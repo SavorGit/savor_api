@@ -23,3 +23,4 @@ class CityObj{
     var $pinyin     = '';   //拼音
     var $first      = '';   //首字母
 }
+

@@ -130,6 +130,21 @@ class BaseController extends Controller {
 	    }
 	    exit;
 	}
+	/**
+	 *@desc 获取阿里云资源全路径
+	 */
+	public function getOssAddr($url){
+	    $oss_host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST').'/';
+	    return  $oss_host.$url;
+	}
+	/**
+	 * @desc 获取内容完整URL
+	 */
+	public function getContentUrl($url){
+	    $content_host = C('CONTENT_HOST');
+	    return $content_host.$url;
+	}
+	
     public function __destruct(){
         
     }

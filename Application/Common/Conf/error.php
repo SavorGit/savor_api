@@ -17,5 +17,10 @@ return array(
 		'12001'=>'mobile_illegal',
 		'12002'=>'user_not_exist',
 		'12003' =>'user_login_err',
+	    
+	    
+	    //记录用手首次使用app
+	    '20001'=>'first_use_have_data',
+	    '20002'=>'first_use_push_err',
 	),
 );

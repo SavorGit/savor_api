@@ -10,7 +10,7 @@ return array(
     'VAR_PATHINFO'          =>  'savors',    // 兼容模式PATHINFO获取变量例如 ?s=/module/action/id/1 后面的参数取决于URL_PATHINFO_DEPR
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
-	'MODULE_ALLOW_LIST'     => array('Basedata'), //模块配置
+	'MODULE_ALLOW_LIST'     => array('Basedata','Version','Content'), //模块配置
 	'DEFAULT_MODULE'        => 'Basedata',
 	
 	//session cookie配置
@@ -59,5 +59,5 @@ return array(
 	//列表缓存时间
 	'LIST_CATCH_TIME'       => '7200',
 	'HOST_NAME'             => 'http://'.$_SERVER['HTTP_HOST'],
-	'CLIENT_NAME_ARR'=> array('pcweb'=>1,'wap'=>2),
+	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
 );

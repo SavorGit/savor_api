@@ -35,6 +35,7 @@ class HomeController extends BaseController{
      */
     public function getLastVodList(){
         $createTime = $this->params['createTime'];
+        $flag = $this->params['flag'];
         //$createTime = strtotime($createTime);
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,1);
@@ -98,19 +99,22 @@ class HomeController extends BaseController{
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
             
-            if(!empty($createTime)){
-                $str_create_time = strtotime($v['createTime']);
-                
-            }
+            $ids[] = $v['id'];
             unset($result[$key]['content']);
         }
         if($result){
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['minTime'];
+            $data['minTime'] = $result[0]['createTime'];
+            $data['flag'] = implode(',', $ids);
+            if(!empty($flag)){
+                $old_ids = explode($flag, ',');
+                $update_info = array_diff($ids, $old_ids);
+                $data['count'] = count($update_info);
+            }
         }
         
-        $this->to_back($result);
+        $this->to_back($data);
     }
     /**
      * @desc 酒店环境上拉
@@ -140,9 +144,8 @@ class HomeController extends BaseController{
         if($result){
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['minTime'];
+            $data['minTime'] = $result[0]['createTime'];
         }
-        
-        $this->to_back($result);
+        $this->to_back($data);
     }
 }

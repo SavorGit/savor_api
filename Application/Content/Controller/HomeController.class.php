@@ -15,12 +15,12 @@ class HomeController extends BaseController{
                 $this->is_verify = 0;
                 break;
             case 'getLastHotelList':
-                $this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
-                $this->is_verify = 1;
+                //$this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
+                $this->is_verify = 0;
                 break;
             case 'getHotelList':
-                $this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
-                $this->is_verify = 1;
+                //$this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
+                $this->is_verify = 0;
                 break;
 
         }
@@ -79,12 +79,15 @@ class HomeController extends BaseController{
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
             $data['minTime'] = $result[0]['createTime'];
+            $num = count($result) -1 ;
+            $data['maxTime'] = $result[$num]['createTime'];
             if(!empty($flag)){
-                $old_ids = explode($flag, ',');
+                $old_ids = explode(',', $flag);
                 $update_info = array_diff($ids, $old_ids);
                 $data['count'] = count($update_info);
-                $data['flag'] = implode(',', $ids);
+                
             }
+            $data['flag'] = implode(',', $ids);
         }
 
         $this->to_back($data);
@@ -123,9 +126,17 @@ class HomeController extends BaseController{
             unset($result[$key]['content']);
         }
         if($result){
-            $data['list'] = $result;
+            $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];
             $data['minTime'] = $result[0]['createTime'];
+            $num = count($result) -1 ;
+            $data['maxTime'] = $result[$num]['createTime'];
+            if(!empty($flag)){
+                $old_ids = explode(',', $flag);
+                $update_info = array_diff($ids, $old_ids);
+                $data['count'] = count($update_info);
+            
+            }
             $data['flag'] = implode(',', $ids);
            
         }
@@ -163,10 +174,10 @@ class HomeController extends BaseController{
             unset($result[$key]['content']);
         }
         if($result){
-            $data['list'] = $result;
+            $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];
             $num = count($result) -1;
-            $data['minTime'] = $result[$num]['createTime'];
+            $data['maxTime'] = $result[$num]['createTime'];
         }
         $this->to_back($data);
     }
@@ -200,7 +211,7 @@ class HomeController extends BaseController{
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
             $num = count($result) -1;
-            $data['minTime'] = $result[$num]['createTime'];
+            $data['maxTime'] = $result[$num]['createTime'];
         }
         $this->to_back($data);
     }

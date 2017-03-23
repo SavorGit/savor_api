@@ -8,13 +8,13 @@ class CatvideoController extends BaseController{
      */
     function _init_() {
 
-        $this->valid_fields=array('categoryId'=>'1001','createTime'=>'1001');
+       // $this->valid_fields=array('categoryId'=>'1001','createTime'=>'1000');
         switch(ACTION_NAME) {
             case 'getLastTopList':
-                $this->is_verify = 1;
+                $this->is_verify = 0;
                 break;
             case 'getTopList':
-                $this->is_verify = 1;
+                $this->is_verify = 0;
                 break;
         }
         parent::_init_();
@@ -31,6 +31,7 @@ class CatvideoController extends BaseController{
                     $res[$vk]['canplay'] = 1;
                     $res[$vk]['name'] = substr($val['name'], strripos($val['name'],'/')+1);
                 }
+                $res[$vk]['createTime'] = strtotime($val['createTime']);
                 foreach($val as $sk=>$sv){
                     if (empty($sv)) {
                         unset($res[$vk][$sk]);
@@ -51,6 +52,7 @@ class CatvideoController extends BaseController{
         $artModel = new \Common\Model\ArticleModel();
         $category_id = $this->params['categoryId'];
         $crtime = $this->params['createTime'];
+        $flag = $this->params['flag'];
         $size   = I('numPerPage',20);//显示每页记录数
         $start = I('pageNum',1);
         $start  = ( $start-1 ) * $size;
@@ -67,8 +69,25 @@ class CatvideoController extends BaseController{
         $res = $artModel->getCapvideolist($table, $field, $joina,$joinb, $where, $orders, $start, $size);
 
         $resu = $this->changeList($res);
+        foreach($resu as $v){
+            $ids[] = $v['id'];
+        }
         if($resu){
+            
+            
             $data['list'] = $resu;
+            $data['flag'] = implode(',', $ids);
+            $data['minTime'] = $resu[0]['createTime'];
+            $num = count($resu) -1;
+            $data['maxTime'] = $resu[$num]['createTime'];
+            if(!empty($flag)){
+                $old_ids = explode(',', $flag);
+            
+                $dif_arr = array_diff($ids, $old_ids);
+            
+                $data['count'] = count($dif_arr);
+            
+            }
         }else{
             $data['list'] = $resu;
         }
@@ -104,6 +123,8 @@ class CatvideoController extends BaseController{
         $resu = $this->changeList($res);
         if($resu){
             $data['list'] = $resu;
+            $num = count($resu) -1;
+            $data['maxTime'] = $resu[$num]['createTime'];
         }else{
             $data['list'] = $resu;
         }

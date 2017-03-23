@@ -101,6 +101,7 @@ class CatvideoController extends BaseController{
         $joinb = 'left join savor_media med on med.id = mco.media_id';
         $res = $artModel->getCapvideolist($table, $field, $joina,$joinb, $where, $orders, $start, $size);
 
+
         $resu = $this->changeList($res);
         if($resu){
             $data['list'] = $resu;

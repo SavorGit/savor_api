@@ -53,7 +53,6 @@ class ArticleModel extends Model
 
 		$acModel = M();
 		$list = $acModel->table($table)->field($field)->join($joina)->join($joinb)->where($where)->order($orders)->limit($start,$size)->select();
-		var_dump($acModel->getLastSql());
 		return $list;
 
 	}//End Function

@@ -165,7 +165,8 @@ class HomeController extends BaseController{
         if($result){
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['createTime'];
+            $num = count($result) -1;
+            $data['minTime'] = $result[$num]['createTime'];
         }
         $this->to_back($data);
     }
@@ -198,7 +199,8 @@ class HomeController extends BaseController{
         if($result){
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['createTime'];
+            $num = count($result) -1;
+            $data['minTime'] = $result[$num]['createTime'];
         }
         $this->to_back($data);
     }

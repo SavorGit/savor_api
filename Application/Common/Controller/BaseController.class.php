@@ -9,12 +9,10 @@ class BaseController extends Controller {
     protected $params = array();
     protected $valid_fields = array(); //数据有效性验证(必参)
     protected $traceinfo = array();
-    protected $userinfo = array();
     
     public function __construct(){
         parent::__construct();
         $this->_init_();
-      	$this->check_token();
     }
     
 	/*
@@ -90,41 +88,6 @@ class BaseController extends Controller {
 	    }
 	    return true;
 	}
-	
-	protected function check_token(){
-	    if($this->is_login || ($this->is_verify && !empty($this->params['token']))){
-	        $token = $this->params['token'];
-	        if(!empty($token)){
-	            $token_info = explode('_', $token);
-	            $deviceid = $token_info[1];
-	            if(md5($this->traceinfo['deviceid'].C('SIGN_KEY')) != $deviceid){
-	                $this->to_back(1004);
-	            }else{
-	                $userinfo = decrypt_data($token_info[0]);
-	                //$m_base = new \Common\Model\BaseModel();
-	                $m_user_token = new \Common\Model\User\UserTokenModel();
-	                $result = $m_user_token->getLoginUserToken($userinfo['uid'],$this->traceinfo['deviceid'],$is_logout=0);
-	                if(!empty($result) && $result['deviceid'] == $this->traceinfo['deviceid']){
-	                    $m_user = new \Common\Model\User\UserModel();
-	                    $data = $m_user->getUserAllInfo($userinfo['uid']);
-	                    if(empty($data)){
-	                    	$this->to_back('12006');
-	                    }
-	                    $location = explode(',', $this->traceinfo['location']);
-	                    $data['lat'] = $location[1];
-	                    $data['lng'] = $location[0];
-	                	$this->userinfo = $data;
-	                }else{
-	                    $this->to_back(1006);
-	                }
-	            }
-	        }else{
-	            $this->to_back(1005);
-	        }
-	    }
-	    return true;
-	}
-	
 	
 	
 	/**

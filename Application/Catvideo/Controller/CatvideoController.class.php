@@ -81,7 +81,6 @@ class CatvideoController extends BaseController{
      * @desc 获取上拉列表
      */
     public function getTopList(){
-
         $artModel = new \Common\Model\ArticleModel();
         $category_id = $this->params['categoryId'];
         $crtime = date("Y-m-d H:i:s",$this->params['createTime']);
@@ -99,7 +98,8 @@ class CatvideoController extends BaseController{
         $table = 'savor_mb_content mco';
         $joina = 'left join savor_mb_category mcat on mco.category_id = mcat.id';
         $joinb = 'left join savor_media med on med.id = mco.media_id';
-        $res = $artModel->getCapvideolist($table, $field, $joina,$joinb, $where, $orders, $start, $size);
+        $res = $artModel->getCapvideotoplist($table, $field, $joina,$joinb, $where, $orders);
+
 
         $resu = $this->changeList($res);
         if($resu){

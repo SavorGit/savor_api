@@ -31,7 +31,13 @@ class HomeController extends BaseController{
         if($res){
             foreach ($res as $vk=>$val) {
                 $res[$vk]['imageURL'] = $this->getOssAddr($val['imageURL']);
+                foreach($val as $sk=>$sv){
+                    if (empty($sv)) {
+                        unset($res[$vk][$sk]);
+                    }
+                }
             }
+
         }
         return $res;
         //如果是空

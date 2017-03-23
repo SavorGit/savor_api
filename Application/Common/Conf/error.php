@@ -17,5 +17,9 @@ return array(
 		'12001'=>'mobile_illegal',
 		'12002'=>'user_not_exist',
 		'12003' =>'user_login_err',
+
+		//客户端传类型报错
+		'13001'=>'ctype_illegal',
+		'13002'=>'cltype_insert_fail',
 	),
 );

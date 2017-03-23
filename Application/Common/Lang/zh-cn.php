@@ -16,4 +16,8 @@ return array(
 	//用户相关
 	'user_not_exist' =>'用户不存在',
 	'user_login_err'=>'用户登录失败',
+
+	//客户端类型
+	'ctype_illegal'=>'类型标识错误',
+	'cltype_insert_fail'=>'数据插入失败',
 );

@@ -58,6 +58,16 @@ class ArticleModel extends Model
 	}//End Function
 
 
+	public function getCapvideotoplist($table, $field, $joina,$joinb, $where, $orders)
+	{
+
+		$acModel = M();
+		$list = $acModel->table($table)->field($field)->join($joina)->join($joinb)->where($where)->order($orders)->select();
+		return $list;
+
+	}//End Function
+
+
 
 
 	public function getOssSize($oss_path) {

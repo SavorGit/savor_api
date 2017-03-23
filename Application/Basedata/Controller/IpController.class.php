@@ -9,7 +9,7 @@ class IpController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            case 'getLastVodList':
+            case 'getIp':
                 $this->is_verify = 0;
                 break;
         }
@@ -18,7 +18,22 @@ class IpController extends BaseController{
     public function getIp(){
         $ip = get_client_ipaddr(); //获取客户端ip地址
         $redis = SavorRedis::getInstance();
+        
         $info = $redis->get($ip);
-        $m_sys_config = '';
+       
+        $m_sys_config = new \Common\Model\SysConfigModel();
+        $where = "'mobileApi.getIp.command_port','mobileApi.getIp.download_port','mobileApi.getIp.netty_port','mobileApi.getIp.type'";
+        $configList = $m_sys_config->getInfo($where);
+        $data['type']         = $configList[3]['config_value'];
+        $data['command_port'] = $configList[0]['config_value'];
+        $data['download_port']= $configList[1]['config_value'];
+        $data['netty_port']   = $configList[2]['config_value'];
+        if($info){
+            $data['ip'] = $info;
+            $tmp = explode('*', $info);
+            $data['hotelId'] = $tmp[1];
+            $data['localIp'] = $tmp[0];
+        }
+        $this->to_back($data);
     }
 }

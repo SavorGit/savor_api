@@ -29,4 +29,17 @@ class ContentModel extends Model{
 	    $result = $this->query($sql);
 	    return $result;
 	}
+
+
+	/**
+	 * @desc 酒店环境下拉宣传片获取
+	 * @param $hotel_id  酒店id
+	 */
+	public function getHotelList($hotel_id){
+		$where .= ' AND ads.state=1 AND ads.type=3 AND ads.hotel_id = '.$hotel_id;
+		$sql = "select ads.id, ads.name title, ads.img_url imageURL, ads.duration duration from savor_ads ads  LEFT JOIN savor_media media on media.id = ads.media_id where 1=1 $where";
+
+		$result = $this->query($sql);
+		return $result;
+	}
 }

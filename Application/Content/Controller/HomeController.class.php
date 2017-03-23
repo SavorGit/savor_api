@@ -78,11 +78,12 @@ class HomeController extends BaseController{
         if($result){
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['minTime'];
+            $data['minTime'] = $result[0]['createTime'];
             if(!empty($flag)){
                 $old_ids = explode($flag, ',');
                 $update_info = array_diff($ids, $old_ids);
                 $data['count'] = count($update_info);
+                $data['flag'] = implode(',', $ids);
             }
         }
 
@@ -90,13 +91,13 @@ class HomeController extends BaseController{
     }
 
     /**
-     * @desc 酒店环境上拉
+     * @desc 酒店环境下拉
      */
     public function getLastHotelList(){
         $m_mb_content = new \Common\Model\ContentModel();
         $createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];
-        
+        $flag = $this->params['flag'];
         $ads_arr = $m_mb_content->getHotelList($hotel_id);
         $ads_arr = $this->changeList($ads_arr);
         $data = array();
@@ -118,7 +119,7 @@ class HomeController extends BaseController{
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
             
-           
+            $ids[] = $v['id'];
             unset($result[$key]['content']);
         }
         if($result){

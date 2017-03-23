@@ -130,6 +130,7 @@ class BaseController extends Controller {
 	    }
 	    exit;
 	}
+
 	/**
 	 *@desc 获取阿里云资源全路径
 	 */
@@ -145,7 +146,11 @@ class BaseController extends Controller {
 	    return $content_host.$url;
 	}
 	
-    public function __destruct(){
+
+
+
+	public function __destruct(){
+
         
     }
 }

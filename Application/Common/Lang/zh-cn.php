@@ -16,8 +16,11 @@ return array(
 	//用户相关
 	'user_not_exist' =>'用户不存在',
 	'user_login_err'=>'用户登录失败',
-    
-    //记录用户首次使用app
+
+	 //记录用户首次使用app
     'first_use_have_data'=>'该设备已记录首次使用数据',
     'first_use_push_err'=>'记录失败',
+	//客户端类型
+	'ctype_illegal'=>'类型标识错误',
+	'cltype_insert_fail'=>'数据插入失败',
 );

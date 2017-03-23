@@ -167,7 +167,18 @@ class BaseController extends Controller {
 	    }
 	    exit;
 	}
-    public function __destruct(){
+
+	/**
+	 *@desc 获取阿里云资源全路径
+	 */
+	public function getOssAddr($url){
+		$oss_host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST').'/';
+		return  $oss_host.$url;
+	}
+
+
+
+	public function __destruct(){
         
     }
 }

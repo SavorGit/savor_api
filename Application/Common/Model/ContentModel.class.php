@@ -10,7 +10,7 @@ class ContentModel extends Model{
 	 * @param $type        类型1：下拉加载  2：上拉加载
 	 * $param $limit       展示条数        
 	 */
-	public function getVodList($createTime,$type=1,$start,$limit= 20){
+	public function getVodList($createTime,$type=1,$limit= 20){
 	    if($type ==1 && !empty($createTime))
 	    {
 	        $createTime = date('Y-m-d H:i:s',$createTime);
@@ -27,7 +27,7 @@ class ContentModel extends Model{
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id
 	           left join savor_media as m on mc.media_id=m.id
 	           
-	           where 1=1 $where order by mh.sort_num asc limit $start , $limit";
+	           where 1=1 $where order by mh.sort_num asc limit $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

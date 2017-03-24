@@ -51,7 +51,6 @@ class HomeController extends BaseController{
         $flag = $this->params['flag'];
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,1);
-        //print_r($result);exit;
         $data = array();
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
@@ -147,9 +146,7 @@ class HomeController extends BaseController{
      * @desc 酒店环境上拉
      */
     public function getHotelList(){
-        $size   = $this->params['pageSize'];//显示每页记录数
-        $start = $this->params['pageNo'];
-        $start  = ( $start-1 ) * $size;
+        $limit = 10;
         $m_mb_content = new \Common\Model\ContentModel();
         $createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];
@@ -160,7 +157,7 @@ class HomeController extends BaseController{
         if($ads_arr){
             $data['adsList'] = $ads_arr;
         }
-        $result = $m_mb_content->getVodList($createTime,2,$start,$size);
+        $result = $m_mb_content->getVodList($createTime,2,$limit);
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
                 if(empty($vv)){
@@ -189,12 +186,10 @@ class HomeController extends BaseController{
      * @desc 非酒店环境上拉
      */
     public function getVodList(){
-        $size   = $this->params['pageSize'];//显示每页记录数
-        $start = $this->params['pageNo'];
-        $start  = ( $start-1 ) * $size;
+        $limit = 10;
         $createTime = $this->params['createTime'];
         $m_mb_content = new \Common\Model\ContentModel();
-        $result = $m_mb_content->getVodList($createTime,2,$start,$size);
+        $result = $m_mb_content->getVodList($createTime,2,$limit);
         //print_r($result);exit;
         $data = array();
         foreach($result as $key=>$v){

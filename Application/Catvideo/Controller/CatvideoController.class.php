@@ -63,21 +63,15 @@ class CatvideoController extends BaseController{
         $sort = I('_sort','desc');
         $orders = $order.' '.$sort;
         $now = date("Y-m-d H:i:s",time());
-        $field = 'mco.id id, mcat.name category, mco.title title,med.oss_addr name, mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, mco.create_time createTime';
         $where = '1=1';
         $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak > "'.$now.'") or mco.bespeak=0)';
-        $table = 'savor_mb_content mco';
-        $joina = 'left join savor_mb_category mcat on mco.category_id = mcat.id';
-        $joinb = 'left join savor_media med on med.id = mco.media_id';
-        $res = $artModel->getCapvideolist($table, $field, $joina,$joinb, $where, $orders, $start, $size);
+        $res = $artModel->getCapvideolist($where, $orders, $start, $size);
 
         $resu = $this->changeList($res);
         foreach($resu as $v){
             $ids[] = $v['id'];
         }
         if($resu){
-            
-            
             $data['list'] = $resu;
             $data['flag'] = implode(',', $ids);
             $data['minTime'] = $resu[0]['createTime'];
@@ -113,16 +107,10 @@ class CatvideoController extends BaseController{
         $sort = I('_sort','desc');
         $orders = $order.' '.$sort;
         $now = date("Y-m-d H:i:s",time());
-        $field = 'mco.id id, mcat.name category, mco.title title,med.oss_addr name, mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, mco.create_time createTime';
         $where = '1=1 AND ';
         $where .= 'mco.create_time < "'.$crtime.'"';
         $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak > "'.$now.'") or mco.bespeak=0)';
-        $table = 'savor_mb_content mco';
-        $joina = 'left join savor_mb_category mcat on mco.category_id = mcat.id';
-        $joinb = 'left join savor_media med on med.id = mco.media_id';
-        $res = $artModel->getCapvideolist($table, $field, $joina,$joinb, $where, $orders, $start, $size);
-
-
+        $res = $artModel->getCapvideolist($where, $orders, $start, $size);
         $resu = $this->changeList($res);
         if($resu){
             $data['list'] = $resu;

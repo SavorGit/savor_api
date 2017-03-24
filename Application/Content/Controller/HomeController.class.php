@@ -15,12 +15,12 @@ class HomeController extends BaseController{
                 $this->is_verify = 0;
                 break;
             case 'getLastHotelList':
-                //$this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
-                $this->is_verify = 0;
+                $this->valid_fields=array('hotelId'=>'1001');
+                $this->is_verify = 1;
                 break;
             case 'getHotelList':
-                //$this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
-                $this->is_verify = 0;
+                $this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
+                $this->is_verify = 1;
                 break;
 
         }
@@ -96,6 +96,7 @@ class HomeController extends BaseController{
      * @desc 酒店环境下拉
      */
     public function getLastHotelList(){
+
         $m_mb_content = new \Common\Model\ContentModel();
         $createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];
@@ -146,6 +147,9 @@ class HomeController extends BaseController{
      * @desc 酒店环境上拉
      */
     public function getHotelList(){
+        $size   = $this->params['pageSize'];//显示每页记录数
+        $start = $this->params['pageSize'];
+        $start  = ( $start-1 ) * $size;
         $m_mb_content = new \Common\Model\ContentModel();
         $createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];

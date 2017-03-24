@@ -8,13 +8,16 @@ class CatvideoController extends BaseController{
      */
     function _init_() {
 
-       // $this->valid_fields=array('categoryId'=>'1001','createTime'=>'1000');
+        $this->valid_fields=array('categoryId'=>'1001');
         switch(ACTION_NAME) {
+
             case 'getLastTopList':
-                $this->is_verify = 0;
+                $this->valid_fields=array('categoryId'=>'1001');
+                $this->is_verify = 1;
                 break;
             case 'getTopList':
-                $this->is_verify = 0;
+                $this->valid_fields=array('categoryId'=>'1001','createTime'=>'1001');
+                $this->is_verify = 1;
                 break;
         }
         parent::_init_();
@@ -103,8 +106,8 @@ class CatvideoController extends BaseController{
         $artModel = new \Common\Model\ArticleModel();
         $category_id = $this->params['categoryId'];
         $crtime = date("Y-m-d H:i:s",$this->params['createTime']);
-        $size   = I('numPerPage',20);//显示每页记录数
-        $start = I('pageNum',1);
+        $size   = I('pageSize',10);//显示每页记录数
+        $start = I('pageNo',1);
         $start  = ( $start-1 ) * $size;
         $order = I('_order','mco.id');
         $sort = I('_sort','desc');
@@ -124,6 +127,7 @@ class CatvideoController extends BaseController{
         if($resu){
             $data['list'] = $resu;
             $num = count($resu) -1;
+            $data['minTime'] = $resu[0]['createTime'];
             $data['maxTime'] = $resu[$num]['createTime'];
         }else{
             $data['list'] = $resu;

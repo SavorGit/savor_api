@@ -22,19 +22,19 @@ class FeedbackController extends BaseController{
     public function feedInsert(){
 
         $save = array();
-        $save['device_id'] = I('post.deviceId',0,'intval');
-        $save['suggestion'] = I('post.suggestion','','trim');
-        $save['contact_way'] = I('post.contactWay','','trim');
+        $save['device_id'] = $this->params['deviceId'];
+
+        I('post.deviceId',0,'intval');
+        $save['suggestion'] = $this->params['suggestion'];
+        $save['contact_way'] = $this->params['contactWay'];
         $save['create_time'] = date('Y-m-d H:i:s');
         $feedModel = new \Common\Model\Feed\FeedbackModel();
-
         $bool = $feedModel->addData($save);
         if($bool) {
             $data = 10000;
         } else {
             $data = 13002;
         }
-
         $this->to_back($data);
     }
 }

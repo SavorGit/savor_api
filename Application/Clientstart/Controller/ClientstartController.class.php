@@ -7,8 +7,6 @@ class ClientstartController extends BaseController{
      * 构造函数
      */
     function _init_() {
-
-        //$this->valid_fields=array('ctype'=>'1001');
         switch(ACTION_NAME) {
             case 'getInfo':
                 $this->is_verify = 0;
@@ -26,8 +24,9 @@ class ClientstartController extends BaseController{
         $traceinfo = $this->traceinfo;
         $clientName = $traceinfo['clientname'];
         $clientArr =C('CLIENT_NAME_ARR');
-        $type = $clientArr[$clientName];
-        if ( in_array($type, array(3,4)) ){
+
+        if ( array_key_exists($clientName, $clientArr) ){
+            $type = $clientArr[$clientName];
             $csModel = new \Common\Model\ClientstartModel();
             $dat = array('ctype'=>$type);
             $field = 'id,status,duration,media_id,img_id';

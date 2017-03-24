@@ -26,7 +26,7 @@ class CatvideoController extends BaseController{
     public function changeList($res){
         if($res){
             foreach ($res as $vk=>$val) {
-                $res[$vk]['contentURL'] = C('HOST_NAME').$val['contentURL'];
+                $res[$vk]['contentURL'] = $this->getContentUrl($val['contentURL']);
                 $res[$vk]['imageURL'] = $this->getOssAddr($val['imageURL']);
                 $res[$vk]['videoURL'] = substr($val['videoURL'], 0, strpos($val['videoURL'],'.f'));
                 $len = count($val['name']);

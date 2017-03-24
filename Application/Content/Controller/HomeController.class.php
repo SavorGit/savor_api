@@ -71,7 +71,7 @@ class HomeController extends BaseController{
 
             } */
             $ids[] = $v['id'];
-            unset($result[$key]['content']);
+            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
             $data['list'] = $result;
@@ -122,7 +122,7 @@ class HomeController extends BaseController{
             $result[$key]['createTime'] = strtotime($v['createTime']);
             
             $ids[] = $v['id'];
-            unset($result[$key]['content']);
+            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
             $data['vodList'] = $result;
@@ -171,7 +171,7 @@ class HomeController extends BaseController{
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
-            unset($result[$key]['content']);
+            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
             $data['vodList'] = $result;
@@ -205,7 +205,7 @@ class HomeController extends BaseController{
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
-            unset($result[$key]['content']);
+            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
             $data['list'] = $result;

@@ -148,7 +148,7 @@ class HomeController extends BaseController{
      */
     public function getHotelList(){
         $size   = $this->params['pageSize'];//显示每页记录数
-        $start = $this->params['pageSize'];
+        $start = $this->params['pageNo'];
         $start  = ( $start-1 ) * $size;
         $m_mb_content = new \Common\Model\ContentModel();
         $createTime = $this->params['createTime'];
@@ -160,7 +160,7 @@ class HomeController extends BaseController{
         if($ads_arr){
             $data['adsList'] = $ads_arr;
         }
-        $result = $m_mb_content->getVodList($createTime,2);
+        $result = $m_mb_content->getVodList($createTime,2,$start,$size);
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
                 if(empty($vv)){
@@ -189,9 +189,12 @@ class HomeController extends BaseController{
      * @desc 非酒店环境上拉
      */
     public function getVodList(){
+        $size   = $this->params['pageSize'];//显示每页记录数
+        $start = $this->params['pageNo'];
+        $start  = ( $start-1 ) * $size;
         $createTime = $this->params['createTime'];
         $m_mb_content = new \Common\Model\ContentModel();
-        $result = $m_mb_content->getVodList($createTime,2);
+        $result = $m_mb_content->getVodList($createTime,2,$start,$size);
         //print_r($result);exit;
         $data = array();
         foreach($result as $key=>$v){

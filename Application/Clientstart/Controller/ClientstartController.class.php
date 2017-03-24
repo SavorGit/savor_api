@@ -8,10 +8,10 @@ class ClientstartController extends BaseController{
      */
     function _init_() {
 
-        $this->valid_fields=array('ctype'=>'1001');
+        //$this->valid_fields=array('ctype'=>'1001');
         switch(ACTION_NAME) {
             case 'getInfo':
-                $this->is_verify = 1;
+                $this->is_verify = 0;
                 break;
         }
         parent::_init_();
@@ -22,7 +22,11 @@ class ClientstartController extends BaseController{
     public function getInfo(){
 
         $mediaModel = new \Common\Model\MediaModel();
-        $type = $this->params['ctype'];
+        //$type = $this->params['ctype'];
+        $traceinfo = $this->traceinfo;
+        $clientName = $traceinfo['clientname'];
+        $clientArr =C('CLIENT_NAME_ARR');
+        $type = $clientArr[$clientName];
         if ( in_array($type, array(3,4)) ){
             $csModel = new \Common\Model\ClientstartModel();
             $dat = array('ctype'=>$type);

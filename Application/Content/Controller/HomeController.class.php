@@ -49,7 +49,6 @@ class HomeController extends BaseController{
     public function getLastVodList(){
         $createTime = $this->params['createTime'];
         $flag = $this->params['flag'];
-        //$createTime = strtotime($createTime);
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,1);
         //print_r($result);exit;
@@ -187,7 +186,6 @@ class HomeController extends BaseController{
      */
     public function getVodList(){
         $createTime = $this->params['createTime'];
-        //$createTime = strtotime($createTime);
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,2);
         //print_r($result);exit;

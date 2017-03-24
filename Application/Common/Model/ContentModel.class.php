@@ -13,8 +13,10 @@ class ContentModel extends Model{
 	public function getVodList($createTime,$type=1,$limit= 20){
 	    if($type ==1 && !empty($createTime))
 	    {
+	        $createTime = date('Y-m-d H:i:s',$createTime);
 	        $where .= " and mh.create_time>'".$createTime."'";   
 	    }else if($type ==2 && !empty($createTime)){
+	        $createTime = date('Y-m-d H:i:s',$createTime);
 	        $where .= " and mh.create_time<'".$createTime."'";   
 	    }    
 	    $sql ="select mh.id,mcat.name as category,mc.title,m.name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,

@@ -19,7 +19,7 @@ class HomeController extends BaseController{
                 $this->is_verify = 1;
                 break;
             case 'getHotelList':
-                $this->valid_fields=array('hotelId'=>'1001','createTime'=>'1001');
+                $this->valid_fields=array('hotelId'=>'1001','createTime'=>'1000');
                 $this->is_verify = 1;
                 break;
 
@@ -47,10 +47,10 @@ class HomeController extends BaseController{
      * @desc 非酒店环境下拉
      */
     public function getLastVodList(){
-        $createTime = $this->params['createTime'];
+        //$createTime = $this->params['createTime'];
         $flag = $this->params['flag'];
         $m_mb_content = new \Common\Model\ContentModel();
-        $result = $m_mb_content->getVodList($createTime,1);
+        $result = $m_mb_content->getVodList('',1);
         $data = array();
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
@@ -66,10 +66,10 @@ class HomeController extends BaseController{
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
 
-            if(!empty($createTime)){
+            /* if(!empty($createTime)){
                 $str_create_time = strtotime($v['createTime']);
 
-            }
+            } */
             $ids[] = $v['id'];
             unset($result[$key]['content']);
         }
@@ -97,7 +97,7 @@ class HomeController extends BaseController{
     public function getLastHotelList(){
 
         $m_mb_content = new \Common\Model\ContentModel();
-        $createTime = $this->params['createTime'];
+        //$createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];
         $flag = $this->params['flag'];
         $ads_arr = $m_mb_content->getHotelList($hotel_id);
@@ -106,7 +106,7 @@ class HomeController extends BaseController{
         if($ads_arr){
             $data['adsList'] = $ads_arr;
         }
-        $result = $m_mb_content->getVodList($createTime,1);
+        $result = $m_mb_content->getVodList('',1);
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
                 if(empty($vv)){

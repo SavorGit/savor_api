@@ -167,7 +167,7 @@ class HomeController extends BaseController{
             $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
-            if($v['type'] ==3 && empty($v['content'])){
+            if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
@@ -201,7 +201,7 @@ class HomeController extends BaseController{
             $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
-            if($v['type'] ==3 && empty($v['content'])){
+            if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);

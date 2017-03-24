@@ -58,9 +58,9 @@ class HomeController extends BaseController{
                     unset($result[$key][$kk]);
                 }
             }
-            $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
-            $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
-            if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
+            $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
@@ -113,9 +113,9 @@ class HomeController extends BaseController{
                     unset($result[$key][$kk]);
                 }
             }
-            $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
-            $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
-            if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ; 
+            $result[$key]['imgURL'] = $this->getOssAddr($v['imgUrl']) ;
+            $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
@@ -164,9 +164,9 @@ class HomeController extends BaseController{
                     unset($result[$key][$kk]);
                 }
             }
-            $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
-            $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
-            if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            $result[$key]['imgURL'] = $this->getOssAddr($v['imgUrl']) ;
+            $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }
@@ -198,9 +198,9 @@ class HomeController extends BaseController{
                     unset($result[$key][$kk]);
                 }
             }
-            $result[$key]['imgUrl'] = $this->getOssAddr($v['imgUrl']) ;
-            $result[$key]['contentUrl'] = $this->getContentUrl($v['contentUrl']);
-            if(!empty($v['videoUrl'])) $result[$key]['videoUrl']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            $result[$key]['imgURL'] = $this->getOssAddr($v['imgUrl']) ;
+            $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }

@@ -20,12 +20,14 @@ class CategoryController extends BaseController{
     public function getCategoryList(){
 
         $m_category = new \Common\Model\Basedata\CategoryModel();
-      //  var_dump($this->params);
-        //var_dump($this->traceinfo);
-        //var_dump($_SERVER);
-
         $data = $m_category->getAllCategory();
-        
+        foreach($data as $key=>$v){
+           foreach($v as $kk=>$vv){
+               if(empty($vv)){
+                   unset($data[$key][$kk]);
+               }
+           }
+        }
         $this->to_back($data);
     }
 }

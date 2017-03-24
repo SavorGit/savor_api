@@ -30,6 +30,8 @@ class UpgradeController extends BaseController{
             $data = $m_version->getOneByVersionAndDevice($now_version, $device_type);
             $data['oss_addr'] =$this->getOssAddr($data['oss_addr']);
             $data['update_type'] = $upgrade_info['update_type'];
+            $remark = explode("|", $data['remark']);
+            $data['remark'] = $remark;
             $this->to_back($data);
         }else {
             $this->to_back(array());

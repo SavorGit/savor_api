@@ -34,6 +34,12 @@ class CatvideoController extends BaseController{
                     $res[$vk]['canplay'] = 1;
                     $res[$vk]['name'] = substr($val['name'], strripos($val['name'],'/')+1);
                 }
+                if($val['type']==3){
+                    if(empty($val['content'])){
+                        $res[$vk]['type'] = 4;
+                    }
+                }
+                unset($res[$vk]['content']);
                 $res[$vk]['createTime'] = strtotime($val['createTime']);
                 foreach($val as $sk=>$sv){
                     if (empty($sv)) {

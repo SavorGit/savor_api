@@ -52,7 +52,7 @@ class ArticleModel extends Model
 	{
 
 
-		$field = 'mco.id id, mcat.name category, mco.title title,med.oss_addr name, mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, mco.create_time createTime';
+		$field = 'mco.id id, mco.type,mco.content,mcat.name category, mco.title title,med.oss_addr name, mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, mco.create_time createTime';
 		$table = 'savor_mb_content mco';
 		$joina = 'left join savor_mb_category mcat on mco.category_id = mcat.id';
 		$joinb = 'left join savor_media med on med.id = mco.media_id';

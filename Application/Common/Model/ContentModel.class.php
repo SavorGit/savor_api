@@ -41,7 +41,7 @@ class ContentModel extends Model{
 	 */
 	public function getHotelList($hotel_id){
 		$where .= ' AND ads.state=1 AND ads.type=3 AND ads.hotel_id = '.$hotel_id;
-		$sql = "select ads.id, media.oss_addr as title, ads.img_url imageURL, ads.duration duration from savor_ads ads  LEFT JOIN savor_media media on media.id = ads.media_id where 1=1 $where";
+		$sql = "select ads.id,ads.name as title, media.oss_addr as name, ads.img_url imageURL, ads.duration duration from savor_ads ads  LEFT JOIN savor_media media on media.id = ads.media_id where 1=1 $where";
 
 		$result = $this->query($sql);
 		return $result;

@@ -36,9 +36,9 @@ class HomeController extends BaseController{
                         unset($res[$vk][$sk]);
                     }
                 }
-                if(!empty($val['title'])){
-                    $ttp = explode('/', $val['title']);
-                    $res[$vk]['title'] = $ttp[2];
+                if(!empty($val['name'])){
+                    $ttp = explode('/', $val['name']);
+                    $res[$vk]['name'] = $ttp[2];
                 }
             }
 

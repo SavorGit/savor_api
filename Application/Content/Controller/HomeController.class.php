@@ -188,7 +188,7 @@ class HomeController extends BaseController{
 
 
 
-        
+
         if($result){
             $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];

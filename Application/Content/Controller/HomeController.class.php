@@ -173,11 +173,12 @@ class HomeController extends BaseController{
             $result[$key]['createTime'] = strtotime($v['createTime']);
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
+
         if($result){
             $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];
             $num = count($result) -1;
-            $data['maxTime'] = $result[$num]['createTime'];
+            $data['maxTime'] = $result[$num]['sort_num'];
         }
         $this->to_back($data);
     }
@@ -211,7 +212,7 @@ class HomeController extends BaseController{
             $data['list'] = $result;
             $data['time'] = $result[0]['id'];
             $num = count($result) -1;
-            $data['maxTime'] = $result[$num]['createTime'];
+            $data['maxTime'] = $result[$num]['sort_num'];
         }
         $this->to_back($data);
     }

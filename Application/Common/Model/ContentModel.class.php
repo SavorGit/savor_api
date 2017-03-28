@@ -10,7 +10,7 @@ class ContentModel extends Model{
 	 * @param $type        类型1：下拉加载  2：上拉加载
 	 * $param $limit       展示条数        
 	 */
-	public function getVodList($createTime,$type=1,$limit= 20){
+	public function getVodList($createTime,$type=1,$limit= 20,$env=0){
 	    if($type ==1 && !empty($createTime))
 	    {
 	        $createTime = date('Y-m-d H:i:s',$createTime);
@@ -18,7 +18,10 @@ class ContentModel extends Model{
 	    }else if($type ==2 && !empty($createTime)){
 	        $where .= " and mh.sort_num>'".$createTime."'";
 	    }    
-	    $sql ="select mh.id,mcat.name as category,mc.title,m.name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
+	    if(!empty($env)){
+	        $where .= " and mc.media_id >0";
+	    }
+	    $sql ="select mh.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
 	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mh.sort_num as sort_num
 	           from savor_mb_home as mh

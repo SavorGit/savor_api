@@ -106,7 +106,7 @@ class HomeController extends BaseController{
         if($ads_arr){
             $data['adsList'] = $ads_arr;
         }
-        $result = $m_mb_content->getVodList('',1);
+        $result = $m_mb_content->getVodList('',1,20,1);
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
                 if(empty($vv)){
@@ -116,6 +116,11 @@ class HomeController extends BaseController{
             $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            if($v['type'] ==3){
+                $ttp = explode('/', $v['name']);
+                
+                $result[$key]['name'] = $ttp[2];
+            }
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
@@ -130,6 +135,9 @@ class HomeController extends BaseController{
             $data['minTime'] = $result[0]['createTime'];
             $num = count($result) -1 ;
             $data['maxTime'] = $result[$num]['createTime'];
+            $m_hotel = new \Common\Model\HotelModel(); 
+            $hotel_info = $m_hotel->getOneById('name', $hotel_id);
+            $data['hotelName'] = $hotel_info['name'];
             if(!empty($flag)){
                 $old_ids = explode(',', $flag);
                 $update_info = array_diff($ids, $old_ids);
@@ -157,7 +165,7 @@ class HomeController extends BaseController{
         if($ads_arr){
             $data['adsList'] = $ads_arr;
         }
-        $result = $m_mb_content->getVodList($createTime,2,$limit);
+        $result = $m_mb_content->getVodList($createTime,2,$limit,$env=1);
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
                 if(empty($vv)){
@@ -167,6 +175,10 @@ class HomeController extends BaseController{
             $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            if($v['type'] ==3){
+                $ttp = explode('/', $v['name']);
+                $result[$key]['name'] = $ttp[2];
+            }
             if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }

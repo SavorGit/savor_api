@@ -36,6 +36,10 @@ class HomeController extends BaseController{
                         unset($res[$vk][$sk]);
                     }
                 }
+                if(!empty($val['title'])){
+                    $ttp = explode('/', $val['title']);
+                    $res[$vk]['title'] = $ttp[2];
+                }
             }
 
         }
@@ -61,6 +65,11 @@ class HomeController extends BaseController{
             $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            if($v['type'] ==3){
+                $ttp = explode('/', $v['name']);
+            
+                $result[$key]['name'] = $ttp[2];
+            }
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }

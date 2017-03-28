@@ -186,6 +186,9 @@ class HomeController extends BaseController{
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
 
+
+
+        
         if($result){
             $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];

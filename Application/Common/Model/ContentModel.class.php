@@ -16,21 +16,20 @@ class ContentModel extends Model{
 	        $createTime = date('Y-m-d H:i:s',$createTime);
 	        $where .= " and mh.create_time>'".$createTime."'";   
 	    }else if($type ==2 && !empty($createTime)){
-	        $createTime = date('Y-m-d H:i:s',$createTime);
-	        $where .= " and mh.create_time<'".$createTime."'";   
+	        $where .= " and mh.sort_num>'".$createTime."'";
 	    }    
 	    if(!empty($env)){
 	        $where .= " and mc.media_id >0";
 	    }
 	    $sql ="select mh.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
-	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content
+	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mh.sort_num as sort_num
 	           from savor_mb_home as mh
 	           left join savor_mb_content as mc on mh.content_id=mc.id
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id
 	           left join savor_media as m on mc.media_id=m.id
 	           
-	           where 1=1 $where order by mh.sort_num asc limit $limit";
+	           where 1=1 $where and mc.type=3 order by mh.sort_num asc limit $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

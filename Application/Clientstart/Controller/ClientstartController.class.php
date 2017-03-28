@@ -31,15 +31,19 @@ class ClientstartController extends BaseController{
             $dat = array('ctype'=>$type);
             $field = 'id,status,duration,media_id,img_id';
             $info = $csModel->getOne($dat,$field);
-            if( $info['status'] == 1 ) {
-                $meid = $info['img_id'];
-            } else if( $info['status'] == 2 ) {
-                $meid = $info['media_id'];
+            if($info){
+                if( $info['status'] == 1 ) {
+                    $meid = $info['img_id'];
+                } else if( $info['status'] == 2 ) {
+                    $meid = $info['media_id'];
+                }
+                unset($info['img_id'],$info['media_id']);
+                $m_info = $mediaModel->getMediaInfoById($meid);
+                $info['url'] = $m_info['oss_addr'];
+                $data = $info;
+            }else{
+                $data = array();
             }
-            unset($info['img_id'],$info['media_id']);
-            $m_info = $mediaModel->getMediaInfoById($meid);
-            $info['url'] = $m_info['oss_addr'];
-            $data = $info;
         } else {
             $data = '13001';
         }

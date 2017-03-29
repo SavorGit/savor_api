@@ -22,8 +22,10 @@ class FeedbackController extends BaseController{
     public function feedInsert(){
 
         $save = array();
+        $traceinfo = $this->traceinfo;
+        $clent_arr  = C('CLIENT_NAME_ARR');
+        $save['device_type'] = $clent_arr[$traceinfo['clientname']];
         $save['device_id'] = $this->params['deviceId'];
-
         I('post.deviceId',0,'intval');
         $save['suggestion'] = $this->params['suggestion'];
         $save['contact_way'] = $this->params['contactWay'];

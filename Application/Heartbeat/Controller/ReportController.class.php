@@ -1,12 +1,13 @@
 <?php
 namespace Heartbeat\Controller;
+use Common\Lib\SavorRedis;
 use Think\Controller;
 use Common\Lib\Curl;
 use \Common\Controller\CommonController as CommonController;
 /**
  * @desc 心跳上报
  */
-class ReportedController extends CommonController{
+class ReportController extends CommonController{
     /**
      * 构造函数
      */
@@ -15,6 +16,8 @@ class ReportedController extends CommonController{
             case 'index':
                 $this->is_verify = 0;
                 break;
+            case 'syncData':
+                $this->is_verify = 0;
         }
         parent::_init_();
     }
@@ -34,6 +37,7 @@ class ReportedController extends CommonController{
         $data['logo']     = I('get.logo','');
         $data['intranet_ip'] = I('get.id','');         //内网ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
+        print_r($data);exit;
         if(empty($data['mac']) || empty($data['period'])){
             $this->to_back(10004);
         }
@@ -44,5 +48,85 @@ class ReportedController extends CommonController{
 		$data = json_encode($data);
 		$curl->post($url, $data);
         $this->to_back(10000);
+    }
+    /**
+     * @desc 同步心跳数据到数据库
+     */
+    public function syncData(){
+        $m_heart_log = new \Common\Model\HeartLogModel();
+        $m_heart_log->truncateTable();
+        $redis = SavorRedis::getInstance();
+        $redis->select(14);
+        $keys = $redis->keys('*');
+        $m_hotel = new \Common\Model\HotelModel();
+        $m_box   = new \Common\Model\BoxModel();
+        //$keys = array('00E04C6A2F72*1');
+        //$keys = array('FCD5D900B83F*2');
+        $data = $map = array();
+        $dflag = $mflag =  0;
+        
+        foreach($keys as $v){
+            $key_arr = explode('*', $v);
+            $mac = $key_arr[0];
+            $clientid = $key_arr[1];
+            
+            $ret = $redis->get($v);
+            $ret_arr = explode(',', $ret);
+            if($clientid==1){//小平台
+                
+                //$ret_arr = array('1','00E04C6A2F72','10.10.10.10','192.168.2.30','1','2','3','4','5','7','20170405054010');
+                $hotelId = intval($ret_arr[9]);
+                
+                $hotelInfo = $m_hotel->getHotelInfoById($hotelId);
+                if($hotelInfo){
+                    $data[$dflag]['box_mac'] = $mac;
+                    $data[$dflag]['hotel_id'] = $hotelId;
+                    $data[$dflag]['hotel_name'] = $hotelInfo['hotel_name'];
+                    $data[$dflag]['area_id'] = $hotelInfo['area_id'];
+                    $data[$dflag]['last_heart_time'] = date('Y-m-d H:i:s',strtotime($ret_arr[10]));
+                    $data[$dflag]['type'] = $clientid;
+                    $data[$dflag]['hotel_ip'] = $ret_arr[2];
+                    $data[$dflag]['small_ip'] = $ret_arr[3];
+                    $data[$dflag]['ads_period'] = $ret_arr[4];
+                    $data[$dflag]['demand_period'] = $ret_arr[5];
+                    $data[$dflag]['apk_version'] = $ret_arr[6];
+                    $data[$dflag]['war_version'] = $ret_arr[7];
+                    $data[$dflag]['logo_period'] = $ret_arr[8];
+                    $dflag ++;
+                    //$m_hotel->add($data);
+                }
+            }else if($clientid==2) {//机顶盒
+               //$ret_arr = array('1','00E04C6A2F72','10.10.10.10','192.168.2.30','1','2','3','4','5','7','20170405054010');
+               $hotelInfo =  $m_box->getHotelInfoByBoxMac($mac);
+               if($hotelInfo){
+                   $map[$mflag]['box_id'] = $hotelInfo['box_id'];
+                   $map[$mflag]['box_mac'] = $mac;
+                   $map[$mflag]['room_id'] = $hotelInfo['room_id'];
+                   $map[$mflag]['room_name'] = $hotelInfo['room_name'];
+                   $map[$mflag]['hotel_id']  = $hotelInfo['hotelId'];
+                   $map[$mflag]['hotel_name'] = $hotelInfo['hotel_name'];
+                   $map[$mflag]['area_id'] = $hotelInfo['area_id'];
+                   $map[$mflag]['area_name'] = $hotelInfo['area_name'];
+                   $map[$mflag]['last_heart_time'] = date('Y-m-d H:i:s',strtotime($ret_arr[10]));
+                   $map[$mflag]['type'] = $clientid;
+                   $map[$mflag]['hotel_ip'] = $ret_arr[2];
+                   $map[$mflag]['small_ip'] = $ret_arr[3];
+                   $map[$mflag]['ads_period'] = $ret_arr[4];
+                   $map[$mflag]['demand_period'] = $ret_arr[5];
+                   $map[$mflag]['apk_version'] = $ret_arr[6];
+                   $map[$mflag]['war_version'] = $ret_arr[7];
+                   $map[$mflag]['logo_period'] = $ret_arr[8];
+                   $mflag++;
+               }
+            }
+        }
+        
+        if(!empty($data)){
+            $m_heart_log->addAll($data);
+        }
+        if(!empty($map)){
+            $m_heart_log->addAll($map);
+        }
+        echo "OK";exit;
     }
 }

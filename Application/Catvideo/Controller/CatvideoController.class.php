@@ -70,7 +70,7 @@ class CatvideoController extends BaseController{
         $orders = $order.' '.$sort;
         $now = date("Y-m-d H:i:s",time());
         $where = '1=1';
-        $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak > "'.$now.'") or mco.bespeak=0)';
+        $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
         $res = $artModel->getCapvideolist($where, $orders, $start, $size);
 
         $resu = $this->changeList($res);
@@ -115,7 +115,7 @@ class CatvideoController extends BaseController{
         $now = date("Y-m-d H:i:s",time());
         $where = '1=1 AND ';
         $where .= 'mco.create_time < "'.$crtime.'"';
-        $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak > "'.$now.'") or mco.bespeak=0)';
+        $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
         $res = $artModel->getCapvideolist($where, $orders, $start, $size);
         $resu = $this->changeList($res);
         if($resu){

@@ -19,8 +19,9 @@ class ContentModel extends Model{
 	        $where .= " and mh.sort_num>'".$createTime."'";
 	    }    
 	    if(!empty($env)){
-	        $where .= " and mc.media_id >0";
+	        $where .= " and mc.media_id >0 and mh.is_demand=1";
 	    }
+		$now_date = date('Y-m-d H:i:s',time());
 	    $sql ="select mh.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
 	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mh.sort_num as sort_num
@@ -29,7 +30,7 @@ class ContentModel extends Model{
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id
 	           left join savor_media as m on mc.media_id=m.id
 	           
-	           where 1=1 $where and mc.type=3 order by mh.sort_num asc limit $limit";
+	           where 1=1 $where  and mc.bespeak_time<'".$now_date."' order by mh.sort_num asc limit $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

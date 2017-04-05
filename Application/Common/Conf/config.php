@@ -23,7 +23,9 @@ return array(
 
 	//数据库配置
 	'DB_FIELDS_CACHE' 		=> true,
-
+    
+    //心跳上报log
+    'REPORT_LOG_PATH'       =>'/application_data/app_logs/php/savor_admin',
 	//日志配置
 	'LOG_RECORD'            =>  false,   // 默认不记录日志
 	'LOG_TYPE'              =>  'File', // 日志记录类型 默认为文件方式

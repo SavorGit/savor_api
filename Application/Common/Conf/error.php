@@ -25,5 +25,9 @@ return array(
 		//客户端传类型报错
 		'13001'=>'ctype_illegal',
 		'13002'=>'cltype_insert_fail',
+
+		//心跳错误判断
+		'10005'=>'ipup_fail',
+		'10006'=>'countupdate_fail',
 	),
 );

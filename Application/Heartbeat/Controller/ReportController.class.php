@@ -41,10 +41,9 @@ class ReportController extends CommonController{
         if(empty($data['mac']) || empty($data['period'])){
             $this->to_back(10004);
         }
-        
-        $url = C('HOST_NAME').'/aa';
+        $str = '/heartcalcu/calculation/getHeartdata';
+        $url = C('HOST_NAME').$str;
 		$curl = new Curl();
-		
 		$data = json_encode($data);
 		$curl->post($url, $data);
         $this->to_back(10000);

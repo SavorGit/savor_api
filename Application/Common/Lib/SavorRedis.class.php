@@ -678,7 +678,25 @@ class SavorRedis {
         $hash = ($h*1)%$m;
         return $hash;
     }
-
+    public function rpush($key,$value){
+        return $this->getRedis()->rpush($key,$value);
+    }
+    public function lgetrange($key, $start, $end){
+        // 没有使用M/S
+        if(! $this->_isUseCluster){
+            return $this->getRedis()->lgetrange($key,$start,$end);
+        }
+        // 使用了 M/S
+        return $this->_getSlaveRedis()->lgetrange($key,$start,$end);
+    }
+    public function lsize($key){
+        // 没有使用M/S
+        if(! $this->_isUseCluster){
+            return $this->getRedis()->lsize($key);
+        }
+        // 使用了 M/S
+        return $this->_getSlaveRedis()->lsize($key);
+    }
     function __destruct()
 	{
 		$this->close();

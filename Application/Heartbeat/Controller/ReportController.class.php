@@ -40,18 +40,22 @@ class ReportController extends CommonController{
         if(empty($data['mac']) || empty($data['period'])){
             $this->to_back(10004);
         }
-        $str = '/heartcalcu/calculation/getHeartdata';
+        $redis = SavorRedis::getInstance();
+        $redis->select(13);
+        $redis->rpush('reportData', json_encode($data));
+        
+        /*$str = '/heartcalcu/calculation/getHeartdata';
         $url = C('HOST_NAME').$str;
-		/* $curl = new Curl();
+		 $curl = new Curl();
 		$data = json_encode($data);
 		$curl->post($url, $data); */
-        $ch = curl_init();
+       /*  $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         $output = curl_exec($ch);
-        curl_close($ch);
+        curl_close($ch); */
         $this->to_back(10000);
     }
     /**

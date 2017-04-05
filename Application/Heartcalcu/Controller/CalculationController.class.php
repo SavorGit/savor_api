@@ -12,7 +12,7 @@ class CalculationController extends CommonController{
      */
     function _init_() {
 
-        parent::_init_();
+       // parent::_init_();
     }
 
     public function ipCalcu ($data) {
@@ -23,6 +23,7 @@ class CalculationController extends CommonController{
         $bool = false;
         $r_data = $this->params['intranet_ip'].'*'.$hid;
         $bool = $redis->set($out_ip, $r_data);
+
         if ($bool) {
             //hotelid不为空
             if ($hid) {
@@ -41,8 +42,10 @@ class CalculationController extends CommonController{
                         $dat['ip'] = $h_dat;
                         $where =  'hotel_id='.$hid;
                         $hextModel = new \Common\Model\HotelExtModel();
-                        $bool = $hextModel->saveData($dat, $where);
-
+                        $dp = $hextModel->getData('ip', $where);
+                        if($dp[0]['ip'] != $dat['ip']){
+                            $bool = $hextModel->saveData($dat, $where);
+                        }
                     }
 
                 } else {
@@ -83,20 +86,45 @@ class CalculationController extends CommonController{
     
     public function getHeartdata(){
 
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $rkey = 'reportData';
+        $redis->select(13);
+        $roll_back_arr = array();
+        $count = 0;
+        $max = $redis->lsize($rkey);
+        $data = $redis->lgetrange($rkey,0,$max);
+        foreach ($data as $val){
+            $this->params = json_decode($val, true);
+            $client_id = $this->params['clientid'];
+            $boc = false;
+            if ($client_id == 1) {
+                //IP统计db0
+                $res_ip = $this->ipCalcu($this->params);
 
+                if($res_ip){
+                    //次数统计
+                    //mac*client_id key值是
+                    $res_num = $this->numCount($this->params);
+                    if($res_num){
+                        $boc = true;
+                    }
+                }
+            } else {
+                $res_ip  = true;
+                $res_num = $this->numCount($this->params);
+                if($res_num){
+                    $boc = true;
+                }
+            }
+            $redis->select(13);
+            $bp = $redis->lPop($rkey);
+            //var_dump($bp);
+        }
+       /* foreach($roll_back_arr as $k=>$v){
+            $redis->rpush($k,$v);
+        }*/
 
        // var_dump($this->params);
-        $client_id = $this->params['clientid'];
 
-        if ($client_id == 1) {
-            //IP统计db0
-            $res_ip = $this->ipCalcu($this->params);
-            //次数统计
-            //mac*client_id key值是
-            $res_num = $this->numCount($this->params);
-        } else {
-            $res_ip  = true;
-            $res_num = $this->numCount($this->params);
-        }
     }
 }

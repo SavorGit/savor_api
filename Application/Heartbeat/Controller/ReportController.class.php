@@ -74,8 +74,12 @@ class ReportController extends CommonController{
         //$keys = array('FCD5D900B83F*2');
         $data = $map = array();
         $dflag = $mflag =  0;
+        $total = count($keys);
         
+        
+        $mark =0;
         foreach($keys as $v){
+            
             $key_arr = explode('*', $v);
             $mac = $key_arr[0];
             $clientid = $key_arr[1];
@@ -103,6 +107,7 @@ class ReportController extends CommonController{
                     $data[$dflag]['war_version'] = $ret_arr[7];
                     $data[$dflag]['logo_period'] = $ret_arr[8];
                     $dflag ++;
+                    $mark++;
                     //$m_hotel->add($data);
                 }
             }else if($clientid==2) {//机顶盒
@@ -127,15 +132,20 @@ class ReportController extends CommonController{
                    $map[$mflag]['war_version'] = $ret_arr[7];
                    $map[$mflag]['logo_period'] = $ret_arr[8];
                    $mflag++;
+                   $mark++;
                }
             }
-        }
-        
-        if(!empty($data)){
-            $m_heart_log->addAll($data);
-        }
-        if(!empty($map)){
-            $m_heart_log->addAll($map);
+            if($mark%100==0){
+                if(!empty($data)){
+                    $m_heart_log->addAll($data);
+                }
+                if(!empty($map)){
+                    $m_heart_log->addAll($map);
+                }
+                $data = array();
+                $map = array();
+                $dflag = $mflag = 0; 
+            }  
         }
         echo "OK";exit;
     }

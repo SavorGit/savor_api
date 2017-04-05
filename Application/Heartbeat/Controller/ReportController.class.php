@@ -68,6 +68,7 @@ class ReportController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select(14);
         $keys = $redis->keys('*');
+        //print_r($keys);exit;
         $m_hotel = new \Common\Model\HotelModel();
         $m_box   = new \Common\Model\BoxModel();
         //$keys = array('00E04C6A2F72*1');
@@ -135,6 +136,8 @@ class ReportController extends CommonController{
                    $mark++;
                }
             }
+            
+            
             if($mark%100==0){
                 if(!empty($data)){
                     $m_heart_log->addAll($data);
@@ -147,6 +150,14 @@ class ReportController extends CommonController{
                 $dflag = $mflag = 0; 
             }  
         }
+       
+        if(!empty($data)){
+            $m_heart_log->addAll($data);
+        }
+        if(!empty($map)){
+            $m_heart_log->addAll($map);
+        }
+  
         echo "OK";exit;
     }
 }

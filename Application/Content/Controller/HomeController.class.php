@@ -212,7 +212,7 @@ class HomeController extends BaseController{
      */
     public function getVodList(){
         $limit = 10;
-        $createTime = $this->params['createTime'];
+        $createTime = $this->params['maxTime'];
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,2,$limit);
         //print_r($result);exit;

@@ -26,7 +26,4 @@ return array(
 	'ctype_illegal'=>'类型标识错误',
 	'cltype_insert_fail'=>'数据插入失败',
 
-	//心跳计算
-	'ipup_fail'=>'ip更新失败',
-	'countupdate_fail'=>'小平台机顶盒计数失败',
 );

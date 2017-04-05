@@ -77,7 +77,7 @@ class CalculationController extends CommonController{
         $redis->select(14);
         $mac_str = $this->params['mac'].'*'.$this->params['clientid'];
         $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",$this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],$this->params['intranet_ip'],$this->params['period'],$this->params['demand'],$this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],date("yyyyMMddHHmm"));
-        $bool = $redis->set($mac_str, $txt);
+        $bool = $redis->set($mac_str, $txt, 259200);
         return $bool;
     }
     
@@ -95,8 +95,8 @@ class CalculationController extends CommonController{
             //mac*client_id key值是
             $res_num = $this->numCount($this->params);
         } else {
+            $res_ip  = true;
             $res_num = $this->numCount($this->params);
         }
-        $this->to_back(10000);
     }
 }

@@ -10,7 +10,9 @@ return array(
     'VAR_PATHINFO'          =>  'savors',    // 兼容模式PATHINFO获取变量例如 ?s=/module/action/id/1 后面的参数取决于URL_PATHINFO_DEPR
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
+
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu'), //模块配置
+
 	'DEFAULT_MODULE'        => 'Basedata',
 	//session cookie配置
 	'SESSION_AUTO_START'    =>  true,    // 是否自动开启Session
@@ -23,7 +25,9 @@ return array(
 
 	//数据库配置
 	'DB_FIELDS_CACHE' 		=> true,
-
+    
+    //心跳上报log
+    'REPORT_LOG_PATH'       =>'/application_data/app_logs/php/savor_admin',
 	//日志配置
 	'LOG_RECORD'            =>  false,   // 默认不记录日志
 	'LOG_TYPE'              =>  'File', // 日志记录类型 默认为文件方式

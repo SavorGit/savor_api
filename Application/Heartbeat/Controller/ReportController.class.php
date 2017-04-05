@@ -6,7 +6,7 @@ use \Common\Controller\CommonController as CommonController;
 /**
  * @desc 心跳上报
  */
-class ReportedController extends CommonController{
+class ReportController extends CommonController{
     /**
      * 构造函数
      */
@@ -37,10 +37,9 @@ class ReportedController extends CommonController{
         if(empty($data['mac']) || empty($data['period'])){
             $this->to_back(10004);
         }
-        
-        $url = C('HOST_NAME').'/aa';
+        $str = '/heartcalcu/calculation/getHeartdata';
+        $url = C('HOST_NAME').$str;
 		$curl = new Curl();
-		
 		$data = json_encode($data);
 		$curl->post($url, $data);
         $this->to_back(10000);

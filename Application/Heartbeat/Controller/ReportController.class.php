@@ -35,7 +35,7 @@ class ReportController extends CommonController{
         $data['apk']      = I('get.apk','');
         $data['war']      = I('get.war','');
         $data['logo']     = I('get.logo','');
-        $data['intranet_ip'] = I('get.id','');         //内网ip
+        $data['intranet_ip'] = I('get.ip','');         //内网ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
         if(empty($data['mac']) || empty($data['period'])){
             $this->to_back(10004);

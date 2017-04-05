@@ -12,7 +12,9 @@ return array(
 	'token_has_expired'=>'token已失效',
 	'sign_error'=>'签名错误',
 	'success'=>'成功',
-
+    
+    //心跳上报
+    'mac_period_not_null'=>'mac地址和period不能为空',
 	//用户相关
 	'user_not_exist' =>'用户不存在',
 	'user_login_err'=>'用户登录失败',

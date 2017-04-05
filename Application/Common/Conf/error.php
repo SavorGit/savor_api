@@ -12,6 +12,7 @@ return array(
 		'1006'=>'token_has_expired',
 		'1007'=>'sign_error',
 		'10000'=>'success',
+	    '10004'=>'mac_period_not_null',
 	    
 		//用户操作报错
 		'12001'=>'mobile_illegal',

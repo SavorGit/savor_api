@@ -83,11 +83,12 @@ class HomeController extends BaseController{
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
-            $data['list'] = $result;
-            $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['createTime'];
             $num = count($result) -1 ;
-            $data['maxTime'] = $result[$num]['createTime'];
+            $data['list'] = $result;
+            $data['time'] = $result[$num]['sort_num'];
+            $data['minTime'] = $result[0]['createTime'];
+            
+            $data['maxTime'] = $result[$num]['sort_num'];
             if(!empty($flag)){
                 $old_ids = explode(',', $flag);
                 $update_info = array_diff($ids, $old_ids);
@@ -139,11 +140,12 @@ class HomeController extends BaseController{
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
         }
         if($result){
-            $data['vodList'] = $result;
-            $data['time'] = $result[0]['id'];
-            $data['minTime'] = $result[0]['createTime'];
             $num = count($result) -1 ;
-            $data['maxTime'] = $result[$num]['createTime'];
+            $data['vodList'] = $result;
+            $data['time'] = $result[$num]['sort_num'];
+            $data['minTime'] = $result[0]['createTime'];
+            
+            $data['maxTime'] = $result[$num]['sort_num'];
             $m_hotel = new \Common\Model\HotelModel(); 
             $hotel_info = $m_hotel->getOneById('name', $hotel_id);
             $data['hotelName'] = $hotel_info['name'];
@@ -165,7 +167,7 @@ class HomeController extends BaseController{
     public function getHotelList(){
         $limit = 10;
         $m_mb_content = new \Common\Model\ContentModel();
-        $createTime = $this->params['maxTime'];
+        $createTime = $this->params['createTime'];
         $hotel_id = $this->params['hotelId'];
         $flag = $this->params['flag'];
         $ads_arr = $m_mb_content->getHotelList($hotel_id);
@@ -212,7 +214,7 @@ class HomeController extends BaseController{
      */
     public function getVodList(){
         $limit = 10;
-        $createTime = $this->params['maxTime'];
+        $createTime = $this->params['createTime'];
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList($createTime,2,$limit);
         //print_r($result);exit;

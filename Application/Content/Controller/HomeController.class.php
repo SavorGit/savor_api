@@ -165,7 +165,7 @@ class HomeController extends BaseController{
     public function getHotelList(){
         $limit = 10;
         $m_mb_content = new \Common\Model\ContentModel();
-        $createTime = $this->params['createTime'];
+        $createTime = $this->params['maxTime'];
         $hotel_id = $this->params['hotelId'];
         $flag = $this->params['flag'];
         $ads_arr = $m_mb_content->getHotelList($hotel_id);

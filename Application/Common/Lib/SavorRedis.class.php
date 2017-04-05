@@ -697,6 +697,9 @@ class SavorRedis {
         // 使用了 M/S
         return $this->_getSlaveRedis()->lsize($key);
     }
+    public function lpop($key){
+        return $this->getRedis()->lpop($key);
+    }
     function __destruct()
 	{
 		$this->close();

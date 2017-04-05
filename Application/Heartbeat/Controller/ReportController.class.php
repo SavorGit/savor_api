@@ -41,6 +41,7 @@ class ReportController extends CommonController{
             $this->to_back(10004);
         }
         $redis = SavorRedis::getInstance();
+       
         $redis->select(13);
         $redis->rpush('reportData', json_encode($data));
         

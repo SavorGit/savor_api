@@ -2,7 +2,7 @@
 namespace Heartbeat\Controller;
 use Common\Lib\SavorRedis;
 use Think\Controller;
-use Common\Lib\Curl;
+//use Common\Lib\Curl;
 use \Common\Controller\CommonController as CommonController;
 /**
  * @desc 心跳上报
@@ -42,9 +42,16 @@ class ReportController extends CommonController{
         }
         $str = '/heartcalcu/calculation/getHeartdata';
         $url = C('HOST_NAME').$str;
-		$curl = new Curl();
+		/* $curl = new Curl();
 		$data = json_encode($data);
-		$curl->post($url, $data);
+		$curl->post($url, $data); */
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $output = curl_exec($ch);
+        curl_close($ch);
         $this->to_back(10000);
     }
     /**

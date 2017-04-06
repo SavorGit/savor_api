@@ -55,6 +55,7 @@ class HomeController extends BaseController{
         $flag = $this->params['flag'];
         $m_mb_content = new \Common\Model\ContentModel();
         $result = $m_mb_content->getVodList('',1);
+       
         $data = array();
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){

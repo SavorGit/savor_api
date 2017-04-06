@@ -86,6 +86,7 @@ class CalculationController extends CommonController{
     public function getHeartdata(){
 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $hextModel = new \Common\Model\HotelExtModel();
         $rkey = 'reportData';
         $redis->select(13);
         $roll_back_arr = array();
@@ -99,6 +100,15 @@ class CalculationController extends CommonController{
         }
         foreach ($data as $val){
             $this->params = json_decode($val, true);
+            $hid = $this->params['hotelId'];
+            if ($hid) {
+                $where =  'hotel_id='.$hid;
+                $res = $hextModel->getOnerow($where);
+                if(!$res){
+                    echo '酒楼'.$hid.'不存在';
+                    continue;
+                }
+            }
             $client_id = $this->params['clientid'];
             $boc = false;
             if ($client_id == 1) {

@@ -66,9 +66,12 @@ class HomeController extends BaseController{
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3){
-                $ttp = explode('/', $v['name']);
-            
-                $result[$key]['name'] = $ttp[2];
+                if(empty($v['name'])){
+                    unset($result[$key]['name']);
+                }else{
+                    $ttp = explode('/', $v['name']);
+                    $result[$key]['name'] = $ttp[2];
+                }
             }
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
@@ -127,9 +130,12 @@ class HomeController extends BaseController{
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3){
-                $ttp = explode('/', $v['name']);
-                
-                $result[$key]['name'] = $ttp[2];
+                if(empty($v['name'])){
+                    unset($result[$key]['name']);
+                }else{
+                    $ttp = explode('/', $v['name']);
+                    $result[$key]['name'] = $ttp[2];
+                }
             }
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
@@ -187,8 +193,12 @@ class HomeController extends BaseController{
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3){
-                $ttp = explode('/', $v['name']);
-                $result[$key]['name'] = $ttp[2];
+                if(empty($v['name'])){
+                    unset($result[$key]['name']);
+                }else{
+                    $ttp = explode('/', $v['name']);
+                    $result[$key]['name'] = $ttp[2];
+                }
             }
             if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;

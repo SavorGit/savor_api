@@ -120,6 +120,11 @@ class CalculationController extends CommonController{
             $bp = $redis->lPop($rkey);
             //var_dump($bp);
         }
+        if($boc){
+            echo 'ok';
+        }else{
+            echo 'fail';
+        }
        /* foreach($roll_back_arr as $k=>$v){
             $redis->rpush($k,$v);
         }*/

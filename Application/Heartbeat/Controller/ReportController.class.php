@@ -43,6 +43,9 @@ class ReportController extends CommonController{
         $redis = SavorRedis::getInstance();
        
         $redis->select(13);
+        //ip库0
+        /*$redis->select(0);
+        //$redis->flushadb();*/
         $redis->rpush('reportData', json_encode($data));
         
         /*$str = '/heartcalcu/calculation/getHeartdata';

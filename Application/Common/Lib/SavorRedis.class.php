@@ -90,6 +90,11 @@ class SavorRedis {
 		}
 
 	}
+    function flushadb()
+    {
+        $this->getRedis()->flushdb();
+
+    }
 
     /**
      * 关闭连接

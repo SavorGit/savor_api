@@ -23,7 +23,6 @@ class CalculationController extends CommonController{
         $bool = false;
         $r_data = $this->params['intranet_ip'].'*'.$hid;
         $bool = $redis->set($out_ip, $r_data);
-
         if ($bool) {
             //hotelid不为空
             if ($hid) {
@@ -96,6 +95,7 @@ class CalculationController extends CommonController{
         if(empty($data)){
             echo '数组为空';
             $boc = true;
+            die;
         }
         foreach ($data as $val){
             $this->params = json_decode($val, true);
@@ -125,7 +125,7 @@ class CalculationController extends CommonController{
             //var_dump($bp);
         }
         if($boc){
-            echo 'ok';
+            echo 'ok处理成功';
         }else{
             echo 'fail';
         }

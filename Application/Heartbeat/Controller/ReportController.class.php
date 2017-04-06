@@ -122,7 +122,7 @@ class ReportController extends CommonController{
                    $map[$mflag]['box_mac'] = $mac;
                    $map[$mflag]['room_id'] = $hotelInfo['room_id'];
                    $map[$mflag]['room_name'] = $hotelInfo['room_name'];
-                   $map[$mflag]['hotel_id']  = $hotelInfo['hotelId'];
+                   $map[$mflag]['hotel_id']  = $hotelInfo['hotel_id'];
                    $map[$mflag]['hotel_name'] = $hotelInfo['hotel_name'];
                    $map[$mflag]['area_id'] = $hotelInfo['area_id'];
                    $map[$mflag]['area_name'] = $hotelInfo['area_name'];

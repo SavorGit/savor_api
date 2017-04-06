@@ -101,6 +101,7 @@ class ReportController extends CommonController{
                     $data[$dflag]['hotel_id'] = $hotelId;
                     $data[$dflag]['hotel_name'] = $hotelInfo['hotel_name'];
                     $data[$dflag]['area_id'] = $hotelInfo['area_id'];
+                    $data[$dflag]['area_name'] = $hotelInfo['area_name'];
                     $data[$dflag]['last_heart_time'] = date('Y-m-d H:i:s',strtotime($ret_arr[10]));
                     $data[$dflag]['type'] = $clientid;
                     $data[$dflag]['hotel_ip'] = $ret_arr[2];

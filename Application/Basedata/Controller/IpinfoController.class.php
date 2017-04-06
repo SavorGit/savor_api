@@ -2,8 +2,8 @@
 namespace BaseData\Controller;
 use Think\Controller;
 use Common\Lib\SavorRedis;
-use \Common\Controller\BaseController as BaseController;
-class IpController extends BaseController{
+use \Common\Controller\CommonController as CommonController;
+class IpinfoController extends CommonController{
     /**
      * 构造函数
      */
@@ -20,7 +20,7 @@ class IpController extends BaseController{
         $redis = SavorRedis::getInstance();
         
         $info = $redis->get($ip);
-       
+         
         $m_sys_config = new \Common\Model\SysConfigModel();
         $where = "'mobileApi.getIp.command_port','mobileApi.getIp.download_port','mobileApi.getIp.netty_port','mobileApi.getIp.type'";
         $configList = $m_sys_config->getInfo($where);
@@ -28,7 +28,7 @@ class IpController extends BaseController{
         $data['command_port'] = $configList[0]['config_value'];
         $data['download_port']= $configList[1]['config_value'];
         $data['netty_port']   = $configList[2]['config_value'];
-        $data['hotelIp']      = $ip; 
+        $data['hotelIp']      = $ip;
         if($info){
             $data['ip'] = $info;
             $tmp = explode('*', $info);

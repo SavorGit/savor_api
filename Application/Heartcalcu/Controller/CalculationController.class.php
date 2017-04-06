@@ -79,12 +79,12 @@ class CalculationController extends CommonController{
         $redis->select(14);
         $mac_str = $this->params['mac'].'*'.$this->params['clientid'];
         $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",$this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],$this->params['intranet_ip'],$this->params['period'],$this->params['demand'],$this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],date("YmdHis"));
-        $bool = $redis->set($mac_str, $txt, 259200);
+        $bool = $redis->set($mac_str, $txt, 604800);
         return $bool;
     }
     
     public function getHeartdata(){
-
+//{"clientid":"1","hotelId":"20","period":"0330095004061335","mac":"00E04C5E4F5D","demand":"20170406161345","apk":"2017030902","war":"2017032002","logo":"391","intranet_ip":"192.168.1.120","outside_ip":"221.218.166.232"}redis数据处理失败 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $hextModel = new \Common\Model\HotelExtModel();
         $rkey = 'reportData';
@@ -94,7 +94,7 @@ class CalculationController extends CommonController{
         $max = $redis->lsize($rkey);
         $data = $redis->lgetrange($rkey,0,$max);
         if(empty($data)){
-            echo '数组为空';
+            echo '数组为空'."\n";
             $boc = true;
             die;
         }
@@ -105,7 +105,7 @@ class CalculationController extends CommonController{
                 $where =  'hotel_id='.$hid;
                 $res = $hextModel->getOnerow($where);
                 if(!$res){
-                    echo '酒楼'.$hid.'不存在';
+                    echo '酒楼'.$hid.'不存在'."\n";
                     continue;
                 }
             }
@@ -135,9 +135,10 @@ class CalculationController extends CommonController{
             //var_dump($bp);
         }
         if($boc){
-            echo 'ok处理成功';
+            echo 'redis数据处理成功'."\n";
         }else{
-            echo 'fail';
+            
+            echo 'redis数据处理失败'."\n";
         }
        /* foreach($roll_back_arr as $k=>$v){
             $redis->rpush($k,$v);

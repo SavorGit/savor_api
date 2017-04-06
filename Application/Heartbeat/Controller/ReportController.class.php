@@ -60,7 +60,19 @@ class ReportController extends CommonController{
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         $output = curl_exec($ch);
         curl_close($ch); */
-        $this->to_back(10000);
+        $ret = array();
+        $ret['deviceType'] = $data['clientid'];
+        $ret['mac'] = $data['mac'];
+        $ret['hotelId'] = $data['hotelId'];
+        $ret['adsPeriod'] = $data['period'];
+        $ret['demandPeriod'] = $data['demand'];
+        $ret['logoPeriod'] = $data['logo'];
+        $ret['boxApkVersion'] = $data['apk'];
+        $ret['smallWebVersion'] = $data['war'];
+        $ret['outerIp'] = $data['outside_ip'];
+        $ret['innerIp'] = $data['intranet_ip'];
+        
+        $this->to_back($ret);
     }
     /**
      * @desc 同步心跳数据到数据库
@@ -162,6 +174,6 @@ class ReportController extends CommonController{
             $m_heart_log->addAll($map);
         }
   
-        echo "OK";exit;
+        echo "数据入库成功"."\n";exit;
     }
 }

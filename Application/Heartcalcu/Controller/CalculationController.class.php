@@ -93,6 +93,10 @@ class CalculationController extends CommonController{
         $count = 0;
         $max = $redis->lsize($rkey);
         $data = $redis->lgetrange($rkey,0,$max);
+        if(empty($data)){
+            echo '数组为空';
+            $boc = true;
+        }
         foreach ($data as $val){
             $this->params = json_decode($val, true);
             $client_id = $this->params['clientid'];

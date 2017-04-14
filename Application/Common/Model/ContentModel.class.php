@@ -30,7 +30,7 @@ class ContentModel extends Model{
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id
 	           left join savor_media as m on mc.media_id=m.id
 	           
-	           where 1=1 $where  and mc.bespeak_time<'".$now_date."' order by mh.sort_num asc limit $limit";
+	           where 1=1 $where  and mc.bespeak_time<'".$now_date."' and mh.state=1 order by mh.sort_num asc limit $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

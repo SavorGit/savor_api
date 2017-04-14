@@ -107,7 +107,8 @@ class ReportController extends CommonController{
                 //$ret_arr = array('1','00E04C6A2F72','10.10.10.10','192.168.2.30','1','2','3','4','5','7','20170405054010');
                 $hotelId = intval($ret_arr[9]);
                 
-                $hotelInfo = $m_hotel->getHotelInfoById($hotelId);
+                //$hotelInfo = $m_hotel->getHotelInfoById($hotelId);
+                $hotelInfo = $m_hotel->getHotelInfoByMac($mac);
                 if($hotelInfo){
                     $data[$dflag]['box_mac'] = $mac;
                     $data[$dflag]['hotel_id'] = $hotelId;

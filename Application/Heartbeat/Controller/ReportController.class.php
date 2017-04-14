@@ -37,7 +37,7 @@ class ReportController extends CommonController{
         $data['logo']     = I('get.logo','');
         $data['intranet_ip'] = I('get.ip','');         //内网ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
-        if(empty($data['mac']) || empty($data['period'])){
+        if(empty($data['mac'])){
             $this->to_back(10004);
         }
         $redis = SavorRedis::getInstance();

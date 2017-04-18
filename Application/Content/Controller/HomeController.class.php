@@ -239,6 +239,12 @@ class HomeController extends BaseController{
             $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            if($v['type']==3 && !empty($v['name'])){
+                
+                $zjstr = substr($v['name'],strpos($v['name'], '/')+1) ;
+                $result[$key]['name'] = substr($zjstr,strpos($zjstr, '/')+1) ;   
+            }
+            
             if($v['type'] ==3 && empty(trim($v['content']))){
                 $result[$key]['type'] = 4;
             }

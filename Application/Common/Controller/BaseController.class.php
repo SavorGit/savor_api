@@ -121,6 +121,8 @@ class BaseController extends Controller {
 	    $apiResp->result = $resp_result;
 	    if($this->is_js ==1){
 	        $result = "h5turbine(".json_encode($apiResp).")";
+	        echo $result;
+	        exit;
 	    }else {
 	        $result = json_encode($apiResp);
 	    }

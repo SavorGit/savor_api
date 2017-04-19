@@ -6,6 +6,7 @@ class BaseController extends Controller {
     protected $is_verify = 1;//检验接口 0不校验 1校验
     protected $is_login = 0;
     protected $is_des = 0;
+    protected $is_head = 1;
     protected $params = array();
     protected $valid_fields = array(); //数据有效性验证(必参)
     protected $traceinfo = array();
@@ -21,7 +22,7 @@ class BaseController extends Controller {
 	*/
 	protected function _init_() {
 	    $this->check_sign();
-	    $this->forbid();
+	    
 		$params = file_get_contents('php://input');
 		if($_SERVER['HTTP_DES']=='true'){
 		    $this->is_des = 1;
@@ -32,6 +33,8 @@ class BaseController extends Controller {
 		if(empty($input_params))  $input_params=array();
 	    $this->params = array_merge($input_params,$_GET,$_POST);
 	    if(isset($this->params['token']) && $this->params['token']=='null')    $this->params['token']='';
+	    if(isset($this->params['is_head']) && $this->params['is_head'] ==0)    $this->is_head = 0;
+	    $this->forbid();
 		if($this->is_verify){
 		    if(empty($this->params)){
 		        $this->to_back(1001);
@@ -81,7 +84,7 @@ class BaseController extends Controller {
 	        $this->traceinfo['language'] = !empty($_SERVER['HTTP_SAVOR_LANGUAGE'])?$_SERVER['HTTP_SAVOR_LANGUAGE']:'zh-cn';
 	    }
 	    
-	    if($this->is_verify){
+	    if($this->is_head){
 	        if(empty($this->traceinfo)){
 	            $this->to_back(1003);
 	        }

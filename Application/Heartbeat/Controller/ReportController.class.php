@@ -27,18 +27,28 @@ class ReportController extends CommonController{
         //https://mb.rerdian.com/survival/api/2/survival
         //?hotelId=10000000&period=454&mac=111&demand=555&apk=666&war=888&logo=ppp&ip=89.3143.1
         $data = array();
-        $data['clientid'] = I('get.clientid','');     //上报客户端类型 1:小平台 2:机顶盒
-        $data['hotelId']  = I('get.hotelId','');
-        $data['period']   = I('get.period','');
-        $data['mac']      = I('get.mac','');
-        $data['demand']   = I('get.demand','');
-        $data['apk']      = I('get.apk','');
-        $data['war']      = I('get.war','');
-        $data['logo']     = I('get.logo','');
-        $data['intranet_ip'] = I('get.ip','');         //内网ip
+        $data['clientid'] = I('get.clientid','0','intval');     //上报客户端类型 1:小平台 2:机顶盒
+        $data['hotelId']  = I('get.hotelId','0','intval');
+        $data['period']   = I('get.period','','trim');
+        $data['mac']      = I('get.mac','','trim');
+        $data['demand']   = I('get.demand','','trim');
+        $data['apk']      = I('get.apk','','trim');
+        $data['war']      = I('get.war','','trim');
+        $data['logo']     = I('get.logo','','trim');
+        $data['intranet_ip'] = I('get.ip','','trim');  //内网ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
+        
         if(empty($data['mac'])){
             $this->to_back(10004);
+        }
+        if(!in_array($data['clientid'],array(1,2))){
+            $this->to_back(10005);
+        }
+        if(!preg_match('/[0-9A-F]{12}/', $data['mac'])){
+            $this->to_back(10006);
+        }
+        if(!is_numeric($data['hotelId'])){
+            $this->to_back(10007);
         }
         $redis = SavorRedis::getInstance();
        

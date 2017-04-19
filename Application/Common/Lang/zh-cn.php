@@ -14,7 +14,10 @@ return array(
 	'success'=>'成功',
     
     //心跳上报
-    'mac_period_not_null'=>'mac地址和period不能为空',
+    'heart_mac_period_not_null'=>'mac地址不能为空',
+    'heart_clientid_range_err'=>'clinetid不在有效范围内',
+    'heart_mac_invalid'=>'mac地址非法',
+    'heart_hotelid_invalid'=>'hotelid非法',
 	//用户相关
 	'user_not_exist' =>'用户不存在',
 	'user_login_err'=>'用户登录失败',

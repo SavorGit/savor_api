@@ -102,6 +102,9 @@ class CalculationController extends CommonController{
             $this->params = json_decode($val, true);
             $hid = $this->params['hotelId'];
             if ($hid) {
+                if(!is_numeric($hid)){
+                    continue;
+                }
                 $where =  'hotel_id='.$hid;
                 $res = $hextModel->getOnerow($where);
                 if(!$res){

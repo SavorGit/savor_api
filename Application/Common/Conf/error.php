@@ -12,7 +12,11 @@ return array(
 		'1006'=>'token_has_expired',
 		'1007'=>'sign_error',
 		'10000'=>'success',
-	    '10004'=>'mac_period_not_null',
+	    //心跳上报
+	    '10004'=>'heart_mac_period_not_null',
+	    '10005'=>'heart_clientid_range_err',
+	    '10006'=>'heart_mac_invalid',
+	    '10007'=>'heart_hotelid_invalid',
 	    
 		//用户操作报错
 		'12001'=>'mobile_illegal',

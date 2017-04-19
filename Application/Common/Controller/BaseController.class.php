@@ -7,6 +7,7 @@ class BaseController extends Controller {
     protected $is_login = 0;
     protected $is_des = 0;
     protected $is_head = 1;
+    protected $is_js =0;
     protected $params = array();
     protected $valid_fields = array(); //数据有效性验证(必参)
     protected $traceinfo = array();
@@ -34,6 +35,7 @@ class BaseController extends Controller {
 	    $this->params = array_merge($input_params,$_GET,$_POST);
 	    if(isset($this->params['token']) && $this->params['token']=='null')    $this->params['token']='';
 	    if(isset($this->params['is_head']) && $this->params['is_head'] ==0)    $this->is_head = 0;
+	    if(isset($this->params['is_js']) && $this->params['is_js'] ==1)        $this->is_js = 1;
 	    $this->forbid();
 		if($this->is_verify){
 		    if(empty($this->params)){
@@ -117,7 +119,12 @@ class BaseController extends Controller {
 	    $apiResp->code = $resp_code;
 	    $apiResp->msg = L("$resp_msg");
 	    $apiResp->result = $resp_result;
-	    $result = json_encode($apiResp);
+	    if($this->is_js ==1){
+	        $result = "h5turbine(".json_encode($apiResp).")";
+	    }else {
+	        $result = json_encode($apiResp);
+	    }
+	    
 	    if($type == 2){
 	        $this->is_des = 1;   
 	    }else{

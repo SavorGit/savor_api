@@ -152,7 +152,8 @@ class HomeController extends BaseController{
             $data['time'] = $result[$num]['sort_num'];
             $data['minTime'] = $result[0]['createTime'];
             
-            $data['maxTime'] = $result[$num]['sort_num'];
+            //$data['maxTime'] = $result[$num]['sort_num'];
+            $data['maxTime'] = $result[$num]['createTime'];
             $m_hotel = new \Common\Model\HotelModel(); 
             $hotel_info = $m_hotel->getOneById('name', $hotel_id);
             $data['hotelName'] = $hotel_info['name'];
@@ -215,7 +216,7 @@ class HomeController extends BaseController{
             $data['vodList'] = $result;
             $data['time'] = $result[0]['id'];
             $num = count($result) -1;
-            $data['maxTime'] = $result[$num]['sort_num'];
+            $data['maxTime'] = $result[$num]['createTime'];
         }
         $this->to_back($data);
     }

@@ -11,16 +11,29 @@ class ContentModel extends Model{
 	 * $param $limit       展示条数        
 	 */
 	public function getVodList($createTime,$type=1,$limit= 20,$env=0){
-	    if($type ==1 && !empty($createTime))
-	    {
-	        $createTime = date('Y-m-d H:i:s',$createTime);
-	        $where .= " and mh.create_time>'".$createTime."'";   
-	    }else if($type ==2 && !empty($createTime)){
-	        $where .= " and mh.sort_num>'".$createTime."'";
-	    }    
 	    if(!empty($env)){
+	        if($type ==2 && !empty($createTime)){
+	            $createTime = date('Y-m-d H:i:s',$createTime);
+	            $where .= " and mh.create_time>'".$createTime."'";
+	            
+	        }
 	        $where .= " and mc.media_id >0 and mh.is_demand=1";
+	        $order =" mh.create_time asc";
+	    }else {
+	        if($type ==1 && !empty($createTime))
+	        {
+	            $createTime = date('Y-m-d H:i:s',$createTime);
+	            $where .= " and mh.create_time>'".$createTime."'";
+	        }else if($type ==2 && !empty($createTime)){
+	            $where .= " and mh.sort_num>'".$createTime."'";
+	        }
+	        $order= " mh.sort_num asc";
 	    }
+	    
+	   
+	    /* if(!empty($env)){
+	        $where .= " and mc.media_id >0 and mh.is_demand=1";
+	    } */
 		$now_date = date('Y-m-d H:i:s',time());
 	    $sql ="select mh.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
@@ -30,7 +43,7 @@ class ContentModel extends Model{
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id
 	           left join savor_media as m on mc.media_id=m.id
 	           
-	           where 1=1 $where  and mc.bespeak_time<'".$now_date."' and mh.state=1 order by mh.sort_num asc limit $limit";
+	           where 1=1 $where  and mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order limit $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

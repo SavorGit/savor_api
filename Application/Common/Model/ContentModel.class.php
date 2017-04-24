@@ -35,7 +35,7 @@ class ContentModel extends Model{
 	        $where .= " and mc.media_id >0 and mh.is_demand=1";
 	    } */
 		$now_date = date('Y-m-d H:i:s',time());
-	    $sql ="select mh.id,mc.id as contentId ,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
+	    $sql ="select mc.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
 	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mh.sort_num as sort_num
 	           from savor_mb_home as mh

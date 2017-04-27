@@ -34,9 +34,15 @@ class IpController extends BaseController{
             $tmp = explode('*', $info);
             $data['hotelId'] = $tmp[1];
             $data['localIp'] = $tmp[0];
-            $m_hotel = new \Common\Model\HotelModel();
-            $hotel_info = $m_hotel->getHotelInfoById($data['hotelId']);
-            $data['area_id'] = $hotel_info['area_id'];
+            if($data['hotelId']){
+                $m_hotel = new \Common\Model\HotelModel();
+                $hotel_info = $m_hotel->where(array('id'=>$data['hotelId']))->find();
+                //$hotel_info = $m_hotel->getHotelInfoById($data['hotelId']);
+                $data['area_id'] = $hotel_info['area_id'];
+            }else {
+                $data['area_id'] = 1;
+            }
+            
         }else {
             $province_name = getprovinceByip($ip);
             $m_area = new \Common\Model\Basedata\AreaInfoModel();

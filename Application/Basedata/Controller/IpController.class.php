@@ -41,7 +41,12 @@ class IpController extends BaseController{
             $province_name = getprovinceByip($ip);
             $m_area = new \Common\Model\Basedata\AreaInfoModel();
             $area_info = $m_area->getInfoByName($province_name);
-            $data['area_id'] = $area_info['id'];
+            if(!empty($area_info)){
+                $data['area_id'] = $area_info['id'];
+            }else {
+                $data['area_id'] = 1;
+            }
+            
         }
         $this->to_back($data);
     }

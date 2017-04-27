@@ -37,7 +37,7 @@ class ContentModel extends Model{
 		$now_date = date('Y-m-d H:i:s',time());
 	    $sql ="select mc.id,mcat.name as category,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,
 	           mh.is_demand as canPlay,mc.tx_url as videoUrl,mc.share_title as shareTitle,
-	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mh.sort_num as sort_num
+	           mc.share_content as shareContent,mh.create_time as createTime ,mc.type,mc.content,mc.media_id as mediaId,mh.sort_num as sort_num
 	           from savor_mb_home as mh
 	           left join savor_mb_content as mc on mh.content_id=mc.id
 	           left join savor_mb_category as mcat on mc.category_id = mcat.id

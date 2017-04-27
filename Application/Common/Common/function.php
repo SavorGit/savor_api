@@ -135,3 +135,16 @@ function getClientId($clientname)
 	$source_client = strtolower($clientname);
 	return $client_arr[$source_client];
 }
+function getprovinceByip($ip){
+    $url = "http://api.map.baidu.com/location/ip?ak=q1pQnjOG28z8xsCaoby2oqLTLaPgelyq&coor=bd09ll&ip=".$ip;
+    $result = file_get_contents($url);
+    $re = json_decode($result,true);
+    
+    if($re && $re['status'] == 0){
+        $province_name = $re['content']['address_detail']['province'];
+        
+    }else{
+        $province_name = '北京市';
+    }
+    return $province_name;
+}

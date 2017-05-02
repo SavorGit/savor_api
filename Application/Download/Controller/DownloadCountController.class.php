@@ -19,9 +19,9 @@ class DownloadCountController extends BaseController{
         parent::_init_();
     }
     public function recordCount(){
-        $st = I('post.st','','string');              //来源
-        $hotelid = I('post.hotelid','','intval');    //餐厅id
-        $waiterid= I('post.waiterid','','intval');   //服务员id
+        $st = $this->params['st'];              //来源
+        $hotelid = $this->params['hotelid'];    //餐厅id
+        $waiterid= $this->params['waiterid'];   //服务员id
         $traceinfo = $this->traceinfo;
         $client_name = $traceinfo['clientname'];     //客户端类型
         
@@ -29,7 +29,7 @@ class DownloadCountController extends BaseController{
         $download_source_arr = C('DOWLOAD_SOURCE_ARR');  //下载来源数组
         $client_arr = C('CLIENT_NAME_ARR');              //客户端数组
         if(!key_exists($st, $download_source_arr)){
-            $this->to_back(14001);
+            //$this->to_back(14001);
         }
         if(!key_exists($client_name, $client_arr)){
             $this->to_back(14002);

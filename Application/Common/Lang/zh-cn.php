@@ -28,5 +28,9 @@ return array(
 	//客户端类型
 	'ctype_illegal'=>'类型标识错误',
 	'cltype_insert_fail'=>'数据插入失败',
+    //下载统计相关
+    'download_source_error'=>'下载来源非法',
+    'client_error'=>'客户端类型非法',
+    'download_data_insert_error'=>'统计数据入库失败',
 
 );

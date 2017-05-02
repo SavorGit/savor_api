@@ -29,6 +29,10 @@ return array(
 		//客户端传类型报错
 		'13001'=>'ctype_illegal',
 		'13002'=>'cltype_insert_fail',
+	    //下载统计类型能够报错
+	    '14001'=>'download_source_error',
+	    '14002'=>'client_error',
+	    '14003'=>'download_data_insert_error',
 
 	),
 );

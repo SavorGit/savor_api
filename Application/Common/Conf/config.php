@@ -63,4 +63,5 @@ return array(
 	'LIST_CATCH_TIME'       => '7200',
 	'HOST_NAME'             => 'http://'.$_SERVER['HTTP_HOST'],
 	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
+    'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
 );

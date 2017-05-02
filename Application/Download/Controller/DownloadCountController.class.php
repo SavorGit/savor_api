@@ -8,10 +8,12 @@ class DownloadCountController extends BaseController{
      */
     function _init_() {
 
-        $this->valid_fields=array('st'=>'1001','hotelid '=>'1001','waiterid'=>'1001');
+        
         switch(ACTION_NAME) {
-            case 'feedInsert':
+            case 'recordCount':
                 $this->is_verify = 1;
+                $this->valid_fields=array('st'=>'1001','hotelid'=>'1001','waiterid'=>'1001');
+                
                 break;
         }
         parent::_init_();
@@ -37,10 +39,10 @@ class DownloadCountController extends BaseController{
         $data = array();
         $data['source_type'] =$download_source_arr[$st] ;
         $data['clientid'] = $client_arr[$client_name];
-        $data['device_id'] = $traceinfo['deviceid'];
+        $data['deviceid'] = $traceinfo['deviceid'];
         $data['hotelid'] = $hotelid;
         $data['waiterid'] = $waiterid;
-        $data['add_time'] = time();
+        $data['add_time'] = date('Y-m-d H:i:s');
         $m_downd_count = new \Common\Model\DownloadCountModel();
         $ret = $m_downd_count->record($data);
         if($ret){

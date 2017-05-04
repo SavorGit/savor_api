@@ -27,9 +27,9 @@ class DownloadCountController extends BaseController{
         
         
         $download_source_arr = C('DOWLOAD_SOURCE_ARR');  //下载来源数组
-        $client_arr = C('CLIENT_NAME_ARR');              //客户端数组
+        $client_arr = array('android'=>1,'ios'=>2);;              //客户端数组
         if(!key_exists($st, $download_source_arr)){
-            //$this->to_back(14001);
+            $this->to_back(14001);
         }
         if(!key_exists($client_name, $client_arr)){
             $this->to_back(14002);

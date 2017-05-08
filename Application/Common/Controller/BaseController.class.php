@@ -120,7 +120,7 @@ class BaseController extends Controller {
 	    $apiResp->msg = L("$resp_msg");
 	    $apiResp->result = $resp_result;
 	    if($this->is_js ==1){
-	        $result = "h5turbine(".json_encode($apiResp).")";
+	        $result = "h5turbine(".json_encode($resp_result).")";
 	        echo $result;
 	        exit;
 	    }else {

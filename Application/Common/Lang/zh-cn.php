@@ -32,5 +32,9 @@ return array(
     'download_source_error'=>'下载来源非法',
     'client_error'=>'客户端类型非法',
     'download_data_insert_error'=>'统计数据入库失败',
+    
+    //抽奖
+    'box_not_set_award'=>'该机顶盒未设置奖项',
+    'box_award_record_error'=>'机顶盒上报中奖信息失败',
 
 );

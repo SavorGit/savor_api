@@ -33,6 +33,10 @@ return array(
 	    '14001'=>'download_source_error',
 	    '14002'=>'client_error',
 	    '14003'=>'download_data_insert_error',
+	    
+	    //抽奖
+	    '15001'=>'box_not_set_award',
+	    '15002'=>'box_award_record_error',
 
 	),
 );

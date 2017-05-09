@@ -27,4 +27,8 @@ class BoxModel extends Model
             }
         }
     }
+    public function getBoxInfoByMac($mac){
+        $map['mac'] = $mac;
+        return $this->where($map)->find();
+    }
 }

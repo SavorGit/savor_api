@@ -37,6 +37,7 @@ return array(
 	    //抽奖
 	    '15001'=>'box_not_set_award',
 	    '15002'=>'box_award_record_error',
+	    '15003'=>'have_not_this_box',
 
 	),
 );

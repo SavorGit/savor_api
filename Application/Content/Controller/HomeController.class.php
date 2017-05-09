@@ -143,7 +143,7 @@ class HomeController extends BaseController{
                     $m_media = new \Common\Model\MediaModel();
                     $marr = $m_media->getMediaInfoById($media_id);
                     if(!empty($marr)){
-                        $award_arr['imgurl'] = $marr['oss_addr'];
+                        $award_arr['imageURL'] = $marr['oss_addr'];
                         $award_arr['award_start_time'] = $award_start_time;
                         $award_arr['award_end_time']   = $award_end_time;
                     }

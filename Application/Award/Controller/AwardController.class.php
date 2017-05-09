@@ -12,7 +12,7 @@ class AwardController extends CommonController{
         switch(ACTION_NAME) {
             case 'getAwardInfo':
                 $this->is_verify = 1;
-                $this->valid_fields=array('boxid'=>'1001','date'=>'1001');
+                $this->valid_fields=array('mac'=>'1001','date'=>'1001');
                 break;
             case 'recordAwardLog':
                 $this->is_verify = 1;
@@ -25,8 +25,15 @@ class AwardController extends CommonController{
      * @desc 获取某个机顶盒的奖项设置
      */
     public function getAwardInfo(){
-        $boxid = $this->params['boxid'];
+        $mac = $this->params['mac'];
         $date  = $this->params['date'];
+    
+        $m_box = new \Common\Model\BoxModel();
+        $boxinfo = $m_box->getBoxInfoByMac($mac);
+        if(empty($boxinfo)){
+            $this->to_back('15003');
+        }
+        $boxid = $boxinfo['id'];
         $awardInfo = array();
         $m_box_award = new \Common\Model\BoxAwardModel();
         $awardInfo = $m_box_award->getAwardInfoByBoxid($boxid,$date);
@@ -34,8 +41,13 @@ class AwardController extends CommonController{
             $this->to_back('15001');
         }else {
             $awardInfo['prize']= json_decode($awardInfo['prize'],true);
-           
-           
+            $m_sys_config = new \Common\Model\SysConfigModel();
+            $award_time = $m_sys_config->getInfo("'system_award_start_time','system_award_end_time'");
+            
+            $award_start_time = $award_time[1]['config_value'];
+            $award_end_time   = $award_time[0]['config_value'];
+            $awardInfo['start_time'] = $award_start_time;
+            $awardInfo['end_time'] = $award_end_time;
             $this->to_back($awardInfo);
         }
         

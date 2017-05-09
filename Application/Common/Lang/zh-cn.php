@@ -36,5 +36,6 @@ return array(
     //抽奖
     'box_not_set_award'=>'该机顶盒未设置奖项',
     'box_award_record_error'=>'机顶盒上报中奖信息失败',
+    'have_not_this_box'=>'机顶盒不存在',
 
 );

@@ -47,11 +47,11 @@ class ReportController extends CommonController{
         if(!preg_match('/[0-9A-F]{12}/', $data['mac'])){
             $this->to_back(10006);
         }
-        if(!is_numeric($data['hotelId'])){
+        if(!is_numeric($data['hotelId']) || $data['hotelId']<1){
             $this->to_back(10007);
         }
         $redis = SavorRedis::getInstance();
-       
+        
         $redis->select(13);
         //ip库0
         /*$redis->select(0);

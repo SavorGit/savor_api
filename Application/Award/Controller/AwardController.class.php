@@ -42,12 +42,11 @@ class AwardController extends CommonController{
         }else {
             $awardInfo['prize']= json_decode($awardInfo['prize'],true);
             $m_sys_config = new \Common\Model\SysConfigModel();
-            $award_time = $m_sys_config->getInfo("'system_award_start_time','system_award_end_time'");
-            
-            $award_start_time = $award_time[1]['config_value'];
-            $award_end_time   = $award_time[0]['config_value'];
-            $awardInfo['start_time'] = $award_start_time;
-            $awardInfo['end_time'] = $award_end_time;
+            $configs = $m_sys_config->getInfo("'system_award_time'");
+            $award_time = json_decode($configs[0]['config_value'],true);
+           
+                    
+            $awardInfo['award_time'] = $award_time;
             $this->to_back($awardInfo);
         }
         

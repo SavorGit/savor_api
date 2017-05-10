@@ -147,7 +147,7 @@ class BaseController extends Controller {
 	 *@desc 获取阿里云资源全路径
 	 */
 	public function getOssAddr($url){
-	    $oss_host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST').'/';
+	    $oss_host = 'http://'.C('OSS_HOST').'/';
 	    return  $oss_host.$url;
 	}
 	/**

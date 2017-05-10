@@ -16,7 +16,7 @@ class MediaModel extends Model{
 					  ->select();
 		$count = $this->where($where)->count();
 		if($count){
-		    $image_host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST').'/';
+		    $image_host = 'http://'.C('OSS_HOST').'/';
 		    foreach ($list as $k=>$v){
 		        $list[$k]['oss_addr'] = $image_host.$v['oss_addr'];
 		    }
@@ -36,7 +36,7 @@ class MediaModel extends Model{
 
 
 	public function getMediaInfoById($media_id){
-	    $oss_host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST').'/';
+	    $oss_host = 'http://'.C('OSS_HOST').'/';
 	    $vinfo = $this->find($media_id);
 	    if($vinfo){
 	        $vinfo['oss_addr'] = $oss_host.$vinfo['oss_addr'];

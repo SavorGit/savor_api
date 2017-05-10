@@ -155,7 +155,8 @@ class HomeController extends BaseController{
                                     }else {
                                         $award_arr['lottery_num'] = 0;
                                     } */
-                                    $award_arr['lottery_num'] = 5-$ret;
+                                    $all_lottery_num = C('ALL_LOTTERY_NUMBER');
+                                    $award_arr['lottery_num'] = $all_lottery_num-$ret;
                                 }
             
                             }

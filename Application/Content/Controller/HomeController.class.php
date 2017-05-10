@@ -149,12 +149,13 @@ class HomeController extends BaseController{
                                     $award_arr['award_end_time']   = $v['end_time'];
                                     $traceinfo = $this->traceinfo;
                                     $m_award_log = new \Common\Model\AwardLogModel();
-                                    $ret = $m_award_log->countAwardLog($traceinfo['deviceid']);
-                                    if(empty($ret)){
+                                    $ret = $m_award_log->countAwardLog($traceinfo['deviceid'],$now_date);
+                                    /* if(empty($ret)){
                                         $award_arr['lottery_num'] = 1;
                                     }else {
                                         $award_arr['lottery_num'] = 0;
-                                    }
+                                    } */
+                                    $award_arr['lottery_num'] = 5-$ret;
                                 }
             
                             }

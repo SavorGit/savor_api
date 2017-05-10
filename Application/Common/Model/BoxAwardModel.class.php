@@ -12,4 +12,7 @@ class BoxAwardModel extends Model
 	public function getAwardInfoByHotelid($hotelid,$date){
 	    return $this->field('id')->where(array('hotel_id'=>$hotelid,'date_time'=>$date,'flag'=>1))->select();
 	}
+	public function addInfo($data){
+	    return $this->add($data);
+	}
 }

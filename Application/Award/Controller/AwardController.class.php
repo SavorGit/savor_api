@@ -12,11 +12,11 @@ class AwardController extends CommonController{
         switch(ACTION_NAME) {
             case 'getAwardInfo':
                 $this->is_verify = 1;
-                $this->valid_fields=array('mac'=>'1001','date'=>'1001');
+                $this->valid_fields=array('mac'=>'1001');
                 break;
             case 'recordAwardLog':
                 $this->is_verify = 1;
-                $this->valid_fields=array('boxid'=>'1001','prizeid'=>'1001','deviceid'=>1001,'time'=>'1001');
+                $this->valid_fields=array('mac'=>'1001','prizeid'=>'1001','deviceid'=>1001,'time'=>'1001');
                 break;
         }
         parent::_init_();
@@ -26,7 +26,7 @@ class AwardController extends CommonController{
      */
     public function getAwardInfo(){
         $mac = $this->params['mac'];
-        $date  = $this->params['date'];
+        $date  = date('Y-m-d');
     
         $m_box = new \Common\Model\BoxModel();
         $boxinfo = $m_box->getBoxInfoByMac($mac);
@@ -56,12 +56,12 @@ class AwardController extends CommonController{
      */
     public function recordAwardLog(){
         $this->to_back(10000);
-        $boxid = $this->params['boxid'];        //机顶盒id
+        $mac = $this->params['mac'];        //机顶盒mac
         $prizeid = $this->params['prizeid'];    //奖品id
         $deviceid = $this->params['deviceid'];  //中奖手机设备
         $time = $this->params['time'];          //中奖时间
         $data = array();
-        $data['boxid']    = intval($boxid);
+        $data['mac']    = intval($mac);
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;

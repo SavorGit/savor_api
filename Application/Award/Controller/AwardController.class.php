@@ -16,7 +16,7 @@ class AwardController extends CommonController{
                 break;
             case 'recordAwardLog':
                 $this->is_verify = 1;
-                $this->valid_fields=array('mac'=>'1001','prizeid'=>'1001','deviceid'=>1001,'time'=>'1001');
+                $this->valid_fields=array('mac'=>'1001','prizeid'=>'1001','deviceid'=>'1001','time'=>'1001');
                 break;
         }
         parent::_init_();
@@ -61,7 +61,7 @@ class AwardController extends CommonController{
         $deviceid = $this->params['deviceid'];  //中奖手机设备
         $time = $this->params['time'];          //中奖时间
         $data = array();
-        $data['mac']    = intval($mac);
+        $data['mac']    = $mac;
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;

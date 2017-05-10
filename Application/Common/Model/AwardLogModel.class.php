@@ -14,4 +14,7 @@ class AwardLogModel extends Model
 	    $map['deviceid'] = $deviceid;
 	    return $this->where($map)->count();
 	}
+	public function addInfo($data){
+	    return $this->add($data);
+	}
 }

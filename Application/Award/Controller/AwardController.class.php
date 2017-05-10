@@ -65,7 +65,7 @@ class AwardController extends CommonController{
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;
-        $m_box_award = new \Common\Model\BoxAwardModel();
+        $m_box_award = new \Common\Model\AwardLogModel();
         $rt = $m_box_award->addInfo($data);
         if($rt){
             $this->to_back('10000');

@@ -121,59 +121,53 @@ class HomeController extends BaseController{
             $data['adsList'] = $ads_arr;
         }
         //抽奖banner图开始
-        
-        $m_sys_config = new \Common\Model\SysConfigModel();
-        $configs = $m_sys_config->getInfo("'system_award_time'");
-        if(!empty($configs)){
-            $award_time = json_decode($configs[0]['config_value'],true);
+        $m_box_award = new \Common\Model\BoxAwardModel();
+        $now_date = date('Y-m-d');
+        $hotelAwardCount = $m_box_award->countBoxAward($hotel_id,$now_date);
+        if($hotelAwardCount>0){
+            $m_sys_config = new \Common\Model\SysConfigModel();
+            $configs = $m_sys_config->getInfo("'system_award_time'");
+            if(!empty($configs)){
+                $award_time = json_decode($configs[0]['config_value'],true);
             
-            $now_time = date('H:i');
+                $now_time = date('H:i');
             
-            foreach($award_time as $v){
-                
-                if($now_time>=$v['start_time'] && $now_time<=$v['end_time']){
-                
-                    $m_box_award = new \Common\Model\BoxAwardModel();
-                    $now_date = date('Y-m-d');
-                    $awardList = $m_box_award->getAwardInfoByHotelid($hotel_id,$now_date);
-                
-                    if(!empty($awardList)){
-                        $award_arr = array();
-                        $mediainfo = $m_sys_config->getInfo("'system_award_banner'");
-                        if(!empty($mediainfo)){
-                            $media_id = $mediainfo[0]['config_value'];
-                            $m_media = new \Common\Model\MediaModel();
-                            $marr = $m_media->getMediaInfoById($media_id);
-                            if(!empty($marr)){
-                                $award_arr['imageURL'] = $marr['oss_addr'];
-                                $award_arr['award_start_time'] = $v['start_time'];
-                                $award_arr['award_end_time']   = $v['end_time'];
-                                $traceinfo = $this->traceinfo;
-                                $m_award_log = new \Common\Model\AwardLogModel();
-                                $ret = $m_award_log->countAwardLog($traceinfo['deviceid']);
-                                if(empty($ret)){
-                                    $award_arr['lottery_num'] = 1;
-                                }else {
-                                    $award_arr['lottery_num'] = 0;
+                foreach($award_time as $v){
+            
+                    if($now_time>=$v['start_time'] && $now_time<=$v['end_time']){
+                        $awardList = $m_box_award->getAwardInfoByHotelid($hotel_id,$now_date);
+                        if(!empty($awardList)){
+                            $award_arr = array();
+                            $mediainfo = $m_sys_config->getInfo("'system_award_banner'");
+                            if(!empty($mediainfo)){
+                                $media_id = $mediainfo[0]['config_value'];
+                                $m_media = new \Common\Model\MediaModel();
+                                $marr = $m_media->getMediaInfoById($media_id);
+                                if(!empty($marr)){
+                                    $award_arr['imageURL'] = $marr['oss_addr'];
+                                    $award_arr['award_start_time'] = $v['start_time'];
+                                    $award_arr['award_end_time']   = $v['end_time'];
+                                    $traceinfo = $this->traceinfo;
+                                    $m_award_log = new \Common\Model\AwardLogModel();
+                                    $ret = $m_award_log->countAwardLog($traceinfo['deviceid']);
+                                    if(empty($ret)){
+                                        $award_arr['lottery_num'] = 1;
+                                    }else {
+                                        $award_arr['lottery_num'] = 0;
+                                    }
                                 }
+            
                             }
-                            
+                            if($award_arr){
+                                $data['award'] = $award_arr;
+                            }
+            
                         }
-                        if($award_arr){
-                            $data['award'] = $award_arr;
-                        }
-                
+                        break;
                     }
-                    break;
                 }
             }
         }
-        
-        
-        
-        
-        
-        
         //抽奖banner图结束
         $result = $m_mb_content->getVodList('',1,20,1);
         foreach($result as $key=>$v){

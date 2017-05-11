@@ -55,7 +55,6 @@ class AwardController extends CommonController{
      * @desc 机顶盒中奖日志上报
      */
     public function recordAwardLog(){
-        $this->to_back(10000);
         $mac = $this->params['mac'];        //机顶盒mac
         $prizeid = $this->params['prizeid'];    //奖品id
         $deviceid = $this->params['deviceid'];  //中奖手机设备
@@ -65,6 +64,7 @@ class AwardController extends CommonController{
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;
+
         $m_box_award = new \Common\Model\AwardLogModel();
         $rt = $m_box_award->addInfo($data);
         if($rt){

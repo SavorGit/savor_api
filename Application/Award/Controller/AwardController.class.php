@@ -89,13 +89,23 @@ class AwardController extends CommonController{
                 $this->to_back('15004');
             }
         }
-        
+        $device_arr = C('CLIENT_NAME_ARR');
         $data = array();
         $data['mac']    = $mac;
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;
-
+        $http_traceinfo = $_SERVER['HTTP_TRACEINFO'];
+        if(!empty($http_traceinfo)){
+	        $http_traceinfo = explode(';', $http_traceinfo);
+	        foreach ($http_traceinfo as $v){
+	            $info = explode('=', $v);
+	            $traceinfo[$info[0]] = $info[1];
+	        }
+	        
+	    }
+	    
+        $data['device_type'] = $device_arr[$traceinfo['clientname']];
         $m_award_log = new \Common\Model\AwardLogModel();
         $rt = $m_award_log->addInfo($data);
         if($rt){

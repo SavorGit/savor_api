@@ -58,16 +58,64 @@ class AwardController extends CommonController{
         $mac = $this->params['mac'];        //机顶盒mac
         $prizeid = $this->params['prizeid'];    //奖品id
         $deviceid = $this->params['deviceid'];  //中奖手机设备
-        $time = $this->params['time'];          //中奖时间
+        $time = $this->params['time'];          //中奖时间  时间戳 毫秒
+        $time = floor ($time/1000);
+        
+        $time = date('Y-m-d H:i:s',$time);
+        //echo $time;exit;
+        $m_box = new \Common\Model\BoxModel();
+        $boxinfo = $m_box->getBoxInfoByMac($mac); 
+        if(empty($boxinfo)){
+            $this->to_back('15003');
+        }
+        $m_box_award = new \Common\Model\BoxAwardModel();
+        $date_time   = date('Y-m-d',strtotime($time)) ;
+        $awardInfo = $m_box_award->getAwardInfoByBoxid($boxinfo['id'],$date_time);
+        if(empty($awardInfo)){
+            $this->to_back('15001');
+        }
+        $prize_current= json_decode($awardInfo['prize_current'],true);
+        if(empty($prize_current)){
+            $this->to_back('15005');
+        }
+        if($prizeid){
+            foreach($prize_current as $v){
+                if($v['prize_id'] == $prizeid){
+                    $award_prize_info = $v;
+                    break;
+                }
+            }
+            if($award_prize_info['prize_num']<=0){
+                $this->to_back('15004');
+            }
+        }
+        
         $data = array();
         $data['mac']    = $mac;
         $data['prizeid']  = intval($prizeid);
         $data['deviceid'] = $deviceid;
         $data['time']     = $time;
 
-        $m_box_award = new \Common\Model\AwardLogModel();
-        $rt = $m_box_award->addInfo($data);
+        $m_award_log = new \Common\Model\AwardLogModel();
+        $rt = $m_award_log->addInfo($data);
         if($rt){
+            if($prizeid){
+                foreach($prize_current as $key=>$v){
+                    if($v['prize_id'] == $prizeid){
+                        $prize_current[$key]['prize_num'] = $v['prize_num'] - 1;
+                    }
+                }
+                
+                $up_prize_current = json_encode($prize_current);
+                $map = array();
+                $map['prize_current'] = $up_prize_current;
+                $where = array();
+                $where['boxid'] = $boxinfo['id'];
+                $where['date_time'] = $date_time;
+                
+                $m_box_award->where($where)->save($map);
+                
+            }
             $this->to_back('10000');
         }else {
             $this->to_back('15002');

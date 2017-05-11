@@ -38,6 +38,8 @@ return array(
 	    '15001'=>'box_not_set_award',
 	    '15002'=>'box_award_record_error',
 	    '15003'=>'have_not_this_box',
+	    '15004'=>'this_award_have_empty',
+	    '15005'=>'this_award_not_have_current',
 
 	),
 );

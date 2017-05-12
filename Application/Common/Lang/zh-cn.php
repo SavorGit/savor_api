@@ -32,6 +32,7 @@ return array(
     'download_source_error'=>'下载来源非法',
     'client_error'=>'客户端类型非法',
     'download_data_insert_error'=>'统计数据入库失败',
+    'this_facility_have_download'=>'该设备已经下载安装过',
     
     //抽奖
     'box_not_set_award'=>'该机顶盒未设置奖项',

@@ -11,4 +11,11 @@ class DownloadCountModel extends Model{
 	public function record($data){
 	    return $this->add($data);
 	}
+	/**
+	 * @desc 根据条件获取下载数据
+	 */
+    public function getInfo($field ='*',$where,$order,$limit){
+	    $result = $this->field($field)->where($where)->order($order)->limit($limit)->select();
+	    return $result;
+	}  
 }

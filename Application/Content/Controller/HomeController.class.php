@@ -131,7 +131,8 @@ class HomeController extends BaseController{
                 $award_time = json_decode($configs[0]['config_value'],true);
             
                 $now_time = date('H:i');
-            
+                $m_media = new \Common\Model\MediaModel();
+                $m_award_log = new \Common\Model\AwardLogModel();
                 foreach($award_time as $v){
             
                     if($now_time>=$v['start_time'] && $now_time<=$v['end_time']){
@@ -141,14 +142,14 @@ class HomeController extends BaseController{
                             $mediainfo = $m_sys_config->getInfo("'system_award_banner'");
                             if(!empty($mediainfo)){
                                 $media_id = $mediainfo[0]['config_value'];
-                                $m_media = new \Common\Model\MediaModel();
+                                
                                 $marr = $m_media->getMediaInfoById($media_id);
                                 if(!empty($marr)){
                                     $award_arr['imageURL'] = $marr['oss_addr'];
                                     $award_arr['award_start_time'] = $v['start_time'];
                                     $award_arr['award_end_time']   = $v['end_time'];
                                     $traceinfo = $this->traceinfo;
-                                    $m_award_log = new \Common\Model\AwardLogModel();
+                                    
                                     $ret = $m_award_log->countAwardLog($traceinfo['deviceid'],$now_date);
                                     /* if(empty($ret)){
                                         $award_arr['lottery_num'] = 1;

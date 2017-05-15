@@ -115,6 +115,7 @@ class AwardController extends CommonController{
                 foreach($prize_current as $key=>$v){
                     if($v['prize_id'] == $prizeid){
                         $prize_current[$key]['prize_num'] = $v['prize_num'] - 1;
+                        break;
                     }
                 }
                 
@@ -122,7 +123,7 @@ class AwardController extends CommonController{
                 $map = array();
                 $map['prize_current'] = $up_prize_current;
                 $where = array();
-                $where['boxid'] = $boxinfo['id'];
+                $where['box_id'] = $boxinfo['id'];
                 $where['date_time'] = $date_time;
                 
                 $m_box_award->where($where)->save($map);

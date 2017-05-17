@@ -41,5 +41,8 @@ return array(
 	    '15004'=>'this_award_have_empty',
 	    '15005'=>'this_award_not_have_current',
 
+		//云平台PHP接口
+		'16001'=>'down_hotel_infotype_error',
+
 	),
 );

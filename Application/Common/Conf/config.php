@@ -1,7 +1,15 @@
 <?php
 //系统及固定配置
+$route_rules = array(
+	'/^small\/api\/getDownloadList\/(\d{0,10})\/(ads|adv|pro|vod|logo|load)$/'=>'small/api/getDownloadList?hotelid=:1&type=:2',
+
+
+);
 return array(
 	//路由配置
+
+	'URL_ROUTER_ON'   => true,
+    'URL_ROUTE_RULES'=>$route_rules,
 	'URL_MODEL'				=>2,
 	'URL_CASE_INSENSITIVE'  => true, //url支持大小写
     'VAR_MODULE'            =>  'savorm',     // 默认模块获取变量
@@ -11,9 +19,9 @@ return array(
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
 
-	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award'), //模块配置
+	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award','Small'), //模块配置
 
-	'DEFAULT_MODULE'        => 'Basedata',
+	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
 	'SESSION_AUTO_START'    =>  true,    // 是否自动开启Session
 	'SESSION_OPTIONS'       =>  array(), // session 配置数组 支持type name id path expire domain 等参数
@@ -64,5 +72,6 @@ return array(
 	'HOST_NAME'             => 'http://'.$_SERVER['HTTP_HOST'],
 	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
     'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
+	'DOWNLOAD_HOTEL_INFO_TYPE'=>array('ads'=>1,'adv'=>2,'pro'=>3,'vod'=>4,'logo'=>5,'load'=>6),
     'ALL_LOTTERY_NUMBER' => 5,
 );

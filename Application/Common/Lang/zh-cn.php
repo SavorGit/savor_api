@@ -41,4 +41,8 @@ return array(
     'this_award_have_empty'=>'该奖项已经被抽空',
     'this_award_not_have_current'=>'该奖品未设置当前奖品剩余数量',
 
+
+    //云平台PHP接口
+    'down_hotel_infotype_error'=>'酒楼下载文件来源类型非法',
+
 );

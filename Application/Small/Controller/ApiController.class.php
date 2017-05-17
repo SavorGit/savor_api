@@ -39,13 +39,44 @@ class ApiController extends CommonController{
                 $this->valid_fields=array('hotelid'=>'1001');
 
                 break;
+            case 'getHotelTv':
+                $this->is_verify = 1;
+                $this->valid_fields=array('hotelid'=>'1001');
+
+                break;
         }
         parent::_init_();
     }
 
+    public function getHotelTv(){
+        $hotelModel = new \Common\Model\HotelModel();
+        $boxModel = new \Common\Model\BoxModel();
+        $sysconfigModel = new \Common\Model\SysConfigModel();
+        $tvModel = new \Common\Model\TvModel();
+        $hotelid = $this->params['hotelid']; //hotelid
+        $where = array();
+        $result = array();
+        if(!is_numeric($hotelid)){
+            $this->to_back(10007);
+        }
+        $count = $hotelModel->where(array('id'=>$hotelid))->count();
+        if($count == 0){
+            $this->to_back(10007);
+        }
+        $boxs = $hotelModel->getStatisticalNumByHotelId($hotelid,'box');
+        $field = " id as tv_id,tv_brand,tv_size,tv_source,box_id, flag,state";
+        if($boxs['box_num']){
+            $box_str = join(',', $boxs['box']);
+            $where['box_id'] = array('IN',"$box_str");
+            $result = $tvModel->getList($where, $field);
+        }
+        $this->to_back($result);
+    }
+
     public function getHotelBox(){
         $hotelModel = new \Common\Model\HotelModel();
-        $romModel = new \Common\Model\RoomModel();
+        $boxModel = new \Common\Model\BoxModel();
+        $sysconfigModel = new \Common\Model\SysConfigModel();
         $hotelid = $this->params['hotelid']; //hotelid
         if(!is_numeric($hotelid)){
             $this->to_back(10007);
@@ -54,14 +85,14 @@ class ApiController extends CommonController{
         if($count == 0){
             $this->to_back(10007);
         }
-        $field = "  id AS room_id,name as room_name,
-        hotel_id,type as room_type,state,flag,remark,
-        create_time,
-        update_time";
-        $map['hotel_id'] = $hotelid;
-        $room_arr = $romModel->getWhere($map, $field);
-        $room_arr =  $this->changeroomList($room_arr);
-        $this->to_back($room_arr);
+        $field = "  box.id AS box_id,box.room_id,box.name as box_name,
+        room.hotel_id,box.mac as box_mac,box.state,box.flag,box.switch_time,box.volum as volume ";
+        $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
+        $where = " 'system_default_volume','system_switch_time'";
+        $sys_arr = $sysconfigModel->getInfo($where);
+        $sys_arr = $this->changesysconfigList($sys_arr);
+        $data = $this->changeBoxList($box_arr, $sys_arr);
+        $this->to_back($data);
     }
 
     public function getHotelRoom(){
@@ -315,6 +346,10 @@ class ApiController extends CommonController{
 
 
 
+
+
+
+
     /**
      * changeroomList  将已经数组修改字段名称
      * @access public
@@ -403,6 +438,49 @@ class ApiController extends CommonController{
                     $res[$vk]['name'] = $ttp[2];
                 }
 
+            }
+
+        }
+        return $res;
+        //如果是空
+    }
+
+
+
+    /**
+     * changeBoxList  将已经数组修改字段名称
+     * @access public
+     * @param $res 机顶盒数组
+     * * @param $sys_arr 系统数组
+     * @return array
+     */
+    public function changeBoxList($res, $sys_arr){
+        $da = array();
+        foreach ($sys_arr as $vk=>$val) {
+           foreach($val as $sk=>$sv){
+               if($sv == 'system_default_volume') {
+                    if(empty($val['configValue'])){
+                        $da['volume'] = 50;
+                    }else{
+                        $da['volume'] = $val['configValue'];
+                    }
+
+               }
+               if($sv == 'system_switch_time') {
+                   if(empty($val['configValue'])){
+                       $da['switch_time'] = 30;
+                   }else{
+                       $da['switch_time'] = $val['configValue'];
+                   }
+                   break;
+               }
+           }
+
+        }
+        if($res){
+            foreach ($res as $vk=>$val) {
+                $res[$vk]['volume'] =  $da['volume'];
+                $res[$vk]['switch_time'] =  $da['switch_time'];
             }
 
         }

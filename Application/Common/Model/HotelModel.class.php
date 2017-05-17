@@ -38,5 +38,14 @@ class HotelModel extends Model
             return false;
         }
     }
+    public function getInfoById($hotelid,$field = '*'){
+        $map = array();
+        $map['id']    = $hotelid;
+        $map['state'] = 1;
+        $map['flag']  = 0;
+        $info = $this->field($field)->where($map)->find();
+       
+        return $info;
+    }
 
 }

@@ -2,7 +2,18 @@
 //系统及固定配置
 $route_rules = array(
 	'/^small\/api\/getDownloadList\/(\d{0,10})\/(ads|adv|pro|vod|logo|load)$/'=>'small/api/getDownloadList?hotelid=:1&type=:2',
-    '/^smalls\/api\/getUpgradeVersion\/(\d{0,10})\/(wwar)$/' =>'smalls/api/getUpgradeVersion?hotelId=:1&type=:2',
+
+
+	'/^small\/api\/getHotel\/(\d{0,10})$/'=>'small/api/getHotel?hotelid=:1',
+
+	'/^small\/api\/getHotel\/(\d{0,10})\/v2$/'=>'small/api/getHotelvb?hotelid=:1',
+
+	'/^small\/api\/getRoom\/(\d{0,10})$/'=>'small/api/getHotelRoom?hotelid=:1',
+
+	'/^small\/api\/getSetTopBox\/(\d{0,10})$/'=>'small/api/getHotelBox?hotelid=:1',
+	'/^small\/api\/getTelevision\/(\d{0,10})$/'=>'small/api/getHotelTv?hotelid=:1',
+	'/^small\/api\/getUpgradeVersion\/(\d{0,10})\/(wwar)$/' =>'small/api/getUpgradeVersion?hotelId=:1&type=:2',
+
 
 );
 return array(
@@ -73,5 +84,7 @@ return array(
 	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
     'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
 	'DOWNLOAD_HOTEL_INFO_TYPE'=>array('ads'=>1,'adv'=>2,'pro'=>3,'vod'=>4,'logo'=>5,'load'=>6),
+	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量'),
+	'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),
     'ALL_LOTTERY_NUMBER' => 5,
 );

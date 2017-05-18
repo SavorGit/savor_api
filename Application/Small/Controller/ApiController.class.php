@@ -97,6 +97,7 @@ class ApiController extends CommonController{
         $boxModel = new \Common\Model\BoxModel();
         $sysconfigModel = new \Common\Model\SysConfigModel();
         $hotelid = $this->params['hotelid']; //hotelid
+        $data = array();
         if(!is_numeric($hotelid)){
             $this->to_back(10007);
         }
@@ -107,6 +108,7 @@ class ApiController extends CommonController{
         $field = "  box.id AS box_id,box.room_id,box.name as box_name,
         room.hotel_id,box.mac as box_mac,box.state,box.flag,box.switch_time,box.volum as volume ";
         $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
+
         $where = " 'system_default_volume','system_switch_time'";
         $sys_arr = $sysconfigModel->getInfo($where);
         $sys_arr = $this->changesysconfigList($sys_arr);

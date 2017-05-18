@@ -29,6 +29,11 @@ class ApiController extends CommonController{
                 $this->valid_fields=array('hotelid'=>'1001');
 
                 break;
+            case 'getHotelvb':
+                $this->is_verify = 1;
+                $this->valid_fields=array('hotelid'=>'1001');
+
+                break;
             case 'getHotelRoom':
                 $this->is_verify = 1;
                 $this->valid_fields=array('hotelid'=>'1001');
@@ -221,10 +226,10 @@ class ApiController extends CommonController{
      */
     public function getadsData($hotelid){
         $menuhotelModel = new \Common\Model\MenuHotelModel();
-        $menuitemModel = new \Common\Model\MenuItemModel();
+        $adsModel = new \Common\Model\AdsModel();
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
         $menuid = $per_arr[0]['menuId'];
-        $ads_arr = $menuitemModel->getadsInfo($menuid);
+        $ads_arr = $adsModel->getadsInfo($menuid);
         $ads_arr = $this->changeadsList($ads_arr);
         $data = array();
         $data['period'] = $per_arr[0]['period'];
@@ -267,11 +272,11 @@ class ApiController extends CommonController{
      */
     public function getproData($hotelid){
         $menuhotelModel = new \Common\Model\MenuHotelModel();
-        $menuitemModel = new \Common\Model\MenuItemModel();
+        $adsModel = new \Common\Model\AdsModel();
         //获取广告期号
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
         $menuid = $per_arr[0]['menuId'];
-        $pro_arr = $menuitemModel->getproInfo($menuid);
+        $pro_arr = $adsModel->getproInfo($menuid);
         $pro_arr = $this->changeadvList($pro_arr);
         $data = array();
         $data['period'] = $per_arr[0]['period'];

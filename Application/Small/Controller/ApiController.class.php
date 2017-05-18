@@ -49,6 +49,22 @@ class ApiController extends CommonController{
                 $this->valid_fields=array('hotelid'=>'1001');
 
                 break;
+            case 'getDownloadList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotelid'=>'1001','type'=>'1001');
+                break;
+            case 'smallPlatform':
+                $this->is_verify = 1;
+                $this->valid_fields = array('areaId'=>'1001','hotelId'=>'1001','remark'=>'1001','smallIp'=>'1001');
+                break;
+            case 'getUpgradeVersion':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotelId'=>'1001','type'=>'1001');
+                break;
+            case 'getDeviceSql':
+                $this->is_verify = 1;
+                $this->valid_fields = array('curVersion'=>'1001','downloadVersion'=>'1001');
+                break;
         }
         parent::_init_();
     }
@@ -492,8 +508,97 @@ class ApiController extends CommonController{
         return $res;
         //如果是空
     }
-
-
+    public function smallPlatform(){
+        $ip_addr = get_client_ipaddr();              //获取外网IP
+        $areaId  = intval($this->params['areaId']);  //区域id
+        $hotelId = intval($this->params['hotelId']); //酒楼id
+        $remark  = $this->params['remark'];          //备注
+        $smallIp = $this->params['smallIp'];         //小平台ip
+    
+        //检测酒楼是否存在且正常
+        $m_hotel = new \Common\Model\HotelModel();
+        $hotel_info = $m_hotel->getInfoById($hotelId,'id');
+        if(empty($hotel_info)){
+            $this->to_back('16100');   //该酒楼不存在或被删除
+        }
+        $m_small_platform = new \Common\Model\SmallPlatformModel();
+        $data = array();
+        $data['hotel_id'] = $hotelId;
+        $data['hotel_ip'] = $ip_addr;
+        $data['area_id']  = $areaId;
+        $data['small_ip'] = $smallIp;
+        $data['state']    =1;
+        $data['remark']   = $remark;
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $data['update_time'] = date('Y-m-d H:i:s');
+        //print_r($data);exit;
+        $ret = $m_small_platform->addInfo($data);
+        if($ret){
+            $this->to_back('10000');
+        }else {
+            $this->to_back('16101');
+        }
+    }
+    public function getUpgradeVersion(){
+        $versionCode = $this->params['versionCode'];
+        $hotelid = intval($this->params['hotelId']);
+        $type = $this->params['type'];
+        if(!key_exists($type, $this->upgrade_type_arr)){
+            $this->to_back('16102');
+        }
+        $data =  array();
+        $m_device_upgrade = new \Common\Model\DeviceUpgradeModel();
+        if(empty($versionCode)){
+            //如果versioncode没有，那就返回savor_device_upgrade表里面满足hotelId和type的最新一条数据对应的版本信息
+            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid);
+        }else {
+            //如果versioncode不为空  根据酒楼id检测最新一条 是否在  min  和max之间
+            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid,$versionCode);
+        }
+        if(!empty($upgrade_info)){
+            $m_device_version = new \Common\Model\DeviceVersionModel();
+            $device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],1);
+            //print_r($device_version_info);exit;
+            if(!empty($device_version_info)){
+                $data['id'] = $device_version_info['id'];
+                $ttp = explode('/', $device_version_info['oss_addr']);
+                $data['name']     = $ttp[2];
+                $data['md5_type'] = 'fullMd5';
+                $data['version']  = $device_version_info['version_code'];
+                $upgrade_type_arr = array_flip($this->upgrade_type_arr) ;
+    
+                $data['type'] = $upgrade_type_arr[1];
+                $data['oss_path'] = $device_version_info['oss_addr'];
+                $data['duration'] = intval($upgrade_info['update_type']);
+                $data['suffix']   = getExt($device_version_info['oss_addr']);
+                $data['order']    = 0;   //排序默认值0
+                $data['chineseName']= $device_version_info['version_name'];
+                $this->to_back($data);
+            }else {
+                $this->to_back('16104');
+            }
+        }else {
+            $this->to_back('16103');
+        }
+    }
+    /**
+     * @desc 获取升级sql
+     */
+    public function getDeviceSql(){
+        $curVersion = $this->params['curVersion'];              //小平台当前版本号
+        $downloadVersion = $this->params['downloadVersion'];    //下载版本号
+        $m_device_sql = new \Common\Model\DeviceSqlModel();
+        $upgrade_sql_list = $m_device_sql->getUpgradeSql($curVersion, $downloadVersion,$type = 1);
+        if(!empty($upgrade_sql_list)){
+            $data = array();
+            foreach($upgrade_sql_list as $key=>$v){
+                $data[] = $v['sql_lang'];
+            }
+            $this->to_back($data);
+        }else {
+            $this->to_back('16105');
+        }
+    }
     public function changeadsList($res){
         if($res){
             foreach ($res as $vk=>$val) {

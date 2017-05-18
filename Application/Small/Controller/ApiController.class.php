@@ -13,6 +13,7 @@ use \Common\Controller\CommonController as CommonController;
  * @package Small\Controller
  */
 class ApiController extends CommonController{
+    var $upgrade_type_arr ;
  	/**
      * 构造函数
      */
@@ -66,6 +67,7 @@ class ApiController extends CommonController{
                 $this->valid_fields = array('curVersion'=>'1001','downloadVersion'=>'1001');
                 break;
         }
+        $this->upgrade_type_arr = array('wwar'=>1);
         parent::_init_();
     }
 

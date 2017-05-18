@@ -43,6 +43,12 @@ return array(
 
 		//云平台PHP接口
 		'16001'=>'down_hotel_infotype_error',
+	    
+	    '16100'=>'small_platform_hotel_error',
+	    '16101'=>'small_platform_report_error',
+	    '16102'=>'small_platform_report_type_error',
+	    '16103'=>'hotel_not_set_small_plat_upgrade_version',
+	    '16104'=>'have_not_this_small_plat_upgrade_war',
 
 	),
 );

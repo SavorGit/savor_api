@@ -44,5 +44,10 @@ return array(
 
     //云平台PHP接口
     'down_hotel_infotype_error'=>'酒楼下载文件来源类型非法',
+    'small_platform_hotel_error'=>'该酒楼为非正常状态',
+    'small_platform_report_error'=>'上报数据入库失败',
+    'small_platform_report_type_error'=>'上报数据类型错误',
+    'hotel_havenot_small_plat_upgrade_version'=>'该酒楼未设置小平台升级包',
+    'have_not_this_small_plat_upgrade_war'=>'小平台升级包不存在',
 
 );

@@ -2,7 +2,7 @@
 //系统及固定配置
 $route_rules = array(
 	'/^small\/api\/getDownloadList\/(\d{0,10})\/(ads|adv|pro|vod|logo|load)$/'=>'small/api/getDownloadList?hotelid=:1&type=:2',
-
+    '/^smalls\/api\/getUpgradeVersion\/(\d{0,10})\/(wwar)$/' =>'smalls/api/getUpgradeVersion?hotelId=:1&type=:2',
 
 );
 return array(
@@ -19,7 +19,7 @@ return array(
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
 
-	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award','Small'), //模块配置
+	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award','Small','Smalls'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置

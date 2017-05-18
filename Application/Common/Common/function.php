@@ -148,3 +148,13 @@ function getprovinceByip($ip){
     }
     return $province_name;
 }
+/**
+ * @desc 获取url的文件扩展名
+ */
+function getExt($url){
+    if($url){
+        return pathinfo( parse_url($url)['path'] )['extension'];
+    }else {
+        return '';
+    }
+}

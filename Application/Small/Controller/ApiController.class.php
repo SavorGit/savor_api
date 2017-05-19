@@ -50,10 +50,6 @@ class ApiController extends CommonController{
                 $this->valid_fields=array('hotelid'=>'1001');
 
                 break;
-            case 'getDownloadList':
-                $this->is_verify = 1;
-                $this->valid_fields = array('hotelid'=>'1001','type'=>'1001');
-                break;
             case 'smallPlatform':
                 $this->is_verify = 1;
                 $this->valid_fields = array('areaId'=>'1001','hotelId'=>'1001','remark'=>'1001','smallIp'=>'1001');
@@ -101,6 +97,7 @@ class ApiController extends CommonController{
         $boxModel = new \Common\Model\BoxModel();
         $sysconfigModel = new \Common\Model\SysConfigModel();
         $hotelid = $this->params['hotelid']; //hotelid
+        $data = array();
         if(!is_numeric($hotelid)){
             $this->to_back(10007);
         }
@@ -111,10 +108,13 @@ class ApiController extends CommonController{
         $field = "  box.id AS box_id,box.room_id,box.name as box_name,
         room.hotel_id,box.mac as box_mac,box.state,box.flag,box.switch_time,box.volum as volume ";
         $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
+
         $where = " 'system_default_volume','system_switch_time'";
         $sys_arr = $sysconfigModel->getInfo($where);
         $sys_arr = $this->changesysconfigList($sys_arr);
-        $data = $this->changeBoxList($box_arr, $sys_arr);
+        if(!empty($box_arr)){
+            $data = $this->changeBoxList($box_arr, $sys_arr);
+        }
         $this->to_back($data);
     }
 
@@ -135,7 +135,9 @@ class ApiController extends CommonController{
         update_time";
         $map['hotel_id'] = $hotelid;
         $room_arr = $romModel->getWhere($map, $field);
-        $room_arr =  $this->changeroomList($room_arr);
+        if(!empty($room_arr)){
+            $room_arr =  $this->changeroomList($room_arr);
+        }
         $this->to_back($room_arr);
     }
 

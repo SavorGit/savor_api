@@ -404,7 +404,7 @@ class ApiController extends CommonController{
      * @param $res
      * @return array
      */
-    public function changesysconfigList($res){
+    private function changesysconfigList($res){
         $vol_arr = C('CONFIG_VOLUME');
         if($res){
             foreach ($res as $vk=>$val) {
@@ -430,7 +430,7 @@ class ApiController extends CommonController{
      * @param $res
      * @return array
      */
-    public function changeadvList($res){
+    private function changeadvList($res){
         if($res){
             foreach ($res as $vk=>$val) {
                 $res[$vk]['order'] =  $res[$vk]['sortNum'];
@@ -452,7 +452,7 @@ class ApiController extends CommonController{
      * @param $res
      * @return array
      */
-    public function changevodList($res,$version){
+    private function changevodList($res,$version){
         if($res){
             foreach ($res as $vk=>$val) {
                 $res[$vk]['order'] =  $res[$vk]['sortNum'];
@@ -479,7 +479,7 @@ class ApiController extends CommonController{
      * * @param $sys_arr 系统数组
      * @return array
      */
-    public function changeBoxList($res, $sys_arr){
+    private function changeBoxList($res, $sys_arr){
         $da = array();
         foreach ($sys_arr as $vk=>$val) {
            foreach($val as $sk=>$sv){

@@ -244,7 +244,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getadsData($hotelid){
+    private function getadsData($hotelid){
         $menuhotelModel = new \Common\Model\MenuHotelModel();
         $adsModel = new \Common\Model\AdsModel();
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
@@ -266,7 +266,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getadvData($hotelid){
+    private function getadvData($hotelid){
         $menuhotelModel = new \Common\Model\MenuHotelModel();
         $adsModel = new \Common\Model\AdsModel();
         //获取广告期号
@@ -290,7 +290,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getproData($hotelid){
+    private function getproData($hotelid){
         $menuhotelModel = new \Common\Model\MenuHotelModel();
         $adsModel = new \Common\Model\AdsModel();
         //获取广告期号
@@ -314,7 +314,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getvodData($hotelid){
+    private function getvodData($hotelid){
         $mbperModel = new \Common\Model\MbPeriodModel();
         $mbhomeModel = new \Common\Model\HomeModel();
         //获取广告期号
@@ -341,7 +341,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getloadData($hotelid){
+    private function getloadData($hotelid){
         $sysconfigModel = new \Common\Model\SysConfigModel();
         $load_arr = $sysconfigModel->getloadInfo($hotelid);
         $load_arr = $this->changeadvList($load_arr);
@@ -359,7 +359,7 @@ class ApiController extends CommonController{
      * @param $hotelid 酒楼id
      * @return array
      */
-    public function getlogoData($hotelid){
+    private function getlogoData($hotelid){
         $hotelModel = new \Common\Model\HotelModel();
         $logo_arr = $hotelModel->gethotellogoInfo($hotelid);
         $logo_arr = $this->changeadvList($logo_arr);
@@ -381,7 +381,7 @@ class ApiController extends CommonController{
      * @param $res
      * @return array
      */
-    public function changeroomList($res){
+    private function changeroomList($res){
         $ro_type = C('ROOM_TYPE');
 
         if($res){

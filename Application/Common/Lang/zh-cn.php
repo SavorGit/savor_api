@@ -50,4 +50,7 @@ return array(
     'hotel_not_set_small_plat_upgrade_version'=>'该酒楼未设置小平台升级包',
     'have_not_this_small_plat_upgrade_war'=>'小平台升级包不存在',
 
+    //客户端获取投屏酒楼距离接口
+    'lat_illegal'=>'纬度值非法',
+    'lng_illegal'=>'经度值非法',
 );

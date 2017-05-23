@@ -481,33 +481,33 @@ class ApiController extends CommonController{
      */
     private function changeBoxList($res, $sys_arr){
         $da = array();
+        $da['switch_time'] = 30;
+        $da['volume']      = 50;
         foreach ($sys_arr as $vk=>$val) {
-           foreach($val as $sk=>$sv){
-               if($sv == 'system_default_volume') {
+            foreach($val as $sk=>$sv){
+                if($sv == 'system_default_volume') {
                     if(empty($val['configValue'])){
                         $da['volume'] = 50;
                     }else{
                         $da['volume'] = $val['configValue'];
                     }
-
-               }
-               if($sv == 'system_switch_time') {
-                   if(empty($val['configValue'])){
-                       $da['switch_time'] = 30;
-                   }else{
-                       $da['switch_time'] = $val['configValue'];
-                   }
-                   break;
-               }
-           }
-
+                }
+                if($sv == 'system_switch_time') {
+                    if(empty($val['configValue'])){
+                        $da['switch_time'] = 30;
+                    }else{
+                        $da['switch_time'] = $val['configValue'];
+                    }
+                    break;
+                }
+            }
+        
         }
         if($res){
             foreach ($res as $vk=>$val) {
                 $res[$vk]['volume'] =  $da['volume'];
                 $res[$vk]['switch_time'] =  $da['switch_time'];
             }
-
         }
         return $res;
         //如果是空

@@ -50,5 +50,9 @@ return array(
 	    '16103'=>'hotel_not_set_small_plat_upgrade_version',
 	    '16104'=>'have_not_this_small_plat_upgrade_war',
 
+	//客户端获取投屏酒楼距离接口
+		'17001'=>'lat_illegal',
+		'17002'=>'lng_illegal',
+
 	),
 );

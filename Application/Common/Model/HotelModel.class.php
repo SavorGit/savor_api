@@ -54,6 +54,34 @@ class HotelModel extends Model
     }
 
 
+    /**
+     * getHotelDis
+     * @desc 获取同一区域的所有酒楼的
+     * @param $field
+     * @param $hotelid
+     * @return mixed
+     */
+    public function getHotelDis($field,$hotelid){
+        $sql ="select $field
+               from savor_hotel where area_id = (select area_id  from savor_hotel where id= $hotelid) and hotel_box_type=3 and state=1 and flag=0";
+        $result =  $this->query($sql);
+        return $result;
+    }
+
+    /**
+     * getAllDis
+     * @获取所有酒楼数据
+     * @param $field 字段
+     * @return array
+     */
+    public function getAllDis($field){
+        $sql ="select $field
+               from savor_hotel where  hotel_box_type=3 and state=1 and flag=0";
+        $result =  $this->query($sql);
+        return $result;
+    }
+
+
     public function gethotellogoInfo($hotelid){
         $sql = "SELECT
         media.id AS id,
@@ -156,6 +184,16 @@ class HotelModel extends Model
         }
         $nums = array('room_num'=>$room_num,'box_num'=>$box_num,'tv_num'=>$tv_num);
         return $nums;
+    }
+
+    public function getRoomNumByHotelId($hotel_id){
+        $sql = "select id as room_id,hotel_id from savor_room where hotel_id='$hotel_id' and state=1 and flag=0";
+        $res = $this->query($sql);
+        $room_num = 0;
+        foreach ($res as $k=>$v){
+            $room_num++;
+        }
+        return $room_num;
     }
 
 }

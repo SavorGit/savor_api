@@ -536,7 +536,7 @@ class ApiController extends CommonController{
         $data['create_time'] = date('Y-m-d H:i:s');
         $data['update_time'] = date('Y-m-d H:i:s');
         //print_r($data);exit;
-        //$ret = $m_small_platform->addInfo($data);
+        $ret = $m_small_platform->addInfo($data);
         if($ret){
             $this->to_back('10000');
         }else {

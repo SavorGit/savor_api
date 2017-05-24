@@ -109,7 +109,7 @@ class ApiController extends CommonController{
         room.hotel_id,box.mac as box_mac,box.state,box.flag,box.switch_time,box.volum as volume ";
         $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
 
-        $where = " 'system_default_volume','system_switch_time'";
+        $where = " 'system_ad_volume','system_switch_time'";
         $sys_arr = $sysconfigModel->getInfo($where);
         $sys_arr = $this->changesysconfigList($sys_arr);
         if(!empty($box_arr)){
@@ -479,22 +479,20 @@ class ApiController extends CommonController{
      * * @param $sys_arr 系统数组
      * @return array
      */
-    private function changeBoxList($res, $sys_arr){
-        $da = array();
-        $da['switch_time'] = 30;
-        $da['volume']      = 50;
+    private function changeBoxList($res, $sys_arr){        $da = array();
+
         foreach ($sys_arr as $vk=>$val) {
             foreach($val as $sk=>$sv){
-                if($sv == 'system_default_volume') {
+                if($sv == 'system_ad_volume') {
                     if(empty($val['configValue'])){
-                        $da['volume'] = 50;
+                        $da['volume'] = 0;
                     }else{
                         $da['volume'] = $val['configValue'];
                     }
                 }
                 if($sv == 'system_switch_time') {
                     if(empty($val['configValue'])){
-                        $da['switch_time'] = 30;
+                        $da['switch_time'] = 0;
                     }else{
                         $da['switch_time'] = $val['configValue'];
                     }
@@ -505,10 +503,21 @@ class ApiController extends CommonController{
         }
         if($res){
             foreach ($res as $vk=>$val) {
-                $res[$vk]['volume'] =  $da['volume'];
-                $res[$vk]['switch_time'] =  $da['switch_time'];
+                if (empty($da['volume'])) {
+                    $res[$vk]['volume'] = empty($val['volume'])?50:$val['volume'];
+                } else {
+                    $res[$vk]['volume'] = $da['volume'];
+                }
+                if (empty($da['switch_time'])) {
+                    $res[$vk]['switch_time'] =  empty($val['switch_time'])?30:$val['switch_time'];
+$val['switch_time'];
+                } else {
+                    $res[$vk]['switch_time'] = $da['switch_time'];
+                }
             }
         }
+
+
         return $res;
         //如果是空
     }

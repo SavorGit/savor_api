@@ -109,6 +109,7 @@ class DistanceController extends CommonController{
      * @return array|bool|mixed
      */
     private function getHotelDis($hotelid, $lat, $lng){
+
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(15);
         $hotelModel = new \Common\Model\HotelModel();
@@ -141,6 +142,13 @@ class DistanceController extends CommonController{
 
                     }
                     $h_ar = $this->calculateDistance($hotel_distance_arr, $lat, $lng);
+                    foreach($h_ar as $h=>$hv) {
+                        if($hv['id'] == $hotelid){
+                            $get_hr  = $hv;
+                            $h_ar[$h] = $h_ar[0];
+                        }
+                    }
+                    $h_ar[0] = $get_hr;
                     $redis->set($dkey, json_encode($h_ar),86400);
                 }
             }
@@ -209,6 +217,7 @@ class DistanceController extends CommonController{
         $lat = $gps_arr['lat'];
         $lng = $gps_arr['lng'];
         $h_ar = array();
+
         if($hotelid){
             $data = $this->getHotelDis($hotelid,$lat , $lng);
         }else{
@@ -228,7 +237,7 @@ class DistanceController extends CommonController{
             $page_num = 1;
         }
         $hotelid = $this->params['hotelid'];
-        $gps_arr = $this->checkInfo($hotelid);
+        $gps_arr = $this->checkDisInfo($hotelid);
         $lat = $gps_arr['lat']; //纬度
         $lng = $gps_arr['lng']; //经度
         $h_ar = array();

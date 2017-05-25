@@ -145,10 +145,14 @@ class DistanceController extends CommonController{
                     foreach($h_ar as $h=>$hv) {
                         if($hv['id'] == $hotelid){
                             $get_hr  = $hv;
-                            $h_ar[$h] = $h_ar[0];
+                            $get_hr['km'] = 0;
+                            unset($h_ar[$h]);
+                            break;
                         }
                     }
-                    $h_ar[0] = $get_hr;
+                    array_unshift($h_ar, $get_hr);
+                    var_dump($h_ar);
+                    die;
                     $redis->set($dkey, json_encode($h_ar),86400);
                 }
             }

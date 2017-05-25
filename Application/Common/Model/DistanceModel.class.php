@@ -21,13 +21,13 @@ class DistanceModel extends Model{
         */
 		if(!empty($u_lat) && !empty($u_lon)){
 			foreach ($list as $row) {
-				$row['km'] = $this->nearby_distance($u_lat, $u_lon, $row['lat'], $row['lon']);
-				$row['km'] = round($row['km'], 1);
+				$row['dis'] = $this->nearby_distance($u_lat, $u_lon, $row['lat'], $row['lon']);
+				$row['dis'] = round($row['dis'], 1);
 				$res[] = $row;
 			}
 			if (!empty($res)) {
 				foreach ($res as $user) {
-					$ages[] = $user['km'];
+					$ages[] = $user['dis'];
 				}
 				array_multisort($ages, SORT_ASC, $res);
 				return $res;

@@ -74,7 +74,7 @@ class DistanceController extends CommonController{
                 $hotel_distance_arr = $this->calculateDistance($hotel_distance_arr, $lat, $lng);
                 foreach ($hotel_distance_arr as $rov) {
                     $rnm[] = $rov['roomnum'];
-                    $kms[] = $rov['km'];
+                    $kms[] = $rov['dis'];
                 }
                 //排序
                 array_multisort($kms,SORT_ASC,$rnm, SORT_DESC, $hotel_distance_arr);
@@ -145,14 +145,12 @@ class DistanceController extends CommonController{
                     foreach($h_ar as $h=>$hv) {
                         if($hv['id'] == $hotelid){
                             $get_hr  = $hv;
-                            $get_hr['km'] = 0;
+                            $get_hr['dis'] = 0;
                             unset($h_ar[$h]);
                             break;
                         }
                     }
                     array_unshift($h_ar, $get_hr);
-                    var_dump($h_ar);
-                    die;
                     $redis->set($dkey, json_encode($h_ar),86400);
                 }
             }
@@ -228,8 +226,16 @@ class DistanceController extends CommonController{
             //全部数据拿出
             $data = $this->getAlldis();
         }
+
         if($data){
             $h_ar = array_slice($data,0,3);
+            foreach($h_ar as $da=>$dv){
+                if($dv['dis'] >=1){
+                    $h_ar[$da]['dis'] = $dv['dis'].'千米';
+                }else{
+                    $h_ar[$da]['dis'] = ($dv['dis']*1000).'米';
+                }
+            }
         }
         $this->to_back($h_ar);
     }
@@ -254,6 +260,16 @@ class DistanceController extends CommonController{
         if($data){
             $start = ($page_num-1)*$page_size;
             $h_ar = array_slice($data,$start,$page_size);
+            foreach($h_ar as $da=>$dv){
+                if(isset($dv['dis'])){
+                    if($dv['dis'] >=1){
+                        $h_ar[$da]['dis'] = $dv['dis'].'千米';
+                    }else{
+                        $h_ar[$da]['dis'] = ($dv['dis']*1000).'米';
+                    }
+                }
+
+            }
         }
         $this->to_back($h_ar);
     }

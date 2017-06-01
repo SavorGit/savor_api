@@ -92,11 +92,12 @@ class DistanceController extends BaseController{
      * @return array|bool
      */
     private function calculateDistance($hotel_distance_arr, $lat, $lng){
-        $dismodel = new \Common\Model\DistanceModel();
-        foreach($hotel_distance_arr as $rk=>$rdv){
-            $h_dis_ar = $dismodel->range($lat,lng,$hotel_distance_arr);
 
-        }
+
+        $dismodel = new \Common\Model\DistanceModel();
+        $h_dis_ar = $dismodel->range($lat,lng,$hotel_distance_arr);
+        var_dump($h_dis_ar);
+        die;
         return $h_dis_ar;
     }
 
@@ -201,12 +202,12 @@ class DistanceController extends BaseController{
                 $this->to_back(17002);
             }
         }
-        if(strstr($lng,'E-')){
-            $lng = $this->sctonum($lng);
-        }
-        if(strstr($lat,'E-')){
-            $lat = $this->sctonum($lat);
-        }
+
+        $lng = $this->sctonum($lng);
+
+
+        $lat = $this->sctonum($lat);
+
         return array('lat'=>$lat,'lng'=>$lng);
 
     }
@@ -237,9 +238,9 @@ class DistanceController extends BaseController{
             $h_ar = array_slice($data,0,3);
             foreach($h_ar as $da=>$dv){
                 if($dv['dis'] >=1){
-                    $h_ar[$da]['dis'] = $dv['dis'].'千米';
+                    $h_ar[$da]['dis'] = $dv['dis'].'km';
                 }else{
-                    $h_ar[$da]['dis'] = ($dv['dis']*1000).'米';
+                    $h_ar[$da]['dis'] = ($dv['dis']*1000).'m';
                 }
             }
         }
@@ -269,9 +270,9 @@ class DistanceController extends BaseController{
             foreach($h_ar as $da=>$dv){
                 if(isset($dv['dis'])){
                     if($dv['dis'] >=1){
-                        $h_ar[$da]['dis'] = $dv['dis'].'千米';
+                        $h_ar[$da]['dis'] = $dv['dis'].'km';
                     }else{
-                        $h_ar[$da]['dis'] = ($dv['dis']*1000).'米';
+                        $h_ar[$da]['dis'] = ($dv['dis']*1000).'m';
                     }
                 }
 
@@ -291,6 +292,8 @@ class DistanceController extends BaseController{
         if(false !== stripos($num, "e")){
             $a = explode("e",strtolower($num));
             return bcmul($a[0], bcpow(10, $a[1], $double), $double);
+        }else{
+            return $num;
         }
     }
 

@@ -21,7 +21,7 @@ class DistanceModel extends Model{
         */
 		if(!empty($u_lat) && !empty($u_lon)){
 			foreach ($list as $row) {
-				$row['dis'] = $this->nearby_distance($u_lat, $u_lon, $row['lat'], $row['lon']);
+				$row['dis'] = $this->nearby_distance($u_lat, $u_lon, $row['lat'], $row['lng']);
 				$row['dis'] = round($row['dis'], 1);
 				$res[] = $row;
 			}

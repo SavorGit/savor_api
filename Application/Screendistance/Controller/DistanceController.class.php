@@ -95,9 +95,9 @@ class DistanceController extends BaseController{
 
 
         $dismodel = new \Common\Model\DistanceModel();
-        $h_dis_ar = $dismodel->range($lat,lng,$hotel_distance_arr);
-        var_dump($h_dis_ar);
-        die;
+
+        $h_dis_ar = $dismodel->range($lat,$lng,$hotel_distance_arr);
+        
         return $h_dis_ar;
     }
 

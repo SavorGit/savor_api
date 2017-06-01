@@ -6,13 +6,13 @@
  */
 namespace Screendistance\Controller;
 
-use \Common\Controller\CommonController as CommonController;
+use \Common\Controller\BaseController as BaseController;
 /**
  * Class DistanceController
  * 客户端非酒楼环境，酒楼环境距离测量
  * @package Screendistance\Controller
  */
-class DistanceController extends CommonController{
+class DistanceController extends BaseController{
  	/**
      * 构造函数
      */
@@ -201,6 +201,12 @@ class DistanceController extends CommonController{
                 $this->to_back(17002);
             }
         }
+        if(strstr($lng,'E-')){
+            $lng = $this->sctonum($lng);
+        }
+        if(strstr($lat,'E-')){
+            $lat = $this->sctonum($lat);
+        }
         return array('lat'=>$lat,'lng'=>$lng);
 
     }
@@ -273,4 +279,19 @@ class DistanceController extends CommonController{
         }
         $this->to_back($h_ar);
     }
+
+
+    /**
+     * @param $num         科学计数法字符串  如 2.1E-5
+     * @param int $double 小数点保留位数 默认6位
+     * @return string
+     */
+
+   public function sctonum($num, $double = 6){
+        if(false !== stripos($num, "e")){
+            $a = explode("e",strtolower($num));
+            return bcmul($a[0], bcpow(10, $a[1], $double), $double);
+        }
+    }
+
 }

@@ -504,12 +504,12 @@ class ApiController extends CommonController{
         if($res){
             foreach ($res as $vk=>$val) {
                 if (empty($da['volume'])) {
-                    $res[$vk]['volume'] = empty($val['volume'])?50:$val['volume'];
+                    $res[$vk]['volume'] = empty($val['volume'])?'':$val['volume'];
                 } else {
                     $res[$vk]['volume'] = $da['volume'];
                 }
                 if (empty($da['switch_time'])) {
-                    $res[$vk]['switch_time'] =  empty($val['switch_time'])?30:$val['switch_time'];
+                    $res[$vk]['switch_time'] =  empty($val['switch_time'])?'':$val['switch_time'];
 $val['switch_time'];
                 } else {
                     $res[$vk]['switch_time'] = $da['switch_time'];

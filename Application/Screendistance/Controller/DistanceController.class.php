@@ -186,28 +186,26 @@ class DistanceController extends BaseController{
             }else{
                 $gps_arr = explode(',', $hotelinfo['gps']);
             }
-        }
-        if(empty($lat)){
             $lat = $gps_arr[1];
+            $lng = $gps_arr[0];
+        }
+        if(empty($lat) || intval($lat) == 0){
+            $lat = 0;
         } else{
             if($lat<0 || $lat>90){
                 $this->to_back(17001);
             }
         }
 
-        if(empty($lng)){
-            $lng = $gps_arr[0];
+        if(empty($lng) || intval($lng) == 0){
+            $lng = 0;
         } else{
             if($lng<0 || $lng>180){
                 $this->to_back(17002);
             }
         }
-
         $lng = $this->sctonum($lng);
-
-
         $lat = $this->sctonum($lat);
-
         return array('lat'=>$lat,'lng'=>$lng);
 
     }
@@ -270,6 +268,7 @@ class DistanceController extends BaseController{
         if($data){
             $start = ($page_num-1)*$page_size;
             $h_ar = array_slice($data,$start,$page_size);
+
             foreach($h_ar as $da=>$dv){
                 if(isset($dv['dis'])){
                     if($dv['dis'] >=1){
@@ -293,8 +292,9 @@ class DistanceController extends BaseController{
 
    public function sctonum($num, $double = 6){
         if(false !== stripos($num, "e")){
-            $a = explode("e",strtolower($num));
-            return bcmul($a[0], bcpow(10, $a[1], $double), $double);
+           /* $a = explode("e",strtolower($num));
+            return bcmul($a[0], bcpow(10, $a[1], $double), $double);*/
+            $this->to_back(17001);
         }else{
             return $num;
         }

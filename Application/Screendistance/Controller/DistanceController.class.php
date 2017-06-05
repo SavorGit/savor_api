@@ -34,9 +34,11 @@ class DistanceController extends BaseController{
     /**
      * getAlldis
      * 获取酒楼所有包间个数的数组
+     *  * @param $lat 纬度
+     * @param $lng 经度
      * @return array|bool|mixed
      */
-    private function getAlldis(){
+    private function getAlldis($lat, $lng){
         $hotelModel = new \Common\Model\HotelModel();
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(15);
@@ -61,24 +63,22 @@ class DistanceController extends BaseController{
             $redis->set($dkey, json_encode($hotel_distance_arr),86400);
         }
         //酒楼ID无经纬度无
-        if(empty($lat)  || empty($lng)){
+        if( empty($lat)  || empty($lng) ) {
             if($hotel_distance_arr){
                 foreach ($hotel_distance_arr as $rov) {
                     $ages[] = $rov['roomnum'];
                 }
                 array_multisort($ages, SORT_DESC, $hotel_distance_arr);
             }
-        } else {
-            if($hotel_distance_arr){
-                //酒楼ID无经纬度有
-                $hotel_distance_arr = $this->calculateDistance($hotel_distance_arr, $lat, $lng);
-                foreach ($hotel_distance_arr as $rov) {
-                    $rnm[] = $rov['roomnum'];
-                    $kms[] = $rov['dis'];
-                }
-                //排序
-                array_multisort($kms,SORT_ASC,$rnm, SORT_DESC, $hotel_distance_arr);
+        }else{
+            //酒楼ID无经纬度有
+            $hotel_distance_arr = $this->calculateDistance($hotel_distance_arr, $lat, $lng);
+            foreach ($hotel_distance_arr as $rov) {
+                $rnm[] = $rov['roomnum'];
+                $kms[] = $rov['dis'];
             }
+            //排序
+            array_multisort($kms,SORT_ASC,$rnm, SORT_DESC, $hotel_distance_arr);
         }
         return $hotel_distance_arr;
     }
@@ -124,7 +124,7 @@ class DistanceController extends BaseController{
             //判断有一个经纬度是否为空
             if( empty($lat)  || empty($lng) ) {
                 //按包间数量算
-                $h_ar = $this->getAlldis();
+                $h_ar = $this->getAlldis($lat , $lng);
                 if($h_ar){
                     foreach ($h_ar as $rov) {
                         $ages[] = $rov['roomnum'];
@@ -174,6 +174,8 @@ class DistanceController extends BaseController{
      */
     private function checkDisInfo($hotelid){
         $hotelModel = new \Common\Model\HotelModel();
+        $lat = $this->params['lat'];
+        $lng = $this->params['lng'];
         if(!empty($hotelid)){
             if(!is_numeric($hotelid)){
                 $this->to_back(10007);
@@ -185,8 +187,6 @@ class DistanceController extends BaseController{
                 $gps_arr = explode(',', $hotelinfo['gps']);
             }
         }
-        $lat = $this->params['lat'];
-        $lng = $this->params['lng'];
         if(empty($lat)){
             $lat = $gps_arr[1];
         } else{
@@ -230,8 +230,11 @@ class DistanceController extends BaseController{
         if($hotelid){
             $data = $this->getHotelDis($hotelid,$lat , $lng);
         }else{
-            //全部数据拿出
-            $data = $this->getAlldis();
+            //全部数据拿出，还有判断经纬度
+
+            $data = $this->getAlldis($lat, $lng);
+
+
         }
 
         if($data){
@@ -262,7 +265,7 @@ class DistanceController extends BaseController{
             $data = $this->getHotelDis($hotelid,$lat , $lng);
         }else{
             //全部数据拿出
-            $data = $this->getAlldis();
+            $data = $this->getAlldis($lat , $lng);
         }
         if($data){
             $start = ($page_num-1)*$page_size;

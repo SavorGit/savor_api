@@ -588,7 +588,7 @@ $val['switch_time'];
                 $data['duration'] = intval($upgrade_info['update_type']);
                 $data['suffix']   = getExt($device_version_info['oss_addr']);
                 $data['order']    = 0;   //排序默认值0
-                $data['chineseName']= $device_version_info['version_name'];
+                $data['chinese_name']= $device_version_info['version_name'];
                 $result['media_list'][] = $data;
                 $this->to_back($result);
             }else {

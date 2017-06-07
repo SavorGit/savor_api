@@ -573,9 +573,12 @@ $val['switch_time'];
             $device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],1);
             //print_r($device_version_info);exit;
             if(!empty($device_version_info)){
+                $result['period'] = $device_version_info['version_code'];
+                
                 $data['id'] = $device_version_info['id'];
                 $ttp = explode('/', $device_version_info['oss_addr']);
                 $data['name']     = $ttp[2];
+                $data['md5'] = $device_version_info['md5'];
                 $data['md5_type'] = 'fullMd5';
                 $data['version']  = $device_version_info['version_code'];
                 $upgrade_type_arr = array_flip($this->upgrade_type_arr) ;
@@ -586,7 +589,8 @@ $val['switch_time'];
                 $data['suffix']   = getExt($device_version_info['oss_addr']);
                 $data['order']    = 0;   //排序默认值0
                 $data['chineseName']= $device_version_info['version_name'];
-                $this->to_back($data);
+                $result['media_list'][] = $data;
+                $this->to_back($result);
             }else {
                 $this->to_back('16104');
             }

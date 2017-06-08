@@ -20,12 +20,23 @@ class CalculationController extends CommonController{
         $redis->select(0);
         $out_ip = $this->params['outside_ip'];
         $hid = $this->params['hotelId'];
+        $teamviewer_id = $this->params['teamviewer_id'];
         $bool = false;
         $r_data = $this->params['intranet_ip'].'*'.$hid;
         $bool = $redis->set($out_ip, $r_data);
+        $hotelModel = new \Common\Model\HotelModel();
         if ($bool) {
             //hotelid不为空
             if ($hid) {
+                //直接判断远程id
+                if($teamviewer_id){
+                    $hotel_info = $hotelModel->find($hid);
+                    $remote_id = $hotel_info['remote_id'];
+                    if($remote_id != $teamviewer_id) {
+                        $team_ar['remote_id'] = $teamviewer_id;
+                        $hotelModel->save($team_ar);
+                    }
+                }
                 $h_res = $redis->keys($hid);
                 if($h_res){
                     //hotelid为key，查找值存在
@@ -53,6 +64,7 @@ class CalculationController extends CommonController{
                     $bool = $redis->set($hid, $this->params['outside_ip']);
                     //更新数据库存
                     if ($bool) {
+
                         $dat['ip'] = $out_ip;
                         $where =  'hotel_id='.$hid;
                         $hextModel = new \Common\Model\HotelExtModel();

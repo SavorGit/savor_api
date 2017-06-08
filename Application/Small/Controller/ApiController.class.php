@@ -59,8 +59,8 @@ class ApiController extends CommonController{
                 $this->valid_fields = array('hotelId'=>'1001','type'=>'1001');
                 break;
             case 'getDeviceSql':
-                $this->is_verify = 1;
-                $this->valid_fields = array('curVersion'=>'1001','downloadVersion'=>'1001');
+                $this->is_verify = 0;
+                $this->valid_fields = array('curVersion'=>'1000','downloadVersion'=>'1000');
                 break;
         }
         $this->upgrade_type_arr = array('wwar'=>1,'apk'=>2);
@@ -606,6 +606,9 @@ $val['switch_time'];
     public function getDeviceSql(){
         $curVersion = $this->params['curVersion'];              //小平台当前版本号
         $downloadVersion = $this->params['downloadVersion'];    //下载版本号
+        if(empty($curVersion) && empty($downloadVersion)){
+            $this->to_back(array());
+        }
         $m_device_sql = new \Common\Model\DeviceSqlModel();
         $upgrade_sql_list = $m_device_sql->getUpgradeSql($curVersion, $downloadVersion,$type = 1);
         if(!empty($upgrade_sql_list)){

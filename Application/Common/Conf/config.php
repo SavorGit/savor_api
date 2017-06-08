@@ -12,7 +12,7 @@ $route_rules = array(
 
 	'/^small\/api\/getSetTopBox\/(\d{0,10})$/'=>'small/api/getHotelBox?hotelid=:1',
 	'/^small\/api\/getTelevision\/(\d{0,10})$/'=>'small/api/getHotelTv?hotelid=:1',
-	'/^small\/api\/getUpgradeVersion\/(\d{0,10})\/(wwar)$/' =>'small/api/getUpgradeVersion?hotelId=:1&type=:2',
+	'/^small\/api\/getUpgradeVersion\/(\d{0,10})\/(wwar|apk)$/' =>'small/api/getUpgradeVersion?hotelId=:1&type=:2',
 
 
 );

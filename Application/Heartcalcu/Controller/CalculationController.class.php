@@ -24,6 +24,7 @@ class CalculationController extends CommonController{
         $bool = false;
         $r_data = $this->params['intranet_ip'].'*'.$hid;
         $bool = $redis->set($out_ip, $r_data);
+
         $hotelModel = new \Common\Model\HotelModel();
         if ($bool) {
             //hotelid不为空
@@ -34,7 +35,8 @@ class CalculationController extends CommonController{
                     $remote_id = $hotel_info['remote_id'];
                     if($remote_id != $teamviewer_id) {
                         $team_ar['remote_id'] = $teamviewer_id;
-                        $hotelModel->save($team_ar);
+                        $where =  'id='.$hid;
+                        $hotelModel->saveData($team_ar, $where);
                     }
                 }
                 $h_res = $redis->keys($hid);

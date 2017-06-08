@@ -37,6 +37,7 @@ class ReportController extends CommonController{
         $data['logo']     = I('get.logo','','trim');
         $data['intranet_ip'] = I('get.ip','','trim');  //内网ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
+        $data['teamviewer_id'] = I('get.teamviewer_id'); //远程id
         
         if(empty($data['mac'])){
             $this->to_back(10004);
@@ -81,7 +82,7 @@ class ReportController extends CommonController{
         $ret['smallWebVersion'] = $data['war'];
         $ret['outerIp'] = $data['outside_ip'];
         $ret['innerIp'] = $data['intranet_ip'];
-        
+        $ret['teamviewer_id'] = $data['teamviewer_id'];
         $this->to_back($ret);
     }
     /**

@@ -18,10 +18,10 @@ class AdsModel extends Model
 	}
 
 	/**
-	 * getadvInfo È¡³ö¾ÆÂ¥Ëù¶ÔÓ¦½ÚÄ¿µ¥µÄËùÓÐÐû´«Æ¬
+	 * getadvInfo È¡ï¿½ï¿½ï¿½ï¿½Â¥ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬
 	 * @access public
-	 * @param $hotelid ¾ÆÂ¥id
-	 * @param $menuid  ¾ÆÂ¥¶ÔÓ¦²Ëµ¥id
+	 * @param $hotelid ï¿½ï¿½Â¥id
+	 * @param $menuid  ï¿½ï¿½Â¥ï¿½ï¿½Ó¦ï¿½Ëµï¿½id
 	 * @return mixed
 	 */
 	public function getadvInfo($hotelid, $menuid){
@@ -57,26 +57,26 @@ class AdsModel extends Model
 	}
 
 	/**
-	 * getadsInfo È¡³ö¾ÆÂ¥Ëù¶ÔÓ¦½ÚÄ¿µ¥µÄËùÓÐads
+	 * getadsInfo È¡ï¿½ï¿½ï¿½ï¿½Â¥ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ads
 	 * @access public
-	 * @param $hotelid ¾ÆÂ¥id
-	 * @param $menuid  ¾ÆÂ¥¶ÔÓ¦²Ëµ¥id
+	 * @param $hotelid ï¿½ï¿½Â¥id
+	 * @param $menuid  ï¿½ï¿½Â¥ï¿½ï¿½Ó¦ï¿½Ëµï¿½id
 	 * @return mixed
 	 */
 	public function getadsInfo($menuid){
 		$field = "media.id AS id,
 				media.oss_addr AS name,
 				media.md5 AS md5,
-				'easyMd5' AS md5Type,
+				'easyMd5' AS md5_type,
 				case ads.type
 				when 1 then 'ads'
 				when 2 then 'pro'
 				when 3 then 'adv' END AS type,
-				media.oss_addr AS ossPath,
+				media.oss_addr AS oss_path,
 				media.duration AS duration,
 				media.surfix AS suffix,
-				item.sort_num AS sortNum,
-				item.ads_name AS chineseName";
+				item.sort_num AS `order`,
+				item.ads_name AS chinese_name";
 		$sql = "select ".$field;
 
 		$sql .= "  FROM savor_ads ads
@@ -94,10 +94,10 @@ class AdsModel extends Model
 
 
 	/**
-	 * getproInfo È¡³ö¾ÆÂ¥Ëù¶ÔÓ¦½ÚÄ¿µ¥µÄËùÓÐ½ÚÄ¿
+	 * getproInfo È¡ï¿½ï¿½ï¿½ï¿½Â¥ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½Ä¿
 	 * @access public
-	 * @param $hotelid ¾ÆÂ¥id
-	 * @param $menuid  ¾ÆÂ¥¶ÔÓ¦²Ëµ¥id
+	 * @param $hotelid ï¿½ï¿½Â¥id
+	 * @param $menuid  ï¿½ï¿½Â¥ï¿½ï¿½Ó¦ï¿½Ëµï¿½id
 	 * @return mixed
 	 */
 	public function getproInfo($menuid){

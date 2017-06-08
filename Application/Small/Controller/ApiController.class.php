@@ -63,7 +63,7 @@ class ApiController extends CommonController{
                 $this->valid_fields = array('curVersion'=>'1001','downloadVersion'=>'1001');
                 break;
         }
-        $this->upgrade_type_arr = array('wwar'=>1);
+        $this->upgrade_type_arr = array('wwar'=>1,'apk'=>2);
         parent::_init_();
     }
 
@@ -559,18 +559,20 @@ $val['switch_time'];
         if(!key_exists($type, $this->upgrade_type_arr)){
             $this->to_back('16102');
         }
+        $device_type = $this->upgrade_type_arr[$type];
         $data =  array();
         $m_device_upgrade = new \Common\Model\DeviceUpgradeModel();
         if(empty($versionCode)){
             //如果versioncode没有，那就返回savor_device_upgrade表里面满足hotelId和type的最新一条数据对应的版本信息
-            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid);
+            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid,'',$device_type);
         }else {
             //如果versioncode不为空  根据酒楼id检测最新一条 是否在  min  和max之间
-            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid,$versionCode);
+            $upgrade_info = $m_device_upgrade->getLastSmallPtInfo($hotelid,$versionCode,$device_type);
         }
         if(!empty($upgrade_info)){
             $m_device_version = new \Common\Model\DeviceVersionModel();
-            $device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],1);
+            
+            $device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],$device_type);
             //print_r($device_version_info);exit;
             if(!empty($device_version_info)){
                 $result['period'] = $device_version_info['version_code'];

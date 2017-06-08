@@ -577,7 +577,7 @@ $val['switch_time'];
             if(!empty($device_version_info)){
                 $result['period'] = $device_version_info['version_code'];
                 
-                $data['id'] = $device_version_info['id'];
+                $data['id'] = intval($device_version_info['id']);
                 $ttp = explode('/', $device_version_info['oss_addr']);
                 $data['name']     = $ttp[2];
                 $data['md5'] = $device_version_info['md5'];

@@ -87,9 +87,18 @@ class ApiController extends CommonController{
         if($boxs['box_num']){
             $box_str = join(',', $boxs['box']);
             $where['box_id'] = array('IN',"$box_str");
-            $result = $tvModel->getList($where, $field);
+            $res = $tvModel->getList($where, $field);
         }
-        $this->to_back($result);
+        if($res){
+            foreach ($res as $vk=>$val) {
+                foreach($val as $rk=>$rv){
+                    if(is_numeric($rv)){
+                        $res[$vk][$rk] = intval($rv);
+                    }
+                }
+            }
+        }
+        $this->to_back($res);
     }
 
     public function getHotelBox(){
@@ -135,9 +144,11 @@ class ApiController extends CommonController{
         update_time";
         $map['hotel_id'] = $hotelid;
         $room_arr = $romModel->getWhere($map, $field);
+
         if(!empty($room_arr)){
             $room_arr =  $this->changeroomList($room_arr);
         }
+
         $this->to_back($room_arr);
     }
 
@@ -159,6 +170,15 @@ class ApiController extends CommonController{
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
         $data = array();
         $data= $ho_arr[0];
+        foreach($data as $dk=>$dv){
+            $data['hotel_id'] = intval($data['hotel_id']);
+            $data['area_id'] = intval($data['area_id']);
+            $data['key_point'] = intval($data['key_point']);
+            $data['state'] = intval($data['state']);
+            $data['state_reason'] = intval($data['state_reason']);
+            $data['flag'] = intval($data['flag']);
+            $data['hotel_box_type'] = intval($data['hotel_box_type']);
+        }
         $data['sys_config_json']= $sys_vol_arr;
         $this->to_back($data);
     }
@@ -178,6 +198,15 @@ class ApiController extends CommonController{
         $ho_arr = $hotelModel->getHotelMacInfo($hotelid);
         $data = array();
         $data= $ho_arr[0];
+        foreach($data as $dk=>$dv){
+            $data['hotel_id'] = intval($data['hotel_id']);
+            $data['area_id'] = intval($data['area_id']);
+            $data['key_point'] = intval($data['key_point']);
+            $data['state'] = intval($data['state']);
+            $data['state_reason'] = intval($data['state_reason']);
+            $data['flag'] = intval($data['flag']);
+            $data['hotel_box_type'] = intval($data['hotel_box_type']);
+        }
         $this->to_back($data);
     }
 
@@ -208,33 +237,54 @@ class ApiController extends CommonController{
         switch ($d_type) {
             case 1:
                 //广告
-                $this->getadsData($hotelid);
+               $dap = $this->getadsData($hotelid);
                 break;
                 //宣传片
             case 2:
-                $this->getadvData($hotelid);
+                $dap = $this->getadvData($hotelid);
                 break;
                 //节目
             case 3:
-                $this->getproData($hotelid);
+                $dap = $this->getproData($hotelid);
                 break;
                 //手机点播
             case 4:
-                $this->getvodData($hotelid);
+                $dap =  $this->getvodData($hotelid);
                 break;
                 //logo数据
             case 5:
-                $this->getlogoData($hotelid);
+                $dap =  $this->getlogoData($hotelid);
                 break;
                 //loading图l
             case 6:
-                $this->getloadData($hotelid);
+                $dap =  $this->getloadData($hotelid);
                 break;
             default:
                 break;
 
         }
-
+        if(!empty($dap) && is_array($dap)){
+            foreach($dap as $dk=>$dv){
+                if(is_string($dv)) {
+                   if (isset($dap['menu_hotel_id'])) {
+                       $dap['menu_hotel_id'] = intval($dap['menu_hotel_id']);
+                   }
+                } else if(is_array($dv)) {
+                    foreach($dv as $rk=>$rv){
+                        if (isset($rv['id'])) {
+                            $dap[$dk][$rk]['id'] = intval($rv['id']);
+                        }
+                        if (isset($rv['duration'])) {
+                            $dap[$dk][$rk]['duration'] = intval($rv['duration']);
+                        }
+                        if (isset($rv['order'])) {
+                            $dap[$dk][$rk]['order'] = intval($rv['order']);
+                        }
+                    }
+                }
+            }
+        }
+        $this->to_back($dap);
     }
 
 
@@ -256,7 +306,7 @@ class ApiController extends CommonController{
         $data['pub_time'] = $per_arr[0]['pubTime'];
         $data['menu_hotel_id'] = $per_arr[0]['menuHotelId'];
         $data['media_list'] = $ads_arr;
-        $this->to_back($data);
+        return $data;
 
     }
 
@@ -279,7 +329,7 @@ class ApiController extends CommonController{
         $data['pub_time'] = $per_arr[0]['pubTime'];
         $data['menu_hotel_id'] = $per_arr[0]['menuHotelId'];
         $data['media_list'] = $adv_arr;
-        $this->to_back($data);
+        return $data;
 
     }
 
@@ -303,7 +353,7 @@ class ApiController extends CommonController{
         $data['pub_time'] = $per_arr[0]['pubTime'];
         $data['menu_hotel_id'] = $per_arr[0]['menuHotelId'];
         $data['media_list'] = $pro_arr;
-        $this->to_back($data);
+        return $data;
 
     }
 
@@ -329,7 +379,7 @@ class ApiController extends CommonController{
         $data = array();
         $data['period'] = $version;
         $data['media_list'] = $ver_arr;
-        $this->to_back($data);
+        return $data;
 
     }
 
@@ -348,7 +398,7 @@ class ApiController extends CommonController{
         $data = array();
         $data['period'] = $load_arr[0]['version'];
         $data['media_list'] = $load_arr;
-        $this->to_back($data);
+        return $data;
     }
 
 
@@ -366,7 +416,7 @@ class ApiController extends CommonController{
         $data = array();
         $data['period'] = $logo_arr[0]['version'];
         $data['media_list'] = $logo_arr;
-        $this->to_back($data);
+        return $data;
     }
 
 
@@ -390,10 +440,16 @@ class ApiController extends CommonController{
                     if($k == $val['room_type']){
                         $res[$vk]['room_type']  = $v;                                   }
                 }
+                foreach($val as $rk=>$rv){
+                    if(is_numeric($rv)){
+                        $res[$vk][$rk] = intval($rv);
+                    }
+                }
 
             }
 
         }
+
         return $res;
         //如果是空
     }
@@ -513,6 +569,12 @@ class ApiController extends CommonController{
 $val['switch_time'];
                 } else {
                     $res[$vk]['switch_time'] = $da['switch_time'];
+                }
+
+                foreach($val as $rk=>$rv){
+                    if(is_numeric($rv)){
+                        $res[$vk][$rk] = intval($rv);
+                    }
                 }
             }
         }

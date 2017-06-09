@@ -444,6 +444,9 @@ class ApiController extends CommonController{
                     if(is_numeric($res[$vk][$rk])){
                         $res[$vk][$rk] = intval($rv);
                     }
+                    if($res[$vk][$rk] === null){
+                        $res[$vk][$rk] = '';
+                    }
                 }
 
             }

@@ -47,9 +47,9 @@ return array(
     'small_platform_hotel_error'=>'该酒楼为非正常状态',
     'small_platform_report_error'=>'上报数据入库失败',
     'small_platform_report_type_error'=>'上报数据类型错误',
-    'hotel_not_set_small_plat_upgrade_version'=>'该酒楼未设置小平台升级包',
-    'have_not_this_small_plat_upgrade_war'=>'小平台升级包不存在',
-
+    'hotel_not_set_small_plat_upgrade_version'=>'该酒楼未设置升级包',
+    'have_not_this_small_plat_upgrade_war'=>'升级包不存在',
+    'have_not_upgrade_sql'=>'无升级sql',
     //客户端获取投屏酒楼距离接口
     'lat_illegal'=>'纬度值非法',
     'lng_illegal'=>'经度值非法',

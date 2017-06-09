@@ -441,8 +441,11 @@ class ApiController extends CommonController{
                         $res[$vk]['room_type']  = $v;                                   }
                 }
                 foreach($val as $rk=>$rv){
-                    if(is_numeric($rv)){
+                    if(is_numeric($res[$vk][$rk])){
                         $res[$vk][$rk] = intval($rv);
+                    }
+                    if($res[$vk][$rk] === null){
+                        $res[$vk][$rk] = '';
                     }
                 }
 
@@ -574,6 +577,9 @@ $val['switch_time'];
                 foreach($val as $rk=>$rv){
                     if(is_numeric($rv)){
                         $res[$vk][$rk] = intval($rv);
+                    }
+                    if($res[$vk][$rk] === null){
+                        $res[$vk][$rk] = '';
                     }
                 }
             }

@@ -9,8 +9,8 @@ class FirstuseController extends BaseController{
     function _init_() {
         switch(ACTION_NAME) {
             case 'pushData':
-                $this->is_verify = 1;
-                $this->valid_fields = array('hotelId'=>1001);
+                $this->is_verify = 0;
+               // $this->valid_fields = array('hotelId'=>1001);
                 break;
         }
         parent::_init_();
@@ -27,9 +27,9 @@ class FirstuseController extends BaseController{
         if(!empty($info)){
             $this->to_back(20001);
         }
+        $data['location'] = $traceinfo['location'];
         $data['hotel_id'] = $this->params['hotelId'];
         $data['create_time'] = date('Y-m-d H:i:s',time());
-        
         $rt = $m_first->addData($data);
         if($rt){
             $this->to_back(10000);

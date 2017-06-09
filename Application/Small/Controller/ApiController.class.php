@@ -578,6 +578,9 @@ $val['switch_time'];
                     if(is_numeric($rv)){
                         $res[$vk][$rk] = intval($rv);
                     }
+                    if($res[$vk][$rk] === null){
+                        $res[$vk][$rk] = '';
+                    }
                 }
             }
         }

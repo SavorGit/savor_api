@@ -82,7 +82,7 @@ class ReportController extends CommonController{
         $ret['smallWebVersion'] = $data['war'];
         $ret['outerIp'] = $data['outside_ip'];
         $ret['innerIp'] = $data['intranet_ip'];
-        $ret['teamviewer_id'] = $data['teamviewer_id'];
+        /* $ret['teamviewer_id'] = $data['teamviewer_id']; */
         $this->to_back($ret);
     }
     /**

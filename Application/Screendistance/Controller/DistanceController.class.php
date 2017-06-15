@@ -134,8 +134,18 @@ class DistanceController extends BaseController{
             } else {
                 $field = 'id,name,addr,gps';
                 $hotel_distance_arr = $hotelModel->getHotelDis($field, $hotelid);
+                $hotelinfo = $hotelModel->field($field)->find($hotelid);
+                $hotelgp_arr = explode(',',$hotelinfo['gps']);
+                $hotelinfo['lat'] = $hotelgp_arr['1'];
+                $hotelinfo['lng'] = $hotelgp_arr['0'];
+                $hotelinfo['dis'] = 0;
+                unset($hotelinfo['gps']);
                 if($hotel_distance_arr){
                     foreach($hotel_distance_arr as $rk=>$rdv){
+                        if($rdv['id'] == $hotelid){
+                            unset($hotel_distance_arr[$rk]);
+                            continue;
+                        }
                         $gp_arr = explode(',',$rdv['gps']);
                         $hotel_distance_arr[$rk]['lat'] = $gp_arr[1];
                         $hotel_distance_arr[$rk]['lng'] = $gp_arr[0];
@@ -143,15 +153,7 @@ class DistanceController extends BaseController{
 
                     }
                     $h_ar = $this->calculateDistance($hotel_distance_arr, $lat, $lng);
-                    foreach($h_ar as $h=>$hv) {
-                        if($hv['id'] == $hotelid){
-                            $get_hr  = $hv;
-                            $get_hr['dis'] = 0;
-                            unset($h_ar[$h]);
-                            break;
-                        }
-                    }
-                    array_unshift($h_ar, $get_hr);
+                    array_unshift($h_ar, $hotelinfo);
                     $redis->set($dkey, json_encode($h_ar),86400);
                 }
             }

@@ -70,8 +70,14 @@ class HotelModel extends Model
      * @return mixed
      */
     public function getHotelDis($field,$hotelid){
-        $sql ="select $field
+        if($hotelid == 7 || $hotelid == 53){
+            $sql ="select $field
                from savor_hotel where area_id = (select area_id  from savor_hotel where id= $hotelid) and hotel_box_type=3 and state=1 and flag=0";
+        }else{
+            $sql ="select $field
+               from savor_hotel where area_id = (select area_id  from savor_hotel where id= $hotelid) and id not in (7,53) and hotel_box_type=3 and state=1 and flag=0";
+        }
+
         $result =  $this->query($sql);
         return $result;
     }
@@ -84,7 +90,7 @@ class HotelModel extends Model
      */
     public function getAllDis($field){
         $sql ="select $field
-               from savor_hotel where  hotel_box_type=3 and state=1 and flag=0";
+               from savor_hotel where id not in (7,53) and   hotel_box_type=3 and state=1 and flag=0";
         $result =  $this->query($sql);
         return $result;
     }

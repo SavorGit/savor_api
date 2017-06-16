@@ -179,8 +179,9 @@ class ApiController extends CommonController{
         $data['state_reason'] = intval($data['state_reason']);
         $data['flag'] = intval($data['flag']);
         $data['hotel_box_type'] = intval($data['hotel_box_type']);
-       
-        $data['sys_config_json']= $sys_vol_arr;
+        
+        $tmp = json_encode($sys_vol_arr,JSON_UNESCAPED_UNICODE);
+        $data['sys_config_json']= $tmp;
         $this->to_back($data);
     }
 

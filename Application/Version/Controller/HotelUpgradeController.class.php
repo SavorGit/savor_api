@@ -24,7 +24,6 @@ class HotelUpgradeController extends BaseController{
         $upgrade_info = $m_version_upgrade->getLastOneByDevice($device_type);
         
         $data = array();
-        $data = array();
         if($versioncode<= $upgrade_info['version_max'] && $versioncode>= $upgrade_info['version_min']){
             $now_version = $upgrade_info['version'];
             $m_version = new \Common\Model\DeviceVersionModel();

@@ -170,15 +170,16 @@ class ApiController extends CommonController{
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
         $data = array();
         $data= $ho_arr[0];
-        foreach($data as $dk=>$dv){
-            $data['hotel_id'] = intval($data['hotel_id']);
-            $data['area_id'] = intval($data['area_id']);
-            $data['key_point'] = intval($data['key_point']);
-            $data['state'] = intval($data['state']);
-            $data['state_reason'] = intval($data['state_reason']);
-            $data['flag'] = intval($data['flag']);
-            $data['hotel_box_type'] = intval($data['hotel_box_type']);
-        }
+        //print_r($data);exit;
+        $data['install_date'] = $data['install_date'].' 00:00:00';
+        $data['hotel_id'] = intval($data['hotel_id']);
+        $data['area_id'] = intval($data['area_id']);
+        $data['key_point'] = intval($data['key_point']);
+        $data['state'] = intval($data['state']);
+        $data['state_reason'] = intval($data['state_reason']);
+        $data['flag'] = intval($data['flag']);
+        $data['hotel_box_type'] = intval($data['hotel_box_type']);
+       
         $data['sys_config_json']= $sys_vol_arr;
         $this->to_back($data);
     }

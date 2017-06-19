@@ -22,8 +22,8 @@ class FirstuseController extends BaseController{
         $traceinfo = $this->traceinfo;
         $data = array();
         $data['device_id'] = $traceinfo['deviceid'];
-        /* $m_first = new \Common\Model\FirstuseModel();
-        $info = $m_first->getOne($data);
+        $m_first = new \Common\Model\FirstuseModel();
+        /*$info = $m_first->getOne($data);
         if(!empty($info)){
             $this->to_back(20001);
         } */

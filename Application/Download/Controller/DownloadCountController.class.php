@@ -27,7 +27,7 @@ class DownloadCountController extends BaseController{
         
         //去重
         $m_downd_count = new \Common\Model\DownloadCountModel();
-        $map = array();
+        /* $map = array();
         $map['hotelid'] = $hotelid;
         $map['deviceid'] = $traceinfo['deviceid'];
         
@@ -35,7 +35,7 @@ class DownloadCountController extends BaseController{
         $count_info = $m_downd_count->getInfo('id',$map);
         if(!empty($count_info)){
             $this->to_back('14004');
-        }
+        } */
         
         $download_source_arr = C('DOWLOAD_SOURCE_ARR');  //下载来源数组
         $client_arr = array('android'=>1,'ios'=>2);;              //客户端数组

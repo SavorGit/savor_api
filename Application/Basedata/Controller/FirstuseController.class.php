@@ -22,11 +22,11 @@ class FirstuseController extends BaseController{
         $traceinfo = $this->traceinfo;
         $data = array();
         $data['device_id'] = $traceinfo['deviceid'];
-        $m_first = new \Common\Model\FirstuseModel();
+        /* $m_first = new \Common\Model\FirstuseModel();
         $info = $m_first->getOne($data);
         if(!empty($info)){
             $this->to_back(20001);
-        }
+        } */
         $data['location'] = $traceinfo['location'];
         $data['hotel_id'] = $this->params['hotelId'];
         $data['create_time'] = date('Y-m-d H:i:s',time());

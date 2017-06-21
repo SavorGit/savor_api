@@ -83,7 +83,7 @@ class ApiController extends CommonController{
             $this->to_back(10007);
         }
         $boxs = $hotelModel->getStatisticalNumByHotelId($hotelid,'box');
-        $field = " id as tv_id,tv_brand,tv_size,tv_source,box_id, flag,state";
+        $field = " id as tv_id,tv_brand as tv_Brand,tv_size,tv_source,box_id, flag,state";
         if($boxs['box_num']){
             $box_str = join(',', $boxs['box']);
             $where['box_id'] = array('IN',"$box_str");

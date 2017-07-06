@@ -35,7 +35,7 @@ class HomeModel extends Model{
             and con.type=3
             and home.is_demand=1
             and media.oss_addr is not null
-            and (((con.bespeak=1 or con.bespeak=2) and con.bespeak_time > NOW()) or con.bespeak=0 or con.bespeak is NULL)
+            and (((con.bespeak=1 or con.bespeak=2) and 1=1) or con.bespeak=0 or con.bespeak is NULL)
         ";
 		$result = $this->query($sql);
 		return $result;

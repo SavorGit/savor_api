@@ -20,6 +20,8 @@ class UserCollectionController extends BaseController{
      */
     public function addMyCollection(){
         $d_time = date("Y-m-d H:i:s");
+        $dat = array();
+        $dp = array();
         $save = array();
         $traceinfo = $this->traceinfo;
         $save['device_id'] = $traceinfo['deviceid'];

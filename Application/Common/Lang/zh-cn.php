@@ -53,4 +53,9 @@ return array(
     //客户端获取投屏酒楼距离接口
     'lat_illegal'=>'纬度值非法',
     'lng_illegal'=>'经度值非法',
+    //用户收藏接口
+    'deviceid_error'=>'用户设备号不可为空',
+    'artid_error'=>'文章id非法',
+    'addmycollection_insert_fail'=>'收藏插入失败',
+    'addmycollection_update_fail'=>'收藏更新失败',
 );

@@ -53,6 +53,11 @@ return array(
 	//客户端获取投屏酒楼距离接口
 		'17001'=>'lat_illegal',
 		'17002'=>'lng_illegal',
+		//用户收藏接口
+		'18001'=>'deviceid_error',
+		'18002'=>'artid_error',
+		'18003'=>'addmycollection_insert_fail',
+		'18004'=>'addmycollection_update_fail',
 
 	),
 );

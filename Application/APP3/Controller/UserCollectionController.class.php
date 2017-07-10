@@ -51,6 +51,8 @@ class UserCollectionController extends BaseController{
                     }
                 } else{
                     $save['create_time'] = $d_time;
+                    $save['create_time'] = $d_time;
+                    $save['create_time'] = $d_time;
                     $save['update_time'] = $d_time;
                     $bool = $ucolModel->addData($save);
                     if($bool) {

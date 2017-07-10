@@ -40,6 +40,22 @@ class HomeModel extends Model{
 		$result = $this->query($sql);
 		return $result;
 	}
-
-
+	/**
+	 * @desc 获取所有投屏点播内容列表
+	 */
+	public function getAllDemandList($order = 'mh.sort_num asc'){
+	    $now_date = date('Y-m-d H:i:s',time());
+	    $sql ="select mc.id,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,
+	           mc.content_url as contentUrl,mh.is_demand as canPlay,mc.tx_url as videoUrl,
+	           mc.share_title as shareTitle,mc.share_content as shareContent,mh.create_time as createTime, mh.update_time as updateTime,
+	           mc.type,mc.content,mc.media_id as mediaId,mh.sort_num as sort_num,sc.name as sourceName,sc.logo
+	    from savor_mb_home as mh
+	    left join savor_mb_content as mc on mh.content_id=mc.id
+	    left join savor_media as m on mc.media_id=m.id
+	    left join savor_article_source as sc on mc.source_id=sc.id
+	    
+	    where  mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order";
+	    $data = $this->query($sql);
+	    return $data;
+	}
 }

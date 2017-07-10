@@ -15,6 +15,9 @@ class UserCollectionController extends BaseController{
             case 'getLastCollectoinList':
                 $this->is_verify = 0;
                 break;
+            case 'getUpCollectoinList':
+                $this->is_verify = 0;
+                break;
         }
         parent::_init_();
     }
@@ -67,19 +70,10 @@ class UserCollectionController extends BaseController{
         $this->to_back($data);
     }
 
-
-    /**
-     * @desc 下拉二十条
-     */
-    public function getLastCollectoinList(){
-        $usecModel = new \Common\Model\UserCollectionModel();
-        $traceinfo = $this->traceinfo;
-        $deviceid = $traceinfo['deviceid'];
-        if(empty($save['device_id'])){
-            $data = 18001;
-        }
-        $result = $usecModel->getCollecitonList($deviceid, '',1);
-        $data = array();
+    public function changColList($result){
+        $rs = array();
+        $mbpictModel = new \Common\Model\MbPicturesModel();
+        $mediaModel  = new \Common\Model\MediaModel();
         //判断结果
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
@@ -88,7 +82,24 @@ class UserCollectionController extends BaseController{
                 }
             }
             $result[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
+            if(!empty($v['index_img_url'])){
+                $result[$key]['indexImgUrl'] = $this->getOssAddr($v['index_img_url']) ;
+            }
+
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if($v['type'] == 2){
+                //图集
+                $info =  $mbpictModel->where('contentid='.$v['artid'])->find();
+                $detail_arr = json_decode($info['detail'], true);
+                foreach($detail_arr as $dk=> $dr){
+                    $media_info = $mediaModel->getMediaInfoById($dr['aid']);
+                    $detail_arr[$dk]['pic_url'] =$media_info['oss_addr'];
+                    unset($detail_arr[$dk]['aid']);
+
+                }
+                $result[$key]['colTuJi'] = $detail_arr;
+
+            }
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
             if($v['type'] ==3){
                 if(empty($v['name'])){
@@ -101,32 +112,71 @@ class UserCollectionController extends BaseController{
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
-            $result[$key]['createTime'] = strtotime($v['createTime']);
-
-            /* if(!empty($createTime)){
-                $str_create_time = strtotime($v['createTime']);
-
-            } */
-            $ids[] = $v['id'];
-            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl']);
+            $result[$key]['ucreateTime'] = strtotime($v['ucreateTime']);
+            $ids[] = $v['colid'];
+            unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl'],$result[$key]['index_img_url']);
         }
-        if($result){
-            $num = count($result) -1 ;
-            $data['list'] = $result;
-            $data['time'] = $result[$num]['sort_num'];
-            $data['minTime'] = $result[0]['createTime'];
+        $rs['list'] = $result;
+        $rs['idstr'] = implode(',', $ids);
+        return $rs;
+    }
 
-            $data['maxTime'] = $result[$num]['sort_num'];
-            if(!empty($flag)){
-                $old_ids = explode(',', $flag);
-                $update_info = array_diff($ids, $old_ids);
-                $data['count'] = count($update_info);
 
+    /**
+     * @desc 下拉二十条
+     */
+    public function getLastCollectoinList(){
+        $usecModel = new \Common\Model\UserCollectionModel();
+        $traceinfo = $this->traceinfo;
+        $deviceid = $traceinfo['deviceid'];
+        if(empty($deviceid)){
+            $data = 18001;
+        }else{
+            $result = $usecModel->getCollecitonList($deviceid, '',1);
+            $res = $this->changColList($result);
+            $colist_arr = $res['list'];
+            if($res){
+                $data['list'] = $colist_arr;
+                $data['minTime'] = $colist_arr[0]['ucreateTime'];
+                $data['flag'] = $res['idstr'];
             }
-            $data['flag'] = implode(',', $ids);
         }
-
         $this->to_back($data);
     }
+
+
+    /**
+     * @desc 上拉二十条
+     */
+    public function getUpCollectoinList(){
+        $createTime = $this->params['createTime'];
+        $usecModel = new \Common\Model\UserCollectionModel();
+        $traceinfo = $this->traceinfo;
+        $deviceid = $traceinfo['deviceid'];
+        if(empty($deviceid)){
+            $data = 18001;
+        }else{
+            $result = $usecModel->getCollecitonList($deviceid, $createTime,2);
+            $res = $this->changColList($result);
+            $colist_arr = $res['list'];
+            //排序
+            foreach ($colist_arr as $key => $row) {
+                $col[$key] = $row['ucreateTime'];
+            }
+            array_multisort($col, SORT_ASC, $colist_arr);
+            foreach ($colist_arr as $key => $row) {
+                $ids[] = $row['colid'];
+            }
+            $res['idstr'] = implode(',', $ids);;
+            if($res){
+                $data['list'] = $colist_arr;
+                $data['minTime'] = $colist_arr[0]['ucreateTime'];
+                $data['flag'] = $res['idstr'];
+            }
+        }
+        $this->to_back($data);
+    }
+
+
 }
 

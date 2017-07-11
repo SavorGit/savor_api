@@ -17,6 +17,10 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotelId'=>'1001');
                 break;
+
+            case 'getsmachEggReward':
+                $this->is_verify = 0;
+                break;
         }
         parent::_init_();
     }
@@ -75,5 +79,14 @@ class ActivityController extends CommonController{
         }
         //抽奖banner图结束
         $this->to_back($data);
+    }
+
+    public function geteggAwardRecord(){
+        $url = get_oss_host();
+        $param = 'Display/geteggAwardRecord';
+        $dat = $url.$param;
+        $data['url'] = $dat;
+        $this->to_back($data);
+
     }
 }

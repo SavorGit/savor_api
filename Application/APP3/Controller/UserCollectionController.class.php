@@ -15,9 +15,6 @@ class UserCollectionController extends BaseController{
             case 'getLastCollectoinList':
                 $this->is_verify = 0;
                 break;
-            case 'getUpCollectoinList':
-                $this->is_verify = 0;
-                break;
         }
         parent::_init_();
     }
@@ -91,13 +88,13 @@ class UserCollectionController extends BaseController{
                 //图集
                 $info =  $mbpictModel->where('contentid='.$v['artid'])->find();
                 $detail_arr = json_decode($info['detail'], true);
-                foreach($detail_arr as $dk=> $dr){
+               /* foreach($detail_arr as $dk=> $dr){
                     $media_info = $mediaModel->getMediaInfoById($dr['aid']);
                     $detail_arr[$dk]['pic_url'] =$media_info['oss_addr'];
                     unset($detail_arr[$dk]['aid']);
 
-                }
-                $result[$key]['colTuJi'] = $detail_arr;
+                }*/
+                $result[$key]['colTuJi'] = count($detail_arr);
 
             }
             if(!empty($v['videoUrl'])) $result[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
@@ -127,14 +124,32 @@ class UserCollectionController extends BaseController{
      */
     public function getLastCollectoinList(){
         $usecModel = new \Common\Model\UserCollectionModel();
+        $createTime = $this->params['createTime'];
+        if(empty($createTime)){
+            $createTime = '';
+            $type = 1;
+        }else{
+            $createTime = date("Y-m-d H:i:s", $createTime);
+            $type = 2;
+        }
         $traceinfo = $this->traceinfo;
         $deviceid = $traceinfo['deviceid'];
         if(empty($deviceid)){
             $data = 18001;
         }else{
-            $result = $usecModel->getCollecitonList($deviceid, '',1);
+            $result = $usecModel->getCollecitonList($deviceid, $createTime,$type);
             $res = $this->changColList($result);
             $colist_arr = $res['list'];
+            foreach ($colist_arr as $key => $row) {
+                $col[$key] = $row['ucreateTime'];
+            }
+            array_multisort($col, SORT_ASC, $colist_arr);
+            if($type == 2){
+                foreach ($colist_arr as $key => $row) {
+                    $ids[] = $row['colid'];
+                }
+                $res['idstr'] = implode(',', $ids);
+            }
             if($res){
                 $data['list'] = $colist_arr;
                 $data['minTime'] = $colist_arr[0]['ucreateTime'];
@@ -150,6 +165,7 @@ class UserCollectionController extends BaseController{
      */
     public function getUpCollectoinList(){
         $createTime = $this->params['createTime'];
+        $createTime = date("Y-m-d H:i:s", $createTime);
         $usecModel = new \Common\Model\UserCollectionModel();
         $traceinfo = $this->traceinfo;
         $deviceid = $traceinfo['deviceid'];

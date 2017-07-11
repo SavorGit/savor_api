@@ -11,7 +11,7 @@ class UserCollectionModel extends Model{
 	 * @param $type        类型1：下拉加载  2：上拉加载
 	 * $param $limit       展示条数
 	 */
-	public function getCollecitonList($device_id,$createTime,$type=1,$limit= 3,$env=0){
+	public function getCollecitonList($device_id,$createTime,$type=1,$limit= 20,$env=0){
 			if($type ==1)
 			{
 				$where .= " and ucl.device_id = '".$device_id."' and ucl.state= 1 and mc.state=2";

@@ -140,10 +140,6 @@ class UserCollectionController extends BaseController{
             $result = $usecModel->getCollecitonList($deviceid, $createTime,$type);
             $res = $this->changColList($result);
             $colist_arr = $res['list'];
-            foreach ($colist_arr as $key => $row) {
-                $col[$key] = $row['ucreateTime'];
-            }
-            array_multisort($col, SORT_ASC, $colist_arr);
             if($type == 2){
                 foreach ($colist_arr as $key => $row) {
                     $ids[] = $row['colid'];
@@ -152,7 +148,8 @@ class UserCollectionController extends BaseController{
             }
             if($res){
                 $data['list'] = $colist_arr;
-                $data['minTime'] = $colist_arr[0]['ucreateTime'];
+                $len = count($colist_arr)-1;
+                $data['minTime'] = $colist_arr[$len]['ucreateTime'];
                 $data['flag'] = $res['idstr'];
             }
         }

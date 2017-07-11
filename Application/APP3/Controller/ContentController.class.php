@@ -19,7 +19,7 @@ class ContentController extends CommonController{
                 break;
             case 'getLastCategoryList':
                 $this->is_verify = 1;
-                $this->valid_fields  = array('cateid'=>'1001');
+                $this->valid_fields  = array('cateid'=>'1001','cateid'=>'1000');
                 break;
             case 'picDetail':
                 $this->is_verify = 1;
@@ -57,7 +57,7 @@ class ContentController extends CommonController{
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
-            $result[$key]['updateTime'] = date('Y.m.d',strtotime($v['updateTime']));
+            $result[$key]['updateTime'] = date('Y-m-d',strtotime($v['updateTime']));
             if($v['logo']){
                 $media_infos  = $m_media->getMediaInfoById($v['logo']);
                 $result[$key]['logo'] = $media_infos['oss_addr'];
@@ -96,6 +96,7 @@ class ContentController extends CommonController{
         if($res){
             $m_media = new \Common\Model\MediaModel();
             $m_Content = new \Common\Model\ContentModel();
+            $m_picturs = new \Common\Model\PicturesModel();
             foreach ($res as $vk=>$val) {
                 if($vk ==0){
                     $infos = $m_Content->getInfoById('index_img_url',$val['artid']);
@@ -122,12 +123,13 @@ class ContentController extends CommonController{
                     }
                 }
                 if($val['type']==2){
+                    $res[$vk]['colTuJi'] = $m_picturs->getCountPics($val['artid']);
                     unset($res[$vk]['contentURL']);
                 }
                 unset($res[$vk]['content']);
                 
                 
-                $res[$vk]['updateTime'] = date('Y.m.d',strtotime($val['updateTime']));
+                $res[$vk]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
                 foreach($val as $sk=>$sv){
                     if (empty($sv)) {
                         unset($res[$vk][$sk]);

@@ -11,4 +11,10 @@ class PicturesModel extends Model{
         $result = $this->query($sql);
         return $result[0];
     }
+    
+    public function getCountPics($contentid){
+        $info = $this->field('detail')->where('contentid='.$contentid)->find();
+        $details = json_decode($info['detail'],true);
+        return count($details);
+    }
 }

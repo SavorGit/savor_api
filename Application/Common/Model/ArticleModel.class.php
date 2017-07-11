@@ -253,5 +253,21 @@ $byt = $this->byteFormat($info['content-length'],'MB');
 		return $list;
 
 	}
+	/**
+	 * @desc 获取专题列表
+	 */
+	public function getSpecialList($where, $orders,  $size){
+	    
+	    $sql ="select mco.id artid,mco.sort_num, mco.title title,med.oss_addr name,
+		       mco.img_url imageURL, mco.content_url contentURL,
+		       mco.tx_url videoURL, mco.share_title shareTitle,
+		       mco.update_time updateTime,ars.name as sourceName,ars.logo
+	           from savor_mb_content mco
+	           left join savor_article_source as ars on mco.source_id = ars.id
+	           left join savor_media med on med.id = mco.media_id where  $where order by $orders limit $size";
+	    
+	    $list = $this->query($sql);
+	    return $list;
+	}
 
 }//End Class

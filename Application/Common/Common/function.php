@@ -58,6 +58,11 @@ function decrypt_data($data, $dejson = true, $key = '')
 	return $res_data;
 }
 
+function get_oss_host(){
+	$oss_host = C('CONTENT_HOST');
+	return $oss_host;
+}
+
 function create_token($deviceid = '', $user)
 {
 	$secrt = md5($deviceid . C('SIGN_KEY'));

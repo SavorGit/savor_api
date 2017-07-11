@@ -73,6 +73,7 @@ class SpecialController extends CommonController{
                     unset($result[$key][$sk]);
                 }
             }
+            $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
         }
         $this->to_back($result);
     }

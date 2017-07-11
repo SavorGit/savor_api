@@ -114,13 +114,12 @@ class UserCollectionController extends BaseController{
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl'],$result[$key]['index_img_url']);
         }
         $rs['list'] = $result;
-        $rs['idstr'] = implode(',', $ids);
         return $rs;
     }
 
 
     /**
-     * @desc 下拉二十条
+     * @desc 上下拉二十条
      */
     public function getLastCollectoinList(){
         $usecModel = new \Common\Model\UserCollectionModel();
@@ -139,56 +138,14 @@ class UserCollectionController extends BaseController{
         }else{
             $result = $usecModel->getCollecitonList($deviceid, $createTime,$type);
             $res = $this->changColList($result);
-            $colist_arr = $res['list'];
-            if($type == 2){
-                foreach ($colist_arr as $key => $row) {
-                    $ids[] = $row['colid'];
-                }
-                $res['idstr'] = implode(',', $ids);
-            }
             if($res){
-                $data['list'] = $colist_arr;
-                $len = count($colist_arr)-1;
-                $data['minTime'] = $colist_arr[$len]['ucreateTime'];
-                $data['flag'] = $res['idstr'];
+                $data['list'] = $res['list'];
             }
         }
         $this->to_back($data);
     }
 
 
-    /**
-     * @desc 上拉二十条
-     */
-    public function getUpCollectoinList(){
-        $createTime = $this->params['createTime'];
-        $createTime = date("Y-m-d H:i:s", $createTime);
-        $usecModel = new \Common\Model\UserCollectionModel();
-        $traceinfo = $this->traceinfo;
-        $deviceid = $traceinfo['deviceid'];
-        if(empty($deviceid)){
-            $data = 18001;
-        }else{
-            $result = $usecModel->getCollecitonList($deviceid, $createTime,2);
-            $res = $this->changColList($result);
-            $colist_arr = $res['list'];
-            //排序
-            foreach ($colist_arr as $key => $row) {
-                $col[$key] = $row['ucreateTime'];
-            }
-            array_multisort($col, SORT_ASC, $colist_arr);
-            foreach ($colist_arr as $key => $row) {
-                $ids[] = $row['colid'];
-            }
-            $res['idstr'] = implode(',', $ids);;
-            if($res){
-                $data['list'] = $colist_arr;
-                $data['minTime'] = $colist_arr[0]['ucreateTime'];
-                $data['flag'] = $res['idstr'];
-            }
-        }
-        $this->to_back($data);
-    }
 
 
 }

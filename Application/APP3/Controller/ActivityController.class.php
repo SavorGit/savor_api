@@ -25,6 +25,7 @@ class ActivityController extends CommonController{
      */
     public function smashEgg(){
         $hotel_id = $this->params['hotelId'];
+        $data = array();
         //抽奖banner图开始
         $m_box_award = new \Common\Model\BoxAwardModel();
         $now_date = date('Y-m-d');

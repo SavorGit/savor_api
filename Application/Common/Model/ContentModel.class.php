@@ -60,4 +60,8 @@ class ContentModel extends Model{
 		$result = $this->query($sql);
 		return $result;
 	}
+	public function getInfoById($field = '*' ,$id){
+	    $result = $this->field($field)->where('id='.$id)->find();
+	    return $result;
+	}
 }

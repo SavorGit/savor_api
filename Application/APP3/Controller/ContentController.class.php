@@ -68,50 +68,46 @@ class ContentController extends CommonController{
         $this->to_back($result);
     }
     /**
-     * @desc 分类文章列表
+     * @desc 创富、生活分类文章列表
      */
     public function getLastCategoryList(){
+        
         $artModel = new \Common\Model\ArticleModel();
-        $category_id = $this->params['cateid'];
-        $crtime = $this->params['createTime'];
-        $flag = $this->params['flag'];
+        $category_id = $this->params['cateid'];  //分类id
+        $sort_num = $this->params['sort_num'];
         $size = $this->params['numPerPage'] ? $this->params['numPerPage'] :20;
-        $start = $this->params['pageNum'] ? $this->params['pageNum'] : 1;
-        
-        $start  = ( $start-1 ) * $size;
-        
-        $orders = 'mco.id desc';
+   
+        $orders = 'mco.sort_num desc';
         $now = date("Y-m-d H:i:s",time());
         $where = '1=1';
-        $where .= ' AND mco.state = 2  and  mcat.state=1 and mco.hot_category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
-        $res = $artModel->getCapvideolist($where, $orders, $start, $size);
-
+        $where .= ' AND mco.state = 2   and mco.hot_category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
+        if($sort_num){
+            $where .=" and mco.sort_num<$sort_num ";
+        }
+        
+        $res = $artModel->getCateList($where, $orders,$size);
         $resu = $this->changeList($res);
-        foreach($resu as $v){
-            $ids[] = $v['id'];
-        }
-        if($resu){
-            $data['list'] = $resu;
-            $data['flag'] = implode(',', $ids);
-            $data['minTime'] = $resu[0]['createTime'];
-            $num = count($resu) -1;
-            $data['maxTime'] = $resu[$num]['createTime'];
-            if(!empty($flag)){
-                $old_ids = explode(',', $flag);
-            
-                $dif_arr = array_diff($ids, $old_ids);
-            
-                $data['count'] = count($dif_arr);
-            
-            }
-        }else{
-            $data['list'] = $resu;
-        }
+        
+       
+        $data = $resu;
         $this->to_back($data);
     }
     public function changeList($res){
         if($res){
+            $m_media = new \Common\Model\MediaModel();
+            $m_Content = new \Common\Model\ContentModel();
             foreach ($res as $vk=>$val) {
+                if($vk ==0){
+                    $infos = $m_Content->getInfoById('index_img_url',$val['artid']);
+                    
+                    $res[$vk]['indexImageUrl'] = $this->getOssAddr($infos['index_img_url']);
+                    
+                }
+                if($val['logo']){
+                    $logoMediainfo = $m_media->getMediaInfoById($val['logo']);
+                    $res[$vk]['logo'] = $logoMediainfo['oss_addr'];
+                }
+                
                 $res[$vk]['contentURL'] = $this->getContentUrl($val['contentURL']);
                 $res[$vk]['imageURL'] = $this->getOssAddr($val['imageURL']);
                 $res[$vk]['videoURL'] = substr($val['videoURL'], 0, strpos($val['videoURL'],'.f'));
@@ -125,8 +121,13 @@ class ContentController extends CommonController{
                         $res[$vk]['type'] = 4;
                     }
                 }
+                if($val['type']==2){
+                    unset($res[$vk]['contentURL']);
+                }
                 unset($res[$vk]['content']);
-                $res[$vk]['createTime'] = strtotime($val['createTime']);
+                
+                
+                $res[$vk]['updateTime'] = date('Y.m.d',strtotime($val['updateTime']));
                 foreach($val as $sk=>$sv){
                     if (empty($sv)) {
                         unset($res[$vk][$sk]);
@@ -143,7 +144,19 @@ class ContentController extends CommonController{
      */
     public function picDetail(){
         $content_id = $this->params['content_id'];   //文章id
-        $m_mb_content = new \Common\Model\ContentModel();
-        $m_mb_content->getPics($content_id);
+        $m_mb_pictures = new \Common\Model\PicturesModel();
+        $info = $m_mb_pictures->getPicsByContentId($content_id);
+        $info =  $info['detail'];
+        $m_media = new \Common\Model\MediaModel();
+        if(!empty($info)){
+            
+            $info= json_decode($info,true);
+            foreach($info as $key=>$v){
+                unset($info[$key]['aid']);
+                $media_info = $m_media->getMediaInfoById($v['aid']);
+                $info[$key]['pic_url'] = $media_info['oss_addr'];
+            }
+        }
+        $this->to_back($info);
     }
 }

@@ -57,6 +57,8 @@ class SpecialController extends BaseController{
         //$res = $artModel->getCateList($where, $orders,$size);
         $result = $artModel->getSpecialList($where, $orders,$size);
         //print_r($result);exit;
+        $m_user_collection = new \Common\Model\UserCollectionModel();
+        $deviceid = $this->traceinfo['deviceid'];
         foreach ($result as $key=>$val) {
             
             $result[$key]['imageURL'] = $this->getOssAddr($val['imageURL']) ;
@@ -74,6 +76,13 @@ class SpecialController extends BaseController{
                 }
             }
             $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
+            //是否收藏
+            $collect_info = $m_user_collection->getOne(array('device_id'=>$deviceid,'artid'=>$val['artid'],'state'=>'1'));
+            if(!empty($collect_info)){
+                $result[$key]['collected'] = 1;
+            }else {
+                $result[$key]['collected'] = 0;
+            }
         }
         $this->to_back($result);
     }

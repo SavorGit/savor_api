@@ -23,17 +23,23 @@ class RecommendController extends BaseController{
         $res = array();
         $articleModel = new  \Common\Model\ArticleModel();
         $vinfo = $articleModel->where('id='.$artid)->find();
+        if(empty($vinfo)){
+           $this->to_back(18002);
+        }
+        if($vinfo['state']!=2){
+            $this->to_back(18005);
+        }
 
         if($vinfo['hot_category_id'] == 3 && $vinfo['type'] == 2){
             $data = array();
         }else{
             $arinfo = $this->judgeRecommendInfo($vinfo);
-            foreach($arinfo as $dv){
-                $where = 'AND mc.id = '. $dv['id'];
-                $dap = $articleModel->getArtinfoById($where);
-                $res[] = $dap;
-            }
-            if($res){
+            if($arinfo){
+                foreach($arinfo as $dv){
+                    $where = 'AND mc.id = '. $dv['id'];
+                    $dap = $articleModel->getArtinfoById($where);
+                    $res[] = $dap;
+                }
                 $data = $this->changRecList($res);
             }else{
                 $data = array();
@@ -76,38 +82,43 @@ class RecommendController extends BaseController{
        // var_dump($order_tag);
         $order_tag_arr = explode(',', $order_tag);
         $tag_len = count($order_tag_arr);
-        $where = "1=1 and state = 2  and hot_category_id = ".$vinfo['hot_category_id']." and type = ".$vinfo['type'];
-        $field = 'id,title,order_tag';
-        $dat = array();
-        $dap = array();
-        $data = array();
-        for($i=$tag_len;$i>=1;$i--){
-            $art = $this->combination($order_tag_arr, $i);
-            foreach($art as $v){
-                $dat[] = $v;
+        if($tag_len == 0){
+            $dap = array();
+        }else{
+            $where = "1=1 and state = 2  and hot_category_id = ".$vinfo['hot_category_id']." and type = ".$vinfo['type'];
+            $field = 'id,title,order_tag';
+            $dat = array();
+            $dap = array();
+            $data = array();
+            for($i=$tag_len;$i>=1;$i--){
+                $art = $this->combination($order_tag_arr, $i);
+                foreach($art as $v){
+                    $dat[] = $v;
+                }
+
             }
 
-        }
+            foreach($dat as $dk=>$dv) {
+                $info = $articleModel->getRecommend($where, $field, $dv);
+                foreach($info as $v){
+                    if($v['id'] == $vinfo['id']){
+                        continue;
+                    }
+                    if(!array_key_exists($v['id'], $dap)){
+                        $dap[$v['id']] = $v;
+                        $mend_len--;
+                    }
 
-        foreach($dat as $dk=>$dv) {
-            $info = $articleModel->getRecommend($where, $field, $dv);
-            foreach($info as $v){
-                if($v['id'] == $vinfo['id']){
-                    continue;
                 }
-                if(!array_key_exists($v['id'], $dap)){
-                    $dap[$v['id']] = $v;
-                    $mend_len--;
+                if($mend_len <=0 ){
+                    break;
                 }
-
             }
             if($mend_len <=0 ){
-                break;
+                $dap = array_slice($dap, 0, 5);
             }
         }
-        if($mend_len <=0 ){
-            $dap = array_slice($dap, 0, 5);
-        }
+
         return $dap;
     }
 

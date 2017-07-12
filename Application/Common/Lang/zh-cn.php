@@ -56,6 +56,7 @@ return array(
     //用户收藏接口
     'deviceid_error'=>'用户设备号不可为空',
     'artid_error'=>'文章id非法',
+    'artid_not_check'=>'文章id未审核通过',
     'addmycollection_insert_fail'=>'收藏插入失败',
     'addmycollection_update_fail'=>'收藏更新失败',
     //创富生活接口

@@ -58,6 +58,7 @@ return array(
 		'18002'=>'artid_error',
 		'18003'=>'addmycollection_insert_fail',
 		'18004'=>'addmycollection_update_fail',
+		'18005'=>'artid_not_check',
 	    //创富生活接口
 	    '19001'=>'hot_category_id_error',
 

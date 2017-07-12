@@ -140,6 +140,8 @@ class UserCollectionController extends BaseController{
             $res = $this->changColList($result);
             if($res){
                 $data['list'] = $res['list'];
+            }else{
+                $data['list'] = array();
             }
         }
         $this->to_back($data);

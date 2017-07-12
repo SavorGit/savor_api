@@ -6,8 +6,8 @@
  */
 namespace APP3\Controller;
 use Think\Controller;
-use Common\Controller\CommonController;
-class SpecialController extends CommonController{
+use Common\Controller\BaseController as BaseController;
+class SpecialController extends BaseController{
     /**
      * 构造函数
      */

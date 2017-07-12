@@ -6,8 +6,8 @@
  */
 namespace APP3\Controller;
 use Think\Controller;
-use Common\Controller\CommonController;
-class ActivityController extends CommonController{
+use Common\Controller\BaseController as BaseController;
+class ActivityController extends BaseController{
     /**
      * 构造函数
      */

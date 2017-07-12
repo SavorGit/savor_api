@@ -6,8 +6,9 @@
  */
 namespace APP3\Controller;
 use Think\Controller;
-use \Common\Controller\CommonController as CommonController;
-class ContentController extends CommonController{
+use \Common\Controller\BaseController as BaseController;
+class ContentController extends BaseController{
+    var $cateArr;
     /**
      * 构造函数
      */
@@ -26,6 +27,7 @@ class ContentController extends CommonController{
                 $this->valid_fields = array('content_id'=>'1001');
                 break;
         }
+        $this->cateArr = array(1,2);  //1：创富 2：生活
         parent::_init_();
     }
     /**
@@ -74,9 +76,12 @@ class ContentController extends CommonController{
         
         $artModel = new \Common\Model\ArticleModel();
         $category_id = $this->params['cateid'];  //分类id
+        if(!in_array($category_id, $this->cateArr)){
+            $this->to_back('19001');
+        }
         $sort_num = $this->params['sort_num'];
         $size = $this->params['numPerPage'] ? $this->params['numPerPage'] :20;
-   
+        
         $orders = 'mco.sort_num desc';
         $now = date("Y-m-d H:i:s",time());
         $where = '1=1';
@@ -85,6 +90,7 @@ class ContentController extends CommonController{
             $where .=" and mco.sort_num<$sort_num ";
         }
         
+        
         $res = $artModel->getCateList($where, $orders,$size);
         $resu = $this->changeList($res);
         
@@ -92,11 +98,14 @@ class ContentController extends CommonController{
         $data = $resu;
         $this->to_back($data);
     }
-    public function changeList($res){
+    private function changeList($res){
+        $deviceid = $this->traceinfo['deviceid'];
+       
         if($res){
             $m_media = new \Common\Model\MediaModel();
             $m_Content = new \Common\Model\ContentModel();
             $m_picturs = new \Common\Model\PicturesModel();
+            $m_user_collection = new \Common\Model\UserCollectionModel();
             foreach ($res as $vk=>$val) {
                 if($vk ==0){
                     $infos = $m_Content->getInfoById('index_img_url',$val['artid']);
@@ -135,7 +144,12 @@ class ContentController extends CommonController{
                         unset($res[$vk][$sk]);
                     }
                 }
-    
+                $collect_info = $m_user_collection->getOne(array('device_id'=>$deviceid,'artid'=>$val['artid'],'state'=>'1'));
+                if(!empty($collect_info)){
+                    $res[$vk]['collected'] = 1;
+                }else {
+                    $res[$vk]['collected'] = 0;
+                }
             }
         }
         return $res;

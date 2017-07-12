@@ -251,6 +251,40 @@ $byt = $this->byteFormat($info['content-length'],'MB');
 	    $result = $this->where(array('category_id'=>$category_id))->count();
 	    return $result;
 	}
+    /**
+     * @desc 获取创富生活列表
+     */
+	 public function getCateList($where, $orders,  $size)
+	{
 
+
+		$field = 'mco.id artid,mco.sort_num, mco.type,mco.content, mco.title title,med.oss_addr name, 
+		          mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, 
+		          mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, 
+		          mco.update_time updateTime,mco.media_id mediaId,ars.name as sourceName,ars.logo';
+		$table = 'savor_mb_content mco';
+		$joina = ' left join savor_article_source as ars on mco.source_id = ars.id';
+		$joinb = 'left join savor_media med on med.id = mco.media_id';
+		$acModel = M();
+		$list = $acModel->table($table)->field($field)->join($joina)->join($joinb)->where($where)->order($orders)->limit($size)->select();
+		return $list;
+
+	}
+	/**
+	 * @desc 获取专题列表
+	 */
+	public function getSpecialList($where, $orders,  $size){
+	    
+	    $sql ="select mco.id artid,mco.sort_num, mco.title title,med.oss_addr name,
+		       mco.img_url imageURL, mco.content_url contentURL,
+		       mco.tx_url videoURL, mco.share_title shareTitle,
+		       mco.update_time updateTime,ars.name as sourceName,ars.logo
+	           from savor_mb_content mco
+	           left join savor_article_source as ars on mco.source_id = ars.id
+	           left join savor_media med on med.id = mco.media_id where  $where order by $orders limit $size";
+	    
+	    $list = $this->query($sql);
+	    return $list;
+	}
 
 }//End Class

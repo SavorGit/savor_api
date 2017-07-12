@@ -58,4 +58,6 @@ return array(
     'artid_error'=>'文章id非法',
     'addmycollection_insert_fail'=>'收藏插入失败',
     'addmycollection_update_fail'=>'收藏更新失败',
+    //创富生活接口
+    'hot_category_id_error'=>'分类id参数错误',
 );

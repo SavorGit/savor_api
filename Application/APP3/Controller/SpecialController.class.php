@@ -6,8 +6,8 @@
  */
 namespace APP3\Controller;
 use Think\Controller;
-use Common\Controller\CommonController;
-class SpecialController extends CommonController{
+use Common\Controller\BaseController as BaseController;
+class SpecialController extends BaseController{
     /**
      * 构造函数
      */
@@ -15,6 +15,10 @@ class SpecialController extends CommonController{
         switch(ACTION_NAME) {
             case 'getSpecialName':
                 $this->is_verify = 0;
+                break;
+            case 'getSpecialList':
+                $this->is_verify =0;
+                $this->valid_fields = array('sort_num'=>'1000');
                 break;
         }
         parent::_init_();
@@ -34,5 +38,52 @@ class SpecialController extends CommonController{
         }
        
         $this->to_back($data);
+    }
+    /**
+     * @desc 专题列表
+     */
+    public function getSpecialList(){
+        $sort_num = $this->params['sort_num'];
+        $category_id = 3;
+        $orders = 'mco.sort_num desc';
+        $now = date("Y-m-d H:i:s",time());
+        $where = '1=1';
+        $where .= ' AND mco.state = 2   and mco.hot_category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
+        if($sort_num){
+            $where .=" and mco.sort_num<$sort_num ";
+        }
+        $artModel = new \Common\Model\ArticleModel();
+        $size = $this->params['numPerPage'] ? $this->params['numPerPage'] :20;
+        //$res = $artModel->getCateList($where, $orders,$size);
+        $result = $artModel->getSpecialList($where, $orders,$size);
+        //print_r($result);exit;
+        $m_user_collection = new \Common\Model\UserCollectionModel();
+        $deviceid = $this->traceinfo['deviceid'];
+        foreach ($result as $key=>$val) {
+            
+            $result[$key]['imageURL'] = $this->getOssAddr($val['imageURL']) ;
+            $result[$key]['contentURL'] = $this->getContentUrl($val['contentURL']);
+            if(!empty($val['name'])){
+                
+                    $ttp = explode('/', $val['name']);
+                    $result[$key]['name'] = $ttp[2];
+                
+                }
+            unset($result[$key]['name']);
+            foreach($val as $sk=>$sv){
+                if (empty($sv)) {
+                    unset($result[$key][$sk]);
+                }
+            }
+            $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
+            //是否收藏
+            $collect_info = $m_user_collection->getOne(array('device_id'=>$deviceid,'artid'=>$val['artid'],'state'=>'1'));
+            if(!empty($collect_info)){
+                $result[$key]['collected'] = 1;
+            }else {
+                $result[$key]['collected'] = 0;
+            }
+        }
+        $this->to_back($result);
     }
 }

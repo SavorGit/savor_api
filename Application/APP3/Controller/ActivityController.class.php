@@ -6,8 +6,8 @@
  */
 namespace APP3\Controller;
 use Think\Controller;
-use Common\Controller\CommonController;
-class ActivityController extends CommonController{
+use Common\Controller\BaseController as BaseController;
+class ActivityController extends BaseController{
     /**
      * 构造函数
      */
@@ -29,6 +29,7 @@ class ActivityController extends CommonController{
      */
     public function smashEgg(){
         $hotel_id = $this->params['hotelId'];
+        $data = array();
         //抽奖banner图开始
         $m_box_award = new \Common\Model\BoxAwardModel();
         $now_date = date('Y-m-d');

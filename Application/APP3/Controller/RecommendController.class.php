@@ -164,6 +164,7 @@ class RecommendController extends BaseController{
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
+            $result[$key]['updateTime'] = date("Y-m-d",strtotime($result[$key]['updateTime']));
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl'],$result[$key]['index_img_url']);
         }
         return $result;

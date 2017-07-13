@@ -15,8 +15,33 @@ class UserCollectionController extends BaseController{
             case 'getLastCollectoinList':
                 $this->is_verify = 0;
                 break;
+            case 'getCollectoinState':
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
+    }
+
+
+    public function getCollectoinState(){
+        $usecModel = new \Common\Model\UserCollectionModel();
+        $traceinfo = $this->traceinfo;
+        $deviceid = $traceinfo['deviceid'];
+        $data = array();
+        if(empty($deviceid)){
+            $data = 18001;
+        }else {
+            $map['device_id'] = $deviceid;
+            $map['artid'] = $this->params['articleId'];
+            $result = $usecModel->getOne($map);
+            if($result){
+                $data['state'] = $result['state'];
+            }else{
+                $data = 18002;
+            }
+
+        }
+        $this->to_back($data);
     }
     /**
      * @desc 收藏取肖收藏
@@ -140,6 +165,8 @@ class UserCollectionController extends BaseController{
             $res = $this->changColList($result);
             if($res){
                 $data['list'] = $res['list'];
+            }else{
+                $data['list'] = array();
             }
         }
         $this->to_back($data);

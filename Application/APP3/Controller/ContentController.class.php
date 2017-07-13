@@ -105,7 +105,7 @@ class ContentController extends BaseController{
             $m_media = new \Common\Model\MediaModel();
             $m_Content = new \Common\Model\ContentModel();
             $m_picturs = new \Common\Model\PicturesModel();
-            $m_user_collection = new \Common\Model\UserCollectionModel();
+            
             foreach ($res as $vk=>$val) {
                 if($vk ==0){
                     $infos = $m_Content->getInfoById('index_img_url',$val['artid']);
@@ -133,7 +133,7 @@ class ContentController extends BaseController{
                 }
                 if($val['type']==2){
                     $res[$vk]['colTuJi'] = $m_picturs->getCountPics($val['artid']);
-                    unset($res[$vk]['contentURL']);
+                    
                 }
                 unset($res[$vk]['content']);
                 
@@ -144,16 +144,11 @@ class ContentController extends BaseController{
                         unset($res[$vk][$sk]);
                     }
                 }
-                $collect_info = $m_user_collection->getOne(array('device_id'=>$deviceid,'artid'=>$val['artid'],'state'=>'1'));
-                if(!empty($collect_info)){
-                    $res[$vk]['collected'] = 1;
-                }else {
-                    $res[$vk]['collected'] = 0;
-                }
+                
             }
         }
         return $res;
-        //如果是空
+       
     }
     /**
      * @desc 图集

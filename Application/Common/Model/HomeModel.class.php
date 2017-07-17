@@ -54,7 +54,7 @@ class HomeModel extends Model{
 	    left join savor_media as m on mc.media_id=m.id
 	    left join savor_article_source as sc on mc.source_id=sc.id
 	    
-	    where  mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order";
+	    where  mc.media_id >0 and mh.is_demand=1 and  mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order";
 	    $data = $this->query($sql);
 	    return $data;
 	}

@@ -27,7 +27,7 @@ class ContentController extends BaseController{
                 $this->valid_fields = array('content_id'=>'1001');
                 break;
         }
-        $this->cateArr = array(1,2);  //1：创富 2：生活
+        $this->cateArr = array(101,102);  //1：创富 2：生活
         parent::_init_();
     }
     /**

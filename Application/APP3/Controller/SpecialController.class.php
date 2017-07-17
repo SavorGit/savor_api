@@ -44,7 +44,7 @@ class SpecialController extends BaseController{
      */
     public function getSpecialList(){
         $sort_num = $this->params['sort_num'];
-        $category_id = 3;
+        $category_id = 103;
         $orders = 'mco.sort_num desc';
         $now = date("Y-m-d H:i:s",time());
         $where = '1=1';

@@ -30,7 +30,7 @@ class RecommendController extends BaseController{
             $this->to_back(18005);
         }
 
-        if($vinfo['hot_category_id'] == 3 && $vinfo['type'] == 2){
+        if($vinfo['hot_category_id'] == 103 && $vinfo['type'] == 2){
             $data = array();
         }else{
             $arinfo = $this->judgeRecommendInfo($vinfo);

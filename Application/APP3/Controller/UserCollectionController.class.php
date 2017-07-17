@@ -37,7 +37,7 @@ class UserCollectionController extends BaseController{
             if($result){
                 $data['state'] = $result['state'];
             }else{
-                $data = 18002;
+               $data['state'] = 0;
             }
 
         }

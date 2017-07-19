@@ -20,7 +20,8 @@ class UserCollectionModel extends Model{
 				$where .= " and ucl.device_id = '".$device_id."' and ucl.state= 1 and mc.state=2  and ucl.create_time < '".$createTime."'";
 				$order= " ucl.create_time desc";
 			}
-		$sql = "  select ucl.id colid, ucl.artid, ucl.create_time ucreateTime,ucl.state,m.oss_addr as name,mcat.name as category,mc.index_img_url,mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,mc.share_title as shareTitle,
+		$sql = "  select ucl.id colid,ucl.state collected
+, ucl.artid, ucl.create_time ucreateTime,ucl.state,m.oss_addr as name,mcat.name as category,mc.index_img_url,mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,mc.share_title as shareTitle,
 	           mc.share_content as shareContent,mc.type,mc.content,mc.media_id as mediaId,mc.create_time acreateTime,mc.source as sourceName,mcat.id categoryId  from  savor_user_collection ucl left join savor_mb_content mc on ucl.artid = mc.id left join savor_media m on mc.media_id = m.id left  join savor_mb_hot_category as mcat on mc.hot_category_id = mcat.id where 1=1 $where order by $order  limit $limit";
 		$result = $this->query($sql);
 		return $result;

@@ -45,7 +45,7 @@ class HomeModel extends Model{
 	 */
 	public function getAllDemandList($order = 'mh.sort_num asc'){
 	    $now_date = date('Y-m-d H:i:s',time());
-	    $sql ="select mc.id,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,
+	    $sql ="select mc.id artid,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,
 	           mc.content_url as contentUrl,mh.is_demand as canPlay,mc.tx_url as videoUrl,
 	           mc.share_title as shareTitle,mc.share_content as shareContent,mh.create_time as createTime, mh.update_time as updateTime,
 	           mc.type,mc.content,mc.media_id as mediaId,mh.sort_num as sort_num,sc.name as sourceName,sc.logo

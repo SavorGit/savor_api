@@ -26,6 +26,10 @@ class ContentController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('content_id'=>'1001');
                 break;
+            case 'isOnlie':
+                $this->is_verify = 1;
+                $this->valid_fields = array('artid'=>'1001');
+                break;
         }
         $this->cateArr = array(101,102);  //1：创富 2：生活
         parent::_init_();
@@ -171,5 +175,35 @@ class ContentController extends BaseController{
             $this->to_back(19002);
         }
         $this->to_back($info);
+    }
+    /**
+     * @desc 判断文章是否下线是否存在
+     */
+    public function isOnlie(){
+        $id = $this->params['artid'];
+        $m_content = new \Common\Model\ContentModel();
+        $map['id'] = $id;
+        $map['state'] =2;
+        $nums = $m_content->where($map)->count();
+        if(empty($nums)){
+            $this->to_back(19002);
+        }else {
+            $this->to_back(array());
+        }
+    }
+    /**
+     * @desc 判断点播文章是否可点播
+     */
+    public function isDemand(){
+        $id = $this->params['artid'];
+        $m_home = new \Common\Model\HomeModel();
+        $map['content_id'] = $id;
+        $map['state'] = 1;
+        $nums = $m_home->where($map)->count();
+        if(empty($nums)){
+            $this->to_back(19003);
+        }else {
+            $this->to_back(array());
+        }
     }
 }

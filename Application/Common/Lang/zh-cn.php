@@ -62,4 +62,5 @@ return array(
     //创富生活接口
     'hot_category_id_error'=>'分类id参数错误',
     'content_not_check_pass'=>'该文章不存在或未通过审核',
+    'not_demand_content'=>'该内容不可点播',
 );

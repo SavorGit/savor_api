@@ -62,5 +62,6 @@ return array(
 	    //创富生活接口
 	    '19001'=>'hot_category_id_error',
         '19002'=>'content_not_check_pass',
+	    '19003'=>'not_demand_content',
 	),
 );

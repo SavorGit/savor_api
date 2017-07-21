@@ -92,13 +92,13 @@ class ContentController extends BaseController{
         
         
         $res = $artModel->getCateList($where, $orders,$size);
-        $resu = $this->changeList($res);
+        $resu = $this->changeList($res,$sort_num);
         
        
         $data = $resu;
         $this->to_back($data);
     }
-    private function changeList($res){
+    private function changeList($res,$sort_num){
         $deviceid = $this->traceinfo['deviceid'];
        
         if($res){
@@ -107,7 +107,7 @@ class ContentController extends BaseController{
             $m_picturs = new \Common\Model\PicturesModel();
             
             foreach ($res as $vk=>$val) {
-                if($vk ==0){
+                if($vk ==0 && empty($sort_num)){
                     $infos = $m_Content->getInfoById('index_img_url',$val['artid']);
                     
                     $res[$vk]['indexImageUrl'] = $this->getOssAddr($infos['index_img_url']);
@@ -160,7 +160,9 @@ class ContentController extends BaseController{
         $info =  $info['detail'];
         $m_media = new \Common\Model\MediaModel();
         if(!empty($info)){
-            
+            if($info['state'] != 2){
+                $this->to_back();
+            }
             $info= json_decode($info,true);
             foreach($info as $key=>$v){
                 unset($info[$key]['aid']);

@@ -160,15 +160,15 @@ class ContentController extends BaseController{
         $info =  $info['detail'];
         $m_media = new \Common\Model\MediaModel();
         if(!empty($info)){
-            if($info['state'] != 2){
-                $this->to_back();
-            }
+            
             $info= json_decode($info,true);
             foreach($info as $key=>$v){
                 unset($info[$key]['aid']);
                 $media_info = $m_media->getMediaInfoById($v['aid']);
                 $info[$key]['pic_url'] = $media_info['oss_addr'];
             }
+        }else {
+            $this->to_back(19002);
         }
         $this->to_back($info);
     }

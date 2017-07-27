@@ -77,6 +77,30 @@ class SpecialController extends BaseController{
             $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
             
         }
-        $this->to_back($result);
+        if($result){
+            $count = count($result);
+            if($count<20){
+                $nextPage = 0;
+            }else{
+                $where = '1=1';
+                $where .= ' AND mco.state = 2   and mco.hot_category_id ='.$category_id. ' AND (((mco.bespeak=1 or mco.bespeak=2) AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
+                $order  = 'sort_num asc';
+                $info = $artModel->alias('mco')->where($where)->order($order)->limit(1)->find();
+                $sort_num_get = $info['sort_num'];
+                //获取传过去最后一条
+                $sort_pass_last = $result[$count-1]['sort_num'];
+                if($sort_num_get == $sort_pass_last){
+                    $nextPage = 0;
+                }else{
+                    $nextPage = 1;
+                }
+
+            }
+            $data['list'] = $result;
+            $data['nextpage'] = $nextPage;
+        }else{
+            $data = array();
+        }
+        $this->to_back($data);
     }
 }

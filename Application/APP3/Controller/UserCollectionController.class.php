@@ -161,10 +161,30 @@ class UserCollectionController extends BaseController{
         }else{
             $result = $usecModel->getCollecitonList($deviceid, $createTime,$type);
             $res = $this->changColList($result);
-            if($res){
+
+            if($result){
+                $count = count($result);
+                if($count<20){
+                    $nextPage = 0;
+                }else{
+                    $where = '1=1';
+                    $where .= " and ucl.device_id = '".$deviceid."' and ucl.state= 1 and mc.state=2 ";
+                    $order  = ' ucl.create_time asc';
+                    $info = $usecModel->alias('ucl') ->join(' savor_mb_content mc on ucl.artid = mc.id')->where($where)->order($order)->limit(1)->find();
+                    $art_num_get = $info['artid'];
+                    //获取传过去最后一条
+                    $art_pass_last = $result[$count-1]['artid'];
+                    if($art_pass_last == $art_num_get){
+                        $nextPage = 0;
+                    }else{
+                        $nextPage = 1;
+                    }
+
+                }
                 $data['list'] = $res['list'];
+                $data['nextpage'] = $nextPage;
             }else{
-                $data['list'] = array();
+                $data = array();
             }
         }
         $this->to_back($data);

@@ -28,7 +28,7 @@ class ArticleModel extends Model
 		foreach($sor_arr as $kv){
 			$set_str .= " AND find_in_set($kv, order_tag)";
 		}
-		$sql =" select $field from savor_mb_content where $where and order_tag !='' $set_str ";
+		$sql =" select $field from savor_mb_content where $where and order_tag !='' $set_str order by savor_mb_content.update_time desc";
 		$result = $this -> query($sql);
 		return  $result;
 	}

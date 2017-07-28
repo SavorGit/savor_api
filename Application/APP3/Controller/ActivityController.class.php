@@ -82,7 +82,8 @@ class ActivityController extends BaseController{
     }
 
     public function geteggAwardRecord(){
-        $url = get_oss_host();
+        //$url = get_oss_host();
+        $url = get_host_name();
         $param = 'Display/geteggAwardRecord';
         $dat = $url.$param;
         $data['url'] = $dat;

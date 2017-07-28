@@ -62,6 +62,10 @@ function get_oss_host(){
 	$oss_host = C('CONTENT_HOST');
 	return $oss_host;
 }
+function get_host_name(){
+    $oss_host = C('CONTENT_HOST');
+    return $oss_host;
+}
 
 function create_token($deviceid = '', $user)
 {

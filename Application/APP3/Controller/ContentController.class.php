@@ -63,7 +63,7 @@ class ContentController extends BaseController{
                 $result[$key]['type'] = 4;
             }
             $result[$key]['createTime'] = strtotime($v['createTime']);
-            $result[$key]['updateTime'] = date('Y-m-d',strtotime($v['updateTime']));
+            $result[$key]['updateTime'] = date('Y-m-d',strtotime($v['createTime']));   //用updateTime作为文章创建时间
             if($v['logo']){
                 $media_infos  = $m_media->getMediaInfoById($v['logo']);
                 $result[$key]['logo'] = $media_infos['oss_addr'];
@@ -165,7 +165,7 @@ class ContentController extends BaseController{
                 unset($res[$vk]['content']);
                 
                 
-                $res[$vk]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
+                $res[$vk]['updateTime'] = date('Y-m-d',strtotime($val['createTime']));
                 foreach($val as $sk=>$sv){
                     if (empty($sv)) {
                         unset($res[$vk][$sk]);

@@ -74,7 +74,7 @@ class SpecialController extends BaseController{
                     unset($result[$key][$sk]);
                 }
             }
-            $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['updateTime']));
+            $result[$key]['updateTime'] = date('Y-m-d',strtotime($val['createTime']));
             
         }
         if($result){

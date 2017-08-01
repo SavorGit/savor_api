@@ -684,7 +684,9 @@ $val['switch_time'];
         if(!empty($upgrade_sql_list)){
             $data = array();
             foreach($upgrade_sql_list as $key=>$v){
-                $data[] = $v['sql_lang'];
+                $data[$key]['sql_lang'] = $v['sql_lang'];
+                $data[$key]['version_name'] = $v['version_name'];
+                $data[$key]['version_code'] = $v['version_code'];
             }
             $this->to_back($data);
         }else {

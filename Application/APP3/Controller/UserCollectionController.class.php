@@ -132,8 +132,8 @@ class UserCollectionController extends BaseController{
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
-            $result[$key]['ucreateTime'] = strtotime($v['ucreateTime']);
-            $result[$key]['acreateTime'] = date('Y-m-d',strtotime($v['ucreateTime']));
+            $result[$key]['ucreateTime'] = date('Y-m-d',strtotime($v['ucreateTime']));
+            //$result[$key]['acreateTime'] = date('Y-m-d',strtotime($v['ucreateTime']));
             $minfo = $mediaModel->getMediaInfoById($v['logo']);
             $result[$key]['logo'] = $minfo['oss_addr'];
             $ids[] = $v['colid'];

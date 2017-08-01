@@ -166,10 +166,11 @@ class UserCollectionController extends BaseController{
                     $where = '1=1';
                     $where .= " and ucl.device_id = '".$deviceid."' and ucl.state= 1 and mc.state=2 ";
                     $order  = ' ucl.create_time asc';
-                    $info = $usecModel->alias('ucl') 
+                    /* $info = $usecModel->alias('ucl') 
                                       ->join(' savor_mb_content mc on ucl.artid = mc.id')
                                       ->join('savor_article_source as on mc.source_id =as.id ')
-                                      ->where($where)->order($order)->limit(1)->find();
+                                      ->where($where)->order($order)->limit(1)->find(); */
+                    $info = $usecModel->getOne($where,$order);
                     $art_num_get = $info['artid'];
                     //获取传过去最后一条
                     $art_pass_last = $result[$count-1]['artid'];

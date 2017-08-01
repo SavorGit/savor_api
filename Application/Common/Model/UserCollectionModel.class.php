@@ -54,9 +54,9 @@ class UserCollectionModel extends Model{
 		    return false;
 		}
 	}
-	public function getOne($map = array()){
+	public function getOne($map = array(),$order=''){
 	    if(!empty($map)){
-	        $result = $this->where($map)->find();
+	        $result = $this->where($map)->order($order)->find();
 	        return $result;
 	    }
 	}

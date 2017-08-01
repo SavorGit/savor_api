@@ -93,7 +93,7 @@ class UserCollectionController extends BaseController{
     public function changColList($result){
         $rs = array();
         $mbpictModel = new \Common\Model\MbPicturesModel();
-        $mediaModel  = new \Common\Model\MediaModel();
+        
         //判断结果
         foreach($result as $key=>$v){
             foreach($v as $kk=> $vv){
@@ -111,12 +111,7 @@ class UserCollectionController extends BaseController{
                 //图集
                 $info =  $mbpictModel->where('contentid='.$v['artid'])->find();
                 $detail_arr = json_decode($info['detail'], true);
-               /* foreach($detail_arr as $dk=> $dr){
-                    $media_info = $mediaModel->getMediaInfoById($dr['aid']);
-                    $detail_arr[$dk]['pic_url'] =$media_info['oss_addr'];
-                    unset($detail_arr[$dk]['aid']);
-
-                }*/
+              
                 $result[$key]['colTuJi'] = count($detail_arr);
 
             }
@@ -132,7 +127,7 @@ class UserCollectionController extends BaseController{
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
             }
-            $result[$key]['ucreateTime'] = date('Y-m-d',strtotime($v['ucreateTime']));
+            $result[$key]['ucreateTime'] = strtotime($v['ucreateTime']);
             
             $ids[] = $v['colid'];
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl'],$result[$key]['index_img_url']);

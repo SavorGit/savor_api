@@ -23,7 +23,7 @@ class UserCollectionModel extends Model{
 		$sql = "  select ucl.id colid,ucl.state collected, ucl.artid, ucl.create_time ucreateTime,ucl.state,
 		          m.oss_addr as name,mcat.name as category,mc.index_img_url,mc.title,mc.duration,mc.img_url as imgUrl,
 		          mc.content_url as contentUrl,mc.tx_url as videoUrl,mc.share_title as shareTitle,mc.share_content as shareContent,
-		          mc.type,mc.content,mc.media_id as mediaId,mc.create_time acreateTime,sas.name as sourceName,sas.logo,mcat.id categoryId  
+		          mc.type,mc.content,mc.media_id as mediaId,mc.create_time acreateTime,sas.name as sourceName,mcat.id categoryId  
 		          from  savor_user_collection ucl 
 		          left join savor_mb_content mc on ucl.artid = mc.id 
 		          left join savor_media m on mc.media_id = m.id 

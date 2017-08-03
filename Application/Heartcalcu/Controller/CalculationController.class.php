@@ -93,7 +93,7 @@ class CalculationController extends CommonController{
         $redis->select(14);
         $mac_str = $this->params['mac'].'*'.$this->params['clientid'];
         $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",$this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],$this->params['intranet_ip'],$this->params['period'],$this->params['demand'],$this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],date("YmdHis"));
-        $bool = $redis->set($mac_str, $txt, 604800);
+        $bool = $redis->set($mac_str, $txt, 2592000);
         return $bool;
     }
     

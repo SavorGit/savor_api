@@ -3,17 +3,30 @@ namespace APP3\Controller;
 
 use \Common\Controller\BaseController as BaseController;
 class RecommendController extends BaseController{
+ 	private $tvPlayRecommondNums;   //电视播放投屏底部推荐条数
+ 	private $picRecommondNums;      //图集推荐条数
+ 	private $imgTextRecommondNums;  //图文推荐条数
+ 	private $videoRecommondNums;     //视频推荐条数
  	/**
      * 构造函数
      */
     function _init_() {
-        $this->valid_fields=array('articleId'=>'1001');
+        
         switch(ACTION_NAME) {
             case 'getRecommendInfo':
                 $this->is_verify = 1;
+                $this->valid_fields=array('articleId'=>'1001');
+                break;
+            case 'getTvPlayRecommend':
+                $this->is_verify = 1;
+                $this->valid_fields = array('articleId'=>1001,'sort_num'=>1001);
                 break;
         }
         parent::_init_();
+        $this->tvPlayRecommondNums = 5;
+        $this->picRecommondNums    = 5;
+        $this->imgTextRecommondNums= 6;
+        $this->videoRecommondNums  = 5;
     }
 
     public function getRecommendInfo(){
@@ -23,14 +36,15 @@ class RecommendController extends BaseController{
         $res = array();
         $articleModel = new  \Common\Model\ArticleModel();
         $vinfo = $articleModel->where('id='.$artid)->find();
-        if(empty($vinfo)){
-           $this->to_back(18002);
+               
+        if(empty($vinfo)){//如果该文章被物理删除  获取最新的5条文章 不包含专题文章
+            //获取最新最新内容开始
+            $res = $articleModel->getRecmmondList(' hot_category_id !=103',' mc.sort_num desc '," limit $this->imgTextRecommondNums");
+            $data = $this->changRecList($res);
+            $this->to_back($data);
+            //获取最新最新内容结束
         }
-        if($vinfo['state']!=2){
-            $this->to_back(18005);
-        }
-
-        if($vinfo['hot_category_id'] == 103 && $vinfo['type'] == 2){
+        if($vinfo['hot_category_id'] == 103){
             $data = array();
         }else{
             $arinfo = $this->judgeRecommendInfo($vinfo);
@@ -74,18 +88,25 @@ class RecommendController extends BaseController{
 
     public function judgeRecommendInfo($vinfo){
         //推荐数
-        //var_dump($vinfo);
-        $mend_len = 5;
+        //print_r($vinfo);
+        if($vinfo['type']==0 || $vinfo['type'] ==1){//纯文本、图文
+            $mend_len = $this->imgTextRecommondNums;
+        }else if($vinfo['type']==2){//图集
+            $mend_len = $this->picRecommondNums;
+        }else if($vinfo['type']==3){//视频
+            $mend_len = $this->videoRecommondNums;
+        }
         $articleModel = new \Common\Model\ArticleModel();
         //获取推荐列表
+        
+        //根据相同的文章类型的标签获取推荐 开始
         $order_tag = $vinfo['order_tag'];
-       // var_dump($order_tag);
         $order_tag_arr = explode(',', $order_tag);
         $tag_len = count($order_tag_arr);
         if($tag_len == 0){
             $dap = array();
         }else{
-            $where = "1=1 and state = 2  and hot_category_id = ".$vinfo['hot_category_id']." and type = ".$vinfo['type'];
+            $where = "1=1 and state = 2   and type = ".$vinfo['type'];
             $field = 'id,title,order_tag';
             $dat = array();
             $dap = array();
@@ -97,7 +118,7 @@ class RecommendController extends BaseController{
                 }
 
             }
-
+            $nums = 0;
             foreach($dat as $dk=>$dv) {
                 $info = $articleModel->getRecommend($where, $field, $dv);
                 foreach($info as $v){
@@ -106,19 +127,52 @@ class RecommendController extends BaseController{
                     }
                     if(!array_key_exists($v['id'], $dap)){
                         $dap[$v['id']] = $v;
-                        $mend_len--;
                     }
-
                 }
-                if($mend_len <=0 ){
+                $nums = count($dap);
+                if($nums>=$mend_len){
                     break;
                 }
             }
-            if($mend_len <=0 ){
-                $dap = array_slice($dap, 0, 5);
+        }
+        //根据相同的文章类型的标签获取推荐 结束
+        //其他全分类查找推荐
+        if($nums<$mend_len){
+            if($tag_len){//如果该文章有标签
+                $where = "1=1 and state = 2  and hot_category_id in(101,102)";
+                $field = 'id,title,order_tag';
+                
+                foreach($dat as $dk=>$dv) {
+                    $info = $articleModel->getRecommend($where, $field, $dv);
+                    foreach($info as $v){
+                        if($v['id'] == $vinfo['id']){
+                            continue;
+                        }
+                        if(!array_key_exists($v['id'], $dap)){
+                            $dap[$v['id']] = $v;
+                        }
+                    }
+                    $nums = count($dap);
+                    if($nums>=$mend_len){
+                        break;
+                    }
+                }
             }
         }
-
+        //获取最新最新内容开始
+        if($nums<$mend_len){
+            $info = $articleModel->getList('',' sort_num desc',0,10,'id,title,order_tag');
+            foreach($info as $v){
+                if($v['id'] == $vinfo['id']){
+                    continue;
+                }
+                if(!array_key_exists($v['id'], $dap)){
+                    $dap[$v['id']] = $v;
+                }
+            }  
+        }
+        //获取最新最新内容结束
+        $dap = array_slice($dap, 0, $mend_len);
         return $dap;
     }
 
@@ -141,7 +195,7 @@ class RecommendController extends BaseController{
             $result[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
             if($v['type'] == 2){
                 //图集
-                $info =  $mbpictModel->where('contentid='.$v['id'])->find();
+                $info =  $mbpictModel->where('contentid='.$v['artid'])->find();
                 $detail_arr = json_decode($info['detail'], true);
                 /* foreach($detail_arr as $dk=> $dr){
                      $media_info = $mediaModel->getMediaInfoById($dr['aid']);
@@ -169,8 +223,81 @@ class RecommendController extends BaseController{
         }
         return $result;
     }
-
-
-
+    public function getTvPlayRecommend(){
+        $articleId = $this->params['articleId'];
+        $sort_num = $this->params['sort_num'];
+        $m_home = new \Common\Model\HomeModel();
+        $map['content_id'] = $articleId;
+        $map['state'] =1;
+        $nums = $m_home->where($map)->count();
+        
+        if(empty($nums)){
+            $this->to_back(19002);
+        }
+        $m_home = new \Common\Model\HomeModel();
+        $data = $remainInfos =array();
+        $count = $m_home->getAllDemandListNums();
+        
+        if(empty($count) || $count ==1){
+            $this->to_back($data);
+        }else if($count>1 && $count<6){
+            $data = $m_home->getAllDemandList($order='mh.sort_num asc',$limit = " limit $this->tvPlayRecommondNums");
+            
+        }else if($count>=6){
+            $where = ' and mh.sort_num>'.$sort_num;
+            $data = $m_home->getRecmmondDemand($where,$order='mh.sort_num asc'," limit $this->tvPlayRecommondNums");
+            $num = count($data);
+            
+            if($num<$this->tvPlayRecommondNums){
+                $remainNum = $this->tvPlayRecommondNums-$num;
+                $remainInfos = $m_home->getAllDemandList($order,$limit = " limit $remainNum");
+            }
+        }
+        $data =  array_merge($data,$remainInfos);
+        $m_media = new \Common\Model\MediaModel();
+        foreach($data as $key=>$v){
+            foreach($v as $kk=> $vv){
+                if(empty($vv)){
+                    unset($data[$key][$kk]);
+                }
+            }
+            $data[$key]['imageURL'] = $this->getOssAddr($v['imgUrl']) ;
+            $data[$key]['contentURL'] = $this->getContentUrl($v['contentUrl']);
+            if(!empty($v['videoUrl'])) $data[$key]['videoURL']   = substr($v['videoUrl'],0,strpos($v['videoUrl'], '.f')) ;
+            if($v['type'] ==3){
+                if(empty($v['name'])){
+                    unset($data[$key]['name']);
+                }else{
+                    $ttp = explode('/', $v['name']);
+                    $data[$key]['name'] = $ttp[2];
+                }
+            }
+            if($v['type'] ==3 && empty($v['content'])){
+                $data[$key]['type'] = 4;
+            }
+            $data[$key]['createTime'] = strtotime($v['createTime']);
+            $data[$key]['updateTime'] = date('Y-m-d',strtotime($v['createTime']));   //用updateTime作为文章创建时间
+            if($v['logo']){
+                $media_infos  = $m_media->getMediaInfoById($v['logo']);
+                $result[$key]['logo'] = $media_infos['oss_addr'];
+            }
+             
+            unset($data[$key]['content'],$data[$key]['contentUrl'],$data[$key]['videoUrl'],$data[$key]['imgUrl']);
+        }
+        $this->to_back($data);   
+    }
+    /**
+     * @desc 获取非正常文章的推荐列表
+     */
+    public function getAbnorRecommend(){
+        $aritcleId = $this->params['articleId'];
+        $m_content =  new \Common\Model\ContentModel();
+        $vinfo = $m_content->getInfoById('id,title,order_tag',$aritcleId);
+        if(!empty($vinfo) && !empty($vinfo['order_tag'])){//如果该文章还存在 并且有标签
+            
+        }else {//如果该文章存在但没有标签 或者被物理删除
+            
+        }
+    }
 }
 

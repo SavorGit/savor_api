@@ -43,7 +43,7 @@ class HomeModel extends Model{
 	/**
 	 * @desc 获取所有投屏点播内容列表
 	 */
-	public function getAllDemandList($order = 'mh.sort_num asc'){
+	public function getAllDemandList($order = 'mh.sort_num asc',$limit = ''){
 	    $now_date = date('Y-m-d H:i:s',time());
 	    $sql ="select mc.id artid,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,
 	           mc.content_url as contentUrl,mh.is_demand as canPlay,mc.tx_url as videoUrl,
@@ -54,8 +54,39 @@ class HomeModel extends Model{
 	    left join savor_media as m on mc.media_id=m.id
 	    left join savor_article_source as sc on mc.source_id=sc.id
 	    
-	    where  mc.media_id >0 and mh.is_demand=1 and  mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order";
+	    where  mc.media_id >0 and mh.is_demand=1 and  mc.bespeak_time<'".$now_date."' and mh.state=1 order by $order $limit";
 	    $data = $this->query($sql);
 	    return $data;
+	}
+	/**
+	 * @desc 获取所有投屏点播内容列表个数
+	 */
+	public function getAllDemandListNums(){
+	    $now_date = date('Y-m-d H:i:s',time());
+	    $sql ="select COUNT(mc.id) AS nums 
+	           from savor_mb_home as mh
+	           left join savor_mb_content as mc on mh.content_id=mc.id
+               where  mc.media_id >0 and mh.is_demand=1 and  mc.bespeak_time<'".$now_date."' and mh.state=1 ";
+	    $data = $this->query($sql);
+	    return $data[0]['nums'];
+	}
+	/**
+	 * @desc 根据条件获取点播内容
+	 */
+	public function getRecmmondDemand($where,$order = 'mh.sort_num asc',$limit=''){
+	    $now_date = date('Y-m-d H:i:s',time());
+	    $sql ="select mc.id artid,mc.title,m.oss_addr as name,mc.duration,mc.img_url as imgUrl,
+	           mc.content_url as contentUrl,mh.is_demand as canPlay,mc.tx_url as videoUrl,
+	           mc.share_title as shareTitle,mc.share_content as shareContent,mh.create_time as createTime, mh.update_time as updateTime,
+	           mc.type,mc.content,mc.media_id as mediaId,mh.sort_num as sort_num,sc.name as sourceName,sc.logo
+	    from savor_mb_home as mh
+	    left join savor_mb_content as mc on mh.content_id=mc.id
+	    left join savor_media as m on mc.media_id=m.id
+	    left join savor_article_source as sc on mc.source_id=sc.id
+	  
+	    where  mc.media_id >0 and mh.is_demand=1 and  mc.bespeak_time<'".$now_date."' and mh.state=1 $where order by $order $limit";
+	    $data = $this->query($sql);
+	    return $data;
+	    
 	}
 }

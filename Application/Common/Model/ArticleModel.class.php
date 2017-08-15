@@ -17,10 +17,22 @@ class ArticleModel extends Model
 	}
 
 	public function getArtinfoById($where){
-		$sql = "  select mc.order_tag,mc.id artid,m.oss_addr as name,mcat.name as category,mc.index_img_url,mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,mc.share_title as shareTitle,
+		$sql = "  select mc.order_tag,mc.id artid,m.oss_addr as name,mcat.name as category,mc.index_img_url,mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,mc.share_title as shareTitle,mc.hot_category_id categoryId,
 	           mc.share_content as shareContent,mc.type,mc.content,mc.media_id as mediaId,mc.create_time updateTime,aso.name as sourceName  from  savor_mb_content mc  left join savor_media m on mc.media_id = m.id left  join savor_mb_hot_category as mcat on mc.hot_category_id = mcat.id left join savor_article_source aso on aso.id=mc.source_id where 1=1 $where";
 		$result = $this->query($sql);
 		return $result[0];
+	}
+	public function getRecmmondList($where,$order,$limit){
+	    $sql = "select mc.order_tag,mc.id artid,m.oss_addr as name,mcat.name as category,mc.index_img_url,
+	            mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,
+	            mc.share_title as shareTitle,mc.share_content as shareContent,mc.type,mc.content,
+	            mc.media_id as mediaId,mc.create_time updateTime,aso.name as sourceName  
+	            from  savor_mb_content mc  
+	            left join savor_media m on mc.media_id = m.id 
+	            left  join savor_mb_hot_category as mcat on mc.hot_category_id = mcat.id 
+	            left join savor_article_source aso on aso.id=mc.source_id where 1=1 $where order by $order $limit";
+	    $result = $this->query($sql);
+	    return $result;
 	}
 
 	public function getRecommend($where, $field, $sor_arr){
@@ -40,11 +52,11 @@ class ArticleModel extends Model
 		return  $result;
 	}
 
-	public function getList($where, $order='id desc', $start=0,$size=20)
+	public function getList($where, $order='id desc', $start=0,$size=20,$field = '*')
 	{
 
 
-		$list = $this->where($where)
+		$list = $this->field($field)->where($where)
 			->order($order)
 			->limit($start,$size)
 			->select();
@@ -52,7 +64,6 @@ class ArticleModel extends Model
 		return $list;
 
 	}//End Function
-
 
 	/**
 	 * @param $table 表名

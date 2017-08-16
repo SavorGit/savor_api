@@ -204,29 +204,34 @@ class ReportController extends CommonController{
                 if(empty($loginfo)){
                     if($info['clientid'] ==1){
                         $hotelInfo = $m_hotel->getHotelInfoByMac($info['mac']);
-                        $data['area_id']    = $hotelInfo['area_id'];
-                        $data['area_name']  = $hotelInfo['area_name'];
-                        $data['hotel_id']   = $info['hotelId'];
-                        $data['hotel_name'] = $hotelInfo['hotel_name'];
-                        $data['mac']        = $info['mac'];
-                        $data['type']       = $info['clientid'];
-                        $data['date']       = $date;
-                        $data['hour'.$hour] = 1;
-                        $ret = $m_heart_all_log->addInfo($data);
+                        if($hotelInfo){
+                            $data['area_id']    = $hotelInfo['area_id'];
+                            $data['area_name']  = $hotelInfo['area_name'];
+                            $data['hotel_id']   = $info['hotelId'];
+                            $data['hotel_name'] = $hotelInfo['hotel_name'];
+                            $data['mac']        = $info['mac'];
+                            $data['type']       = $info['clientid'];
+                            $data['date']       = $date;
+                            $data['hour'.$hour] = 1;
+                            $ret = $m_heart_all_log->addInfo($data);
+                        }
+                        
                     }else if($info['clientid'] ==2){
                         $hotelInfo =  $m_box->getHotelInfoByBoxMac($info['mac']);
-                        $data['area_id']    = $hotelInfo['area_id'];
-                        $data['area_name']  = $hotelInfo['area_name'];
-                        $data['hotel_id']   = $info['hotelId'];
-                        $data['hotel_name'] = $hotelInfo['hotel_name'];
-                        $data['room_id']    = $hotelInfo['room_id'];
-                        $data['room_name']  = $hotelInfo['room_name'];
-                        $data['box_id']     = $hotelInfo['box_id'];
-                        $data['mac']        = $info['mac'];
-                        $data['type']       = $info['clientid'];
-                        $data['date']       = $date;
-                        $data['hour'.$hour] = 1;
-                        $ret = $m_heart_all_log->addInfo($data);
+                        if($hotelInfo){
+                            $data['area_id']    = $hotelInfo['area_id'];
+                            $data['area_name']  = $hotelInfo['area_name'];
+                            $data['hotel_id']   = $info['hotelId'];
+                            $data['hotel_name'] = $hotelInfo['hotel_name'];
+                            $data['room_id']    = $hotelInfo['room_id'];
+                            $data['room_name']  = $hotelInfo['room_name'];
+                            $data['box_id']     = $hotelInfo['box_id'];
+                            $data['mac']        = $info['mac'];
+                            $data['type']       = $info['clientid'];
+                            $data['date']       = $date;
+                            $data['hour'.$hour] = 1;
+                            $ret = $m_heart_all_log->addInfo($data);
+                        }           
                     } 
                 }else {
                     if($info['clientid'] ==1){

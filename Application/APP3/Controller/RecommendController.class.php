@@ -24,8 +24,8 @@ class RecommendController extends BaseController{
         }
         parent::_init_();
         $this->tvPlayRecommondNums = 5;
-        $this->picRecommondNums    = 5;
-        $this->imgTextRecommondNums= 6;
+        $this->picRecommondNums    = 6;
+        $this->imgTextRecommondNums= 5;
         $this->videoRecommondNums  = 5;
     }
 

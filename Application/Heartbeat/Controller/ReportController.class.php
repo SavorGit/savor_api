@@ -8,6 +8,7 @@ use \Common\Controller\CommonController as CommonController;
  * @desc 心跳上报
  */
 class ReportController extends CommonController{
+    private $countHeartlogPre ;
     /**
      * 构造函数
      */
@@ -18,7 +19,13 @@ class ReportController extends CommonController{
                 break;
             case 'syncData':
                 $this->is_verify = 0;
+                break;
+            case 'countHeartLog':
+                $this->is_verify = 0;
+                break;
+                
         }
+        $this->countHeartlogPre = 'heartlog_';
         parent::_init_();
     }
     
@@ -52,25 +59,13 @@ class ReportController extends CommonController{
             $this->to_back(10007);
         }
         $redis = SavorRedis::getInstance();
-        
         $redis->select(13);
-        //ip库0
-        /*$redis->select(0);
-        //$redis->flushadb();*/
         $redis->rpush('reportData', json_encode($data));
         
-        /*$str = '/heartcalcu/calculation/getHeartdata';
-        $url = C('HOST_NAME').$str;
-		 $curl = new Curl();
-		$data = json_encode($data);
-		$curl->post($url, $data); */
-       /*  $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        $output = curl_exec($ch);
-        curl_close($ch); */
+        $key = $this->countHeartlogPre.$data['mac'].'_'.date('YmdHis');
+        $data['date'] = date('YmdHis');
+        $redis->set($key, json_encode($data));
+        
         $ret = array();
         $ret['deviceType'] = $data['clientid'];
         $ret['mac'] = $data['mac'];
@@ -82,7 +77,6 @@ class ReportController extends CommonController{
         $ret['smallWebVersion'] = $data['war'];
         $ret['outerIp'] = $data['outside_ip'];
         $ret['innerIp'] = $data['intranet_ip'];
-        /* $ret['teamviewer_id'] = $data['teamviewer_id']; */
         $this->to_back($ret);
     }
     /**
@@ -187,5 +181,71 @@ class ReportController extends CommonController{
         }
   
         echo "数据入库成功"."\n";exit;
+    }
+    /**
+     * @desc 统计历史心跳上报数据
+     */
+    public function countHeartLog(){
+        $redis = SavorRedis::getInstance();
+        $redis->select(13);
+        $keys = $redis->keys($this->countHeartlogPre.'*');
+        $m_heart_all_log = new \Common\Model\HeartAllLogModel();
+        $m_hotel = new \Common\Model\HotelModel();
+        $m_box   = new \Common\Model\BoxModel();
+        foreach($keys as $v){
+            $data = array();
+            $info = $redis->get($v);
+            if(!empty($info)){
+                $info = json_decode($info,true);
+                $date = substr($info['date'],0,8);
+                $loginfo = $m_heart_all_log->getOne($info['mac'], $info['clientid'], $date);
+                $hour = substr($info['date'], 8,2);
+                
+                if(empty($loginfo)){
+                    if($info['clientid'] ==1){
+                        $hotelInfo = $m_hotel->getHotelInfoByMac($info['mac']);
+                        $data['area_id']    = $hotelInfo['area_id'];
+                        $data['area_name']  = $hotelInfo['area_name'];
+                        $data['hotel_id']   = $info['hotelId'];
+                        $data['hotel_name'] = $hotelInfo['hotel_name'];
+                        $data['mac']        = $info['mac'];
+                        $data['type']       = $info['clientid'];
+                        $data['date']       = $date;
+                        $data['hour'.$hour] = 1;
+                        $ret = $m_heart_all_log->addInfo($data);
+                    }else if($info['clientid'] ==2){
+                        $hotelInfo =  $m_box->getHotelInfoByBoxMac($info['mac']);
+                        $data['area_id']    = $hotelInfo['area_id'];
+                        $data['area_name']  = $hotelInfo['area_name'];
+                        $data['hotel_id']   = $info['hotelId'];
+                        $data['hotel_name'] = $hotelInfo['hotel_name'];
+                        $data['room_id']    = $hotelInfo['room_id'];
+                        $data['room_name']  = $hotelInfo['room_name'];
+                        $data['box_id']     = $hotelInfo['box_id'];
+                        $data['mac']        = $info['mac'];
+                        $data['type']       = $info['clientid'];
+                        $data['date']       = $date;
+                        $data['hour'.$hour] = 1;
+                        $ret = $m_heart_all_log->addInfo($data);
+                    } 
+                }else {
+                    if($info['clientid'] ==1){
+                        $where['mac'] = $info['mac'];
+                        $where['type']= $info['clientid'];
+                        $where['date']= $date;
+                        $ret = $m_heart_all_log->where($where)->setInc('hour'.$hour);
+                    }else if($info['clientid'] ==2){
+                        $where['mac'] = $info['mac'];
+                        $where['type']= $info['clientid'];
+                        $where['date']= $date;
+                        $ret = $m_heart_all_log->where($where)->setInc('hour'.$hour);
+                    }
+                }
+                if($ret){
+                    $redis->remove($v);
+                }
+            }
+        }
+        echo 'OK';
     }
 }

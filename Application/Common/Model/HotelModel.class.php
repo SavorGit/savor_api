@@ -24,10 +24,10 @@ class HotelModel extends Model
     }
 
     public function getHotelInfoById($hotelId){
-        $sql ="select he.mac_addr,h.name as hotel_name,a.id as area_id,a.name as area_name
+        $sql ="select he.mac_addr,h.name as hotel_name,a.id as area_id,a.region_name as area_name
                from savor_hotel as h
                left join savor_hotel_ext as he on h.id=he.hotel_id
-               left join savor_area as a on h.area_id =a.id where h.flag=0 and h.id=".$hotelId;
+               left join savor_area_info as a on h.area_id =a.id where h.flag=0 and h.id=".$hotelId;
         $result =  $this->query($sql);
         if($result){
             return $result[0];
@@ -64,7 +64,7 @@ class HotelModel extends Model
 
     /**
      * getHotelDis
-     * @desc »ñÈ¡Í¬Ò»ÇøÓòµÄËùÓÐ¾ÆÂ¥µÄ
+     * @desc ï¿½ï¿½È¡Í¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¾ï¿½Â¥ï¿½ï¿½
      * @param $field
      * @param $hotelid
      * @return mixed
@@ -84,8 +84,8 @@ class HotelModel extends Model
 
     /**
      * getAllDis
-     * @»ñÈ¡ËùÓÐ¾ÆÂ¥Êý¾Ý
-     * @param $field ×Ö¶Î
+     * @ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ð¾ï¿½Â¥ï¿½ï¿½ï¿½
+     * @param $field ï¿½Ö¶ï¿½
      * @return array
      */
     public function getAllDis($field){
@@ -119,7 +119,7 @@ class HotelModel extends Model
 
 
     /**
-     * getHotelInfo »ñÈ¡¾ÆÂ¥ÐÅÏ¢
+     * getHotelInfo ï¿½ï¿½È¡ï¿½ï¿½Â¥ï¿½ï¿½Ï¢
      * @access public
      * @param $hotelid
      * @return array

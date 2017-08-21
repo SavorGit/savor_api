@@ -103,10 +103,10 @@ class RecommendController extends BaseController{
         $order_tag = $vinfo['order_tag'];
         $order_tag_arr = explode(',', $order_tag);
         $tag_len = count($order_tag_arr);
-        if($tag_len == 0){
+        if($tag_len == 0 || empty($order_tag)){
             $dap = array();
         }else{
-            $where = "1=1 and state = 2   and type = ".$vinfo['type'];
+            $where = "1=1 and state = 2 and hot_category_id !=103  and type = ".$vinfo['type'];
             $field = 'id,title,order_tag';
             $dat = array();
             $dap = array();
@@ -161,7 +161,7 @@ class RecommendController extends BaseController{
         }
         //获取最新最新内容开始
         if($nums<$mend_len){
-            $info = $articleModel->getList('',' sort_num desc',0,10,'id,title,order_tag');
+            $info = $articleModel->getList('hot_category_id != 103',' sort_num desc',0,10,'id,title,order_tag');
             foreach($info as $v){
                 if($v['id'] == $vinfo['id']){
                     continue;

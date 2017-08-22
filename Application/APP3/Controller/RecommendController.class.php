@@ -39,7 +39,8 @@ class RecommendController extends BaseController{
                
         if(empty($vinfo)){//如果该文章被物理删除  获取最新的5条文章 不包含专题文章
             //获取最新最新内容开始
-            $res = $articleModel->getRecmmondList(' hot_category_id !=103',' mc.sort_num desc '," limit $this->imgTextRecommondNums");
+            $res = $articleModel->getRecmmondList(' and hot_category_id !=103',' mc.sort_num desc '," limit $this->imgTextRecommondNums");
+            
             $data = $this->changRecList($res);
             $this->to_back($data);
             //获取最新最新内容结束
@@ -217,6 +218,9 @@ class RecommendController extends BaseController{
             }
             if($v['type'] ==3 && empty($v['content'])){
                 $result[$key]['type'] = 4;
+            }
+            if($v['logo']){
+                $result[$key]['logo'] = $this->getOssAddr($v['logo']);
             }
             $result[$key]['updateTime'] = date("Y-m-d",strtotime($result[$key]['updateTime']));
             unset($result[$key]['content'],$result[$key]['contentUrl'],$result[$key]['videoUrl'],$result[$key]['imgUrl'],$result[$key]['index_img_url']);

@@ -39,7 +39,7 @@ class RecommendController extends BaseController{
                
         if(empty($vinfo)){//如果该文章被物理删除  获取最新的5条文章 不包含专题文章
             //获取最新最新内容开始
-            $res = $articleModel->getRecmmondList(' and hot_category_id !=103',' mc.sort_num desc '," limit $this->imgTextRecommondNums");
+            $res = $articleModel->getRecmmondList(' and hot_category_id !=103 and mc.state = 2 ',' mc.sort_num desc '," limit $this->imgTextRecommondNums");
             
             $data = $this->changRecList($res);
             $this->to_back($data);
@@ -162,7 +162,7 @@ class RecommendController extends BaseController{
         }
         //获取最新最新内容开始
         if($nums<$mend_len){
-            $info = $articleModel->getList('hot_category_id != 103',' sort_num desc',0,10,'id,title,order_tag');
+            $info = $articleModel->getList('hot_category_id != 103 and state =2',' sort_num desc',0,10,'id,title,order_tag');
             foreach($info as $v){
                 if($v['id'] == $vinfo['id']){
                     continue;

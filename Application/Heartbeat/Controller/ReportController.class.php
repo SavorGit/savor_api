@@ -199,7 +199,7 @@ class ReportController extends CommonController{
                 $info = json_decode($info,true);
                 $date = substr($info['date'],0,8);
                 $loginfo = $m_heart_all_log->getOne($info['mac'], $info['clientid'], $date);
-                $hour = substr($info['date'], 8,2);
+                $hour = intval(substr($info['date'], 8,2));
                 
                 if(empty($loginfo)){
                     if($info['clientid'] ==1){

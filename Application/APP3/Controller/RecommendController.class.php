@@ -23,12 +23,47 @@ class RecommendController extends BaseController{
                 break;
         }
         parent::_init_();
+        $actionname  = strtolower(ACTION_NAME);          //方法名称
+        $versionname = $this->traceinfo['versionname'];  //版本号
+        if($actionname =='getrecommendinfo' && $versionname =='3.0'){
+            $this->getRecommendInfo30();
+        }
         $this->tvPlayRecommondNums = 5;
         $this->picRecommondNums    = 6;
         $this->imgTextRecommondNums= 5;
         $this->videoRecommondNums  = 5;
     }
-
+    public function getRecommendInfo30(){
+        $artid = $this->params['articleId'];
+        //$artid = 2675;
+        $arinfo = array();
+        $res = array();
+        $articleModel = new  \Common\Model\ArticleModel();
+        $vinfo = $articleModel->where('id='.$artid)->find();
+        if(empty($vinfo)){
+            $this->to_back(18002);
+        }
+        if($vinfo['state']!=2){
+            $this->to_back(18005);
+        }
+        
+        if($vinfo['hot_category_id'] == 103 && $vinfo['type'] == 2){
+            $data = array();
+        }else{
+            $arinfo = $this->judgeRecommendInfo30($vinfo);
+            if($arinfo){
+                foreach($arinfo as $dv){
+                    $where = 'AND mc.id = '. $dv['id'];
+                    $dap = $articleModel->getArtinfoById($where);
+                    $res[] = $dap;
+                }
+                $data = $this->changRecList($res);
+            }else{
+                $data = array();
+            }
+        }
+        $this->to_back($data);
+    }
     public function getRecommendInfo(){
         $artid = $this->params['articleId'];
         //$artid = 2675;
@@ -86,7 +121,55 @@ class RecommendController extends BaseController{
 
         return $r;
     }
-
+    public function judgeRecommendInfo30($vinfo){
+        //推荐数
+        //var_dump($vinfo);
+        $mend_len = 5;
+        $articleModel = new \Common\Model\ArticleModel();
+        //获取推荐列表
+        $order_tag = $vinfo['order_tag'];
+        // var_dump($order_tag);
+        $order_tag_arr = explode(',', $order_tag);
+        $tag_len = count($order_tag_arr);
+        if($tag_len == 0){
+            $dap = array();
+        }else{
+            $where = "1=1 and state = 2  and hot_category_id = ".$vinfo['hot_category_id']." and type = ".$vinfo['type'];
+            $field = 'id,title,order_tag';
+            $dat = array();
+            $dap = array();
+            $data = array();
+            for($i=$tag_len;$i>=1;$i--){
+                $art = $this->combination($order_tag_arr, $i);
+                foreach($art as $v){
+                    $dat[] = $v;
+                }
+    
+            }
+    
+            foreach($dat as $dk=>$dv) {
+                $info = $articleModel->getRecommend($where, $field, $dv);
+                foreach($info as $v){
+                    if($v['id'] == $vinfo['id']){
+                        continue;
+                    }
+                    if(!array_key_exists($v['id'], $dap)){
+                        $dap[$v['id']] = $v;
+                        $mend_len--;
+                    }
+    
+                }
+                if($mend_len <=0 ){
+                    break;
+                }
+            }
+            if($mend_len <=0 ){
+                $dap = array_slice($dap, 0, 5);
+            }
+        }
+    
+        return $dap;
+    }
     public function judgeRecommendInfo($vinfo){
         //推荐数
         //print_r($vinfo);

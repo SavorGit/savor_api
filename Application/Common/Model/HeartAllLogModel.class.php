@@ -26,4 +26,9 @@ class HeartAllLogModel extends Model
 	    }
 	    return $ret;
 	}
+	public function updateInfo($mac,$type,$date,$filed){
+	    $sql ="update savor_heart_all_log set `$filed` = `$filed`+1 
+	           where `date`={$date} and  `mac`='{$mac}' and `type`={$type}";
+	    return $this->execute($sql);
+	}
 }

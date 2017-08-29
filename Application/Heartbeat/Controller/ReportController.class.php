@@ -66,6 +66,8 @@ class ReportController extends CommonController{
         $data['date'] = date('YmdHis');
         $redis->set($key, json_encode($data));
         
+        $bkey = 'bkheartlog_'.$data['mac'].'_'.date('YmdHis');
+        $redis->set($bkey,json_encode($data));
         $ret = array();
         $ret['deviceType'] = $data['clientid'];
         $ret['mac'] = $data['mac'];
@@ -197,6 +199,10 @@ class ReportController extends CommonController{
             $info = $redis->get($v);
             if(!empty($info)){
                 $info = json_decode($info,true);
+                if(empty($info['mac']) || empty($info['clientid']) || empty($info['date'])){
+                    $redis->remove($v);
+                    continue;
+                }
                 $date = substr($info['date'],0,8);
                 $loginfo = $m_heart_all_log->getOne($info['mac'], $info['clientid'], $date);
                 $hour = intval(substr($info['date'], 8,2));
@@ -234,16 +240,19 @@ class ReportController extends CommonController{
                         }           
                     } 
                 }else {
+                    $where = array();
                     if($info['clientid'] ==1){
                         $where['mac'] = $info['mac'];
                         $where['type']= $info['clientid'];
                         $where['date']= $date;
-                        $ret = $m_heart_all_log->where($where)->setInc('hour'.$hour);
+                        $ret = $m_heart_all_log->updateInfo($where['mac'], $where['type'], $where['date'], $filed = "hour{$hour}");
+                        //$ret = $m_heart_all_log->where($where)->setInc("hour{$hour}",1);
                     }else if($info['clientid'] ==2){
                         $where['mac'] = $info['mac'];
                         $where['type']= $info['clientid'];
                         $where['date']= $date;
-                        $ret = $m_heart_all_log->where($where)->setInc('hour'.$hour);
+                        $ret = $m_heart_all_log->updateInfo($where['mac'], $where['type'], $where['date'], $filed = "hour{$hour}");
+                        //$ret = $m_heart_all_log->where($where)->setInc("hour{$hour}",1);
                     }
                 }
                 if($ret){

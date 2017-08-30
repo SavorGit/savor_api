@@ -66,8 +66,8 @@ class ReportController extends CommonController{
         $data['date'] = date('YmdHis');
         $redis->set($key, json_encode($data));
         
-        $bkey = 'bkheartlog_'.$data['mac'].'_'.date('YmdHis');
-        $redis->set($bkey,json_encode($data));
+        //$bkey = 'bkheartlog_'.$data['mac'].'_'.date('YmdHis');
+        //$redis->set($bkey,json_encode($data));
         $ret = array();
         $ret['deviceType'] = $data['clientid'];
         $ret['mac'] = $data['mac'];

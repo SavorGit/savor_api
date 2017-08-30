@@ -188,6 +188,7 @@ class ReportController extends CommonController{
      * @desc 统计历史心跳上报数据
      */
     public function countHeartLog(){
+        exit(0);
         $redis = SavorRedis::getInstance();
         $redis->select(13);
         $keys = $redis->keys($this->countHeartlogPre.'*');

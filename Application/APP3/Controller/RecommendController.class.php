@@ -245,7 +245,8 @@ class RecommendController extends BaseController{
         }
         //获取最新最新内容开始
         if($nums<$mend_len){
-            $info = $articleModel->getList('hot_category_id != 103 and state =2',' sort_num desc',0,10,'id,title,order_tag');
+            $now_date = date('Y-m-d H:i:s',time());
+            $info = $articleModel->getList("hot_category_id != 103 and state =2 and bespeak_time<='".$now_date."'",' sort_num desc',0,10,'id,title,order_tag');
             foreach($info as $v){
                 if($v['id'] == $vinfo['id']){
                     continue;

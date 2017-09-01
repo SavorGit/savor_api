@@ -32,6 +32,7 @@ class ArticleModel extends Model
 		return $result[0];
 	}
 	public function getRecmmondList($where,$order,$limit){
+	    $now_date = date('Y-m-d H:i:s',time());
 	    $sql = "select mc.order_tag,mc.id artid,m.oss_addr as name,mcat.name as category,mc.index_img_url,
 	            mc.title,mc.duration,mc.img_url as imgUrl,mc.content_url as contentUrl,mc.tx_url as videoUrl,
 	            mc.share_title as shareTitle,mc.share_content as shareContent,mc.type,mc.content,
@@ -42,7 +43,7 @@ class ArticleModel extends Model
 	            left  join savor_mb_hot_category as mcat on mc.hot_category_id = mcat.id 
 	            left join savor_article_source aso on aso.id=mc.source_id
                 left join savor_media ssme on aso.logo = ssme.id
-	            where 1=1 $where order by $order $limit";
+	            where 1=1 $where and mc.bespeak_time<'".$now_date."' order by $order $limit";
 	    $result = $this->query($sql);
 	    return $result;
 	}

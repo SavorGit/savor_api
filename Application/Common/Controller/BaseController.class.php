@@ -157,7 +157,11 @@ class BaseController extends Controller {
 	    $content_host = C('CONTENT_HOST');
 	    return $content_host.$url;
 	}
-	
+	public function getOssAddrByMediaId($id){
+	    $m_media = new \Common\Model\MediaModel();
+	    $info = $m_media->getMediaInfoById($id);
+	    return $info['oss_addr'];
+	}
 
 
 

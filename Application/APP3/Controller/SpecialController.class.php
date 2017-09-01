@@ -20,6 +20,18 @@ class SpecialController extends BaseController{
                 $this->is_verify =0;
                 $this->valid_fields = array('sort_num'=>'1000');
                 break;
+            case 'specialGroupDetail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('id'=>'1000');
+                break;
+            case 'getSpecialGroupList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('id'=>'1000');
+                break;
+            case 'specialGroupList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('id'=>'1000');
+                break;
         }
         parent::_init_();
     }
@@ -102,5 +114,161 @@ class SpecialController extends BaseController{
             $data = array();
         }
         $this->to_back($data);
+    }
+    /**
+     * @desc 获取专题详情页
+     */
+    public function specialGroupDetail(){
+        $id = I('id','0','intval');
+        $data = array();
+        $m_special_group = new \Common\Model\SpecialGroupModel();
+        $order = $limit =  '';
+        $where =  '1=1';
+       
+        if(empty($id)){
+            $order = ' id desc ';
+            $limit = ' limit 1';
+            $type  = 1;
+            $info = $m_special_group->getInfo($where,$order , $limit ,$type );
+        } else {
+            $where .= ' and id ='.$id;
+            $type  = 1;
+            $info = $m_special_group->getInfo($where,$order,$limit ,$type);
+            
+        }
+        if(empty($info)){
+            $this->to_back(20001);
+        }
+        $info['img_url'] = $this->getOssAddr($info['img_url']);
+       
+        $m_special_relation = new \Common\Model\SpecialRelationModel();
+        $relationInfo = $m_special_relation->getInfoBySpecialId($info['id']);
+        $artModel = new \Common\Model\ArticleModel();
+        
+        foreach($relationInfo as $key=>$v){
+            if($v['sgtype'] == 1){
+                $stext = $v['stext'];
+                unset($relationInfo[$key]);
+                $relationInfo[$key]['sgtype'] = 1;
+                $relationInfo[$key]['stext'] = $stext;
+            }else if($v['sgtype']==2){
+                $now = date("Y-m-d H:i:s",time());
+                
+                $where = ' 1=1 and mco.id='.$v['sarticleid'].' AND mco.state = 2    AND (((mco.bespeak=1 or mco.bespeak=2) 
+                           AND mco.bespeak_time < "'.$now.'") or mco.bespeak=0)';
+                
+                
+                $artinfo = $artModel->getCateList($where);
+                unset($relationInfo[$key]);
+                if($artinfo){
+                    $tmp = array();
+                    $artinfo = $this->changeList($artinfo);
+                    $artinfo = $artinfo[0];
+                    $artinfo['sgtype'] = 2;
+                    $relationInfo[$key] = $artinfo;
+                }
+                
+                
+            }else if($v['sgtype']==3) {
+                $img_url = $this->getOssAddrByMediaId($v['spictureid']);
+                unset($relationInfo[$key]);
+                $relationInfo[$key]['sgtype']  = '3';
+                $relationInfo[$key]['img_url'] = $img_url;
+            }else if($v['sgtype']==4){
+                $stitle = $v['stitle'];
+                unset($relationInfo[$key]);
+                $relationInfo[$key]['sgtype']  = '4';
+                $relationInfo[$key]['stitle']  = $stitle;
+            }
+        }
+        $info['list'] = $relationInfo;
+        $this->to_back($info);
+    }
+    /**
+     * @desc 获取专题组列表
+     */
+    public function specialGroupList(){
+        $id = I('id','0','intval');
+        $pageSize = I('pageSize','20','intval');
+        $m_special_group = new \Common\Model\SpecialGroupModel();
+        $where =  $order = '';
+        if(!empty($id)){
+            $where .= " and id<{$id}"; 
+        }
+        $order = ' id desc';
+        $limit = " limit {$pageSize}";
+        $info = $m_special_group->getList($where,$order ,$limit);
+        foreach($info as $key=>$v){
+            $info[$key]['img_url'] = $this->getOssAddr($v['img_url']);
+        }
+        
+        if($info){
+            $count = count($info);
+            if($count<$pageSize){
+                $nextPage = 0;
+            }else{
+                
+                $where =" and id<{$info[$count-1]['id']}";
+                $order = ' id desc';
+                $limit =  ' limit 1';
+                $nextInfo = $m_special_group->getList($where,$order ,$limit);
+                if(empty($nextInfo)){
+                    $nextPage = 0;
+                }else {
+                    $nextPage = 1;
+                }
+            }    
+            $data['list'] = $info;
+            $data['nextpage'] = $nextPage;
+        }else {
+            $data = array();
+        }
+        $this->to_back($data);
+    }
+    private function changeList($res){
+       
+        if($res){
+            $m_media = new \Common\Model\MediaModel();
+            $m_Content = new \Common\Model\ContentModel();
+            $m_picturs = new \Common\Model\PicturesModel();
+    
+            foreach ($res as $vk=>$val) {
+                
+                if($val['logo']){
+                    $logoMediainfo = $m_media->getMediaInfoById($val['logo']);
+                    $res[$vk]['logo'] = $logoMediainfo['oss_addr'];
+                }
+    
+                $res[$vk]['contentURL'] = $this->getContentUrl($val['contentURL']);
+                $res[$vk]['imageURL'] = $this->getOssAddr($val['imageURL']);
+                $res[$vk]['videoURL'] = substr($val['videoURL'], 0, strpos($val['videoURL'],'.f'));
+                $len = count($val['name']);
+                if($len != 0) {
+                    $res[$vk]['canplay'] = 1;
+                    $res[$vk]['name'] = substr($val['name'], strripos($val['name'],'/')+1);
+                }
+                if($val['type']==3){
+                    if(empty($val['content'])){
+                        $res[$vk]['type'] = 4;
+                    }
+                }
+                if($val['type']==2){
+                    $res[$vk]['colTuJi'] = $m_picturs->getCountPics($val['artid']);
+    
+                }
+                unset($res[$vk]['content']);
+    
+    
+                $res[$vk]['updateTime'] = date('Y-m-d',strtotime($val['createTime']));
+                foreach($val as $sk=>$sv){
+                    if (empty($sv)) {
+                        unset($res[$vk][$sk]);
+                    }
+                }
+    
+            }
+        }
+        return $res;
+         
     }
 }

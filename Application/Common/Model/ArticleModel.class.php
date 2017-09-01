@@ -284,7 +284,7 @@ $byt = $this->byteFormat($info['content-length'],'MB');
 		$field = 'mco.id artid,mco.sort_num, mco.type,mco.content, mco.title title,med.oss_addr name, 
 		          mco.duration duration, mco.img_url imageURL, mco.content_url contentURL, 
 		          mco.tx_url videoURL, mco.share_title shareTitle, mco.share_content shareContent, 
-		          mco.update_time updateTime,mco.create_time as createTime,mco.media_id mediaId,ars.name as sourceName,ars.logo';
+		          mco.update_time updateTime,mco.create_time as createTime,mco.media_id mediaId,mco.img_style imgStyle, ars.name as sourceName,ars.logo';
 		$table = 'savor_mb_content mco';
 		$joina = ' left join savor_article_source as ars on mco.source_id = ars.id';
 		$joinb = 'left join savor_media med on med.id = mco.media_id';

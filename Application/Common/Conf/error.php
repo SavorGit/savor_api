@@ -63,5 +63,7 @@ return array(
 	    '19001'=>'hot_category_id_error',
         '19002'=>'content_not_check_pass',
 	    '19003'=>'not_demand_content',
+	    //专题组接口
+	    '20001'=>'special_group_not_exist',
 	),
 );

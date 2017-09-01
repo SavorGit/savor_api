@@ -63,4 +63,6 @@ return array(
     'hot_category_id_error'=>'分类id参数错误',
     'content_not_check_pass'=>'该文章不存在或未通过审核',
     'not_demand_content'=>'该内容不可点播',
+	//专题组接口
+	'special_group_not_exist'=>'专题组不存在',
 );

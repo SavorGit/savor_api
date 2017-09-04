@@ -200,6 +200,14 @@ class HotelModel extends Model
         return $nums;
     }
 
+
+    public function getMacaddrByHotelId($hotel_id){
+        $sql = "select * from savor_hotel_ext where hotel_id='$hotel_id' limit 1";
+        $result = $this->query($sql);
+        $data = !empty($result)?$result[0]:array();
+        return $data;
+    }
+
     public function getRoomNumByHotelId($hotel_id){
         $sql = "select id as room_id,hotel_id from savor_room where hotel_id='$hotel_id' and state=1 and flag=0";
         $res = $this->query($sql);

@@ -37,4 +37,14 @@ class BoxModel extends Model
         $result = $this->query($sql);
         return $result;
     }
+    public function getList($fields ,$where, $order,$limit){
+        $data = $this->alias('a')
+             ->join('savor_room as room on a.room_id = room.id ')
+             ->field($fields)
+             ->where($where)
+             ->order($order)
+             ->limit($limit)
+             ->select();
+        return $data;
+    }
 }

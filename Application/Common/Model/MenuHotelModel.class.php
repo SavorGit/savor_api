@@ -40,6 +40,15 @@ class MenuHotelModel extends Model
 		return $result;
 	}
 
+	public function fetchDataWhere($where, $order, $field, $type=1){
+		if( $type == 1) {
+			$list = $this->where($where)->order($order)->field($field)->find();
+		} else {
+			$list = $this->where($where)->order($order)->field($field)->select();
+		}
+		return $list;
+	}
+
 
 	
 

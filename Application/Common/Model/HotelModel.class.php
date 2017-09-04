@@ -159,6 +159,48 @@ class HotelModel extends Model
     }
 
 
+    public function getStatisticalNumByStateHotelId($hotel_id,$type=''){
+        $sql = "select id as room_id,hotel_id from savor_room where hotel_id='$hotel_id' and flag = 0";
+        $res = $this->query($sql);
+        $room_num = $box_num = $tv_num = 0;
+        $all_rooms = array();
+        foreach ($res as $k=>$v){
+            $room_num++;
+            $all_rooms[] = $v['room_id'];
+        }
+        if($type == 'room'){
+            $nums = array('room_num'=>$room_num,'room'=>$all_rooms);
+            return $nums;
+        }
+        if($room_num){
+            $rooms_str = join(',', $all_rooms);
+            $sql = "select id as box_id,room_id from savor_box where room_id in ($rooms_str) and flag=0 ";
+            $res = $this->query($sql);
+            $all_box = array();
+            foreach ($res as $k=>$v){
+                $box_num++;
+                $all_box[] = $v['box_id'];
+            }
+            if($type == 'box'){
+                $nums = array('box_num'=>$box_num,'box'=>$all_box);
+                return $nums;
+            }
+            if($box_num){
+                $box_str = join(',', $all_box);
+                $sql = "select count(id) as tv_num from savor_tv where box_id in ($box_str) and flag=0 ";
+                $res = $this->query($sql);
+                $tv_num = $res[0]['tv_num'];
+                if($type == 'tv'){
+                    $nums = array('tv_num'=>$tv_num);
+                    return $nums;
+                }
+            }
+        }
+        $nums = array('room_num'=>$room_num,'box_num'=>$box_num,'tv_num'=>$tv_num);
+        return $nums;
+    }
+
+
     public function getStatisticalNumByHotelId($hotel_id,$type=''){
         $sql = "select id as room_id,hotel_id from savor_room where hotel_id='$hotel_id'";
         $res = $this->query($sql);
@@ -217,5 +259,81 @@ class HotelModel extends Model
         }
         return $room_num;
     }
+
+
+    public function changeIdinfoToName($result=[])
+    {
+        if(!$result || !is_array($result))
+        {
+            return [];
+        }
+        $areaModel  = new \Common\Model\AreaModel();
+        $area = $areaModel->getAllArea();
+        $key_arr = C('HOTEL_KEY');
+        $hotel_level = C('HOTEL_LEVEL');
+        $state_change = C('STATE_REASON');
+        $hotel_state = C('HOTEL_STATE');
+        $hotel_box_type = C('HOTEL_BOX_TYPE');
+        foreach ($result as &$value)
+        {
+            foreach($area as $row)
+            {
+                if($value['area_id'] == $row['id'])
+                {
+                    $value['area_name'] = $row['region_name'];
+                }
+
+            }
+
+            foreach($key_arr as $hk=>$hv)
+            {
+                if($value['is_key'] == $hk)
+                {
+                    $value['is_key'] = $hv;
+                }
+
+            }
+
+            foreach($hotel_level as $hk=>$hv)
+            {
+                if($value['level'] == $hk)
+                {
+                    $value['level'] = $hv;
+                }
+
+            }
+
+            foreach($state_change as $hk=>$hv)
+            {
+                if($value['state_change_reason'] == $hk)
+                {
+                    $value['state_change_reason'] = $hv;
+                }
+
+            }
+
+            foreach($hotel_state as $hk=>$hv)
+            {
+                if($value['hotel_state'] == $hk)
+                {
+                    $value['hotel_state'] = $hv;
+                }
+
+            }
+
+            foreach($hotel_box_type as $hk=>$hv)
+            {
+                if($value['hotel_box_type'] == $hk)
+                {
+                    $value['hotel_box_type'] = $hv;
+                }
+
+            }
+
+            unset($value['area_id']);
+        }
+        return $result;
+
+    }//End Function
 
 }

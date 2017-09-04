@@ -119,12 +119,11 @@ class SpecialController extends BaseController{
      * @desc 获取专题详情页
      */
     public function specialGroupDetail(){
-        $id = I('id','0','intval');
+        $id = $this->params['id'];
         $data = array();
         $m_special_group = new \Common\Model\SpecialGroupModel();
         $order = $limit =  '';
         $where =  '1=1';
-       
         if(empty($id)){
             $order = ' id desc ';
             $limit = ' limit 1';

@@ -76,6 +76,7 @@ return array(
 	'USER_SECRET_KEY'=>'#@%$&#&!&@!@*!*#',   //用户解密接口数据
 	'SIGN_KEY'				=> 'savor4321abcd1234',
 	'COMMENT_MD5_KEY'       =>  '#F4$)68!KaMtc^',
+    'PWDPRE'                =>'SAVOR@&^2017^2030&*^',
     
 	'ORIGINAL_CATCH_TIME'   => '3600',
 	//列表缓存时间

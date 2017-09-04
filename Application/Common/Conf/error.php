@@ -65,5 +65,9 @@ return array(
 	    '19003'=>'not_demand_content',
 	    //专题组接口
 	    '20001'=>'special_group_not_exist',
+	    
+	    //运维端接口
+	    '30001'=>'option_user_not_exist',
+	    '30002'=>'option_user_pwd_error',
 	),
 );

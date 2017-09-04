@@ -23,7 +23,7 @@ class SpecialGroupModel extends Model{
 	    return $result;
 	}
 	public function getList($where,$order ,$limit){
-	    $sql ="select `id`,`name`,`title`,`img_url`,`desc` from `savor_special_group` where 1=1 $where order by $order $limit";
+	    $sql ="select `id`,`name`,`title`,`img_url`,`desc` from `savor_special_group` where 1=1  $where and state=1 order by $order $limit";
 	    $data = $this->query($sql);
 	    
 	    return $data;

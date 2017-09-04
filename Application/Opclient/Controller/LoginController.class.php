@@ -32,7 +32,7 @@ class LoginController extends BaseController{
         
         $where['username'] = $username;
         $where['status']   =1;
-        $userinfo = $m_sysuser->getUserInfo($where,'id,username,remark,password');
+        $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname,password');
         
         if(empty($userinfo)){
             $this->to_back('30001');    //用户不存在
@@ -42,22 +42,6 @@ class LoginController extends BaseController{
         }
         unset($userinfo['password']);
         $this->to_back($userinfo);
-    }
-    /**
-     * @用户退出
-     */
-    public function logout(){
-        $userinfo = $this->userinfo;
-        $m_user_token = new \Common\Model\UserTokenModel();
-        $where = $data = array();
-        $where['userid'] = $userinfo['userid'];
-        $data['is_logout'] = 1;
-        $ret = $m_user_token->updateInfo($where,$data);
-        if($ret){
-            $this->to_back('');        //退出登录成功
-        }else {
-            $this->to_back('11111');   //退出登录失败
-        }
     }
 }
 

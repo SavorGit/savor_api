@@ -30,7 +30,7 @@ return array(
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
 
-	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award','Small','Smalls','Screendistance','APP3'), //模块配置
+	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','Version','Content','Heartbeat','Heartcalcu','Download','Award','Small','Smalls','Screendistance','APP3','Opclient'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -76,6 +76,7 @@ return array(
 	'USER_SECRET_KEY'=>'#@%$&#&!&@!@*!*#',   //用户解密接口数据
 	'SIGN_KEY'				=> 'savor4321abcd1234',
 	'COMMENT_MD5_KEY'       =>  '#F4$)68!KaMtc^',
+    'PWDPRE'                =>'SAVOR@&^2017^2030&*^',
     
 	'ORIGINAL_CATCH_TIME'   => '3600',
 	//列表缓存时间

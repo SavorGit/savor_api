@@ -65,4 +65,8 @@ return array(
     'not_demand_content'=>'该内容不可点播',
 	//专题组接口
 	'special_group_not_exist'=>'专题组不存在',
+    
+    //运维客户端接口
+    'option_user_not_exist'=>'用户不存在',
+    'option_user_pwd_error'=>'密码错误',
 );

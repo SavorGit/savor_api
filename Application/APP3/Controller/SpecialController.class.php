@@ -140,7 +140,7 @@ class SpecialController extends BaseController{
             $this->to_back(20001);
         }
         $info['img_url'] = $this->getOssAddr($info['img_url']);
-       
+        $info['contentUrl'] = C('CONTENT_HOST').'admin/SpecialgroupShow/showsp?id='.$info['id'];
         $m_special_relation = new \Common\Model\SpecialRelationModel();
         $relationInfo = $m_special_relation->getInfoBySpecialId($info['id']);
         $artModel = new \Common\Model\ArticleModel();

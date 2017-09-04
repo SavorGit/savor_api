@@ -89,4 +89,35 @@ return array(
 	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量'),
 	'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),
     'ALL_LOTTERY_NUMBER' => 5,
+	'HOTEL_KEY' => array(
+		'1'=>'重点',
+		'2'=>'非重点',
+	),
+	'HOTEL_LEVEL' => array(
+		'3'=>'3A',
+		'4'=>'4A',
+		'5'=>'5A',
+		'6'=>'6A',
+	),
+	'STATE_REASON' => array(
+		'1'=>'正常',
+		'2'=>'倒闭',
+		'3'=>'装修',
+		'4'=>'淘汰',
+		'5'=>'放假',
+		'6'=>'易主',
+		'7'=>'终止合作',
+		'8'=>'问题沟通中',
+	),
+	'HOTEL_STATE' => array(
+		'1'=>'正常',
+		'2'=>'冻结',
+		'3'=>'报损',
+	),
+	'HOTEL_BOX_TYPE' => array(
+		'1'=>'一代单机版',
+		'2'=>'二代网络版',
+		'3'=>'三代5G版',
+	),
+
 );

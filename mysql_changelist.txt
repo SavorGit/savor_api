@@ -1,0 +1,44 @@
+﻿############################################
+-------------------------
+文件说明:用于记录Mysql表修改历史
+2017.3.3增加该文件
+
+格式要求:
+-------------------------
+修改说明:修改某某表,某某字段,修改目的
+修改时间:年份.月份.日期 当前时间
+修改人:XXX
+Mysql语句:mysql可执行语句
+
+#############################################
+
+
+增加说明：增加用户维修记录表
+修改时间:2017.9.5 10：36
+修改人:白玉涛
+执行SQL:CREATE TABLE `savor_repair_box_user` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `mac` VARCHAR(21) NOT NULL DEFAULT '' COMMENT 'mac地址',
+  `type` INT(3) NOT NULL DEFAULT 1 COMMENT '类型。1、小平台；、2机顶盒。',
+  `userid` INT(11) NOT NULL DEFAULT 0 COMMENT '用户id',
+  `remark` TEXT COMMENT '备注',
+  `hotel_id` INT(11) NOT NULL DEFAULT 0 COMMENT '酒楼id',
+  `state` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '状态 1已经解决 2未解决',
+  `flag` TINYINT(4) NOT NULL DEFAULT '0' COMMENT '状态标识：0正常，1删除',
+   `datetime` INT(11) NOT NULL DEFAULT 0 COMMENT '按天格式创建日期',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+ALTER TABLE `cloud`.`savor_repair_box_user`  ADD INDEX `reparir_ind` (`datetime`, `hotel_id`, `userid`, `mac`);
+
+增加说明：增加用户维修记录对应明细表
+修改时间:2017.9.5 10：36
+修改人:白玉涛
+执行SQL:CREATE TABLE `savor_repair_detail` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `repair_id`  INT(11) NOT NULL DEFAULT 0 COMMENT 'repair主键',
+  `repair_type` INT(11) NOT NULL DEFAULT 0 COMMENT '损坏类型',
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;

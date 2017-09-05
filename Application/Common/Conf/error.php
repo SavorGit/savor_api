@@ -69,6 +69,8 @@ return array(
 	    //运维端接口
 	    '30001'=>'option_user_not_exist',
 	    '30002'=>'option_user_pwd_error',
+	    '30003'=>'option_error_report_not_exist',
+	    '30004'=>'option_error_hotel_not_exist',
 		'30050'=>'option_user_illegeal',
 		'30051'=>'option_user_pro',
 		'30052'=>'option_box_not_exists',

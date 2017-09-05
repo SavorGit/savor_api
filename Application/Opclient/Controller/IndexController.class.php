@@ -1,8 +1,8 @@
 <?php
 namespace Opclient\Controller;
 use Think\Controller;
-use \Common\Controller\PubController as PubController;
-class IndexController extends PubController{ 
+use \Common\Controller\BaseController as BaseController;
+class IndexController extends BaseController{ 
     /**
      * 构造函数
      */

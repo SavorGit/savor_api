@@ -75,4 +75,6 @@ return array(
     'option_pla_not_exists'=>'小平台mac不存在',
     'option_reason_not_empty'=>'请选择维修记录或填写备注',
     'option_insert_fail'=>'插入记录失败',
+    'option_error_report_not_exist'=>'该异常记录不存在',
+    'option_error_hotel_not_exist'=>'该异常记录不包含该酒楼',
 );

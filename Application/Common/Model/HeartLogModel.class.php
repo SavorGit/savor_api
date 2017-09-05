@@ -15,4 +15,10 @@ class HeartLogModel extends Model
 	    return $this->execute($sql);
 	}
 	// TRUNCATE TABLE
+	public function getOnlineHotel($where,$fields = '*'){
+	    $result = $this->field($fields)->where($where)->group('hotel_id')->select();
+	    /* echo $this->getLastSql();
+	    echo "<br>"; */
+	    return $result;
+	}
 }

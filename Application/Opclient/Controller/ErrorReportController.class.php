@@ -129,7 +129,7 @@ class ErrorReportController extends BaseController{
      */
     public function getList(){
         $id = $this->params['id'];
-        $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :20;
+        $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
         $where = array();
         if(!empty($id)){
@@ -173,7 +173,7 @@ class ErrorReportController extends BaseController{
      */
     public function getErrorDetail(){
         $id = $this->params['id'];
-        $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :20;
+        $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $hotel_id = $this->params['hotel_id'];
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
         $fields = '*';

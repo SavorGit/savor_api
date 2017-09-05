@@ -18,6 +18,10 @@ class HotelController extends BaseController {
                 $this->is_verify = 1;
                 $this->valid_fields=array('hotelId'=>'1001');
                 break;
+            case 'searchHotel':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_name'=>'1001');
+                break;
         }
         parent::_init_();
     }
@@ -88,5 +92,20 @@ class HotelController extends BaseController {
         if( empty($hotel_info) ) {
             $this->to_back('16100');   //该酒楼不存在或被删除
         }
+    }
+    /**
+     * @desc 搜索酒楼
+     */
+    public function searchHotel(){
+        $hotel_name = $this->params['hotel_name'];
+        $m_hotel = new \Common\Model\HotelModel();
+        $where = array();
+        $where['name'] = array('like',"%$hotel_name%");
+        $order = ' id desc';
+        $limit  = '';
+        $fields = 'id,name';
+        
+        $data = $m_hotel->getHotelList($where,$order,$limit,$fields = 'id,name');
+        $this->to_back($data);
     }
 }

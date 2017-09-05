@@ -99,13 +99,14 @@ class HotelController extends BaseController {
     public function searchHotel(){
         $hotel_name = $this->params['hotel_name'];
         $m_hotel = new \Common\Model\HotelModel();
-        $where = array();
+        $where = $data = array();
         $where['name'] = array('like',"%$hotel_name%");
         $order = ' id desc';
         $limit  = '';
         $fields = 'id,name';
         
         $data = $m_hotel->getHotelList($where,$order,$limit,$fields = 'id,name');
-        $this->to_back($data);
+        $list['list'] =$data;
+        $this->to_back($list);
     }
 }

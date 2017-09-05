@@ -42,8 +42,22 @@ class BoxModel extends Model
         return $result;
     }
 
+
     public function getOnerow($where){
         $list = $this->where($where)->find();
         return $list;
+    }
+
+
+    public function getList($fields ,$where, $order,$limit){
+        $data = $this->alias('a')
+             ->join('savor_room as room on a.room_id = room.id ')
+             ->field($fields)
+             ->where($where)
+             ->order($order)
+             ->limit($limit)
+             ->select();
+        return $data;
+
     }
 }

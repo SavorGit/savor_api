@@ -29,12 +29,21 @@ class BoxModel extends Model
     }
     public function getBoxInfoByMac($mac){
         $map['mac'] = $mac;
+        $map['flag'] = 0;
         return $this->where($map)->find();
     }
+
+
+
     public function getInfoByHotelid($hotelid , $field){
         $sql = 'select '.$field;
         $sql  .= 'FROM  savor_box box  LEFT JOIN savor_room room ON  box.room_id = room.id  WHERE room.hotel_id=' . $hotelid;
         $result = $this->query($sql);
         return $result;
+    }
+
+    public function getOnerow($where){
+        $list = $this->where($where)->find();
+        return $list;
     }
 }

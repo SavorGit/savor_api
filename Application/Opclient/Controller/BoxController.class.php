@@ -18,6 +18,9 @@ class BoxController extends BaseController {
             case 'getHotelBoxDamageConfig':
                 $this->is_verify = 0;
                 break;
+            case 'getAllRepairUser':
+                $this->is_verify = 0;
+                break;
             case 'InsertBoxDamage':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
@@ -28,11 +31,14 @@ class BoxController extends BaseController {
                     'hotel_id'=>'1001',
                 );
                 break;
+            case 'getRepairRecordListByUserid':
+                $this->is_verify = 1;
         }
         //解决未解决对应数组
         $this->state_ar = array(1, 2);
         parent::_init_();
     }
+
 
     /*
      * @desc 获取酒楼损坏基本信息
@@ -53,6 +59,122 @@ class BoxController extends BaseController {
         $this->to_back($data);
     }
 
+    public function changeRepairInfo($box_info){
+        $dap = array();
+        $rdeitalModel = new \Common\Model\RepairDetailModel();
+        foreach ($box_info as $bk=>$bv) {
+            $st_array = array();
+            $dac = array();
+            $ch_ar['rpid'] = explode(',', $bv['rpid']);
+            $ch_ar['remark'] = explode('&&&', $bv['remark']);
+            $ch_ar['state'] = explode(',', $bv['state']);
+            $ch_ar['ctime'] = explode(',', $bv['ctime']);
+            $ch_ar['boxtype'] = explode(',', $bv['boxtype']);
+            $ch_ar['state'] = explode(',', $bv['state']);
+            foreach($ch_ar['rpid'] as $cm=> $ck) {
+                if ($bv['boxtype'] == 2) {
+                    $st_array['type'] = '机顶盒';
+                    $st_array['mac_name'] = $bv['mac_name'];
+                } else {
+                    $st_array['type'] = '小平台';
+                    $st_array['mac_name'] = '';
+                }
+                $st_array['create_time'] = $ch_ar['ctime'][$cm];
+                //获取解决是否
+                if ( $ch_ar['state'][$cm] == 1) {
+                    $st_array['state'] = '已解决';
+                } elseif ( $ch_ar['state'][$cm] == 2) {
+                    $st_array['state'] = '未解决';
+                }
+                //获取出错条件
+                $rinfo = $rdeitalModel->fetchDataWhere(array('repair_id'=>$ch_ar['rpid'][$cm]),'','repair_type',2);
+                if ( empty($rinfo) ) {
+                    $st_array['repair_error'] = '';
+                } else {
+                    $repair_arr =  C('HOTEL_DAMAGE_CONFIG');
+                    $dam_str = '';
+                    foreach ($rinfo as $rv) {
+                        $dam_str .= $repair_arr[$rv['repair_type']].',';
+                    }
+                    $dam_str = substr($dam_str,0 , -1);
+                    $st_array['repair_error'] = $dam_str;
+                }
+
+                $st_array['remark'] = $ch_ar['remark'][$cm];
+                $dac[] = $st_array;
+            }
+            $dap[$bk]['nickname'] = $bv['username'];
+            $dap[$bk]['datetime'] = date("Y-m-d",
+                strtotime($bv['datetime']));
+            $dap[$bk]['hotel_name'] = $bv['hotel_name'];
+            $dap[$bk]['repair_list'] = $dac;
+        }
+
+        $data['list'] = $dap;
+        $this->to_back($data);
+    }
+
+    public function getRepairBoxInfo($userid, $start, $size){
+        $redMo = new \Common\Model\RepairBoxUserModel();
+        $field = " sys.remark username,GROUP_CONCAT(sru.id) rpid,
+                GROUP_CONCAT(sru.remark SEPARATOR '&&&') remark,
+                GROUP_CONCAT(sru.state) state,GROUP_CONCAT(sru
+                .create_time) ctime,sru.type boxtype,sbo.name mac_name,sru
+                .datetime,sru.hotel_id,sru.mac,sht.name hotel_name ";
+        if ( $userid ) {
+            $condition = ' 1=1 and sru.userid ='.$userid;
+            $group = 'sru.DATETIME,sru.hotel_id,sru.mac';
+        } else {
+            $condition = ' 1=1 ';
+            $group = 'sru.DATETIME,sru.hotel_id,sru.userid,sru
+            .mac';
+        }
+        $order = " CONCAT(sru.DATETIME,sru.create_time) DESC ";
+        $box_info = $redMo->getRepairInfo($field, $condition, $group, $order, $start, $size);
+        return $box_info;
+    }
+
+    public function getRepairRecordListByUserid() {
+        $userid = $this->params['userid'];   //用户名
+        $size  =  2;
+        $start = empty($this->params['page_num'])?1:$this->params['page_num'];
+        $start  = ( $start-1 ) * $size;
+        if ($userid == 0) {
+            //获取所有
+            $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+        } else {
+            $m_sysuser = new \Common\Model\SysUserModel();
+            $where['status']   =1;
+            $where['id'] = $userid;
+            $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username',2);
+            if ( empty($userinfo) ) {
+                $this->to_back('30001');    //用户不存在
+            } else {
+                $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+
+            }
+        }
+        $dat = $this->changeRepairInfo($box_info);
+
+    }
+
+    public function getAllRepairUser() {
+        $m_sysuser = new \Common\Model\SysUserModel();
+        $where['status']   =1;
+        $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2);
+        if(empty($userinfo)){
+            $this->to_back('30001');    //用户不存在
+        }
+        $usr = array(
+            'userid'=>0,
+            'username'=>'所有人',
+            'nickname'=>'所有人',
+
+        );
+        array_unshift($userinfo, $usr);
+        $this->to_back($userinfo);
+    }
+
     public function InsertBoxDamage() {
         $save['hotel_id'] = intval($this->params['hotel_id']);
         $save['mac'] = $this->params['box_mac'];
@@ -69,9 +191,8 @@ class BoxController extends BaseController {
         $repairMo->startTrans();
         $bool = $repairMo->addData($save);
         if ( $bool ) {
-            $rep_arr = array (
-                '1','2','3'
-            );
+            $rep_str = $this->params['repair_num_str'];
+            $rep_arr = explode(',', $rep_str);
             $rdeital_arr = array();
             $insertid = $repairMo->getLastInsID();
             foreach ($rep_arr as $rv) {

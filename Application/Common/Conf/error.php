@@ -69,5 +69,11 @@ return array(
 	    //运维端接口
 	    '30001'=>'option_user_not_exist',
 	    '30002'=>'option_user_pwd_error',
+		'30050'=>'option_user_illegeal',
+		'30051'=>'option_user_pro',
+		'30052'=>'option_box_not_exists',
+		'30053'=>'option_pla_not_exists',
+		'30054'=>'option_reason_not_empty',
+		'30055'=>'option_insert_fail',
 	),
 );

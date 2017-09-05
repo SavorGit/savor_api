@@ -69,4 +69,10 @@ return array(
     //运维客户端接口
     'option_user_not_exist'=>'用户不存在',
     'option_user_pwd_error'=>'密码错误',
+    'option_user_illegeal'=>'用户非法',
+    'option_user_pro' =>'用户是否解决必选',
+    'option_box_not_exists'=>'机顶盒mac不存在',
+    'option_pla_not_exists'=>'小平台mac不存在',
+    'option_reason_not_empty'=>'请选择维修记录或填写备注',
+    'option_insert_fail'=>'插入记录失败',
 );

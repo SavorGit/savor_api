@@ -1,5 +1,5 @@
 <?php
-namespace Version\Controller;
+namespace Opclient\Controller;
 use Think\Controller;
 use \Common\Controller\BaseController as BaseController;
 class VersionController extends BaseController{

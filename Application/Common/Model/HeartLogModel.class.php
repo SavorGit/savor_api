@@ -21,4 +21,8 @@ class HeartLogModel extends Model
 	    echo "<br>"; */
 	    return $result;
 	}
+	public function getInfo($fileds,$where,$order){
+	    $data = $this->field($fileds)->where($where)->order($order)->find();
+	    return $data;
+	}
 }

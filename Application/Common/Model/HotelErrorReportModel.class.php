@@ -12,8 +12,9 @@ class HotelErrorReportModel extends Model
     protected $tableName='hotel_error_report';
     
     public function addInfo($data){
-        $ret = $this->add($data);
-        return $ret;
+        $this->add($data);
+        $id = $this->getLastInsID();
+        return $id;
     }
     public function getInfo($fields,$where){
         $data = $this->field($fields)->where($where)->find();

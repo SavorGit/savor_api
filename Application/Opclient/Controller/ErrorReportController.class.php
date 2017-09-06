@@ -18,7 +18,7 @@ class ErrorReportController extends BaseController{
                 break;
             case 'getErrorDetail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('id'=>1001,'pageSize'=>1000,'hotel_id'=>1000);
+                $this->valid_fields = array('error_id'=>1001,'pageSize'=>1000,'detail_id'=>1000);
                 break;
             
         }
@@ -38,6 +38,7 @@ class ErrorReportController extends BaseController{
         
         //正常酒楼 、异常酒楼
         $end_time = date('Y-m-d H:i:s',strtotime('-10 minutes'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-15 hours'));
         $m_heart_log = new \Common\Model\HeartLogModel();
         $m_box = new \Common\Model\BoxModel();
         $where = array();
@@ -55,13 +56,18 @@ class ErrorReportController extends BaseController{
         $normal_box_num = 0;
         $not_normal_box_num = 0;
         $not_normal_hotel_arr = array();
-        foreach($hotel_list as $key=>$v){
         
+        foreach($hotel_list as $key=>$v){
+            $small_plat_status = 1;
+            $crr_box_not_normal_num = 0;
+            $box_last_report_time = '';
+            
             $where = '';
             $where .=" 1 and hotel_id=".$v['id']." and type=1";
-            $where .="  and last_heart_time>='".$end_time."'";
+            $where .="  and last_heart_time>='".$start_time."'";
             $ret = $m_heart_log->getOnlineHotel($where,'hotel_id');
             if(!empty($ret)){//小平台有15小时内的心跳 判断机顶盒是否有心跳
+                
                 $flag = 0;
                 //$normal_hotel_num +=1;
                 $where = '';
@@ -70,56 +76,108 @@ class ErrorReportController extends BaseController{
                 foreach($box_list as $ks=>$vs){
                     $where = '';
                     $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $where .="  and last_heart_time>='".$end_time."'";
+                    $where .="  and last_heart_time>='".$start_time."'";
                      
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
                     if(empty($rets)){
                         $not_normal_box_num +=1;
+                        $crr_box_not_normal_num +=1;
                         $flag = 1;
                         //$not_normal_hotel_num +=1;
                         //break;
                     }else {
                         $normal_box_num +=1;
                     }
+                    $where = '';
+                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
+                    $rets  = $m_heart_log->getOnlineHotel($where,'last_heart_time');
+                    $box_last_report_time = strtotime($box_last_report_time);
+                    if(!empty($rets)){
+                        $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
+                        if($crr_box_report_time>$box_last_report_time){
+                            $box_last_report_time = $crr_box_report_time;
+                        }
+                    }
+                    $box_last_report_time = date('Y-m-d H:i:s',$box_last_report_time);
                 }
+                
                 if($flag ==1){
                     $not_normal_hotel_arr[] = $v['id'];
                     $not_normal_hotel_num +=1;
                 }
             }else {//小平台没有15小时内的心跳 判断机顶盒是否有心跳
+                $small_plat_status = 0; 
                 $flag = 0;
-                 
                 $where = '';
                 $where .=" 1 and room.hotel_id=".$v['id'].' and a.state=1 and a.flag =0';
                 $box_list = $m_box->getList( 'a.id, a.mac',$where);
                 foreach($box_list as $ks=>$vs){
                     $where = '';
                     $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $where .="  and last_heart_time>='".$end_time."'";
+                    $where .="  and last_heart_time>='".$start_time."'";
                      
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
                     if(empty($rets)){
                         $not_normal_box_num +=1;
+                        $crr_box_not_normal_num +=1;
         
                     }else {
                         $normal_box_num +=1;
                     }
+                    $where = '';
+                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
+                    $rets  = $m_heart_log->getOnlineHotel($where,'last_heart_time');
+                    $box_last_report_time = strtotime($box_last_report_time);
+                    if(!empty($rets)){
+                        $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
+                        if($crr_box_report_time>$box_last_report_time){
+                            $box_last_report_time = $crr_box_report_time;
+                        }
+                    }
+                    $box_last_report_time = date('Y-m-d H:i:s',$box_last_report_time);
                 }
         
                 $not_normal_small_plat_num +=1;
                 $not_normal_hotel_num +=1;
                 $not_normal_hotel_arr[] = $v['id'];
             }
+            $rets = $m_hotel->getStatisticalNumByHotelId($v['id'],'tv');
+            $result[$key]['hotel_id'] = $v['id'];
+            $result[$key]['tv_num'] = $rets['tv_num'];
+            $result[$key]['small_plat_status'] = $small_plat_status;
+            $where = array();
+            $where['hotel_id'] = $v['id'];
+            $where['type']  =1;
+            
+            $dt = $m_heart_log->getInfo('last_heart_time',$where);
+            if(!empty($dt)){
+                $result[$key]['small_plat_report_time'] = $dt['last_heart_time'];
+            }else {
+                $result[$key]['small_plat_report_time'] = '';
+            }
+            $result[$key]['not_normal_box_num'] = $crr_box_not_normal_num;
+            if($box_last_report_time =='1970-01-01 08:00:00'){
+                $box_last_report_time = '';
+            }
+            $result[$key]['box_report_time'] = $box_last_report_time;
+            $result[$key]['create_time'] = date('Y-m-d H:i:s');
         }
+        
         $data['hotel_all_num']            = $hotel_all_num;               //酒楼总数
         $data['not_normal_hotel_num']     = $not_normal_hotel_num;        //异常酒楼
         $data['not_normal_smallplat_num'] = $not_normal_small_plat_num;   //异常小平台
         $data['not_normal_box_num']       = $not_normal_box_num;          //异常机顶盒
-        $data['not_normal_hotel_ids']          = json_encode($not_normal_hotel_arr);
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
-        $ret = $m_hotel_error_report->addInfo($data);
-        if($ret){
-            echo "ok";
+        $id = $m_hotel_error_report->addInfo($data);
+        if($id){
+            $m_hotel_error_report_detail = new \Common\Model\HotelErrorReportDetailModel();
+            
+            foreach($result as $key=> $v){
+                $result[$key]['error_id'] = $id;
+                
+            }
+           $m_hotel_error_report_detail->addInfo($result,2);
+           echo "ok";
         }else {
             echo "not ok";
         }
@@ -132,15 +190,17 @@ class ErrorReportController extends BaseController{
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
         $where = array();
+
         if(!empty($id)){
             $where['id'] = array('LT',$id);
-        }   
+        }  
+
         $where['is_push'] = 1;
-        $fields = 'id,hotel_all_num,not_normal_hotel_num,not_normal_smallplat_num,not_normal_box_num,create_time';
+        $fields = '*';
         $order = ' id desc';
         $limit = ' limit '.$pageSize;
         $list = $m_hotel_error_report->getList($fields,$where,$order,$limit);
-        
+        print_r($list);exit;
         $data = array();
         $count = count($list);
         $last_error_id = $list[$count-1]['id'];
@@ -172,9 +232,9 @@ class ErrorReportController extends BaseController{
      * @desc 异常详情
      */
     public function getErrorDetail(){
-        $id = $this->params['id'];
+        $id = $this->params['error_id'];    //异常报告主键id
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
-        $hotel_id = $this->params['hotel_id'];
+        $detail_id = $this->params['detail_id'];     //异常报告详情id
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
         $fields = '*';
         $where['id'] = $id;
@@ -186,9 +246,9 @@ class ErrorReportController extends BaseController{
             $this->to_back('30003');
         }
         $data = array();
-        $hotel_arr = json_decode($info['not_normal_hotel_ids']);
-        
-        if(empty($hotel_id)){
+       
+        $m_hotel_error_report_detial = new \Common\Model\HotelErrorReportDetailModel();
+        if(empty($detail_id)){
             //print_r($info);exit;
             $report_date = date('m-d',strtotime($info['create_time']));
             $report_time = intval(date('H',strtotime($info['create_time'])));
@@ -196,24 +256,69 @@ class ErrorReportController extends BaseController{
                             $info['not_normal_smallplat_num'].'个小平台失联超过15小时,'.$info['not_normal_box_num'].'个机顶盒失联超过15小时)';
             $data['date'] = $info['create_time'];
             
-            $count = count($hotel_arr);
             
-            $curr_hotel_arr = array_slice($hotel_arr, 0,$pageSize);
+            
+            
+            $fileds = '*';
+            $where = ' 1 and error_id='.$id;
+            $order = ' id asc';
+            $limit  = $pageSize;
+            
+            $detail_list = $m_hotel_error_report_detial->getList($fileds,$where,$order,$limit);
             
             
         }else {
-            if(!in_array($hotel_id,$hotel_arr)){
-                $this->to_back('30004');
-            }
-            $last_key = array_search($hotel_id,$hotel_arr);
-            $curr_key = $last_key+1;
-            $curr_hotel_arr = array_slice($hotel_arr, $curr_key,$pageSize);    
+            $fields = '*';
+            $where = ' 1 and error_id='.$id.' and id>'.$detail_id;
+            $order = ' id asc';
+            $limit = $pageSize;
+            $detail_list = $m_hotel_error_report_detial->getList($fileds,$where,$order,$limit);
         }
         $m_hotel = new \Common\Model\HotelModel();
-        foreach($curr_hotel_arr as $v){
-            $hotel_info = $m_hotel->getOneById('name',$v);   //酒楼名称
+        foreach($detail_list as $key=>$v){
+            $data['list'][$key]['detail_id'] = $v['id'];
+            $data['list'][$key]['hotel_id'] = $v['hotel_id'];
+            
+            $hotel_info = $m_hotel->getOneById('name',$v['hotel_id']);
+            
+            $rets = $m_hotel->getStatisticalNumByHotelId($v['hotel_id'],'tv');
+            $data['list'][$key]['hotel_info'] = $hotel_info['name'].' 共'.$rets['tv_num'].'个版位';
+            if($v['small_plat_status']==1){
+                $data['list'][$key]['small_palt_info'] = '小平台正常,上次上报时间'.$v['small_plat_report_time'].';';
+            }else {
+                
+                if($v['small_plat_report_time']=='0000-00-00 00:00:00'){
+                    $data['list'][$key]['small_palt_info'] = '小平台异常，未找到心跳';
+                }else {
+                    $diff_time = strtotime($v['create_time']) - strtotime($v['small_plat_report_time']);
+                    $diff_hours = floor($diff_time/3600);
+                    $data['list'][$key]['small_palt_info'] ='小平台异常，失联时长'.$diff_hours.'小时';
+                }
+            }
+            if(empty($v['not_normal_box_num'])){
+                $data['list'][$key]['box_info'] = '机顶盒正常';
+            }else if($v['not_normal_box_num']==1){
+                if($v['box_report_time'] =='0000-00-00 00:00:00'){
+                    $diff_hours = '未找到心跳;';
+                }else {
+                    $diff_time = strtotime($v['create_time']) - strtotime($v['box_report_time']);
+                    $diff_hours = floor($diff_time/3600);
+                    $diff_hours = '失联时长'.$diff_hours.'小时';
+                }
+                
+                $data['list'][$key]['box_info'] = '机顶盒异常1个;'.$diff_hours; 
+            }else if($v['not_normal_box_num']>1){
+                if($v['box_report_time'] =='0000-00-00 00:00:00'){
+                    $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个;未找到心跳';
+                }else {
+                    $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个'.'最后上报时间 '.$v['box_report_time'];
+                }
+                
+            }
+            
             
         }
+       
         $this->to_back($data);
     }
 }

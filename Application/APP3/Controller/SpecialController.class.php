@@ -34,6 +34,12 @@ class SpecialController extends BaseController{
                 break;
         }
         parent::_init_();
+        $actionname  = strtolower(ACTION_NAME);          //方法名称
+        $versionname = $this->traceinfo['versionname'];  //版本号
+        $versionname = str_replace('.', '', $versionname);
+        if($actionname =='getspecialname' && $versionname >='302'){
+            $this->getSpecialName302();
+        }
     }
     /**
      * @desc 获取专题名称
@@ -49,6 +55,19 @@ class SpecialController extends BaseController{
             $data['specialName'] = '';
         }
        
+        $this->to_back($data);
+    }
+    /**
+     * @desc 获取专题名称
+     */
+    public function getSpecialName302(){
+        $m_special_group =  new \Common\Model\SpecialGroupModel();
+        $where = ' 1';
+        $order = ' update_time desc ';
+        $limit = ' limit 1';
+        $type  = 1;
+        $info = $m_special_group->getInfo($where,$order , $limit ,$type );
+        $data['specialName'] = $info['name'];
         $this->to_back($data);
     }
     /**

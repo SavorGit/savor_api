@@ -180,6 +180,7 @@ class SpecialController extends BaseController{
                 $relationInfo[$key]['stitle']  = $stitle;
             }
         }
+        
         $info['list'] = $relationInfo;
         $this->to_back($info);
     }
@@ -190,10 +191,12 @@ class SpecialController extends BaseController{
         $id = I('id','0','intval');
         $pageSize = I('pageSize','20','intval');
         $m_special_group = new \Common\Model\SpecialGroupModel();
-        $where =  $order = '';
+        $order = '';
+        $where = ' 1';
         if(!empty($id)){
             $where .= " and id<{$id}"; 
         }
+        $where =" and state=1";
         $order = ' id desc';
         $limit = " limit {$pageSize}";
         $info = $m_special_group->getList($where,$order ,$limit);

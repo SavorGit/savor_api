@@ -177,9 +177,10 @@ class ErrorReportController extends BaseController{
                 
             }
            $m_hotel_error_report_detail->addInfo($result,2);
-           echo "ok";
+           
+           echo 'OK';
         }else {
-            echo "not ok";
+           echo 'NOT OK';   
         }
     }
     /**
@@ -200,7 +201,6 @@ class ErrorReportController extends BaseController{
         $order = ' id desc';
         $limit = ' limit '.$pageSize;
         $list = $m_hotel_error_report->getList($fields,$where,$order,$limit);
-        print_r($list);exit;
         $data = array();
         $count = count($list);
         $last_error_id = $list[$count-1]['id'];
@@ -338,4 +338,5 @@ class ErrorReportController extends BaseController{
        
         $this->to_back($data);
     }
+  
 }

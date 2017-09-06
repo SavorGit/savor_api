@@ -316,6 +316,23 @@ class ErrorReportController extends BaseController{
                 
             }
             
+            $count = count($detail_list);
+            
+            if($count<$pageSize){
+                $data['isNextPage'] = 0;
+            }else {
+                $last_detail_id = $detail_list[$count-1]['id'];
+                $where = array();
+                $where['error_id'] = $id;
+                $where['id'] = array('GT',$last_detail_id);
+                $order = ' id asc';
+                $info = $m_hotel_error_report_detial->where($where)->order($order)->find();
+                if(!empty($info)){
+                    $data['isNextPage'] = 1;
+                }else {
+                    $data['isNextPage'] = 0;
+                }
+            }
             
         }
        

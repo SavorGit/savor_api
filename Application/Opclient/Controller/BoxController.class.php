@@ -119,8 +119,9 @@ class BoxController extends BaseController {
         $field = " sys.remark username,GROUP_CONCAT(sru.id) rpid,
                 GROUP_CONCAT(sru.remark SEPARATOR '&&&') remark,
                 GROUP_CONCAT(sru.state) state,GROUP_CONCAT(sru
-                .create_time) ctime,sru.type boxtype,sbo.name mac_name,sru
-                .datetime,sru.hotel_id,sru.mac,sht.name hotel_name ";
+                .create_time) ctime,sru.type boxtype,sbo.name
+                mac_name,sru.datetime,sru.hotel_id,sru.mac,sht.name
+                hotel_name ";
         if ( $userid ) {
             $condition = ' 1=1 and sru.userid ='.$userid;
             $group = 'sru.DATETIME,sru.hotel_id,sru.mac';

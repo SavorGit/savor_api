@@ -77,4 +77,5 @@ return array(
     'option_insert_fail'=>'插入记录失败',
     'option_error_report_not_exist'=>'该异常记录不存在',
     'option_error_hotel_not_exist'=>'该异常记录不包含该酒楼',
+    'option_notallow_remark'=>'备注限制100字',
 );

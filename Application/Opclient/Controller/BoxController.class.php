@@ -73,18 +73,18 @@ class BoxController extends BaseController {
             $ch_ar['state'] = explode(',', $bv['state']);
             foreach($ch_ar['rpid'] as $cm=> $ck) {
                 if ($bv['boxtype'] == 2) {
-                    $st_array['type'] = '机顶盒';
-                    $st_array['mac_name'] = $bv['mac_name'];
+                    $tp= '机顶盒';
+                    $tname = $bv['mac_name'];
                 } else {
-                    $st_array['type'] = '小平台';
-                    $st_array['mac_name'] = '';
+                    $tp = '小平台';
+                    $tname = '';
                 }
                 $st_array['create_time'] = $ch_ar['ctime'][$cm];
                 //获取解决是否
                 if ( $ch_ar['state'][$cm] == 1) {
-                    $st_array['state'] = '已解决';
+                    $st_array['state'] = '已解决：'.$tp.$tname;
                 } elseif ( $ch_ar['state'][$cm] == 2) {
-                    $st_array['state'] = '未解决';
+                    $st_array['state'] = '未解决：'.$tp.$tname;
                 }
                 //获取出错条件
                 $rinfo = $rdeitalModel->fetchDataWhere(array('repair_id'=>$ch_ar['rpid'][$cm]),'','repair_type',2);
@@ -262,6 +262,10 @@ class BoxController extends BaseController {
             if(empty($info)){
                 $this->to_back('30052');
             }
+        }
+
+        if(mb_strlen($save['remark']) >= 100) {
+            $this->to_back('30055');
         }
 
         if(empty($save['remark']) && empty($reason_str)) {

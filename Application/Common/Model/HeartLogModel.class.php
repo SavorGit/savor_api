@@ -26,7 +26,7 @@ class HeartLogModel extends Model
 	    $data = $this->field($fileds)->where($where)->order($order)->find();
 	    return $data;
 
-
+	}
 	public function getHotelHeartBox($where,$fields = '*',$group=''){
 		$result = $this->field($fields)->where($where)->group($group)->select();
 		return $result;

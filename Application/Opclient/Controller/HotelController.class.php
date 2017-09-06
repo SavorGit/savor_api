@@ -173,7 +173,6 @@ class HotelController extends BaseController {
                 'last_small_state' =>0,
             );
         }
-        var_export($dat);
         return $dat;
     }
 

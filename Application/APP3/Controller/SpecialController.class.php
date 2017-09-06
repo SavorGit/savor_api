@@ -214,7 +214,7 @@ class SpecialController extends BaseController{
      */
     public function specialGroupList(){
         //$id = I('id','0','intval');
-        $update_time = $this->params['update_time'];
+        $update_time = $this->params['updateTime'];
         
         $pageSize = I('pageSize','20','intval');
         $m_special_group = new \Common\Model\SpecialGroupModel();

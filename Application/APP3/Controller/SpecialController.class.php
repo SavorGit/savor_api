@@ -24,13 +24,13 @@ class SpecialController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('id'=>'1000');
                 break;
-            case 'getSpecialGroupList':
+           /*  case 'getSpecialGroupList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('id'=>'1000');
-                break;
+                $this->valid_fields = array('update_time'=>'1000');
+                break; */
             case 'specialGroupList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('id'=>'1000');
+                $this->valid_fields = array('update_time'=>'1000');
                 break;
         }
         parent::_init_();
@@ -125,7 +125,7 @@ class SpecialController extends BaseController{
         $order = $limit =  '';
         $where =  '1=1';
         if(empty($id)){
-            $order = ' id desc ';
+            $order = ' update_time desc ';
             $limit = ' limit 1';
             $type  = 1;
             $info = $m_special_group->getInfo($where,$order , $limit ,$type );
@@ -180,6 +180,7 @@ class SpecialController extends BaseController{
                 $relationInfo[$key]['stitle']  = $stitle;
             }
         }
+        
         $info['list'] = $relationInfo;
         $this->to_back($info);
     }
@@ -187,14 +188,18 @@ class SpecialController extends BaseController{
      * @desc 获取专题组列表
      */
     public function specialGroupList(){
-        $id = I('id','0','intval');
+        //$id = I('id','0','intval');
+        $update_time = $this->params['update_time'];
+        
         $pageSize = I('pageSize','20','intval');
         $m_special_group = new \Common\Model\SpecialGroupModel();
-        $where =  $order = '';
-        if(!empty($id)){
-            $where .= " and id<{$id}"; 
+        $order = '';
+        $where = ' ';
+        if(!empty($update_time)){
+            $where .= " and update_time<'".$update_time."'"; 
         }
-        $order = ' id desc';
+        $where .=" and state=1";
+        $order = ' update_time desc';
         $limit = " limit {$pageSize}";
         $info = $m_special_group->getList($where,$order ,$limit);
         foreach($info as $key=>$v){
@@ -207,8 +212,8 @@ class SpecialController extends BaseController{
                 $nextPage = 0;
             }else{
                 
-                $where =" and id<{$info[$count-1]['id']}";
-                $order = ' id desc';
+                $where =" and update_time<'".$info[$count-1]['update_time']."'";
+                $order = ' update_time desc';
                 $limit =  ' limit 1';
                 $nextInfo = $m_special_group->getList($where,$order ,$limit);
                 if(empty($nextInfo)){

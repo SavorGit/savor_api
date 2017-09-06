@@ -77,5 +77,6 @@ return array(
 		'30053'=>'option_pla_not_exists',
 		'30054'=>'option_reason_not_empty',
 		'30055'=>'option_insert_fail',
+		'30056'=>'option_notallow_remark',
 	),
 );

@@ -16,11 +16,15 @@ class HotelController extends BaseController {
         switch(ACTION_NAME) {
             case 'getHotelMacInfoById':
                 $this->is_verify = 1;
-                $this->valid_fields=array('hotelId'=>'1001');
+                $this->valid_fields=array('hotel_id'=>'1001');
                 break;
             case 'searchHotel':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_name'=>'1001');
+                break;
+            case 'getHotelVersionById':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>'1001');
                 break;
         }
         parent::_init_();
@@ -35,7 +39,7 @@ class HotelController extends BaseController {
      * @return json
      */
     public function getHotelMacInfoById() {
-        $hotel_id = intval( $this->params['hotelId'] );
+        $hotel_id = intval( $this->params['hotel_id'] );
         $this->disposeTips($hotel_id);
         $hotelModel = new \Common\Model\HotelModel();
         $menuHoModel = new \Common\Model\MenuHotelModel();
@@ -108,5 +112,146 @@ class HotelController extends BaseController {
         $data = $m_hotel->getHotelList($where,$order,$limit,$fields = 'id,name');
         $list['list'] =$data;
         $this->to_back($list);
+    }
+
+    public function getNewVerson($hotelid, $now, $start_time) {
+        $m_heart_log = new \Common\Model\HeartLogModel();
+        //获得小平台最后心跳时间
+        $where = '';
+        $where .=" 1 and hotel_id=".$hotelid." and type=1";
+        $field = " sd.`version_name`,sa.`ltime` ";
+        $rets  = $m_heart_log->getLastHeartVersion($field, $where);
+        if ( empty($rets) ) {
+            $dat['last_heart_time'] = array(
+                'ltime'=>'',
+                'lstate'=>0,
+            );
+            $dat['last_small'] = '';
+        } else {
+            $ltime = $rets[0]['ltime'];
+            $diff = ($now-strtotime($ltime));
+            if($diff< 3600) {
+                $dp = floor($diff/60).'分';
+
+            }else if ($diff >= 3600 && $diff <= 86400) {
+                $hour = floor($diff/3600);
+                $min = floor($diff%3600/60);
+                $dp = $hour.'小时'.$min.'分';
+            }else if ($diff > 86400) {
+                $day = floor($diff/86400);
+                $hour = floor($diff%86400/3600);
+                $dp = $day.'天'.$hour.'小时';
+            }
+            $lp = strtotime($ltime);
+            if($lp <= $start_time) {
+                $mstate = 0;
+            } else {
+                $mstate = 1;
+            }
+            $dat['last_heart_time'] = array(
+                'ltime'=>$dp,
+                'lstate'=>$mstate,
+            );
+            $dat['last_small'] = $rets[0]['version_name'];
+        }
+        //小平台
+        $versionModel = new \Common\Model\VersionModel();
+        $co['device_type'] = 1;
+        $order = 'id desc ';
+        $field = 'version_name';
+        $infoa = $versionModel->fetchDataWhere($co, $order, $field, 1);
+        $dat['new_small'] = $infoa['version_name'];
+        //获取小平台心跳最后版本号
+        if ($dat['new_small'] == $dat['last_small']) {
+            $dat['last_small'] = array(
+                'last_small_pla' =>$dat['last_small'],
+                'last_small_state' =>1,
+            );
+        } else {
+            $dat['last_small'] = array(
+                'last_small_pla' =>$dat['last_small'],
+                'last_small_state' =>0,
+            );
+        }
+        var_export($dat);
+        return $dat;
+    }
+
+    public function getHotelVersionById(){
+        $hotel_id = intval( $this->params['hotel_id'] );
+        $m_heart_log = new \Common\Model\HeartLogModel();
+        $this->disposeTips($hotel_id);
+        //获取版本信息
+        $now = time();
+        $start_time = strtotime('-15 hours');
+        $version_info = $this->getNewVerson($hotel_id, $now, $start_time);
+        $data['list']['version'] = $version_info;
+
+
+        //获取心跳相关
+        $m_box = new \Common\Model\BoxModel();
+        $where = '';
+        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state=1 and a.flag =0';
+        $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
+        $unusual_num = 0;
+        $box_total_num = count($box_list);
+        foreach($box_list as $ks=>$vs){
+            $where = '';
+            $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_mac='".$vs['mac']."'";
+
+            $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
+            if(empty($rets)){
+                $unusual_num +=1;
+                $box_list[$ks]['ustate'] = 0;
+                $box_list[$ks]['last_heart_time'] = '无';
+                $box_list[$ks]['ltime'] = '-888';
+            }else {
+                $ltime = $rets[0]['ltime'];
+                $diff = ($now-strtotime($ltime));
+                if($diff< 3600) {
+                    $box_list[$ks]['last_heart_time'] = floor($diff/60).'分';
+
+                }else if ($diff >= 3600 && $diff <= 86400) {
+                    $hour = floor($diff/3600);
+                    $min = floor($diff%3600/60);
+                    $box_list[$ks]['last_heart_time'] = $hour.'小时'.$min.'分';
+                }else if ($diff > 86400) {
+                    $day = floor($diff/86400);
+                    $hour = floor($diff%86400/3600);
+                    $box_list[$ks]['last_heart_time'] = $day.'天'.$hour.'小时';
+                }
+                $box_list[$ks]['ltime'] = strtotime($ltime);
+                if($box_list[$ks]['ltime'] <= $start_time) {
+                    $unusual_num +=1;
+                    $box_list[$ks]['ustate'] = 0;
+                } else {
+                    $box_list[$ks]['ustate'] = 1;
+                }
+            }
+        }
+        //二维数组排序
+
+        foreach ($box_list as $key => $row)
+        {
+            $volume[$key]  = $row['ltime'];
+        }
+        array_multisort($volume, SORT_ASC, $box_list);
+        $redMo = new \Common\Model\RepairBoxUserModel();
+
+        foreach($box_list as $bk => $bv) {
+            //获取机顶盒维修记录
+            $field = 'sys.remark nickname, sru.create_time ctime ';
+            $co['mac'] = $bv['mac'];
+            $rinfo = $redMo->getRepairUserInfo($field, $co);
+            if (empty($rinfo)) {
+                $box_list[$bk]['repair_record'] = array();
+            } else {
+                $box_list[$bk]['repair_record'] = $rinfo;
+            }
+            unset($box_list[$bk]['ltime']);
+        }
+        $data['list']['box_info'] = $box_list;
+        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过15个小时'.$unusual_num.'个)';
+        $this->to_back($data);
     }
 }

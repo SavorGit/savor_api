@@ -38,5 +38,16 @@ class RepairBoxUserModel extends Model
 		return $result;
 	}
 
+	public function getRepairUserInfo($fields, $map){
+		$map['flag'] = 0;
+		$data = $this->alias('sru')
+					 ->field($fields)
+					 ->join('savor_sysuser sys ON sys.id =
+					 sru.userid')
+					 ->where($map)
+					 ->select();
+		return $data;
+	}
+
 
 }//End Class

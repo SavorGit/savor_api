@@ -138,18 +138,20 @@ class SpecialController extends BaseController{
         if(empty($info)){
             $this->to_back(20001);
         }
+        
         $info['img_url'] = $this->getOssAddr($info['img_url']);
         $info['contentUrl'] = C('CONTENT_HOST').'admin/SpecialgroupShow/showsp?id='.$info['id'];
         $m_special_relation = new \Common\Model\SpecialRelationModel();
         $relationInfo = $m_special_relation->getInfoBySpecialId($info['id']);
         $artModel = new \Common\Model\ArticleModel();
-        
+        $flag = 0;
         foreach($relationInfo as $key=>$v){
             if($v['sgtype'] == 1){
                 $stext = $v['stext'];
                 unset($relationInfo[$key]);
-                $relationInfo[$key]['sgtype'] = 1;
-                $relationInfo[$key]['stext'] = $stext;
+                $relationInfo[$flag]['sgtype'] = 1;
+                $relationInfo[$flag]['stext'] = $stext;
+                $flag ++;
             }else if($v['sgtype']==2){
                 $now = date("Y-m-d H:i:s",time());
                 
@@ -164,21 +166,25 @@ class SpecialController extends BaseController{
                     $artinfo = $this->changeList($artinfo);
                     $artinfo = $artinfo[0];
                     $artinfo['sgtype'] = 2;
-                    $relationInfo[$key] = $artinfo;
+                    $relationInfo[$flag] = $artinfo;
+                    $flag ++;
                 }
                 
                 
             }else if($v['sgtype']==3) {
                 $img_url = $this->getOssAddrByMediaId($v['spictureid']);
                 unset($relationInfo[$key]);
-                $relationInfo[$key]['sgtype']  = '3';
-                $relationInfo[$key]['img_url'] = $img_url;
+                $relationInfo[$flag]['sgtype']  = '3';
+                $relationInfo[$flag]['img_url'] = $img_url;
+                $flag ++;
             }else if($v['sgtype']==4){
                 $stitle = $v['stitle'];
                 unset($relationInfo[$key]);
-                $relationInfo[$key]['sgtype']  = '4';
-                $relationInfo[$key]['stitle']  = $stitle;
+                $relationInfo[$flag]['sgtype']  = '4';
+                $relationInfo[$flag]['stitle']  = $stitle;
+                $flag ++;
             }
+            
         }
         
         $info['list'] = $relationInfo;

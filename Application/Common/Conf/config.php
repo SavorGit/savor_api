@@ -84,6 +84,7 @@ return array(
 	'HOST_NAME'             => 'http://'.$_SERVER['HTTP_HOST'],
 	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
     'HOTEL_CLIENT_NAME_ARR'=>array('android'=>5,'ios'=>6),
+    'OPTION_CLIENT_NAME_ARR'=>array('android'=>7,'ios'=>8),
     'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
 	'DOWNLOAD_HOTEL_INFO_TYPE'=>array('ads'=>1,'adv'=>2,'pro'=>3,'vod'=>4,'logo'=>5,'load'=>6),
 	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量'),

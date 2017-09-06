@@ -75,7 +75,7 @@ class IndexController extends BaseController{
             
             $where = '';
             $where .=" 1 and hotel_id=".$v['id']." and type=1";
-            $where .="  and last_heart_time>='".$end_time."'";
+            $where .="  and last_heart_time>='".$start_time."'";
             $ret = $m_heart_log->getOnlineHotel($where,'hotel_id');
             if(!empty($ret)){//小平台有15小时内的心跳 判断机顶盒是否有心跳
                 $flag = 0;
@@ -86,7 +86,7 @@ class IndexController extends BaseController{
                 foreach($box_list as $ks=>$vs){
                      $where = '';
                      $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                     $where .="  and last_heart_time>='".$end_time."'";
+                     $where .="  and last_heart_time>='".$start_time."'";
                      
                      $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
                      if(empty($rets)){
@@ -110,7 +110,7 @@ class IndexController extends BaseController{
                 foreach($box_list as $ks=>$vs){
                     $where = '';
                     $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $where .="  and last_heart_time>='".$end_time."'";
+                    $where .="  and last_heart_time>='".$start_time."'";
                      
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
                     if(empty($rets)){

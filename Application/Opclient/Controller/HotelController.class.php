@@ -119,7 +119,7 @@ class HotelController extends BaseController {
         //获得小平台最后心跳时间
         $where = '';
         $where .=" 1 and hotel_id=".$hotelid." and type=1";
-        $field = " sd.`version_name`,sa.`ltime` ";
+        $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
         if ( empty($rets) ) {
             $dat['last_heart_time'] = array(
@@ -127,7 +127,9 @@ class HotelController extends BaseController {
                 'lstate'=>0,
             );
             $dat['last_small'] = '';
+            $dat['small_mac'] = '';
         } else {
+            $dat['small_mac'] = $rets[0]['small_mac'];
             $ltime = $rets[0]['ltime'];
             $diff = ($now-strtotime($ltime));
             if($diff< 3600) {
@@ -182,6 +184,9 @@ class HotelController extends BaseController {
         $ossboxModel = new \Common\Model\OssBoxModel();
         $last_time = $ossboxModel->getLastTime($mac);
         $time =  date("Y-m-d H:i",strtotime($last_time[0]['lastma']));
+        if($time == '1970-01-01 00:00') {
+            $time = '无';
+        }
         return $time;
     }
 

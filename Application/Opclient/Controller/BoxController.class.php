@@ -227,7 +227,7 @@ class BoxController extends BaseController {
      * @return json
      */
     public function disposeTips($save) {
-        $reason_str = $this->params['reason_str'];
+        $reason_str = $this->params['repair_num_str'];
         //检测酒楼是否存在且正常
         $m_hotel = new \Common\Model\HotelModel();
         $hotel_info = $m_hotel->getInfoById($save['hotel_id'], 'id');

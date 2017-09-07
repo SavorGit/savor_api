@@ -59,7 +59,7 @@ class BoxController extends BaseController {
         $this->to_back($data);
     }
 
-    public function changeRepairInfo($box_info){
+    public function changeRepairInfo($box_info, $nextpage){
         $dap = array();
         $rdeitalModel = new \Common\Model\RepairDetailModel();
         foreach ($box_info as $bk=>$bv) {
@@ -109,8 +109,8 @@ class BoxController extends BaseController {
             $dap[$bk]['hotel_name'] = $bv['hotel_name'];
             $dap[$bk]['repair_list'] = $dac;
         }
-
-        $data['list'] = $dap;
+        $data['list']['repair_info'] = $dap;
+        $data['list']['isNextPage'] = $nextpage;
         $this->to_back($data);
     }
 
@@ -140,9 +140,15 @@ class BoxController extends BaseController {
         $size  =  2;
         $start = empty($this->params['page_num'])?1:$this->params['page_num'];
         $start  = ( $start-1 ) * $size;
+        $nextpage = 1;
         if ($userid == 0) {
             //获取所有
             $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+            //获取下一页是否有记录
+            $box_info_next = $this->getRepairBoxInfo($userid, $start+1, $size);
+            if(empty($box_info_next)) {
+                $nextpage = 0;
+            }
         } else {
             $m_sysuser = new \Common\Model\SysUserModel();
             $where['status']   =1;
@@ -152,10 +158,15 @@ class BoxController extends BaseController {
                 $this->to_back('30001');    //用户不存在
             } else {
                 $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+                //获取下一页是否有记录
+                $box_info_next = $this->getRepairBoxInfo($userid, $start+1, $size);
+                if(empty($box_info_next)) {
+                    $nextpage = 0;
+                }
 
             }
         }
-        $dat = $this->changeRepairInfo($box_info);
+        $dat = $this->changeRepairInfo($box_info, $nextpage);
 
     }
 

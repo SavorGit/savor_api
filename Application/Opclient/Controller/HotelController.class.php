@@ -257,7 +257,7 @@ class HotelController extends BaseController {
 
         foreach($box_list as $bk => $bv) {
             //获取机顶盒维修记录
-            $field = 'sys.remark nickname, sru.create_time ctime ';
+            $field = 'sys.remark nickname, date_format(sru.create_time,"%m-%d  %H:%i") ctime ';
             $co['mac'] = $bv['mac'];
             $rinfo = $redMo->getRepairUserInfo($field, $co);
             if (empty($rinfo)) {

@@ -119,7 +119,7 @@ class HotelController extends BaseController {
         //获得小平台最后心跳时间
         $where = '';
         $where .=" 1 and hotel_id=".$hotelid." and type=1";
-        $field = " sd.`version_name`,sa.`ltime` ";
+        $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
         if ( empty($rets) ) {
             $dat['last_heart_time'] = array(
@@ -127,22 +127,25 @@ class HotelController extends BaseController {
                 'lstate'=>0,
             );
             $dat['last_small'] = '';
+            $dat['small_mac'] = '';
         } else {
+            $dat['small_mac'] = $rets[0]['small_mac'];
             $ltime = $rets[0]['ltime'];
             $diff = ($now-strtotime($ltime));
             if($diff< 3600) {
-                $dp = floor($diff/60).'分';
+                $dp = floor($diff/60).'分钟';
 
             }else if ($diff >= 3600 && $diff <= 86400) {
                 $hour = floor($diff/3600);
                 $min = floor($diff%3600/60);
-                $dp = $hour.'小时'.$min.'分';
+                $dp = $hour.'小时'.$min.'分钟';
             }else if ($diff > 86400) {
                 $day = floor($diff/86400);
                 $hour = floor($diff%86400/3600);
                 $dp = $day.'天'.$hour.'小时';
             }
             $lp = strtotime($ltime);
+            $dp = $dp.'前';
             if($lp <= $start_time) {
                 $mstate = 0;
             } else {
@@ -176,7 +179,20 @@ class HotelController extends BaseController {
         return $dat;
     }
 
+    public function getLastNginx($mac){
+        //获取机顶盒日志
+        $ossboxModel = new \Common\Model\OssBoxModel();
+        $last_time = $ossboxModel->getLastTime($mac);
+        $time =  date("Y-m-d H:i",strtotime($last_time[0]['lastma']));
+        if($time == '1970-01-01 00:00') {
+            $time = '无';
+        }
+        return $time;
+    }
+
     public function getHotelVersionById(){
+
+
         $hotel_id = intval( $this->params['hotel_id'] );
         $m_heart_log = new \Common\Model\HeartLogModel();
         $this->disposeTips($hotel_id);
@@ -199,6 +215,7 @@ class HotelController extends BaseController {
             $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_mac='".$vs['mac']."'";
 
             $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
+            $box_list[$ks]['last_nginx'] = $this->getLastNginx($vs['mac']);
             if(empty($rets)){
                 $unusual_num +=1;
                 $box_list[$ks]['ustate'] = 0;
@@ -208,17 +225,18 @@ class HotelController extends BaseController {
                 $ltime = $rets[0]['ltime'];
                 $diff = ($now-strtotime($ltime));
                 if($diff< 3600) {
-                    $box_list[$ks]['last_heart_time'] = floor($diff/60).'分';
+                    $box_list[$ks]['last_heart_time'] = floor($diff/60).'分钟';
 
                 }else if ($diff >= 3600 && $diff <= 86400) {
                     $hour = floor($diff/3600);
                     $min = floor($diff%3600/60);
-                    $box_list[$ks]['last_heart_time'] = $hour.'小时'.$min.'分';
+                    $box_list[$ks]['last_heart_time'] = $hour.'小时'.$min.'分钟';
                 }else if ($diff > 86400) {
                     $day = floor($diff/86400);
                     $hour = floor($diff%86400/3600);
                     $box_list[$ks]['last_heart_time'] = $day.'天'.$hour.'小时';
                 }
+                $box_list[$ks]['last_heart_time'] = $box_list[$ks]['last_heart_time'].'前';
                 $box_list[$ks]['ltime'] = strtotime($ltime);
                 if($box_list[$ks]['ltime'] <= $start_time) {
                     $unusual_num +=1;

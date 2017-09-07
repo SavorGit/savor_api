@@ -176,6 +176,17 @@ class HotelController extends BaseController {
                 'last_small_state' =>0,
             );
         }
+
+        //获取小平台维修记录
+        $redMo = new \Common\Model\RepairBoxUserModel();
+        $cao['mac'] =  $dat['small_mac'];
+        $field = 'sys.remark nickname, date_format(sru.create_time,"%m-%d  %H:%i") ctime ';
+        $rinfo = $redMo->getRepairUserInfo($field, $cao);
+        if (empty($rinfo)) {
+            $dat['repair_record'] = array();
+        } else {
+            $dat['repair_record'] = $rinfo;
+        }
         return $dat;
     }
 

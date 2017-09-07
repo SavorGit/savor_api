@@ -283,6 +283,7 @@ class ErrorReportController extends BaseController{
             
             $rets = $m_hotel->getStatisticalNumByHotelId($v['hotel_id'],'tv');
             $data['list'][$key]['hotel_info'] = $hotel_info['name'].' 共'.$rets['tv_num'].'个版位';
+            $data['list'][$key]['hotel_name'] = $hotel_info['name'];
             if($v['small_plat_status']==1){
                 $data['list'][$key]['small_palt_info'] = '小平台正常,上次上报时间'.$v['small_plat_report_time'].';';
             }else {

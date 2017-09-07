@@ -109,8 +109,8 @@ class BoxController extends BaseController {
             $dap[$bk]['hotel_name'] = $bv['hotel_name'];
             $dap[$bk]['repair_list'] = $dac;
         }
-        $data['list']['repair_info'] = $dap;
-        $data['list']['isNextPage'] = $nextpage;
+        $data['list'] = $dap;
+        $data['isNextPage'] = $nextpage;
         $this->to_back($data);
     }
 
@@ -132,6 +132,7 @@ class BoxController extends BaseController {
         }
         $order = " CONCAT(sru.DATETIME,sru.create_time) DESC ";
         $box_info = $redMo->getRepairInfo($field, $condition, $group, $order, $start, $size);
+        //var_export($redMo->getLastSql());
         return $box_info;
     }
 
@@ -145,7 +146,7 @@ class BoxController extends BaseController {
             //获取所有
             $box_info = $this->getRepairBoxInfo($userid, $start, $size);
             //获取下一页是否有记录
-            $box_info_next = $this->getRepairBoxInfo($userid, $start+1, $size);
+            $box_info_next = $this->getRepairBoxInfo($userid, $start+$size, $size);
             if(empty($box_info_next)) {
                 $nextpage = 0;
             }
@@ -159,7 +160,7 @@ class BoxController extends BaseController {
             } else {
                 $box_info = $this->getRepairBoxInfo($userid, $start, $size);
                 //获取下一页是否有记录
-                $box_info_next = $this->getRepairBoxInfo($userid, $start+1, $size);
+                $box_info_next = $this->getRepairBoxInfo($userid, $start+$size, $size);
                 if(empty($box_info_next)) {
                     $nextpage = 0;
                 }

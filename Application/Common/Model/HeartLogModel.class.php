@@ -33,7 +33,7 @@ class HeartLogModel extends Model
 	}
 
 	public function getLastHeartVersion($field,$where ){
-		$sql = " SELECT $field FROM savor_device_version sd JOIN (SELECT MAX(last_heart_time) ltime,MAX(apk_version ) ak,box_mac FROM
+		$sql = " SELECT $field FROM savor_device_version sd JOIN (SELECT MAX(last_heart_time) ltime,MAX(war_version ) ak,box_mac FROM
  savor_heart_log WHERE $where) sa ON sa.ak  =  sd.version_code";
 		$result = $this->query($sql);
 		return $result;

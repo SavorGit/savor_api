@@ -173,6 +173,7 @@ class RecommendController extends BaseController{
     public function judgeRecommendInfo($vinfo){
         //推荐数
         //print_r($vinfo);
+        $now_date = date('Y-m-d H:i:s',time());
         if($vinfo['type']==0 || $vinfo['type'] ==1){//纯文本、图文
             $mend_len = $this->imgTextRecommondNums;
         }else if($vinfo['type']==2){//图集
@@ -190,7 +191,7 @@ class RecommendController extends BaseController{
         if($tag_len == 0 || empty($order_tag)){
             $dap = array();
         }else{
-            $where = "1=1 and state = 2 and hot_category_id !=103  and type = ".$vinfo['type'];
+            $where = "1=1 and state = 2 and hot_category_id !=103  and type = ".$vinfo['type']." and bespeak_time<='".$now_date."'";
             $field = 'id,title,order_tag';
             $dat = array();
             $dap = array();
@@ -223,7 +224,7 @@ class RecommendController extends BaseController{
         //其他全分类查找推荐
         if($nums<$mend_len){
             if($tag_len){//如果该文章有标签
-                $where = "1=1 and state = 2  and hot_category_id in(101,102)";
+                $where = "1=1 and state = 2  and hot_category_id in(101,102)  and bespeak_time<='".$now_date."'";
                 $field = 'id,title,order_tag';
                 
                 foreach($dat as $dk=>$dv) {
@@ -245,7 +246,6 @@ class RecommendController extends BaseController{
         }
         //获取最新最新内容开始
         if($nums<$mend_len){
-            $now_date = date('Y-m-d H:i:s',time());
             $info = $articleModel->getList("hot_category_id != 103 and state =2 and bespeak_time<='".$now_date."'",' sort_num desc',0,10,'id,title,order_tag');
             foreach($info as $v){
                 if($v['id'] == $vinfo['id']){

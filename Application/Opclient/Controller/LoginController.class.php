@@ -26,7 +26,7 @@ class LoginController extends BaseController{
         $username = $this->params['username'];   //用户名
         $password = $this->params['password'];   //密码
         $pwdpre  = C('PWDPRE');
-        
+        $passme = md5($password.$pwdpre);
         $password = md5(md5($password.$pwdpre));
         $m_sysuser = new \Common\Model\SysUserModel();
         
@@ -34,6 +34,19 @@ class LoginController extends BaseController{
         $where['status']   =1;
         $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname,password');
         
+
+        //获取运维组id
+        $sysusergroup  = new \Common\Model\SysusergroupModel();
+        $map['sgr.name'] = '白玉涛测试运维';
+        $map['su.username'] = $username;
+        $map['su.password'] = $passme;
+        $map['su.status'] = '1';
+        $field = 'su.id';
+        $userarr =  $sysusergroup->getOpeprv($map, $field);
+        if(empty($userarr)){
+            $this->to_back('30001');    //用户密码错误或者无权限
+        }
+
         if(empty($userinfo)){
             $this->to_back('30001');    //用户不存在
         }

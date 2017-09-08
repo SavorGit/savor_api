@@ -77,7 +77,11 @@ class HotelController extends BaseController {
         if(!empty($isHaveTv)){
             $isRealTv = $tvModel->changeBoxTv($isHaveTv);
         }
-        $data['list']['position'] = $isRealTv;
+        if(!empty($isRealTv)){
+            $data['list']['position'] = $isRealTv;
+        } else {
+            $data['list']['position'] = array();
+        }
         $this->to_back($data);
     }
 

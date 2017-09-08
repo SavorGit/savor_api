@@ -176,6 +176,17 @@ class HotelController extends BaseController {
                 'last_small_state' =>0,
             );
         }
+
+        //获取小平台维修记录
+        $redMo = new \Common\Model\RepairBoxUserModel();
+        $cao['mac'] =  $dat['small_mac'];
+        $field = 'sys.remark nickname, date_format(sru.create_time,"%m-%d  %H:%i") ctime ';
+        $rinfo = $redMo->getRepairUserInfo($field, $cao);
+        if (empty($rinfo)) {
+            $dat['repair_record'] = array();
+        } else {
+            $dat['repair_record'] = $rinfo;
+        }
         return $dat;
     }
 
@@ -257,7 +268,7 @@ class HotelController extends BaseController {
 
         foreach($box_list as $bk => $bv) {
             //获取机顶盒维修记录
-            $field = 'sys.remark nickname, sru.create_time ctime ';
+            $field = 'sys.remark nickname, date_format(sru.create_time,"%m-%d  %H:%i") ctime ';
             $co['mac'] = $bv['mac'];
             $rinfo = $redMo->getRepairUserInfo($field, $co);
             if (empty($rinfo)) {

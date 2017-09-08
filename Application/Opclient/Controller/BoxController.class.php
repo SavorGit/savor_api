@@ -59,7 +59,7 @@ class BoxController extends BaseController {
         $this->to_back($data);
     }
 
-    public function changeRepairInfo($box_info){
+    public function changeRepairInfo($box_info, $nextpage){
         $dap = array();
         $rdeitalModel = new \Common\Model\RepairDetailModel();
         foreach ($box_info as $bk=>$bv) {
@@ -103,14 +103,19 @@ class BoxController extends BaseController {
                 $st_array['remark'] = $ch_ar['remark'][$cm];
                 $dac[] = $st_array;
             }
+            foreach ($dac as $key => $row)
+            {
+                $volumbe[$key]  = $row['create_time'];
+            }
+            array_multisort($volumbe, SORT_DESC, $dac);
             $dap[$bk]['nickname'] = $bv['username'];
             $dap[$bk]['datetime'] = date("Y-m-d",
                 strtotime($bv['datetime']));
             $dap[$bk]['hotel_name'] = $bv['hotel_name'];
             $dap[$bk]['repair_list'] = $dac;
         }
-
         $data['list'] = $dap;
+        $data['isNextPage'] = $nextpage;
         $this->to_back($data);
     }
 
@@ -124,10 +129,10 @@ class BoxController extends BaseController {
                 hotel_name ";
         if ( $userid ) {
             $condition = ' 1=1 and sru.userid ='.$userid;
-            $group = 'sru.DATETIME,sru.hotel_id,sru.mac';
+            $group = 'sru.datetime,sru.hotel_id,sru.mac';
         } else {
             $condition = ' 1=1 ';
-            $group = 'sru.DATETIME,sru.hotel_id,sru.userid,sru
+            $group = 'sru.datetime,sru.hotel_id,sru.userid,sru
             .mac';
         }
         $order = " CONCAT(sru.DATETIME,sru.create_time) DESC ";
@@ -137,12 +142,18 @@ class BoxController extends BaseController {
 
     public function getRepairRecordListByUserid() {
         $userid = $this->params['userid'];   //用户名
-        $size  =  2;
+        $size  =  15;
         $start = empty($this->params['page_num'])?1:$this->params['page_num'];
         $start  = ( $start-1 ) * $size;
+        $nextpage = 1;
         if ($userid == 0) {
             //获取所有
             $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+            //获取下一页是否有记录
+            $box_info_next = $this->getRepairBoxInfo($userid, $start+$size, $size);
+            if(empty($box_info_next)) {
+                $nextpage = 0;
+            }
         } else {
             $m_sysuser = new \Common\Model\SysUserModel();
             $where['status']   =1;
@@ -152,10 +163,15 @@ class BoxController extends BaseController {
                 $this->to_back('30001');    //用户不存在
             } else {
                 $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+                //获取下一页是否有记录
+                $box_info_next = $this->getRepairBoxInfo($userid, $start+$size, $size);
+                if(empty($box_info_next)) {
+                    $nextpage = 0;
+                }
 
             }
         }
-        $dat = $this->changeRepairInfo($box_info);
+        $dat = $this->changeRepairInfo($box_info, $nextpage);
 
     }
 

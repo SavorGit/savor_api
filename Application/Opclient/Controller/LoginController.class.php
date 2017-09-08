@@ -37,7 +37,7 @@ class LoginController extends BaseController{
 
         //获取运维组id
         $sysusergroup  = new \Common\Model\SysusergroupModel();
-        $map['sgr.name'] = '白玉涛测试运维';
+        $map['sgr.name'] = '酒楼运维';
         $map['su.username'] = $username;
         $map['su.password'] = $passme;
         $map['su.status'] = '1';

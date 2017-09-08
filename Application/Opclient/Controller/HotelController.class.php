@@ -125,13 +125,15 @@ class HotelController extends BaseController {
         $where .=" 1 and hotel_id=".$hotelid." and type=1";
         $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
+        $m_hotel_ext = new \Common\Model\HotelExtModel();
         if ( empty($rets) ) {
             $dat['last_heart_time'] = array(
                 'ltime'=>'',
                 'lstate'=>0,
             );
             $dat['last_small'] = '';
-            $dat['small_mac'] = '';
+            $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
+            $dat['small_mac'] = $infos['mac_addr'];
         } else {
             $dat['small_mac'] = $rets[0]['small_mac'];
             $ltime = $rets[0]['ltime'];

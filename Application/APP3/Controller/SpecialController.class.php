@@ -155,7 +155,7 @@ class SpecialController extends BaseController{
             
         }
         if(empty($info)){
-            $this->to_back(20001);
+            $this->to_back(19101);
         }
         
         $info['img_url'] = $this->getOssAddr($info['img_url']);

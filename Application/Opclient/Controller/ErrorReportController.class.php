@@ -238,7 +238,14 @@ class ErrorReportController extends BaseController{
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
         $fields = '*';
         $where['id'] = $id;
-        $where['is_push'] =1;
+        $traceinfo = $this->traceinfo;
+        $clientname = $traceinfo['clientname'];
+        if($clientname=='android'){
+            $where['is_push'] = array('in','1,2');
+        }else if($clientname =='ios'){
+            $where['is_push'] = array('in','1,3');
+        }
+        
         $info = $m_hotel_error_report->getInfo($fields,$where);
         
         

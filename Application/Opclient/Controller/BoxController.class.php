@@ -103,6 +103,11 @@ class BoxController extends BaseController {
                 $st_array['remark'] = $ch_ar['remark'][$cm];
                 $dac[] = $st_array;
             }
+            foreach ($dac as $key => $row)
+            {
+                $volumbe[$key]  = $row['create_time'];
+            }
+            array_multisort($volumbe, SORT_DESC, $dac);
             $dap[$bk]['nickname'] = $bv['username'];
             $dap[$bk]['datetime'] = date("Y-m-d",
                 strtotime($bv['datetime']));
@@ -132,13 +137,12 @@ class BoxController extends BaseController {
         }
         $order = " CONCAT(sru.DATETIME,sru.create_time) DESC ";
         $box_info = $redMo->getRepairInfo($field, $condition, $group, $order, $start, $size);
-        //var_export($redMo->getLastSql());
         return $box_info;
     }
 
     public function getRepairRecordListByUserid() {
         $userid = $this->params['userid'];   //用户名
-        $size  =  2;
+        $size  =  15;
         $start = empty($this->params['page_num'])?1:$this->params['page_num'];
         $start  = ( $start-1 ) * $size;
         $nextpage = 1;

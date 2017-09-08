@@ -64,7 +64,7 @@ return array(
         '19002'=>'content_not_check_pass',
 	    '19003'=>'not_demand_content',
 	    //专题组接口
-	    '20001'=>'special_group_not_exist',
+	    '19101'=>'special_group_not_exist',
 	    
 	    //运维端接口
 	    '30001'=>'option_user_not_exist',

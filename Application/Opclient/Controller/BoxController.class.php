@@ -129,10 +129,10 @@ class BoxController extends BaseController {
                 hotel_name ";
         if ( $userid ) {
             $condition = ' 1=1 and sru.userid ='.$userid;
-            $group = 'sru.DATETIME,sru.hotel_id,sru.mac';
+            $group = 'sru.datetime,sru.hotel_id,sru.mac';
         } else {
             $condition = ' 1=1 ';
-            $group = 'sru.DATETIME,sru.hotel_id,sru.userid,sru
+            $group = 'sru.datetime,sru.hotel_id,sru.userid,sru
             .mac';
         }
         $order = " CONCAT(sru.DATETIME,sru.create_time) DESC ";

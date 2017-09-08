@@ -280,8 +280,7 @@ class BoxController extends BaseController {
                 $this->to_back('30052');
             }
         }
-
-        if(mb_strlen($save['remark']) >= 100) {
+        if(mb_strlen($save['remark'],'utf8') > 100) {
             $this->to_back('30055');
         }
 

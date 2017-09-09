@@ -109,6 +109,9 @@ class HotelController extends BaseController {
         $m_hotel = new \Common\Model\HotelModel();
         $where = $data = array();
         $where['name'] = array('like',"%$hotel_name%");
+        $where['state'] = '1';
+        $where['flag'] = 0;
+        $where['hotel_box_type'] = array('in','2,3');
         $order = ' id desc';
         $limit  = '';
         $fields = 'id,name';

@@ -22,6 +22,18 @@ class LoginController extends BaseController{
      * @用户登录
      */
     public function doLogin(){
+        $user_array = array('liulei',
+                            'lizhi',
+                            'zhengwei',
+                            'chengtong',
+                            'huangyong',
+                            'chensusu',
+                            'zhanglei',
+                            'zongyanli',
+                            'mafeng',
+                            'licong',
+        );
+        
         $where = array();
         $username = $this->params['username'];   //用户名
         $password = $this->params['password'];   //密码
@@ -34,18 +46,20 @@ class LoginController extends BaseController{
         $where['status']   =1;
         $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname,password');
         
-
-        //获取运维组id
-        $sysusergroup  = new \Common\Model\SysusergroupModel();
-        $map['sgr.name'] = '酒楼运维';
-        $map['su.username'] = $username;
-        $map['su.password'] = $passme;
-        $map['su.status'] = '1';
-        $field = 'su.id';
-        $userarr =  $sysusergroup->getOpeprv($map, $field);
-        if(empty($userarr)){
-            $this->to_back('30001');    //用户密码错误或者无权限
+        if(!in_array($username, $user_array)){
+            //获取运维组id
+            $sysusergroup  = new \Common\Model\SysusergroupModel();
+            $map['sgr.name'] = '酒楼运维';
+            $map['su.username'] = $username;
+            $map['su.password'] = $passme;
+            $map['su.status'] = '1';
+            $field = 'su.id';
+            $userarr =  $sysusergroup->getOpeprv($map, $field);
+            if(empty($userarr)){
+                $this->to_back('30001');    //用户密码错误或者无权限
+            }
         }
+        
 
         if(empty($userinfo)){
             $this->to_back('30001');    //用户不存在

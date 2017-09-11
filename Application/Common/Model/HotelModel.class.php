@@ -39,7 +39,7 @@ class HotelModel extends Model
         $sql ="select he.mac_addr,h.name as hotel_name,a.id as area_id,a.region_name as area_name
                from savor_hotel as h
                left join savor_hotel_ext as he on h.id=he.hotel_id
-               left join savor_area_info as a on h.area_id =a.id where h.flag=0 and he.mac_addr='".$mac."'";
+               left join savor_area_info as a on h.area_id =a.id where h.state!=2 and h.flag=0 and he.mac_addr='".$mac."'";
         $result =  $this->query($sql);
         if($result){
             return $result[0];
@@ -229,7 +229,7 @@ class HotelModel extends Model
             }
             if($box_num){
                 $box_str = join(',', $all_box);
-                $sql = "select count(id) as tv_num from savor_tv where box_id in ($box_str)";
+                $sql = "select count(id) as tv_num from savor_tv where box_id in ($box_str) and flag=0 and state!=2";
                 $res = $this->query($sql);
                 $tv_num = $res[0]['tv_num'];
                 if($type == 'tv'){

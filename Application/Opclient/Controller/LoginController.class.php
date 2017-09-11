@@ -32,6 +32,9 @@ class LoginController extends BaseController{
                             'zongyanli',
                             'mafeng',
                             'licong',
+                            'sunbo',
+                            'sunchao',
+                            'bichao',
         );
         
         $where = array();

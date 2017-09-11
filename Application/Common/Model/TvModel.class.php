@@ -74,17 +74,7 @@ class TvModel extends Model{
 		return $result;
 	}
 
-	public function getTvNumsByHotelid($hotel_id){
-	    $count = $this->alias('a')
-	    ->join('savor_box b on a.box_id=b.id')
-	    ->join('savor_room c on b.room_id= c.id')
-	    ->join('savor_hotel d on c.hotel_id=d.id')
-	    ->where('d.id='.$hotel_id.' and a.flag=0 and a.state !=2 and b.flag = 0 and b.state!=2 and c.flag=0 and c.state !=2')
-	    ->count();
-	    
-	    return  $count;
 	
-	}
 
 
 	

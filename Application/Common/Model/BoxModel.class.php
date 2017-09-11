@@ -18,7 +18,7 @@ class BoxModel extends Model
                    left join savor_room as r on b.room_id=r.id
                    left join savor_hotel as h on r.hotel_id=h.id
                    left join savor_area_info as a on h.area_id=a.id 
-                   where b.flag=0 and  b.mac='".$mac."' limit 1";
+                   where b.flag=0 and b.state!=2 and r.flag=0 and r.state!=2 and b.mac='".$mac."' limit 1";
             $result = $this->query($sql);
             if($result){
                 return $result[0];

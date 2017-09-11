@@ -41,6 +41,7 @@ class ErrorReportController extends BaseController{
         $start_time = date('Y-m-d H:i:s',strtotime('-15 hours'));
         $m_heart_log = new \Common\Model\HeartLogModel();
         $m_box = new \Common\Model\BoxModel();
+        $m_tv = new \Common\Model\TvModel();
         $where = array();
         
         $where['state'] = 1;
@@ -141,9 +142,11 @@ class ErrorReportController extends BaseController{
                 $not_normal_hotel_num +=1;
                 $not_normal_hotel_arr[] = $v['id'];
             }
-            $rets = $m_hotel->getStatisticalNumByHotelId($v['id'],'tv');
+            //$rets = $m_hotel->getStatisticalNumByHotelId($v['id'],'tv');
+            
+            $rets  = $m_tv->getTvNumsByHotelid($v['id']);
             $result[$key]['hotel_id'] = $v['id'];
-            $result[$key]['tv_num'] = $rets['tv_num'];
+            $result[$key]['tv_num'] = $rets;
             $result[$key]['small_plat_status'] = $small_plat_status;
             $where = array();
             $where['hotel_id'] = $v['id'];
@@ -282,14 +285,17 @@ class ErrorReportController extends BaseController{
             $detail_list = $m_hotel_error_report_detial->getList($fileds,$where,$order,$limit);
         }
         $m_hotel = new \Common\Model\HotelModel();
+        $m_tv = new \Common\Model\TvModel();
         foreach($detail_list as $key=>$v){
             $data['list'][$key]['detail_id'] = $v['id'];
             $data['list'][$key]['hotel_id'] = $v['hotel_id'];
             
             $hotel_info = $m_hotel->getOneById('name',$v['hotel_id']);
             
-            $rets = $m_hotel->getStatisticalNumByHotelId($v['hotel_id'],'tv');
-            $data['list'][$key]['hotel_info'] = $hotel_info['name'].' 共'.$rets['tv_num'].'个版位';
+            //$rets = $m_hotel->getStatisticalNumByHotelId($v['hotel_id'],'tv');
+            
+            $rets  = $m_tv->getTvNumsByHotelid($v['hotel_id']);
+            $data['list'][$key]['hotel_info'] = $hotel_info['name'].' 共'.$rets.'个版位';
             $data['list'][$key]['hotel_name'] = $hotel_info['name'];
             if($v['small_plat_status']==1){
                 $data['list'][$key]['small_palt_info'] = '小平台正常,上次上报时间'.$v['small_plat_report_time'].';';

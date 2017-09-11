@@ -60,4 +60,5 @@ class BoxModel extends Model
         return $data;
 
     }
+    
 }

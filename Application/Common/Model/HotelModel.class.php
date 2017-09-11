@@ -241,7 +241,7 @@ class HotelModel extends Model
         $nums = array('room_num'=>$room_num,'box_num'=>$box_num,'tv_num'=>$tv_num);
         return $nums;
     }
-
+    
 
     public function getMacaddrByHotelId($hotel_id){
         $sql = "select * from savor_hotel_ext where hotel_id='$hotel_id' limit 1";

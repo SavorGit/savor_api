@@ -143,8 +143,8 @@ class ErrorReportController extends BaseController{
                 $not_normal_hotel_arr[] = $v['id'];
             }
             //$rets = $m_hotel->getStatisticalNumByHotelId($v['id'],'tv');
-            
-            $rets  = $m_tv->getTvNumsByHotelid($v['id']);
+            $rets = $m_box->getTvNumsByHotelid($v['id']);
+            //$rets  = $m_tv->getTvNumsByHotelid($v['id']);
             $result[$key]['hotel_id'] = $v['id'];
             $result[$key]['tv_num'] = $rets;
             $result[$key]['small_plat_status'] = $small_plat_status;
@@ -285,7 +285,7 @@ class ErrorReportController extends BaseController{
             $detail_list = $m_hotel_error_report_detial->getList($fileds,$where,$order,$limit);
         }
         $m_hotel = new \Common\Model\HotelModel();
-        $m_tv = new \Common\Model\TvModel();
+        $m_box = new \Common\Model\BoxModel();
         foreach($detail_list as $key=>$v){
             $data['list'][$key]['detail_id'] = $v['id'];
             $data['list'][$key]['hotel_id'] = $v['hotel_id'];
@@ -293,8 +293,8 @@ class ErrorReportController extends BaseController{
             $hotel_info = $m_hotel->getOneById('name',$v['hotel_id']);
             
             //$rets = $m_hotel->getStatisticalNumByHotelId($v['hotel_id'],'tv');
-            
-            $rets  = $m_tv->getTvNumsByHotelid($v['hotel_id']);
+            $rets = $m_box->getTvNumsByHotelid($v['hotel_id']);
+            //$rets  = $m_tv->getTvNumsByHotelid($v['hotel_id']);
             $data['list'][$key]['hotel_info'] = $hotel_info['name'].' 共'.$rets.'个版位';
             $data['list'][$key]['hotel_name'] = $hotel_info['name'];
             if($v['small_plat_status']==1){

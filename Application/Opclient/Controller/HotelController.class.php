@@ -226,7 +226,9 @@ class HotelController extends BaseController {
         //获取心跳相关
         $m_box = new \Common\Model\BoxModel();
         $where = '';
-        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0';
+
+        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
+
         $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
         $unusual_num = 0;
         $box_total_num = count($box_list);

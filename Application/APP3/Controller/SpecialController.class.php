@@ -237,7 +237,7 @@ class SpecialController extends BaseController{
                 $nextPage = 0;
             }else{
                 
-                $where =" and update_time<'".$info[$count-1]['update_time']."'";
+                $where =" and update_time<'".$info[$count-1]['updateTime']."'";
                 $order = ' update_time desc';
                 $limit =  ' limit 1';
                 $nextInfo = $m_special_group->getList($where,$order ,$limit);

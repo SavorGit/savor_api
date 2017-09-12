@@ -59,7 +59,7 @@ class BoxController extends BaseController {
         $this->to_back($data);
     }
 
-    public function changeRepairInfo($box_info, $nextpage){
+    public function changeRepairInfo($userid, $box_info, $nextpage){
         $dap = array();
         $rdeitalModel = new \Common\Model\RepairDetailModel();
         foreach ($box_info as $bk=>$bv) {
@@ -111,7 +111,11 @@ class BoxController extends BaseController {
             $dap[$bk]['nickname'] = $bv['username'];
             $dap[$bk]['datetime'] = date("Y-m-d",
                 strtotime($bv['datetime']));
-            $dap[$bk]['hotel_name'] = $bv['hotel_name'];
+            if ($userid == 0) {
+                $dap[$bk]['hotel_name'] = $bv['hotel_name'].'-'.$bv['username'];
+            }else {
+                $dap[$bk]['hotel_name'] = $bv['hotel_name'];
+            }
             $dap[$bk]['repair_list'] = $dac;
         }
         $data['list'] = $dap;
@@ -149,6 +153,7 @@ class BoxController extends BaseController {
         if ($userid == 0) {
             //获取所有
             $box_info = $this->getRepairBoxInfo($userid, $start, $size);
+
             //获取下一页是否有记录
             $box_info_next = $this->getRepairBoxInfo($userid, $start+$size, $size);
             if(empty($box_info_next)) {
@@ -171,7 +176,8 @@ class BoxController extends BaseController {
 
             }
         }
-        $dat = $this->changeRepairInfo($box_info, $nextpage);
+        $dat = $this->changeRepairInfo($userid, $box_info, $nextpage);
+
 
     }
 

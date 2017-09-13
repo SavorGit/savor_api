@@ -30,7 +30,7 @@ class SpecialController extends BaseController{
                 break; */
             case 'specialGroupList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('update_time'=>'1000');
+                $this->valid_fields = array('upadteTime'=>'1000');
                 break;
         }
         parent::_init_();

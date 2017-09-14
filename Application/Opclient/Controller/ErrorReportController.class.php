@@ -95,7 +95,7 @@ class ErrorReportController extends BaseController{
                     $box_last_report_time = strtotime($box_last_report_time);
                     if(!empty($rets)){
                         $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
-                        if($crr_box_report_time>$box_last_report_time){
+                        if($crr_box_report_time<$box_last_report_time){
                             $box_last_report_time = $crr_box_report_time;
                         }
                     }
@@ -131,7 +131,7 @@ class ErrorReportController extends BaseController{
                     $box_last_report_time = strtotime($box_last_report_time);
                     if(!empty($rets)){
                         $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
-                        if($crr_box_report_time>$box_last_report_time){
+                        if($crr_box_report_time<$box_last_report_time){
                             $box_last_report_time = $crr_box_report_time;
                         }
                     }
@@ -325,7 +325,7 @@ class ErrorReportController extends BaseController{
                 if($v['box_report_time'] =='0000-00-00 00:00:00'){
                     $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个;未找到心跳';
                 }else {
-                    $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个'.'最后上报时间 '.$v['box_report_time'];
+                    $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个';
                 }
                 
             }

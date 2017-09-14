@@ -29,6 +29,7 @@ class ErrorReportController extends BaseController{
      * @desc 
      */
     public function report(){
+        exit(0);
         //酒楼总数
         $m_hotel = new \Common\Model\HotelModel();
         $where = array();
@@ -61,7 +62,7 @@ class ErrorReportController extends BaseController{
         foreach($hotel_list as $key=>$v){
             $small_plat_status = 1;
             $crr_box_not_normal_num = 0;
-            $box_last_report_time = '';
+            $box_last_report_time = $tmp_time = date('Y-m-d H:i:s');
             
             $where = '';
             $where .=" 1 and hotel_id=".$v['id']." and type=1";
@@ -159,7 +160,7 @@ class ErrorReportController extends BaseController{
                 $result[$key]['small_plat_report_time'] = '';
             }
             $result[$key]['not_normal_box_num'] = $crr_box_not_normal_num;
-            if($box_last_report_time =='1970-01-01 08:00:00'){
+            if($box_last_report_time == $tmp_time){
                 $box_last_report_time = '';
             }
             $result[$key]['box_report_time'] = $box_last_report_time;

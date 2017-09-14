@@ -24,6 +24,7 @@ class BoxController extends BaseController {
             case 'InsertBoxDamage':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
+                    'box_mac'=>'1001',
                     'userid'=>'1001',
                     'state'=>'1001',
                     'type'=>'1001',
@@ -199,7 +200,7 @@ class BoxController extends BaseController {
 
     public function InsertBoxDamage() {
         $save['hotel_id'] = intval($this->params['hotel_id']);
-        $save['mac'] = empty($this->params['box_mac'])?'':$this->params['box_mac'];
+        $save['mac'] = $this->params['box_mac'];
         $save['userid'] = intval($this->params['userid']);
         $save['state'] = $this->params['state'];
         $save['remark'] = empty($this->params['remark'])?'':$this->params['remark'];

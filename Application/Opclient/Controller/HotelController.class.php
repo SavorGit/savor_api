@@ -136,7 +136,12 @@ class HotelController extends BaseController {
             );
             $dat['last_small'] = '';
             $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
-            $dat['small_mac'] = $infos['mac_addr'];
+            if( empty($infos['mac_addr']) ) {
+                $dat['last_small'] = '没有填写MAC地址';
+                $dat['small_mac'] = '';
+            }else {
+                $dat['small_mac'] = $infos['mac_addr'];
+            }
         } else {
             $dat['small_mac'] = $rets[0]['small_mac'];
             $ltime = $rets[0]['ltime'];

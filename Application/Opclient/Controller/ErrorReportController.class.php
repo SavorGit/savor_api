@@ -322,11 +322,12 @@ class ErrorReportController extends BaseController{
                 
                 $data['list'][$key]['box_info'] = '机顶盒异常1个;'.$diff_hours; 
             }else if($v['not_normal_box_num']>1){
-                if($v['box_report_time'] =='0000-00-00 00:00:00'){
+                /* if($v['box_report_time'] =='0000-00-00 00:00:00'){
                     $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个;未找到心跳';
                 }else {
                     $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个';
-                }
+                } */
+                $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个';
                 
             }
             

@@ -112,7 +112,7 @@ class BoxController extends BaseController {
             $dap[$bk]['datetime'] = date("Y-m-d",
                 strtotime($bv['datetime']));
             if ($userid == 0) {
-                $dap[$bk]['hotel_name'] = $bv['hotel_name'].'-'.$bv['username'];
+                $dap[$bk]['hotel_name'] = $bv['hotel_name'].'-'.$bv['username'].'的';
             }else {
                 $dap[$bk]['hotel_name'] = $bv['hotel_name'];
             }

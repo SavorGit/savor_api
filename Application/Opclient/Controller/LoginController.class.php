@@ -23,7 +23,7 @@ class LoginController extends BaseController{
      */
     public function doLogin(){
         $user_array = array('liulei',
-                            'lizhi',
+                            'duoduo',
                             'zhengwei',
                             'chengtong',
                             'huangyong',

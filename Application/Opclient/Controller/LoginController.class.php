@@ -22,14 +22,7 @@ class LoginController extends BaseController{
      * @用户登录
      */
     public function doLogin(){
-        $user_array = array('liulei',
-                            'duoduo',
-                            'zhengwei',
-                            'chengtong',
-                            'huangyong',
-                            'chensusu',
-                            'zhanglei',
-                            'zongyanli',
+        $user_array = array('duoduo',
                             'mafeng',
                             'licong',
                             'sunbo',

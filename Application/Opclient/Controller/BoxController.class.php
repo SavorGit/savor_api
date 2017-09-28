@@ -183,8 +183,20 @@ class BoxController extends BaseController {
 
     public function getAllRepairUser() {
         $m_sysuser = new \Common\Model\SysUserModel();
-        $where['status']   =1;
-        $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2);
+        /* $where['status']   =1;
+        $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2); */
+        $map['sgr.name'] = '酒楼运维';
+        $sysusergroup  = new \Common\Model\SysusergroupModel();
+        $map['su.status'] = '1';
+        $field = 'su.id as userid,su.username,su.remark as nickname';
+        
+        $userinfo =  $sysusergroup->getOpeprv($map, $field);
+        $where = array();
+        $where['username'] = array('in',"duoduo,mafeng,licong,sunbo,sunchao,bichao");
+        $where['status'] = 1;
+        $user_commne = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2);
+   
+        $userinfo = array_merge($userinfo,$user_commne);
         if(empty($userinfo)){
             $this->to_back('30001');    //用户不存在
         }

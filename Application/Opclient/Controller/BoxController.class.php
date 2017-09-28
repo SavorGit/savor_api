@@ -192,7 +192,7 @@ class BoxController extends BaseController {
         
         $userinfo =  $sysusergroup->getOpeprv($map, $field);
         $where = array();
-        $where['username'] = array('in',"duoduo,mafeng,licong,sunbo,sunchao,bichao");
+        $where['username'] = array('in',"duoduo,mafeng,zhengwei,licong,sunbo,sunchao,bichao");
         $where['status'] = 1;
         $user_commne = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2);
    

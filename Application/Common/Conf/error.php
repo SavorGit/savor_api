@@ -78,5 +78,12 @@ return array(
 		'30054'=>'option_reason_not_empty',
 		'30055'=>'option_insert_fail',
 		'30056'=>'option_notallow_remark',
+	    //每日知享接口
+	    '40001'=>'daily_content_not_exist',
+	    '40002'=>'daily_content_collection_err',
+	    '40003'=>'daily_content_not_collection_err',
+	    '40004'=>'daily_keywords_empty',
+	    //升级接口
+	    '50001'=>'version_device_type_err',
 	),
 );

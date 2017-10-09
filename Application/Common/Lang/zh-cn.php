@@ -78,4 +78,11 @@ return array(
     'option_error_report_not_exist'=>'该异常记录不存在',
     'option_error_hotel_not_exist'=>'该异常记录不包含该酒楼',
     'option_notallow_remark'=>'备注限制100字',
+    //每日知享接口
+    'daily_content_not_exist'=>'文章不存在',
+    'daily_content_collection_err'=>'收藏失败',
+    'daily_content_not_collection_err'=>'取消收藏失败',
+    'daily_keywords_empty'=>'关键词为空',
+    //升级接口
+    'version_device_type_err'=>'clientname错误',
 );

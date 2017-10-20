@@ -11,4 +11,11 @@ class DeviceSqlModel extends Model{
 	    $result = $this->query($sql);
 	    return $result;
 	}
+    public function getUpgradeSqlFf($curVersion,$downloadVersion,$type =1){
+	    $sql ="select sql_lang,version_name,version_code from savor_device_sql
+               where version_code > $curVersion and version_code <= $downloadVersion and device_type = $type
+               ORDER BY create_time ASC";
+	    $result = $this->query($sql);
+	    return $result;
+	}
 }

@@ -33,4 +33,10 @@ class SysConfigModel extends Model{
 		$result = $this->query($sql);
 		return $result;
 	}
+
+    public function getOne($config_key){
+                $ret = $this->where("config_key='".$config_key."'")->find();
+                return $ret;
+    }
+
 }

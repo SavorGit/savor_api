@@ -60,7 +60,7 @@ class OssBoxModel extends Model
 
 
 	public function getLastTime($mac) {
-		$sql = " SELECT GREATEST(
+		/*$sql = " SELECT GREATEST(
  			( SELECT IFNULL((SELECT MAX(create_time) FROM
  		 	oss_box_log where oss_key like '%$mac%'),'1970-01-01
  		 	00:00:00')),
@@ -69,6 +69,18 @@ class OssBoxModel extends Model
  		 	00:00:00')),
  		 	( SELECT IFNULL((SELECT MAX(create_time) FROM
  		 	oss_box_log_death where oss_key like '%$mac%'),'1970-01-01
+ 		 	00:00:00'))
+		) lastma";*/
+
+		$sql = " SELECT GREATEST(
+ 			( SELECT IFNULL((SELECT MAX(create_time) FROM
+ 		 	oss_box_log where LOCATE('$mac', `oss_key`)>0),'1970-01-01
+ 		 	00:00:00')),
+ 		 	( SELECT IFNULL((SELECT MAX(create_time) FROM
+ 		 	oss_box_log_bak where LOCATE('$mac', `oss_key`)>0),'1970-01-01
+ 		 	00:00:00')),
+ 		 	( SELECT IFNULL((SELECT MAX(create_time) FROM
+ 		 	oss_box_log_death where LOCATE('$mac', `oss_key`)>0),'1970-01-01
  		 	00:00:00'))
 		) lastma";
 		$result = $this->query($sql);

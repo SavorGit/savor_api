@@ -83,6 +83,14 @@ return array(
     'daily_content_collection_err'=>'收藏失败',
     'daily_content_not_collection_err'=>'取消收藏失败',
     'daily_keywords_empty'=>'关键词为空',
+    'daily_user_add_fail'=>'用户添加失败',
+    'daily_user_ptype_notnull'=>'人群设定不可为空',
+    'daily_user_update_fail'=>'用户更新失败',
+    'daily_user_tel_illegal'=>'用户电话非法',
+    'daily_user_code_notnull'=>'手机验证码不可为空',
+    'daily_user_code_illegal'=>'手机验证码不正确或已过期',
+    'daily_user_code_min'=>'一分钟内请勿重复获取验证码',
+    'daily_code_send_fail'=>'验证码发送失败',
     //升级接口
     'version_device_type_err'=>'clientname错误',
 );

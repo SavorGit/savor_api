@@ -56,7 +56,7 @@ class ContentController extends BaseController{
     public function getDetail(){
         $id = $this->params['dailyid'];   //知享文章id
         $m_daily_content = new \Common\Model\DailyContentModel();
-        $fields = 'a.id dailyid,a.title,a.media_id imgUrl,a.title,a.desc,c.name sourceName,b.dailytype,b.stext,b.spictureid spicture,e.bespeak_time';
+        $fields = 'a.id dailyid,a.title,a.media_id imgUrl,a.title,a.desc,c.name sourceName,b.dailytype,b.stext,b.spictureid spicture,e.bespeak_time,a.artpro';
         $info = $m_daily_content->getDetailById($fields,$id);
         if(empty($info)){
             $this->to_back(40001);
@@ -70,7 +70,7 @@ class ContentController extends BaseController{
                 $details[$key]['spicture'] = $this->getOssAddrByMediaId($v['spicture']);
             }
         }
-        
+        $data['artpro'] = $info[0]['artpro'];
         $data['dailyid'] = $info[0]['dailyid'];
         $data['title'] = $info[0]['title'];
         $data['imgUrl']  = $this->getOssAddrByMediaId($info[0]['imgUrl']) ;

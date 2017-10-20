@@ -38,10 +38,13 @@ class IndexController extends BaseController{
             $where .= " and c.bespeak_time<='".date('Y-m-d H:i:s')."'";
         }
         $order =" c.bespeak_time desc, b.sort_num asc";
-        $limit = 10;
+        $limit = 11;
 
         $m_daily_content = new \Common\Model\DailyContentModel();
-        $list = $m_daily_content->getList($fields,$where,$order,$limit);
+
+        $alist = $m_daily_content->getList($fields,$where,$order,$limit);
+        $list = array_slice($alist,0,10);
+        $nexlist = array_slice($alist,10,1);
         $m_daily_relation = new \Common\Model\DailyRelationModel(); 
         foreach($list as $key=>$val){
             $content_list = array();
@@ -74,6 +77,24 @@ class IndexController extends BaseController{
             $month = date('n',strtotime($list[0]['contentDetail']['bespeak_time'])).'月';
             $day   = date('d',strtotime($list[0]['contentDetail']['bespeak_time']));
             $bespeak_time = date('Y-m-d',strtotime($list[0]['contentDetail']['bespeak_time']));
+        }
+        if(!empty($nexlist)) {
+            $nweek  = '星期'.$this->weekarray[date('w',strtotime($nexlist[0]['bespeak_time']))] ;
+            $nmonth = date('n',strtotime($nexlist[0]['bespeak_time'])).'月';
+            $nday   = date('d',strtotime($nexlist[0]['bespeak_time']));
+            $data['nextpage'] = array(
+                'next'=>1,
+                'week'=>$nweek,
+                'month'=>$nmonth,
+                'day'=>$nday,
+            );
+        }else{
+            $data['nextpage'] = array(
+                'next'=>0,
+                'week'=>'',
+                'month'=>'',
+                'day'=>'',
+            );
         }
         $data['week'] = $week;
         $data['month']= $month;

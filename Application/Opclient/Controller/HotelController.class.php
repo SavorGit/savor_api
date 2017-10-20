@@ -235,6 +235,7 @@ class HotelController extends BaseController {
         $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
 
         $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
+
         $unusual_num = 0;
         $box_total_num = count($box_list);
         foreach($box_list as $ks=>$vs){
@@ -242,7 +243,9 @@ class HotelController extends BaseController {
             $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_mac='".$vs['mac']."'";
 
             $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
-            $box_list[$ks]['last_nginx'] = $this->getLastNginx($vs['mac']);
+
+            //$box_list[$ks]['last_nginx'] = $this->getLastNginx($vs['mac']);
+            $box_list[$ks]['last_nginx'] = '';
             if(empty($rets)){
                 $unusual_num +=1;
                 $box_list[$ks]['ustate'] = 0;

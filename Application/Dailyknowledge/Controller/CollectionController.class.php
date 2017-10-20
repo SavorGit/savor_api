@@ -37,6 +37,7 @@ class CollectionController extends BaseController{
         foreach($data as $key=>$v){
             $data[$key]['imgUrl'] = $this->getOssAddrByMediaId($v['imgUrl']);
             $data[$key]['bespeak_time'] = date('Y-m-d',strtotime($v['bespeak_time']));
+            $data[$key]['sourceName'] = '';
         }
         $this->to_back($data);
     }

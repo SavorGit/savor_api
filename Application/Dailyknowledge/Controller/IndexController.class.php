@@ -28,7 +28,7 @@ class IndexController extends BaseController{
      */
     public function getList(){
         $bespeak_time = $this->params['bespeak_time'];
-        $fields = ' a.id dailyid, a.media_id imgUrl,a.title,a.desc,d.name sourceName,c.bespeak_time';
+        $fields = ' a.id dailyid,a.artpro, a.media_id imgUrl,a.title,a.desc,d.name sourceName,c.bespeak_time';
         $where  = ' 1=1';
         if(!empty($bespeak_time)){
             $where .=" and c.bespeak_time<'".$bespeak_time."'";

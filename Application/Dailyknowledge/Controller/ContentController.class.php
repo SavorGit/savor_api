@@ -71,7 +71,7 @@ class ContentController extends BaseController{
                 $details[$key]['spicture'] = $this->getOssAddrByMediaId($v['spicture']);
             }
         }
-        $data['artpro'] = $info[0]['artpro'];
+
         $data['dailyid'] = $info[0]['dailyid'];
         $data['title'] = $info[0]['title'];
         $data['imgUrl']  = $this->getOssAddrByMediaId($info[0]['imgUrl']) ;

@@ -25,7 +25,6 @@ class VersionController extends BaseController{
         $clentname = $traceinfo['clientname'];
         $m_version_upgrade = new \Common\Model\DeviceUpgradeModel();
         $upgrade_info = $m_version_upgrade->getLastOneByDevice($device_type);
-        
         $data = array();
         if($versioncode<= $upgrade_info['version_max'] && $versioncode>= $upgrade_info['version_min']){
             $now_version = $upgrade_info['version'];

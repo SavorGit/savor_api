@@ -47,6 +47,7 @@ class ContentController extends BaseController{
             foreach($list as $key=>$v){
                 $list[$key]['imgUrl'] = $this->getOssAddrByMediaId($v['imgUrl']);
                 $list[$key]['bespeak_time'] = date('Y-m-d',strtotime($v['bespeak_time']));
+                $list[$key]['sourceName'] = '';
             }
             
             $data['list'] = $list;
@@ -74,7 +75,8 @@ class ContentController extends BaseController{
         $data['dailyid'] = $info[0]['dailyid'];
         $data['title'] = $info[0]['title'];
         $data['imgUrl']  = $this->getOssAddrByMediaId($info[0]['imgUrl']) ;
-        $data['sourceName'] = $info[0]['sourceName'];
+        //$data['sourceName'] = $info[0]['sourceName'];
+        $data['sourceName'] = '';
         $data['desc'] = $info[0]['desc'];
         $data['bespeak_time'] = date('Y-m-d',strtotime($v['bespeak_time']));
         $data['share_url'] = C('CONTENT_HOST').'admin/dailycontentshow/'.$id;

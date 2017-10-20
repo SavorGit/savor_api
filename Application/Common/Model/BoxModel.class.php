@@ -73,4 +73,13 @@ class BoxModel extends Model
         return  $count;
     
     }
+    public function getBoxListByHotelid($fields,$hotel_id){
+        $data = $this->alias('a')
+             ->field($fields)
+             ->join('savor_room c on a.room_id= c.id')
+             ->join('savor_hotel d on c.hotel_id=d.id')
+             ->where('d.id='.$hotel_id.' and a.flag=0 and a.state !=2 and c.flag=0 and c.state !=2')
+             ->select();
+        return $data;
+    }
 }

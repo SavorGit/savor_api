@@ -680,7 +680,9 @@ $val['switch_time'];
             $this->to_back(array());
         }
         $m_device_sql = new \Common\Model\DeviceSqlModel();
-        $upgrade_sql_list = $m_device_sql->getUpgradeSql($curVersion, $downloadVersion,$type = 1);
+        //$upgrade_sql_list = $m_device_sql->getUpgradeSql($curVersion, $downloadVersion,$type = 1);
+        $upgrade_sql_list = $m_device_sql->getUpgradeSqlFf($curVersion, $downloadVersion,$type = 1);
+        
         if(!empty($upgrade_sql_list)){
             $data = array();
             foreach($upgrade_sql_list as $key=>$v){

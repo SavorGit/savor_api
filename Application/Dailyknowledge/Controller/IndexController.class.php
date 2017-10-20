@@ -51,6 +51,7 @@ class IndexController extends BaseController{
             $list[$key]['imgUrl'] = $this->getOssAddrByMediaId($val['imgUrl']);
              $list[$key]['share_url'] = C('CONTENT_HOST').'admin/dailycontentshow/'.$val['dailyid'];
             $content_detail = $m_daily_relation->getListByDailyid('dailytype,stext,spictureid spicture',$val['dailyid']);
+            $list[$key]['sourceName'] = '';
             foreach($content_detail as $k=>$v){
                 if($v['dailytype']==3){
                     $content_detail[$k]['spicture'] = $this->getOssAddrByMediaId($v['spicture']);
@@ -64,7 +65,8 @@ class IndexController extends BaseController{
             $content_list['imgUrl'] = $list[$key]['imgUrl'];
             $content_list['title']   = $list[$key]['title'];
             $content_list['bespeak_time']  = date('Y-m-d',strtotime($list[$key]['bespeak_time']));
-            $content_list['sourceName']  = $list[$key]['sourceName'];
+            //$content_list['sourceName']  = $list[$key]['sourceName'];
+            $content_list['sourceName']  = '';
             $content_list['desc'] = $list[$key]['desc'];
             
             $content_list['details']  = $content_detail;

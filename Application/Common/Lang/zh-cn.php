@@ -85,4 +85,13 @@ return array(
     'daily_keywords_empty'=>'关键词为空',
     //升级接口
     'version_device_type_err'=>'clientname错误',
+    'program_hotel_not_exist'=>'该酒楼不存在',
+    'program_hotel_have_delete'=>'该酒楼已删除',
+    'program_hotel_abnormal'=>'该酒楼为非正常酒楼',
+    'program_hotel_not_net_box'=>'该酒楼为非网络版',
+    'program_hotel_box_empty'=>'该就楼下没有正常的机顶盒',
+    'program_hotel_menu_empty'=>'该酒楼未设置节目单',
+    'program_ads_num_empty'=>'该广告号不存在',
+    'program_menu_update_donwstate_error'=>'酒楼下载节目单更新下载状态失败',
+    'program_hotel_have_donw_success'=>'该酒楼已成功下载过',
 );

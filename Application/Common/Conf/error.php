@@ -50,7 +50,17 @@ return array(
 	    '16103'=>'hotel_not_set_small_plat_upgrade_version',
 	    '16104'=>'have_not_this_small_plat_upgrade_war',
         '16105'=>'have_not_upgrade_sql',
-	//客户端获取投屏酒楼距离接口
+	    
+	    '16200'=>'program_hotel_not_exist',
+	    '16201'=>'program_hotel_have_delete',
+	    '16202'=>'program_hotel_abnormal',
+	    '16203'=>'program_hotel_not_net_box',
+	    '16204'=>'program_hotel_box_empty',
+	    '16205'=>'program_hotel_menu_empty',
+	    '16206'=>'program_ads_num_empty',
+	    '16207'=>'program_menu_update_donwstate_error',
+	    '16208'=>'program_hotel_have_donw_success',
+	    //客户端获取投屏酒楼距离接口
 		'17001'=>'lat_illegal',
 		'17002'=>'lng_illegal',
 		//用户收藏接口

@@ -217,15 +217,19 @@ class ProgramController extends CommonController{
                          $ads_num_arr[] = $av['pab_id'];
                          unset($av['pab_id']);
                          //$ttmp = $this->changeadvList($av);
-                         $list[$key]['media_list'][] = $av;
+                         $ttmp['media_list'] = $av;
+                         //$list[$key]['media_list'][] = $av;
                      }
                      //$adv_arr = $this->changeadvList($adv_arr);
                      //$list[$key]['adv_list'][$i] = $adv_arr;
                  } 
              }
+             
              if(!empty($ads_num_arr)){
+                 $ttmp['box_id'] = $v['box_id'];
+                 $ttmp['box_mac'] = $v['box_mac'];
                  $ads_num = md5(json_encode($ads_num_arr));
-                 $list[$key]['menu_num'] = $ads_num;
+                 $ttmp['menu_num'] = $ads_num;
 
                  $redis_arr =array();
                  $redis_arr['box_id'] = $v['box_id'];
@@ -236,11 +240,11 @@ class ProgramController extends CommonController{
                      $redis_value = json_encode($redis_arr);
                      $redis->set($cache_key, $redis_value,2592000);
                  }
-             }else {
-                 unset($list[$key]);
+                 $all_tmp[] = $ttmp;
              }
+             
          }
-         $data = $list;
+         $data = $all_tmp;
          $this->to_back($data);
      }
      /**

@@ -76,7 +76,10 @@ class ProgramController extends CommonController{
         
         $adv_item_arr = $m_program_menu_item->getMenuAds($menu_id);
         foreach($adv_item_arr as $key=>$v){
-            $adv_item_arr[$key]['location_id'] = $v['order'];
+            if($v['type']=='adv'){
+                $adv_item_arr[$key]['location_id'] = $v['order'];
+            }
+            
         }
         $menu_arr =  array_merge($menu_item_arr,$adv_item_arr);
         foreach($menu_arr as $key=>$v){

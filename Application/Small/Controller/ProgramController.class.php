@@ -217,7 +217,7 @@ class ProgramController extends CommonController{
                          $ads_num_arr[] = $av['pab_id'];
                          unset($av['pab_id']);
                          //$ttmp = $this->changeadvList($av);
-                         $ttmp['media_list'] = $av;
+                         $ttmp['media_list'][] = $av;
                          //$list[$key]['media_list'][] = $av;
                      }
                      //$adv_arr = $this->changeadvList($adv_arr);

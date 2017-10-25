@@ -146,4 +146,8 @@ return array(
 
 	),
 
+	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
+
+
+
 );

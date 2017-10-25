@@ -75,6 +75,12 @@ class ProgramController extends CommonController{
         $menu_item_arr = $this->changeadvList($menu_item_arr);
         
         $adv_item_arr = $m_program_menu_item->getMenuAds($menu_id);
+        foreach($adv_item_arr as $key=>$v){
+            if($v['type']=='adv'){
+                $adv_item_arr[$key]['location_id'] = $v['order'];
+            }
+            
+        }
         $menu_arr =  array_merge($menu_item_arr,$adv_item_arr);
         foreach($menu_arr as $key=>$v){
             $order_arr[$key] = $v['order'];
@@ -196,10 +202,11 @@ class ProgramController extends CommonController{
         
          $max_adv_location = 10;
          $now_date = date('Y-m-d H:i:s');
+         $ttmp = $data =  array();
          foreach($list as $key=>$v){
              $ads_num_arr = array();
              for($i=1;$i<=10;$i++){
-                 $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);
+                 $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
                  $adv_arr = $this->changeadvList($adv_arr);
                  if(!empty($adv_arr)){
                      $flag =0;
@@ -214,15 +221,19 @@ class ProgramController extends CommonController{
                          $ads_num_arr[] = $av['pab_id'];
                          unset($av['pab_id']);
                          //$ttmp = $this->changeadvList($av);
-                         $list[$key]['media_list'][] = $av;
+                         $ttmp[$key]['media_list'][] = $av;
+                         //$list[$key]['media_list'][] = $av;
                      }
                      //$adv_arr = $this->changeadvList($adv_arr);
                      //$list[$key]['adv_list'][$i] = $adv_arr;
                  } 
              }
+             
              if(!empty($ads_num_arr)){
+                 $ttmp[$key]['box_id'] = $v['box_id'];
+                 $ttmp[$key]['box_mac'] = $v['box_mac'];
                  $ads_num = md5(json_encode($ads_num_arr));
-                 $list[$key]['menu_num'] = $ads_num;
+                 $ttmp[$key]['menu_num'] = $ads_num;
 
                  $redis_arr =array();
                  $redis_arr['box_id'] = $v['box_id'];
@@ -233,11 +244,17 @@ class ProgramController extends CommonController{
                      $redis_value = json_encode($redis_arr);
                      $redis->set($cache_key, $redis_value,2592000);
                  }
+                
              }else {
-                 unset($list[$key]);
+                 unset($ttmp[$key]);
              }
+             
          }
-         $data = $list;
+         foreach($ttmp as $key=>$v){
+             $data[] = $v;
+         }
+         //$data = $ttmp;
+         
          $this->to_back($data);
      }
      /**

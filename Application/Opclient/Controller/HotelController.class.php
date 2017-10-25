@@ -223,7 +223,7 @@ class HotelController extends BaseController {
         $this->disposeTips($hotel_id);
         //获取版本信息
         $now = time();
-        $start_time = strtotime('-15 hours');
+        $start_time = strtotime('-72 hours');
         $version_info = $this->getNewVerson($hotel_id, $now, $start_time);
         $data['list']['version'] = $version_info;
 
@@ -298,7 +298,7 @@ class HotelController extends BaseController {
             unset($box_list[$bk]['ltime']);
         }
         $data['list']['box_info'] = $box_list;
-        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过15个小时'.$unusual_num.'个)';
+        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个)';
         $this->to_back($data);
     }
 }

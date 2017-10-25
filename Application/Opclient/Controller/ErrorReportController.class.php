@@ -215,7 +215,7 @@ class ErrorReportController extends BaseController{
             $report_time = intval(date('H',strtotime($v['create_time'])));
             $data['list'][$key]['id'] = $v['id'];
             $data['list'][$key]['info'] = '截止到'.$report_date.' '.$report_time.'点，共有'.$v['hotel_all_num'].'家酒楼('.$v['not_normal_hotel_num'].'家酒楼异常,'.
-                            $v['not_normal_smallplat_num'].'个小平台失联超过15小时,'.$v['not_normal_box_num'].'个机顶盒失联超过15小时)';
+                            $v['not_normal_smallplat_num'].'个小平台失联超过72小时,'.$v['not_normal_box_num'].'个机顶盒失联超过72小时)';
             $data['list'][$key]['date'] = $v['create_time'];
         }
         
@@ -265,7 +265,7 @@ class ErrorReportController extends BaseController{
             $report_date = date('m-d',strtotime($info['create_time']));
             $report_time = intval(date('H',strtotime($info['create_time'])));
             $data['info'] = '截止到'.$report_date.' '.$report_time.'点，共有'.$info['hotel_all_num'].'家酒楼('.$info['not_normal_hotel_num'].'家酒楼异常,'.
-                            $info['not_normal_smallplat_num'].'个小平台失联超过15小时,'.$info['not_normal_box_num'].'个机顶盒失联超过15小时)';
+                            $info['not_normal_smallplat_num'].'个小平台失联超过72小时,'.$info['not_normal_box_num'].'个机顶盒失联超过72小时)';
             $data['date'] = $info['create_time'];
             
             

@@ -11,6 +11,9 @@ class ConfigController extends BaseController{
             case 'getdailyconfig':
                 $this->is_verify = 0;
                 break;
+            case 'getshareApp':
+                $this->is_verify = 0;
+                break;
         }
         parent::_init_();
     }
@@ -23,7 +26,15 @@ class ConfigController extends BaseController{
         $switch_cache_info = $m_sys_config->getOne('daily_cache_config');
         $data['state'] = empty($switch_cache_info['status'])?0:
             $switch_cache_info['status'];
+        $data['touping'] = 1;
         $this->to_back($data);
     }
+
+    public function getshareApp(){
+        $data['url'] = C('ONLINE_CONTENT_HOST').'dailycontentshow/shareapp?';
+        $this->to_back($data);
+           // http://devp.admin.littlehotspot.com/admin/dailycontentshow/showday?id=188
+    }
+
 
 }

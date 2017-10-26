@@ -28,7 +28,7 @@ class IndexController extends BaseController{
      */
     public function getList(){
         $bespeak_time = $this->params['bespeak_time'];
-        $fields = ' a.id dailyid,a.artpro, a.media_id imgUrl,a.title,a.desc,d.name sourceName,c.bespeak_time';
+        $fields = ' a.id dailyid,a.artpro, a.media_id imgUrl,a.title,a.desc,d.name sourceName,c.bespeak_time,c.dailyauthor,c.dailyart';
         $where  = ' 1=1';
         if(!empty($bespeak_time)){
             $where .=" and c.bespeak_time<'".$bespeak_time."'";
@@ -43,10 +43,15 @@ class IndexController extends BaseController{
         $m_daily_content = new \Common\Model\DailyContentModel();
 
         $alist = $m_daily_content->getList($fields,$where,$order,$limit);
+
         $list = array_slice($alist,0,10);
         $nexlist = array_slice($alist,10,1);
-        $m_daily_relation = new \Common\Model\DailyRelationModel(); 
+        $m_daily_relation = new \Common\Model\DailyRelationModel();
+        $dailyauthor = $list[0]['dailyauthor'];
+        $dailyart = $list[0]['dailyart'];
         foreach($list as $key=>$val){
+            unset($list[$key]['dailyauthor']);
+            unset($list[$key]['dailyart']);
             $content_list = array();
             $list[$key]['imgUrl'] = $this->getOssAddrByMediaId($val['imgUrl']);
              $list[$key]['share_url'] = C('CONTENT_HOST').'admin/dailycontentshow/'.$val['dailyid'];
@@ -75,6 +80,7 @@ class IndexController extends BaseController{
         }
         $week = $month = $day = '';
         if(!empty($list)){
+
             $week  = '星期'.$this->weekarray[date('w',strtotime($list[0]['contentDetail']['bespeak_time']))] ;
             $month = date('n',strtotime($list[0]['contentDetail']['bespeak_time'])).'月';
             $day   = date('d',strtotime($list[0]['contentDetail']['bespeak_time']));
@@ -98,9 +104,12 @@ class IndexController extends BaseController{
                 'day'=>'',
             );
         }
+
         $data['week'] = $week;
         $data['month']= $month;
         $data['day']  = $day;
+        $data['dailyauthor']  = $dailyauthor;
+        $data['dailyart']  = $dailyart;
         $data['list'] = $list;
         $this->to_back($data);
     }

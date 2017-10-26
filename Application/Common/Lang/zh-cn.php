@@ -86,9 +86,9 @@ return array(
     'daily_user_add_fail'=>'用户添加失败',
     'daily_user_ptype_notnull'=>'人群设定不可为空',
     'daily_user_update_fail'=>'用户更新失败',
-    'daily_user_tel_illegal'=>'用户电话非法',
-    'daily_user_code_notnull'=>'手机验证码不可为空',
-    'daily_user_code_illegal'=>'手机验证码不正确或已过期',
+    'daily_user_tel_illegal'=>'手机号输入有误',
+    'daily_user_code_notnull'=>'验证码不可为空',
+    'daily_user_code_illegal'=>'验证码错误或已过期',
     'daily_user_code_min'=>'一分钟内请勿重复获取验证码',
     'daily_code_send_fail'=>'验证码发送失败',
     //升级接口

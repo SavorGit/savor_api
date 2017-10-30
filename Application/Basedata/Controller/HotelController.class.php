@@ -23,7 +23,6 @@ class HotelController extends BaseController{
         $where = ' 1=1 and hotel_box_type=1 and flag=0 and state=1 ';
         $field = 'id,name hotel_name';
         $data = $h_model->getHotelList($where, '', '', $field);
-        var_export($data);
         $this->to_back($data);
     }
 }

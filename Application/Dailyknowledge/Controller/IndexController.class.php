@@ -88,7 +88,7 @@ class IndexController extends BaseController{
         }
         if(!empty($nexlist)) {
             $nweek  = '星期'.$this->weekarray[date('w',strtotime($nexlist[0]['bespeak_time']))] ;
-            $nmonth = date('n',strtotime($nexlist[0]['bespeak_time'])).'月';
+            $nmonth = date('n',strtotime($nexlist[0]['bespeak_time']));
             $nday   = date('d',strtotime($nexlist[0]['bespeak_time']));
             $data['nextpage'] = array(
                 'next'=>1,

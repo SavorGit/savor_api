@@ -347,6 +347,9 @@ class ApiController extends CommonController{
         $adsModel = new \Common\Model\AdsModel();
         //获取广告期号
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
+        if(empty($per_arr)){
+            $this->to_back(10000);
+        }
         $menuid = $per_arr[0]['menuId'];
         $pro_arr = $adsModel->getproInfo($menuid);
         $pro_arr = $this->changeadvList($pro_arr);

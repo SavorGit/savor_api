@@ -110,6 +110,13 @@ class IndexController extends BaseController{
         $data['day']  = $day;
         $data['dailyauthor']  = $dailyauthor;
         $data['dailyart']  = $dailyart;
+        $content_date = date('Y-m-d',strtotime($list[0]['contentDetail']['bespeak_time']));
+        $now_date = date('Y-m-d');
+        if($content_date==$now_date){
+            $data['is_same_day'] = 1;
+        }else {
+            $data['is_same_day'] = 0;
+        }
         $data['list'] = $list;
         $this->to_back($data);
     }

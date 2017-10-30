@@ -1,8 +1,11 @@
 <?php
-namespace BaseData\Controller;
-use Think\Controller;
-use \Common\Controller\BaseController as BaseController;
-class HotelController extends BaseController{
+
+namespace Small\Controller;
+
+use Common\Controller\CommonController as CommonController;;
+
+
+class HotelController extends CommonController{
  	/**
      * 构造函数
      */

@@ -130,10 +130,17 @@ class IndexController extends BaseController{
             
             
         }
+        $m_hote_ext = new \Common\Model\HotelExtModel();
+        $map = array();
+        $map['mac_addr'] = '000000000000';
+        
+        
+        $counts = $m_hote_ext->where($map)->count();
+        
         $normal_hotel_num = $hotel_all_num - $not_normal_hotel_num;
         $data['list'][] = '正常酒楼:'. $normal_hotel_num;               //正常酒楼
         $data['list'][] = '异常酒楼:'. $not_normal_hotel_num;           //异常酒楼
-        
+        $not_normal_small_plat_num -= $counts;
         $data['list'][] = '异常小平台:'. $not_normal_small_plat_num;  //异常小平台
         
         

@@ -249,7 +249,10 @@ abstract class Driver {
         if ( !$this->_linkID ) return false;
         //数据rollback 支持
         if ($this->transTimes == 0) {
-            $this->_linkID->beginTransaction();
+            //$this->_linkID->beginTransaction();
+            foreach ($this->linkID as $_linkId) {
+                $_linkId->beginTransaction();
+            }
         }
         $this->transTimes++;
         return ;
@@ -262,7 +265,10 @@ abstract class Driver {
      */
     public function commit() {
         if ($this->transTimes > 0) {
-            $result = $this->_linkID->commit();
+           // $result = $this->_linkID->commit();
+            foreach ($this->linkID as $_linkId) {
+                $result = $_linkId->commit();
+            }
             $this->transTimes = 0;
             if(!$result){
                 $this->error();
@@ -279,7 +285,10 @@ abstract class Driver {
      */
     public function rollback() {
         if ($this->transTimes > 0) {
-            $result = $this->_linkID->rollback();
+            //$result = $this->_linkID->rollback();
+            foreach ($this->linkID as $_linkId) {
+                $result = $_linkId->rollback();
+            }
             $this->transTimes = 0;
             if(!$result){
                 $this->error();

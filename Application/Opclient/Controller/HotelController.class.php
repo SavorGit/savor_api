@@ -232,7 +232,8 @@ class HotelController extends BaseController {
         $m_box = new \Common\Model\BoxModel();
         $where = '';
 
-        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
+        //$where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
+        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state =1 and a.flag =0 and room.state =1 and room.flag =0 ';
 
         $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
 

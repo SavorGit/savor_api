@@ -26,6 +26,18 @@ class HotelController extends CommonController{
         $where = ' 1=1 and hotel_box_type=1 and flag=0 and state=1 ';
         $field = 'id,name hotel_name';
         $data = $h_model->getHotelList($where, '', '', $field);
+        $m_menu = new \Common\Model\MenuListModel();
+        
+        foreach($data as $key=>$v){
+            //获取最新节目单
+            $menu_info = $m_menu->getMenuInfoByHotelid($v['id']);
+            if(!empty($menu_info)){
+                $data[$key]['menu_name'] = $menu_info['menu_name'];
+            }else {
+                $data[$key]['menu_name'] = '';
+            }
+            
+        }
         $this->to_back($data);
     }
 }

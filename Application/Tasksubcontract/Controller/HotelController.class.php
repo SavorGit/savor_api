@@ -162,7 +162,7 @@ class HotelController extends BaseController {
             }
         }
         //二维数组排序
-die;
+
         foreach ($box_list as $key => $row)
         {
             $volume[$key]  = $row['ltime'];

@@ -138,7 +138,6 @@ class HotelController extends BaseController {
         $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
 
         $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id bid ',$where);
-
         $box_total_num = count($box_list);
         foreach($box_list as $ks=>$vs){
             $sql = "select a.srtype,a.create_time ctime,a.current_location from (select
@@ -159,11 +158,11 @@ class HotelController extends BaseController {
 
                 $box_list[$ks]['last_time'] = strtotime($rets[0]['ctime']);
                 $box_list[$ks]['last_ctime'] = $rets[0]['ctime'];
-                $box_list[$ks]['current_location']  = empty($box_list[$ks]['current_location'])?'无':$box_list[$ks]['current_location'];
+                $box_list[$ks]['current_location']  = empty($rets[0]['current_location'])?'无':$rets[0]['current_location'];
             }
         }
         //二维数组排序
-
+die;
         foreach ($box_list as $key => $row)
         {
             $volume[$key]  = $row['ltime'];

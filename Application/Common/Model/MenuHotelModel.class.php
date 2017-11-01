@@ -31,7 +31,7 @@ class MenuHotelModel extends Model
         menu_hotel.menu_id AS menuId,
         CONCAT(DATE_FORMAT(menu_hotel.update_time,'%m%d%H%i'),
 		  DATE_FORMAT(list.update_time,'%m%d%H%i')) AS period,
-        menu_hotel.pub_time AS pubTime
+        menu_hotel.pub_time AS pubTime,list.menu_name
         FROM savor_menu_hotel menu_hotel
         LEFT JOIN savor_menu_list list on menu_hotel.menu_id=list.id
         where menu_hotel.hotel_id = $hotelid

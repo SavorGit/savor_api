@@ -33,7 +33,7 @@ return array(
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo',
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
-	                                 'APP3','Opclient','Dailyknowledge'), //模块配置
+	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -89,7 +89,8 @@ return array(
     'HOTEL_CLIENT_NAME_ARR'=>array('android'=>5,'ios'=>6),
     'OPTION_CLIENT_NAME_ARR'=>array('android'=>7,'ios'=>8),
     'KNOWLEDGE_CLIENT_NAME_ARR'=>array('android'=>9,'ios'=>10),
-    'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
+	'SUBSCONTRACT_CLIENT_NAME_ARR'=>array('android'=>11,'ios'=>12),
+	'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
 	'DOWNLOAD_HOTEL_INFO_TYPE'=>array('ads'=>1,'adv'=>2,'pro'=>3,'vod'=>4,'logo'=>5,'load'=>6),
 	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量'),
 	'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),

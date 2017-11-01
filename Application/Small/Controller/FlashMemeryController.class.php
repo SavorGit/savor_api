@@ -125,12 +125,12 @@ class FlashMemeryController extends CommonController{
             $where['menu_num'] = array('neq',$menu_num);
             $order = ' id desc';
             $limit = 1;
-            $last_menu_info = $m_flash_menu->getInfo('media_id,name,md5,md5_type,type,oss_path,duration,suffix,chinese_name,order',$where,$order,$limit);
+            $last_menu_info = $m_flash_menu->getInfo('*',$where,$order,$limit);
             if(!empty($last_menu_info)){
                 $where = array();
                 $where['flash_id'] = $last_menu_info[0]['id'];
                 $order = ' id asc';
-                $last_flash_menu_item = $m_flash_menu_item->getList($where,$order);
+                $last_flash_menu_item = $m_flash_menu_item->getList('media_id,name,md5,md5_type,type,oss_path,duration,suffix,chinese_name,order',$where,$order);
                 $result['last_menu'] = $last_flash_menu_item;
             }else {
                 $result['last_menu'] = array();

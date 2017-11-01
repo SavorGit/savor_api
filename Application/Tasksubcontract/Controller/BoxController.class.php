@@ -11,9 +11,11 @@
 namespace Tasksubcontract\Controller;
 use \Common\Controller\BaseController as BaseController;
 use Common\Lib\RecordLog;
+use Think\Log;
 
 class BoxController extends BaseController {
     private $state_ar;
+    private $img_up = 'http://oss.littlehotspot.com/log/resource/standalone/moble/';
     function _init_() {
         switch(ACTION_NAME) {
             case 'getHotelBoxDamageConfig':
@@ -22,10 +24,10 @@ class BoxController extends BaseController {
             case 'InsertBoxDamage':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
-                    'box_mac'=>'1001',
-                    'type'=>'1001',
+                    'bid'=>'1001',
                     'hotel_id'=>'1001',
                     'srtype'=>'1001',
+                    'userid'=>'1001',
                 );
                 break;
         }
@@ -43,7 +45,7 @@ class BoxController extends BaseController {
      * @return json
      */
     public function getHotelBoxDamageConfig() {
-        $damage_config = C('HOTEL_DAMAGE_CONFIG');
+        $damage_config = C('HOTEL_STANDALONE_CONFIG');
         $d_config_arr = array();
         foreach ($damage_config as $dk=>$dv) {
             $d_config_arr[] = array('id'=>$dk,
@@ -67,25 +69,30 @@ class BoxController extends BaseController {
     }
 
     public function InsertBoxDamage() {
-        $params = file_get_contents('php://input');
-        RecordLog::addLog($params);
+
+        $params = $_SERVER['HTTP_TRACEINFO'];
+        file_put_contents(LOG_PATH.'baiyu.log', $params.PHP_EOL,  FILE_APPEND);
+
         $save['hotel_id'] = intval($this->params['hotel_id']);
         $save['bid'] = $this->params['bid'];
-        $save['state'] = empty($this->params['state'])?0:$this->params['state'];
         $save['userid'] = intval($this->params['userid']);
         $save['remark'] = empty($this->params['remark'])?'':$this->params['remark'];
+        $save['current_location'] = empty($this->params['current_location'])?'':$this->params['current_location'];
         $save['repair_type'] = empty($this->params['repair_type'])?'':$this->params['repair_type'];
-        $save['repair_img'] = empty($this->params['repair_img'])?'':$this->params['repair_img'];
+        $save['repair_img'] = str_replace( C('IMG_UP_SUBCONTACT'),'', $this->params['repair_img']);
         $save['srtype'] = $this->params['srtype'];
-
         $this->disposeTips($save);
-        $lng = $this->sctonum( $this->traceinfo['lat']);
-        $lat = $this->sctonum($this->traceinfo['lng']);
-        $save['gps'] = array(
-            $lng,
-            $lat
-        );
-        $save['gps'] = json_encode($save['gps']);
+        $lo = explode(',', $this->traceinfo['location']);
+        $lng = $this->sctonum( $lo[1]);
+        $lat = $this->sctonum( $lo[0]);
+        if($lat<0 || $lat>90){
+            $this->to_back(17001);
+        }
+        if($lng<0 || $lng>180){
+            $this->to_back(17002);
+        }
+        $save['gps'] = $this->traceinfo['location'];
+        //$save['gps'] = json_encode($save['gps']);
         $save['flag'] = 0;
         $save['create_time'] = date("Y-m-d H:i:s");
         $save['datetime'] = date("Ymd");
@@ -152,9 +159,7 @@ class BoxController extends BaseController {
             $this->to_back('30001');    //用户不存在
         }
 
-        if ((!in_array($save['state'], $this->state_ar)) && $save['srtype'] == 2 ) {
-            $this->to_back('30051');
-        }
+
 
         $con['id'] = $save['bid'];
         $boxModel  = new \Common\Model\BoxModel();

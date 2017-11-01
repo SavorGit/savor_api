@@ -141,7 +141,7 @@ class HotelController extends BaseController {
 
         $box_total_num = count($box_list);
         foreach($box_list as $ks=>$vs){
-            $sql = "select a.srtype,a.create_time ctime from (select
+            $sql = "select a.srtype,a.create_time ctime,a.current_location from (select
 
 * from savor_subcontract where bid = '".$vs["bid"]."' order by id desc) as a limit 1";
             $rets  = $m_box->query($sql);
@@ -149,16 +149,17 @@ class HotelController extends BaseController {
                 $box_list[$ks]['srtype'] = '无';
                 $box_list[$ks]['last_time'] = '99999999999999';
                 $box_list[$ks]['last_ctime'] = '';
+                $box_list[$ks]['current_location'] = '无';
             }else {
-                $box_list[$ks]['ustate'] = 0;
                 if($rets[0]['srtype'] == 2) {
-                    $box_list[$ks]['srtype'] = '维修';
+                    $box_list[$ks]['srtype'] = '报修';
                 } else {
                     $box_list[$ks]['srtype'] = '签到';
                 }
 
                 $box_list[$ks]['last_time'] = strtotime($rets[0]['ctime']);
                 $box_list[$ks]['last_ctime'] = $rets[0]['ctime'];
+                $box_list[$ks]['current_location']  = empty($box_list[$ks]['current_location'])?'无':$box_list[$ks]['current_location'];
             }
         }
         //二维数组排序

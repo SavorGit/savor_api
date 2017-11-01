@@ -151,7 +151,7 @@ class ProgramController extends CommonController{
              if(empty($redis_arr)){
                  $adv_num = md5($menu_num);
              }else {
-                 $adv_num = md5(json_encode($redis_arr));
+                 $adv_num = md5(json_encode($redis_arr).$menu_num);
              }
              foreach($list as $key=>$v){
                  $data[$key]['box_id']    = $v['boxId'];              //机顶盒id

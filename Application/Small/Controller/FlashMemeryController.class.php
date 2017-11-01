@@ -66,7 +66,8 @@ class FlashMemeryController extends CommonController{
             $sort_arr[$key]['order'] = $v['order'];
         }
         array_multisort($sort_arr,SORT_ASC,$menu_list);
-        $result['menu_list'] = $menu_list; 
+        $result['menu_list']['menu_name'] = $per_arr[0]['menu_name'];
+        $result['menu_list']['list'] = $menu_list; 
         //获取节目单的宣传片end
         //print_r($menu_list);exit;
         foreach($menu_list as $key=>$v){
@@ -99,7 +100,7 @@ class FlashMemeryController extends CommonController{
             $data['menu_num'] = $menu_num;
             $data['period'] = $per_arr[0]['period'];
             $data['menu_pub_time'] = $per_arr[0]['pubTime'];
-            
+            $data['menu_name'] = $per_arr[0]['menu_name'];
             $data['create_time'] = date('Y-m-d H:i:s');
             $flash_id = $m_flash_menu->addInfo($data);
             foreach($menu_list as $key=>$v){
@@ -131,9 +132,11 @@ class FlashMemeryController extends CommonController{
                 $where['flash_id'] = $last_menu_info[0]['id'];
                 $order = ' id asc';
                 $last_flash_menu_item = $m_flash_menu_item->getList('media_id,name,md5,md5_type,type,oss_path,duration,suffix,chinese_name,order',$where,$order);
-                $result['last_menu'] = $last_flash_menu_item;
+                $result['last_menu']['menu_name'] = $last_menu_info[0]['menu_name'];
+                $result['last_menu']['list'] = $last_flash_menu_item;
             }else {
-                $result['last_menu'] = array();
+                $result['last_menu']['menu_name'] = array();
+                $result['last_menu']['list'] = array();
             }
         }
        

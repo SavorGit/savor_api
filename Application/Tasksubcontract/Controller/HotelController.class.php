@@ -137,13 +137,13 @@ class HotelController extends BaseController {
 
         $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
 
-        $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
+        $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id bid ',$where);
 
         $box_total_num = count($box_list);
         foreach($box_list as $ks=>$vs){
             $sql = "select a.srtype,a.create_time ctime from (select
 
-* from savor_subcontract where mac = '".$vs["mac"]."' order by id desc) as a limit 1";
+* from savor_subcontract where bid = '".$vs["bid"]."' order by id desc) as a limit 1";
             $rets  = $m_box->query($sql);
             if(empty($rets)){
                 $box_list[$ks]['srtype'] = '无';

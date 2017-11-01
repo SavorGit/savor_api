@@ -70,8 +70,9 @@ class BoxController extends BaseController {
         $params = file_get_contents('php://input');
         RecordLog::addLog($params);
         $save['hotel_id'] = intval($this->params['hotel_id']);
-        $save['mac'] = $this->params['box_mac'];
+        $save['bid'] = $this->params['bid'];
         $save['state'] = empty($this->params['state'])?0:$this->params['state'];
+        $save['userid'] = intval($this->params['userid']);
         $save['remark'] = empty($this->params['remark'])?'':$this->params['remark'];
         $save['repair_type'] = empty($this->params['repair_type'])?'':$this->params['repair_type'];
         $save['repair_img'] = empty($this->params['repair_img'])?'':$this->params['repair_img'];
@@ -142,12 +143,20 @@ class BoxController extends BaseController {
         if( empty($hotel_info) ) {
             $this->to_back('16100');   //该酒楼不存在或被删除
         }
+        $m_sysuser = new \Common\Model\SysUserModel();
+        $where['id'] = $save['userid'];
+        $where['status']   =1;
+        $userinfo = $m_sysuser->getUserInfo($where,'username,
+            remark as nickname,password');
+        if(empty($userinfo)){
+            $this->to_back('30001');    //用户不存在
+        }
 
         if ((!in_array($save['state'], $this->state_ar)) && $save['srtype'] == 2 ) {
             $this->to_back('30051');
         }
 
-        $con['mac'] = $save['mac'];
+        $con['id'] = $save['bid'];
         $boxModel  = new \Common\Model\BoxModel();
         $info = $boxModel->getOnerow($con);
         if(empty($info)){

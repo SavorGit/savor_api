@@ -172,11 +172,19 @@ class HotelController extends BaseController {
             $dat['last_small'] = $rets[0]['version_name'];
         }
         //小平台
-        $versionModel = new \Common\Model\VersionModel();
+        /* $versionModel = new \Common\Model\VersionModel();
         $co['device_type'] = 1;
         $order = 'id desc ';
         $field = 'version_name';
-        $infoa = $versionModel->fetchDataWhere($co, $order, $field, 1);
+        $infoa = $versionModel->fetchDataWhere($co, $order, $field, 1); */
+        
+        $m_device_upgrade = new \Common\Model\DeviceUpgradeModel();
+        $ret = $m_device_upgrade->getLastSmallPtInfo($hotelid);
+        
+        if(!empty($ret)){
+            $m_device_version = new \Common\Model\DeviceVersionModel();
+            $infoa = $m_device_version->getOneByVersionAndDevice($ret['version'], $device_type=1);
+        }
         $dat['new_small'] = $infoa['version_name'];
         //获取小平台心跳最后版本号
         if ($dat['new_small'] == $dat['last_small']) {

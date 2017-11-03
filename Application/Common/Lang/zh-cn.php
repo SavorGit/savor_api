@@ -78,6 +78,11 @@ return array(
     'option_error_report_not_exist'=>'该异常记录不存在',
     'option_error_hotel_not_exist'=>'该异常记录不包含该酒楼',
     'option_notallow_remark'=>'备注限制100字',
+    //运维客户端接口1.1
+    'option_user_role_empty'=>'该账号未设置运维角色',
+    'option_user_role_error'=>'账号角色非法',
+    'option_task_empty'=>'该任务不存在',
+    
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

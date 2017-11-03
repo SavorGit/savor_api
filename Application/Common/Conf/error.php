@@ -88,6 +88,11 @@ return array(
 		'30054'=>'option_reason_not_empty',
 		'30055'=>'option_insert_fail',
 		'30056'=>'option_notallow_remark',
+	    
+	    //1.1版本
+	    '30057'=>'option_user_role_empty',
+	    '30058'=>'option_user_role_error',
+	    '30059'=>'option_task_empty',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

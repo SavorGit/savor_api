@@ -51,9 +51,13 @@ class AreaModel extends Model
 		}
 		return $result;
 
-	}//End Function
-
-
-
-
-}//End Class
+	}
+	/**
+	 * @desc 获取有酒楼的城市列表
+	 */
+	public function getHotelAreaList(){
+	    $where['is_in_hotel'] = 1;
+	    $data = $this->field('id,region_name')->where($where)->select();
+	    return $data;
+	}
+}

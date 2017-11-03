@@ -33,7 +33,7 @@ return array(
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo',
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
-	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract'), //模块配置
+	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -166,7 +166,17 @@ return array(
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
-
-
-
+    'OPTION_USER_SKILL_ARR' => array(
+        '3'=>'信息检测',
+        '4'=>'网络改造',
+        '6'=>'安装验收',
+        '7'=>'维修',
+    ),
+    'OPTION_USER_ROLE_ARR' => ARRAY(
+        '1'=>'发布者',
+        '2'=>'指派者',
+        '3'=>'执行者',
+        '4'=>'查看',
+    ),
+    'TASK_EMERGE_ARR'=>array('2'=>'紧急','3'=>'正常'),
 );

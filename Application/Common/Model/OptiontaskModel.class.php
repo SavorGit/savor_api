@@ -14,9 +14,11 @@ class OptiontaskModel extends Model
 	public function addData($data, $type) {
 		if($type == 1) {
 			$result = $this->add($data);
+			return $this->getLastInsID();
 		} else {
 			$result = $this->addAll($data);
+		    return $result;
 		}
-		return $result;
+		
 	}
 }

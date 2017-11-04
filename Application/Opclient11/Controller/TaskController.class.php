@@ -422,7 +422,8 @@ class TaskController extends BaseController{
     public function taskDetail(){
             $task_id = $this->params['task_id'];  //任务id
             $m_option_task = new \Common\Model\OptiontaskModel();
-            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_address,
+            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,
+                       a.hotel_address,a.appoint_time,a.appoint_exe_time,
                        a.task_emerge,a.task_type,a.tv_nums';
             
             $where = array();
@@ -443,8 +444,9 @@ class TaskController extends BaseController{
                     $task_info['repair_list'] = $repair_list;
                 }
             }
-            
+            $task_info['task_emerge_id'] = $task_info['task_emerge'];
             $task_info['task_emerge'] = $this->task_emerge_arr[$task_info['task_emerge']];
+            $task_info['task_type_id'] = $task_info['task_type'];
             $task_info['task_type']   = $this->option_user_skill_arr[$task_info['task_type']];
             
             

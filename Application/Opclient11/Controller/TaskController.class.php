@@ -28,6 +28,14 @@ class TaskController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
                 break;
+            case 'exeTaskList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                break;
+            case 'viewTaskList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                break; 
             case 'taskDetail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'1001');
@@ -196,6 +204,77 @@ class TaskController extends BaseController{
         $this->to_back($data);
     }
     /**
+     * @desc 执行者任务列表
+     */
+    public function exeTaskList(){
+        $user_id = $this->params['user_id'];
+        $state   = $this->params['state'];   //0  全部    2：处理中  4 已完成
+        $page    = $this->params['page'];
+        $page    = intval($page) ? intval($page) : 1;
+    
+        $page_size = $this->pagesize;
+        $offset = ($page-1)*$page_size;
+        $limit  = "$offset,$page_size";
+    
+        $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+                    a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    ';
+    
+        $where = ' a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
+        $state = intval($state);
+        if(!empty($state)){
+            $where .= ' and a.state ='.$state;
+        }
+    
+        if($state ==0 || $state ==4){
+            $order = ' a.create_time desc';
+        }else if($state ==1 || $state ==2){
+            $order = ' a.task_emerge asc ,a.create_time asc';
+        }
+    
+    
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $data = $m_option_task->getList($fields, $where, $order, $limit);
+    
+        foreach($data as $key=>$v){
+    
+            $data[$key]['state_id'] = $v['state'];
+            $data[$key]['state'] = $this->task_state_arr[$v['state']];
+            $data[$key]['task_emerge_id'] = $v['task_emerge'];
+            $data[$key]['task_emerge'] = $this->task_emerge_arr[$v['task_emerge']];
+            $data[$key]['task_type_id'] = $v['task_type'];
+            $data[$key]['task_type'] = $this->option_user_skill_arr[$v['task_type']];
+            if(!empty($v['appoint_exe_time'])){
+                $data[$key]['appoint_exe_time'] = substr($v['appoint_exe_time'], 0,10);
+            }
+    
+            $data[$key]['task_type_desc'] = $this->option_user_skill_bref_arr[$data[$key]['task_type_id']];
+            if(empty($v['appoint_user_id'])){
+                unset($data[$key]['appoint_user_id']);
+                unset($data[$key]['appoint_user']);
+            }
+    
+            if(empty($v['exe_user_id'])){
+                unset($data[$key]['exe_user_id']);
+                unset($data[$key]['exeuser']);
+            }
+            if(empty($v['appoint_time'])){
+                unset($data[$key]['appoint_time']);
+            }
+            if(empty($v['appoint_exe_time'])){
+                unset($data[$key]['appoint_exe_time']);
+            }
+            if(empty($v['complete_time'])){
+                unset($data[$key]['complete_time']);
+            }
+            //
+        }
+        $this->to_back($data);
+    }
+    
+    
+    /**
      * @desc 指派任务列表
      */
     public function appointTaskList(){
@@ -264,6 +343,75 @@ class TaskController extends BaseController{
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
             }
+        }
+        $this->to_back($data);
+    }
+    /**
+     * @desc 查看者任务列表 
+     */
+    public function viewTaskList(){
+        $user_id = $this->params['user_id'];
+        $state   = $this->params['state'];   //0  全部    2：处理中  4 已完成
+        $page    = $this->params['page'];
+        $page    = intval($page) ? intval($page) : 1;
+    
+        $page_size = $this->pagesize;
+        $offset = ($page-1)*$page_size;
+        $limit  = "$offset,$page_size";
+    
+        $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+                    a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    ';
+    
+        $where = ' and a.flag=0';   //获取所有任务
+        $state = intval($state);
+        if(!empty($state)){
+            $where .= ' and a.state ='.$state;
+        }
+    
+        if($state ==0 || $state ==4){
+            $order = ' a.create_time desc';
+        }else if($state ==1 || $state ==2){
+            $order = ' a.task_emerge asc ,a.create_time asc';
+        }
+    
+    
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $data = $m_option_task->getList($fields, $where, $order, $limit);
+    
+        foreach($data as $key=>$v){
+    
+            $data[$key]['state_id'] = $v['state'];
+            $data[$key]['state'] = $this->task_state_arr[$v['state']];
+            $data[$key]['task_emerge_id'] = $v['task_emerge'];
+            $data[$key]['task_emerge'] = $this->task_emerge_arr[$v['task_emerge']];
+            $data[$key]['task_type_id'] = $v['task_type'];
+            $data[$key]['task_type'] = $this->option_user_skill_arr[$v['task_type']];
+            if(!empty($v['appoint_exe_time'])){
+                $data[$key]['appoint_exe_time'] = substr($v['appoint_exe_time'], 0,10);
+            }
+    
+            $data[$key]['task_type_desc'] = $this->option_user_skill_bref_arr[$data[$key]['task_type_id']];
+            if(empty($v['appoint_user_id'])){
+                unset($data[$key]['appoint_user_id']);
+                unset($data[$key]['appoint_user']);
+            }
+    
+            if(empty($v['exe_user_id'])){
+                unset($data[$key]['exe_user_id']);
+                unset($data[$key]['exeuser']);
+            }
+            if(empty($v['appoint_time'])){
+                unset($data[$key]['appoint_time']);
+            }
+            if(empty($v['appoint_exe_time'])){
+                unset($data[$key]['appoint_exe_time']);
+            }
+            if(empty($v['complete_time'])){
+                unset($data[$key]['complete_time']);
+            }
+            //
         }
         $this->to_back($data);
     }

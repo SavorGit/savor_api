@@ -10,4 +10,14 @@ class OpuserRoleModel extends Model{
  	    $data = $this->field($fields)->where($where)->find();
 	    return $data;
 	}
+	public function getList($fields,$where,$order,$limit){
+	    $data = $this->alias('a')
+	                 ->join('savor_sysuser as user on user.id=a.user_id','left')
+	                 ->field($fields)
+	                 ->where($where)
+	                 ->order($order)
+	                 ->limit()
+	                 ->select();
+	    return $data;
+	}
 }

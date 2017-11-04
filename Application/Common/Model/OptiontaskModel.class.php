@@ -41,4 +41,14 @@ class OptiontaskModel extends Model
 	                 ->field($fields)->where($where)->find();
 	    return $data;
 	}
+	public function updateInfo($where,$data){
+	    $ret = $this->where($where)->save($data);
+	    return $ret;
+	}
+	public function getdatas($fields,$where){
+	    $data = $this->alias('a')
+	    ->join('savor_hotel hotel on a.hotel_id = hotel.id','left')
+	    ->field($fields)->where($where)->select();
+	    return $data;
+	}
 }

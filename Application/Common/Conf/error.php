@@ -93,6 +93,8 @@ return array(
 	    '30057'=>'option_user_role_empty',
 	    '30058'=>'option_user_role_error',
 	    '30059'=>'option_task_empty',
+	    '30060'=>'option_task_not_new_task',
+	    '30061'=>'option_task_refuse_err',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

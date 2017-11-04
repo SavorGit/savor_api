@@ -82,7 +82,8 @@ return array(
     'option_user_role_empty'=>'该账号未设置运维角色',
     'option_user_role_error'=>'账号角色非法',
     'option_task_empty'=>'该任务不存在',
-    
+    'option_task_not_new_task'=>'该任务不是新任务', 
+    'option_task_refuse_err'=>'任务拒绝失败',
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

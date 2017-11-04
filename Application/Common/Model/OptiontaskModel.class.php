@@ -11,6 +11,18 @@ use Think\Model;
 class OptiontaskModel extends Model
 {
 	protected $tableName='option_task';
+
+	public function getTaskInfoByUserid($fields, $where){
+		$data = $this->field($fields)->where($where)->find();
+		return $data;
+	}
+
+	public function saveData($dat, $where) {
+		$ret = $this->where($where)->save($dat);
+		return $ret;
+	}
+
+
 	public function addData($data, $type) {
 		if($type == 1) {
 			$result = $this->add($data);

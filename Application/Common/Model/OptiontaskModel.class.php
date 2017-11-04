@@ -50,6 +50,7 @@ class OptiontaskModel extends Model
 	public function getInfo($fields,$where){
 	    $data = $this->alias('a')
 	                 ->join('savor_hotel hotel on a.hotel_id = hotel.id','left')
+	                 ->join('savor_area_info area on a.task_area=area.id','left')
 	                 ->field($fields)->where($where)->find();
 	    return $data;
 	}

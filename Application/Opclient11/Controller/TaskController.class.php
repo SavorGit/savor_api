@@ -422,9 +422,9 @@ class TaskController extends BaseController{
     public function taskDetail(){
             $task_id = $this->params['task_id'];  //任务id
             $m_option_task = new \Common\Model\OptiontaskModel();
-            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,
+            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,
                        a.hotel_address,a.appoint_time,a.appoint_exe_time,
-                       a.task_emerge,a.task_type,a.tv_nums';
+                       a.task_emerge,a.task_type,a.tv_nums,area.region_name,a.state';
             
             $where = array();
             $where['a.id'] = $task_id;
@@ -434,7 +434,17 @@ class TaskController extends BaseController{
             if(empty($task_info)){
                 $this->to_back(30059);
             }
-            if($task_info['task_type']==7){//维修
+            $task_type = $task_info['task_type'];
+            
+            $task_info['task_emerge_id'] = $task_info['task_emerge'];
+            $task_info['task_emerge'] = $this->task_emerge_arr[$task_info['task_emerge']];
+            $task_info['task_type_id'] = $task_info['task_type'];
+            $task_info['task_type_desc'] = $this->option_user_skill_bref_arr[$task_info['task_type']];
+            $task_info['task_type']   = $this->option_user_skill_arr[$task_info['task_type']];
+            $task_info['region_name'] = str_replace('市', '', $task_info['region_name']);
+            $task_info['state_id'] = $task_info['state'];
+            $task_info['state'] = $this->task_state_arr[$task_info['state']];
+            if($task_type==7){//维修
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 $fields = 'box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
                 $where = array();
@@ -444,12 +454,6 @@ class TaskController extends BaseController{
                     $task_info['repair_list'] = $repair_list;
                 }
             }
-            $task_info['task_emerge_id'] = $task_info['task_emerge'];
-            $task_info['task_emerge'] = $this->task_emerge_arr[$task_info['task_emerge']];
-            $task_info['task_type_id'] = $task_info['task_type'];
-            $task_info['task_type']   = $this->option_user_skill_arr[$task_info['task_type']];
-            
-            
             $this->to_back($task_info);
     }
     /**

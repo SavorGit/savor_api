@@ -7,6 +7,7 @@ class TaskController extends BaseController{
     private $task_state_arr ;
     private $task_emerge_arr;
     private $option_user_skill_arr;
+    private $option_user_skill_bref_arr;
     /**
      * 构造函数
      */
@@ -31,6 +32,14 @@ class TaskController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'1001');
                 break;
+            case 'refuseTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>'1001','task_id'=>'10001','refuse_desc'=>'1000');
+                break;
+            case 'getExeUserList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('task_id'=>'1001','exe_date'=>'1001','is_lead_install'=>'1000');
+                break;
                 
         }
         parent::_init_();
@@ -38,6 +47,12 @@ class TaskController extends BaseController{
         $this->task_state_arr = C('TASK_STATE_ARR');
         $this->task_emerge_arr = C('TASK_EMERGE_ARR');
         $this->option_user_skill_arr = C('OPTION_USER_SKILL_ARR');
+        $this->option_user_skill_bref_arr = array(
+            '3'=>'检测',
+            '4'=>'网络',
+            '6'=>'安装',
+            '7'=>'维修',
+        );
     }
     /**
      * @desc 发布任务
@@ -86,14 +101,22 @@ class TaskController extends BaseController{
         
         if($task_type==7){//如果是维修
             $repair_info = $this->params['repair_info'];
+            $map['box_id'] = 1;
+            $map['task_id'] =1;
+            $map['fault_desc'] = 'fda';
+            $map['fault_img_url'] = $repair_info;
+            $m_option_task_repair->addData($map);
+            $this->to_back(10000);
+            $repair_info = str_replace('\\', '', $repair_info);
             $repair_info = json_decode($repair_info,true);
+            
             foreach($repair_info as $key=>$v){
                 $map = array();
                 $map['task_id'] = $task_id;
                 $map['box_id'] = $v['box_id'];
-                $map['fault_desc'] = $v['desc'];
+                $map['fault_desc'] = $v['fault_desc'];
                 $map['fault_img_url'] = $v['fault_img_url'];
-                $m_option_task_repair->addInfo($map);
+                $m_option_task_repair->addData($map);
             }
         }
         $this->to_back(10000);
@@ -112,12 +135,16 @@ class TaskController extends BaseController{
         $limit  = "$offset,$page_size";
         
         $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
-                    user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                    a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time
                     ';
         
         $where = ' a.publish_user_id='.$user_id.' and a.flag=0';   //获取自己发布的任务  
         $state = intval($state);
+        if(!empty($state)){
+            $where .= ' and a.state ='.$state;
+        }
+        
         if($state ==0 || $state ==4){
             $order = ' a.create_time desc';
         }else if($state ==1 || $state ==2){
@@ -130,9 +157,17 @@ class TaskController extends BaseController{
         
         foreach($data as $key=>$v){
             
+            $data[$key]['state_id'] = $v['state'];
             $data[$key]['state'] = $this->task_state_arr[$v['state']];
-            $data[$key]['task_emerge'] = $this->task_state_arr[$v['task_emerge']];
+            $data[$key]['task_emerge_id'] = $v['task_emerge'];
+            $data[$key]['task_emerge'] = $this->task_emerge_arr[$v['task_emerge']];
+            $data[$key]['task_type_id'] = $v['task_type'];
             $data[$key]['task_type'] = $this->option_user_skill_arr[$v['task_type']];
+            if(!empty($v['appoint_exe_time'])){
+                $data[$key]['appoint_exe_time'] = substr($v['appoint_exe_time'], 0,10);
+            }
+            
+            $data[$key]['task_type_desc'] = $this->option_user_skill_bref_arr[$data[$key]['task_type_id']];
             if(empty($v['appoint_user_id'])){
                 unset($data[$key]['appoint_user_id']);
                 unset($data[$key]['appoint_user']);
@@ -151,6 +186,7 @@ class TaskController extends BaseController{
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
             }
+            //
         }
         $this->to_back($data);
     }
@@ -175,12 +211,15 @@ class TaskController extends BaseController{
         $limit  = "$offset,$page_size";
         
         $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
-                    user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                    a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time
                     ';
         
         $where = ' a.flag=0';   //获取所有发布的任务
         $state = intval($state);
+        if(!empty($state)){
+            $where .= ' and a.state ='.$state;
+        }
         if($state ==0 || $state ==4){
             $order = ' a.create_time desc';
         }else if($state ==1 || $state ==2){
@@ -192,10 +231,16 @@ class TaskController extends BaseController{
         $data = $m_option_task->getList($fields, $where, $order, $limit);
         
         foreach($data as $key=>$v){
-        
+            $data[$key]['state_id'] = $v['state'];
             $data[$key]['state'] = $this->task_state_arr[$v['state']];
-            $data[$key]['task_emerge'] = $this->task_state_arr[$v['task_emerge']];
+            $data[$key]['task_emerge_id'] = $v['task_emerge'];
+            $data[$key]['task_emerge'] = $this->task_emerge_arr[$v['task_emerge']];
+            $data[$key]['task_type_id'] = $v['task_type'];
             $data[$key]['task_type'] = $this->option_user_skill_arr[$v['task_type']];
+            $data[$key]['task_type_desc'] = $this->option_user_skill_bref_arr[$data[$key]['task_type_id']];
+            if(!empty($v['appoint_exe_time'])){
+                $data[$key]['appoint_exe_time'] = substr($v['appoint_exe_time'], 0,10);
+            }
             if(empty($v['appoint_user_id'])){
                 unset($data[$key]['appoint_user_id']);
                 unset($data[$key]['appoint_user']);
@@ -251,5 +296,83 @@ class TaskController extends BaseController{
             
             
             $this->to_back($task_info);
+    }
+    /**
+     * @desc 拒绝任务
+     */
+    public function refuseTask(){
+        $user_id     = $this->params['user_id'];    //拒绝人id
+        $task_id     = $this->params['task_id'];    //任务id
+        $refuse_desc = $this->params['refuse_desc'];  //拒绝描述
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $fields = 'a.state,a.appoint_user_id';
+        $where = array();
+        $where['a.id'] = $task_id;
+        $where['a.flag'] = 0;
+        $task_info = $m_option_task->getInfo($fields,$where);
+        if(empty($task_info)){ 
+            $this->to_back(30059);
+        }
+        if($task_info['state']!=1){
+            $this->to_back(30060);
+        }
+        
+        $map = $data = array();
+        $map['id'] = $task_id;
+        $data['appoint_user_id'] = $user_id;
+        $data['refuse_time']  = date('Y-m-d H:i:s');
+        $data['refuse_desc']  = $refuse_desc;
+        $data['state']        =5;
+        $ret = $m_option_task->updateInfo($map,$data);
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(30061);
+        }
+    }
+    /**
+     * @desc 获取任务执行人员列表
+     */
+    public function getExeUserList(){
+        $task_id = $this->params['task_id']; //任务id
+        $exe_date = $this->params['exe_date']; //执行日期
+        $is_lead_install = $this->params['is_lead_install']; //是否带队安装
+        //获取当前城市的执行者列表
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $fields = 'a.task_area';
+        $where['a.id'] = $task_id;
+        $task_info = $m_option_task->getInfo($fields, $where);
+        //print_r($task_info);exit;
+        $area_id = $task_info['task_area'];
+        $m_option_task_role = new \Common\Model\OpuserRoleModel();
+        
+        $fields = 'a.user_id,user.remark as username';
+        $where =" 1 and a.role_id = 3 and (FIND_IN_SET($area_id,a.`manage_city`) or a.manage_city=9999) and a.state=1";
+        if($is_lead_install){
+            $where .= " and a.is_lead_install =".$is_lead_install;
+        }
+        
+        $order = '';
+        $user_list = $m_option_task_role->getList($fields,$where,$order);
+        //print_r($user_list);exit;
+        $fields = 'a.task_type,hotel.name hotel_name';
+        foreach($user_list as $key=>$v){
+            //获取当前用户指定日期指派的任务
+            
+            $where = array();
+            $where['a.exe_user_id'] = $v['user_id'];
+            $where['a.appoint_exe_time'] = $exe_date.' 00:00:00';
+      
+            $task_info = $m_option_task->getdatas($fields, $where);
+            if(!empty($task_info)){
+                //$task_info['task_type_desc'] = $this->option_user_skill_arr[$task_info['task_type']];
+                foreach($task_info as $kk=>$vv){
+                    $task_info[$kk]['task_type_desc'] = $this->option_user_skill_arr[$vv['task_type']];
+                }
+                $user_list[$key]['task_info'] = $task_info;
+            }
+            
+        }
+        $this->to_back($user_list);
     }
 }

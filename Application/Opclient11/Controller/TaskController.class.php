@@ -42,7 +42,7 @@ class TaskController extends BaseController{
                 break;
             case 'appointTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001');    
+                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001');    
                 break;
                 
         }

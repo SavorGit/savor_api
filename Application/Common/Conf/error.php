@@ -93,6 +93,17 @@ return array(
 	    '30057'=>'option_user_role_empty',
 	    '30058'=>'option_user_role_error',
 	    '30059'=>'option_task_empty',
+		'30100'=>'option_task_execuser_illegal',
+		'30101'=>'option_boxid_not_null',
+		'30102'=>'option_task_state_error',
+		'30103'=>'option_task_upload_pic_error',
+		'30104'=>'option_task_record_error',
+		'30105'=>'option_task_record_fail',
+		'30106'=>'option_task_submit_fail',
+		'30107'=>'option_task_infocheck_error',
+		'30108'=>'option_task_netmodify_error',
+		'30109'=>'option_task_installl_error',
+
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

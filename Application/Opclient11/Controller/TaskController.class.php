@@ -364,7 +364,7 @@ class TaskController extends BaseController{
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time
                     ';
     
-        $where = ' and a.flag=0';   //获取所有任务
+        $where = '1 and a.flag=0';   //获取所有任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;

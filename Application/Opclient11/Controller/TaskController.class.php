@@ -91,6 +91,7 @@ class TaskController extends BaseController{
         $data = array();
         $data['task_area']       = $area_id;
         $data['publish_user_id'] = $publish_user_id;
+        $data['palan_finish_time'] = date('Y-m-d H:i:s',time()+259200);
         $data['task_emerge']     = $task_emerge;
         $data['task_type']       = $task_type;
         $data['hotel_id']        = $hotel_id;
@@ -105,12 +106,12 @@ class TaskController extends BaseController{
         
         if($task_type==7){//如果是维修
             $repair_info = $this->params['repair_info'];
-            $map['box_id'] = 1;
+            /* $map['box_id'] = 1;
             $map['task_id'] =1;
             $map['fault_desc'] = 'fda';
             $map['fault_img_url'] = $repair_info;
             $m_option_task_repair->addData($map);
-            $this->to_back(10000);
+            $this->to_back(10000); */
             $repair_info = str_replace('\\', '', $repair_info);
             $repair_info = json_decode($repair_info,true);
             
@@ -390,7 +391,7 @@ class TaskController extends BaseController{
         $m_option_task = new \Common\Model\OptiontaskModel();
         
         $fields = ' a.id,a.state';
-        $where['id'] = $task_id;
+        $where['a.id'] = $task_id;
         $task_info = $m_option_task->getInfo($fields, $where);
         if(empty($task_info)){
             $this->to_back(30059);

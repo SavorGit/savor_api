@@ -92,6 +92,9 @@ return array(
     'option_task_record_fail'=>'该版位维修记录提交失败',
     'option_task_submit_fail'=>'执行任务失败',
     'option_task_installl_error'=>'该任务安装流程已完成',
+    'option_task_not_new_task'=>'该任务不是新任务', 
+    'option_task_refuse_err'=>'任务拒绝失败',
+
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

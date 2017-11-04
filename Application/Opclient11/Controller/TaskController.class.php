@@ -40,6 +40,10 @@ class TaskController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'1001','exe_date'=>'1001','is_lead_install'=>'1000');
                 break;
+            case 'appointTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001');    
+                break;
                 
         }
         parent::_init_();
@@ -374,5 +378,38 @@ class TaskController extends BaseController{
             
         }
         $this->to_back($user_list);
+    }
+    /**
+     * @desc 指派任务
+     */
+    public function appointTask(){
+        $task_id = $this->params['task_id'];          //任务id
+        $appoin_user_id = $this->params['appoint_user_id'];  //指派人id
+        $exe_user_id = $this->params['exe_user_id'];  //执行人userid
+        $appoint_exe_time = $this->params['appoint_exe_time'];  //指派执行时间
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        
+        $fields = ' a.id,a.state';
+        $where['id'] = $task_id;
+        $task_info = $m_option_task->getInfo($fields, $where);
+        if(empty($task_info)){
+            $this->to_back(30059);
+        }
+        if($task_info['state'] !=1){
+            $this->to_back(30060);
+        }
+        $map = $data = array();
+        $map['id'] = $task_id;
+        $data['appoint_user_id'] = $appoin_user_id;
+        $data['appoint_time']  = date('Y-m-d H:i:s');
+        $data['appoint_exe_time']  = $appoint_exe_time;
+        $data['exe_user_id']  = $exe_user_id;
+        $data['state']        =2;
+        $ret = $m_option_task->updateInfo($map,$data);
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(30061);
+        }
     }
 }

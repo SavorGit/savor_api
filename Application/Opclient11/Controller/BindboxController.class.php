@@ -41,10 +41,10 @@ class BindboxController extends BaseController{
         $m_tv = new \Common\Model\TvModel();
         $where = " r.hotel_id= ".$hotel_id." and r .id = ".$room_id." ";
         $ret = array();
-        $field = 'tv.tv_brand,r.name,b.name box_name,b.mac ';
+        $field = 'tv.tv_brand,b.id box_id,r.name room_name,b.name box_name,b.mac box_mac ';
         $ret = $m_tv->isTvInfo($field, $where);
-        $data['list'] = $ret;
-        $this->to_back($data);
+
+        $this->to_back($ret);
 
     }
 
@@ -53,9 +53,6 @@ class BindboxController extends BaseController{
         $room_id = $this->params['room_id'];
         $box_id = $this->params['box_id'];
         $new_mac = $this->params['new_mac'];
-        var_export($new_mac);
-
-
         if( !(preg_match('/^[0-9A-F]{12}$/', $new_mac)) ) {
             $this->to_back(10006);
         }

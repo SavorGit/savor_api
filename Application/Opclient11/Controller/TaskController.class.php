@@ -430,10 +430,12 @@ class TaskController extends BaseController{
             $where['a.id'] = $task_id;
             $where['a.flag'] = 0;
             $task_info = $m_option_task->getInfo($fields,$where);
-  
+
+
             if(empty($task_info)){
                 $this->to_back(30059);
             }
+            $mission_state = $task_info['state'];
             $task_type = $task_info['task_type'];
             
             $task_info['task_emerge_id'] = $task_info['task_emerge'];
@@ -453,6 +455,48 @@ class TaskController extends BaseController{
                 if(!empty($repair_list)){
                     $task_info['repair_list'] = $repair_list;
                 }
+            }
+            //获取任务状
+            if($mission_state == 4) {
+                $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+                if($task_type == 7) {
+                    $fielda = ' suser.remark username,sbox.NAME box_name,
+                    srepair.state,srepair.remark,srepair.repair_img,srepair.repair_time';
+                    $map['srepair.task_id'] = $task_id;
+                    //1为机顶盒
+                    $type = 1;
+                   $rplist = $m_option_task_repair->getMissionRepairInfo
+                   ($fielda, $map, $type);
+                    foreach($rplist as $rk=>$rv) {
+                        $rplist[$rk]['repair_img'] = json_decode
+                        ($rv['repair_img']);
+                    }
+                } else if($task_type == 3 || $task_type == 6){
+                    $fielda = ' suser.remark username,
+                    srepair.state,srepair.remark,srepair.repair_img';
+                    $map['srepair.task_id'] = $task_id;
+                    //1为机顶盒
+                    $type = 2;
+                    $rplist = $m_option_task_repair->getMissionRepairInfo
+                    ($fielda, $map, $type);
+                    foreach($rplist as $rk=>$rv) {
+                        $rplist[$rk]['repair_img'] = json_decode
+                        ($rv['repair_img']);
+                    }
+                }else if($task_type == 4){
+                    $fielda = ' suser.remark username,
+                    srepair.state,srepair.remark,srepair.repair_img';
+                    $map['srepair.task_id'] = $task_id;
+                    //1为机顶盒
+                    $type = 2;
+                    $rplist = $m_option_task_repair->getMissionRepairInfo
+                    ($fielda, $map, $type);
+                    foreach($rplist as $rk=>$rv) {
+                        $rplist[$rk]['repair_img'] = json_decode
+                        ($rv['repair_img']);
+                    }
+                }
+                $task_info['execute'] = $rplist;
             }
             $this->to_back($task_info);
     }

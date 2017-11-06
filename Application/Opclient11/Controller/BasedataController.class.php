@@ -28,7 +28,29 @@ class BasedataController extends BaseController{
      * @desc 任务类型
      */
     public function getTaskTypeList(){
-        $this->to_back($this->option_user_skill_arr);
+        
+        $option_user_skill_arr = $this->option_user_skill_arr;
+        $data = array();
+        
+        foreach($option_user_skill_arr as $key=>$v){
+            switch($key){
+                case '3':
+                   $data[$key]['bref'] = '信';
+                   break;
+                case '4':
+                   $data[$key]['bref'] = '网';
+                   break;
+               case '6':
+                   $data[$key]['bref'] = '安';
+                   break;
+               case '7':
+                   $data[$key]['bref'] = '修';
+                   break;
+            }
+            $data[$key]['type_name'] = $v;
+        }
+        $this->to_back($data);
+        
     }
     /**
      * @desc 任务紧急程度类型

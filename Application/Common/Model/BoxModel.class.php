@@ -38,6 +38,7 @@ class BoxModel extends Model
 
 
 
+
     public function getInfoByHotelid($hotelid , $field,$where){
         $sql = 'select '.$field;
         $sql  .= 'FROM  savor_box box  LEFT JOIN savor_room room ON  box.room_id = room.id  WHERE room.hotel_id=' . $hotelid.$where;
@@ -80,6 +81,12 @@ class BoxModel extends Model
              ->join('savor_hotel d on c.hotel_id=d.id')
              ->where('d.id='.$hotel_id.' and a.flag=0 and a.state !=2 and c.flag=0 and c.state !=2')
              ->select();
+        return $data;
+    }
+
+
+    public function saveData($save, $where) {
+        $data = $this->where($where)->save($save);
         return $data;
     }
 }

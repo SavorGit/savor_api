@@ -15,7 +15,8 @@ class MissionController extends BaseController{
         switch(ACTION_NAME) {
             case 'getexecutorInfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>'1001');
+                $this->valid_fields = array('task_id'=>'1001',
+                    'user_id'=>'1001','task_type'=>'1001');
                 break;
             case 'reportMission':
                 $this->is_verify = 1;
@@ -27,11 +28,48 @@ class MissionController extends BaseController{
         parent::_init_();
     }
 
+    public function getexecutorInfo() {
+        $save['task_id'] = $this->params['task_id'];  //任务id
+        $save['task_type']  = $this->params['task_type'];//任务类型
+        $save['user_id'] = $this->params['user_id'];//执行人id
+        //判断是否有对任务执行权限,判断角色
+        $type = 2;
+        $task_info = $this->disposeTips($save, $type);
+        //获取相关数据
+        $m_option_task_repair = new
+        \Common\Model\OptionTaskRepairModel();
+        $where = array();
+        $data['list'] = array();
+        if($save['task_type'] == 3 || $save['task_type'] == 6 || $save['task_type'] == 4 ) {
+            $fields = 'repair_img';
+            $where['task_id'] = $save['task_id'];
+            $repair_list = $m_option_task_repair->getList($fields,
+                $where);
+            if($repair_list) {
+                $img_arr = json_decode($repair_list[0]['repair_img'], true);
+                $data['list'] = $img_arr;
+
+            }
+
+        } else if($save['task_type'] == 7){
+            $fields = 'box_id,box.name box_name';
+            $where['task_id'] = $save['task_id'];
+            $where['a.state'] = 0;
+            $repair_list = $m_option_task_repair->getList($fields,
+                $where);
+
+            if($repair_list) {
+                $data['list'] = $repair_list;
+            }
+        }
+        $this->to_back($data);
+    }
+
 
     /**
      * @desc 处理账号信息
      */
-    public function disposeTips($save) {
+    public function disposeTips($save, $type) {
 
 
 
@@ -50,6 +88,11 @@ class MissionController extends BaseController{
         if(empty($user_task)) {
             $this->to_back(30100);
         }else{
+
+            if($type == 2) {
+                return $user_task;
+            }
+
             if ( $user_task['state'] !=2 ) {
                 //该任务状态不对
                 $this->to_back(30102);
@@ -294,32 +337,13 @@ class MissionController extends BaseController{
             $this->to_back(10000);
         }
 
-
-
-
-
-
-
-        die;
-        $m_repair_task = new \Common\Model\OptionTaskRepairModel();
-        $bool = $m_repair_task->addData($save);
-        if($bool){
-            //更新task表
-            $dat['state'] = 4;
-            $map['task_id'] = $this->params['task_id'];
-            $m_option_task = new \Common\Model\OptiontaskModel();
-            $m_option_task->saveData($dat, $map);
-            $this->to_back(10000);
-        } else {
-            $this->to_back(30106);
-        }
     }
 
     /**
      * @desc 执行者提交任务
      */
     public function reportMission(){
-        
+
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id

@@ -95,6 +95,10 @@ return array(
     'option_task_not_new_task'=>'该任务不是新任务', 
     'option_task_refuse_err'=>'任务拒绝失败',
     'option_task_appoint_err'=>'任务指派失败',
+    'option_task_bind_error'=>'绑定机顶盒参数传递错误',
+    'option_task_bind_mac_have'=>'该机顶盒mac地址已存在',
+    'option_bind_mac_update_fail'=>'机顶盒mac更新失败',
+
 
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',

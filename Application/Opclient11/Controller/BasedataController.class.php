@@ -31,23 +31,25 @@ class BasedataController extends BaseController{
         
         $option_user_skill_arr = $this->option_user_skill_arr;
         $data = array();
-        
+        $flag = 0;
         foreach($option_user_skill_arr as $key=>$v){
             switch($key){
                 case '3':
-                   $data[$key]['bref'] = '信';
+                   $data[$flag]['bref'] = '信';
                    break;
                 case '4':
-                   $data[$key]['bref'] = '网';
+                   $data[$flag]['bref'] = '网';
                    break;
                case '6':
-                   $data[$key]['bref'] = '安';
+                   $data[$flag]['bref'] = '安';
                    break;
                case '7':
-                   $data[$key]['bref'] = '修';
+                   $data[$flag]['bref'] = '修';
                    break;
             }
-            $data[$key]['type_name'] = $v;
+            $data[$flag]['type_id'] = $key;
+            $data[$flag]['type_name'] = $v;
+            $flag++;
         }
         $this->to_back($data);
         

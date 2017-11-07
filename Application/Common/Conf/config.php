@@ -167,10 +167,10 @@ return array(
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
     'OPTION_USER_SKILL_ARR' => array(
-        '3'=>'信息检测',
-        '4'=>'网络改造',
-        '6'=>'安装验收',
-        '7'=>'维修',
+        '1'=>'信息检测',
+        '8'=>'网络改造',
+        '3'=>'安装验收',
+        '4'=>'维修',
     ),
     'OPTION_USER_ROLE_ARR' => ARRAY(
         '1'=>'发布者',

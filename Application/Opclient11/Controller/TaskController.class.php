@@ -64,10 +64,10 @@ class TaskController extends BaseController{
         $this->task_emerge_arr = C('TASK_EMERGE_ARR');
         $this->option_user_skill_arr = C('OPTION_USER_SKILL_ARR');
         $this->option_user_skill_bref_arr = array(
-            '3'=>'检测',
-            '4'=>'网络',
-            '6'=>'安装',
-            '7'=>'维修',
+            '1'=>'信息检测',
+            '8'=>'网络改造',
+            '3'=>'安装验收',
+            '4'=>'维修',
         );
     }
     /**

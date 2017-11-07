@@ -105,6 +105,9 @@ return array(
 		'30107'=>'option_task_infocheck_error',
 		'30108'=>'option_task_netmodify_error',
 		'30109'=>'option_task_installl_error',
+		'30110'=>'option_task_bind_error',
+		'30111'=>'option_task_bind_mac_have',
+		'30112'=>'option_bind_mac_update_fail',
 
 
 	    '30060'=>'option_task_not_new_task',

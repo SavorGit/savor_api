@@ -153,7 +153,7 @@ class TaskController extends BaseController{
         
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
         
         $where = ' a.publish_user_id='.$user_id.' and a.flag=0';   //获取自己发布的任务  
@@ -222,7 +222,7 @@ class TaskController extends BaseController{
     
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
     
         $where = ' a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
@@ -300,7 +300,7 @@ class TaskController extends BaseController{
         
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
         
         $where = ' a.flag=0';   //获取所有发布的任务
@@ -365,7 +365,7 @@ class TaskController extends BaseController{
     
         $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
     
         $where = '1 and a.flag=0';   //获取所有任务
@@ -426,9 +426,14 @@ class TaskController extends BaseController{
     public function taskDetail(){
             $task_id = $this->params['task_id'];  //任务id
             $m_option_task = new \Common\Model\OptiontaskModel();
-            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,
-                       a.hotel_address,a.appoint_time,a.appoint_exe_time,
-                       a.task_emerge,a.task_type,a.tv_nums,area.region_name,a.state';
+            
+           
+            
+            
+            $fields = ' a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+                        a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                        a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
+            
             
             $where = array();
             $where['a.id'] = $task_id;
@@ -439,6 +444,12 @@ class TaskController extends BaseController{
             if(empty($task_info)){
                 $this->to_back(30059);
             }
+            foreach($task_info as $key=>$v){
+                if(empty($v)){
+                    unset($task_info[$key]);
+                }
+            }
+            
             $mission_state = $task_info['state'];
             $task_type = $task_info['task_type'];
             

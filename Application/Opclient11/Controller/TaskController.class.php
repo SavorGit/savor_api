@@ -151,7 +151,7 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
         
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
@@ -220,7 +220,7 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
     
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
@@ -298,7 +298,7 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
         
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
@@ -363,7 +363,7 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
     
-        $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
@@ -430,7 +430,7 @@ class TaskController extends BaseController{
            
             
             
-            $fields = ' a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+            $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                         a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                         a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
             

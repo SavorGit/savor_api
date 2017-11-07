@@ -52,6 +52,10 @@ class TaskController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001');    
                 break;
+            case 'countTaskNums';
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>'1001','area_id'=>'1001');
+                break;
                 
         }
         parent::_init_();
@@ -147,9 +151,9 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
         
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
         
         $where = ' a.publish_user_id='.$user_id.' and a.flag=0';   //获取自己发布的任务  
@@ -216,9 +220,9 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
     
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
     
         $where = ' a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
@@ -294,9 +298,9 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
         
-        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
         
         $where = ' a.flag=0';   //获取所有发布的任务
@@ -359,9 +363,9 @@ class TaskController extends BaseController{
         $offset = ($page-1)*$page_size;
         $limit  = "$offset,$page_size";
     
-        $fields =  'a.id,a.task_type,a.state,area.region_name,a.task_emerge,a.tv_nums,hotel.name hotel_name,a.create_time,a.publish_user_id,
+        $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time
+                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
     
         $where = '1 and a.flag=0';   //获取所有任务
@@ -422,9 +426,14 @@ class TaskController extends BaseController{
     public function taskDetail(){
             $task_id = $this->params['task_id'];  //任务id
             $m_option_task = new \Common\Model\OptiontaskModel();
-            $fields = 'a.create_time,hotel.name hotel_name,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,
-                       a.hotel_address,a.appoint_time,a.appoint_exe_time,
-                       a.task_emerge,a.task_type,a.tv_nums,area.region_name,a.state';
+            
+           
+            
+            
+            $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
+                        a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                        a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
+            
             
             $where = array();
             $where['a.id'] = $task_id;
@@ -435,6 +444,12 @@ class TaskController extends BaseController{
             if(empty($task_info)){
                 $this->to_back(30059);
             }
+            foreach($task_info as $key=>$v){
+                if(empty($v)){
+                    unset($task_info[$key]);
+                }
+            }
+            
             $mission_state = $task_info['state'];
             $task_type = $task_info['task_type'];
             
@@ -610,5 +625,44 @@ class TaskController extends BaseController{
         }else {
             $this->to_back(30061);
         }
+    }
+    /**
+     * @desc 获取当前用户得任务数量
+     */
+    public function countTaskNums(){
+        $user_id = $this->params['user_id'];
+        $area_id = $this->params['area_id'];
+        
+        $m_opuser_role = new \Common\Model\OpuserRoleModel();
+        $role_info = $m_opuser_role->getInfoByUserid('role_id,manage_city', $user_id);
+        if(empty($role_info)){
+            $this->to_back(30057);
+        }
+        $task_nums_role_arr = array('2','3');
+        if(!in_array($role_info['role_id'], $task_nums_role_arr)){
+            $this->to_back(30058);
+        }
+        $manage_city = explode(',', $role_info['manage_city']);
+        if(!in_array($area_id, $manage_city)){
+            $this->to_back(30060);
+        }
+        $where = array();
+        if($role_info['role_id'] ==2){//指派者
+
+            $where['task_area'] = $area_id;
+            $where['state']     = 1;
+            $where['flag']      = 0;
+                
+        }
+        if($role_info['role_id']==3){//执行者
+            $where['exe_user_id'] = $user_id;
+            $where['state']       = 2;
+            $where['flag']        = 0;
+        }
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $nums = $m_option_task->countTaskNums($where);
+        $data = array();
+        $data['nums'] = $nums;
+        $this->to_back($data);
     }
 }

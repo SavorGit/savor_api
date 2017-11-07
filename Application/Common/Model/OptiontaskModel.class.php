@@ -51,6 +51,9 @@ class OptiontaskModel extends Model
 	    $data = $this->alias('a')
 	                 ->join('savor_hotel hotel on a.hotel_id = hotel.id','left')
 	                 ->join('savor_area_info area on a.task_area=area.id','left')
+	                 ->join(' savor_sysuser user on a.publish_user_id=user.id','left')
+	                 ->join('savor_sysuser appuser on a.appoint_user_id = appuser.id','left')
+	                 ->join('savor_sysuser exeuser on a.exe_user_id = exeuser.id','left')
 	                 ->field($fields)->where($where)->find();
 	    return $data;
 	}
@@ -63,5 +66,9 @@ class OptiontaskModel extends Model
 	    ->join('savor_hotel hotel on a.hotel_id = hotel.id','left')
 	    ->field($fields)->where($where)->select();
 	    return $data;
+	}
+	public function countTaskNums($where){
+	    $nums = $this->where($where)->count();
+	    return $nums;
 	}
 }

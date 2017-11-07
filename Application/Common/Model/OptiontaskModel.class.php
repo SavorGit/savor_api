@@ -64,4 +64,8 @@ class OptiontaskModel extends Model
 	    ->field($fields)->where($where)->select();
 	    return $data;
 	}
+	public function countTaskNums($where){
+	    $nums = $this->where($where)->count();
+	    return $nums;
+	}
 }

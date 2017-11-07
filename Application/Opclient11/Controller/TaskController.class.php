@@ -52,6 +52,10 @@ class TaskController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001');    
                 break;
+            case 'countTaskNums';
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>'1001','area_id'=>'1001');
+                break;
                 
         }
         parent::_init_();
@@ -566,5 +570,44 @@ class TaskController extends BaseController{
         }else {
             $this->to_back(30061);
         }
+    }
+    /**
+     * @desc 获取当前用户得任务数量
+     */
+    public function countTaskNums(){
+        $user_id = $this->params['user_id'];
+        $area_id = $this->params['area_id'];
+        
+        $m_opuser_role = new \Common\Model\OpuserRoleModel();
+        $role_info = $m_opuser_role->getInfoByUserid('role_id,manage_city', $user_id);
+        if(empty($role_info)){
+            $this->to_back(30057);
+        }
+        $task_nums_role_arr = array('2','3');
+        if(!in_array($role_info['role_id'], $task_nums_role_arr)){
+            $this->to_back(30058);
+        }
+        $manage_city = explode(',', $role_info['manage_city']);
+        if(!in_array($area_id, $manage_city)){
+            $this->to_back(30060);
+        }
+        $where = array();
+        if($role_info['role_id'] ==2){//指派者
+
+            $where['task_area'] = $area_id;
+            $where['state']     = 1;
+            $where['flag']      = 0;
+                
+        }
+        if($role_info['role_id']==3){//执行者
+            $where['exe_user_id'] = $user_id;
+            $where['state']       = 2;
+            $where['flag']        = 0;
+        }
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $nums = $m_option_task->countTaskNums($where);
+        $data = array();
+        $data['nums'] = $nums;
+        $this->to_back($data);
     }
 }

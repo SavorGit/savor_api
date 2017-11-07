@@ -238,13 +238,35 @@ class HotelController extends BaseController {
 
         //获取心跳相关
         $m_box = new \Common\Model\BoxModel();
+        $black_model = new \Common\Model\BlackListModel();
         $where = '';
 
-        //$where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
         $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state =1 and a.flag =0 and room.state =1 and room.flag =0 ';
 
-        $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac',$where);
-
+        $box_lista = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id box_id',$where);
+        //过滤黑名单
+        $bfield = 'box_id';
+        $yestoday_time = strtotime('-1 day');
+        $yestoday_start = date('Y-m-d 00:00:00',$yestoday_time);
+        $yestoday_end   = date('Y-m-d 23:59:59',$yestoday_time);
+        $where = array();
+        $bwhere['create_time'] = array(array('EGT',$yestoday_start),
+            array('elt',$yestoday_end));
+        $bwhere['hotel_id'] = $hotel_id;
+        $black_box = $black_model->getList($bwhere, $bfield);
+        if($black_box){
+            $black_box = array_column($black_box, 'box_id');
+            $black_box = array_flip($black_box);
+            $box_list = array_filter($box_lista, function($val)use($black_box){
+                    if(array_key_exists($val['box_id'], $black_box)) {
+                        return 0;
+                    } else {
+                        return 1;
+                    }
+            });
+        } else{
+            $box_list = $box_lista;
+        }
         $unusual_num = 0;
         $box_total_num = count($box_list);
         foreach($box_list as $ks=>$vs){
@@ -289,6 +311,7 @@ class HotelController extends BaseController {
 
         foreach ($box_list as $key => $row)
         {
+
             $volume[$key]  = $row['ltime'];
         }
         array_multisort($volume, SORT_ASC, $box_list);
@@ -305,6 +328,7 @@ class HotelController extends BaseController {
                 $box_list[$bk]['repair_record'] = $rinfo;
             }
             unset($box_list[$bk]['ltime']);
+            unset($box_list[$bk]['box_id']);
         }
         $data['list']['box_info'] = $box_list;
         $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个)';

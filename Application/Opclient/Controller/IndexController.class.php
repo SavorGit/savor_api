@@ -143,8 +143,10 @@ class IndexController extends BaseController{
         $not_normal_small_plat_num -= $counts;
         $data['list'][] = '异常小平台:'. $not_normal_small_plat_num;  //异常小平台
         
+        $m_black_list = new \Common\Model\BlacklistModel();
+        $black_box_num = $m_black_list->countBlackBoxNum();
         
-        $data['list'][] = '异常机顶盒:'. $not_normal_box_num;            //异常机顶盒
+        $data['list'][] = '异常机顶盒:'. ($not_normal_box_num - $black_box_num);            //异常机顶盒
         $data['list'][] = '更新时间:'. date('Y-m-d H:i:s');
         $data['remark'] = '注:异常为心跳失联超过72小时以上';
         $this->to_back($data);

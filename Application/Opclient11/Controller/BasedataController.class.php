@@ -34,16 +34,16 @@ class BasedataController extends BaseController{
         $flag = 0;
         foreach($option_user_skill_arr as $key=>$v){
             switch($key){
-                case '3':
+                case '1':
                    $data[$flag]['bref'] = '信';
                    break;
-                case '4':
+                case '8':
                    $data[$flag]['bref'] = '网';
                    break;
-               case '6':
+               case '2':
                    $data[$flag]['bref'] = '安';
                    break;
-               case '7':
+               case '4':
                    $data[$flag]['bref'] = '修';
                    break;
             }

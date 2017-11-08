@@ -309,13 +309,6 @@ class ReportController extends CommonController{
         echo "数据入库成功"."\n";exit;
     }
     /**
-     * @desc 清理心跳历史数据
-     */
-    public function clearHeartLog(){
-        
-    }
-    
-    /**
      * @desc 统计历史心跳上报数据
      */
     public function countHeartLog(){

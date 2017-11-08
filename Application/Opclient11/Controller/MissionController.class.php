@@ -47,6 +47,10 @@ class MissionController extends BaseController{
                 $where);
             if($repair_list) {
                 $img_arr = json_decode($repair_list[0]['repair_img'], true);
+                foreach($img_arr as $im=>$iv) {
+                    $img_arr[$im]['repair_img'] = C('TASK_REPAIR_IMG').
+$img_arr[$im]['repair_img'];
+                }
                 $data['list'] = $img_arr;
 
             }
@@ -57,7 +61,7 @@ class MissionController extends BaseController{
             $where['a.state'] = 0;
             $repair_list = $m_option_task_repair->getList($fields,
                 $where);
-
+            
             if($repair_list) {
                 $data['list'] = $repair_list;
             }
@@ -347,11 +351,14 @@ class MissionController extends BaseController{
      * @desc 执行者提交任务
      */
     public function reportMission(){
-        error_log(file_get_contents('php://input'),3,LOG_PATH.'baiyutao.log');
+
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id
         $save['repair_img'] = empty($this->params['repair_img'])?'':$this->params['repair_img'];
+        $save['repair_img'] = str_replace('\\', '', $save['repair_img']);
+        $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $this->params['repair_img']);
+        error_log(($save['repair_img']),3,LOG_PATH.'baiyutao.log');
         //判断是否有对任务执行权限,判断角色
         $task_info = $this->disposeTips($save);
         unset($save['user_id']);

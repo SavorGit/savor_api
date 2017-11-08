@@ -61,7 +61,7 @@ $img_arr[$im]['repair_img'];
             $where['a.state'] = 0;
             $repair_list = $m_option_task_repair->getList($fields,
                 $where);
-            
+
             if($repair_list) {
                 $data['list'] = $repair_list;
             }

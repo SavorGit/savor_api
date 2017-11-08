@@ -40,7 +40,7 @@ class MissionController extends BaseController{
         \Common\Model\OptionTaskRepairModel();
         $where = array();
         $data['list'] = array();
-        if($save['task_type'] == 3 || $save['task_type'] == 6 || $save['task_type'] == 4 ) {
+        if($save['task_type'] == 1 || $save['task_type'] == 8 || $save['task_type'] == 2 ) {
             $fields = 'repair_img';
             $where['task_id'] = $save['task_id'];
             $repair_list = $m_option_task_repair->getList($fields,
@@ -51,7 +51,7 @@ class MissionController extends BaseController{
 
             }
 
-        } else if($save['task_type'] == 7){
+        } else if($save['task_type'] == 4){
             $fields = 'box_id,box.name box_name';
             $where['task_id'] = $save['task_id'];
             $where['a.state'] = 0;
@@ -85,6 +85,7 @@ class MissionController extends BaseController{
         $where['exe_user_id'] = $save['user_id'];
         $m_option_task = new \Common\Model\OptiontaskModel();
         $user_task = $m_option_task->getTaskInfoByUserid($field, $where);
+        //echo $m_option_task->getLastSql();
         if(empty($user_task)) {
             $this->to_back(30100);
         }else{
@@ -102,12 +103,15 @@ class MissionController extends BaseController{
                 $field = " repair_img ";
                 $map['task_id'] = $save['task_id'];
                 $res = $m_option_task_repair->getRepairBoxInfo($field, $map);
-                if($save['task_type'] == 3) {
+
+
+
+                if($save['task_type'] == 1) {
                     if($res) {
                         $this->to_back(30107);
                     }
                 }
-                if($save['task_type'] == 4) {
+                if($save['task_type'] == 8) {
                     if($res) {
                         $img_arr = json_decode($res[0]['repair_img'], true);
                         if(count($img_arr) == $this->net_img_len) {
@@ -115,7 +119,7 @@ class MissionController extends BaseController{
                         }
                     }
                 }
-                if($save['task_type'] == 6) {
+                if($save['task_type'] == 2) {
                     if($res) {
                         $img_arr = json_decode($res[0]['repair_img'], true);
                         if(count($img_arr) == $user_task['tv_nums']) {
@@ -123,7 +127,7 @@ class MissionController extends BaseController{
                         }
                     }
                 }
-                if($save['task_type'] == 7) {
+                if($save['task_type'] == 4) {
                     $box_id = $this->params['box_id'];
                     $task_id = $this->params['task_id'];
                     $repair_img = $this->params['repair_img'];
@@ -131,7 +135,7 @@ class MissionController extends BaseController{
                         ?0:$this->params['state'];
 
                     if(empty($box_id) || empty($state)) {
-                        $this->to_back(30100);
+                        $this->to_back(30101);
                     }
                     //判断上传照片个数
                     $img_arr = explode(',', $repair_img);
@@ -143,9 +147,9 @@ class MissionController extends BaseController{
                     \Common\Model\OptionTaskRepairModel();
                     $fields = 'box_id';
                     $where = array();
-                    $where['box_id'] = $box_id;
-                    $where['task_id'] = $task_id;
-                    $where['state'] = array('neq',0);
+                    $where['a.box_id'] = $box_id;
+                    $where['a.task_id'] = $task_id;
+                    $where['a.state'] = array('neq',0);
                     $repair_list = $m_option_task_repair->getList($fields,
                         $where);
                     if($repair_list){
@@ -343,7 +347,7 @@ class MissionController extends BaseController{
      * @desc 执行者提交任务
      */
     public function reportMission(){
-
+        error_log(file_get_contents('php://input'),3,LOG_PATH.'baiyutao.log');
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id
@@ -354,16 +358,16 @@ class MissionController extends BaseController{
         $task_type = $save['task_type'];
         unset($save['task_type']);
         switch($task_type){
-            case '3':
+            case '1':
                 $this->disposeCheck($save, $task_info);
                 break;
-            case '4':
+            case '8':
                 $this->disposeModify($save, $task_info);
                 break;
-            case '6':
+            case '2':
                 $this->disposeInstall($save, $task_info);
                 break;
-            case '7':
+            case '4':
                 $this->disposeRepair($save, $task_info);
                 break;
             default:

@@ -230,7 +230,7 @@ class ReportController extends CommonController{
                         $m_heart_log->add($data);
                     }else {
                         $last_heart_time = date('Y-m-d H:i:s',strtotime($ret_arr[10]));
-                        if($heart_log_info != $heart_log_info['last_heart_time']){
+                        if($last_heart_time != $heart_log_info['last_heart_time']){
                             $data['box_mac'] = $mac;
                             //$data['hotel_id'] = $hotelId;
                             $data['hotel_name'] = $hotelInfo['hotel_name'];
@@ -308,6 +308,13 @@ class ReportController extends CommonController{
         }//数据循环结束
         echo "数据入库成功"."\n";exit;
     }
+    /**
+     * @desc 清理心跳历史数据
+     */
+    public function clearHeartLog(){
+        
+    }
+    
     /**
      * @desc 统计历史心跳上报数据
      */

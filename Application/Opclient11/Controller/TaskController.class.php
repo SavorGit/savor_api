@@ -452,7 +452,7 @@ class TaskController extends BaseController{
                     unset($task_info[$key]);
                 }
             }
-            
+            $task_repair_img = C('TASK_REPAIR_IMG');
             $mission_state = $task_info['state'];
             $task_type = $task_info['task_type'];
             
@@ -464,20 +464,26 @@ class TaskController extends BaseController{
             $task_info['region_name'] = str_replace('市', '', $task_info['region_name']);
             $task_info['state_id'] = $task_info['state'];
             $task_info['state'] = $this->task_state_arr[$task_info['state']];
-            if($task_type==7){//维修
+            if($task_type==4 || $task_type==2){//维修
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 $fields = 'box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
                 $where = array();
                 $where['a.task_id'] = $task_id;
                 $repair_list = $m_option_task_repair->getList($fields,$where);
                 if(!empty($repair_list)){
+                    foreach($repair_list as $key=>$v){
+                        if(!empty($v['fault_img_url'])){
+                            $repair_list[$key]['fault_img_url'] = $task_repair_img.$v['fault_img_url'];
+                        }
+                        
+                    }
                     $task_info['repair_list'] = $repair_list;
                 }
             }
             //获取任务状
             if($mission_state == 4) {
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                if($task_type == 7) {
+                if($task_type == 4) {
                     $fielda = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img,srepair.repair_time';
                     $map['srepair.task_id'] = $task_id;
@@ -489,7 +495,7 @@ class TaskController extends BaseController{
                         $rplist[$rk]['repair_img'] = json_decode
                         ($rv['repair_img']);
                     }
-                } else if($task_type == 3 || $task_type == 6){
+                } else if($task_type == 1 || $task_type == 2){
                     $fielda = ' suser.remark username,
                     srepair.state,srepair.remark,srepair.repair_img';
                     $map['srepair.task_id'] = $task_id;
@@ -501,7 +507,7 @@ class TaskController extends BaseController{
                         $rplist[$rk]['repair_img'] = json_decode
                         ($rv['repair_img']);
                     }
-                }else if($task_type == 4){
+                }else if($task_type == 8){
                     $fielda = ' suser.remark username,
                     srepair.state,srepair.remark,srepair.repair_img';
                     $map['srepair.task_id'] = $task_id;

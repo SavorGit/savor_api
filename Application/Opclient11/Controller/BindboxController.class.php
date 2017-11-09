@@ -41,9 +41,14 @@ class BindboxController extends BaseController{
         $m_tv = new \Common\Model\TvModel();
         $where = " r.hotel_id= ".$hotel_id." and r .id = ".$room_id." ";
         $ret = array();
-        $field = 'tv.tv_brand,b.id box_id,r.name room_name,b.name box_name,b.mac box_mac ';
+        $field = 'tv.tv_brand,b.id box_id,r.name room_name,b.name box_name,b.mac box_mac,h.name hotel_name ';
         $ret = $m_tv->isTvInfo($field, $where);
+        $hotel_name = $ret['list'][0]['hotel_name'];
 
+        foreach($ret['list'] as $rk=>$rv) {
+            unset ($ret['list'][$rk]['hotel_name']);
+        }
+        $ret['hotel_name'] = $hotel_name;
         $this->to_back($ret);
 
     }

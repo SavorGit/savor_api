@@ -132,7 +132,10 @@ class TaskController extends BaseController{
                 $map['task_id'] = $task_id;
                 $map['box_id'] = $v['box_id'];
                 $map['fault_desc'] = $v['fault_desc'];
-                $map['fault_img_url'] = $v['fault_img_url'];
+                if(!empty($v['fault_img_url'])){
+                    $fault_img_url_arr = parse_url($v['fault_img_url']);
+                }
+                $map['fault_img_url'] = $fault_img_url_arr['path'] ? $fault_img_url_arr['path']: '';
                 $m_option_task_repair->addData($map);
             }
         }

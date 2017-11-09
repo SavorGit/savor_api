@@ -40,11 +40,30 @@ class MissionController extends BaseController{
         \Common\Model\OptionTaskRepairModel();
         $where = array();
         $data['list'] = array();
-        if($save['task_type'] == 1 || $save['task_type'] == 8 || $save['task_type'] == 2 ) {
-            $fields = 'repair_img';
-            $where['task_id'] = $save['task_id'];
+        //安装验收
+        if($save['task_type'] == 2) {
+            $fields = 'a.repair_img,a.box_id,box.name box_name';
+            $where['a.task_id'] = $save['task_id'];
             $repair_list = $m_option_task_repair->getList($fields,
                 $where);
+
+            if($repair_list) {
+                foreach($repair_list as $rk=>$rk) {
+                    $repair_list[$rk]['repair_img'] = C('TASK_REPAIR_IMG').
+                        $repair_list[$rk]['repair_img'];
+                }
+                $data['list'] = $repair_list;
+
+            }else{
+                $data['list']  = array();
+            }
+        }
+        if($save['task_type'] == 1 || $save['task_type'] == 8) {
+            $fields = 'a.repair_img,a.box_id,box.name box_name';
+            $where['a.task_id'] = $save['task_id'];
+            $repair_list = $m_option_task_repair->getList($fields,
+                $where);
+
             if($repair_list) {
                 $img_arr = json_decode($repair_list[0]['repair_img'], true);
                 foreach($img_arr as $im=>$iv) {
@@ -52,6 +71,8 @@ class MissionController extends BaseController{
 $img_arr[$im]['repair_img'];
                 }
                 $data['list'] = $img_arr;
+
+            }else{
 
             }
 
@@ -74,10 +95,7 @@ $img_arr[$im]['repair_img'];
      * @desc 处理账号信息
      */
     public function disposeTips($save, $type) {
-
-
-
-
+        
         $m_opuser_role = new \Common\Model\OpuserRoleModel();
         $role_info = $m_opuser_role->getInfoByUserid('role_id',$save['user_id']);
         if($role_info['role_id'] !=3){
@@ -124,12 +142,12 @@ $img_arr[$im]['repair_img'];
                     }
                 }
                 if($save['task_type'] == 2) {
-                    if($res) {
+                    /*if($res) {
                         $img_arr = json_decode($res[0]['repair_img'], true);
                         if(count($img_arr) == $user_task['tv_nums']) {
                             $this->to_back(30109);
                         }
-                    }
+                    }*/
                 }
                 if($save['task_type'] == 4) {
                     $box_id = $this->params['box_id'];
@@ -192,7 +210,8 @@ $img_arr[$im]['repair_img'];
             } else {
                 //更新task表
                 $dat['state'] = 4;
-                $map['task_id'] = $this->params['task_id'];
+                $map['id'] = $this->params['task_id'];
+                $dat['update_time'] = $now_date;
                 $m_option_task = new \Common\Model\OptiontaskModel();
                 $m_option_task->saveData($dat, $map);
 
@@ -215,7 +234,8 @@ $img_arr[$im]['repair_img'];
         if($bool){
             //更新task表
             $dat['state'] = 4;
-            $map['task_id'] = $this->params['task_id'];
+            $map['id'] = $this->params['task_id'];
+            $dat['update_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
             $this->to_back(10000);
@@ -277,9 +297,12 @@ $img_arr[$im]['repair_img'];
         }
 
         if($task_update){
+
             $dat['state'] = 4;
-            $map['task_id'] = $save['task_id'];
+            $map['id'] = $save['task_id'];
+            $dat['update_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
+
             $m_option_task->saveData($dat, $map);
             $this->to_back(10000);
         }
@@ -291,57 +314,59 @@ $img_arr[$im]['repair_img'];
     public function disposeInstall($save, $task_info) {
         $now_date = date("Y-m-d H:i:s");
         $save['create_time'] = $now_date;
-        $field = 'repair_img,id';
+        $field = 'id,box_id';
         $where = array();
         $where['task_id'] = $save['task_id'];
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
-        $ta_info = $m_repair_task->getOneRecord($field, $where);
-        $task_update = false;
-        $len = count(json_decode($save['repair_img'], true));
+        $ta_info = $m_repair_task->getRepairBoxInfo($field, $where);
+        $rp_img = json_decode($save['repair_img'], true);
+        $len = count($rp_img);
         $tv_nums = $task_info['tv_nums'];
+
         if($ta_info) {
-            $rid['id'] = $ta_info['id'];
-            $info['repair_img'] = $save['repair_img'];
-            $info['update_time'] = $now_date;
-            $tmp_info = $m_repair_task->saveData($info, $rid);
-            if($tmp_info){
-                if($len == $tv_nums){
+            $bool = true;
+            $m_repair_task->startTrans();
+            foreach($ta_info as $tk=>$tv) {
+                foreach($rp_img as $rk=>$rv) {
+                    if($rv['box_id'] == $tv['box_id']) {
+                        $rid['id'] = $tv['id'];
+                        $info['repair_img'] = $rv['img'];
+                        $info['update_time'] = $now_date;
+                        $tmp_info = $m_repair_task->saveData($info, $rid);
+                        if($tmp_info) {
+
+                        } else {
+                            $bool = false;
+                            break;
+                        }
+
+                    }
+                }
+                if($bool == false) {
+                    break;
+                }
+            }
+            if($bool){
+                if($len == $tv_nums) {
                     $task_update = true;
                 }else{
+                    $m_repair_task->commit();
                     $this->to_back(10000);
                 }
             }else {
+                $m_repair_task->rollback();
                 $this->to_back(30106);
             }
 
-        } else {
-            $ta_info = $m_repair_task->addData($save);
-            if($ta_info) {
-                if($len == $tv_nums){
-                    $task_update = true;
-                }else{
-                    $this->to_back(10000);
-                }
-            } else {
-                $ta_info = $m_repair_task->addData($save);
-                if($ta_info){
-                    if($len == $tv_nums){
-                        $task_update = true;
-                    }else{
-                        $this->to_back(10000);
-                    }
-                }else {
-                    $this->to_back(30106);
-                }
-
-            }
         }
 
         if($task_update){
             $dat['state'] = 4;
-            $map['task_id'] = $save['task_id'];
+            $map['id'] = $save['task_id'];
+            $dat['update_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
+            $m_repair_task->commit();
             $this->to_back(10000);
         }
 
@@ -352,15 +377,18 @@ $img_arr[$im]['repair_img'];
      */
     public function reportMission(){
 
+        error_log(($this->params['repair_img']),3,LOG_PATH.'baiyutao.log');
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id
-        $save['repair_img'] = empty($this->params['repair_img'])?'':$this->params['repair_img'];
-        $save['repair_img'] = str_replace('\\', '', $save['repair_img']);
-        $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $this->params['repair_img']);
-        error_log(($save['repair_img']),3,LOG_PATH.'baiyutao.log');
+        $repair_img = empty($this->params['repair_img'])?'':$this->params['repair_img'];
+        $save['repair_img'] = str_replace('\\', '', $repair_img);
+
+    //   $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $this->params['repair_img']);
+        $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $save['repair_img']);
         //判断是否有对任务执行权限,判断角色
         $task_info = $this->disposeTips($save);
+
         unset($save['user_id']);
         $task_type = $save['task_type'];
         unset($save['task_type']);

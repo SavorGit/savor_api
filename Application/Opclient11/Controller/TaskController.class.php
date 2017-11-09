@@ -480,7 +480,7 @@ class TaskController extends BaseController{
                     $task_info['repair_list'] = $repair_list;
                 }
             }
-            //获取任务状
+            //获取执行者完成任务详情
             if($mission_state == 4) {
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 if($task_type == 4) {
@@ -491,9 +491,13 @@ class TaskController extends BaseController{
                     $type = 1;
                    $rplist = $m_option_task_repair->getMissionRepairInfo
                    ($fielda, $map, $type);
+
                     foreach($rplist as $rk=>$rv) {
-                        $rplist[$rk]['repair_img'] = json_decode
-                        ($rv['repair_img']);
+                       $tmp_img  = json_decode($rv['repair_img']);
+                        foreach($tmp_img as $tk=>$tv) {
+                            $tmp_img[$tk] = $task_repair_img.$tv;
+                        }
+                        $rplist[$rk]['repair_img'] = $tmp_img;
                     }
                 } else if($task_type == 1 || $task_type == 2){
                     $fielda = ' suser.remark username,
@@ -504,8 +508,11 @@ class TaskController extends BaseController{
                     $rplist = $m_option_task_repair->getMissionRepairInfo
                     ($fielda, $map, $type);
                     foreach($rplist as $rk=>$rv) {
-                        $rplist[$rk]['repair_img'] = json_decode
-                        ($rv['repair_img']);
+                        $tmp_img  = json_decode($rv['repair_img']);
+                        foreach($tmp_img as $tk=>$tv) {
+                            $tmp_img[$tk] = $task_repair_img.$tv;
+                        }
+                        $rplist[$rk]['repair_img'] = $tmp_img;
                     }
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,
@@ -516,8 +523,11 @@ class TaskController extends BaseController{
                     $rplist = $m_option_task_repair->getMissionRepairInfo
                     ($fielda, $map, $type);
                     foreach($rplist as $rk=>$rv) {
-                        $rplist[$rk]['repair_img'] = json_decode
-                        ($rv['repair_img']);
+                        $tmp_img  = json_decode($rv['repair_img']);
+                        foreach($tmp_img as $tk=>$tv) {
+                            $tmp_img[$tk] = $task_repair_img.$tv;
+                        }
+                        $rplist[$rk]['repair_img'] = $tmp_img;
                     }
                 }
                 $task_info['execute'] = $rplist;

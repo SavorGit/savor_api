@@ -116,7 +116,7 @@ class TaskController extends BaseController{
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
         $task_id = $m_option_task->addData($data, $type=1); 
         
-        if($task_type==4){//如果是维修
+        if($task_type==4 || $task_type ==2){//如果是维修 或者是安装验收
             $repair_info = $this->params['repair_info'];
             /* $map['box_id'] = 1;
             $map['task_id'] =1;

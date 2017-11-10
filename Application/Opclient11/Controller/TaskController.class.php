@@ -497,7 +497,9 @@ class TaskController extends BaseController{
                         foreach($tmp_img as $tk=>$tv) {
                             $tmp_img[$tk] = $task_repair_img.$tv;
                         }
-                        $rplist[$rk]['repair_img'] = $tmp_img;
+                        $rplist[$rk]['repair_img'] = empty($tmp_img)?'':$tmp_img;
+                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+
                     }
                 } else if($task_type == 1 || $task_type == 2){
                     $fielda = ' suser.remark username,
@@ -512,7 +514,8 @@ class TaskController extends BaseController{
                         foreach($tmp_img as $tk=>$tv) {
                             $tmp_img[$tk] = $task_repair_img.$tv;
                         }
-                        $rplist[$rk]['repair_img'] = $tmp_img;
+                        $rplist[$rk]['repair_img'] = empty($tmp_img)?'':$tmp_img;
+                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
                     }
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,
@@ -527,7 +530,8 @@ class TaskController extends BaseController{
                         foreach($tmp_img as $tk=>$tv) {
                             $tmp_img[$tk] = $task_repair_img.$tv;
                         }
-                        $rplist[$rk]['repair_img'] = $tmp_img;
+                        $rplist[$rk]['repair_img'] = empty($tmp_img)?'':$tmp_img;
+                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
                     }
                 }
                 $task_info['execute'] = $rplist;

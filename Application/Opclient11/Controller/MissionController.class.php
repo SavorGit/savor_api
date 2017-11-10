@@ -21,7 +21,7 @@ class MissionController extends BaseController{
             case 'reportMission':
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>'1001',
-                    'user_id'=>'1001','task_type'=>'1001');
+                    'user_id'=>'1001','task_type'=>'1001','repair_img'=>'1001');
                 break;
                 
         }
@@ -192,7 +192,7 @@ $img_arr[$im]['repair_img'];
      */
     public function disposeRepair($save, $task_info) {
         $now_date = date("Y-m-d H:i:s");
-        $save['remak'] = empty($this->params['remark'])?'':$this->params['remark'];
+        $save['remark'] = $this->params['remark'] ? $this->params['remark'] : '';
         $save['state'] = $this->params['state'];
         $save['repair_time'] = $now_date;
         $where = array();
@@ -201,17 +201,20 @@ $img_arr[$im]['repair_img'];
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
         $bool = $m_repair_task->saveData($save, $where);
         if($bool) {
-            $fields = 'state';
-            $where['state'] = array('eq',0);
-            $repair_list = $m_repair_task->getList($fields,
-                $where);
+            $where = array();
+            $fields = 'id';
+            $where['state'] = 0;
+            $where['task_id'] = $this->params['task_id'];
+            $repair_list = $m_repair_task->getRepairBoxInfo($fields,$where);
+            //$repair_list = $m_repair_task->getList($fields,$where);
             if($repair_list) {
                 $this->to_back(10000);
             } else {
+                $dat = array();
                 //更新task表
                 $dat['state'] = 4;
                 $map['id'] = $this->params['task_id'];
-                $dat['update_time'] = $now_date;
+                $dat['complete_time'] = $now_date;
                 $m_option_task = new \Common\Model\OptiontaskModel();
                 $m_option_task->saveData($dat, $map);
 
@@ -319,9 +322,10 @@ $img_arr[$im]['repair_img'];
         $where['task_id'] = $save['task_id'];
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
         $ta_info = $m_repair_task->getRepairBoxInfo($field, $where);
+        $repair_box_num = count($ta_info);
         $rp_img = json_decode($save['repair_img'], true);
         $len = count($rp_img);
-        $tv_nums = $task_info['tv_nums'];
+        //$tv_nums = $task_info['tv_nums'];
 
         if($ta_info) {
             $bool = true;
@@ -347,7 +351,7 @@ $img_arr[$im]['repair_img'];
                 }
             }
             if($bool){
-                if($len == $tv_nums) {
+                if($len == $repair_box_num) {
                     $task_update = true;
                 }else{
                     $m_repair_task->commit();
@@ -363,7 +367,7 @@ $img_arr[$im]['repair_img'];
         if($task_update){
             $dat['state'] = 4;
             $map['id'] = $save['task_id'];
-            $dat['update_time'] = $now_date;
+            $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
             $m_repair_task->commit();

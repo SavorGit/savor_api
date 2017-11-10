@@ -549,7 +549,7 @@ class TaskController extends BaseController{
                     }
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,sbox.NAME box_name,
-                    srepair.state,srepair.remark,srepair.repair_img';
+                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;

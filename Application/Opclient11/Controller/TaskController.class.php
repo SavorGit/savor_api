@@ -524,7 +524,7 @@ class TaskController extends BaseController{
 
                     }
                 }else if($task_type == 1){
-                    echo 'welrjlwer';
+                    //echo 'welrjlwer';
                     $fielda = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img';
                     $map['srepair.task_id'] = $task_id;

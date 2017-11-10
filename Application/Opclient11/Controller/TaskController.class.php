@@ -485,7 +485,7 @@ class TaskController extends BaseController{
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 if($task_type == 4) {
                     $fielda = ' suser.remark username,sbox.NAME box_name,
-                    srepair.state,srepair.remark,srepair.repair_img,srepair.repair_time';
+                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;

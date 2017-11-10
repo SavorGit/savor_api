@@ -502,6 +502,7 @@ class TaskController extends BaseController{
                             $rplist[$rk]['repair_img'] = '';
                         }
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
 
                     }
                 } elseif($task_type == 2) {
@@ -519,6 +520,7 @@ class TaskController extends BaseController{
                                 $rplist[$rk]['repair_img'] = '';
                         }
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
 
                     }
                 }else if($task_type == 1){
@@ -538,6 +540,7 @@ class TaskController extends BaseController{
                             $rplist[$rk]['repair_img'] = '';
                         }
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
                     }
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,sbox.NAME box_name,
@@ -561,6 +564,7 @@ class TaskController extends BaseController{
                         }
 
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
                     }
 
                 }

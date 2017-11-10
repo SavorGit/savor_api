@@ -45,7 +45,7 @@ class HotelController extends BaseController {
         $menuHoModel = new \Common\Model\MenuHotelModel();
         $menlistModel = new \Common\Model\MenuListModel();
         $tvModel = new \Common\Model\TvModel();
-        $vinfo = $hotelModel->getOneById(' name hotel_name,addr hotel_addr,area_id,iskey is_key,level,state_change_reason,install_date,state hotel_state,contractor,hotel_box_type,maintainer,tel,mobile,remote_id,tech_maintainer,hotel_wifi_pas,hotel_wifi,gps', $hotel_id);
+        $vinfo = $hotelModel->getOneById(' id hotel_id, name hotel_name,addr hotel_addr,area_id,iskey is_key,level,state_change_reason,install_date,state hotel_state,contractor,hotel_box_type,maintainer,tel,mobile,remote_id,tech_maintainer,hotel_wifi_pas,hotel_wifi,gps', $hotel_id);
         $vinfoa[] = $vinfo;
         $vinfo = $hotelModel->changeIdinfoToName($vinfoa);
 

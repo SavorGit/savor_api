@@ -235,7 +235,7 @@ $img_arr[$im]['repair_img'];
             //更新task表
             $dat['state'] = 4;
             $map['id'] = $this->params['task_id'];
-            $dat['update_time'] = $now_date;
+            $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
             $this->to_back(10000);

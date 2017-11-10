@@ -464,7 +464,10 @@ class TaskController extends BaseController{
             $task_info['region_name'] = str_replace('市', '', $task_info['region_name']);
             $task_info['state_id'] = $task_info['state'];
             $task_info['state'] = $this->task_state_arr[$task_info['state']];
-            if($task_type==4 || $task_type==2){//维修
+            if($task_info['appoint_exe_time']){
+                $task_info['appoint_exe_time'] = substr($task_info['appoint_exe_time'], 0,10);
+            }            
+            if($task_type==4 || $task_type==2){//维修  安装与验收
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 $fields = 'box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
                 $where = array();
@@ -526,7 +529,7 @@ class TaskController extends BaseController{
                 }else if($task_type == 1){
                     //echo 'welrjlwer';
                     $fielda = ' suser.remark username,sbox.NAME box_name,
-                    srepair.state,srepair.remark,srepair.repair_img';
+                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
@@ -535,7 +538,9 @@ class TaskController extends BaseController{
                     $rplist = array_slice($rplist,0,1);
                     foreach($rplist as $rk=>$rv) {
                         if(!empty($rv['repair_img'])) {
-                            $rplist[$rk]['repair_img'] = $task_repair_img.$rplist[$rk]['repair_img'];
+                            $repair_img =json_decode($rv['repair_img'],true);
+                            
+                            $rplist[$rk]['repair_img'] = $task_repair_img.$repair_img[0];
                         } else{
                             $rplist[$rk]['repair_img'] = '';
                         }

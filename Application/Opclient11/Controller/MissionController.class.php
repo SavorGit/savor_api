@@ -194,7 +194,7 @@ $img_arr[$im]['repair_img'];
         $now_date = date("Y-m-d H:i:s");
         $save['remark'] = $this->params['remark'] ? $this->params['remark'] : '';
         $save['state'] = $this->params['state'];
-        $save['repair_time'] = $now_date;
+        $save['update_time'] = $now_date;
         $where = array();
         $where['task_id'] = $this->params['task_id'];
         $where['box_id'] = $this->params['box_id'];

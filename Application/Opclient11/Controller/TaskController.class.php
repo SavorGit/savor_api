@@ -110,7 +110,7 @@ class TaskController extends BaseController{
         $data['hotel_address']   = $addr;
         $data['hotel_linkman']   = $contractor;
         $data['hotel_linkman_tel']= $mobile;
-        $data['tv_nums']         = $tv_nums ;
+        //$data['tv_nums']         = $tv_nums ;
      
         $m_option_task = new \Common\Model\OptiontaskModel();
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
@@ -205,6 +205,9 @@ class TaskController extends BaseController{
             }
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
+            }
+            if(empty($v['refuse_time'])){
+                unset($data[$key]['refuse_time']);
             }
             //
         }
@@ -467,7 +470,7 @@ class TaskController extends BaseController{
             if($task_info['appoint_exe_time']){
                 $task_info['appoint_exe_time'] = substr($task_info['appoint_exe_time'], 0,10);
             }            
-            if($task_type==4 || $task_type==2){//维修  安装与验收
+            if($task_type==4 ){//维修  安装与验收
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
                 $fields = 'box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
                 $where = array();
@@ -509,23 +512,20 @@ class TaskController extends BaseController{
 
                     }
                 } elseif($task_type == 2) {
-                    $fielda = ' suser.remark username,sbox.NAME box_name,
-                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
+                    $fielda = ' suser.remark username,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
                     $rplist = $m_option_task_repair->getMissionRepairInfo
                     ($fielda, $map, $type);
-                    foreach($rplist as $rk=>$rv) {
-                         if(!empty($rv['repair_img'])) {
-                                $rplist[$rk]['repair_img'] = $task_repair_img.$rplist[$rk]['repair_img'];
-                            } else{
-                                $rplist[$rk]['repair_img'] = '';
+                    foreach($rplist as $key=>$v){
+                        $repair_img_arr = json_decode($v['repair_img'],true);
+                        foreach($repair_img_arr as $rk=>$rv){
+                            $repair_img_arr[$rk]['img'] = $task_repair_img .$rv['img'];
                         }
-                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
-                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
-
+                        $rplist[$key]['repair_img'] = $repair_img_arr;
                     }
+                    
                 }else if($task_type == 1){
                     //echo 'welrjlwer';
                     $fielda = ' suser.remark username,sbox.NAME box_name,
@@ -594,7 +594,7 @@ class TaskController extends BaseController{
             $this->to_back(30059);
         }
         if($task_info['state']!=1){
-            $this->to_back(30060);
+            $this->to_back(30062);
         }
         
         $map = $data = array();
@@ -607,7 +607,7 @@ class TaskController extends BaseController{
         if($ret){
             $this->to_back(10000);
         }else {
-            $this->to_back(30061);
+            $this->to_back(30063);
         }
     }
     /**
@@ -672,7 +672,7 @@ class TaskController extends BaseController{
             $this->to_back(30059);
         }
         if($task_info['state'] !=1){
-            $this->to_back(30060);
+            $this->to_back(30062);
         }
         $map = $data = array();
         $map['id'] = $task_id;
@@ -685,7 +685,7 @@ class TaskController extends BaseController{
         if($ret){
             $this->to_back(10000);
         }else {
-            $this->to_back(30061);
+            $this->to_back(30064);
         }
     }
     /**
@@ -705,13 +705,18 @@ class TaskController extends BaseController{
             $this->to_back(30058);
         }
         $manage_city = explode(',', $role_info['manage_city']);
-        if(!in_array($area_id, $manage_city)){
-            $this->to_back(30060);
+        if(!in_array(9999, $manage_city)){
+            if(!in_array($area_id, $manage_city)){
+                $this->to_back(30060);
+            } 
         }
+        
         $where = array();
         if($role_info['role_id'] ==2){//指派者
-
-            $where['task_area'] = $area_id;
+            if($area_id!=9999){
+                $where['task_area'] = $area_id;
+            }
+            
             $where['state']     = 1;
             $where['flag']      = 0;
                 

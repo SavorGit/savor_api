@@ -101,12 +101,15 @@ $img_arr[$im]['repair_img'];
         if($role_info['role_id'] !=3){
             $this->to_back(30058);
         }
-        $field = 'state,tv_nums ';
+        $field = 'state,tv_nums,task_type ';
         $where['flag'] = 0;
         $where['id'] = $save['task_id'];
         $where['exe_user_id'] = $save['user_id'];
         $m_option_task = new \Common\Model\OptiontaskModel();
         $user_task = $m_option_task->getTaskInfoByUserid($field, $where);
+        if($user_task['task_type']!=$save['task_type']){
+            $this->to_back('30113');
+        }
         //echo $m_option_task->getLastSql();
         if(empty($user_task)) {
             $this->to_back(30100);
@@ -317,11 +320,44 @@ $img_arr[$im]['repair_img'];
     public function disposeInstall($save, $task_info) {
         $now_date = date("Y-m-d H:i:s");
         $save['create_time'] = $now_date;
-        $field = 'id,box_id';
+        $field = 'a.id';
         $where = array();
-        $where['task_id'] = $save['task_id'];
+        $where['a.id'] = $save['task_id'];
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $task_info = $m_option_task->getInfo($field, $where);
+        
+        if($task_info){
+            
+            $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+            $data = array();
+            $data['task_id'] = $save['task_id'];
+            $data['repair_img'] = $save['repair_img'];
+            $ret = $m_option_task_repair->add($data);
+            if($ret){
+                $dat['state'] = 4;
+                $map['id'] = $save['task_id'];
+                $dat['complete_time'] = $now_date;
+                $m_option_task = new \Common\Model\OptiontaskModel();
+                $m_option_task->saveData($dat, $map);
+                
+                $this->to_back(10000);
+                
+            }else {
+                $this->to_back(30106);
+            }
+        }else {
+            $this->to_back(30059);
+            
+        }
+        
+        
+       /*  
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
         $ta_info = $m_repair_task->getRepairBoxInfo($field, $where);
+        
+        
+        
+        
         $repair_box_num = count($ta_info);
         $rp_img = json_decode($save['repair_img'], true);
         $len = count($rp_img);
@@ -362,6 +398,8 @@ $img_arr[$im]['repair_img'];
                 $this->to_back(30106);
             }
 
+        }else {
+            $this->to_back(30059);
         }
 
         if($task_update){
@@ -372,7 +410,7 @@ $img_arr[$im]['repair_img'];
             $m_option_task->saveData($dat, $map);
             $m_repair_task->commit();
             $this->to_back(10000);
-        }
+        } */
 
     }
 
@@ -381,7 +419,7 @@ $img_arr[$im]['repair_img'];
      */
     public function reportMission(){
 
-        error_log(($this->params['repair_img']),3,LOG_PATH.'baiyutao.log');
+        //error_log(($this->params['repair_img']),3,LOG_PATH.'baiyutao.log');
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id
@@ -410,7 +448,7 @@ $img_arr[$im]['repair_img'];
                 $this->disposeRepair($save, $task_info);
                 break;
             default:
-                echo 'kckdker';
+                $this->to_back('30065');
                 break;
         }
         /*'3'=>'信息检测',

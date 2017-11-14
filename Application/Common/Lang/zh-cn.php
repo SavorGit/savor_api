@@ -84,7 +84,7 @@ return array(
     'option_task_empty'=>'该任务不存在',
     'option_task_execuser_illegal'=>'该执行者无此权限',
     'option_boxid_not_null'=>'版位与是否解决为必填项',
-    'option_task_state_error'=>'该任务状态不对',
+    'option_task_state_error'=>'该任务为非处理中任务',
     'option_task_upload_pic_error'=>'上传照片数超过最大值',
     'option_task_record_error'=>'该版位维修记录已提交',
     'option_task_infocheck_error'=>'该任务信息检测已提交',
@@ -100,6 +100,8 @@ return array(
     'option_task_bind_mac_have'=>'该机顶盒mac地址已存在',
     'option_bind_mac_update_fail'=>'机顶盒mac更新失败',
     'option_user_role_null'=>'登录失败，没有登录权限',
+    'option_task_type_empty'=>'任务类型错误',
+    'option_task_type_changed'=>'任务类型不一致',
 
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',

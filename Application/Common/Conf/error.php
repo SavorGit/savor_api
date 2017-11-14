@@ -109,11 +109,12 @@ return array(
 		'30110'=>'option_task_bind_error',
 		'30111'=>'option_task_bind_mac_have',
 		'30112'=>'option_bind_mac_update_fail',
+        '30113'=>'option_task_type_changed',
 
-
-	    '30060'=>'option_task_not_new_task',
-	    '30061'=>'option_task_refuse_err',
-	    '360062'=>'option_task_appoint_err',
+	    '30062'=>'option_task_not_new_task',
+	    '30063'=>'option_task_refuse_err',
+	    '30064'=>'option_task_appoint_err',
+	    '30065'=>'option_task_type_empty',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

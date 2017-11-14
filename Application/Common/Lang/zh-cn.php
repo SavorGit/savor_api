@@ -67,8 +67,8 @@ return array(
 	'special_group_not_exist'=>'专题组不存在',
     
     //运维客户端接口
-    'option_user_not_exist'=>'用户不存在',
-    'option_user_pwd_error'=>'密码错误',
+    'option_user_not_exist'=>'登录失败,账号密码错误',
+    'option_user_pwd_error'=>'登录失败,账号密码错误',
     'option_user_illegeal'=>'用户非法',
     'option_user_pro' =>'用户是否解决必选',
     'option_box_not_exists'=>'机顶盒mac不存在',

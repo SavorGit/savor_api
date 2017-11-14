@@ -34,8 +34,23 @@ class LoginController extends BaseController{
         $where['username'] = $username;
         $where['status']   =1;
         $userinfo = $m_sysuser->getUserInfo($where,'id as userid,groupId,username,remark as nickname,password');
+        $m_area_model = new \Common\Model\AreaModel();
+        
+        if(empty($userinfo)){
+            $this->to_back('30001');    //用户不存在
+        }
+        if($password != md5($userinfo['password'])){
+            $this->to_back('30002');     //密码不正确
+        }
+        unset($userinfo['password']);
         if($userinfo['groupId'] == 1){
+            $skill_result['role_info'] = array('id'=>4,'name'=>'查看');
+            $ret = $m_area_model->getHotelAreaList();
             
+            $skill_result['manage_city'] = $ret;
+            $userinfo['skill_list'] = $skill_result;
+            
+            $this->to_back($userinfo);
         }else {
             
             //获取运维组id
@@ -54,18 +69,12 @@ class LoginController extends BaseController{
         }
         
         
-        if(empty($userinfo)){
-            $this->to_back('30001');    //用户不存在
-        }
-        if($password != md5($userinfo['password'])){
-            $this->to_back('30002');     //密码不正确
-        }
-        unset($userinfo['password']);
+        
         
         $m_opuser_role = new \Common\Model\OpuserRoleModel();
         $skill_info = $m_opuser_role->getInfoByUserid('role_id,skill_info,is_lead_install,manage_city',$userinfo['userid']);
         //print_r($skill_info);exit;
-        $m_area_model = new \Common\Model\AreaModel();
+        
         $ret = $m_area_model->getHotelAreaList();
         array_unshift( $ret,array('id'=>9999,'region_name'=>'全国'));
         

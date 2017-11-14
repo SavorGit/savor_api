@@ -94,6 +94,7 @@ return array(
 	    '30058'=>'option_user_role_error',
 	    '30059'=>'option_task_empty',
 	    '30060'=>'option_user_manage_city_err',
+	    '30061'=>'option_user_role_null',
 
 		'30100'=>'option_task_execuser_illegal',
 		'30101'=>'option_boxid_not_null',

@@ -74,7 +74,9 @@ class LoginController extends BaseController{
         $m_opuser_role = new \Common\Model\OpuserRoleModel();
         $skill_info = $m_opuser_role->getInfoByUserid('role_id,skill_info,is_lead_install,manage_city',$userinfo['userid']);
         //print_r($skill_info);exit;
-        
+        if(empty($skill_info)){
+            $this->to_back('30061');
+        }
         $ret = $m_area_model->getHotelAreaList();
         array_unshift( $ret,array('id'=>9999,'region_name'=>'全国'));
         

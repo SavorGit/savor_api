@@ -47,10 +47,11 @@ class MissionController extends BaseController{
             $repair_list = $m_option_task_repair->getList($fields,$where);
             
             $repair_list = json_decode($repair_list[0]['repair_img'],true);
-            
+            $repair_img_arr =array();
             foreach($repair_list as $key=> $v){
                 $repair_img_arr[$key]['repair_img'] = C('TASK_REPAIR_IMG').$v['img'];
             }
+           
             $data['list'] = $repair_img_arr;
             
         }
@@ -59,7 +60,7 @@ class MissionController extends BaseController{
             $where['a.task_id'] = $save['task_id'];
             $repair_list = $m_option_task_repair->getList($fields,
                 $where);
-
+            $img_arr = array();
             if($repair_list) {
                 $img_arr = json_decode($repair_list[0]['repair_img'], true);
                 foreach($img_arr as $im=>$iv) {

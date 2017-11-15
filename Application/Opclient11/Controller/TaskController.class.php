@@ -526,11 +526,12 @@ class TaskController extends BaseController{
                         if(!empty($rv['repair_img'])) {
                             $tmp_img  = json_decode($rv['repair_img']);
                             foreach($tmp_img as $tk=>$tv) {
-                                $tmp_img[$tk] = $task_repair_img.$tv;
+                                $tmp_img[$tk]['type'] =0;
+                                $tmp_img[$tk]['img'] = $task_repair_img.$tv;
                             }
                             $rplist[$rk]['repair_img'] = $tmp_img;
                         } else{
-                            $rplist[$rk]['repair_img'] = '';
+                            $rplist[$rk]['repair_img'] = array();
                         }
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
                         $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
@@ -546,6 +547,7 @@ class TaskController extends BaseController{
                     foreach($rplist as $key=>$v){
                         $repair_img_arr = json_decode($v['repair_img'],true);
                         foreach($repair_img_arr as $rk=>$rv){
+                            $repair_img_arr[$rk]['type'] = 0;
                             $repair_img_arr[$rk]['img'] = $task_repair_img .$rv['img'];
                         }
                         $rplist[$key]['repair_img'] = $repair_img_arr;
@@ -561,13 +563,18 @@ class TaskController extends BaseController{
                     $rplist = $m_option_task_repair->getMissionRepairInfo
                     ($fielda, $map, $type);
                     $rplist = array_slice($rplist,0,1);
+                    
                     foreach($rplist as $rk=>$rv) {
                         if(!empty($rv['repair_img'])) {
                             $repair_img =json_decode($rv['repair_img'],true);
                             
-                            $rplist[$rk]['repair_img'] = $task_repair_img.$repair_img[0];
+                            foreach($repair_img as $k=>$v){
+                                $repair_img_arr[$k]['type'] = 0;
+                                $repair_img_arr[$k]['img'] = $task_repair_img .$v;
+                            }
+                            $rplist[$rk]['repair_img'] = $repair_img_arr;
                         } else{
-                            $rplist[$rk]['repair_img'] = '';
+                            $rplist[$rk]['repair_img'] = array();
                         }
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
                         $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
@@ -585,12 +592,16 @@ class TaskController extends BaseController{
                     foreach($rplist as $rk=>$rv) {
                         if(!empty($rv['repair_img'])) {
                             $tmp_img  = json_decode($rv['repair_img'], true);
+                            
                             foreach($tmp_img as $tk=>$tv) {
-                                $tmp_img[$tk]['img'] = $task_repair_img.$tv['img'];
+                                $tmp_img[$tk]['type'] = $tv['type'];
+                                   
+                                $tmp_img[$tk]['img'] = $task_repair_img .$tv['img'];
                             }
-                            $rplist[$rk]['repair_img'] = empty($tmp_img)?'':$tmp_img;
+ 
+                            $rplist[$rk]['repair_img'] = empty($tmp_img)? array():$tmp_img;
                         } else {
-                            $rplist[$rk]['repair_img'] = '';
+                            $rplist[$rk]['repair_img'] = array();
                         }
 
                         $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];

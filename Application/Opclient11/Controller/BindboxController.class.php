@@ -28,11 +28,11 @@ class BindboxController extends BaseController{
     public function getBoxList(){
         $hotel_id = $this->params['hotel_id'];
         $hotelModel = new \Common\Model\HotelModel();
-        if(!empty($hotelid)){
-            if(!is_numeric($hotelid)){
+        if(!empty($hotel_id)){
+            if(!is_numeric($hotel_id)){
                 $this->to_back(10007);
             }
-            $hotelinfo = $hotelModel->find($hotelid);
+            $hotelinfo = $hotelModel->find($hotel_id);
             if(count($hotelinfo) == 0){
                 $this->to_back(10007);
             }

@@ -90,4 +90,13 @@ class BoxModel extends Model
         $data = $this->where($where)->save($save);
         return $data;
     }
+    public function getBoxInfo($fileds,$where){
+        $data = $this->alias('a')
+             ->field($fileds)
+             ->join('savor_room c on a.room_id= c.id','left')
+             ->join('savor_hotel d on c.hotel_id=d.id','left')
+             ->where($where)
+             ->select();
+        return $data;
+    }
 }

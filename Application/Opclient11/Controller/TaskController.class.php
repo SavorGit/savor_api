@@ -525,11 +525,12 @@ class TaskController extends BaseController{
                     foreach($rplist as $rk=>$rv) {
                         if(!empty($rv['repair_img'])) {
                             $tmp_img  = json_decode($rv['repair_img']);
+                            $repair_img_arr = array();
                             foreach($tmp_img as $tk=>$tv) {
-                                $tmp_img[$tk]['type'] =0;
-                                $tmp_img[$tk]['img'] = $task_repair_img.$tv;
+                                $repair_img_arr[$tk]['type'] =0;
+                                $repair_img_arr[$tk]['img'] = $task_repair_img.$tv;
                             }
-                            $rplist[$rk]['repair_img'] = $tmp_img;
+                            $rplist[$rk]['repair_img'] = $repair_img_arr;
                         } else{
                             $rplist[$rk]['repair_img'] = array();
                         }

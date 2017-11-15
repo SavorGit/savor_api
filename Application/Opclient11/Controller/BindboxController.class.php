@@ -62,11 +62,16 @@ class BindboxController extends BaseController{
             $this->to_back(10006);
         }
         $m_tv = new \Common\Model\TvModel();
-        $field = 'b.id';
-        $where = '1=1 and h.id='.$hotel_id.' and r.id='.$room_id.'
-        and b.id='.$box_id;
-        $ret = $m_tv->isTvInfo($field, $where);
-        $ret = $ret['list'];
+        $field = 'a.id';
+        
+        $where['d.id'] = $hotel_id;
+        $where['c.id'] = $room_id;
+        $where['a.id'] = $box_id;
+       
+        $m_box = new \Common\Model\BoxModel();
+        $ret = $m_box->getBoxInfo($field,$where);
+        //$ret = $m_tv->isTvInfo($field, $where);
+        //$ret = $ret['list'];
         if($ret){
             $b_box = new \Common\Model\BoxModel();
             $info = $b_box->getBoxInfoByMac($new_mac);
@@ -74,7 +79,8 @@ class BindboxController extends BaseController{
                 $this->to_back(30111);
             } else{
                 $save['mac'] = $new_mac;
-                $dat['id'] = $ret[0]['id'];
+                $dat['id'] = $box_id;
+                $save['update'] = date('Y-m-d H:i:s');
                $res = $b_box->saveData($save, $dat);
                 if($res) {
                     $this->to_back(10000);

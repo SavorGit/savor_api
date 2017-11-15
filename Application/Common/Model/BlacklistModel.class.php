@@ -17,13 +17,13 @@ class BlackListModel extends Model
 	    return $list;
 	}
     public function countBlackBoxNum(){
-        $yestoday_time = strtotime('-1 day');
+        /* $yestoday_time = strtotime('-1 day');
         $yestoday_start = date('Y-m-d 00:00:00',$yestoday_time);
         $yestoday_end   = date('Y-m-d 23:59:59',$yestoday_time);
         $where = array();
-        $where =" create_time >='".$yestoday_start."' and create_time<='".$yestoday_end."'";
+        $where =" create_time >='".$yestoday_start."' and create_time<='".$yestoday_end."'"; */
         
-        $nums = $this->where($where)->count();
+        $nums = $this->where()->count();
         return $nums;
     }
 }

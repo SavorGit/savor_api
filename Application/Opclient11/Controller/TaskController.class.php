@@ -90,6 +90,11 @@ class TaskController extends BaseController{
             $this->to_back(30058);
         }
         
+        $task_type_arr =  C('OPTION_USER_SKILL_ARR');
+        if(!key_exists($task_type, $task_type_arr)){
+            $this->to_back('30065');
+        }
+        
         $m_hotel = new \Common\Model\HotelModel();
         
         $hotel_info = $m_hotel->getOneById('id,area_id',$hotel_id);
@@ -280,6 +285,9 @@ class TaskController extends BaseController{
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
             }
+            if(empty($v['refuse_time'])){
+                unset($data[$key]['refuse_time']);
+            }
             //
         }
         $this->to_back($data);
@@ -359,6 +367,9 @@ class TaskController extends BaseController{
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
             }
+            if(empty($v['refuse_time'])){
+                unset($data[$key]['refuse_time']);
+            }
         }
         $this->to_back($data);
     }
@@ -385,7 +396,7 @@ class TaskController extends BaseController{
             $where .= " and a.task_area=$city_id ";
         }
         
-        $where = " and a.flag=0";   //获取所有任务
+        $where .= " and a.flag=0";   //获取所有任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -431,6 +442,9 @@ class TaskController extends BaseController{
             }
             if(empty($v['complete_time'])){
                 unset($data[$key]['complete_time']);
+            }
+            if(empty($v['refuse_time'])){
+                unset($data[$key]['refuse_time']);
             }
             //
         }

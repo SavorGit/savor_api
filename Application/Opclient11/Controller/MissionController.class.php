@@ -42,21 +42,17 @@ class MissionController extends BaseController{
         $data['list'] = array();
         //安装验收
         if($save['task_type'] == 2) {
-            $fields = 'a.repair_img,a.box_id,box.name box_name';
+            $fields = 'a.repair_img';
             $where['a.task_id'] = $save['task_id'];
-            $repair_list = $m_option_task_repair->getList($fields,
-                $where);
-
-            if($repair_list) {
-                foreach($repair_list as $rk=>$rk) {
-                    $repair_list[$rk]['repair_img'] = C('TASK_REPAIR_IMG').
-                        $repair_list[$rk]['repair_img'];
-                }
-                $data['list'] = $repair_list;
-
-            }else{
-                $data['list']  = array();
+            $repair_list = $m_option_task_repair->getList($fields,$where);
+            
+            $repair_list = json_decode($repair_list[0]['repair_img'],true);
+            
+            foreach($repair_list as $key=> $v){
+                $repair_img_arr[$key]['repair_img'] = C('TASK_REPAIR_IMG').$v['img'];
             }
+            $data['list'] = $repair_img_arr;
+            
         }
         if($save['task_type'] == 1 || $save['task_type'] == 8) {
             $fields = 'a.repair_img,a.box_id,box.name box_name';
@@ -164,7 +160,7 @@ $img_arr[$im]['repair_img'];
             $repair_list = $m_repair_task->getRepairBoxInfo($fields,$where);
             //$repair_list = $m_repair_task->getList($fields,$where);
             if($repair_list) {
-                $this->to_back(10000);
+                $this->to_back(array('state'=>$save['state']));
             } else {
                 $dat = array();
                 //更新task表
@@ -175,9 +171,9 @@ $img_arr[$im]['repair_img'];
                 $m_option_task->saveData($dat, $map);
 
             }
-            $this->to_back(10000);
+            $this->to_back(array('state'=>4));
         } else {
-            $this->to_back(10000);
+            $this->to_back(30106);
         }
     }
 
@@ -249,7 +245,7 @@ $img_arr[$im]['repair_img'];
             $repair_img = json_decode($save['repair_img'],true);
             $count = count($repair_img);
             
-            $repair_info = $m_option_task_repair->getOneRecord(array('task_id'=>$save['task_id']));
+            $repair_info = $m_option_task_repair->getOneRecord('id',array('task_id'=>$save['task_id']));
             if(empty($repair_info)){
                 $data = array();
                 $data['task_id'] = $save['task_id'];

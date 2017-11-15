@@ -37,6 +37,18 @@ class HotelController extends BaseController{
         $fields = 'id,name,contractor,mobile,addr,area_id';
         
         $data = $m_hotel->getHotelList($where,$order,$limit,$fields );
+        $m_box = new \Common\Model\BoxModel();
+        $where ='';
+        $where = ' and box.flag= 0 and room.flag=0';
+        foreach($data as $key=>$v){
+            
+            $ret =$m_box ->getInfoByHotelid("$v[id] ", 'box.id', $where);
+            $nums = count($ret);
+            $data[$key]['tv_nums'] = $nums;
+        }
+        
+        
+        
         $list['list'] =$data;
         $this->to_back($list);
     }

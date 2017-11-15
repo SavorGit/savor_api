@@ -245,7 +245,10 @@ $img_arr[$im]['repair_img'];
             
             $repair_img = json_decode($save['repair_img'],true);
             $count = count($repair_img);
-            
+            if($count> $task_info['tv_nums']){
+                $this->to_back('30066');
+                
+            }
             $repair_info = $m_option_task_repair->getOneRecord('id',array('task_id'=>$save['task_id']));
             if(empty($repair_info)){
                 $data = array();

@@ -78,6 +78,7 @@ class LoginController extends BaseController{
             $this->to_back('30061');
         }
         $ret = $m_area_model->getHotelAreaList();
+        $city_list = $ret;
         array_unshift( $ret,array('id'=>9999,'region_name'=>'全国'));
         
         foreach($ret as $key=>$v){
@@ -92,6 +93,9 @@ class LoginController extends BaseController{
         $manage_city_list = explode(',', $skill_info['manage_city']);
         foreach($manage_city_list as $v){
             $skill_result['manage_city'][] = $area_list[$v];
+            if($v==9999){
+                $skill_result['manage_city'] = array_merge($skill_result['manage_city'],$city_list);
+            }
         }
         //拥有技能
         if(!empty($skill_info['skill_info'])){

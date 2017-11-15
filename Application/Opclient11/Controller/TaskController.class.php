@@ -22,19 +22,19 @@ class TaskController extends BaseController{
                 break;
             case 'pubTaskList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                $this->valid_fields = array('user_id'=>'1001','city_id'=>'1001','state'=>'1000','page'=>'1000');
                 break;
             case 'appointTaskList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                $this->valid_fields = array('user_id'=>'1001','city_id'=>'1001','state'=>'1000','page'=>'1000');
                 break;
             case 'exeTaskList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                $this->valid_fields = array('user_id'=>'1001','city_id'=>'1001','state'=>'1000','page'=>'1000');
                 break;
             case 'viewTaskList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('user_id'=>'1001','state'=>'1000','page'=>'1000');
+                $this->valid_fields = array('user_id'=>'1001','city_id'=>'1001','state'=>'1000','page'=>'1000');
                 break; 
             case 'taskDetail':
                 $this->is_verify = 1;
@@ -110,7 +110,7 @@ class TaskController extends BaseController{
         $data['hotel_address']   = $addr;
         $data['hotel_linkman']   = $contractor;
         $data['hotel_linkman_tel']= $mobile;
-        //$data['tv_nums']         = $tv_nums ;
+        $data['tv_nums']         = $tv_nums ;
      
         $m_option_task = new \Common\Model\OptiontaskModel();
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
@@ -148,6 +148,7 @@ class TaskController extends BaseController{
         $user_id = $this->params['user_id'];
         $state   = $this->params['state'];   //0  全部  1：贷指派  2：处理中  4 已完成
         $page    = $this->params['page'];
+        $city_id = $this->params['city_id'];
         $page    = intval($page) ? intval($page) : 1; 
         
         $page_size = $this->pagesize;
@@ -220,6 +221,7 @@ class TaskController extends BaseController{
         $user_id = $this->params['user_id'];
         $state   = $this->params['state'];   //0  全部    2：处理中  4 已完成
         $page    = $this->params['page'];
+        $city_id = $this->params['city_id'];
         $page    = intval($page) ? intval($page) : 1;
     
         $page_size = $this->pagesize;
@@ -291,6 +293,7 @@ class TaskController extends BaseController{
         $user_id = $this->params['user_id'];
         $state   = $this->params['state'];   //0  全部  1：贷指派  2：处理中  4 已完成
         $page    = $this->params['page'];
+        $city_id = $this->params['city_id'];
         $page    = intval($page) ? intval($page) : 1;
         
         $m_opuser_role = new \Common\Model\OpuserRoleModel();
@@ -308,8 +311,11 @@ class TaskController extends BaseController{
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
-        
-        $where = ' a.flag=0';   //获取所有发布的任务
+        $where = ' 1';
+        if($city_id !=9999){
+            $where .= " and a.task_area =$city_id";
+        }
+        $where .= "  and a.flag=0";   //获取所有发布的任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -363,6 +369,7 @@ class TaskController extends BaseController{
         $user_id = $this->params['user_id'];
         $state   = $this->params['state'];   //0  全部    2：处理中  4 已完成
         $page    = $this->params['page'];
+        $city_id = $this->params['city_id'];
         $page    = intval($page) ? intval($page) : 1;
     
         $page_size = $this->pagesize;
@@ -373,8 +380,12 @@ class TaskController extends BaseController{
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
-    
-        $where = '1 and a.flag=0';   //获取所有任务
+        $where = ' 1';
+        if($city_id !=9999){
+            $where .= " and a.task_area=$city_id ";
+        }
+        
+        $where = " and a.flag=0";   //获取所有任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -712,11 +723,11 @@ class TaskController extends BaseController{
         }
         
         $where = array();
+        
+        if($area_id!=9999){
+            $where['task_area'] = $area_id;
+        }
         if($role_info['role_id'] ==2){//指派者
-            if($area_id!=9999){
-                $where['task_area'] = $area_id;
-            }
-            
             $where['state']     = 1;
             $where['flag']      = 0;
                 

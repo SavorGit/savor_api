@@ -110,54 +110,24 @@ $img_arr[$im]['repair_img'];
         if($user_task['task_type']!=$save['task_type']){
             $this->to_back('30113');
         }
-        //echo $m_option_task->getLastSql();
         if(empty($user_task)) {
             $this->to_back(30100);
         }else{
-
             if($type == 2) {
                 return $user_task;
             }
-
             if ( $user_task['state'] !=2 ) {
                 //该任务状态不对
                 $this->to_back(30102);
             } else {
-                $m_option_task_repair = new
-                \Common\Model\OptionTaskRepairModel();
-                $field = " repair_img ";
-                $map['task_id'] = $save['task_id'];
-                $res = $m_option_task_repair->getRepairBoxInfo($field, $map);
-
-
-
-                if($save['task_type'] == 1) {
-                    if($res) {
-                        $this->to_back(30107);
-                    }
-                }
-                if($save['task_type'] == 8) {
-                    if($res) {
-                        $img_arr = json_decode($res[0]['repair_img'], true);
-                        if(count($img_arr) == $this->net_img_len) {
-                            $this->to_back(30108);
-                        }
-                    }
-                }
-                if($save['task_type'] == 2) {
-                    /*if($res) {
-                        $img_arr = json_decode($res[0]['repair_img'], true);
-                        if(count($img_arr) == $user_task['tv_nums']) {
-                            $this->to_back(30109);
-                        }
-                    }*/
-                }
+                $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+                
                 if($save['task_type'] == 4) {
                     $box_id = $this->params['box_id'];
                     $task_id = $this->params['task_id'];
-                    $repair_img = $this->params['repair_img'];
-                    $state =  empty($this->params['state'])
-                        ?0:$this->params['state'];
+                    //$repair_img = $this->params['repair_img'];
+                    $repair_img = $save['repair_img'];
+                    $state =  empty($this->params['state']) ? 0 : $this->params['state'];
 
                     if(empty($box_id) || empty($state)) {
                         $this->to_back(30101);
@@ -166,28 +136,11 @@ $img_arr[$im]['repair_img'];
                     $img_arr = explode(',', $repair_img);
                     if(count($img_arr)>3) {
                         $this->to_back(30103);
-                    }
-                    //判断是否提交过维修记录
-                    $m_option_task_repair = new
-                    \Common\Model\OptionTaskRepairModel();
-                    $fields = 'box_id';
-                    $where = array();
-                    $where['a.box_id'] = $box_id;
-                    $where['a.task_id'] = $task_id;
-                    $where['a.state'] = array('neq',0);
-                    $repair_list = $m_option_task_repair->getList($fields,
-                        $where);
-                    if($repair_list){
-                        $this->to_back(30104);
-                    }
-
+                    } 
                 }
                 return $user_task;
             }
         }
-
-
-
     }
 
     /**
@@ -244,7 +197,7 @@ $img_arr[$im]['repair_img'];
             $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
-            $this->to_back(10000);
+            $this->to_back(array('state'=>4));
         } else {
             $this->to_back(30106);
         }
@@ -255,62 +208,24 @@ $img_arr[$im]['repair_img'];
      * @desc 网络改造
      */
     public function disposeModify($save, $task_info) {
-        $now_date = date("Y-m-d H:i:s");
-        $save['create_time'] = $now_date;
-        $field = 'repair_img,id';
+        /* 
+        $save['create_time'] = $now_date; */
+        /* $field = 'repair_img,id';
         $where = array();
         $where['task_id'] = $save['task_id'];
+         */
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
-        $ta_info = $m_repair_task->getOneRecord($field, $where);
-        $task_update = false;
-        $len = count(json_decode($save['repair_img'], true));
-        if($ta_info) {
-            $rid['id'] = $ta_info['id'];
-            $info['repair_img'] = $save['repair_img'];
-            $info['update_time'] = $now_date;
-            $tmp_info = $m_repair_task->saveData($info, $rid);
-            if($tmp_info){
-                if($len == $this->net_img_len){
-                    $task_update = true;
-                }else{
-                    $this->to_back(10000);
-                }
-            }else {
-                $this->to_back(30106);
-            }
-
-        } else {
-            $ta_info = $m_repair_task->addData($save);
-            if($ta_info) {
-                if($len == $this->net_img_len){
-                    $task_update = true;
-                }else{
-                    $this->to_back(10000);
-                }
-            } else {
-                $ta_info = $m_repair_task->addData($save);
-                if($ta_info){
-                    if($len == $this->net_img_len){
-                        $task_update = true;
-                    }else{
-                        $this->to_back(10000);
-                    }
-                }else {
-                    $this->to_back(30106);
-                }
-
-            }
-        }
-
-        if($task_update){
-
+        $ret = $m_repair_task->addData($save);
+        if($ret){
+            $now_date = date("Y-m-d H:i:s");
             $dat['state'] = 4;
             $map['id'] = $save['task_id'];
-            $dat['update_time'] = $now_date;
+            
+            $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
 
             $m_option_task->saveData($dat, $map);
-            $this->to_back(10000);
+            $this->to_back(array('state'=>4));
         }
     }
 
@@ -320,98 +235,52 @@ $img_arr[$im]['repair_img'];
     public function disposeInstall($save, $task_info) {
         $now_date = date("Y-m-d H:i:s");
         $save['create_time'] = $now_date;
-        $field = 'a.id';
+        $field = 'a.id,a.tv_nums,a.state';
         $where = array();
         $where['a.id'] = $save['task_id'];
+        $where['a.flag'] = 0;
         $m_option_task = new \Common\Model\OptiontaskModel();
         $task_info = $m_option_task->getInfo($field, $where);
         
         if($task_info){
             
             $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-            $data = array();
-            $data['task_id'] = $save['task_id'];
-            $data['repair_img'] = $save['repair_img'];
-            $ret = $m_option_task_repair->add($data);
-            if($ret){
+            
+            $repair_img = json_decode($save['repair_img'],true);
+            $count = count($repair_img);
+            
+            $repair_info = $m_option_task_repair->getOneRecord(array('task_id'=>$save['task_id']));
+            if(empty($repair_info)){
+                $data = array();
+                $data['task_id'] = $save['task_id'];
+                $data['repair_img'] = $save['repair_img'];
+                $ret = $m_option_task_repair->add($data);
+                
+            }else {
+                $where = array();
+                $where['task_id'] = $save['task_id'];
+                $data['repair_img'] = $save['repair_img'];
+                $ret = $m_option_task_repair->saveData($data, $where);
+            }
+            if(!$ret){
+                $this->to_back(30106);
+            }
+            if($count == $task_info['tv_nums']){
                 $dat['state'] = 4;
                 $map['id'] = $save['task_id'];
                 $dat['complete_time'] = $now_date;
                 $m_option_task = new \Common\Model\OptiontaskModel();
                 $m_option_task->saveData($dat, $map);
                 
-                $this->to_back(10000);
-                
+                $this->to_back(array('state'=>4));
             }else {
-                $this->to_back(30106);
-            }
+                
+               $this->to_back(array('state'=>2));
+            }  
         }else {
             $this->to_back(30059);
             
         }
-        
-        
-       /*  
-        $m_repair_task = new \Common\Model\OptionTaskRepairModel();
-        $ta_info = $m_repair_task->getRepairBoxInfo($field, $where);
-        
-        
-        
-        
-        $repair_box_num = count($ta_info);
-        $rp_img = json_decode($save['repair_img'], true);
-        $len = count($rp_img);
-        //$tv_nums = $task_info['tv_nums'];
-
-        if($ta_info) {
-            $bool = true;
-            $m_repair_task->startTrans();
-            foreach($ta_info as $tk=>$tv) {
-                foreach($rp_img as $rk=>$rv) {
-                    if($rv['box_id'] == $tv['box_id']) {
-                        $rid['id'] = $tv['id'];
-                        $info['repair_img'] = $rv['img'];
-                        $info['update_time'] = $now_date;
-                        $tmp_info = $m_repair_task->saveData($info, $rid);
-                        if($tmp_info) {
-
-                        } else {
-                            $bool = false;
-                            break;
-                        }
-
-                    }
-                }
-                if($bool == false) {
-                    break;
-                }
-            }
-            if($bool){
-                if($len == $repair_box_num) {
-                    $task_update = true;
-                }else{
-                    $m_repair_task->commit();
-                    $this->to_back(10000);
-                }
-            }else {
-                $m_repair_task->rollback();
-                $this->to_back(30106);
-            }
-
-        }else {
-            $this->to_back(30059);
-        }
-
-        if($task_update){
-            $dat['state'] = 4;
-            $map['id'] = $save['task_id'];
-            $dat['complete_time'] = $now_date;
-            $m_option_task = new \Common\Model\OptiontaskModel();
-            $m_option_task->saveData($dat, $map);
-            $m_repair_task->commit();
-            $this->to_back(10000);
-        } */
-
     }
 
     /**

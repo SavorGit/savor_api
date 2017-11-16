@@ -74,16 +74,25 @@ class BindboxController extends BaseController{
         //$ret = $ret['list'];
         if($ret){
             $b_box = new \Common\Model\BoxModel();
-            $info = $b_box->getBoxInfoByMac($new_mac);
+
+            $info = $m_box->getHotelInfoByBoxMac($new_mac);
+            
+            //$info = $b_box->getBoxInfoByMac($new_mac);
             if($info){
-                $this->to_back(30111);
+                if($info['box_id']==$box_id){
+                    $this->to_back(30067);
+                }else {
+                    $err_msg = 'MAC已被'.$info['hotel_name'].'的'.$info['room_name'].'的'.$info['box_name'].'机顶盒占用,无法绑定';
+                    $this->to_back(array('type'=>2,'err_msg'=>$err_msg));
+                }
+                
             } else{
                 $save['mac'] = $new_mac;
                 $dat['id'] = $box_id;
                 $save['update'] = date('Y-m-d H:i:s');
                $res = $b_box->saveData($save, $dat);
                 if($res) {
-                    $this->to_back(10000);
+                    $this->to_back(array('type'=>1));
                 } else {
                     $this->to_back(30112);
                 }

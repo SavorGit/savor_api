@@ -103,7 +103,7 @@ return array(
     'option_task_type_empty'=>'任务类型错误',
     'option_task_type_changed'=>'任务类型不一致',
     'option_task_upload_img_nums_err'=>'上传照片数量错误',
-
+    'option_task_bind_mac_repeat'=>'绑定MAC与机顶盒MAC相同',
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

@@ -116,6 +116,7 @@ return array(
 	    '30064'=>'option_task_appoint_err',
 	    '30065'=>'option_task_type_empty',
 	    '30066'=>'option_task_upload_img_nums_err',
+	    '30067'=>'option_task_bind_mac_repeat',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

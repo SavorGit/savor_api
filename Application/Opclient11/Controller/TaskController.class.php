@@ -50,7 +50,7 @@ class TaskController extends BaseController{
                 break;
             case 'appointTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001');    
+                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001','is_lead_install'=>'1001');    
                 break;
             case 'countTaskNums';
                 $this->is_verify = 1;
@@ -470,7 +470,7 @@ class TaskController extends BaseController{
             
             
             $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
-                        a.hotel_address,a.refuse_time,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                        a.is_lead_install,a.hotel_address,a.refuse_time,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                         a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
             
             
@@ -596,23 +596,25 @@ class TaskController extends BaseController{
                     if(empty($repair_img_arr)){
                         $repair_img_arr = array();
                     }
+                    $rets = array();
                     foreach($repair_img_arr as $rk=>$rv){
                         $ttp = array();
                         $ttp[0]['type'] = 0;
-                        if(!empty($rv['img'])){
-                            $ttp[0]['img'] = $task_repair_img .$rv['img'];
+                        if(!empty($rv)){
+                            $ttp[0]['img'] = $task_repair_img .$rv;
                             
                         }else {
                             $ttp[0]['img'] = '';
                         }
-                        $repair_img_arr[$rk]['repair_img'] = $ttp;
-                        unset($repair_img_arr[$rk]['img']);
-                        $repair_img_arr[$rk]['usernanme'] = $result['username'];
-                        $repair_img_arr[$rk]['repair_time']= $result['repair_time'];
+                        
+                        $rets[$rk]['repair_img'] = $ttp;
+                        //unset($repair_img_arr[$rk]['img']);
+                        $rets[$rk]['usernanme'] = $result['username'];
+                        $rets[$rk]['repair_time']= $result['repair_time'];
                         
                     }
                     
-                   $rplist = $repair_img_arr;
+                   $rplist = $rets;
                     
                     
                 }else if($task_type == 1){
@@ -790,6 +792,7 @@ class TaskController extends BaseController{
         $appoin_user_id = $this->params['appoint_user_id'];  //指派人id
         $exe_user_id = $this->params['exe_user_id'];  //执行人userid
         $appoint_exe_time = $this->params['appoint_exe_time'];  //指派执行时间
+        $is_lead_install = $this->params['is_lead_install'] ? $this->params['is_lead_install']:0;  //是否带队安装
         $m_option_task = new \Common\Model\OptiontaskModel();
         
         $fields = ' a.id,a.state';
@@ -808,6 +811,7 @@ class TaskController extends BaseController{
         $data['appoint_exe_time']  = $appoint_exe_time;
         $data['exe_user_id']  = $exe_user_id;
         $data['state']        =2;
+        $data['is_lead_install'] = $is_lead_install;
         $ret = $m_option_task->updateInfo($map,$data);
         if($ret){
             $this->to_back(10000);

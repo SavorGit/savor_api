@@ -185,7 +185,7 @@ class HotelController extends BaseController {
             $m_device_version = new \Common\Model\DeviceVersionModel();
             $infoa = $m_device_version->getOneByVersionAndDevice($ret['version'], $device_type=1);
         }
-        $dat['new_small'] = $infoa['version_name'];
+        $dat['new_small'] = $infoa['version_name'] ?$infoa['version_name']:'';
         //获取小平台心跳最后版本号
         if ($dat['new_small'] == $dat['last_small']) {
             $dat['last_small'] = array(

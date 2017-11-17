@@ -165,8 +165,11 @@ class TaskController extends BaseController{
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
-        
-        $where = ' a.publish_user_id='.$user_id.' and a.flag=0';   //获取自己发布的任务  
+        $where = ' 1';
+        if($city_id !=9999){
+            $where .= " and a.task_area =$city_id";
+        }
+        $where .= ' and  a.publish_user_id='.$user_id.' and a.flag=0';   //获取自己发布的任务  
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -238,8 +241,12 @@ class TaskController extends BaseController{
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                     a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
                     ';
-    
-        $where = ' a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
+        
+        $where = ' 1';
+        if($city_id !=9999){
+            $where .= " and a.task_area =$city_id";
+        }
+        $where .= ' and a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -498,24 +505,55 @@ class TaskController extends BaseController{
             }            
             if($task_type==4 ){//维修  安装与验收
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                $fields = 'box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
+                $fields = 'a.id as repair_id,box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
                 $where = array();
                 $where['a.task_id'] = $task_id;
                 $repair_list = $m_option_task_repair->getList($fields,$where);
+                
                 if(!empty($repair_list)){
                     foreach($repair_list as $key=>$v){
                         if(!empty($v['fault_img_url'])){
                             $repair_list[$key]['fault_img_url'] = $task_repair_img.$v['fault_img_url'];
                         }
+                        $fieldd = ' suser.remark username,sbox.NAME box_name,
+                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
+                        
+                        $result = $m_option_task_repair->getMissionRepairInfo($fieldd,array('srepair.id'=>$v['repair_id']),1);
+                        $result = $result[0];
+                        $repair_list[$key]['username'] = $result['username'] ? $result['username'] :'';
+                        $repair_list[$key]['state'] = $result['state'] ? $result['state'] :'';
+                        $repair_list[$key]['remark'] = $result['remark'] ? $result['remark'] :'';
+                        
+                        if(!empty($result['repair_img'])){
+                            $tmp_img  = json_decode($result['repair_img']);
+                            $repair_img_arr = array();
+                            foreach($tmp_img as $tk=>$tv) {
+                                $repair_img_arr[$tk]['type'] =0;
+                                if(!empty($tv)){
+                                    $repair_img_arr[$tk]['img'] = $task_repair_img.$tv;
+                                }else {
+                                    $repair_img_arr[$tk]['img'] = '';
+                                }
+                            
+                            }
+                            $repair_list[$key]['repair_time'] = $result['repair_time'];
+                            $repair_list[$key]['repair_img'] = $repair_img_arr;
+                        }else {
+                            $repair_list[$key]['repair_img'] = array();
+                        }
+                        
+                        
+                        //$rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
                         
                     }
                     $task_info['repair_list'] = $repair_list;
                 }
             }
             //获取执行者完成任务详情
+            $rplist = array();
             if($mission_state == 4) {
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                if($task_type == 4) {
+                /* if($task_type == 4) {
                     $fielda = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
@@ -544,26 +582,38 @@ class TaskController extends BaseController{
                         $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
 
                     }
-                } elseif($task_type == 2) {
+                } else */
+                if($task_type == 2) {
                     $fielda = ' suser.remark username,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo
-                    ($fielda, $map, $type);
-                    foreach($rplist as $key=>$v){
-                        $repair_img_arr = json_decode($v['repair_img'],true);
-                        foreach($repair_img_arr as $rk=>$rv){
-                            $repair_img_arr[$rk]['type'] = 0;
-                            if(!empty($rv['img'])){
-                                $repair_img_arr[$rk]['img'] = $task_repair_img .$rv['img'];
-                            }else {
-                                $repair_img_arr[$rk]['img'] = '';
-                            }
-                            
-                        }
-                        $rplist[$key]['repair_img'] = $repair_img_arr;
+                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                   
+                    $result = $rplist[0];
+                    
+                    $repair_img_arr = json_decode($result['repair_img'],true);
+                    if(empty($repair_img_arr)){
+                        $repair_img_arr = array();
                     }
+                    foreach($repair_img_arr as $rk=>$rv){
+                        $ttp = array();
+                        $ttp[0]['type'] = 0;
+                        if(!empty($rv['img'])){
+                            $ttp[0]['img'] = $task_repair_img .$rv['img'];
+                            
+                        }else {
+                            $ttp[0]['img'] = '';
+                        }
+                        $repair_img_arr[$rk]['repair_img'] = $ttp;
+                        unset($repair_img_arr[$rk]['img']);
+                        $repair_img_arr[$rk]['usernanme'] = $result['username'];
+                        $repair_img_arr[$rk]['repair_time']= $result['repair_time'];
+                        
+                    }
+                    
+                   $rplist = $repair_img_arr;
+                    
                     
                 }else if($task_type == 1){
                     //echo 'welrjlwer';
@@ -572,65 +622,79 @@ class TaskController extends BaseController{
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo
-                    ($fielda, $map, $type);
-                    $rplist = array_slice($rplist,0,1);
+                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                    $result = $rplist[0];
+                    $repair_img =json_decode($result['repair_img'],true);
                     
-                    foreach($rplist as $rk=>$rv) {
-                        if(!empty($rv['repair_img'])) {
-                            $repair_img =json_decode($rv['repair_img'],true);
+                    $repair_img_arr = array();
+                    foreach($repair_img as $k=>$v){
+                        $ttp = array();
+                        $ttp[0]['type'] = 0;
+                        if(!empty($v['img'])){
+                            $ttp[0]['img'] = $task_repair_img .$v['img'];
                             
-                            foreach($repair_img as $k=>$v){
-                                $repair_img_arr[$k]['type'] = 0;
-                                if(!empty($v)){
-                                    $repair_img_arr[$k]['img'] = $task_repair_img .$v;
-                                }else {
-                                    $repair_img_arr[$k]['img'] = '';
-                                }
-                                
-                            }
-                            $rplist[$rk]['repair_img'] = $repair_img_arr;
-                        } else{
-                            $rplist[$rk]['repair_img'] = array();
+                        }else {
+                            $ttp[0]['img'] = '';
                         }
-                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
-                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
+                        $repair_img_arr[$k]['repair_img'] = $ttp;
+                        unset($repair_img_arr[$k]['img']);
+                        $repair_img_arr[$k]['username'] = $result['username'];
+                        $repair_img_arr[$k]['repair_time'] = $result['repair_time'];
                     }
+                    //$rplist[$rk]['repair_img'] = $repair_img_arr;
+                        //} 
+                        //else{
+                            //$rplist[$rk]['repair_img'] = array();
+                        //}
+                       // $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
+                        //$rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
+                    //}
+                    $rplist = $repair_img_arr;
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo
-                    ($fielda, $map, $type);
-                    $rplist = array_slice($rplist,0,1);
-                   // var_export($rplist);
-                    foreach($rplist as $rk=>$rv) {
-                        if(!empty($rv['repair_img'])) {
-                            $tmp_img  = json_decode($rv['repair_img'], true);
+                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                    $result = $rplist[0];
+                    $repair_img =json_decode($result['repair_img'],true);
+                    
+                    $repair_img_arr = array();
+                    //print_r($repair_img);exit;
+                    /* foreach($repair_img as $k=>$v){
+                         $ttp = array();
+                        $ttp[0]['type'] = $v['type'];
+                        if(!empty($v['img'])){
+                            $ttp[0]['img'] = $task_repair_img .$v['img'];
                             
-                            foreach($tmp_img as $tk=>$tv) {
-                                $tmp_img[$tk]['type'] = $tv['type'];
-                                if(!empty($tv['img'])){
-                                    $tmp_img[$tk]['img'] = $task_repair_img .$tv['img'];
-                                }else {
-                                    $tmp_img[$tk]['img'] = '';
-                                }   
-                                
-                            }
- 
-                            $rplist[$rk]['repair_img'] = empty($tmp_img)? array():$tmp_img;
-                        } else {
-                            $rplist[$rk]['repair_img'] = array();
+                        }else {
+                            $ttp[0]['img'] = '';
                         }
-
-                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
-                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
+                        
+                        $repair_img_arr[$k]['repair_img'] = $ttp;
+                        unset($repair_img_arr[$k]['img']);
+                        $repair_img_arr[$k]['username'] = $result['username'];
+                        $repair_img_arr[$k]['repair_time'] = $result['repair_time'];
+                    } */
+                    foreach($repair_img as $key=>$v){
+                        if(!empty($v['img'])){
+                            $repair_img[$key]['img'] = $task_repair_img.$v['img'];
+                        }else {
+                            $repair_img[$key]['img'] = '';
+                        }
+                        
                     }
+                    $repair_img_arr[0]['username']    = $result['username'];
+                    $repair_img_arr[0]['repair_time'] = $result['repair_time'];
+                    $repair_img_arr[0]['repair_img']  = $repair_img;
+                    $rplist = $repair_img_arr;
 
                 }
-                $task_info['execute'] = $rplist;
+                if($task_type!=4){
+                    $task_info['execute'] = $rplist;
+                }
+                
             }
             $this->to_back($task_info);
     }
@@ -676,22 +740,28 @@ class TaskController extends BaseController{
         $is_lead_install = $this->params['is_lead_install']; //是否带队安装
         //获取当前城市的执行者列表
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $fields = 'a.task_area';
+        $fields = 'a.task_area,a.task_type';
         $where['a.id'] = $task_id;
         $task_info = $m_option_task->getInfo($fields, $where);
+        if(empty($task_info)){
+            $this->to_back(30059);
+        }
         //print_r($task_info);exit;
         $area_id = $task_info['task_area'];
+        $task_type = $task_info['task_type'];
         $m_option_task_role = new \Common\Model\OpuserRoleModel();
         
         $fields = 'a.user_id,user.remark as username';
-        $where =" 1 and a.role_id = 3 and (FIND_IN_SET($area_id,a.`manage_city`) or a.manage_city=9999) and a.state=1";
+        $where =" 1 and a.role_id = 3 and (FIND_IN_SET($area_id,a.`manage_city`) or a.manage_city=9999) and FIND_IN_SET($task_type,a.`skill_info`)  and a.state=1";
         if($is_lead_install){
             $where .= " and a.is_lead_install =".$is_lead_install;
         }
         
         $order = '';
+        $user_list = array();
         $user_list = $m_option_task_role->getList($fields,$where,$order);
         //print_r($user_list);exit;
+        
         $fields = 'a.task_type,hotel.name hotel_name';
         foreach($user_list as $key=>$v){
             //获取当前用户指定日期指派的任务

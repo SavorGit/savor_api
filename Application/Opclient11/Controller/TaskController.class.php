@@ -50,7 +50,7 @@ class TaskController extends BaseController{
                 break;
             case 'appointTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001','is_lead_install'=>'1001');    
+                $this->valid_fields = array('task_id'=>'10001','appoint_user_id'=>'1001','exe_user_id'=>'1001','appoint_exe_time'=>'1001','is_lead_install'=>'1000');    
                 break;
             case 'countTaskNums';
                 $this->is_verify = 1;
@@ -470,7 +470,7 @@ class TaskController extends BaseController{
             
             
             $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
-                        a.is_lead_install,a.hotel_address,a.refuse_time,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
+                        a.is_lead_install,a.hotel_address,a.refuse_time,a.refuse_desc,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
                         a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
             
             
@@ -632,8 +632,8 @@ class TaskController extends BaseController{
                     foreach($repair_img as $k=>$v){
                         $ttp = array();
                         $ttp[0]['type'] = 0;
-                        if(!empty($v['img'])){
-                            $ttp[0]['img'] = $task_repair_img .$v['img'];
+                        if(!empty($v)){
+                            $ttp[0]['img'] = $task_repair_img .$v;
                             
                         }else {
                             $ttp[0]['img'] = '';

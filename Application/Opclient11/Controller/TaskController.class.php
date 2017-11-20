@@ -597,11 +597,12 @@ class TaskController extends BaseController{
                         $repair_img_arr = array();
                     }
                     $rets = array();
+                    
                     foreach($repair_img_arr as $rk=>$rv){
                         $ttp = array();
                         $ttp[0]['type'] = 0;
-                        if(!empty($rv)){
-                            $ttp[0]['img'] = $task_repair_img .$rv;
+                        if(!empty($rv['img'])){
+                            $ttp[0]['img'] = $task_repair_img .$rv['img'];
                             
                         }else {
                             $ttp[0]['img'] = '';

@@ -238,7 +238,7 @@ class HotelController extends BaseController {
 
         //获取心跳相关
         $m_box = new \Common\Model\BoxModel();
-        $black_model = new \Common\Model\BlackListModel();
+        $black_model = new \Common\Model\BlacklistModel();
         $where = '';
 
         $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state =1 and a.flag =0 and room.state =1 and room.flag =0 ';

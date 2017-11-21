@@ -49,10 +49,12 @@ class IndexController extends BaseController{
         $data['list'][] = '当前离线酒楼(离线超过10分钟)'.$not_online_hotel_all_num.' (其中'.$not_online_hotel_1_num.'个酒楼离线72小时以内，'.$not_online_hotel_2_num.'个酒楼离线大于72小时)';
         //酒楼总数
         $m_hotel = new \Common\Model\HotelModel();
-        $where = array();
+        $where = '';
+        /* $where['a.id'] = array(array('not in',array('7','53')));
         $where['a.state'] = 1;
         $where['a.hotel_box_type'] = array('in','2,3');
-        $where['b.mac_addr'] = array('neq','');
+        $where['b.mac_addr'] = array('neq',array('','000000000000')); */
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_all_num = $m_hotel->getHotelCountNums($where);
         $data['list'][] = '酒楼总数:'.$hotel_all_num;
         //print_r($data);exit;
@@ -60,10 +62,12 @@ class IndexController extends BaseController{
         $m_box = new \Common\Model\BoxModel();
         $where = array();
 
-        $where['a.state'] = 1;
+        /* $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in','2,3');
-        $where['b.mac_addr'] = array('neq','');
+        $where['b.mac_addr'] = array('neq',''); */
+        
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_list = $m_hotel->getHotelLists($where,'','','a.id');
         
         $normal_hotel_num = 0;
@@ -132,13 +136,13 @@ class IndexController extends BaseController{
             
             
         }
-        $m_hote_ext = new \Common\Model\HotelExtModel();
+        /* $m_hote_ext = new \Common\Model\HotelExtModel();
         $map = array();
         $map['mac_addr'] = '000000000000';
         
         
-        $counts = $m_hote_ext->where($map)->count();
-        
+        $counts = $m_hote_ext->where($map)->count(); */
+        $counts = 0;
         $normal_hotel_num = $hotel_all_num - $not_normal_hotel_num;
         $data['list'][] = '正常酒楼:'. $normal_hotel_num;               //正常酒楼
         $data['list'][] = '异常酒楼:'. $not_normal_hotel_num;           //异常酒楼

@@ -132,5 +132,8 @@ return array(
 		'40012'=>'daily_code_send_fail',
 	    //升级接口
 	    '50001'=>'version_device_type_err',
+
+		//餐厅端接口
+		'60001'=>'dinner_reportlog_touping_fail',
 	),
 );

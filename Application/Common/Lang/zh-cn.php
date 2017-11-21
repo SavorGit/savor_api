@@ -128,4 +128,5 @@ return array(
     'program_ads_num_empty'=>'该广告号不存在',
     'program_menu_update_donwstate_error'=>'酒楼下载节目单更新下载状态失败',
     'program_hotel_have_donw_success'=>'该酒楼已成功下载过',
+    'dinner_reportlog_touping_fail'=>'餐厅端酒楼投屏日志上传失败',
 );

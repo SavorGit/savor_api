@@ -143,7 +143,7 @@ class IndexController extends BaseController{
         $not_normal_small_plat_num -= $counts;
         $data['list'][] = '异常小平台:'. $not_normal_small_plat_num;  //异常小平台
         
-        $m_black_list = new \Common\Model\BlackListModel();
+        $m_black_list = new \Common\Model\BlacklistModel();
         $black_box_num = $m_black_list->countBlackBoxNum();
         
         $data['list'][] = '异常机顶盒:'. ($not_normal_box_num - $black_box_num);            //异常机顶盒

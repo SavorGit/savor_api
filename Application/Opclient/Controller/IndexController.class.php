@@ -50,19 +50,21 @@ class IndexController extends BaseController{
         //酒楼总数
         $m_hotel = new \Common\Model\HotelModel();
         $where = array();
-        $where['state'] = 1;
-        $where['hotel_box_type'] = array('in','2,3');
-        $hotel_all_num = $m_hotel->getHotelCount($where);
+        $where['a.state'] = 1;
+        $where['a.hotel_box_type'] = array('in','2,3');
+        $where['b.mac_addr'] = array('neq','');
+        $hotel_all_num = $m_hotel->getHotelCountNums($where);
         $data['list'][] = '酒楼总数:'.$hotel_all_num;
         //print_r($data);exit;
         //正常酒楼 、异常酒楼
         $m_box = new \Common\Model\BoxModel();
         $where = array();
 
-        $where['state'] = 1;
-        $where['flag']  = 0;
-        $where['hotel_box_type'] = array('in','2,3');
-        $hotel_list = $m_hotel->getHotelList($where,'','','id');
+        $where['a.state'] = 1;
+        $where['a.flag']  = 0;
+        $where['a.hotel_box_type'] = array('in','2,3');
+        $where['b.mac_addr'] = array('neq','');
+        $hotel_list = $m_hotel->getHotelLists($where,'','','a.id');
         
         $normal_hotel_num = 0;
         $not_normal_hotel_num = 0;

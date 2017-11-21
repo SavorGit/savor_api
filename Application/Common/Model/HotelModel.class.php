@@ -60,7 +60,13 @@ class HotelModel extends Model
     public function getHotelCount($where){
         return $this->where($where)->count();
     }
-
+    public function getHotelCountNums($where){
+        $count =$this->alias('a')
+             ->join('savor_hotel_ext b on a.id=b.hotel_id','left')
+             ->where($where)
+             ->count();
+        return $count;
+    }
 
     /**
      * getHotelDis
@@ -263,7 +269,12 @@ class HotelModel extends Model
         $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
         return $data;
     }
-
+    public function getHotelLists($where,$order,$limit,$fields = '*'){
+        $data = $this->alias('a')
+                     ->join('savor_hotel_ext b on a.id=b.hotel_id')
+                    ->field($fields)->where($where)->order($order)->limit($limit)->select();
+        return $data;
+    }
 
     public function changeIdinfoToName($result=[])
     {

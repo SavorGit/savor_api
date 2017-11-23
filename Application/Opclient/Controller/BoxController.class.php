@@ -185,7 +185,7 @@ class BoxController extends BaseController {
         $m_sysuser = new \Common\Model\SysUserModel();
         /* $where['status']   =1;
         $userinfo = $m_sysuser->getUserInfo($where,'id as userid,username,remark as nickname',2); */
-        $map['sgr.name'] = '酒楼运维';
+        $map['sgr.name'] = array('like','酒楼运维%');
         $sysusergroup  = new \Common\Model\SysusergroupModel();
         $map['su.status'] = '1';
         $field = 'su.id as userid,su.username,su.remark as nickname';

@@ -260,6 +260,7 @@ $img_arr[$im]['repair_img'];
                 $where = array();
                 $where['task_id'] = $save['task_id'];
                 $data['repair_img'] = $save['repair_img'];
+                $data['update_time'] = date('Y-m-d H:i;s');
                 $ret = $m_option_task_repair->saveData($data, $where);
             }
             if(!$ret){

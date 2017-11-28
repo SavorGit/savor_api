@@ -17,6 +17,7 @@ class ToupingController extends BaseController{
                 $this->valid_fields = array(
                     'device_id'=>1001,
                     'hotel_id'=>1001,
+                    'room_id'=>1001,
                 );
                 break;
         }
@@ -26,6 +27,7 @@ class ToupingController extends BaseController{
      * @desc 上报日志
      */
     public function reportLog(){
+
         $save['wifi'] = $this->params['wifi'];
         $save['hotel_id'] = $this->params['hotel_id'];
         $save['room_id'] = $this->params['room_id'];
@@ -33,7 +35,7 @@ class ToupingController extends BaseController{
         $save['device_id'] = $this->params['device_id'];
         $save['state'] = $this->params['state'];
         $save['ads_type'] = $this->params['ads_type'];
-        $save['info'] = $this->params['info'];
+        $save['info'] = json_decode($this->params['info']);
         $save['screen_num'] = $this->params['screen_num'];
         $save['screen_time'] = $this->params['screen_time'];
         $save['create_time'] = date("Y-m-d H:i:s");

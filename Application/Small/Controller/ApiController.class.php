@@ -300,6 +300,9 @@ class ApiController extends CommonController{
         $menuhotelModel = new \Common\Model\MenuHotelModel();
         $adsModel = new \Common\Model\AdsModel();
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
+        if(empty($per_arr)){
+            $this->to_back(16205);
+        }
         $menuid = $per_arr[0]['menuId'];
         $ads_arr = $adsModel->getadsInfo($menuid);
         $ads_arr = $this->changeadsList($ads_arr);
@@ -323,6 +326,9 @@ class ApiController extends CommonController{
         $adsModel = new \Common\Model\AdsModel();
         //获取广告期号
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
+        if(empty($per_arr)){
+            $this->to_back(16205);
+        }
         $menuid = $per_arr[0]['menuId'];
         $adv_arr = $adsModel->getadvInfo($hotelid, $menuid);
         $adv_arr = $this->changeadvList($adv_arr);
@@ -348,7 +354,7 @@ class ApiController extends CommonController{
         //获取广告期号
         $per_arr = $menuhotelModel->getadsPeriod($hotelid);
         if(empty($per_arr)){
-            $this->to_back(10000);
+            $this->to_back(16205);
         }
         $menuid = $per_arr[0]['menuId'];
         $pro_arr = $adsModel->getproInfo($menuid);

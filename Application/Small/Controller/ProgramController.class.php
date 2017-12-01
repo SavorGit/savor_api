@@ -200,7 +200,7 @@ class ProgramController extends CommonController{
          $redis = new SavorRedis();
          $redis->select(12);
         
-         $max_adv_location = 10;
+         $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
          $now_date = date('Y-m-d H:i:s');
          $ttmp = $data =  array();
          foreach($list as $key=>$v){

@@ -180,4 +180,5 @@ return array(
     ),
     'TASK_EMERGE_ARR'=>array('2'=>'紧急','3'=>'正常'),
     'TASK_STATE_ARR'=>array('1'=>'待指派',2=>'待处理',4=>'已完成',5=>'拒绝'),
+    'MAX_ADS_LOCATION_NUMS'=>50,
 );

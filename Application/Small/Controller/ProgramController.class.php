@@ -6,6 +6,7 @@ class ProgramController extends CommonController{
     /**
      * 构造函数
      */
+    public $max_adv_location = 50;
     var $menu_type;
     function _init_() {
         switch(ACTION_NAME) {
@@ -205,7 +206,7 @@ class ProgramController extends CommonController{
          $ttmp = $data =  array();
          foreach($list as $key=>$v){
              $ads_num_arr = array();
-             for($i=1;$i<=10;$i++){
+             for($i=1;$i<=$max_adv_location;$i++){
                  $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
                  $adv_arr = $this->changeadvList($adv_arr);
                  if(!empty($adv_arr)){

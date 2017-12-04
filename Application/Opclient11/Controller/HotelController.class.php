@@ -31,7 +31,7 @@ class HotelController extends BaseController{
         $where['name'] = array('like',"%$hotel_name%");
         $where['state'] = '1';
         $where['flag'] = 0;
-        $where['hotel_box_type'] = array('in','2,3');
+        //$where['hotel_box_type'] = array('in','2,3');
         $order = ' id desc';
         $limit  = '';
         $fields = 'id,name,contractor,mobile,addr,area_id';

@@ -135,5 +135,11 @@ return array(
 
 		//餐厅端接口
 		'60001'=>'dinner_reportlog_touping_fail',
+	    '60002'=>'dinner_mobile_error',
+	    '60003'=>'dinner_user_code_min',
+	    '60004'=>'dinner_user_code_illegal',
+	    '60005'=>'dinner_invite_code_err',
+	    '60006'=>'dinner_user_login_err',
+	    '60007'=>'dinner_hotel_rec_food_empty',
 	),
 );

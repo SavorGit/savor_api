@@ -162,6 +162,7 @@ return array(
 		'token'     =>'66edd50a46c882a7f4231186c44416d8',
 		'appid'     =>'a982fdb55a2441899f2eaa64640477c0',
 		'daily_login_templateid'=>'178978',
+	    'dinner_login_templateid'=>'238349',
 
 	),
 

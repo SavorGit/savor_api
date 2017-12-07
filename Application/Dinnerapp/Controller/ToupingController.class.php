@@ -14,10 +14,8 @@ class ToupingController extends BaseController{
         switch(ACTION_NAME) {
             case 'reportLog':
                 $this->is_verify = 1;
-                $this->valid_fields = array(
-                    'device_id'=>1001,
-                    'hotel_id'=>1001,
-                    'room_id'=>1001,
+                $this->valid_fields = array('mobile'=>1001,'invite_code'=>1001,'hotel_id'=>1001,'room_id'=>1001,'screen_result'=>1001,
+                                            'screen_type'=>1001,'screen_num'=>1001,'screen_time'=>1001
                 );
                 break;
         }
@@ -27,22 +25,25 @@ class ToupingController extends BaseController{
      * @desc 上报日志
      */
     public function reportLog(){
-
-        $save['wifi'] = $this->params['wifi'];
+        $client_arr = C('CLIENT_NAME_ARR');
+        $save['mobile'] = $this->params['mobile'];
+        $save['invite_code'] = $this->params['invite_code'];
         $save['hotel_id'] = $this->params['hotel_id'];
         $save['room_id'] = $this->params['room_id'];
-        $save['device_type'] = $this->params['device_type'];
-        $save['device_id'] = $this->params['device_id'];
-        $save['state'] = $this->params['state'];
-        $save['ads_type'] = $this->params['ads_type'];
-        $save['info'] = json_decode($this->params['info']);
+        $save['welcome_word'] = $this->params['welcome_word'];
+        $save['welcome_template'] = $this->params['welcome_template'];
+        $save['screen_result'] = $this->params['screen_result'];
+        $save['screen_type'] = $this->params['screen_type'];
+        $traceinfo = $this->traceinfo;
+        $save['device_type'] = $client_arr[$traceinfo['clientname']];
+        $save['device_id'] = $traceinfo['device_id'];
+
         $save['screen_num'] = $this->params['screen_num'];
         $save['screen_time'] = $this->params['screen_time'];
         $save['create_time'] = date("Y-m-d H:i:s");
-        $save['screen_type'] = $this->params['screen_type'];
         foreach($save as $k=>$v) {
-            if(is_null($v)) {
-                $save[$k] = '';
+            if(empty($v)){
+                unset($save[$k]);
             }
         }
         $redis = SavorRedis::getInstance();

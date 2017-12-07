@@ -128,5 +128,13 @@ return array(
     'program_ads_num_empty'=>'该广告号不存在',
     'program_menu_update_donwstate_error'=>'酒楼下载节目单更新下载状态失败',
     'program_hotel_have_donw_success'=>'该酒楼已成功下载过',
+    //餐厅端接口
     'dinner_reportlog_touping_fail'=>'餐厅端酒楼投屏日志上传失败',
+    'dinner_mobile_error'=>'手机格式错误',
+    'dinner_user_code_min'=>'一分钟内请勿重复获取验证码',
+    'dinner_user_code_illegal'=>'验证码错误或已过期',
+    'dinner_invite_code_err'=>'您输入的邀请码不正确',
+    'dinner_user_login_err'=>'登录失败',
+    'dinner_hotel_rec_food_empty'=>'当前酒楼没有推荐菜，请联系酒楼维护人员添加',
+    
 );

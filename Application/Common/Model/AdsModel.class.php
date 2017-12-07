@@ -129,4 +129,14 @@ class AdsModel extends Model
 		return $result;
 
 	}
+	public function getAdsList($field,$where,$order,$limit){
+	    $data = $this->alias('a')
+	         ->join('savor_media b on a.media_id =b.id','left')
+	         ->field($field)
+	         ->where($where)
+	         ->order($order)
+	         ->limit($limit)
+	         ->select();
+	    return $data;
+	}
 }

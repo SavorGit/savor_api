@@ -40,6 +40,7 @@ class ToupingController extends BaseController{
 
         $save['screen_num'] = $this->params['screen_num'];
         $save['screen_time'] = $this->params['screen_time'];
+        $save['info'] = $this->params['info'];
         $save['create_time'] = date("Y-m-d H:i:s");
         foreach($save as $k=>$v) {
             if(empty($v)){
@@ -57,6 +58,7 @@ class ToupingController extends BaseController{
     }
 
     public function  syncData(){
+        exit(1);
         $redis = SavorRedis::getInstance();
         $key = 'dinnertoupinglog';
         $redis->select(13);

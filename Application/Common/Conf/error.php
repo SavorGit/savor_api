@@ -141,5 +141,11 @@ return array(
 	    '60005'=>'dinner_invite_code_err',
 	    '60006'=>'dinner_user_login_err',
 	    '60007'=>'dinner_hotel_rec_food_empty',
+	    '60008'=>'dinner_hotel_empty',
+	    '60009'=>'dinner_hotel_state_err',
+	    '60010'=>'dinner_mobile_not_fit_invitecode',
+	    '60011'=>'dinner_invite_code_have_used',
+	    '60012'=>'dinner_please_input_your_invite_code',
+	    
 	),
 );

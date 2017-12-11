@@ -130,11 +130,16 @@ return array(
     'program_hotel_have_donw_success'=>'该酒楼已成功下载过',
     //餐厅端接口
     'dinner_reportlog_touping_fail'=>'餐厅端酒楼投屏日志上传失败',
-    'dinner_mobile_error'=>'手机格式错误',
+    'dinner_mobile_error'=>'手机号输入有误',
     'dinner_user_code_min'=>'一分钟内请勿重复获取验证码',
     'dinner_user_code_illegal'=>'验证码错误或已过期',
-    'dinner_invite_code_err'=>'您输入的邀请码不正确',
+    'dinner_invite_code_err'=>'您输入的邀请码不正确,请重新输入',
     'dinner_user_login_err'=>'登录失败',
     'dinner_hotel_rec_food_empty'=>'当前酒楼没有推荐菜，请联系酒楼维护人员添加',
+    'dinner_hotel_empty'=>'邀请码对应酒楼不存在',
+    'dinner_hotel_state_err'=>'邀请码对应的酒楼状态异常',
+    'dinner_mobile_not_fit_invitecode'=>'该手机号与邀请码绑定手机号不一致',
+    'dinner_invite_code_have_used'=>'该邀请码已经被使用,请更换',
+    'dinner_please_input_your_invite_code'=>'您已经绑定邀请码，请输入正确邀请码',
     
 );

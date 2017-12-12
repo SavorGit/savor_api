@@ -146,6 +146,7 @@ return array(
 	    '60010'=>'dinner_mobile_not_fit_invitecode',
 	    '60011'=>'dinner_invite_code_have_used',
 	    '60012'=>'dinner_please_input_your_invite_code',
-	    
+	    '60013'=>'dinner_hotel_adv_list_empty',
+	    '60014'=>'dinner_hotel_room_empty',
 	),
 );

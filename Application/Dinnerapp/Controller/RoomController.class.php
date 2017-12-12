@@ -28,6 +28,9 @@ class RoomController extends BaseController{
         $where['state']= 1;
         $field = 'id,name';
         $data = $m_room->getWhere($where,$field);
+        if(empty($data)){
+            $this->to_back(60014);
+        }
         $this->to_back($data);
     }
 }

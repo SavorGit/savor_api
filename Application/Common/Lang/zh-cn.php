@@ -141,5 +141,7 @@ return array(
     'dinner_mobile_not_fit_invitecode'=>'该手机号与邀请码绑定手机号不一致',
     'dinner_invite_code_have_used'=>'该邀请码已经被使用,请更换',
     'dinner_please_input_your_invite_code'=>'您已经绑定邀请码，请输入正确邀请码',
+    'dinner_hotel_adv_list_empty'=>'该酒楼没有宣传片，请联系酒楼维护人员添加',
+    'dinner_hotel_room_empty'=>'该酒楼没有包间，请联系酒楼维护人员添加',
     
 );

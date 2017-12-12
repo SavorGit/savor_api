@@ -27,9 +27,12 @@ class AdvController extends BaseController{
         $where['a.hotel_id'] = $hotel_id;
         $where['a.type'] = 3;
         $where['a.state']= 1;
-        $fields = "b.id,a.name chinese_name,b.oss_addr name,b.md5 ,'fullMd5' AS `md5_type`,b.oss_addr AS oss_path,
+        $fields = "b.id,a.name chinese_name,b.oss_addr name,b.md5 ,'easyMd5' AS `md5_type`,b.oss_addr AS oss_path,
                    b.duration,b.surfix,a.img_url";
         $list = $m_ads->getAdsList( $fields,$where);
+        if(empty($list)){
+            $this->to_back(60013);
+        }
         $oss_host = C('TASK_REPAIR_IMG');
         foreach($list as $key=>$v){
             $list[$key]['oss_path'] = $oss_host.'/'.$v['oss_path'];

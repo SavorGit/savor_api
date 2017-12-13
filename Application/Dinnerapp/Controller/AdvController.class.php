@@ -13,7 +13,7 @@ class AdvController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            case 'doLogin':
+            case 'getAdvList':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>'1001');
                 break;

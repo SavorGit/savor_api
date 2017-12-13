@@ -60,4 +60,12 @@ class AreaModel extends Model
 	    $data = $this->field('id,region_name')->where($where)->select();
 	    return $data;
 	}
+	public function getWhere($felds,$where,$order,$limit,$type=1){
+	    if($type==1){
+	        $data = $this->field($felds)->where($where)->order($order)->limit($limit)->find();
+	    }else {
+	        $data = $this->field($felds)->where($where)->order($order)->limit($limit)->select();
+	    }
+	    return $data;
+	}
 }

@@ -32,7 +32,9 @@ class AreainfoController extends CommonController{
         $where['is_in_hotel'] = 1;
         
         $data = $m_area_info->getWhere('id', $where);
-        
+        if(empty($data)){
+            $data = array();
+        }
         $this->to_back($data);
     }
 }

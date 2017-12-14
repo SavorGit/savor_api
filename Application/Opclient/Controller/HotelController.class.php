@@ -129,13 +129,14 @@ class HotelController extends BaseController {
         $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
         $m_hotel_ext = new \Common\Model\HotelExtModel();
+        $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
         if ( empty($rets) ) {
             $dat['last_heart_time'] = array(
                 'ltime'=>'',
                 'lstate'=>0,
             );
             $dat['last_small'] = '';
-            $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
+            
             if( empty($infos['mac_addr']) ) {
                 $dat['last_small'] = '没有填写MAC地址';
                 $dat['small_mac'] = '';
@@ -171,6 +172,7 @@ class HotelController extends BaseController {
             );
             $dat['last_small'] = $rets[0]['version_name'];
         }
+        
         //小平台
         /* $versionModel = new \Common\Model\VersionModel();
         $co['device_type'] = 1;
@@ -198,7 +200,10 @@ class HotelController extends BaseController {
                 'last_small_state' =>0,
             );
         }
-
+        if($infos['mac_addr'] =='000000000000'){
+            $dat['last_heart_time']['lstate'] = 1;
+            $dat['last_small']['last_small_state'] = 1;
+        }
         //获取小平台维修记录
         $redMo = new \Common\Model\RepairBoxUserModel();
         $cao['mac'] =  $dat['small_mac'];

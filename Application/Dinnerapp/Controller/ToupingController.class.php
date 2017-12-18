@@ -36,7 +36,7 @@ class ToupingController extends BaseController{
         $save['screen_type'] = $this->params['screen_type'];
         $traceinfo = $this->traceinfo;
         $save['device_type'] = $client_arr[$traceinfo['clientname']];
-        $save['device_id'] = $traceinfo['device_id'];
+        $save['device_id'] = $traceinfo['deviceid'];
 
         $save['screen_num'] = $this->params['screen_num'];
         $save['screen_time'] = $this->params['screen_time'];

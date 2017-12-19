@@ -115,7 +115,12 @@ class HotelController extends BaseController {
         $order = ' id desc';
         $limit  = '';
         $fields = 'id,name';
-        
+        $area_id = $this->params['area_id'];
+        if( empty($area_id) || $area_id == 9999) {
+
+        } else {
+            $where['area_id'] = $area_id;
+        }
         $data = $m_hotel->getHotelList($where,$order,$limit,$fields = 'id,name');
         $list['list'] =$data;
         $this->to_back($list);

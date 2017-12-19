@@ -504,8 +504,10 @@ class TaskController extends BaseController{
                 $task_info['appoint_exe_time'] = substr($task_info['appoint_exe_time'], 0,10);
             }            
             if($task_type==4 ){//维修  安装与验收
+                $hotel_standalone_config = C('HOTEL_STANDALONE_CONFIG');
+                
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                $fields = 'a.id as repair_id,box.name as box_name,a.box_id,a.fault_desc,a.fault_img_url';
+                $fields = 'a.id as repair_id,box.name as box_name,a.box_id,a.fault_desc,a.repair_type,a.fault_img_url';
                 $where = array();
                 $where['a.task_id'] = $task_id;
                 $repair_list = $m_option_task_repair->getList($fields,$where);
@@ -515,6 +517,20 @@ class TaskController extends BaseController{
                         if(!empty($v['fault_img_url'])){
                             $repair_list[$key]['fault_img_url'] = $task_repair_img.$v['fault_img_url'];
                         }
+                        if(!empty($v['repair_type'])){
+                            $repair_type_arr = explode(',', $v['repair_type']);
+                            $repair_type_str  = '';
+                            $space = '';
+                            
+                            foreach($repair_type_arr as $rvs){
+                                $repair_type_str .= $space .$hotel_standalone_config[$rvs];
+                                $space = ',';      
+                                
+                            }
+                            $repair_list[$key]['fault_desc'] .= "(".$repair_type_str.")";
+ 
+                        }
+                        unset($repair_list[$key]['repair_type']);
                         $fieldd = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                         

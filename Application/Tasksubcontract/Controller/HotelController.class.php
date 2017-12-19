@@ -125,7 +125,6 @@ class HotelController extends BaseController {
 
 
         $hotel_id = intval( $this->params['hotel_id'] );
-        $hotel_id = 50;
         $this->disposeTips($hotel_id);
         //获取报修机顶盒
         $m_box = new \Common\Model\BoxModel();

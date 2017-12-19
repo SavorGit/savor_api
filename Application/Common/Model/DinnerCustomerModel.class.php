@@ -14,4 +14,8 @@ class DinnerCustomerModel extends Model
 	    $ret = $this->addAll($dataList);
 	    return $ret;
 	}
+	public function countNums($where){
+	    $nums = $this->where($where)->count();
+	    return $nums;
+	}
 }

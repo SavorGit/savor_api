@@ -143,6 +143,8 @@ return array(
     'dinner_please_input_your_invite_code'=>'您已经绑定邀请码，请输入正确邀请码',
     'dinner_hotel_adv_list_empty'=>'该酒楼没有宣传片，请联系酒楼维护人员添加',
     'dinner_hotel_room_empty'=>'该酒楼没有包间，请联系酒楼维护人员添加',
+    'dinner_invite_id_illegal'=>'传参邀请id应为整数',
+
     'dinner_mobile_not_bind_code'=>'该手机号还未绑定酒楼邀请码',
     'dinner_customer_import_err'=>'通讯录导入失败',
     'dinner_customer_empty'=>'导入通讯录不能为空',
@@ -150,4 +152,5 @@ return array(
     'dinner_bind_mobile_err'=>'绑定手机号与该手机号不一致',
     'dinner_customer_have_import'=>'该账号已经导入过通讯录',
     
+
 );

@@ -40,7 +40,7 @@ class RecfoodController extends BaseController{
            $list[$key]['suffix'] =  getExt($v['oss_path']);
            $ttp = explode('/', $v['oss_path']);
            $list[$key]['name']   = $ttp[2];
-           $list[$key]['oss_path'] = $oss_host.'/'.$v['oss_path'];
+           $list[$key]['oss_path'] = $oss_host.'/'.$v['oss_path'].'?x-oss-process=image/resize,w_200';
         }
         $this->to_back($list);
     }

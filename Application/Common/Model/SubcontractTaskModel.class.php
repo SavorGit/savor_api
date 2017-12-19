@@ -12,6 +12,14 @@ class SubcontractTaskModel extends Model
 {
 	protected $tableName='subcontract';
 
+	public function getList($field, $where, $order){
+		$data = $this->field($field)
+			->where($where)
+			->order($order)
+			->select();
+		return $data;
+
+	}
 
 	public function saveData($data, $where) {
 		$bool = $this->where($where)->save($data);

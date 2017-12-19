@@ -121,7 +121,118 @@ class HotelController extends BaseController {
         $this->to_back($list);
     }
 
+    public function getSingleHotelVersionById(){
 
+
+        $hotel_id = intval( $this->params['hotel_id'] );
+        $hotel_id = 50;
+        $this->disposeTips($hotel_id);
+        //获取报修机顶盒
+        $m_box = new \Common\Model\BoxModel();
+        $where = '';
+        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state !=2 and a.flag =0 and room.state !=2 and room.flag =0 ';
+
+        $box_list = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id bid ',$where);
+        $box_arr = array();
+        foreach($box_list as $bv) {
+            $box_arr[] = $bv['bid'];
+        }
+        $box_arr = array_unique($box_arr);
+
+        $box_total_num = count($box_arr);
+        if($box_arr) {
+            $optask_rp_Model = new \Common\Model\OptionTaskRepairModel();
+            $box_str = implode(',', $box_arr);
+
+            $field = 'box_id, create_time,current_location';
+            $map['box_id'] = array('in', $box_str);
+            $order = 'id desc';
+            $rp_box_info = $optask_rp_Model->getRepairBoxInfo($field, $map, $order);
+            $repair_box = array();
+            foreach($rp_box_info as $rv) {
+                $rv['srtype'] = '报修';
+                if(array_key_exists($rv['box_id'], $repair_box)) {
+                    continue;
+                } else {
+                    $repair_box[$rv['box_id']] = $rv;
+                }
+
+            }
+            //获取签到时间
+            $field = 'bid box_id, create_time,current_location';
+            $sub['bid'] = array('in', $box_str);
+            $order = ' id desc ';
+            $subconModel = new \Common\Model\SubcontractTaskModel();
+            $sub_info = $subconModel->getList($field, $sub, $order);
+            $sub_sign = array();
+            foreach($sub_info as $rv) {
+                $rv['srtype'] = '签到';
+                if(array_key_exists($rv['box_id'], $sub_sign)) {
+                    continue;
+                } else {
+                    $sub_sign[$rv['box_id']] = $rv;
+                }
+
+            }
+
+        }
+        $bap = array();
+        foreach($box_list as $ks=>$vs){
+            $bo_id = $vs['bid'];
+            if( empty($repair_box[$bo_id]) &&  empty($sub_info[$bo_id])){
+                $box_list[$ks]['srtype'] = '无';
+                $box_list[$ks]['last_ctime'] = '';
+                $box_list[$ks]['current_location'] = '无';
+                $box_list[$ks]['last_time'] = 15;
+            }else {
+                if ( empty($repair_box[$bo_id]) ) {
+                    $box_list[$ks]['last_time'] = strtotime($sub_sign[$bo_id]['create_time']);
+                    $box_list[$ks]['srtype'] = $sub_sign[$bo_id][srtype];
+                    $box_list[$ks]['last_ctime'] = $sub_sign[$bo_id]['create_time'];
+                    $box_list[$ks]['current_location']  = empty($sub_sign[$bo_id]['current_location'])
+                    ?'无':$sub_sign[$bo_id]['current_location'];
+                }
+                if ( empty($sub_info[$bo_id]) ) {
+                    $box_list[$ks]['last_time'] = strtotime($repair_box[$bo_id]['create_time']);
+                    $box_list[$ks]['srtype'] = $repair_box[$bo_id][srtype];
+                    $box_list[$ks]['last_ctime'] = $repair_box[$bo_id]['create_time'];
+                    $box_list[$ks]['current_location']  = empty($repair_box[$bo_id]['current_location'])
+                    ?'无':$repair_box[$bo_id]['current_location'];
+                }
+                if( !empty($repair_box[$bo_id]) &&  !empty($sub_info[$bo_id])) {
+                    $lboxtime = strtotime($repair_box[$bo_id]['create_time']);
+                    $lsigntime = strtotime($sub_sign[$bo_id]['create_time']);
+                    if($lboxtime > $lsigntime) {
+                        $box_list[$ks]['last_time'] = strtotime($repair_box[$bo_id]['create_time']);
+                        $box_list[$ks]['srtype'] = $repair_box[$bo_id][srtype];
+                        $box_list[$ks]['last_ctime'] = $repair_box[$bo_id]['create_time'];
+                        $box_list[$ks]['current_location']  = empty($repair_box[$bo_id]['current_location'])
+                            ?'无':$repair_box[$bo_id]['current_location'];
+                    } else {
+                        $box_list[$ks]['last_time'] = strtotime($sub_sign[$bo_id]['create_time']);
+                        $box_list[$ks]['srtype'] = $sub_sign[$bo_id][srtype];
+                        $box_list[$ks]['last_ctime'] = $sub_sign[$bo_id]['create_time'];
+                        $box_list[$ks]['current_location']  = empty($sub_sign[$bo_id]['current_location'])
+                            ?'无':$sub_sign[$bo_id]['current_location'];
+                    }
+                }
+
+            }
+        }
+        //二维数组排序
+
+        foreach ($box_list as $key => $row)
+        {
+            $volume[$key]  = $row['last_time'];
+        }
+        array_multisort($volume, SORT_DESC, $box_list);
+        foreach($box_list as $bk => $bv) {
+            unset($box_list[$bk]['last_time']);
+        }
+        $data['list']['box_info'] = $box_list;
+        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个)';
+        $this->to_back($data);
+    }
 
     /**
      * @desc 获取酒楼的维修签到信息

@@ -68,6 +68,117 @@ class BoxController extends BaseController {
         }
     }
 
+
+
+    public function insertSingleBoxDamage() {
+
+        $params = $_SERVER['HTTP_TRACEINFO'];
+       // file_put_contents(LOG_PATH.'baiyu.log', $params.PHP_EOL,  FILE_APPEND);
+
+        $save['srtype']    = $this->params['srtype'];
+        $save['hotel_id']  = intval($this->params['hotel_id']);
+        $save['userid']    = intval($this->params['userid']);
+        $save['remark'] = empty($this->params['remark'])?'':$this->params['remark'];
+        $save['repair_type'] = empty($this->params['repair_type'])?'':$this->params['repair_type'];
+        $this->disposeTips($save);
+
+        //判断角色是否属于单机
+        $m_opuser_role = new \Common\Model\OpuserRoleModel();
+        $role_info = $m_opuser_role->getInfoByUserid('role_id',$save['userid']);
+        if($role_info['role_id'] !=5){
+            $this->to_back(30058);
+        }
+        //传经纬存纬经 lat-纬度,lng-经度
+        $location = $this->traceinfo['location'];
+        $location_arr = explode(',', $location);
+        $lat = $location_arr[1];
+        $lng = $location_arr[0];
+        if(empty($lat) || intval($lat) == 0){
+            $lat = 0;
+        } else{
+            if($lat<0 || $lat>90){
+                $this->to_back(17001);
+            }
+        }
+        if(empty($lng) || intval($lng) == 0){
+            $lng = 0;
+        } else{
+            if($lng<0 || $lng>180){
+                $this->to_back(17002);
+            }
+        }
+        $lng = $this->sctonum( $lng);
+        $lat = $this->sctonum( $lat);
+
+        if ($save['srtype'] == 2) {
+            //维修
+            //添加到option_task表
+            $m_hotel = new \Common\Model\HotelModel();
+            $hotel_info = $m_hotel->getOneById('id,area_id',$save['hotel_id']);
+            $data['hotel_address']      = $hotel_info['addr'];
+            $data['hotel_linkman']      = $hotel_info['contractor'];
+            $data['hotel_linkman_tel']  = $hotel_info['mobile'];
+            $data['task_area']          = $hotel_info['area_id'];
+            $data['publish_user_id']    = $save['userid'];
+            $data['palan_finish_time'] = date('Y-m-d H:i:s',time()+259200);
+            $data['task_emerge']     = 3;
+            $data['task_type']       = 1;
+            $data['hotel_id']        = $save['hotel_id'];
+            $data['tv_nums']         = 1;
+            $data['create_time']         = date("Y-m-d H:i:s");
+            $m_option_task = new \Common\Model\OptiontaskModel();
+            $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+            $task_id = $m_option_task->addData($data, $type=1);
+            if ($task_id) {
+                $task_arr = array();
+                //添加到option_task_repair表
+                $task_arr['box_id'] = $this->params['bid'];
+                $task_arr['task_id'] = $task_id;
+                $task_arr['remark'] = $save['remark'];
+                $repair_img = str_replace( C('IMG_UP_SUBCONTACT'),'', $this->params['repair_img']);
+                $task_arr['repair_img'] = $repair_img;
+
+                $task_arr['gps'] = $lat.','.$lng;
+                $task_arr['current_location'] = empty($this->params['current_location'])?'':$this->params['current_location'];
+                $task_arr['repair_type'] = empty($this->params['repair_type'])?'':$this->params['repair_type'];
+                $task_arr['create_time'] = $data['create_time'];
+                $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+                $bool = $m_option_task_repair->addData($task_arr);
+                if ($bool) {
+                    $this->to_back(10000);
+                } else {
+                    $this->to_back('30055');
+                }
+            } else {
+                $this->to_back('30055');
+            }
+        } else {
+            //签到
+            $save['bid'] = $this->params['bid'];
+            $save['current_location'] = empty($this->params['current_location'])?'':$this->params['current_location'];
+            $save['repair_type'] = empty($this->params['repair_type'])?'':$this->params['repair_type'];
+            $save['repair_img'] = '';
+            $save['gps'] = $lat.','.$lng;
+            $save['flag'] = 0;
+            $save['create_time'] = date("Y-m-d H:i:s");
+            $save['datetime'] = date("Ymd");
+            $repairMo = new \Common\Model\SubcontractTaskModel();
+            $repairMo->startTrans();
+            $bool = $repairMo->addData($save);
+            if ($bool) {
+                $repairMo->commit();
+                $this->to_back(10000);
+            } else {
+                $repairMo->rollback();
+                $this->to_back('30055');
+            }
+
+
+        }
+
+    }
+
+
     public function InsertBoxDamage() {
 
         $params = $_SERVER['HTTP_TRACEINFO'];

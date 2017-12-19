@@ -26,9 +26,10 @@ class OptionTaskRepairModel extends Model
 		$ret = $this->where($where)->save($dat);
 		return $ret;
 	}
-	public function getRepairBoxInfo($field, $where){
+	public function getRepairBoxInfo($field, $where, $order){
 		$data = $this->field($field)
 					 ->where($where)
+					 ->order($order)
 			         ->select();
 		return $data;
 

@@ -148,5 +148,6 @@ return array(
 	    '60012'=>'dinner_please_input_your_invite_code',
 	    '60013'=>'dinner_hotel_adv_list_empty',
 	    '60014'=>'dinner_hotel_room_empty',
+		'60100'=>'dinner_invite_id_illegal',
 	),
 );

@@ -143,5 +143,5 @@ return array(
     'dinner_please_input_your_invite_code'=>'您已经绑定邀请码，请输入正确邀请码',
     'dinner_hotel_adv_list_empty'=>'该酒楼没有宣传片，请联系酒楼维护人员添加',
     'dinner_hotel_room_empty'=>'该酒楼没有包间，请联系酒楼维护人员添加',
-    
+    'dinner_invite_id_illegal'=>'传参邀请id应为整数',
 );

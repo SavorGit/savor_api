@@ -123,7 +123,7 @@ class BoxController extends BaseController {
             $data['publish_user_id']    = $save['userid'];
             $data['palan_finish_time'] = date('Y-m-d H:i:s',time()+259200);
             $data['task_emerge']     = 3;
-            $data['task_type']       = 1;
+            $data['task_type']       = 4;
             $data['hotel_id']        = $save['hotel_id'];
             $data['tv_nums']         = 1;
             $data['create_time']         = date("Y-m-d H:i:s");
@@ -135,9 +135,9 @@ class BoxController extends BaseController {
                 //添加到option_task_repair表
                 $task_arr['box_id'] = $this->params['bid'];
                 $task_arr['task_id'] = $task_id;
-                $task_arr['remark'] = $save['remark'];
+                $task_arr['fault_desc'] = $save['remark'];
                 $repair_img = str_replace( C('IMG_UP_SUBCONTACT'),'', $this->params['repair_img']);
-                $task_arr['repair_img'] = $repair_img;
+                $task_arr['fault_img_url'] = $repair_img;
 
                 $task_arr['gps'] = $lat.','.$lng;
                 $task_arr['current_location'] = empty($this->params['current_location'])?'':$this->params['current_location'];

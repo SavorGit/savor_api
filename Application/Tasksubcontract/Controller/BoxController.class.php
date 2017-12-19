@@ -71,7 +71,7 @@ class BoxController extends BaseController {
 
 
     public function insertSingleBoxDamage() {
-
+        
         $params = $_SERVER['HTTP_TRACEINFO'];
        // file_put_contents(LOG_PATH.'baiyu.log', $params.PHP_EOL,  FILE_APPEND);
 
@@ -136,7 +136,8 @@ class BoxController extends BaseController {
                 $task_arr['box_id'] = $this->params['bid'];
                 $task_arr['task_id'] = $task_id;
                 $task_arr['fault_desc'] = $save['remark'];
-                $repair_img = str_replace( C('IMG_UP_SUBCONTACT'),'', $this->params['repair_img']);
+                $fault_img_url_arr = parse_url($this->params['repair_img']);
+                $repair_img = $fault_img_url_arr['path'] ? $fault_img_url_arr['path']: '';
                 $task_arr['fault_img_url'] = $repair_img;
 
                 $task_arr['gps'] = $lat.','.$lng;

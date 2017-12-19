@@ -4,7 +4,7 @@
  * @author baiyutao
  * @date  20171219
  */
-namespace Dinnerapp\Controller;
+namespace Dinnerapp2\Controller;
 use Think\Controller;
 use \Common\Controller\BaseController as BaseController;
 class CustomerController extends BaseController{
@@ -16,9 +16,10 @@ class CustomerController extends BaseController{
             case 'addCustom':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
-                    'invite_id' =>1001,
-                    'mobile'    =>1001,
-                    'name'      =>1001,
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                    'usermobile'    =>1001,
+                    'name'          =>1001,
                 );
                 break;
             default:
@@ -39,7 +40,8 @@ class CustomerController extends BaseController{
             $this->to_back(60100);
         }
         //判断用户名是否存在
-        
+        //invite_id  查出得数据为空 60018
+
         $username    = $this->params['name'];
         $username    = $this->params['name'];
         $username    = $this->params['name'];
@@ -49,5 +51,5 @@ class CustomerController extends BaseController{
         $username    = $this->params['name'];
     }
 
-    
+
 }

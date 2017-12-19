@@ -33,7 +33,8 @@ return array(
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo',
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
-	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp'), //模块配置
+	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
+	                                 'Dinnerapp2'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置

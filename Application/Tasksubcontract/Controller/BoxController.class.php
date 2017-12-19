@@ -76,6 +76,7 @@ class BoxController extends BaseController {
        // file_put_contents(LOG_PATH.'baiyu.log', $params.PHP_EOL,  FILE_APPEND);
 
         $save['srtype']    = $this->params['srtype'];
+        $save['bid'] = $this->params['bid'];
         $save['hotel_id']  = intval($this->params['hotel_id']);
         $save['userid']    = intval($this->params['userid']);
         $save['remark'] = empty($this->params['remark'])?'':$this->params['remark'];
@@ -114,10 +115,10 @@ class BoxController extends BaseController {
             //维修
             //添加到option_task表
             $m_hotel = new \Common\Model\HotelModel();
-            $hotel_info = $m_hotel->getOneById('id,area_id',$save['hotel_id']);
-            $data['hotel_address']      = $hotel_info['addr'];
-            $data['hotel_linkman']      = $hotel_info['contractor'];
-            $data['hotel_linkman_tel']  = $hotel_info['mobile'];
+            $hotel_info = $m_hotel->getOneById('id,area_id,addr,contractor,mobile',$save['hotel_id']);
+            $data['hotel_address']      = empty($hotel_info['addr'])?'':$hotel_info['addr'];
+            $data['hotel_linkman']      = empty($hotel_info['contractor'])?'':$hotel_info['contractor'];
+            $data['hotel_linkman_tel']  = empty($hotel_info['mobile'])?'':$hotel_info['mobile'];
             $data['task_area']          = $hotel_info['area_id'];
             $data['publish_user_id']    = $save['userid'];
             $data['palan_finish_time'] = date('Y-m-d H:i:s',time()+259200);

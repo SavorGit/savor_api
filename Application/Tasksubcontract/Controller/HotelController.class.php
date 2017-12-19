@@ -175,30 +175,32 @@ class HotelController extends BaseController {
             }
 
         }
-        $bap = array();
         foreach($box_list as $ks=>$vs){
             $bo_id = $vs['bid'];
-            if( empty($repair_box[$bo_id]) &&  empty($sub_info[$bo_id])){
+            if( empty($repair_box[$bo_id]) &&  empty($sub_sign[$bo_id])){
                 $box_list[$ks]['srtype'] = '无';
                 $box_list[$ks]['last_ctime'] = '';
                 $box_list[$ks]['current_location'] = '无';
                 $box_list[$ks]['last_time'] = 15;
             }else {
+
                 if ( empty($repair_box[$bo_id]) ) {
+
                     $box_list[$ks]['last_time'] = strtotime($sub_sign[$bo_id]['create_time']);
                     $box_list[$ks]['srtype'] = $sub_sign[$bo_id][srtype];
                     $box_list[$ks]['last_ctime'] = $sub_sign[$bo_id]['create_time'];
                     $box_list[$ks]['current_location']  = empty($sub_sign[$bo_id]['current_location'])
                     ?'无':$sub_sign[$bo_id]['current_location'];
                 }
-                if ( empty($sub_info[$bo_id]) ) {
+                if ( empty($sub_sign[$bo_id]) ) {
                     $box_list[$ks]['last_time'] = strtotime($repair_box[$bo_id]['create_time']);
                     $box_list[$ks]['srtype'] = $repair_box[$bo_id][srtype];
                     $box_list[$ks]['last_ctime'] = $repair_box[$bo_id]['create_time'];
                     $box_list[$ks]['current_location']  = empty($repair_box[$bo_id]['current_location'])
                     ?'无':$repair_box[$bo_id]['current_location'];
                 }
-                if( !empty($repair_box[$bo_id]) &&  !empty($sub_info[$bo_id])) {
+                if( !empty($repair_box[$bo_id]) &&  !empty($sub_sign[$bo_id])) {
+
                     $lboxtime = strtotime($repair_box[$bo_id]['create_time']);
                     $lsigntime = strtotime($sub_sign[$bo_id]['create_time']);
                     if($lboxtime > $lsigntime) {
@@ -219,6 +221,7 @@ class HotelController extends BaseController {
             }
         }
         //二维数组排序
+
 
         foreach ($box_list as $key => $row)
         {

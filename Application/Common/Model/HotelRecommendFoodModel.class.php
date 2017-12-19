@@ -22,7 +22,7 @@ class HotelRecommendFoodModel extends Model
 	}
     public function getHotelListOne($fields,$where,$order,$limit){
 	    $data = $this->alias('a')
-	         ->join('savor_media b on a.media_id=b.id')
+	         ->join('savor_media b on a.big_media_id=b.id')
 	         ->field($fields)
 	         ->where($where)
 	         ->order($order)

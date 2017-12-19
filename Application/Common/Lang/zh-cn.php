@@ -148,5 +148,6 @@ return array(
     'dinner_customer_empty'=>'导入通讯录不能为空',
     'dinner_bind_invite_err'=>'用户绑定关系不存在',
     'dinner_bind_mobile_err'=>'绑定手机号与该手机号不一致',
+    'dinner_customer_have_import'=>'该账号已经导入过通讯录',
     
 );

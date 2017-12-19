@@ -153,5 +153,6 @@ return array(
 	    '60017'=>'dinner_customer_empty',
 	    '60018'=>'dinner_bind_invite_err',
 	    '60019'=>'dinner_bind_mobile_err',
+	    '60020'=>'dinner_customer_have_import'
 	),
 );

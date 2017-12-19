@@ -50,12 +50,20 @@ class CustomerController extends BaseController{
         $where['flag'] = '0';
         $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
         if(empty($invite_id)){
-            $this->to_back();
+            $this->to_back(60018);
         }
         if($invite_info['bind_mobile'] != $mobile){
-    
+            $this->to_back(60019);
         }
-    
+        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+        $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      =0;
+        $customer_nums = $m_dinner_customer->countNums($where);
+        if(!empty($customer_nums)){
+            $this->to_back(60020);
+        }
+        
         $book_info = str_replace('\\', '', $book_info);
         $book_info =  json_decode($book_info,true);
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
@@ -72,7 +80,7 @@ class CustomerController extends BaseController{
             foreach($book_info as $key=>$v){
                 $book_info[$key]['invite_id'] = $info['id'];
             }
-            $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+            
             $ret = $m_dinner_customer->addList($book_info);
             if($ret){
                 $this->to_back(10000);

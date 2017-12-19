@@ -4,7 +4,7 @@
  * @author baiyutao
  * @date  20171219
  */
-namespace Dinnerapp\Controller;
+namespace Dinnerapp2\Controller;
 use Think\Controller;
 use \Common\Controller\BaseController as BaseController;
 class CustomerController extends BaseController{
@@ -46,6 +46,7 @@ class CustomerController extends BaseController{
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
+        $where['state'] = 1;
         $where['flag'] = '0';
         $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
         if(empty($invite_id)){

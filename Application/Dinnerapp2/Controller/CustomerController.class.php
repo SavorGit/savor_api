@@ -91,8 +91,8 @@ class CustomerController extends BaseController{
         if(!check_mobile($mobile)){
             $this->to_back(60002);
         }
-        $invite_code = $this->params['invite_id'];
-        if(!is_numeric($invite_code)) {
+        $invite_id = $this->params['invite_id'];
+        if(!is_numeric($invite_id)) {
             $this->to_back(60100);
         }
         //判断用户名是否存在

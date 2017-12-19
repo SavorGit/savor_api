@@ -42,3 +42,11 @@ ALTER TABLE `cloud`.`savor_repair_box_user`  ADD INDEX `reparir_ind` (`datetime`
   `repair_type` INT(11) NOT NULL DEFAULT 0 COMMENT '损坏类型',
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+
+增加说明：修改机顶盒维修字段
+修改时间:2017.12.19 15：36
+修改人:白玉涛
+执行SQL:
+alter table `cloud`.`savor_option_task_repair` add `gps` varchar(50) not Null DEFAULT '' comment '纬经度';
+alter table `cloud`.`savor_option_task_repair` add `repari_type` varchar(250) not Null DEFAULT '' comment '1,2,3错误类型';
+ALTER TABLE `cloud`.`savor_option_task_repair`  ADD `current_location` varchar(255) not null default '';

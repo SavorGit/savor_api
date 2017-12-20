@@ -153,5 +153,5 @@ return array(
     'dinner_customer_have_import'=>'该账号已经导入过通讯录',
     'dinner_room_add_failed'=>'包间添加失败',
     'dinner_room_name_repeat'=>'包间名称已存在，请重新输入',
-
+    'dinner_order_add_failed'=>'预订添加失败',
 );

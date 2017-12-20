@@ -1,17 +1,20 @@
 <?php
 /**
  *@author zhang.yingtao
- *@desc 餐厅端客户
- *
+ *@desc   餐厅端预订包间
+ *@since  20171220
  */
 namespace Common\Model;
 use Think\Model;
 
-class DinnerCustomerModel extends Model
+class DinnerOrderModel extends Model
 {
-	protected $tableName='dinner_customer';
-	public function addList($dataList){
-	    $ret = $this->addAll($dataList);
+	protected $tableName='dinner_order';
+	/**
+	 * @desc 添加包间
+	 */
+	public function addInfo($data){
+	    $ret = $this->add($data);
 	    return $ret;
 	}
 	public function countNums($where){
@@ -20,10 +23,6 @@ class DinnerCustomerModel extends Model
 	}
 	public function getList($fields,$where,$order,$limit){
 	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
-	    return $data;
-	}
-	public function getOne($fields,$where){
-	    $data = $this->field($fields)->where($where)->find();
 	    return $data;
 	}
 }

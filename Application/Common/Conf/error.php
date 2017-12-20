@@ -156,6 +156,7 @@ return array(
 	    '60020'=>'dinner_customer_have_import',
 	    '60021'=>'dinner_room_add_failed',
 	    '60022'=>'dinner_room_name_repeat',
+	    '60023'=>'dinner_order_add_failed',
 	    '60100'=>'dinner_invite_id_illegal',
 
 	),

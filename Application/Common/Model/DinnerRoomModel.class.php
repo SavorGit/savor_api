@@ -21,4 +21,8 @@ class DinnerRoomModel extends Model
 	    $nums = $this->where($where)->count();
 	    return $nums;
 	}
+	public function getList($fields,$where,$order,$limit){
+	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
+	    return $data;
+	}
 }

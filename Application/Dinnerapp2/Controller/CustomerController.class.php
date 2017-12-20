@@ -1,6 +1,6 @@
 <?php
 /**
- * @desc 客户信息管理
+ * @desc 餐厅端2.0-客户信息管理
  * @author baiyutao
  * @date  20171219
  */

@@ -1,13 +1,13 @@
 <?php
 /**
- * @desc 餐厅端1.2-用户登录
+ * @desc 餐厅端2.0-用户登录
  * @author zhang.yingtao
  * @since  20171219
  */
 namespace Dinnerapp2\Controller;
 use Think\Controller;
 use \Common\Controller\BaseController as BaseController;
-class LoginsController extends BaseController{
+class LoginController extends BaseController{
     /**
      * 构造函数
      */

@@ -154,6 +154,8 @@ return array(
 	    '60018'=>'dinner_bind_invite_err',
 	    '60019'=>'dinner_bind_mobile_err',
 	    '60020'=>'dinner_customer_have_import',
+	    '60021'=>'dinner_room_add_failed',
+	    '60022'=>'dinner_room_name_repeat',
 	    '60100'=>'dinner_invite_id_illegal',
 
 	),

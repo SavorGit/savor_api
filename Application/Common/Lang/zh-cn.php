@@ -151,6 +151,7 @@ return array(
     'dinner_bind_invite_err'=>'用户绑定关系不存在',
     'dinner_bind_mobile_err'=>'绑定手机号与该手机号不一致',
     'dinner_customer_have_import'=>'该账号已经导入过通讯录',
-    
+    'dinner_room_add_failed'=>'包间添加失败',
+    'dinner_room_name_repeat'=>'包间名称已存在，请重新输入',
 
 );

@@ -18,6 +18,7 @@ class DinnerCustomerModel extends Model
 	    $nums = $this->where($where)->count();
 	    return $nums;
 	}
+
 	public function addData($data){
 		$ret = $this->add($data);
 		return $this->getLastInsID();
@@ -42,4 +43,13 @@ class DinnerCustomerModel extends Model
 		return $res;
 	}
 
+
+	public function getList($fields,$where,$order,$limit){
+	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
+	    return $data;
+	}
+	public function getOne($fields,$where){
+	    $data = $this->field($fields)->where($where)->find();
+	    return $data;
+	}
 }

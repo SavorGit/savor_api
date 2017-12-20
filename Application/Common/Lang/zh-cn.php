@@ -151,6 +151,14 @@ return array(
     'dinner_bind_invite_err'=>'用户绑定关系不存在',
     'dinner_bind_mobile_err'=>'绑定手机号与该手机号不一致',
     'dinner_customer_have_import'=>'该账号已经导入过通讯录',
-    
-
+    'dinner_customer_insert_fail'=>'添加客户失败请重试',
+    'dinner_customer_already_exist'=>'该客户联系方式已经添加过',
+    'dinner_customer_tel_repeat'=>'客户电话请勿重复',
+    'dinner_customer_tel_empty'=>'客户两个电话不可都为空',
+    'dinner_customer_tel1_exist'=>'手机号1已经存在',
+    'dinner_customer_tel2_exist'=>'手机号2已经存在',
+    'dinner_customer_id_empty'=>'客户id不可为空',
+    'dinner_customer_empty'=>'该客户不存在',
+    'dinner_customer_label_up_fail'=>'客户标签更新失败',
+    'dinner_customer_update_fail'=>'客户更新失败',
 );

@@ -7,9 +7,21 @@
 namespace Common\Model;
 use Think\Model;
 
-class DinnerCustomerModel extends Model
+class DinnerActionLogModel extends Model
 {
-	protected $tableName='dinner_customer';
+	protected $tableName='dinner_action_log';
+	public function addData($data){
+		$ret = $this->add($data);
+		return $ret;
+	}
+
+
+
+
+
+
+
+
 	public function addList($dataList){
 	    $ret = $this->addAll($dataList);
 	    return $ret;
@@ -19,10 +31,6 @@ class DinnerCustomerModel extends Model
 	    return $nums;
 	}
 
-	public function addData($data){
-		$ret = $this->add($data);
-		return $this->getLastInsID();
-	}
 	public function getData($field, $where, $order, $limit) {
 		$res = $this->field($field)
 					->where($where)
@@ -43,13 +51,4 @@ class DinnerCustomerModel extends Model
 		return $res;
 	}
 
-
-	public function getList($fields,$where,$order,$limit){
-	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
-	    return $data;
-	}
-	public function getOne($fields,$where){
-	    $data = $this->field($fields)->where($where)->find();
-	    return $data;
-	}
 }

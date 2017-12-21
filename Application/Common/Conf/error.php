@@ -158,6 +158,17 @@ return array(
 	    '60022'=>'dinner_room_name_repeat',
 	    '60023'=>'dinner_order_add_failed',
 	    '60100'=>'dinner_invite_id_illegal',
-
+		'60101'=>'dinner_customer_insert_fail',
+		'60102'=>'dinner_customer_already_exist',
+		'60103'=>'dinner_customer_tel_repeat',
+		'60104'=>'dinner_customer_tel_empty',
+		'60105'=>'dinner_customer_tel1_exist',
+		'60106'=>'dinner_customer_tel2_exist',
+		'60107'=>'dinner_customer_id_empty',
+		'60108'=>'dinner_customer_empty',
+		'60109'=>'dinner_customer_label_add_fail',
+		'60110'=>'dinner_customer_update_fail',
+		'60111'=>'dinner_customer_label_illegal',
+		'60112'=>'dinner_customer_label_die_fail',
 	),
 );

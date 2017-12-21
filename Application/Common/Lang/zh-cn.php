@@ -180,6 +180,6 @@ return array(
     'dinner_cannot_del_other_hotel_order'=>'不可删除其它酒楼的预订信息',
     'dinner_order_del_failed'=>'预订信息删除失败',
     'dinner_order_update_failed'=>'预订信息更新失败',
-
+    'dinner_order_donot_belong_you'=>'该预订不属于你',
 
 );

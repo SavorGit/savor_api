@@ -164,8 +164,10 @@ return array(
     'dinner_customer_label_add_fail'=>'客户标签添加失败',
     'dinner_customer_update_fail'=>'客户更新失败',
     'dinner_customer_label_illegal'=>'客户标签id不可为空',
+    'dinner_customer_label_not_exist'=>'客户标签id不存在',
     'dinner_customer_label_die_fail'=>'客户标签熄灭失败',
     'dinner_customer_consume_failed'=>'消费记录添加失败',
+    'dinner_label_type_error'=>'点亮熄灭标签类型传参错误',
     'dinner_order_not_exist'=>'预订信息不存在',
 
     'dinner_room_add_failed'=>'包间添加失败',

@@ -182,5 +182,7 @@ return array(
 		'60112'=>'dinner_customer_label_die_fail',
 		'60113'=>'dinner_customer_consume_failed',
 		'60114'=>'dinner_order_not_exist',
+		'60115'=>'dinner_label_type_error',
+		'60116'=>'dinner_customer_label_not_exist',
 	),
 );

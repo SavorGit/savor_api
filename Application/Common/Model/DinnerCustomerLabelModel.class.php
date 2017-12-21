@@ -9,7 +9,7 @@ use Think\Model;
 
 class DinnerCustomerLabelModel extends Model
 {
-	protected $tableName='dinner_label';
+	protected $tableName='dinner_customer_label';
 
 	public function getLabelNameByCid($field, $where){
 		$res = $this->alias('scl')

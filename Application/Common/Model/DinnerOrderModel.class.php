@@ -25,6 +25,7 @@ class DinnerOrderModel extends Model
 	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
 	    return $data;
 	}
+
 	public function updateInfo($where,$data){
 	    $ret =$this->where($where)->save($data);
 	    return $ret;

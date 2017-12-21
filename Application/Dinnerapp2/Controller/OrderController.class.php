@@ -16,9 +16,19 @@ class OrderController extends BaseController{
         switch(ACTION_NAME) {
             case 'addOrder':
                 $this->is_verify = 1;
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_name'=>1001,
+                                            'order_mobile'=>1001,'person_nums'=>1001,'room_id'=>1001,
+                                            'room_type'=>1001,'order_time'=>1001
+                );
+                break;
+            case 'getOrderList':
+                $this->is_verify = 1;
                 $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001);
                 break;
-            
+            case 'upateOrderService':
+                $this->is_verify = 1;
+                $this->valid_fields = array('order_id'=>1001,'type'=>1001,'ticket_url'=>1000);
+                break;
         }
         parent::_init_();
     }
@@ -143,6 +153,52 @@ class OrderController extends BaseController{
             $this->to_back(10000);
         }else {
             $this->to_back(60023);
+        }
+    }
+    /**
+     * @desc 更新预订的服务功能
+     */
+    public function upateOrderService(){
+        $order_id   = intval($this->params['order_id']);
+        $type       = intval($this->params['type']);
+        $ticket_url = $this->params['ticket_url'];
+        
+
+        $m_dinner_order = new \Common\Model\DinnerOrderModel();
+        $fields = 'id,is_welcome,is_recfood,ticket_url';
+        $where = array();
+        $where['id']  = $order_id;
+        $where['flag']= 0;
+        $order_info = $m_dinner_order->getOne($fields,$where);
+        if(empty($order_info)){
+            $this->to_back(60024);
+        }
+        
+        $data  = array();
+        switch ($type){
+            case '1':
+                if($order_info['is_welcome']==1){
+                    $this->to_back(60025);
+                }
+                $data['is_welcome'] = 1;
+                break;
+            case '2':
+                if($order_info['is_recfood']==1){
+                    $this->to_back(60026);
+                }
+                $data['is_recfood'] = 2;
+                break;
+            case '3':
+                if(!empty($order_info['ticket_url'])){
+                    $this->to_back(60027);
+                }
+                $data['ticket_url'] = $ticket_url;
+        }
+        $ret = $m_dinner_order->updateInfo($where, $data);
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(60028);
         }
     }
 }

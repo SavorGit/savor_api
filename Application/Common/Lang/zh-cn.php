@@ -169,5 +169,10 @@ return array(
     'dinner_room_add_failed'=>'包间添加失败',
     'dinner_room_name_repeat'=>'包间名称已存在，请重新输入',
     'dinner_order_add_failed'=>'预订添加失败',
+    'dinner_order_empty'=>'该预订信息不存在',
+    'dinner_is_welcome_used'=>'该预订信息的欢迎词功能已经使用过',
+    'dinner_is_recfood_used'=>'该预订信息的推荐菜功能已经使用过',
+    'dinner_ticket_url_have_upload'=>'该预订信息的消费小票已经上传过',
+    'dinner_service_update_failed'=>'更新失败',
 
 );

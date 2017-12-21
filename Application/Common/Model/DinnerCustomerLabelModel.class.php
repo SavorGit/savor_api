@@ -10,6 +10,16 @@ use Think\Model;
 class DinnerCustomerLabelModel extends Model
 {
 	protected $tableName='dinner_label';
+
+	public function getLabelNameByCid($field, $where){
+		$res = $this->alias('scl')
+					->field($field)
+			        ->join('left JOIN savor_dinner_label sdl ON scl.label_id = sdl.id')
+					->where($where)
+					->select();
+		return $res;
+	}
+
 	public function addData($data){
 		$ret = $this->add($data);
 		return $ret;

@@ -152,7 +152,12 @@ class IndexController extends BaseController{
         $m_black_list = new \Common\Model\BlacklistModel();
         $black_box_num = $m_black_list->countBlackBoxNum();
         
-        $data['list'][] = '异常机顶盒:'. ($not_normal_box_num - $black_box_num);            //异常机顶盒
+        $real_normal_box_num  = $not_normal_box_num - $black_box_num;
+        if($real_normal_box_num<0){
+            $real_normal_box_num = 0;
+        }
+        //$data['list'][] = '异常机顶盒:'. ($not_normal_box_num - $black_box_num);            //异常机顶盒
+        $data['list'][] = '异常机顶盒:'.$real_normal_box_num;
         $data['list'][] = '黑名单机顶盒:'.$black_box_num;
         $data['list'][] = '更新时间:'. date('Y-m-d H:i:s');
         $data['remark'] = '注:异常为心跳失联超过72小时以上';

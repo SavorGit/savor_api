@@ -147,7 +147,7 @@ return array(
 
     'dinner_mobile_not_bind_code'=>'该手机号还未绑定酒楼邀请码',
     'dinner_customer_import_err'=>'通讯录导入失败',
-    'dinner_customer_empty'=>'导入通讯录不能为空',
+    'dinner_customer_import_empty'=>'导入通讯录不能为空',
     'dinner_bind_invite_err'=>'用户绑定关系不存在',
     'dinner_bind_mobile_err'=>'绑定手机号与该手机号不一致',
     'dinner_customer_have_import'=>'该账号已经导入过通讯录',
@@ -180,6 +180,6 @@ return array(
     'dinner_cannot_del_other_hotel_order'=>'不可删除其它酒楼的预订信息',
     'dinner_order_del_failed'=>'预订信息删除失败',
     'dinner_order_update_failed'=>'预订信息更新失败',
-
+    'dinner_order_donot_belong_you'=>'该预订不属于你',
 
 );

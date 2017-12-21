@@ -165,9 +165,12 @@ return array(
     'dinner_customer_update_fail'=>'客户更新失败',
     'dinner_customer_label_illegal'=>'客户标签id不可为空',
     'dinner_customer_label_die_fail'=>'客户标签熄灭失败',
+    'dinner_customer_consume_failed'=>'消费记录添加失败',
+    'dinner_order_not_exist'=>'预订信息不存在',
 
     'dinner_room_add_failed'=>'包间添加失败',
     'dinner_room_name_repeat'=>'包间名称已存在，请重新输入',
     'dinner_order_add_failed'=>'预订添加失败',
+
 
 );

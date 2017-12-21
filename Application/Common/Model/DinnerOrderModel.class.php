@@ -25,4 +25,9 @@ class DinnerOrderModel extends Model
 	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
 	    return $data;
 	}
+
+	public function getOne($field, $where){
+		$res = $this->field($field)->find($where);
+		return $res;
+	}
 }

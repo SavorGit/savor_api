@@ -110,21 +110,13 @@ class CustomerController extends BaseController{
     }
 
     public function addConsumeRecord() {
-
+        
     }
 
-    public function upLabel() {
-        //type 1批量新增2单个
-        $ptype  = empty($this->params['type'])?1:$this->params['type'];
-        $mobile = $this->params['mobile'];
-        //验证管理人手机格式
-        if(!check_mobile($mobile)){
-            $this->to_back(60002);
-        }
+    public function addLabel() {
+        //type 1新增2点亮
         $invite_id = $this->params['invite_id'];
-        if(!is_numeric($invite_id)) {
-            $this->to_back(60100);
-        }
+        $mobile   = $this->params['mobile'];    //销售手机号
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
@@ -137,27 +129,187 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        $save['label']   = empty($this->params['label'])?'':$this->params['label'];
-        $c_id  = $this->params['customerid'];
-        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-        if($c_id) {
-            $cus_info = $m_dinner_customer->find($c_id);
-            if($cus_info) {
-                $map['id'] = $c_id;
-                $bool = $m_dinner_customer->saveData($save, $map);
-                if ($bool) {
-                   $this->to_back(10000);
+        $ptype  = empty($this->params['type'])?1:$this->params['type'];
+        $customer_id  = empty($this->params['customerid'])?1:$this->params['customerid'];
+        if($ptype == 1) {
+            $lname  = empty($this->params['label_name'])?1:$this->params['label_name'];
+
+            //空格处理
+            //先判断标签库是否存在
+            $m_dinner_label = new \Common\Model\DinnerLabelModel();
+            $map['name'] = $lname;
+            $map['flag'] = 0;
+            $field = 'id';
+            $label_arr = $m_dinner_label->getData($field, $where);
+            if($label_arr) {
+                $label_id = $label_arr[0]['id'];
+                //添加到销售标签表
+                $m_dinner_mana_lab = new \Common\Model\DinnerManaLabelModel();
+                $ma_ar['invite_id'] = $invite_id;
+                $ma_ar['label_id'] = $label_id;
+                $ma_ar['flag'] = 0;
+                $ma_num = $m_dinner_mana_lab->countNums($ma_ar);
+                if($ma_num > 0) {
+                    //添加到客户端
+                    $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                    $cus['customer_id'] = $customer_id;
+                    $cus['label_id'] = $label_id;
+                    $cus['flag'] = 0;
+                    $cus_num = $m_customer_lab->countNums($cus);
+                    if($cus_num) {
+                        $this->to_back(10000);
+                    } else {
+                        $bool = $m_customer_lab->addData($cus);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60109);
+                        }
+                    }
                 } else {
+                    $bool = $m_dinner_mana_lab->addData($ma_ar);
+                    if($bool) {
+                        //添加到客户标签表
+                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                        $cus['customer_id'] = $customer_id;
+                        $cus['label_id'] = $label_id;
+                        $bool = $m_customer_lab->add($cus);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60109);
+                        }
+                    } else {
+                        $this->to_back(60109);
+                    }
+
+                }
+
+            } else {
+                //添加到总标签表
+                $m_dinner_lab = new \Common\Model\DinnerLabelModel();
+                $dl['name'] = $lname;
+                $bool = $m_dinner_label->addData($dl);
+                if($bool) {
+                    $label_id = $m_dinner_label->getLastInsID();
+                    //添加到销售标签表
+                    $m_dinner_mana_lab = new \Common\Model\DinnerManaLabelModel();
+                    $ma_ar['invite_id'] = $invite_id;
+                    $ma_ar['label_id'] = $label_id;
+                    $bool = $m_dinner_mana_lab->add($ma_ar);
+                    if($bool) {
+                        //添加到客户标签表
+                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                        $cus['customer_id'] = $customer_id;
+                        $cus['label_id'] = $label_id;
+                        $bool = $m_customer_lab->add($cus);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60109);
+                        }
+                    } else {
+                        $this->to_back(60109);
+                    }
+
+                }else{
                     $this->to_back(60109);
                 }
-            } else {
-                $this->to_back(60108);
+
             }
 
-        } else {
-            $this->to_back(60107);
         }
+        if($ptype == 2) {
+            //点亮图标获取label_id
+            $label_id  = empty($this->params['label_id'])?0:$this->params['label_id'];
+            if (empty($label_id) ) {
+                $this->to_back(60111);
+            }
+            //添加到总标签表
+            $m_dinner_label = new \Common\Model\DinnerLabelModel();
+            $map['label_id'] = $label_id;
+            $map['flag'] = 0;
+            $field = 'id';
+            $label_arr = $m_dinner_label->getData($field, $where);
+            if($label_arr) {
+                //添加到销售标签表
+                $m_dinner_mana_lab = new \Common\Model\DinnerManaLabelModel();
+                $ma_ar['invite_id'] = $invite_id;
+                $ma_ar['label_id'] = $label_id;
+                $ma_ar['flag'] = 0;
+                $ma_num = $m_dinner_mana_lab->countNums($ma_ar);
+                if($ma_num > 0) {
+                    //添加到客户端
+                    $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                    $cus['customer_id'] = $customer_id;
+                    $cus['label_id'] = $label_id;
+                    $fields = 'id,flag';
+                    $cus_info = $m_customer_lab->getOne($fields, $cus);
+                    if($cus_info) {
+                        $cflag = $cus_info['flag'];
+                        if($cflag == 0) {
+                            $this->to_back(10000);
+                        } else {
+                            $cp['id'] = $cus_info['id'];
+                            $cuso['flag'] = 0;
+                            $bool = $m_customer_lab->saveData($cuso, $cp);
+                            if($bool) {
+                                $this->to_back(10000);
+                            } else {
+                                $this->to_back(60109);
+                            }
+                        }
 
+
+                    } else {
+                        $bool = $m_customer_lab->addData($cus);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60109);
+                        }
+                    }
+                } else {
+                    $bool = $m_dinner_mana_lab->addData($ma_ar);
+                    if($bool) {
+                        //添加到客户标签表
+                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                        $cus['customer_id'] = $customer_id;
+                        $cus['label_id'] = $label_id;
+                        $bool = $m_customer_lab->add($cus);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60109);
+                        }
+                    } else {
+                        $this->to_back(60109);
+                    }
+
+                }
+            } else {
+                $this->to_back(60111);
+            }
+        }
+        if($ptype == 3) {
+            //熄灭图标
+            $label_id  = empty($this->params['label_id'])?0:$this->params['label_id'];
+            if (empty($label_id) ) {
+                $this->to_back(60111);
+            } else {
+                $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                $cus['customer_id'] = $customer_id;
+                $cus['label_id'] = $label_id;
+                $mp['flag'] = 1;
+                $bool = $m_customer_lab->saveData($mp, $cus);
+                if($bool) {
+                    $this->to_back(10000);
+                }else {
+                    $this->to_back(60112);
+                }
+            }
+
+        }
     }
 
     public function addCustom() {
@@ -268,9 +420,9 @@ class CustomerController extends BaseController{
             }
             $insid = $m_dinner_customer->addData($save);
             if($insid) {
-                $m_dinner_customer_log = new \Common\Model\DinnerCustomerHistroyLogModel();
+                $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
                 $log_arr['action_id'] = $insid;
-                $log_arr['type'] = $insid;
+                $log_arr['type'] = 1;
                 $m_dinner_customer_log->addData($log_arr);
                 $this->to_back(10000);
             } else {
@@ -278,6 +430,9 @@ class CustomerController extends BaseController{
             }
         } else {
            $c_id  = empty($this->params['customerid'])?0:$this->params['customerid'];
+            $map = array();
+            $map['invite_id'] = $invite_id;
+            $map['flag'] = 0;
             if($c_id) {
                 $cus_info = $m_dinner_customer->find($c_id);
                 if($cus_info) {
@@ -290,6 +445,7 @@ class CustomerController extends BaseController{
                         $bool = $m_dinner_customer->saveData($save, $map);
 
                     }else {
+
                         $field = 'id,mobile,mobile1';
                         if(empty($tel_a)) {
                             $mp = array();
@@ -337,6 +493,10 @@ class CustomerController extends BaseController{
                         $bool = $m_dinner_customer->saveData($save, $map);
                     }
                     if($bool) {
+                        $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+                        $log_arr['action_id'] = $c_id;
+                        $log_arr['type'] = 2;
+                        $m_dinner_customer_log->addData($log_arr);
                         $this->to_back(10000);
                     } else {
                         $this->to_back(60110);
@@ -347,54 +507,6 @@ class CustomerController extends BaseController{
 
             } else {
                 $this->to_back(60107);
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        if(empty($d_res)) {
-            if(empty($tel_a)) {
-                $save['mobile1'] = $tel_b;
-            }
-            if(empty($tel_b)) {
-                $save['mobile'] = $tel_a;
-            }
-            if(!empty($tel_a) && !empty($tel_b)) {
-                $save['mobile'] = $tel_a;
-                $save['mobile1'] = $tel_b;
-            }
-            $bool = $m_dinner_customer->addData($save);
-        } else {
-            $mo_arr = array_merge($d_res[0]['mobile'], $d_res[0]['mobilea']);
-
-            $m_len = count($mo_arr);
-            if(in_array($usermobile_arr, $mo_arr)) {
-                $this->to_back(60102);
-            } else {
-                if($tel_count == 1) {
-                    $save['mobile'] = $usermobile_arr[0];
-                } else {
-                    $save['mobile'] = $usermobile_arr[0];
-                    $save['mobilea'] = $usermobile_arr[1];
-                }
-                $bool = $m_dinner_customer->addData($save);
             }
         }
 

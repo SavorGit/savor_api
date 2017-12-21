@@ -161,10 +161,13 @@ return array(
     'dinner_customer_tel2_exist'=>'手机号2已经存在',
     'dinner_customer_id_empty'=>'客户id不可为空',
     'dinner_customer_empty'=>'该客户不存在',
-    'dinner_customer_label_up_fail'=>'客户标签更新失败',
+    'dinner_customer_label_add_fail'=>'客户标签添加失败',
     'dinner_customer_update_fail'=>'客户更新失败',
+    'dinner_customer_label_illegal'=>'客户标签id不可为空',
+    'dinner_customer_label_die_fail'=>'客户标签熄灭失败',
 
     'dinner_room_add_failed'=>'包间添加失败',
     'dinner_room_name_repeat'=>'包间名称已存在，请重新输入',
     'dinner_order_add_failed'=>'预订添加失败',
+
 );

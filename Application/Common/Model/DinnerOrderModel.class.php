@@ -11,7 +11,7 @@ class DinnerOrderModel extends Model
 {
 	protected $tableName='dinner_order';
 	/**
-	 * @desc 添加包间
+	 * @desc 添加订单
 	 */
 	public function addInfo($data){
 	    $ret = $this->add($data);
@@ -26,8 +26,12 @@ class DinnerOrderModel extends Model
 	    return $data;
 	}
 
-	public function getOne($field, $where){
-		$res = $this->field($field)->find($where);
-		return $res;
+	public function updateInfo($where,$data){
+	    $ret =$this->where($where)->save($data);
+	    return $ret;
+	}
+	public function getOne($fields,$where){
+	    $data = $this->field($fields)->where($where)->find();
+	    return $data;
 	}
 }

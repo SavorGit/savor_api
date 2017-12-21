@@ -92,13 +92,35 @@ class CustomerController extends BaseController{
         if(empty($info)){
             $this->to_back(60015);
         }
+        $flag = 0;
         if(!empty($book_info)){
+            //print_r($book_info);exit;
             foreach($book_info as $key=>$v){
-                $book_info[$key]['invite_id'] = $info['id'];
+                $where = '';
+                if(!empty($v['mobile'])){//第一个手机号不为空
+                    $where .= " (mobile='".$v['mobile']."'";
+                }
+                if(!empty($v['mobile1'])){//第二个手机号不为空
+                    if(empty($where)){
+                        $where .=" (mobile1='".$v['mobile']."'";
+                    }else{
+                        $where .=" or  mobile1='".$v['mobile']."'";
+                    }
+                }
+                if(!empty($where)){
+                    $where .=") and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+                    
+                    if(!empty($nums)){
+                        continue;
+                    }
+                }else {
+                     $v['invite_id'];
+                     $m_dinner_customer->add($v); 
+                }
+                $flag ++;  
             }
-            
-            $ret = $m_dinner_customer->addList($book_info);
-            if($ret){
+            if($flag){
                 $this->to_back(10000);
             }else {
                 $this->to_back(60016);

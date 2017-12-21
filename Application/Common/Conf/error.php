@@ -150,7 +150,7 @@ return array(
 	    '60014'=>'dinner_hotel_room_empty',
 	    '60015'=>'dinner_mobile_not_bind_code',
 	    '60016'=>'dinner_customer_import_err',
-	    '60017'=>'dinner_customer_empty',
+	    '60017'=>'dinner_customer_import_empty',
 	    '60018'=>'dinner_bind_invite_err',
 	    '60019'=>'dinner_bind_mobile_err',
 	    '60020'=>'dinner_customer_have_import',

@@ -67,7 +67,8 @@ class OrderController extends BaseController{
         $m_dinner_order = new \Common\Model\DinnerOrderModel();
         $fields = 'id order_id,room_id,room_type,order_time,person_nums,order_name,order_mobile,remark,is_welcome,is_recfood,ticket_url';
         $where = array();
-        $where['hotel_id']    = $invite_info['hotel_id'];
+        //$where['hotel_id']    = $invite_info['hotel_id'];
+        $where['invite_id']   = $invite_id;
         $where['order_date']  = array(array('EGT',$start_date),array('ELT',$end_date)) ;
         $where['flag']        = 0;
         $order = 'order_time asc';

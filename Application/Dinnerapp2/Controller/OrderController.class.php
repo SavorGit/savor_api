@@ -27,7 +27,11 @@ class OrderController extends BaseController{
                 break;
             case 'upateOrderService':
                 $this->is_verify = 1;
-                $this->valid_fields = array('order_id'=>1001,'type'=>1001,'ticket_url'=>1000);
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_id'=>1001,'type'=>1001,'ticket_url'=>1000);
+                break;
+            case 'deleteOrder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -162,7 +166,23 @@ class OrderController extends BaseController{
         $order_id   = intval($this->params['order_id']);
         $type       = intval($this->params['type']);
         $ticket_url = $this->params['ticket_url'];
-        
+        $invite_id  = $this->params['invite_id'];
+        $mobile     = $this->params['mobile'];    //用户手机号
+        if(!check_mobile($mobile)){
+            $this->to_back('60002');
+        }
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile,hotel_id', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
 
         $m_dinner_order = new \Common\Model\DinnerOrderModel();
         $fields = 'id,is_welcome,is_recfood,ticket_url';
@@ -203,6 +223,47 @@ class OrderController extends BaseController{
             $this->to_back(10000);
         }else {
             $this->to_back(60028);
+        }
+    }
+    public function deleteOrder(){
+        $order_id = $this->params['order_id'];
+        $invite_id  = $this->params['invite_id'];
+        $mobile     = $this->params['mobile'];    //用户手机号
+        if(!check_mobile($mobile)){
+            $this->to_back('60002');
+        }
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile,hotel_id', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        
+        $m_dinner_order = new \Common\Model\DinnerOrderModel();
+        $fields = 'id,hotel_id,invite_id';
+        $where = array();
+        $where['id']  = $order_id;
+        $where['flag']= 0;
+        $order_info = $m_dinner_order->getOne($fields,$where);
+        if(empty($order_info)){
+            $this->to_back(60024);
+        }
+        if($invite_info['hotel_id']!==$order_info['hotel_id']){
+            $this->to_back(60030);
+        }
+        $data = array();
+        $data['flag'] = 1;
+        $ret = $m_dinner_order->updateInfo($where, $data);
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(60031);
         }
     }
 }

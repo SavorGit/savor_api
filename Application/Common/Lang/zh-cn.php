@@ -175,5 +175,7 @@ return array(
     'dinner_ticket_url_have_upload'=>'该预订信息的消费小票已经上传过',
     'dinner_service_update_failed'=>'更新失败',
     'dinner_service_ticket_url_empty'=>'请上传消费小票',
+    'dinner_cannot_del_other_hotel_order'=>'不可删除其它酒楼的预订信息',
+    'dinner_order_del_failed'=>'预订信息删除失败',
 
 );

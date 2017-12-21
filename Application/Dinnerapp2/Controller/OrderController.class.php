@@ -186,13 +186,17 @@ class OrderController extends BaseController{
                 if($order_info['is_recfood']==1){
                     $this->to_back(60026);
                 }
-                $data['is_recfood'] = 2;
+                $data['is_recfood'] = 1;
                 break;
             case '3':
+                if(empty($ticket_url)){
+                    $this->to_back(60029);
+                }
                 if(!empty($order_info['ticket_url'])){
                     $this->to_back(60027);
                 }
-                $data['ticket_url'] = $ticket_url;
+                $ticket_url_info = parse_url($ticket_url);
+                $data['ticket_url'] = $ticket_url_info['path'];
         }
         $ret = $m_dinner_order->updateInfo($where, $data);
         if($ret){

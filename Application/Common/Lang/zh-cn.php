@@ -174,5 +174,6 @@ return array(
     'dinner_is_recfood_used'=>'该预订信息的推荐菜功能已经使用过',
     'dinner_ticket_url_have_upload'=>'该预订信息的消费小票已经上传过',
     'dinner_service_update_failed'=>'更新失败',
+    'dinner_service_ticket_url_empty'=>'请上传消费小票',
 
 );

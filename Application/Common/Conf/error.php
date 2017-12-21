@@ -162,6 +162,7 @@ return array(
 	    '60026'=>'dinner_is_recfood_used',
 	    '60027'=>'dinner_ticket_url_have_upload',
 	    '60028'=>'dinner_service_update_failed',
+	    '60029'=>'dinner_service_ticket_url_empty',
 	    '60100'=>'dinner_invite_id_illegal',
 		'60101'=>'dinner_customer_insert_fail',
 		'60102'=>'dinner_customer_already_exist',

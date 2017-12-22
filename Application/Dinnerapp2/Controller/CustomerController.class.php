@@ -374,12 +374,17 @@ class CustomerController extends BaseController{
 
             $max_id  = $this->params['max_id'];
             if($max_id) {
-                $mp['id'] = array('gt',$max_id);
+                $mp['scr.id'] = array('gt',$max_id);
             }
         }
         if($ptype == 2) {
             $min_id  = $this->params['min_id'];
-            $mp['id'] = array('lt',$min_id);
+            if($min_id) {
+                $mp['scr.id'] = array('lt',$min_id);
+            }else{
+                $this->to_back(1001);
+            }
+
         }
         $field = ' scr.order_id,  scr.create_time,scr.recipt, sdo.room_type,sdo.room_id,sdo.hotel_id,scr.id ';
 

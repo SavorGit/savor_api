@@ -57,6 +57,8 @@ class CustomerController extends BaseController{
                     'mobile'        =>1001,
                     'customer_id'    =>1001,
                     'recipt'         =>1001,
+                    'usermobile'         =>1001,
+                    'name'         =>1001,
                 );
                 break;
 
@@ -461,20 +463,64 @@ class CustomerController extends BaseController{
         $cus['invite_id']  = $invite_id;
         $cus['flag'] = 0;
         //判断客户id存在
-        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $cus_num = $m_dinner_cus->countNums($cus);
+        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+        $m_dinner_record = new \Common\Model\DinnerConRecModel();
+        $cus_num = $m_dinner_customer->countNums($cus);
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         $recipt_arr = parse_url($recipt);
         $save['recipt']  = $recipt_arr['path'];
         $save['invite_id'] = $invite_id;
         if($cus_num > 0) {
-            $save['customer_id']  = $cus['customer_id'];
-            $m_di_consume = new \Common\Model\DinnerConRecModel();
-            $bool = $m_di_consume->addData($save);
-            if($bool) {
-                $this->to_back(10000);
-            } else {
-                $this->to_back(60113);
+            $save['name']  = empty($this->params['name'])?'':$this->params['name'];
+            $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
+            //判断手机号是否在表中存在
+            $mp = array();
+            $mp['mobile'] = $usermobile;
+            $mp['mobile1'] = $usermobile;
+            $mp['_logic'] = 'or';
+            $map['_complex'] = $mp;
+            $map['flag'] = 0;
+            $field = 'id';
+            $cus_info = $m_dinner_customer->getOne($field,$map);
+            $save['mobile'] = $usermobile;
+            if($cus_info) {
+                $get_cid = $cus_info['id'];
+                if($get_cid == $cus['customer_id']) {
+                    $save['customer_id'] = $cus_info['id'];
+                    $bool = $m_dinner_record->addData($save);
+                    if($bool) {
+                        $this->to_back(10000);
+                    } else {
+                        $this->to_back(60113);
+                    }
+                } else {
+                    $this->to_back(60105);
+                }
+            }else {
+                //添加客户表
+                $map = array();
+                $map['name'] = $save['name'];
+                $map['invite_id'] = $invite_id;
+                $map['mobile'] = $usermobile;
+                $insid = $m_dinner_customer->addData($map);
+                if($insid) {
+                    //加lg日志
+                    $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+                    $log_arr['action_id'] = $insid;
+                    $log_arr['type'] = 1;
+                    $log_arr['invite_id'] = $invite_id;
+                    $m_dinner_customer_log->addData($log_arr);
+                    $save['customer_id'] = $insid;
+                    $bool = $m_dinner_record->addData($save);
+                    if($bool) {
+                        $this->to_back(10000);
+                    } else {
+                        $this->to_back(60113);
+                    }
+                } else {
+                    $this->to_back(60113);
+                }
+
             }
         } else {
             $this->to_back(60017);
@@ -501,6 +547,7 @@ class CustomerController extends BaseController{
         $cus['invite_id']  = $invite_id;
         $cus['flag'] = 0;
         //判断客户id存在
+        $m_dinner_record = new \Common\Model\DinnerConRecModel();
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
         $cus_num = $m_dinner_cus->countNums($cus);
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
@@ -517,50 +564,12 @@ class CustomerController extends BaseController{
             $or_res = $m_dinner_order->getOne($field, $cus);
             if($or_res) {
                 $save['order_id']  = $cus['id'];
-                $save['name']  = empty($this->params['name'])?0:$this->params['name'];
-                $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
-                //判断手机号是否在表中存在
-                $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-                $mp = array();
-                $mp['mobile'] = $usermobile;
-                $mp['mobile1'] = $usermobile;
-                $mp['_logic'] = 'or';
-                $map['_complex'] = $mp;
-                $field = 'id';
-                $cus_info = $m_dinner_customer->getOne($field,$map);
-                if($cus_info) {
-                    $save['customer_id'] = $cus_info['id'];
-                    $bool = $m_dinner_order->addInfo($save);
-                    if($bool) {
-                        $this->to_back(10000);
-                    } else {
-                        $this->to_back(60113);
-                    }
-                }else {
-                    //添加客户表
-                    $map = array();
-                    $map['name'] = $save['name'];
-                    $map['invite_id'] = $invite_id;
-                    $map['mobile'] = $usermobile;
-                    $insid = $m_dinner_customer->addData($save);
-                    if($insid) {
-                        //加lg日志
-                        $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
-                        $log_arr['action_id'] = $insid;
-                        $log_arr['type'] = 1;
-                        $log_arr['invite_id'] = $invite_id;
-                        $m_dinner_customer_log->addData($log_arr);
-                        $save['customer_id'] = $insid;
-                        $bool = $m_dinner_order->addInfo($save);
-                        if($bool) {
-                            $this->to_back(10000);
-                        } else {
-                            $this->to_back(60113);
-                        }
-                    } else {
-                        $this->to_back(60113);
-                    }
-
+                $save['customer_id'] = $cus['customer_id'];
+                $bool = $m_dinner_record->addData($save);
+                if($bool) {
+                    $this->to_back(10000);
+                } else {
+                    $this->to_back(60113);
                 }
             } else{
                 $this->to_back(60114);

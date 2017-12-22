@@ -340,8 +340,12 @@ class CustomerController extends BaseController{
             $this->to_back(60019);
         }
         //修改客户经理名称
-        //$dat['nick']
-        $m_hotel_invite_code->saveInfo($where, $dat);
+        $dat['nickname'] = empty($this->params['nickname'])?'':$this->params['nickname'];
+        $bool = $m_hotel_invite_code->saveInfo($where, $dat);
+        if($bool) {
+            $this->to_back(10000);
+        }
+
     }
 
 

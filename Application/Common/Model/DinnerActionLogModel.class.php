@@ -18,6 +18,7 @@ class DinnerActionLogModel extends Model
 	public function getLatestCusInfo($field, $where, $order, $limit) {
 		$res = $this->alias('sa')
 			        ->join('left join `savor_dinner_customer` sct on sa.action_id = sct.id ')
+					->field($field)
 					->where($where)
 					->order($order)
 					->limit($limit)

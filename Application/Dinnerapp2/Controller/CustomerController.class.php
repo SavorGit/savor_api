@@ -13,6 +13,13 @@ class CustomerController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+            case 'editManager':
+                $this->is_verify = 1;
+                $this->valid_fields = array(
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                );
+                break;
             case 'addCustomer':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
@@ -69,11 +76,12 @@ class CustomerController extends BaseController{
                     'customer_id'    =>1001,
                 );
                 break;
-            case 'getConsumeRecordTopList':
+            case 'getConRecTopList':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
+                    'customer_id'    =>1001,
                 );
                 break;
             case 'importInfo':
@@ -86,6 +94,13 @@ class CustomerController extends BaseController{
         parent::_init_();
         $this->vcode_valid_time =  600;
     }
+
+    public function getConAbility() {
+        $config = C('CONSUME_ABILITY');
+        $data['list'] = $config;
+        return $this->to_back($data);
+    }
+
     /**
      * @desc 导入通讯录
      */
@@ -307,10 +322,7 @@ class CustomerController extends BaseController{
 
     }
 
-    /*
-     * 上拉消费记录
-     */
-    public function getConRecUpList(){
+    public function editManager(){
         $invite_id = $this->params['invite_id'];
         $mobile   = $this->params['mobile'];    //销售手机号
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
@@ -325,19 +337,14 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        $max_id  = $this->params['max_id'];
-        $mp = array();
-        $mp['flag'] = 0;
-        $order = 'id asc';
-        $limit = 10;
-        if($max_id) {
-            $mp['id'] = array('gt',$max_id);
-        } else {
-
-        }
+        //修改客户经理名称
+        //$dat['nick']
+        $m_hotel_invite_code->saveInfo($where, $dat);
     }
+
+
     /*
-     * 下拉消费记录
+     * 上下拉消费记录
      */
     public function getConRecTopList(){
         //取最新的并按倒序排 1下拉2上拉
@@ -362,8 +369,9 @@ class CustomerController extends BaseController{
         $mp['scr.flag'] = 0;
         $mp['scr.customer_id'] = $this->params['customer_id'];
         $order = 'scr.id desc';
+        $m_dinner_consume = new \Common\Model\DinnerConRecModel();
         if($ptype == 1) {
-            $m_dinner_consume = new \Common\Model\DinnerConRecModel();
+
             $max_id  = $this->params['max_id'];
             if($max_id) {
                 $mp['id'] = array('gt',$max_id);
@@ -373,13 +381,14 @@ class CustomerController extends BaseController{
             $min_id  = $this->params['min_id'];
             $mp['id'] = array('lt',$min_id);
         }
-        $field = ' scr.order_id,  scr.create_time,scr.recipt, sdo.room_type,sdo.room_id,sdo.hotel_id ';
+        $field = ' scr.order_id,  scr.create_time,scr.recipt, sdo.room_type,sdo.room_id,sdo.hotel_id,scr.id ';
+
         $consume_arr = $m_dinner_consume->getConsumeList($field, $mp, $order, $limit);
         if($consume_arr) {
             $roomModel = new \Common\Model\RoomModel();
             $m_dinner_room = new \Common\Model\DinnerRoomModel();
             $count = 0;
-            foreach($consume_arr as $ck=>$cv) {
+            foreach($consume_arr as $ck=>&$cv) {
                 if(!empty($cv['order_id'])) {
                     if($cv['room_type'] == 1) {
                         //酒楼包间
@@ -397,14 +406,33 @@ class CustomerController extends BaseController{
                         $cv['room_name'] = $room_info['rname'];
                     }
                 }else {
+                    $cv['room_id'] = '';
+                    $cv['room_type'] = '';
+                    $cv['hotel_id'] = '';
                     $cv['room_name'] = '';
+                }
+                unset($cv['room_id']);
+                unset($cv['hotel_id']);
+                unset($cv['room_type']);
+                unset($cv['order_id']);
+                $rcp = empty($cv['recipt'])?'':$cv['recipt'];
+                if(empty($rtp)) {
+                    $cv['recipt'] = '';
+                } else {
+                    $cv['recipt'] = get_oss_host().$rcp;
                 }
                 $count++;
             }
         }
         $data['list'] = $consume_arr;
-        $data[min_id] = $consume_arr[$count-1][order_id];
-        $data[max_id] = $consume_arr[0][order_id];
+        if($consume_arr) {
+            $data[min_id] = $consume_arr[$count-1]['id'];
+            $data[max_id] = $consume_arr[0]['id'];
+        } else {
+            $data[min_id] = 0;
+            $data[max_id] = 0;
+        }
+
         $this->to_back($data);
     }
 
@@ -477,7 +505,7 @@ class CustomerController extends BaseController{
         if($cus_num > 0) {
             $save['customer_id']  = $cus['customer_id'];
             //usermobile填写
-            $cus['id']         = $this->params['orderid'];
+            $cus['id']         = $this->params['order_id'];
             //判断预订id是否存在
             $m_dinner_order = new \Common\Model\DinnerOrderModel();
             $field = 'id';
@@ -581,6 +609,7 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
+
 
         //判断用户名是否存在
         $username    = empty($this->params['name'])?'':$this->params['name'];

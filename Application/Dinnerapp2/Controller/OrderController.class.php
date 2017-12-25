@@ -65,20 +65,20 @@ class OrderController extends BaseController{
         $start_date = $order_date.' 00:00:00';
         $end_date   = $order_date.' 23:59:59';
         $m_dinner_order = new \Common\Model\DinnerOrderModel();
-        $fields = 'id order_id,room_id,room_type,order_time,person_nums,order_name,order_mobile,remark,is_welcome,is_recfood,ticket_url';
+        $fields = 'a.id order_id,a.room_id,a.room_type,a.order_time,a.person_nums,a.order_name,a.order_mobile,a.remark,a.is_welcome,a.is_recfood,a.ticket_url,b.face_url';
         $where = array();
         //$where['hotel_id']    = $invite_info['hotel_id'];
-        $where['invite_id']   = $invite_id;
-        $where['order_date']  = array(array('EGT',$start_date),array('ELT',$end_date)) ;
-        $where['flag']        = 0;
-        $order = 'order_time asc,id asc';
+        $where['a.invite_id']   = $invite_id;
+        $where['a.order_time']  = array(array('EGT',$start_date),array('ELT',$end_date)) ;
+        $where['a.flag']        = 0;
+        $order = 'a.order_time asc,a.id asc';
         $offset = ($page_num-1)*$this->pagesize;
         $limit = "$offset,$this->pagesize";
         
         $data = $m_dinner_order->getList($fields,$where,$order,$limit);
         $m_room = new \Common\Model\RoomModel();
         $m_dinner_room = new \Common\Model\DinnerRoomModel();
-        
+        $oss_path = C('TASK_REPAIR_IMG');
         foreach($data as $key=>$v){
             if($v['room_type']==1){//酒楼包间
                 $room_info = $m_room->getOne('name',array('id'=>$v['room_id']));
@@ -103,6 +103,9 @@ class OrderController extends BaseController{
             if(empty($v['remark'])){
                 //unset($data[$key]['remark']);
                 $data[$key]['remark'] = "";
+            }
+            if(!empty($v['face_url'])){
+                $data[$key]['face_url'] = $oss_path.$v['face_url'].'?x-oss-process=image/resize,w_100';
             }
             unset($data[$key]['room_id']);
             unset($data[$key]['room_type']);

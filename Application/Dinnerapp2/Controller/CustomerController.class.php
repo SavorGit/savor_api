@@ -854,5 +854,86 @@ class CustomerController extends BaseController{
             $this->to_back(60101);
         }
     }
-
+    /**
+     * @desc @批量导入新增用户
+     */
+    public function importNewInfo(){
+        $invite_id = $this->params['invite_id'];
+        $mobile   = $this->params['mobile'];    //用户手机号
+        //$hotel_id = $this->params['hotel_id'];  //酒楼id
+        $book_info= $this->params['book_info']; //通讯录新增列表
+        
+        if(!check_mobile($mobile)){
+            $this->to_back('60002');
+        }
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+        /* $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      =0;
+        $customer_nums = $m_dinner_customer->countNums($where);
+        if(!empty($customer_nums)){
+            $this->to_back(60020);
+        } */
+        
+        $book_info = str_replace('\\', '', $book_info);
+        $book_info =  json_decode($book_info,true);
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $fields = 'id';
+        $where = array();
+        $where['bind_mobile'] = $mobile;
+        $where['state'] = 1;
+        $where['flag']  = 0;
+        $info = $m_hotel_invite_code->getOne($fields, $where);
+        if(empty($info)){
+            $this->to_back(60015);
+        }
+        $flag = 0;
+        if(!empty($book_info)){
+            //print_r($book_info);exit;
+            foreach($book_info as $key=>$v){
+                $where = '';
+                if(!empty($v['mobile'])){//第一个手机号不为空
+                    $where .= " (mobile='".$v['mobile']."'";
+                }
+                if(!empty($v['mobile1'])){//第二个手机号不为空
+                    if(empty($where)){
+                        $where .=" (mobile1='".$v['mobile']."'";
+                    }else{
+                        $where .=" or  mobile1='".$v['mobile']."'";
+                    }
+                }
+                if(!empty($where)){
+                    $where .=") and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+        
+                    if(!empty($nums)){
+                        continue;
+                    }
+                }else {
+                    $v['invite_id'] = $invite_id;
+                    $m_dinner_customer->add($v);
+                }
+                $flag ++;
+            }
+            if($flag){
+                $this->to_back(10000);
+            }else {
+                $this->to_back(60016);
+            }
+        }else {
+            $this->to_back(60017);
+        }
+    }
 }

@@ -22,7 +22,9 @@ class DinnerOrderModel extends Model
 	    return $nums;
 	}
 	public function getList($fields,$where,$order,$limit){
-	    $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
+	    $data = $this->alias('a')
+	                 ->join('savor_dinner_customer b on a.customer_id = b.id','left')
+	                 ->field($fields)->where($where)->order($order)->limit($limit)->select();
 	    return $data;
 	}
 

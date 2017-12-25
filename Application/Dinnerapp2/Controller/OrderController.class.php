@@ -275,7 +275,7 @@ class OrderController extends BaseController{
         $order_name   = $this->params['order_name'];
         $order_mobile = $this->params['order_mobile'];
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-        $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile' and flag=0";
+        $where = " (`mobile`='$order_mobile' or `mobile1`='$order_mobile') and flag=0";
         $customer_info = $m_dinner_customer->getOne('id',$where);
         if(empty($customer_info)){
             $data = array();

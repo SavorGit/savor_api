@@ -401,18 +401,16 @@ class CustomerController extends BaseController{
             $count = 0;
             foreach($consume_arr as $ck=>&$cv) {
                 if(!empty($cv['order_id'])) {
+                    $field = 'name rname';
+                    $ro['hotel_id'] = $cv['hotel_id'];
+                    $ro['id'] = $cv['room_id'];
                     if($cv['room_type'] == 1) {
                         //酒楼包间
-                        $field = 'name rname';
-                        $ro['hotel_id'] = $cv['hotel_id'];
-                        $ro['id'] = $cv['room_id'];
                         $room_info = $roomModel->getOne($field, $ro);
                         $cv['room_name'] = $room_info['rname'];
                     }
                     if($cv['room_type'] == 2) {
-                        $field = 'name rname';
-                        $ro['hotel_id'] = $cv['hotel_id'];
-                        $ro['id'] = $cv['room_id'];
+
                         $room_info = $m_dinner_room->getOne($field, $ro);
                         $cv['room_name'] = $room_info['rname'];
                     }
@@ -711,8 +709,6 @@ class CustomerController extends BaseController{
                         $save['mobile'] = $tel_a;
                         $save['mobile1'] = $tel_b;
                     }
-                    var_export($save);
-                    var_export($map);
                     $rp['id'] = $c_id;
                     $bool = $m_dinner_customer->saveData($save, $rp);
                 }

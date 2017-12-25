@@ -184,5 +184,6 @@ return array(
 		'60114'=>'dinner_order_not_exist',
 		'60115'=>'dinner_label_type_error',
 		'60116'=>'dinner_customer_label_not_exist',
+		'60117'=>'dinner_cosumerecord_type_error',
 	),
 );

@@ -7,28 +7,23 @@
 namespace Common\Model;
 use Think\Model;
 
-class DinnerActionLogModel extends Model
+class DinnerConRecModel extends Model
 {
-	protected $tableName='dinner_action_log';
+	protected $tableName='dinner_consume_record';
 	public function addData($data){
 		$ret = $this->add($data);
 		return $ret;
 	}
-
-	public function getLatestCusInfo($field, $where, $order, $limit) {
-		$res = $this->alias('sa')
-			        ->join('left join `savor_dinner_customer` sct on sa.action_id = sct.id ')
+	public function getConsumeList($field, $where, $order, $limit) {
+		$res = $this->alias('scr')
 					->field($field)
+					->join(' LEFT JOIN savor_dinner_order  sdo ON scr.order_id = sdo.id ')
 					->where($where)
 					->order($order)
 					->limit($limit)
 					->select();
 		return $res;
 	}
-
-
-
-
 
 	public function addList($dataList){
 	    $ret = $this->addAll($dataList);

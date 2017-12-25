@@ -101,7 +101,8 @@ class OrderController extends BaseController{
                 $data[$key]['is_expense'] = 1;
             }
             if(empty($v['remark'])){
-                unset($data[$key]['remark']);
+                //unset($data[$key]['remark']);
+                $data[$key]['remark'] = "";
             }
             unset($data[$key]['room_id']);
             unset($data[$key]['room_type']);

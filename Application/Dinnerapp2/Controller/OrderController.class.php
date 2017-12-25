@@ -107,8 +107,8 @@ class OrderController extends BaseController{
             if(!empty($v['face_url'])){
                 $data[$key]['face_url'] = $oss_path.$v['face_url'].'?x-oss-process=image/resize,w_100';
             }
-            unset($data[$key]['room_id']);
-            unset($data[$key]['room_type']);
+            //unset($data[$key]['room_id']);
+            //unset($data[$key]['room_type']);
             unset($data[$key]['order_time']);
             unset($data[$key]['ticket_url']);
         }

@@ -88,12 +88,13 @@ class OrderController extends BaseController{
             $data[$key]['room_name'] = $room_info['name'];
             $order_times = date('His',strtotime($v['order_time']));
             if($order_times<110000){
-                $data[$key]['time_str'] = '上午 '.date('H:i',strtotime($v['order_time']));
+                $data[$key]['time_str'] = '上午 ';
             }else if($order_times>=110000 && $order_times<160000){
-                $data[$key]['time_str'] = '中午 '.date('H:i',strtotime($v['order_time']));
+                $data[$key]['time_str'] = '中午 ';
             }else {
-                $data[$key]['time_str'] = '晚上 '.date('H:i',strtotime($v['order_time']));
+                $data[$key]['time_str'] = '晚上 ';
             }
+            $data[$key]['moment_str'] = date('H:i',strtotime($v['order_time']));
             if(empty($v['ticket_url'])){//消费记录
                 $data[$key]['is_expense'] = 0;
             }else {

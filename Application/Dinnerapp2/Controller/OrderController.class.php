@@ -17,7 +17,7 @@ class OrderController extends BaseController{
             case 'addOrder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_name'=>1001,
-                                            'order_mobile'=>1001,'person_nums'=>1001,'room_id'=>1001,
+                                            'order_mobile'=>1000,'person_nums'=>1000,'room_id'=>1001,
                                             'room_type'=>1001,'order_time'=>1001
                 );
                 break;
@@ -134,19 +134,27 @@ class OrderController extends BaseController{
         }
         $order_name   = $this->params['order_name'];
         $order_mobile = $this->params['order_mobile'];
-        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-        $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile'";
-        $customer_info = $m_dinner_customer->getOne('id',$where);
-        if(empty($customer_info)){
-            $data = array();
-            $data['invite_id'] = $invite_id;
-            $data['name']      = $order_name;
-            $data['mobile']    = $order_mobile;
-            $m_dinner_customer->add($data);
-            $customer_id = $m_dinner_customer->getLastInsID();
+        if(!empty($order_mobile)){
+            if(!check_mobile($mobile)){
+                $this->to_back('60034');
+            }
+            $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+            $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile'";
+            $customer_info = $m_dinner_customer->getOne('id',$where);
+            if(empty($customer_info)){
+                $data = array();
+                $data['invite_id'] = $invite_id;
+                $data['name']      = $order_name;
+                $data['mobile']    = $order_mobile;
+                $m_dinner_customer->add($data);
+                $customer_id = $m_dinner_customer->getLastInsID();
+            }else {
+                $customer_id = $customer_info['id'];
+            }
         }else {
-            $customer_id = $customer_info['id'];
+            $customer_id = 0;
         }
+        
         
         $data = array();
         

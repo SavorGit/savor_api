@@ -167,6 +167,7 @@ return array(
 	    '60031'=>'dinner_order_del_failed',
 	    '60032'=>'dinner_order_update_failed',
 	    '60033'=>'dinner_order_donot_belong_you',
+	    '60034'=>'dinner_customer_mobile_err',
 	    '60100'=>'dinner_invite_id_illegal',
 		'60101'=>'dinner_customer_insert_fail',
 		'60102'=>'dinner_customer_already_exist',

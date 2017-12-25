@@ -184,5 +184,6 @@ return array(
     'dinner_order_del_failed'=>'预订信息删除失败',
     'dinner_order_update_failed'=>'预订信息更新失败',
     'dinner_order_donot_belong_you'=>'该预订不属于你',
+    'dinner_customer_mobile_err'=>'请输入正确的客户手机',
 
 );

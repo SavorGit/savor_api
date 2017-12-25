@@ -71,7 +71,7 @@ class OrderController extends BaseController{
         $where['invite_id']   = $invite_id;
         $where['order_date']  = array(array('EGT',$start_date),array('ELT',$end_date)) ;
         $where['flag']        = 0;
-        $order = 'order_time asc';
+        $order = 'order_time asc,id asc';
         $offset = ($page_num-1)*$this->pagesize;
         $limit = "$offset,$this->pagesize";
         
@@ -98,6 +98,9 @@ class OrderController extends BaseController{
                 $data[$key]['is_expense'] = 0;
             }else {
                 $data[$key]['is_expense'] = 1;
+            }
+            if(empty($v['remark'])){
+                unset($data[$key]['remark']);
             }
             unset($data[$key]['room_id']);
             unset($data[$key]['room_type']);
@@ -272,7 +275,7 @@ class OrderController extends BaseController{
         $order_name   = $this->params['order_name'];
         $order_mobile = $this->params['order_mobile'];
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-        $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile'";
+        $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile' and flag=0";
         $customer_info = $m_dinner_customer->getOne('id',$where);
         if(empty($customer_info)){
             $data = array();

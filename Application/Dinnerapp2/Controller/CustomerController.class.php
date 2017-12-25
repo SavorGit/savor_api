@@ -140,7 +140,7 @@ class CustomerController extends BaseController{
                         continue;
                     }
                 }else {
-                     $v['invite_id'];
+                     $v['invite_id'] = $invite_id;
                      $m_dinner_customer->add($v); 
                 }
                 $flag ++;  

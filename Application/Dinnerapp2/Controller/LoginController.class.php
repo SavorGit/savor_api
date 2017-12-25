@@ -84,10 +84,17 @@ class LoginController extends BaseController{
             }
             unset($info['code']);
             $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-            $fields = 'name,mobile,face_url';
+            $oss_path = C('TASK_REPAIR_IMG');
+            $fields = "name,mobile,mobile1,`face_url`";
             $where = array();
             $where['invite_id'] = $info['invite_id']; 
             $customer_list = $m_dinner_customer->getList($fields,$where);
+            foreach($customer_list as $key=>$v){
+                if(!empty($v['face_url'])){
+                    $customer_list[$key]['face_url'] = $oss_path.$v['face_url'];
+                }
+                
+            }
             $info['customer_list'] = $customer_list;
             $this->to_back($info);
         }

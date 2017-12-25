@@ -23,7 +23,7 @@ class OrderController extends BaseController{
                 break;
             case 'getOrderList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001);
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_date'=>1001);
                 break;
             case 'upateOrderService':
                 $this->is_verify = 1;

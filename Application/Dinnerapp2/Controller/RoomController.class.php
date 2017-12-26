@@ -97,11 +97,11 @@ class RoomController extends BaseController{
         $where = array();
         $where['hotel_id'] = $invite_info['hotel_id'];
         $where['flag'] = 0;
-        $fields = "`id`,`name`,'1' as `room_type`";
+        $fields = "`id` room_id,`name` room_name,'1' as `room_type`";
         $room_list = $m_room->getWhere($where,$fields);
         
         $m_dinner_room = new \Common\Model\DinnerRoomModel();
-        $fields = "`id`,`name`, '2' as `room_type`";
+        $fields = "`id` room_id,`name` room_name, '2' as `room_type`";
         $where = array();
         $where['hotel_id'] = $invite_info['hotel_id'];
         $where['flag']     = 0;

@@ -99,7 +99,6 @@ class CustomerController extends BaseController{
 
     public function getConAbility() {
         $config = C('CONSUME_ABILITY');
-        $data['list'] = $config;
         $ab_arr = array();
         foreach($config as $k=>$v) {
             $ab_arr[] = array(
@@ -107,6 +106,7 @@ class CustomerController extends BaseController{
                 'name'=>$v,
             );
         }
+        $data['list'] = $ab_arr;
         return $this->to_back($data);
     }
 

@@ -920,10 +920,12 @@ class CustomerController extends BaseController{
                 if(!empty($where)){
                     $where .=") and invite_id=$invite_id";
                     $nums = $m_dinner_customer->countNums($where);
-        
+                    
                     if(!empty($nums)){
                         continue;
                     }
+                    $v['invite_id'] = $invite_id;
+                    $m_dinner_customer->add($v);
                 }else {
                     $v['invite_id'] = $invite_id;
                     $m_dinner_customer->add($v);

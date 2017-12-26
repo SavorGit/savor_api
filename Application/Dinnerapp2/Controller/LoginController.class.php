@@ -48,7 +48,7 @@ class LoginController extends BaseController{
         
         $where['a.bind_mobile'] = $mobile;
         $where['a.flag'] = 0;
-        $info = $m_hotel_invite_code->getInfo('a.id invite_id,a.code,b.id hotel_id,b.name hotel_name', $where);
+        $info = $m_hotel_invite_code->getInfo('a.id invite_id,a.is_import_customer,a.code,b.id hotel_id,b.name hotel_name', $where);
         if(empty($info)){
             $where = array();
             $where['a.code'] = $invite_code;

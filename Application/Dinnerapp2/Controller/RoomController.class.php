@@ -61,8 +61,12 @@ class RoomController extends BaseController{
          $data['hotel_id']  = $invite_info['hotel_id'];
          $data['name']      = trim($room_name);
          $ret = $m_dinner_room->add($data);
-         if($ret){
-             $this->to_back(10000);
+         $room_id = $m_dinner_room->getLastInsID();
+         if($room_id){
+             $data = array();
+             $data['room_id'] = $room_id;
+             $data['room_type'] = 2;
+             $this->to_back($data);
          }else {
              $this->to_back(60021);
          }
@@ -93,11 +97,11 @@ class RoomController extends BaseController{
         $where = array();
         $where['hotel_id'] = $invite_info['hotel_id'];
         $where['flag'] = 0;
-        $fields = "`id`,`name`,'1' as `room_type`";
+        $fields = "`id` room_id,`name` room_name,'1' as `room_type`";
         $room_list = $m_room->getWhere($where,$fields);
         
         $m_dinner_room = new \Common\Model\DinnerRoomModel();
-        $fields = "`id`,`name`, '2' as `room_type`";
+        $fields = "`id` room_id,`name` room_name, '2' as `room_type`";
         $where = array();
         $where['hotel_id'] = $invite_info['hotel_id'];
         $where['flag']     = 0;

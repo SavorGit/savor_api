@@ -184,6 +184,9 @@ class CustomerController extends BaseController{
                 $flag ++;  
             }
             if($flag){
+                $where['id'] = $invite_id;
+                $data['is_import_customer']  = 1;
+                $m_hotel_invite_code ->saveInfo($where,$data);
                 $this->to_back(10000);
             }else {
                 $this->to_back(60016);
@@ -924,10 +927,12 @@ class CustomerController extends BaseController{
                 if(!empty($where)){
                     $where .=") and invite_id=$invite_id";
                     $nums = $m_dinner_customer->countNums($where);
-        
+                    
                     if(!empty($nums)){
                         continue;
                     }
+                    $v['invite_id'] = $invite_id;
+                    $m_dinner_customer->add($v);
                 }else {
                     $v['invite_id'] = $invite_id;
                     $m_dinner_customer->add($v);

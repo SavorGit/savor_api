@@ -175,17 +175,23 @@ class CustomerController extends BaseController{
                     if(!empty($nums)){
                         continue;
                     }
-                }else {
-                     $v['invite_id'] = $invite_id;
-                     $m_dinner_customer->add($v); 
                 }
-                $flag ++;  
+                $v['invite_id'] = $invite_id;
+                $m_dinner_customer->add($v); 
+                $customer_id = $m_dinner_customer->getLastInsID();
+                $v['customer_id'] = $customer_id;
+                $list[$flag] =  $v;
+                $flag ++;
             }
+            
             if($flag){
+                $where = array();
                 $where['id'] = $invite_id;
                 $data['is_import_customer']  = 1;
                 $m_hotel_invite_code ->saveInfo($where,$data);
-                $this->to_back(10000);
+                $data = array();
+                $data['customer_list'] = $list;
+                $this->to_back($data);
             }else {
                 $this->to_back(60016);
             }

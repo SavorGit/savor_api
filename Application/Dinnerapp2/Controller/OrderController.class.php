@@ -65,7 +65,7 @@ class OrderController extends BaseController{
         $start_date = $order_date.' 00:00:00';
         $end_date   = $order_date.' 23:59:59';
         $m_dinner_order = new \Common\Model\DinnerOrderModel();
-        $fields = 'a.id order_id,a.room_id,a.room_type,a.order_time,a.person_nums,a.order_name,a.order_mobile,a.remark,a.is_welcome,a.is_recfood,a.ticket_url,b.face_url';
+        $fields = 'a.id order_id,a.customer_id,a.room_id,a.room_type,a.order_time,a.person_nums,a.order_name,a.order_mobile,a.remark,a.is_welcome,a.is_recfood,a.ticket_url,b.face_url';
         $where = array();
         //$where['hotel_id']    = $invite_info['hotel_id'];
         $where['a.invite_id']   = $invite_id;
@@ -147,7 +147,7 @@ class OrderController extends BaseController{
             //如果客户id不为空
             
             if($customer_info['id']!=$customer_id){
-                $this->to_back();
+                $this->to_back(60118);
             }
             
         }else {

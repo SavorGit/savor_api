@@ -86,14 +86,15 @@ class OrderController extends BaseController{
                 $room_info = $m_dinner_room->getOne('name', array('id'=>$v['room_id']));  
             }    
             $data[$key]['room_name'] = $room_info['name'];
-            $order_times = date('His',strtotime($v['order_time']));
+            /* $order_times = date('His',strtotime($v['order_time']));
             if($order_times<110000){
                 $data[$key]['time_str'] = '上午 ';
             }else if($order_times>=110000 && $order_times<160000){
                 $data[$key]['time_str'] = '中午 ';
             }else {
                 $data[$key]['time_str'] = '晚上 ';
-            }
+            } */
+            $data[$key]['time_str'] = $order_date;
             $data[$key]['moment_str'] = date('H:i',strtotime($v['order_time']));
             if(empty($v['ticket_url'])){//消费记录
                 $data[$key]['is_expense'] = 0;

@@ -99,7 +99,13 @@ class CustomerController extends BaseController{
 
     public function getConAbility() {
         $config = C('CONSUME_ABILITY');
-        $data['list'] = $config;
+        foreach($config as $k=>$v) {
+            $ab_arr[] = array(
+                'id'=>$k,
+                'name'=>$v,
+            );
+        }
+        $data['list'] = ($ab_arr);
         return $this->to_back($data);
     }
 

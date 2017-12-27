@@ -190,6 +190,7 @@ return array(
     'TASK_STATE_ARR'=>array('1'=>'待指派',2=>'待处理',4=>'已完成',5=>'拒绝'),
     'MAX_ADS_LOCATION_NUMS'=>50,
 	'CONSUME_ABILITY' => ARRAY(
+		'0'=>'请选择消费能力',
 		'1'=>'100及以下',
 		'2'=>'200',
 		'3'=>'300',

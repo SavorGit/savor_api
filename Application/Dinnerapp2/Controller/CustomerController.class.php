@@ -485,6 +485,18 @@ class CustomerController extends BaseController{
             //新增判断手机号
             //添加客户表
             $map = array();
+            $map['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
+            $map['birthplace']         = empty($this->params['birthplace'])?'':$this->params['birthplace'];
+            $map['birthday']           = empty($this->params['birthday'])?'':$this->params['birthday'];
+            $map['consume_ability']    = empty($this->params['consume_ability'])?0:$this->params['consume_ability'];
+            $map['bill_info']    = empty($this->params['bill_info'])?'':$this->params['bill_info'];
+            $map['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
+            $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
+            $map['face_url'] = '';
+            if($fimg){
+                $face_arr = parse_url($fimg);
+                $map['face_url'] = $face_arr['path'];
+            }
             $map['name'] = $save['name'];
             $map['invite_id'] = $invite_id;
             $map['mobile'] = $usermobile;

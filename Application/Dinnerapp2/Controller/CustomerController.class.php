@@ -614,7 +614,7 @@ class CustomerController extends BaseController{
             $this->to_back(60104);
         }
         if ($tel_a == $tel_b) {
-            $this->to_back(60103);
+            $tel_b = '';
         }
         //验证手机格式
         foreach ($usermobile_arr as $uv ) {
@@ -763,7 +763,7 @@ class CustomerController extends BaseController{
             $this->to_back(60104);
         }
         if ($tel_a == $tel_b) {
-            $this->to_back(60103);
+            $tel_b = '';
         }
 
         //验证手机格式
@@ -858,7 +858,9 @@ class CustomerController extends BaseController{
             $log_arr['type'] = 1;
             $log_arr['invite_id'] = $invite_id;
             $m_dinner_customer_log->addData($log_arr);
-            $this->to_back(10000);
+            $arp['customer_id'] = $insid;
+            $data['list'] = $arp;
+            $this->to_back($data);
         } else {
             $this->to_back(60101);
         }

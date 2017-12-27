@@ -474,63 +474,121 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        //判断客户id存在
+        $cus = array();
+        $cus['customer_id']  = empty($this->params['customer_id'])?0:$this->params['customer_id'];
+        $cus['invite_id']  = $invite_id;
+        $cus['flag'] = 0;
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         $recipt_arr = parse_url($recipt);
         $save['recipt']  = $recipt_arr['path'];
         $save['invite_id'] = $invite_id;
-            $save['name']  = empty($this->params['name'])?'':$this->params['name'];
-        $save['name'] = trim($save['name']);
-            $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
-            //判断手机号是否在表中存在
-            $mp = array();
-            $mp['mobile'] = $usermobile;
-            $mp['mobile1'] = $usermobile;
-            $mp['_logic'] = 'or';
-            $map['_complex'] = $mp;
-            $map['flag'] = 0;
-            $field = 'id';
-            $cus_info = $m_dinner_customer->getOne($field,$map);
-            $save['mobile'] = $usermobile;
-            if($cus_info) {
-                $get_cid = $cus_info['id'];
-                if($get_cid) {
-                    $save['customer_id'] = $get_cid;
-                    $bool = $m_dinner_record->addData($save);
-                    if($bool) {
-                        $this->to_back(10000);
-                    } else {
-                        $this->to_back(60113);
-                    }
-                }
-            }else {
-                //添加客户表
-                $map = array();
-                $map['name'] = $save['name'];
-                $map['invite_id'] = $invite_id;
-                $map['mobile'] = $usermobile;
-                $insid = $m_dinner_customer->addData($map);
-                if($insid) {
-                    //加lg日志
-                    $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
-                    $log_arr['action_id'] = $insid;
-                    $log_arr['type'] = 1;
-                    $log_arr['invite_id'] = $invite_id;
-                    $m_dinner_customer_log->addData($log_arr);
-                    $save['customer_id'] = $insid;
-                    $bool = $m_dinner_record->addData($save);
-                    if($bool) {
-                        $this->to_back(10000);
-                    } else {
-                        $this->to_back(60113);
-                    }
+        $username  = empty($this->params['name'])?'':$this->params['name'];
+        $username = trim($username);
+        $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
+        if($cus['customer_id'] == 0) {
+            //新增判断手机号
+            //添加客户表
+            $map = array();
+            $map['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
+            $map['birthplace']         = empty($this->params['birthplace'])?'':$this->params['birthplace'];
+            $map['birthday']           = empty($this->params['birthday'])?'':$this->params['birthday'];
+            $map['consume_ability']    = empty($this->params['consume_ability'])?0:$this->params['consume_ability'];
+            $map['bill_info']    = empty($this->params['bill_info'])?'':$this->params['bill_info'];
+            $map['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
+            $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
+            $map['face_url'] = '';
+            if($fimg){
+                $face_arr = parse_url($fimg);
+                $map['face_url'] = $face_arr['path'];
+            }
+            $map['name'] = $save['name'];
+            $map['invite_id'] = $invite_id;
+            $map['mobile'] = $usermobile;
+            $insid = $m_dinner_customer->addData($map);
+            if($insid) {
+                //加lg日志
+                $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+                $log_arr['action_id'] = $insid;
+                $log_arr['type'] = 1;
+                $log_arr['invite_id'] = $invite_id;
+                $m_dinner_customer_log->addData($log_arr);
+                $save['customer_id'] = $insid;
+                $bool = $m_dinner_record->addData($save);
+                if($bool) {
+                    $arp['customer_id'] = $insid;
+                    $data['list'] = $arp;
+                    $this->to_back($data);
                 } else {
                     $this->to_back(60113);
                 }
-
+            } else {
+                $this->to_back(60113);
             }
+        } else {
+
+            $cus_num = $m_dinner_customer->countNums($cus);
+            if($cus_num > 0) {
+                $save['name'] = $username;
+
+                //判断手机号是否在表中存在
+                $mp = array();
+                $mp['mobile'] = $usermobile;
+                $mp['mobile1'] = $usermobile;
+                $mp['_logic'] = 'or';
+                $map['_complex'] = $mp;
+                $map['flag'] = 0;
+                $field = 'id';
+                $cus_info = $m_dinner_customer->getOne($field,$map);
+                $save['mobile'] = $usermobile;
+                if($cus_info) {
+                    $get_cid = $cus_info['id'];
+                    if($get_cid == $cus['customer_id']) {
+                        $save['customer_id'] = $cus_info['id'];
+                        $bool = $m_dinner_record->addData($save);
+                        if($bool) {
+                            $this->to_back(10000);
+                        } else {
+                            $this->to_back(60113);
+                        }
+                    } else {
+                        $this->to_back(60105);
+                    }
+                }else {
+                    //添加客户表
+                    $map = array();
+                    $map['name'] = $save['name'];
+                    $map['invite_id'] = $invite_id;
+                    $map['mobile'] = $usermobile;
+                    $insid = $m_dinner_customer->addData($map);
+                    if($insid) {
+                        //加lg日志
+                        $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+                        $log_arr['action_id'] = $insid;
+                        $log_arr['type'] = 1;
+                        $log_arr['invite_id'] = $invite_id;
+                        $m_dinner_customer_log->addData($log_arr);
+                        $save['customer_id'] = $insid;
+                        $bool = $m_dinner_record->addData($save);
+                        if($bool) {
+                            $arp['customer_id'] = $insid;
+                            $data['list'] = $arp;
+                            $this->to_back($data);
+                        } else {
+                            $this->to_back(60113);
+                        }
+                    } else {
+                        $this->to_back(60113);
+                    }
+
+                }
+            } else {
+                $this->to_back(60017);
+            }
+        }
+
+
 
     }
 

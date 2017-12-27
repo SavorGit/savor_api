@@ -135,26 +135,47 @@ class OrderController extends BaseController{
         }
         $order_name   = $this->params['order_name'];
         $order_mobile = $this->params['order_mobile'];
-        if(!empty($order_mobile)){
-            if(!check_mobile($mobile)){
-                $this->to_back('60034');
+        
+        $customer_id  = $this->params['customer_id'];   //客户id
+        if(!check_mobile($order_mobile)){
+            $this->to_back('60034');
+        }
+        $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
+        $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile'";
+        $customer_info = $m_dinner_customer->getOne('id',$where);
+        if(!empty($customer_id)){
+            //如果客户id不为空
+            
+            if($customer_info['id']!=$customer_id){
+                $this->to_back();
             }
-            $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-            $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile'";
-            $customer_info = $m_dinner_customer->getOne('id',$where);
+            
+        }else {
             if(empty($customer_info)){
                 $data = array();
                 $data['invite_id'] = $invite_id;
                 $data['name']      = $order_name;
                 $data['mobile']    = $order_mobile;
+                $data['sex']       = intval($this->params['sex']);
+                $data['consume_ability'] = intval($this->params['consume_ability']);
+                $data['bill_info'] = !empty($this->params['bill_info']) ? $this->params['bill_info'] :'';
+                
+                $face_url = $this->params['face_url'];
+                if(!empty($face_url)){
+                    $face_url_arr = parse_url($face_url);
+                    $data['face_url']  = $face_url_arr['path'];
+                }
+                $data['remark']    = $this->params['c_remark'];
+                
+                $data['birthday']  = !empty($this->params['birthday']) ? $this->params['birthday'] :'';
+                $data['birthplace']= !empty($this->params['birthplace']) ? $this->params['birthplace'] :'';
                 $m_dinner_customer->add($data);
                 $customer_id = $m_dinner_customer->getLastInsID();
             }else {
                 $customer_id = $customer_info['id'];
-            }
-        }else {
-            $customer_id = 0;
+            }   
         }
+        
         
         
         $data = array();
@@ -178,7 +199,9 @@ class OrderController extends BaseController{
             $data['type']      = 4;
             $m_dinner_action_log = new \Common\Model\DinnerActionLogModel();
             $m_dinner_action_log ->add($data);
-            $this->to_back(10000);
+            $data = array();
+            $data['customer_id'] = $customer_id;
+            $this->to_back($data);
         }else {
             $this->to_back(60023);
         }

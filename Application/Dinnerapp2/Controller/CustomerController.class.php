@@ -988,16 +988,21 @@ class CustomerController extends BaseController{
                     if(!empty($nums)){
                         continue;
                     }
-                    $v['invite_id'] = $invite_id;
-                    $m_dinner_customer->add($v);
-                }else {
-                    $v['invite_id'] = $invite_id;
-                    $m_dinner_customer->add($v);
+                   /*  $v['invite_id'] = $invite_id;
+                    $m_dinner_customer->add($v); */
                 }
+                $v['invite_id'] = $invite_id;
+                $m_dinner_customer->add($v);
+                $customer_id = $m_dinner_customer->getLastInsID();
+                $v['customer_id'] = $customer_id;
+                $list[$flag] = $v;
+                
                 $flag ++;
             }
             if($flag){
-                $this->to_back(10000);
+                $data = array();
+                $data['customer_list'] = $list;
+                $this->to_back($data);
             }else {
                 $this->to_back(60016);
             }

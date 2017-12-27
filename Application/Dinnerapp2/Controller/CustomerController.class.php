@@ -481,9 +481,16 @@ class CustomerController extends BaseController{
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
-        $recipt = str_replace('\\','', $recipt);
-        $recipt_arr = parse_url($recipt);
-        $save['recipt']  = $recipt_arr['path'];
+        if($recipt) {
+            $recipt = str_replace('\\','', $recipt);
+            $recipt = json_decode($recipt, true);
+
+        }
+        $rec_arr = array();
+        foreach($recipt as $rv) {
+            $url_arr = parse_url($rv);
+            $rec_arr[]  = $url_arr['path'];
+        }
         $save['invite_id'] = $invite_id;
         $username  = empty($this->params['name'])?'':$this->params['name'];
         $username = trim($username);
@@ -504,7 +511,10 @@ class CustomerController extends BaseController{
             if($cas_info) {
                 //新增消费记录
                 $save['customer_id'] = $cas_info['id'];
-                $bool = $m_dinner_record->addData($save);
+                foreach($rec_arr as $rv) {
+                    $save['recipt'] = $rv;
+                    $bool = $m_dinner_record->addData($save);
+                }
                 $arp['customer_id'] = $cas_info['id'];
                 $data['list'] = $arp;
                 $this->to_back($data);
@@ -533,7 +543,10 @@ class CustomerController extends BaseController{
                     $log_arr['invite_id'] = $invite_id;
                     $m_dinner_customer_log->addData($log_arr);
                     $save['customer_id'] = $insid;
-                    $bool = $m_dinner_record->addData($save);
+                    foreach($rec_arr as $rv) {
+                        $save['recipt'] = $rv;
+                        $bool = $m_dinner_record->addData($save);
+                    }
                     if($bool) {
                         $arp['customer_id'] = $insid;
                         $data['list'] = $arp;
@@ -566,7 +579,10 @@ class CustomerController extends BaseController{
                     $get_cid = $cus_info['id'];
                     if($get_cid == $cus['customer_id']) {
                         $save['customer_id'] = $cus_info['id'];
-                        $bool = $m_dinner_record->addData($save);
+                        foreach($rec_arr as $rv) {
+                            $save['recipt'] = $rv;
+                            $bool = $m_dinner_record->addData($save);
+                        }
                         if($bool) {
                             $this->to_back(10000);
                         } else {
@@ -590,7 +606,10 @@ class CustomerController extends BaseController{
                         $log_arr['invite_id'] = $invite_id;
                         $m_dinner_customer_log->addData($log_arr);
                         $save['customer_id'] = $insid;
-                        $bool = $m_dinner_record->addData($save);
+                        foreach($rec_arr as $rv) {
+                            $save['recipt'] = $rv;
+                            $bool = $m_dinner_record->addData($save);
+                        }
                         if($bool) {
                             $arp['customer_id'] = $insid;
                             $data['list'] = $arp;

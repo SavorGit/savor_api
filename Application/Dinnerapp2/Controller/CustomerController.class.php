@@ -55,7 +55,6 @@ class CustomerController extends BaseController{
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
-                    'customer_id'    =>1001,
                     'recipt'         =>1001,
                     'usermobile'         =>1001,
                     'name'         =>1001,
@@ -469,20 +468,15 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        $cus = array();
-        $cus['customer_id']  = $this->params['customer_id'];
-        $cus['invite_id']  = $invite_id;
-        $cus['flag'] = 0;
         //判断客户id存在
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
-        $cus_num = $m_dinner_customer->countNums($cus);
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         $recipt_arr = parse_url($recipt);
         $save['recipt']  = $recipt_arr['path'];
         $save['invite_id'] = $invite_id;
-        if($cus_num > 0) {
             $save['name']  = empty($this->params['name'])?'':$this->params['name'];
+        $save['name'] = trim($save['name']);
             $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
             //判断手机号是否在表中存在
             $mp = array();
@@ -496,16 +490,14 @@ class CustomerController extends BaseController{
             $save['mobile'] = $usermobile;
             if($cus_info) {
                 $get_cid = $cus_info['id'];
-                if($get_cid == $cus['customer_id']) {
-                    $save['customer_id'] = $cus_info['id'];
+                if($get_cid) {
+                    $save['customer_id'] = $get_cid;
                     $bool = $m_dinner_record->addData($save);
                     if($bool) {
                         $this->to_back(10000);
                     } else {
                         $this->to_back(60113);
                     }
-                } else {
-                    $this->to_back(60105);
                 }
             }else {
                 //添加客户表
@@ -533,9 +525,7 @@ class CustomerController extends BaseController{
                 }
 
             }
-        } else {
-            $this->to_back(60017);
-        }
+
     }
 
     public function addConsumeRecord() {
@@ -638,6 +628,7 @@ class CustomerController extends BaseController{
 
         //判断用户名是否存在
         $username    = empty($this->params['name'])?'':$this->params['name'];
+        $username = trim($username);
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $save['name']                = $username;
         $save['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
@@ -787,6 +778,7 @@ class CustomerController extends BaseController{
 
         //判断用户名是否存在
         $username    = empty($this->params['name'])?'':$this->params['name'];
+        $username = trim($username);
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $save['name']                = $username;
         $save['sex']                = empty($this->params['sex'])?1:$this->params['sex'];

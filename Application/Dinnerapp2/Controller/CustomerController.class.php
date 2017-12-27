@@ -481,6 +481,7 @@ class CustomerController extends BaseController{
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
+        $recipt = str_replace('\\','', $recipt);
         $recipt_arr = parse_url($recipt);
         $save['recipt']  = $recipt_arr['path'];
         $save['invite_id'] = $invite_id;
@@ -572,7 +573,7 @@ class CustomerController extends BaseController{
                             $this->to_back(60113);
                         }
                     } else {
-                        $this->to_back(60105);
+                        $this->to_back(60118);
                     }
                 }else {
                     //添加客户表

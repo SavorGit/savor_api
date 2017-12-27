@@ -18,6 +18,7 @@ class HotelInviteCodeModel extends Model
 	public function getInfo($fields,$where){
 	    $data =  $this->alias('a')
 	                  ->join('savor_hotel b on a.hotel_id=b.id','left')
+	                  ->join('savor_hotel_ext c on b.id=c.hotel_id','left')
 	                  ->field($fields)
 	                  ->where($where)
 	                  ->find();

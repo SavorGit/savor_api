@@ -89,6 +89,10 @@ class CustomerController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'book_info'=>1001);
                 break;
+            case 'importNewInfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'book_info'=>1001);
+                break;
             default:
                  break;
         }

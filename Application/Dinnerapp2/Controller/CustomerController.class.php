@@ -656,7 +656,16 @@ class CustomerController extends BaseController{
         $cus_num = $m_dinner_cus->countNums($cus);
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         $recipt_arr = parse_url($recipt);
-        $save['recipt']  = $recipt_arr['path'];
+        if($recipt) {
+            $recipt = str_replace('\\','', $recipt);
+            $recipt = json_decode($recipt, true);
+
+        }
+        $rec_arr = array();
+        foreach($recipt as $rv) {
+            $url_arr = parse_url($rv);
+            $rec_arr[]  = $url_arr['path'];
+        }
         $save['invite_id'] = $invite_id;
         if($cus_num > 0) {
             $save['customer_id']  = $cus['customer_id'];
@@ -669,7 +678,10 @@ class CustomerController extends BaseController{
             if($or_res) {
                 $save['order_id']  = $cus['id'];
                 $save['customer_id'] = $cus['customer_id'];
-                $bool = $m_dinner_record->addData($save);
+                foreach($rec_arr as $rv) {
+                    $save['recipt'] = $rv;
+                    $bool = $m_dinner_record->addData($save);
+                }
                 if($bool) {
                     $this->to_back(10000);
                 } else {

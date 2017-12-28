@@ -269,8 +269,7 @@ class LabelController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        $ptype  = empty($this->params['type'])?1:$this->params['type'];
-        $customer_id  = empty($this->params['customer_id'])?1:$this->params['customer_id'];
+        $customer_id  = empty($this->params['customer_id'])?0:$this->params['customer_id'];
             $lname  = empty($this->params['label_name'])?'':$this->params['label_name'];
         //判断客户信息
         $jud['invite_id'] = $invite_id;

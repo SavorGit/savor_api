@@ -18,7 +18,6 @@ class LabelController extends BaseController{
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
-                    'customer_id'    =>1001,
                     'label_name'    =>1001,
                 );
                 break;

@@ -59,24 +59,49 @@ class LabelController extends BaseController{
             $this->to_back(60019);
         }
         $map['id']  = $this->params['customer_id'];
-        $map['invite_id'] = $invite_id;
-        $map['flag'] = 0;
-        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $cus_num = $m_dinner_cus->countNums($map);
-        if($cus_num > 0) {
-            //获取客户标签
-            $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
-            $customer_id  = $this->params['customer_id'];
-            $map = array();
-            $map['customer_id'] = $customer_id;
-            $map['flag'] = 0;
-            $field = 'label_id id';
-            $label_info = $m_customer_lab->getData($field, $map);
-            $cus_label = array();
-            foreach($label_info as $lv) {
-                $cus_label[$lv['id']] = 1;
-            }
+        if($map['id']) {
 
+            $map['invite_id'] = $invite_id;
+            $map['flag'] = 0;
+            $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+            $cus_num = $m_dinner_cus->countNums($map);
+            if($cus_num > 0) {
+                //获取客户标签
+                $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                $customer_id  = $this->params['customer_id'];
+                $map = array();
+                $map['customer_id'] = $customer_id;
+                $map['flag'] = 0;
+                $field = 'label_id id';
+                $label_info = $m_customer_lab->getData($field, $map);
+                $cus_label = array();
+                foreach($label_info as $lv) {
+                    $cus_label[$lv['id']] = 1;
+                }
+
+                //获取销售经理标签
+                $offer['scl.invite_id'] = $invite_id;
+                $offer['scl.flag'] = 0;
+                $m_manna_lab = new \Common\Model\DinnerManaLabelModel();
+                $field = 'scl.label_id,sdl.NAME label_name';
+                $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
+                if($ma_info) {
+                    foreach($ma_info as $mk=>$mv) {
+                        if(array_key_exists($mv['label_id'], $cus_label)) {
+                            $ma_info[$mk]['light'] = 1;
+                        } else {
+                            $ma_info[$mk]['light'] = 0;
+                        }
+                    }
+                } else {
+                    $ma_info = array();
+                }
+                $data['list'] = $ma_info;
+                $this->to_back($data);
+            } else {
+                $this->to_back(60108);
+            }
+        } else {
             //获取销售经理标签
             $offer['scl.invite_id'] = $invite_id;
             $offer['scl.flag'] = 0;
@@ -85,20 +110,15 @@ class LabelController extends BaseController{
             $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
             if($ma_info) {
                 foreach($ma_info as $mk=>$mv) {
-                    if(array_key_exists($mv['label_id'], $cus_label)) {
-                        $ma_info[$mk]['light'] = 1;
-                    } else {
-                        $ma_info[$mk]['light'] = 0;
-                    }
+                    $ma_info[$mk]['light'] = 0;
                 }
             } else {
                 $ma_info = array();
             }
             $data['list'] = $ma_info;
             $this->to_back($data);
-        } else {
-            $this->to_back(60108);
         }
+
 
 
 

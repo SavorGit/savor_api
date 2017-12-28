@@ -97,7 +97,7 @@ class LabelController extends BaseController{
             $data['list'] = $ma_info;
             $this->to_back($data);
         } else {
-            $this->to_back(60116);
+            $this->to_back(60108);
         }
 
 

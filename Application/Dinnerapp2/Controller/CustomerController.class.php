@@ -13,6 +13,13 @@ class CustomerController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+            case 'getOnlyLabel':
+                $this->is_verify = 1;
+                $this->valid_fields = array(
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                );
+                break;
             case 'editManager':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
@@ -280,6 +287,53 @@ class CustomerController extends BaseController{
 
 
 
+    }
+
+
+    public function getOnlyLabel(){
+        $invite_id = $this->params['invite_id'];
+        $mobile   = $this->params['mobile'];    //销售手机号
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        $cus_id = $this->params['customer_id'];
+        if($cus_id) {
+            $map['id']  = $cus_id;
+            $map['invite_id'] = $invite_id;
+            $map['flag'] = 0;
+            $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+            $cus_num = $m_dinner_cus->countNums($map);
+            if($cus_num > 0) {
+                $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                $map = array();
+                $map['scl.customer_id'] = $cus_id;
+                $map['scl.flag'] = 0;
+                $field = 'scl.label_id,sdl.NAME label_name';
+                $label_info = $m_customer_lab->getLabelNameByCid($field, $map);
+                print_r($m_customer_lab->getLastSql());
+                if($label_info) {
+                    $data['list'] = $label_info;
+                }else{
+                    $data['list'] = array();
+
+                }
+                $this->to_back($data);
+            }else{
+                $this->to_back(60108);
+            }
+        } else {
+            $data['list'] = array();
+            $this->to_back($data);
+        }
     }
 
     public function getCustomerBaseInfo(){

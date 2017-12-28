@@ -137,7 +137,8 @@ class OrderController extends BaseController{
         $order_mobile = $this->params['order_mobile'];
         
         $customer_id  = $this->params['customer_id'];   //客户id
-        if(!check_mobile($order_mobile)){
+        
+        if(!empty($order_mobile) && !check_mobile($order_mobile)){
             $this->to_back('60034');
         }
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();

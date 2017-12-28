@@ -327,7 +327,7 @@ class CustomerController extends BaseController{
             if($label_info) {
                 $cus_info['label'] = $label_info;
             }else {
-                $cus_info['label'] = array();
+               // $cus_info['label'] = array();
             }
             foreach($cus_info as &$v) {
                 if(empty($v)) {

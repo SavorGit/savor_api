@@ -88,6 +88,7 @@ class LoginController extends BaseController{
             $fields = "id customer_id,name,mobile,mobile1,`face_url`";
             $where = array();
             $where['invite_id'] = $info['invite_id']; 
+            $where['flag']      = 0;
             $customer_list = $m_dinner_customer->getList($fields,$where);
             foreach($customer_list as $key=>$v){
                 if(!empty($v['face_url'])){

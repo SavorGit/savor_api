@@ -59,24 +59,49 @@ class LabelController extends BaseController{
             $this->to_back(60019);
         }
         $map['id']  = $this->params['customer_id'];
-        $map['invite_id'] = $invite_id;
-        $map['flag'] = 0;
-        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $cus_num = $m_dinner_cus->countNums($map);
-        if($cus_num > 0) {
-            //获取客户标签
-            $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
-            $customer_id  = $this->params['customer_id'];
-            $map = array();
-            $map['customer_id'] = $customer_id;
-            $map['flag'] = 0;
-            $field = 'label_id id';
-            $label_info = $m_customer_lab->getData($field, $map);
-            $cus_label = array();
-            foreach($label_info as $lv) {
-                $cus_label[$lv['id']] = 1;
-            }
+        if($map['id']) {
 
+            $map['invite_id'] = $invite_id;
+            $map['flag'] = 0;
+            $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+            $cus_num = $m_dinner_cus->countNums($map);
+            if($cus_num > 0) {
+                //获取客户标签
+                $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                $customer_id  = $this->params['customer_id'];
+                $map = array();
+                $map['customer_id'] = $customer_id;
+                $map['flag'] = 0;
+                $field = 'label_id id';
+                $label_info = $m_customer_lab->getData($field, $map);
+                $cus_label = array();
+                foreach($label_info as $lv) {
+                    $cus_label[$lv['id']] = 1;
+                }
+
+                //获取销售经理标签
+                $offer['scl.invite_id'] = $invite_id;
+                $offer['scl.flag'] = 0;
+                $m_manna_lab = new \Common\Model\DinnerManaLabelModel();
+                $field = 'scl.label_id,sdl.NAME label_name';
+                $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
+                if($ma_info) {
+                    foreach($ma_info as $mk=>$mv) {
+                        if(array_key_exists($mv['label_id'], $cus_label)) {
+                            $ma_info[$mk]['light'] = 1;
+                        } else {
+                            $ma_info[$mk]['light'] = 0;
+                        }
+                    }
+                } else {
+                    $ma_info = array();
+                }
+                $data['list'] = $ma_info;
+                $this->to_back($data);
+            } else {
+                $this->to_back(60108);
+            }
+        } else {
             //获取销售经理标签
             $offer['scl.invite_id'] = $invite_id;
             $offer['scl.flag'] = 0;
@@ -85,20 +110,15 @@ class LabelController extends BaseController{
             $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
             if($ma_info) {
                 foreach($ma_info as $mk=>$mv) {
-                    if(array_key_exists($mv['label_id'], $cus_label)) {
-                        $ma_info[$mk]['light'] = 1;
-                    } else {
-                        $ma_info[$mk]['light'] = 0;
-                    }
+                    $ma_info[$mk]['light'] = 0;
                 }
             } else {
                 $ma_info = array();
             }
             $data['list'] = $ma_info;
             $this->to_back($data);
-        } else {
-            $this->to_back(60108);
         }
+
 
 
 
@@ -260,9 +280,111 @@ class LabelController extends BaseController{
         $field = '*';
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $cus_info = $m_dinner_customer->getOne($field, $jud);
-        if($cus_info) {
-            //空格处理
-            //先判断标签库是否存在
+        if($customer_id) {
+            if($cus_info) {
+                //空格处理
+                //先判断标签库是否存在
+                $m_dinner_label = new \Common\Model\DinnerLabelModel();
+                $map = array();
+                $map['name'] = $lname;
+                $map['flag'] = 0;
+                $field = 'id';
+                $label_arr = $m_dinner_label->getData($field, $map);
+                if($label_arr) {
+                    $label_id = $label_arr[0]['id'];
+                    //添加到销售标签表
+                    $m_dinner_mana_lab = new \Common\Model\DinnerManaLabelModel();
+                    $ma_ar['invite_id'] = $invite_id;
+                    $ma_ar['label_id'] = $label_id;
+                    $ma_ar['flag'] = 0;
+                    $ma_num = $m_dinner_mana_lab->countNums($ma_ar);
+                    if($ma_num > 0) {
+                        //添加到客户端
+                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                        $cus['customer_id'] = $customer_id;
+                        $cus['label_id'] = $label_id;
+                        $cus['flag'] = 0;
+                        $cus_num = $m_customer_lab->countNums($cus);
+                        if($cus_num) {
+                            $this->to_back(10000);
+                        } else {
+                            $bool = $m_customer_lab->addData($cus);
+                            if($bool) {
+                                $data = array();
+                                $data['list'] = array(
+                                    'label_name'=>$lname,
+                                    'label_id'=>$label_id,
+                                );
+                                $this->to_back($data);
+                            } else {
+                                $this->to_back(60109);
+                            }
+                        }
+                    } else {
+                        $bool = $m_dinner_mana_lab->addData($ma_ar);
+                        if($bool) {
+                            //添加到客户标签表
+                            $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                            $cus['customer_id'] = $customer_id;
+                            $cus['label_id'] = $label_id;
+                            $bool = $m_customer_lab->add($cus);
+                            if($bool) {
+                                $data = array();
+                                $data['list'] = array(
+                                    'label_name'=>$lname,
+                                    'label_id'=>$label_id,
+                                );
+                                $this->to_back($data);
+                            } else {
+                                $this->to_back(60109);
+                            }
+                        } else {
+                            $this->to_back(60109);
+                        }
+
+                    }
+
+                } else {
+                    //添加到总标签表
+                    $m_dinner_lab = new \Common\Model\DinnerLabelModel();
+                    $dl['name'] = $lname;
+                    $bool = $m_dinner_label->addData($dl);
+                    if($bool) {
+                        $label_id = $m_dinner_label->getLastInsID();
+                        //添加到销售标签表
+                        $m_dinner_mana_lab = new \Common\Model\DinnerManaLabelModel();
+                        $ma_ar['invite_id'] = $invite_id;
+                        $ma_ar['label_id'] = $label_id;
+                        $bool = $m_dinner_mana_lab->add($ma_ar);
+                        if($bool) {
+                            //添加到客户标签表
+                            $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                            $cus['customer_id'] = $customer_id;
+                            $cus['label_id'] = $label_id;
+                            $bool = $m_customer_lab->add($cus);
+                            if($bool) {
+                                $data = array();
+                                $data['list'] = array(
+                                    'label_name'=>$lname,
+                                    'label_id'=>$label_id,
+                                );
+                                $this->to_back($data);
+                            } else {
+                                $this->to_back(60109);
+                            }
+                        } else {
+                            $this->to_back(60109);
+                        }
+
+                    }else{
+                        $this->to_back(60109);
+                    }
+
+                }
+            } else {
+                $this->to_back(60108);
+            }
+        } else {
             $m_dinner_label = new \Common\Model\DinnerLabelModel();
             $map = array();
             $map['name'] = $lname;
@@ -278,52 +400,19 @@ class LabelController extends BaseController{
                 $ma_ar['flag'] = 0;
                 $ma_num = $m_dinner_mana_lab->countNums($ma_ar);
                 if($ma_num > 0) {
-                    //添加到客户端
-                    $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
-                    $cus['customer_id'] = $customer_id;
-                    $cus['label_id'] = $label_id;
-                    $cus['flag'] = 0;
-                    $cus_num = $m_customer_lab->countNums($cus);
-                    if($cus_num) {
-                        $this->to_back(10000);
-                    } else {
-                        $bool = $m_customer_lab->addData($cus);
-                        if($bool) {
-                            $data = array();
-                            $data['list'] = array(
-                                'label_name'=>$lname,
-                                'label_id'=>$label_id,
-                            );
-                            $this->to_back($data);
-                        } else {
-                            $this->to_back(60109);
-                        }
-                    }
+
                 } else {
                     $bool = $m_dinner_mana_lab->addData($ma_ar);
-                    if($bool) {
-                        //添加到客户标签表
-                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
-                        $cus['customer_id'] = $customer_id;
-                        $cus['label_id'] = $label_id;
-                        $bool = $m_customer_lab->add($cus);
-                        if($bool) {
-                            $data = array();
-                            $data['list'] = array(
-                                'label_name'=>$lname,
-                                'label_id'=>$label_id,
-                            );
-                            $this->to_back($data);
-                        } else {
-                            $this->to_back(60109);
-                        }
-                    } else {
-                        $this->to_back(60109);
-                    }
 
                 }
+                $data = array();
+                $data['list'] = array(
+                    'label_name'=>$lname,
+                    'label_id'=>$label_id,
+                );
+                $this->to_back($data);
 
-            } else {
+            }else {
                 //添加到总标签表
                 $m_dinner_lab = new \Common\Model\DinnerLabelModel();
                 $dl['name'] = $lname;
@@ -336,21 +425,12 @@ class LabelController extends BaseController{
                     $ma_ar['label_id'] = $label_id;
                     $bool = $m_dinner_mana_lab->add($ma_ar);
                     if($bool) {
-                        //添加到客户标签表
-                        $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
-                        $cus['customer_id'] = $customer_id;
-                        $cus['label_id'] = $label_id;
-                        $bool = $m_customer_lab->add($cus);
-                        if($bool) {
-                            $data = array();
-                            $data['list'] = array(
-                                'label_name'=>$lname,
-                                'label_id'=>$label_id,
-                            );
-                            $this->to_back($data);
-                        } else {
-                            $this->to_back(60109);
-                        }
+                        $data = array();
+                        $data['list'] = array(
+                            'label_name'=>$lname,
+                            'label_id'=>$label_id,
+                        );
+                        $this->to_back($data);
                     } else {
                         $this->to_back(60109);
                     }
@@ -360,9 +440,8 @@ class LabelController extends BaseController{
                 }
 
             }
-        } else {
-            $this->to_back(60108);
         }
+
     }
 
 }

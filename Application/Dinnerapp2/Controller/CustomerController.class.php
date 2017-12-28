@@ -355,11 +355,14 @@ class CustomerController extends BaseController{
         }
         //修改客户经理名称
         $dat['nickname'] = empty($this->params['nickname'])?'':$this->params['nickname'];
-        $bool = $m_hotel_invite_code->saveInfo($where, $dat);
-        if($bool) {
+        if($dat['nickname'] == $invite_info['nickname']) {
             $this->to_back(10000);
+        } else {
+            $bool = $m_hotel_invite_code->saveInfo($where, $dat);
+            if($bool) {
+                $this->to_back(10000);
+            }
         }
-
     }
 
 
@@ -497,6 +500,8 @@ class CustomerController extends BaseController{
         $usermobile    = empty($this->params['usermobile'])?'':$this->params['usermobile'];
         $save['mobile'] = $usermobile;
         $save['name'] = $username;
+        $lable_str  = empty($this->params['lable_id_str'])?0:$this->params['lable_id_str'];
+        //添加点亮的lable_id
         if($cus['customer_id'] == 0) {
             //判断手机号是否存在
             $mp = array();

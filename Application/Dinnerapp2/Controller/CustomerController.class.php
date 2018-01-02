@@ -227,14 +227,7 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-
-        $map['id']  = $this->params['customer_id'];
-        $map['invite_id'] = $invite_id;
-        $map['flag'] = 0;
-        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $cus_num = $m_dinner_cus->countNums($map);
-        if($cus_num > 0) {
-            $field = 'sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type';
+            $field = 'sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type,sct.face_url';
             $map = array();
             $map['sct.flag'] = 0;
             $map['sa.invite_id'] = $invite_id;
@@ -246,6 +239,8 @@ class CustomerController extends BaseController{
             foreach($res_info as $ra=>$rk) {
                 $mobile_ar = array_filter( array($rk['mobile'], $rk['mobile1']) );
                 $res_info[$ra]['usermobile'] = current($mobile_ar);
+                $res_info[$ra]['face_url'] =
+                    C('IMG_UP_SUBCONTACT').$rk['face_url'];
                 //判断时间
                 $ltime = strtotime($rk['create_time']);
                 $diff = ($now-$ltime);
@@ -279,14 +274,6 @@ class CustomerController extends BaseController{
             }
             $data['list'] = $res_info;
             $this->to_back($data);
-        } else {
-            $this->to_back(60116);
-        }
-
-
-
-
-
     }
 
 
@@ -964,8 +951,13 @@ class CustomerController extends BaseController{
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
         $save['face_url'] = '';
         if($fimg){
-            $face_arr = parse_url($fimg);
-            $save['face_url'] = $face_arr['path'];
+            $fimg = str_replace('\\','', $fimg);
+            $fimg_arr = json_decode($fimg, true);
+            foreach($fimg_arr as $rv) {
+                $url_arr = parse_url($rv);
+                $save['face_url']  = $url_arr['path'];
+            }
+
         }
 
         $map = array();

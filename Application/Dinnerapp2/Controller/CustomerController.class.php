@@ -13,6 +13,15 @@ class CustomerController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+
+            case 'editRemark':
+                $this->is_verify = 1;
+                $this->valid_fields = array(
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                    'customer_id'   =>1001,
+                );
+
             case 'getOnlyLabel':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
@@ -210,6 +219,38 @@ class CustomerController extends BaseController{
             $this->to_back(60017);
         }
     
+    }
+
+    public function editRemark(){
+        $invite_id = $this->params['invite_id'];
+        $mobile   = $this->params['mobile'];    //销售手机号
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        $cus_id = $this->params['customer_id'];
+        $field = '*';
+        $mop['id'] = $cus_id;
+        $mop['invite_id'] = $invite_id;
+        $mop['flag'] = 0;
+        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+        $cus_info = $m_dinner_cus->getOne($field, $mop);
+        $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
+        if($cus_info) {
+            $bool = $m_dinner_cus->saveData($save, $mop);
+            $this->to_back(10000);
+        } else {
+            $this->to_back(60107);
+        }
+
     }
 
     public function getCustomerHistory(){

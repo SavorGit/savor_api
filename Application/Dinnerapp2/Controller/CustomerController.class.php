@@ -499,12 +499,7 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
-                $rcp = empty($cv['recipt'])?'':$cv['recipt'];
-                if(empty($rtp)) {
-                    $cv['recipt'] = '';
-                } else {
-                    $cv['recipt'] = get_oss_host().$rcp;
-                }
+                $cv['recipt'] = empty($cv['recipt'])?'':C('IMG_UP_SUBCONTACT').$cv['recipt'];
                 $count++;
             }
         }

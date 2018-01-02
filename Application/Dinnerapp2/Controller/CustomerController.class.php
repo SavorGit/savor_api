@@ -319,7 +319,6 @@ class CustomerController extends BaseController{
                 $map['scl.flag'] = 0;
                 $field = 'scl.label_id,sdl.NAME label_name';
                 $label_info = $m_customer_lab->getLabelNameByCid($field, $map);
-                print_r($m_customer_lab->getLastSql());
                 if($label_info) {
                     $data['list'] = $label_info;
                 }else{

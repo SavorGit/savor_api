@@ -244,9 +244,16 @@ class CustomerController extends BaseController{
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
         $cus_info = $m_dinner_cus->getOne($field, $mop);
         $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
+        $save['update_time']  =date("Y-m-d H:i:s");
+        
         if($cus_info) {
             $bool = $m_dinner_cus->saveData($save, $mop);
-            $this->to_back(10000);
+            if ($bool) {
+                $this->to_back(10000);
+            } else {
+                $this->to_back(60110);
+            }
+
         } else {
             $this->to_back(60107);
         }

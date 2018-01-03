@@ -82,7 +82,6 @@ class CustomerController extends BaseController{
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
-                    'customer_id'    =>1001,
                 );
                 break;
             case 'getCustomerBaseInfo':
@@ -245,7 +244,7 @@ class CustomerController extends BaseController{
         $cus_info = $m_dinner_cus->getOne($field, $mop);
         $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
         $save['update_time']  =date("Y-m-d H:i:s");
-        
+
         if($cus_info) {
             $bool = $m_dinner_cus->saveData($save, $mop);
             if ($bool) {

@@ -187,7 +187,7 @@ class LabelController extends BaseController{
                                     $this->to_back(10000);
                                 } else {
                                     $cp['id'] = $cus_info['id'];
-                                    $cp['update_time'] = date("Y-m-d H:i:s");
+                                    $cuso['update_time'] = date("Y-m-d H:i:s");
                                     $cuso['flag'] = 0;
                                     $bool = $m_customer_lab->saveData($cuso, $cp);
                                     if($bool) {

@@ -532,7 +532,7 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
-                $cv['recipt'] = empty($cv['recipt'])?'':C('IMG_UP_SUBCONTACT').$cv['recipt'];
+                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'];
                 $count++;
             }
         }

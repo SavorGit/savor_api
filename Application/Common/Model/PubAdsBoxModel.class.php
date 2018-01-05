@@ -16,7 +16,7 @@ class PubAdsBoxModel extends Model
              ->join('savor_pub_ads b on a.pub_ads_id= b.id','left')
              ->join('savor_ads c on b.ads_id=c.id','left')
              ->join('savor_media d on c.media_id=d.id')
-             ->field("a.id as pab_id,d.id,d.oss_addr AS name,d.md5 AS md5,'easyMd5' AS md5_type,c.name AS chinese_name,
+             ->field("b.id pub_ads_id,b.create_time,d.id,d.oss_addr AS name,d.md5 AS md5,'easyMd5' AS md5_type,c.name AS chinese_name,
     				 'ads' AS `type`,
 				     d.oss_addr AS oss_path,
 				     d.duration AS duration,

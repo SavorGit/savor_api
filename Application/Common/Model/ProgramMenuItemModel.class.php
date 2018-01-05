@@ -69,7 +69,8 @@ class ProgramMenuItemModel extends Model
 				media.duration AS duration,
 				media.surfix AS suffix,
 				item.sort_num AS sortNum,
-				item.ads_name AS chinese_name";
+				item.ads_name AS chinese_name,
+	            ads.update_time";
 	    $sql = "select ".$field;
 	    
 	    $sql .= " FROM savor_ads ads

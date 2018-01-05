@@ -205,4 +205,5 @@ return array(
 		'12'=>'1500',
 		'13'=>'2000及以上',
 	),
+    'PROGRAM_ADS_CACHE_PRE'=>'program_ads_',
 );

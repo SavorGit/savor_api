@@ -113,7 +113,47 @@ class OrderController extends BaseController{
             unset($data[$key]['order_time']);
             unset($data[$key]['ticket_url']);
         }
-        $this->to_back($data);
+        //获取四个日期的预订总数（昨天，当天，明天，后天）
+        //昨天
+        $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      = '0';
+        $start_time = date('Y-m-d 00:00:00',strtotime($order_date)-86400);
+        $end_time   = date('Y-m-d 23:59:59',strtotime($order_date)-86400);
+        $where['order_time']= array(array('EGT',$start_time),array('ELT',$end_time));
+        $yesterday_order_nums = $m_dinner_order->countNums($where);
+        //当天
+        $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      = '0';
+        $start_time = $order_date.' 00:00:00';
+        $end_time   = $order_date.' 23:59:59';
+        $where['order_time']= array(array('EGT',$start_time),array('ELT',$end_time));
+        $today_order_nums = $m_dinner_order->countNums($where);
+        //明天
+        $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      = '0';
+        $start_time = date('Y-m-d 00:00:00',strtotime($order_date)+86400);
+        $end_time   = date('Y-m-d 23:59:59',strtotime($order_date)+86400);
+        $where['order_time']= array(array('EGT',$start_time),array('ELT',$end_time));
+        $tomorrow_order_nums = $m_dinner_order->countNums($where);
+        //后天
+        $where = array();
+        $where['invite_id'] = $invite_id;
+        $where['flag']      = '0';
+        $start_time = date('Y-m-d 00:00:00',strtotime($order_date)+172800);
+        $end_time   = date('Y-m-d 23:59:59',strtotime($order_date)+172800);
+        $where['order_time']= array(array('EGT',$start_time),array('ELT',$end_time));
+        $after_tomorrow_order_nums =  $m_dinner_order->countNums($where);
+        
+        $result['yesterday_order_nums'] = $yesterday_order_nums;
+        $result['today_order_nums']     = $today_order_nums;
+        $result['tomorrow_order_nums'] = $tomorrow_order_nums;
+        $result['after_tomorrow_order_nums'] = $after_tomorrow_order_nums;
+        $result['order_list'] = $data;
+        
+        $this->to_back($result);
     }
     public function addOrder(){
         $invite_id  = $this->params['invite_id'];

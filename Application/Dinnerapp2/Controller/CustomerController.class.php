@@ -286,8 +286,14 @@ class CustomerController extends BaseController{
             foreach($res_info as $ra=>$rk) {
                 $mobile_ar = array_filter( array($rk['mobile'], $rk['mobile1']) );
                 $res_info[$ra]['usermobile'] = current($mobile_ar);
-                $res_info[$ra]['face_url'] =
-                    C('IMG_UP_SUBCONTACT').$rk['face_url'];
+                if ( empty($rk['face_url']) ) {
+
+                    $res_info[$ra]['face_url'] = '';
+                } else {
+                    $res_info[$ra]['face_url'] =
+                        C('TASK_REPAIR_IMG').$rk['face_url'].'?x-oss-process=image/resize,w_100';
+                }
+
                 //判断时间
                 $ltime = strtotime($rk['create_time']);
                 $diff = ($now-$ltime);

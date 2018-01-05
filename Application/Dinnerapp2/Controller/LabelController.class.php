@@ -18,7 +18,6 @@ class LabelController extends BaseController{
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
-                    'customer_id'    =>1001,
                     'label_name'    =>1001,
                 );
                 break;
@@ -188,7 +187,7 @@ class LabelController extends BaseController{
                                     $this->to_back(10000);
                                 } else {
                                     $cp['id'] = $cus_info['id'];
-                                    $cp['update_time'] = date("Y-m-d H:i:s");
+                                    $cuso['update_time'] = date("Y-m-d H:i:s");
                                     $cuso['flag'] = 0;
                                     $bool = $m_customer_lab->saveData($cuso, $cp);
                                     if($bool) {
@@ -270,8 +269,7 @@ class LabelController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-        $ptype  = empty($this->params['type'])?1:$this->params['type'];
-        $customer_id  = empty($this->params['customer_id'])?1:$this->params['customer_id'];
+        $customer_id  = empty($this->params['customer_id'])?0:$this->params['customer_id'];
             $lname  = empty($this->params['label_name'])?'':$this->params['label_name'];
         //判断客户信息
         $jud['invite_id'] = $invite_id;

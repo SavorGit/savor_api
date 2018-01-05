@@ -13,6 +13,22 @@ class CustomerController extends BaseController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+
+            case 'editRemark':
+                $this->is_verify = 1;
+                $this->valid_fields = array(
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                    'customer_id'   =>1001,
+                );
+
+            case 'getOnlyLabel':
+                $this->is_verify = 1;
+                $this->valid_fields = array(
+                    'invite_id'     =>1001,
+                    'mobile'        =>1001,
+                );
+                break;
             case 'editManager':
                 $this->is_verify = 1;
                 $this->valid_fields = array(
@@ -66,7 +82,6 @@ class CustomerController extends BaseController{
                 $this->valid_fields = array(
                     'invite_id'     =>1001,
                     'mobile'        =>1001,
-                    'customer_id'    =>1001,
                 );
                 break;
             case 'getCustomerBaseInfo':
@@ -205,6 +220,45 @@ class CustomerController extends BaseController{
     
     }
 
+    public function editRemark(){
+        $invite_id = $this->params['invite_id'];
+        $mobile   = $this->params['mobile'];    //销售手机号
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        $cus_id = $this->params['customer_id'];
+        $field = '*';
+        $mop['id'] = $cus_id;
+        $mop['invite_id'] = $invite_id;
+        $mop['flag'] = 0;
+        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+        $cus_info = $m_dinner_cus->getOne($field, $mop);
+        $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
+        $save['update_time']  =date("Y-m-d H:i:s");
+
+        if($cus_info) {
+            $bool = $m_dinner_cus->saveData($save, $mop);
+            if ($bool) {
+                $this->to_back(10000);
+            } else {
+                $this->to_back(60110);
+            }
+
+        } else {
+            $this->to_back(60107);
+        }
+
+    }
+
     public function getCustomerHistory(){
         $invite_id = $this->params['invite_id'];
         $mobile   = $this->params['mobile'];    //销售手机号
@@ -220,14 +274,7 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-
-        $map['id']  = $this->params['customer_id'];
-        $map['invite_id'] = $invite_id;
-        $map['flag'] = 0;
-        $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $cus_num = $m_dinner_cus->countNums($map);
-        if($cus_num > 0) {
-            $field = 'sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type';
+            $field = 'sct.id customer_id,sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type,sct.face_url';
             $map = array();
             $map['sct.flag'] = 0;
             $map['sa.invite_id'] = $invite_id;
@@ -239,6 +286,14 @@ class CustomerController extends BaseController{
             foreach($res_info as $ra=>$rk) {
                 $mobile_ar = array_filter( array($rk['mobile'], $rk['mobile1']) );
                 $res_info[$ra]['usermobile'] = current($mobile_ar);
+                if ( empty($rk['face_url']) ) {
+
+                    $res_info[$ra]['face_url'] = '';
+                } else {
+                    $res_info[$ra]['face_url'] =
+                        C('TASK_REPAIR_IMG').$rk['face_url'].'?x-oss-process=image/resize,w_100';
+                }
+
                 //判断时间
                 $ltime = strtotime($rk['create_time']);
                 $diff = ($now-$ltime);
@@ -272,14 +327,52 @@ class CustomerController extends BaseController{
             }
             $data['list'] = $res_info;
             $this->to_back($data);
-        } else {
-            $this->to_back(60116);
+    }
+
+
+    public function getOnlyLabel(){
+        $invite_id = $this->params['invite_id'];
+        $mobile   = $this->params['mobile'];    //销售手机号
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
         }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+        $cus_id = $this->params['customer_id'];
+        if($cus_id) {
+            $map['id']  = $cus_id;
+            $map['invite_id'] = $invite_id;
+            $map['flag'] = 0;
+            $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
+            $cus_num = $m_dinner_cus->countNums($map);
+            if($cus_num > 0) {
+                $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
+                $map = array();
+                $map['scl.customer_id'] = $cus_id;
+                $map['scl.flag'] = 0;
+                $field = 'scl.label_id,sdl.NAME label_name';
+                $label_info = $m_customer_lab->getLabelNameByCid($field, $map);
+                if($label_info) {
+                    $data['list'] = $label_info;
+                }else{
+                    $data['list'] = array();
 
-
-
-
-
+                }
+                $this->to_back($data);
+            }else{
+                $this->to_back(60108);
+            }
+        } else {
+            $data['list'] = array();
+            $this->to_back($data);
+        }
     }
 
     public function getCustomerBaseInfo(){
@@ -301,7 +394,7 @@ class CustomerController extends BaseController{
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $field = 'name username,mobile usermobile,mobile1 usermobile1
+        $field = 'id customer_id,name username,mobile usermobile,mobile1 usermobile1
         ,sex,birthday,birthplace,face_url,consume_ability ,remark';
         $cus_info = $m_dinner_cus->getOne($field, $map);
         if($cus_info) {
@@ -445,12 +538,7 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
-                $rcp = empty($cv['recipt'])?'':$cv['recipt'];
-                if(empty($rtp)) {
-                    $cv['recipt'] = '';
-                } else {
-                    $cv['recipt'] = get_oss_host().$rcp;
-                }
+                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'];
                 $count++;
             }
         }
@@ -916,8 +1004,13 @@ class CustomerController extends BaseController{
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
         $save['face_url'] = '';
         if($fimg){
-            $face_arr = parse_url($fimg);
-            $save['face_url'] = $face_arr['path'];
+            $fimg = str_replace('\\','', $fimg);
+            $fimg_arr = json_decode($fimg, true);
+            foreach($fimg_arr as $rv) {
+                $url_arr = parse_url($rv);
+                $save['face_url']  = $url_arr['path'];
+            }
+
         }
 
         $map = array();

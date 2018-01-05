@@ -274,7 +274,7 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
-            $field = 'sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type,sct.face_url';
+            $field = 'sct.id customer_id,sct.name username,sa.create_time,sct.mobile,sct.mobile1,sa.type,sct.face_url';
             $map = array();
             $map['sct.flag'] = 0;
             $map['sa.invite_id'] = $invite_id;
@@ -394,7 +394,7 @@ class CustomerController extends BaseController{
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $field = 'name username,mobile usermobile,mobile1 usermobile1
+        $field = 'id customer_id,name username,mobile usermobile,mobile1 usermobile1
         ,sex,birthday,birthplace,face_url,consume_ability ,remark';
         $cus_info = $m_dinner_cus->getOne($field, $map);
         if($cus_info) {

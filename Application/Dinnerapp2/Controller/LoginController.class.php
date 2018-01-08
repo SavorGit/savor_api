@@ -53,7 +53,7 @@ class LoginController extends BaseController{
             $where = array();
             $where['a.code'] = $invite_code;
             $where['a.flag'] = 0;
-            $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.state,b.id hotel_id,b.name hotel_name',$where);
+            $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.state,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
             if(empty($invite_code_info)){//输入的邀请码不正确
                 $this->to_back(60005);
             }

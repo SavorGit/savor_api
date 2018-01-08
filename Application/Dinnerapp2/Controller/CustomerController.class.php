@@ -1121,6 +1121,34 @@ class CustomerController extends BaseController{
         }
         $flag = 0;
         if(!empty($book_info)){
+            $count = count($book_info);
+            if($count==1){
+                $bi = $book_info[0];
+                
+                $where = '';
+                if(!empty($bi['mobile'])){//第一个手机号不为空
+                    $where .= " (mobile='".$bi['mobile']."'";
+                }
+                if(!empty($bi['mobile1'])){//第二个手机号不为空
+                    if(empty($where)){
+                        $where .=" (mobile1='".$bi['mobile']."'";
+                    }else{
+                        $where .=" or  mobile1='".$bi['mobile']."'";
+                    }
+                }
+                if(!empty($where)){
+                    $where .=") and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+                
+                    if(!empty($nums)){
+                        $this->to_back(60119);
+                    }
+                    /*  $v['invite_id'] = $invite_id;
+                     $m_dinner_customer->add($v); */
+                }
+                
+                
+            }
             //print_r($book_info);exit;
             foreach($book_info as $key=>$v){
                 $where = '';

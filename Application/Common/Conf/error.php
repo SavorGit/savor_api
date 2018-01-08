@@ -187,5 +187,6 @@ return array(
 		'60116'=>'dinner_customer_label_not_exist',
 		'60117'=>'dinner_cosumerecord_type_error',
 		'60118'=>'dinner_customer_tel_notsame',
+	    '60119'=>'dinner_customer_have_exist',
 	),
 );

@@ -128,10 +128,11 @@ class OrderController extends BaseController{
         $where = array();
         $where['invite_id'] = $invite_id;
         $where['flag']      = '0';
-        $start_time = strtotime('Y-m-d 00:00:00',$now_time);
-        $end_time   = strtotime('Y-m-d 23:59:59',$now_time);
+        $start_time = date('Y-m-d 00:00:00',$now_time);
+        $end_time   = date('Y-m-d 23:59:59',$now_time);
         $where['order_time']= array(array('EGT',$start_time),array('ELT',$end_time));
         $today_order_nums = $m_dinner_order->countNums($where);
+
         //明天
         $where = array();
         $where['invite_id'] = $invite_id;

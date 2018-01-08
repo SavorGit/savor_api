@@ -297,6 +297,9 @@ class CustomerController extends BaseController{
                 //判断时间
                 $ltime = strtotime($rk['create_time']);
                 $diff = ($now-$ltime);
+                if($diff<60) {
+                    $dp = '刚刚';
+                }
                 if($diff< 3600) {
                     $dp = floor($diff/60).'分钟';
 

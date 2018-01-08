@@ -394,11 +394,11 @@ class CustomerController extends BaseController{
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
-        $field = 'id customer_id,name username,mobile usermobile,mobile1 usermobile1
-        ,sex,birthday,birthplace,face_url,consume_ability ,remark';
+        $field = 'id customer_id,name ,mobile ,mobile1
+        ,sex,birthday,birthplace,face_url,consume_ability consume_ability_id ,remark';
         $cus_info = $m_dinner_cus->getOne($field, $map);
         if($cus_info) {
-            $abi_num = $cus_info['consume_ability'];
+            $abi_num = $cus_info['consume_ability_id'];
             $config_abi = C('CONSUME_ABILITY');
             $cus_info['consume_ability'] = empty($config_abi[$abi_num])?'':$config_abi[$abi_num];
             $face = $cus_info['face_url'];

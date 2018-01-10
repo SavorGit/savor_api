@@ -16,6 +16,12 @@ class BlackListModel extends Model
 
 	    return $list;
 	}
+	public function getAll($where,$field){
+	    $list = $this->field($field)
+	    ->where($where)
+	    ->select();
+	    return $list;
+	}
     public function countBlackBoxNum(){
         /* $yestoday_time = strtotime('-1 day');
         $yestoday_start = date('Y-m-d 00:00:00',$yestoday_time);

@@ -255,10 +255,10 @@ class HotelController extends BaseController {
         $yestoday_start = date('Y-m-d 00:00:00',$yestoday_time);
         $yestoday_end   = date('Y-m-d 23:59:59',$yestoday_time);
         $where = array();
-        $bwhere['create_time'] = array(array('EGT',$yestoday_start),
-            array('elt',$yestoday_end));
+        /* $bwhere['create_time'] = array(array('EGT',$yestoday_start),
+            array('elt',$yestoday_end)); */
         $bwhere['hotel_id'] = $hotel_id;
-        $black_box = $black_model->getList($bwhere, $bfield);
+        $black_box = $black_model->getAll($bwhere, $bfield);
         if($black_box){
             $black_box = array_column($black_box, 'box_id');
             $black_box = array_flip($black_box);

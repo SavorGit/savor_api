@@ -30,6 +30,10 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('menu_num'=>1001,'hotel_id'=>1001,'type'=>1001);
                 break;
+            case 'rtbAdsList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
         }
         $this->menu_type = array('pro'=>1,'adv'=>2,'all'=>3);
         parent::_init_();
@@ -334,8 +338,42 @@ class ProgramController extends CommonController{
              $this->to_back(16207);
          }
      }
-     
-     
+     /**
+      * @desc 获取B类全量广告列表
+      */
+     public function rtbAdsList(){
+         $hotel_id = $this->params['hotel_id'];
+         $m_rtb_ads = new \Common\Model\PubRtbAdsModel();
+         
+         $field = "c.id,c.oss_addr AS name,c.md5, 'easyMd5' as `md5_type`,
+                   'rtbads' as `type`,c.oss_addr oss_path,c.duration,c.surfix,c.name as chinese_name,a.create_time,a.admaster_sin";
+         $where = array();
+         $now_date = date('Y-m-d H:i:s');
+         $where['h.hotel_id'] = $hotel_id;
+         $where['a.flag'] =0;
+         //$where['a.start_date'] = array('elt',$now_date);
+         $where['a.end_date']   = array('egt',$now_date);
+         $order = 'a.create_time desc';
+
+         $data = $m_rtb_ads->getAdsList($field, $where, $order);
+         //echo $m_rtb_ads->getLastSql();exit;
+         if(empty($data)){
+             $this->to_back(10000);
+         }
+         
+         foreach($data as $key=>$val){
+             if(!empty($val['name'])){
+                 $ttp = explode('/', $val['name']);
+                 $data[$key]['name'] = $ttp[2];
+             }
+             $adsb_arr[] = $val['create_time'];
+             unset($data[$key]['create_time']);
+         }
+         $period = date('YmdHis',strtotime(max($adsb_arr)));
+         $result['period'] = $period;
+         $result['media_list']   = $data;
+         $this->to_back($result);
+     }
      private function changeadvList($res,$type=1){
          if($res){
              foreach ($res as $vk=>$val) {

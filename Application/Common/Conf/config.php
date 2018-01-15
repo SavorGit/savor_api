@@ -34,7 +34,7 @@ return array(
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
-	                                 'Dinnerapp2'), //模块配置
+	                                 'Dinnerapp2','Box'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -205,4 +205,20 @@ return array(
 		'13'=>'2000及以上',
 	),
     'PROGRAM_ADS_CACHE_PRE'=>'program_ads_',
+    'UMENBAI_API_CONFIG' => array(
+        'API_URL'=>'http://msg.umeng.com/api/send',
+        'boxclient'=>array(
+            'android_appkey'=>'58576b54677baa3b41000809',
+            'android_master_secret'=>'v6fr959wpmczeayq34utymxcm7fizufu',
+            //'ios_appkey'=>'59b1260a734be41803000022',
+            //'ios_master_secret' =>'wgyklqy5uu8dacj9yartpic9xmpkezs4',
+        ),
+     ),
+    'AFTER_APP'=>array(
+        0=>"go_app",
+        1=>"go_url",
+        2=>"go_activity",
+        3=>"go_custom",
+    ),
+    'RTB_TAG_PORTRAYAL_PERCENT'=>'0.3',
 );

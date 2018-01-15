@@ -188,5 +188,11 @@ return array(
 		'60117'=>'dinner_cosumerecord_type_error',
 		'60118'=>'dinner_customer_tel_notsame',
 	    '60119'=>'dinner_customer_have_exist',
+	    //盒子接口错误码
+	    '70001'=>'box_not_exist',
+	    '70002'=>'box_mac_error',
+	    '70003'=>'box_device_token_report_error',
+	    '70004'=>'box_room_empty',
+	    '70005'=>'box_device_token_empty',
 	),
 );

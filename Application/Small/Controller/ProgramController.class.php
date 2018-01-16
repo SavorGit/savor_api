@@ -345,7 +345,7 @@ class ProgramController extends CommonController{
          $hotel_id = $this->params['hotel_id'];
          $m_rtb_ads = new \Common\Model\PubRtbAdsModel();
          
-         $field = "c.id,c.oss_addr AS name,c.md5, 'easyMd5' as `md5_type`,
+         $field = "c.id,a.start_date,a.end_date,c.oss_addr AS name,c.md5, 'easyMd5' as `md5_type`,
                    'rtbads' as `type`,c.oss_addr oss_path,c.duration,c.surfix,c.name as chinese_name,a.create_time,a.admaster_sin";
          $where = array();
          $now_date = date('Y-m-d H:i:s');

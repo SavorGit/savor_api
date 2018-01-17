@@ -187,5 +187,11 @@ return array(
     'dinner_order_donot_belong_you'=>'该预订不属于你',
     'dinner_customer_mobile_err'=>'请输入正确的客户手机',
     'dinner_customer_have_exist'=>'导入失败，该用户已经存在',
+    
+    'box_not_exist'=>'该机顶盒不存在',
+    'box_mac_error'=>'mac与机顶盒mac不一致',
+    'box_device_token_report_error'=>'机顶盒device_token上报失败',
+    'box_room_empty' =>'包间不存在',
+    'box_device_token_empty'=>'机顶盒设备号为空',
 
 );

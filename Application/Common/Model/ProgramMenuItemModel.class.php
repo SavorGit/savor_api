@@ -48,8 +48,10 @@ class ProgramMenuItemModel extends Model
 	           case type
 			   when 1 then 'ads'
 			   when 2 then 'pro'
-			   when 3 then 'adv' END AS type 
-	           FROM savor_programmenu_item WHERE menu_id=$menuid and  type in(1,3)";
+			   when 3 then 'adv'
+               when 4 then 'rtbads'
+			   END AS type 
+	           FROM savor_programmenu_item WHERE menu_id=$menuid and  type in(1,3,4)";
 	    $result = $this->query($sql);
 	    return $result;
 	}

@@ -42,6 +42,10 @@ class LabelController extends BaseController{
 
 
     public function getCustomerLable(){
+
+
+
+
         //获取销售经理标签
         $invite_id = $this->params['invite_id'];
         $mobile   = $this->params['mobile'];    //销售手机号
@@ -58,6 +62,13 @@ class LabelController extends BaseController{
             $this->to_back(60019);
         }
         $map['id']  = $this->params['customer_id'];
+        //获取总标签
+        $m_dinner_label = new \Common\Model\DinnerLabelModel();
+        $tag_all['flag'] = 0;
+        $tag_all['default_tag'] = 1;
+        $tag_field = 'id label_id,name label_name';
+        $def_label_arr = $m_dinner_label->getData($tag_field, $tag_all);
+        $def_label_id_arr = array_column($def_label_arr, 'lable_id');
         if($map['id']) {
 
             $map['invite_id'] = $invite_id;
@@ -95,8 +106,7 @@ class LabelController extends BaseController{
                 } else {
                     $ma_info = array();
                 }
-                $data['list'] = $ma_info;
-                $this->to_back($data);
+
             } else {
                 $this->to_back(60108);
             }
@@ -114,15 +124,23 @@ class LabelController extends BaseController{
             } else {
                 $ma_info = array();
             }
-            $data['list'] = $ma_info;
-            $this->to_back($data);
+
+        }
+        $count = count($ma_info);
+        foreach($def_label_arr as $dk=>$dv) {
+
+            if( in_array($dv['label_id'], $ma_info) ) {
+                continue;
+            } else {
+                $ma_info[$count]['light'] = 0;
+                $ma_info[$count]['label_id'] = $dv['label_id'];
+                $ma_info[$count]['label_name'] = $dv['label_name'];
+                $count++;
+            }
         }
 
-
-
-
-
-
+        $data['list'] = $ma_info;
+        $this->to_back($data);
     }
 
 

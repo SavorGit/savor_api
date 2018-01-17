@@ -34,7 +34,7 @@ return array(
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
-	                                 'Dinnerapp2','Box'), //模块配置
+	                                 'Dinnerapp2','Box','Opclient20'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置

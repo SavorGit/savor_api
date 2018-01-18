@@ -578,6 +578,7 @@ class CustomerController extends BaseController{
         $cus['flag'] = 0;
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
+        $m_dinner_c_label = new \Common\Model\DinnerCustomerLabelModel();
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         if($recipt) {
             $recipt = str_replace('\\','', $recipt);
@@ -596,7 +597,10 @@ class CustomerController extends BaseController{
         $save['mobile'] = $usermobile;
         $save['name'] = $username;
         $lable_str  = empty($this->params['lable_id_str'])?0:$this->params['lable_id_str'];
-        //添加点亮的lable_id
+        $lable_str = str_replace('\\','', $lable_str);
+        $lable_arr = json_decode($lable_str, true);
+
+        //添加点亮的lable_id,客户端ID为空,手机号不存在
         if($cus['customer_id'] == 0) {
             //判断手机号是否存在
             $mp = array();
@@ -615,11 +619,25 @@ class CustomerController extends BaseController{
                     $save['recipt'] = $rv;
                     $bool = $m_dinner_record->addData($save);
                 }
+                $c = array();
+                $cp = array();
+                $c['customer_id'] = $cas_info['id'];
+                $cp['flag'] = 1;
+                $m_dinner_c_label->saveData($cp, $c);
+                foreach($lable_arr as $lv) {
+                    $c_lab = array();
+                    $c_lab['label_id'] = $lv;
+                    $c_lab['customer_id'] = $cas_info['id'];
+                    $bool = $m_dinner_c_label->addData($c_lab);
+                }
                 $arp['customer_id'] = $cas_info['id'];
                 $data['list'] = $arp;
                 $this->to_back($data);
             } else {
                 //新增客户
+                $map = array();
+                $map['mobile'] = $usermobile;
+                $map['invite_id'] = $invite_id;
                 $map['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
                 $map['birthplace']         = empty($this->params['birthplace'])?'':$this->params['birthplace'];
                 $map['birthday']           = empty($this->params['birthday'])?'':$this->params['birthday'];
@@ -647,6 +665,12 @@ class CustomerController extends BaseController{
                         $save['recipt'] = $rv;
                         $bool = $m_dinner_record->addData($save);
                     }
+                    foreach($lable_arr as $lv) {
+                        $c_lab = array();
+                        $c_lab['label_id'] = $lv;
+                        $c_lab['customer_id'] = $insid;
+                        $bool = $m_dinner_c_label->addData($c_lab);
+                    }
                     if($bool) {
                         $arp['customer_id'] = $insid;
                         $data['list'] = $arp;
@@ -662,7 +686,7 @@ class CustomerController extends BaseController{
 
 
         } else {
-
+            //cusid不为0
             $cus_num = $m_dinner_customer->countNums($cus);
             if($cus_num > 0) {
                 //判断手机号是否在表中存在
@@ -672,6 +696,7 @@ class CustomerController extends BaseController{
                 $mp['_logic'] = 'or';
                 $map['_complex'] = $mp;
                 $map['flag'] = 0;
+                $map['invite_id'] = $invite_id;
                 $field = 'id';
                 $cus_info = $m_dinner_customer->getOne($field,$map);
 
@@ -682,6 +707,18 @@ class CustomerController extends BaseController{
                         foreach($rec_arr as $rv) {
                             $save['recipt'] = $rv;
                             $bool = $m_dinner_record->addData($save);
+                        }
+                        //覆盖标签
+                        $c = array();
+                        $cp = array();
+                        $c['customer_id'] = $cus_info['id'];
+                        $cp['flag'] = 1;
+                        $m_dinner_c_label->saveData($cp, $c);
+                        $c_lab = array();
+                        foreach($lable_arr as $lv) {
+                            $c_lab['label_id'] = $lv;
+                            $c_lab['customer_id'] = $cus_info['id'];
+                            $bool = $m_dinner_c_label->addData($c_lab);
                         }
                         if($bool) {
                             $this->to_back(10000);

@@ -43,9 +43,6 @@ class LabelController extends BaseController{
 
     public function getCustomerLable(){
 
-
-
-
         //获取销售经理标签
         $invite_id = $this->params['invite_id'];
         $mobile   = $this->params['mobile'];    //销售手机号
@@ -126,10 +123,12 @@ class LabelController extends BaseController{
             }
 
         }
+
         $count = count($ma_info);
+        $ma_info_id_arr = array_column($ma_info, 'label_id');
         foreach($def_label_arr as $dk=>$dv) {
 
-            if( in_array($dv['label_id'], $ma_info) ) {
+            if( in_array($dv['label_id'], $ma_info_id_arr) ) {
                 continue;
             } else {
                 $ma_info[$count]['light'] = 0;

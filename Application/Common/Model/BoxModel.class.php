@@ -10,6 +10,20 @@ use Think\Model;
 class BoxModel extends Model
 {
     protected $tableName='box';
+
+
+    public function getListInfo($fields ,$where, $order,$limit){
+        $data = $this->alias('a')
+            ->join('savor_room as room on a.room_id = room.id ')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($limit)
+            ->select();
+        return $data;
+
+    }
+
     public function getHotelInfoByBoxMac($mac){
         if($mac){
             $sql ="select b.id as box_id,b.name as box_name,b.room_id,r.name as room_name, h.id as hotel_id,

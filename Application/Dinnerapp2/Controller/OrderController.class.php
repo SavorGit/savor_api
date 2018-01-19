@@ -32,10 +32,14 @@ class OrderController extends BaseController{
             case 'updateOrder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_id'=>1001,'order_name'=>1001,
-                                            'order_mobile'=>1001,'person_nums'=>1001,'room_id'=>1001,
+                                            'order_mobile'=>1001,'person_nums'=>1000,'room_id'=>1001,
                                             'room_type'=>1001,'order_time'=>1001);
                 break;
             case 'deleteOrder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_id'=>1001);
+                break;
+            case 'getOrderDetail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('invite_id'=>1001,'mobile'=>1001,'order_id'=>1001);
                 break;
@@ -438,6 +442,50 @@ class OrderController extends BaseController{
             $this->to_back(10000);
         }else {
             $this->to_back(60031);
+        }
+    }
+    /**
+     * @desc 获取预订详情
+     */
+    public function getOrderDetail(){
+        $order_id = $this->params['order_id'];
+        $invite_id  = $this->params['invite_id'];
+        $mobile     = $this->params['mobile'];    //用户手机号
+        
+        if(!check_mobile($mobile)){
+            $this->to_back('60002');
+        }
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $where = array();
+        $where['id'] = $invite_id;
+        $where['state'] = 1;
+        $where['flag'] = '0';
+        $invite_info = $m_hotel_invite_code->getOne('bind_mobile,hotel_id', $where);
+        if(empty($invite_id)){
+            $this->to_back(60018);
+        }
+        if($invite_info['bind_mobile'] != $mobile){
+            $this->to_back(60019);
+        }
+      
+        
+        $m_dinner_order = new \Common\Model\DinnerOrderModel();
+        $fields = 'a.id order_id,a.customer_id,a.room_id,a.room_type,a.order_time,
+                   a.person_nums,a.order_name,a.order_mobile,a.remark,a.is_welcome,
+                   a.is_recfood,a.ticket_url,b.face_url';
+        $where = array();
+        //$where['hotel_id']    = $invite_info['hotel_id'];
+        $where['a.id'] = $order_id;
+        $where['a.flag']        = 0;
+        $order = 'a.order_time asc,a.id asc';
+      
+        
+        $data = $m_dinner_order->getList($fields, $where);
+        if($data){
+            $data = $data[0];
+            $this->to_back($data);
+        }else {
+            $this->to_back(60024);
         }
     }
 }

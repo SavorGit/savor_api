@@ -299,19 +299,21 @@ class CustomerController extends BaseController{
                 $diff = ($now-$ltime);
                 if($diff<60) {
                     $dp = '刚刚';
-                }
-                if($diff< 3600) {
-                    $dp = floor($diff/60).'分钟';
+                } else {
+                    if($diff< 3600) {
+                        $dp = floor($diff/60).'分钟';
 
-                }else if ($diff >= 3600 && $diff <= 86400) {
-                    $hour = floor($diff/3600);
-                    $min = floor($diff%3600/60);
-                    $dp = $hour.'小时'.$min.'分钟';
-                }else if ($diff > 86400) {
-                    $day = floor($diff/86400);
-                    $hour = floor($diff%86400/3600);
-                    $dp = $day.'天'.$hour.'小时';
+                    }else if ($diff >= 3600 && $diff <= 86400) {
+                        $hour = floor($diff/3600);
+                        $min = floor($diff%3600/60);
+                        $dp = $hour.'小时'.$min.'分钟';
+                    }else if ($diff > 86400) {
+                        $day = floor($diff/86400);
+                        $hour = floor($diff%86400/3600);
+                        $dp = $day.'天'.$hour.'小时';
+                    }
                 }
+
                 $res_info[$ra][create_time] = $dp;
                 if($rk['type'] == 1) {
                     $res_info[$ra]['type'] = '新增';
@@ -405,7 +407,7 @@ class CustomerController extends BaseController{
             $config_abi = C('CONSUME_ABILITY');
             $cus_info['consume_ability'] = empty($config_abi[$abi_num])?'':$config_abi[$abi_num];
             $face = $cus_info['face_url'];
-            $cus_info['face_url'] = empty($face)?'':get_oss_host().$face;
+            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face;
 
             if($cus_info['sex'] == 1) {
                 $cus_info['sex'] = '男';
@@ -578,6 +580,7 @@ class CustomerController extends BaseController{
         $cus['flag'] = 0;
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $m_dinner_record = new \Common\Model\DinnerConRecModel();
+        $m_dinner_c_label = new \Common\Model\DinnerCustomerLabelModel();
         $recipt = empty($this->params['recipt'])?'':$this->params['recipt'];
         if($recipt) {
             $recipt = str_replace('\\','', $recipt);
@@ -596,7 +599,10 @@ class CustomerController extends BaseController{
         $save['mobile'] = $usermobile;
         $save['name'] = $username;
         $lable_str  = empty($this->params['lable_id_str'])?0:$this->params['lable_id_str'];
-        //添加点亮的lable_id
+        $lable_str = str_replace('\\','', $lable_str);
+        $lable_arr = json_decode($lable_str, true);
+
+        //添加点亮的lable_id,客户端ID为空,手机号不存在
         if($cus['customer_id'] == 0) {
             //判断手机号是否存在
             $mp = array();
@@ -615,11 +621,25 @@ class CustomerController extends BaseController{
                     $save['recipt'] = $rv;
                     $bool = $m_dinner_record->addData($save);
                 }
+                $c = array();
+                $cp = array();
+                $c['customer_id'] = $cas_info['id'];
+                $cp['flag'] = 1;
+                $m_dinner_c_label->saveData($cp, $c);
+                foreach($lable_arr as $lv) {
+                    $c_lab = array();
+                    $c_lab['label_id'] = $lv;
+                    $c_lab['customer_id'] = $cas_info['id'];
+                    $bool = $m_dinner_c_label->addData($c_lab);
+                }
                 $arp['customer_id'] = $cas_info['id'];
                 $data['list'] = $arp;
                 $this->to_back($data);
             } else {
                 //新增客户
+                $map = array();
+                $map['mobile'] = $usermobile;
+                $map['invite_id'] = $invite_id;
                 $map['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
                 $map['birthplace']         = empty($this->params['birthplace'])?'':$this->params['birthplace'];
                 $map['birthday']           = empty($this->params['birthday'])?'':$this->params['birthday'];
@@ -647,6 +667,12 @@ class CustomerController extends BaseController{
                         $save['recipt'] = $rv;
                         $bool = $m_dinner_record->addData($save);
                     }
+                    foreach($lable_arr as $lv) {
+                        $c_lab = array();
+                        $c_lab['label_id'] = $lv;
+                        $c_lab['customer_id'] = $insid;
+                        $bool = $m_dinner_c_label->addData($c_lab);
+                    }
                     if($bool) {
                         $arp['customer_id'] = $insid;
                         $data['list'] = $arp;
@@ -662,7 +688,7 @@ class CustomerController extends BaseController{
 
 
         } else {
-
+            //cusid不为0
             $cus_num = $m_dinner_customer->countNums($cus);
             if($cus_num > 0) {
                 //判断手机号是否在表中存在
@@ -672,9 +698,9 @@ class CustomerController extends BaseController{
                 $mp['_logic'] = 'or';
                 $map['_complex'] = $mp;
                 $map['flag'] = 0;
+                $map['invite_id'] = $invite_id;
                 $field = 'id';
                 $cus_info = $m_dinner_customer->getOne($field,$map);
-
                 if($cus_info) {
                     $get_cid = $cus_info['id'];
                     if($get_cid == $cus['customer_id']) {
@@ -682,6 +708,18 @@ class CustomerController extends BaseController{
                         foreach($rec_arr as $rv) {
                             $save['recipt'] = $rv;
                             $bool = $m_dinner_record->addData($save);
+                        }
+                        //覆盖标签
+                        $c = array();
+                        $cp = array();
+                        $c['customer_id'] = $cus_info['id'];
+                        $cp['flag'] = 1;
+                        $m_dinner_c_label->saveData($cp, $c);
+                        $c_lab = array();
+                        foreach($lable_arr as $lv) {
+                            $c_lab['label_id'] = $lv;
+                            $c_lab['customer_id'] = $cus_info['id'];
+                            $bool = $m_dinner_c_label->addData($c_lab);
                         }
                         if($bool) {
                             $this->to_back(10000);
@@ -1006,7 +1044,7 @@ class CustomerController extends BaseController{
         $save['flag']               = 0;
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
         $save['face_url'] = '';
-        if($fimg){
+        /*if($fimg){
             $fimg = str_replace('\\','', $fimg);
             $fimg_arr = json_decode($fimg, true);
             foreach($fimg_arr as $rv) {
@@ -1014,8 +1052,11 @@ class CustomerController extends BaseController{
                 $save['face_url']  = $url_arr['path'];
             }
 
+        }*/
+        if ($fimg) {
+            $url_arr = parse_url($fimg);
+            $save['face_url']  = $url_arr['path'];
         }
-
         $map = array();
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;

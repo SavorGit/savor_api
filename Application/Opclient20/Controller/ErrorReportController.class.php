@@ -1,5 +1,5 @@
 <?php
-namespace Opclient\Controller;
+namespace Opclient20\Controller;
 use Think\Controller;
 use \Common\Controller\BaseController as BaseController;
 class ErrorReportController extends BaseController{ 
@@ -28,169 +28,7 @@ class ErrorReportController extends BaseController{
         }
         parent::_init_();
     }
-    /**
-     * @desc 
-     */
-    public function report(){
-        exit(0);
-        //酒楼总数
-        $m_hotel = new \Common\Model\HotelModel();
-        $where = array();
-        $where['state'] = 1;
-        $where['hotel_box_type'] = array('in','2,3');
-        $hotel_all_num = $m_hotel->getHotelCount($where);
-        
-        //正常酒楼 、异常酒楼
-        $end_time = date('Y-m-d H:i:s',strtotime('-10 minutes'));
-        $start_time = date('Y-m-d H:i:s',strtotime('-15 hours'));
-        $m_heart_log = new \Common\Model\HeartLogModel();
-        $m_box = new \Common\Model\BoxModel();
-        $m_tv = new \Common\Model\TvModel();
-        $where = array();
-        
-        $where['state'] = 1;
-        $where['hotel_box_type'] = array('in','2,3');
-        $hotel_list = $m_hotel->getHotelList($where,'','','id');
-        
-        $normal_hotel_num = 0;
-        $not_normal_hotel_num = 0;
-        
-        $normal_small_plat_num = 0;
-        $not_normal_small_plat_num = 0;
-        
-        $normal_box_num = 0;
-        $not_normal_box_num = 0;
-        $not_normal_hotel_arr = array();
-        
-        foreach($hotel_list as $key=>$v){
-            $small_plat_status = 1;
-            $crr_box_not_normal_num = 0;
-            $box_last_report_time = $tmp_time = date('Y-m-d H:i:s');
-            
-            $where = '';
-            $where .=" 1 and hotel_id=".$v['id']." and type=1";
-            $where .="  and last_heart_time>='".$start_time."'";
-            $ret = $m_heart_log->getOnlineHotel($where,'hotel_id');
-            if(!empty($ret)){//小平台有15小时内的心跳 判断机顶盒是否有心跳
-                
-                $flag = 0;
-                //$normal_hotel_num +=1;
-                $where = '';
-                $where .=" 1 and room.hotel_id=".$v['id'].'  and a.state !=2 and a.flag=0  and  room.flag=0 and room.state !=2';  
-                $box_list = $m_box->getList( 'a.id, a.mac',$where);
-                foreach($box_list as $ks=>$vs){
-                    $where = '';
-                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $where .="  and last_heart_time>='".$start_time."'";
-                     
-                    $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
-                    if(empty($rets)){
-                        $not_normal_box_num +=1;
-                        $crr_box_not_normal_num +=1;
-                        $flag = 1;
-                        //$not_normal_hotel_num +=1;
-                        //break;
-                    }else {
-                        $normal_box_num +=1;
-                    }
-                    $where = '';
-                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $rets  = $m_heart_log->getOnlineHotel($where,'last_heart_time');
-                    $box_last_report_time = strtotime($box_last_report_time);
-                    if(!empty($rets)){
-                        $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
-                        if($crr_box_report_time<$box_last_report_time){
-                            $box_last_report_time = $crr_box_report_time;
-                        }
-                    }
-                    $box_last_report_time = date('Y-m-d H:i:s',$box_last_report_time);
-                }
-                
-                if($flag ==1){
-                    $not_normal_hotel_arr[] = $v['id'];
-                    $not_normal_hotel_num +=1;
-                }
-            }else {//小平台没有15小时内的心跳 判断机顶盒是否有心跳
-                $small_plat_status = 0; 
-                $flag = 0;
-                $where = '';
-                $where .=" 1 and room.hotel_id=".$v['id'].' and a.state !=2 and a.flag=0  and  room.flag=0 and room.state !=2';
-                                                            
-                $box_list = $m_box->getList( 'a.id, a.mac',$where);
-                foreach($box_list as $ks=>$vs){
-                    $where = '';
-                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $where .="  and last_heart_time>='".$start_time."'";
-                     
-                    $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
-                    if(empty($rets)){
-                        $not_normal_box_num +=1;
-                        $crr_box_not_normal_num +=1;
-        
-                    }else {
-                        $normal_box_num +=1;
-                    }
-                    $where = '';
-                    $where .=" 1 and hotel_id=".$v['id']." and type=2 and box_mac='".$vs['mac']."'";
-                    $rets  = $m_heart_log->getOnlineHotel($where,'last_heart_time');
-                    $box_last_report_time = strtotime($box_last_report_time);
-                    if(!empty($rets)){
-                        $crr_box_report_time = strtotime($rets[0]['last_heart_time']);
-                        if($crr_box_report_time<$box_last_report_time){
-                            $box_last_report_time = $crr_box_report_time;
-                        }
-                    }
-                    $box_last_report_time = date('Y-m-d H:i:s',$box_last_report_time);
-                }
-        
-                $not_normal_small_plat_num +=1;
-                $not_normal_hotel_num +=1;
-                $not_normal_hotel_arr[] = $v['id'];
-            }
-            //$rets = $m_hotel->getStatisticalNumByHotelId($v['id'],'tv');
-            $rets = $m_box->getTvNumsByHotelid($v['id']);
-            //$rets  = $m_tv->getTvNumsByHotelid($v['id']);
-            $result[$key]['hotel_id'] = $v['id'];
-            $result[$key]['tv_num'] = $rets;
-            $result[$key]['small_plat_status'] = $small_plat_status;
-            $where = array();
-            $where['hotel_id'] = $v['id'];
-            $where['type']  =1;
-            
-            $dt = $m_heart_log->getInfo('last_heart_time',$where);
-            if(!empty($dt)){
-                $result[$key]['small_plat_report_time'] = $dt['last_heart_time'];
-            }else {
-                $result[$key]['small_plat_report_time'] = '';
-            }
-            $result[$key]['not_normal_box_num'] = $crr_box_not_normal_num;
-            if($box_last_report_time == $tmp_time){
-                $box_last_report_time = '';
-            }
-            $result[$key]['box_report_time'] = $box_last_report_time;
-            $result[$key]['create_time'] = date('Y-m-d H:i:s');
-        }
-        
-        $data['hotel_all_num']            = $hotel_all_num;               //酒楼总数
-        $data['not_normal_hotel_num']     = $not_normal_hotel_num;        //异常酒楼
-        $data['not_normal_smallplat_num'] = $not_normal_small_plat_num;   //异常小平台
-        $data['not_normal_box_num']       = $not_normal_box_num;          //异常机顶盒
-        $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
-        $id = $m_hotel_error_report->addInfo($data);
-        if($id){
-            $m_hotel_error_report_detail = new \Common\Model\HotelErrorReportDetailModel();
-            
-            foreach($result as $key=> $v){
-                $result[$key]['error_id'] = $id;
-                
-            }
-           $m_hotel_error_report_detail->addInfo($result,2);
-           
-           echo 'OK';
-        }else {
-           echo 'NOT OK';   
-        }
-    }
+
     /**
      * @desc 异常报告列表
      */
@@ -278,7 +116,7 @@ class ErrorReportController extends BaseController{
         not_box_percent desc,box_lost_hour desc';
         $start  = ($pageNum-1)*$pageSize;
         $hotelUnModel = new \Common\Model\HotelUnusualModel();
-        $where = '1=1';
+        $where = '1=1 and small_plat_status != 2 ';
         $error_info = $hotelUnModel->getList($fileds, $where, $order,$start, $pageSize);
         $m_hotel = new \Common\Model\HotelModel();
         foreach($error_info as $key=>$v){

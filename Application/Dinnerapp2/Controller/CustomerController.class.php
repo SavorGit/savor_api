@@ -299,19 +299,21 @@ class CustomerController extends BaseController{
                 $diff = ($now-$ltime);
                 if($diff<60) {
                     $dp = '刚刚';
-                }
-                if($diff< 3600) {
-                    $dp = floor($diff/60).'分钟';
+                } else {
+                    if($diff< 3600) {
+                        $dp = floor($diff/60).'分钟';
 
-                }else if ($diff >= 3600 && $diff <= 86400) {
-                    $hour = floor($diff/3600);
-                    $min = floor($diff%3600/60);
-                    $dp = $hour.'小时'.$min.'分钟';
-                }else if ($diff > 86400) {
-                    $day = floor($diff/86400);
-                    $hour = floor($diff%86400/3600);
-                    $dp = $day.'天'.$hour.'小时';
+                    }else if ($diff >= 3600 && $diff <= 86400) {
+                        $hour = floor($diff/3600);
+                        $min = floor($diff%3600/60);
+                        $dp = $hour.'小时'.$min.'分钟';
+                    }else if ($diff > 86400) {
+                        $day = floor($diff/86400);
+                        $hour = floor($diff%86400/3600);
+                        $dp = $day.'天'.$hour.'小时';
+                    }
                 }
+
                 $res_info[$ra][create_time] = $dp;
                 if($rk['type'] == 1) {
                     $res_info[$ra]['type'] = '新增';
@@ -405,7 +407,7 @@ class CustomerController extends BaseController{
             $config_abi = C('CONSUME_ABILITY');
             $cus_info['consume_ability'] = empty($config_abi[$abi_num])?'':$config_abi[$abi_num];
             $face = $cus_info['face_url'];
-            $cus_info['face_url'] = empty($face)?'':get_oss_host().$face;
+            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face;
 
             if($cus_info['sex'] == 1) {
                 $cus_info['sex'] = '男';
@@ -699,7 +701,6 @@ class CustomerController extends BaseController{
                 $map['invite_id'] = $invite_id;
                 $field = 'id';
                 $cus_info = $m_dinner_customer->getOne($field,$map);
-
                 if($cus_info) {
                     $get_cid = $cus_info['id'];
                     if($get_cid == $cus['customer_id']) {
@@ -1043,7 +1044,7 @@ class CustomerController extends BaseController{
         $save['flag']               = 0;
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
         $save['face_url'] = '';
-        if($fimg){
+        /*if($fimg){
             $fimg = str_replace('\\','', $fimg);
             $fimg_arr = json_decode($fimg, true);
             foreach($fimg_arr as $rv) {
@@ -1051,8 +1052,11 @@ class CustomerController extends BaseController{
                 $save['face_url']  = $url_arr['path'];
             }
 
+        }*/
+        if ($fimg) {
+            $url_arr = parse_url($fimg);
+            $save['face_url']  = $url_arr['path'];
         }
-
         $map = array();
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;

@@ -99,4 +99,13 @@ class BoxModel extends Model
              ->select();
         return $data;
     }
+    public function countBoxNums($where){
+        $nums = $this->alias('a')
+             
+             ->join('savor_room b on a.room_id= b.id')
+             ->join('savor_hotel c on b.hotel_id=c.id')
+             ->where($where)
+             ->count();
+        return $nums;
+    }
 }

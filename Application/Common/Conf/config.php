@@ -121,6 +121,11 @@ return array(
 		'2'=>'冻结',
 		'3'=>'报损',
 	),
+    'BOX_STATE'=>array(
+        '1'=>'正常',
+        '2'=>'冻结',
+        '3'=>'报损',
+    ),
 	'HOTEL_BOX_TYPE' => array(
 		'1'=>'一代单机版',
 		'2'=>'二代网络版',
@@ -221,4 +226,6 @@ return array(
         3=>"go_custom",
     ),
     'RTB_TAG_PORTRAYAL_PERCENT'=>'0.3',
+    'HEART_LOSS_HOURS'=>'72',
+    'NET_REPORT_KEY'=>'net_report_',
 );

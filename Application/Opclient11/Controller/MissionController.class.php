@@ -249,7 +249,22 @@ $img_arr[$im]['repair_img'];
                 $this->to_back('30066');
                 
             }
-            $repair_info = $m_option_task_repair->getOneRecord('id',array('task_id'=>$save['task_id']));
+            $data = array();
+            $data['task_id'] = $save['task_id'];
+            $data['repair_img'] = $save['repair_img'];
+            $ret = $m_option_task_repair->add($data);
+            if(!$ret){
+                $this->to_back(30106);
+            }
+            $dat['state'] = 4;
+            $map['id'] = $save['task_id'];
+            $dat['complete_time'] = $now_date;
+            $m_option_task = new \Common\Model\OptiontaskModel();
+            $m_option_task->saveData($dat, $map);
+            
+            $this->to_back(array('state'=>4));
+            
+            /* $repair_info = $m_option_task_repair->getOneRecord('id',array('task_id'=>$save['task_id']));
             if(empty($repair_info)){
                 $data = array();
                 $data['task_id'] = $save['task_id'];
@@ -277,7 +292,7 @@ $img_arr[$im]['repair_img'];
             }else {
                 
                $this->to_back(array('state'=>2));
-            }  
+            }  */ 
         }else {
             $this->to_back(30059);
             

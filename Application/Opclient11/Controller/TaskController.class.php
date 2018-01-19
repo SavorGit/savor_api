@@ -81,6 +81,7 @@ class TaskController extends BaseController{
         $addr       = $this->params['addr'];    //酒楼地址
         $tv_nums     = $this->params['tv_nums'];  //版位数量
         $publish_user_id = $this->params['publish_user_id'];  //发布者用户id
+        $desc = $this->params['desc']; //备注
         $m_opuser_role = new \Common\Model\OpuserRoleModel();
         $role_info = $m_opuser_role->getInfoByUserid('role_id', $publish_user_id);
         if(empty($role_info)){//未设置发布者账号
@@ -116,6 +117,7 @@ class TaskController extends BaseController{
         $data['hotel_linkman']   = $contractor;
         $data['hotel_linkman_tel']= $mobile;
         $data['tv_nums']         = $tv_nums ;
+        $data['desc']            = $desc;
      
         $m_option_task = new \Common\Model\OptiontaskModel();
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
@@ -471,7 +473,7 @@ class TaskController extends BaseController{
             
             $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                         a.is_lead_install,a.hotel_address,a.refuse_time,a.refuse_desc,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                        a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id';
+                        a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,a.desc';
             
             
             $where = array();

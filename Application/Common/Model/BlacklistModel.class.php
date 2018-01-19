@@ -32,4 +32,11 @@ class BlackListModel extends Model
         $nums = $this->where()->count();
         return $nums;
     }
+    public function countNums($where){
+        $nums = $this->alias('a')
+             ->join('savor_hotel b on a.hotel_id= b.id','left')
+             ->where($where)
+             ->count();
+        return $nums;
+    }
 }

@@ -92,7 +92,13 @@ class CalculationController extends CommonController{
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $mac_str = $this->params['mac'].'*'.$this->params['clientid'];
-        $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",$this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],$this->params['intranet_ip'],$this->params['period'],$this->params['demand'],$this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],date("YmdHis"));
+        $txt = sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                       $this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],
+                       $this->params['intranet_ip'],$this->params['period'],$this->params['demand'],
+                       $this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],
+                       date("YmdHis"),$this->params['pro_period'],$this->params['adv_period'],
+                       $this->params['pro_download_period'],$this->params['ads_download_period']
+                );
         $bool = $redis->set($mac_str, $txt, 2592000);
         return $bool;
     }

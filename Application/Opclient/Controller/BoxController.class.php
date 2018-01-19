@@ -29,6 +29,7 @@ class BoxController extends BaseController {
                     'state'=>'1001',
                     'type'=>'1001',
                     'hotel_id'=>'1001',
+                    'box_state'=>'1001'
                 );
                 break;
             case 'getRepairRecordListByUserid':
@@ -240,6 +241,22 @@ class BoxController extends BaseController {
             $bop = $redMo->addData($rdeital_arr, 2);
             if ($bop) {
                 $repairMo->commit();
+                
+                
+                $box_state = $this->params['box_state'];
+                if($box_state){
+                    $m_box = new \Common\Model\BoxModel();
+                    $where = array();
+                    $box_mac = $this->params['box_mac'];
+                    $box_info = $m_box->getBoxInfoByMac($box_mac);
+                    if($box_info['state'] != $box_state){
+                        $where['mac'] = $box_mac;
+                        $where['flag'] = 0;
+                        $data['state'] = $box_state;
+                        $m_box->saveData($data, $where);
+                    }
+                    
+                }
                 $this->to_back(10000);
             } else {
                 $repairMo->rollback();

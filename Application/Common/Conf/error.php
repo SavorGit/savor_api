@@ -110,6 +110,8 @@ return array(
 		'30111'=>'option_task_bind_mac_have',
 		'30112'=>'option_bind_mac_update_fail',
         '30113'=>'option_task_type_changed',
+	    '30114'=>'option_ads_list_err',
+	    '30115'=>'option_pro_empty',
 
 	    '30062'=>'option_task_not_new_task',
 	    '30063'=>'option_task_refuse_err',

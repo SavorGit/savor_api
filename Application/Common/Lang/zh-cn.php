@@ -104,6 +104,8 @@ return array(
     'option_task_type_changed'=>'任务类型不一致',
     'option_task_upload_img_nums_err'=>'上传照片数量错误',
     'option_task_bind_mac_repeat'=>'绑定MAC与机顶盒MAC相同',
+    'option_ads_list_err'=>'无法获取当前下载得广告列表',
+    'option_pro_empty'=>'该节目单不存在',
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

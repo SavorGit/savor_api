@@ -195,7 +195,6 @@ class ProgramController extends CommonController{
          }
          $m_box = new \Common\Model\BoxModel();
          $list = $m_box->getBoxListByHotelid('a.id box_id,a.mac as box_mac', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
-          
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
          }
@@ -277,6 +276,37 @@ class ProgramController extends CommonController{
       */
      public function updateAdsDownState(){
          $ads_num = $this->params['menu_num'];
+         $box_id  = $this->params['box_id'];
+         $cache_key =C('PROGRAM_ADS_CACHE_PRE').$box_id;
+         //echo $cache_key;exit;
+         $redis = new SavorRedis();
+         $redis->select(12);
+         $ads_arr = $redis->get($cache_key);
+         if(!empty($ads_arr)){
+             $ads_arr = json_decode($ads_arr,true);
+             if($ads_arr['menu_num'] != $ads_num){
+                 $this->to_back(16206);
+             }
+             
+             $pubs_ads_arr = array_column($ads_arr['ads_list'], 'pub_ads_id');
+             $pubs_ads_arr = array_unique($pubs_ads_arr);
+             $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
+             foreach($pubs_ads_arr as $v){
+                 $where = array();
+                 $where['box_id'] = $box_id;
+                 $where['down_state'] = 0;
+                 $where['pub_ads_id'] = $v;
+                 $data['down_state'] = 1;
+                 $data['update_time'] = date('Y-m-d H:i:s');
+                 $m_pub_ads_box->updateInfo($where,$data);
+             }
+             $this->to_back(10000);
+         }else {
+             $this->to_back(16206);
+         }
+         
+         
+         /* $ads_num = $this->params['menu_num'];
          $redis = new SavorRedis();
          $redis->select(12);
          $ads_arr = $redis->get($ads_num);
@@ -294,7 +324,9 @@ class ProgramController extends CommonController{
              $this->to_back(10000);
          }else {
              $this->to_back(16206);
-         }
+         } */
+         
+         
          
      }
      /**

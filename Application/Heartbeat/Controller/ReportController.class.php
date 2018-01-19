@@ -46,6 +46,12 @@ class ReportController extends CommonController{
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
         $data['teamviewer_id'] = I('get.teamviewer_id'); //远程id
         
+        //20170115 新增
+        $data['pro_period'] = I('get.pro_period','','trim');  //当前节目号
+        $data['adv_period'] = I('get.adv_period','','trim');  //当前宣传片期号
+        $data['pro_download_period'] = I('get.pro_download_period','','trim'); //下载节目期号
+        $data['ads_download_period'] = I('get.ads_download_period','','trim');  //下载广告期号
+                
         if(empty($data['mac'])){
             $this->to_back(10004);
         }
@@ -79,6 +85,11 @@ class ReportController extends CommonController{
         $ret['smallWebVersion'] = $data['war'];
         $ret['outerIp'] = $data['outside_ip'];
         $ret['innerIp'] = $data['intranet_ip'];
+        $ret['teamviewer_id'] = $data['teamviewer_id'];
+        $ret['pro_period']  = $data['pro_period'];
+        $ret['adv_period'] = $data['adv_period'];
+        $ret['pro_download_period'] = $data['pro_download_period'];
+        $ret['ads_download_period'] = $data['ads_download_period'];
         $this->to_back($ret);
     }
     /**
@@ -277,6 +288,11 @@ class ReportController extends CommonController{
                         $map['apk_version'] = $ret_arr[6];
                         $map['war_version'] = $ret_arr[7];
                         $map['logo_period'] = $ret_arr[8];
+                        
+                        $map['pro_period']  = $ret_arr[11];
+                        $map['adv_period']  = $ret_arr[12];
+                        $map['pro_download_period'] = $ret_arr[13];
+                        $map['ads_download_period'] = $ret_arr[14];
                         $ret = $m_heart_log->add($map);
                     }else {
                         $last_heart_time = date('Y-m-d H:i:s',strtotime($ret_arr[10]));
@@ -299,6 +315,11 @@ class ReportController extends CommonController{
                             $map['apk_version'] = $ret_arr[6];
                             $map['war_version'] = $ret_arr[7];
                             $map['logo_period'] = $ret_arr[8];
+                            
+                            $map['pro_period']  = $ret_arr[11];
+                            $map['adv_period']  = $ret_arr[12];
+                            $map['pro_download_period'] = $ret_arr[13];
+                            $map['ads_download_period'] = $ret_arr[14];
                             $m_heart_log->where(array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid))->save($map);
                                     
                         }

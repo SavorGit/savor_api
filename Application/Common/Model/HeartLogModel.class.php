@@ -39,4 +39,15 @@ class HeartLogModel extends Model
 		return $result;
 
 	}
+	public function getHotelList($fields,$where,$order,$limit,$group){
+	    $data = $this->alias('a')
+	         ->join('savor_hotel b on a.hotel_id= b.id','left')
+	         ->field($fields)
+	         ->where($where)
+	         ->order($order)
+	         ->limit($limit)
+	         ->group($group)
+	         ->select();
+	    return $data;
+	}
 }

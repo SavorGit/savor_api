@@ -185,9 +185,9 @@ class OrderController extends BaseController{
         
         $customer_id  = $this->params['customer_id'];   //客户id
         
-        if(!empty($order_mobile) && !check_mobile($order_mobile)){
+        /* if(!empty($order_mobile) && !check_mobile($order_mobile)){
             $this->to_back('60034');
-        }
+        } */
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $where = " `mobile`='$order_mobile' or `mobile1`='$order_mobile' and invite_id=".$invite_id;
         $customer_info = $m_dinner_customer->getOne('id',$where);
@@ -482,6 +482,41 @@ class OrderController extends BaseController{
         
         $data = $m_dinner_order->getList($fields, $where);
         if($data){
+            //$data = $data[0];
+            $m_room = new \Common\Model\RoomModel();
+            $m_dinner_room = new \Common\Model\DinnerRoomModel();
+            $oss_path = C('TASK_REPAIR_IMG');
+            
+            foreach($data as $key=>$v){
+                
+                if($v['room_type']==1){//酒楼包间
+                    $room_info = $m_room->getOne('name',array('id'=>$v['room_id']));
+                }else if($v['room_type']==2){//手动添加包间
+                    $room_info = $m_dinner_room->getOne('name', array('id'=>$v['room_id']));
+                }
+                $data[$key]['room_name'] = $room_info['name'];
+                
+                $data[$key]['time_str'] = date('Y-m-d',strtotime($v['order_time']));
+                $data[$key]['moment_str'] = date('H:i',strtotime($v['order_time']));
+                if(empty($v['ticket_url'])){//消费记录
+                    $data[$key]['is_expense'] = 0;
+                }else {
+                    $data[$key]['is_expense'] = 1;
+                }
+                if(empty($v['remark'])){
+                    //unset($data[$key]['remark']);
+                    $data[$key]['remark'] = "";
+                }
+                if(!empty($v['face_url'])){
+                    $data[$key]['face_url'] = $oss_path.$v['face_url'].'?x-oss-process=image/resize,w_100';
+                }
+                
+                //unset($data[$key]['room_id']);
+                //unset($data[$key]['room_type']);
+                unset($data[$key]['order_time']);
+                unset($data[$key]['ticket_url']);
+                
+            }
             $data = $data[0];
             $this->to_back($data);
         }else {

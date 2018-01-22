@@ -131,6 +131,7 @@ class CustomerController extends BaseController{
      * @desc 导入通讯录
      */
     public function  importInfo(){
+        exit();
         $invite_id = $this->params['invite_id'];
         $mobile   = $this->params['mobile'];    //用户手机号
         //$hotel_id = $this->params['hotel_id'];  //酒楼id
@@ -400,7 +401,7 @@ class CustomerController extends BaseController{
         $map['flag'] = 0;
         $m_dinner_cus = new \Common\Model\DinnerCustomerModel();
         $field = 'id customer_id,name ,mobile ,mobile1
-        ,sex,birthday,birthplace,face_url,consume_ability consume_ability_id ,remark';
+        ,sex,birthday,birthplace,face_url,consume_ability consume_ability_id ,remark,bill_info';
         $cus_info = $m_dinner_cus->getOne($field, $map);
         if($cus_info) {
             $abi_num = $cus_info['consume_ability_id'];
@@ -409,11 +410,11 @@ class CustomerController extends BaseController{
             $face = $cus_info['face_url'];
             $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face;
 
-            if($cus_info['sex'] == 1) {
+           /*  if($cus_info['sex'] == 1) {
                 $cus_info['sex'] = '男';
             } else {
                 $cus_info['sex'] = '女';
-            }
+            } */
             //获取标签
 
             $m_customer_lab = new \Common\Model\DinnerCustomerLabelModel();
@@ -860,11 +861,11 @@ class CustomerController extends BaseController{
             $tel_b = '';
         }
         //验证手机格式
-        foreach ($usermobile_arr as $uv ) {
+       /*  foreach ($usermobile_arr as $uv ) {
             if(!empty($uv) &&!check_mobile($uv)){
                 $this->to_back(60002);
             }
-        }
+        } */
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
@@ -903,13 +904,13 @@ class CustomerController extends BaseController{
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;
         $save['update_time'] = date("Y-m-d H:i:s");
-        if($c_id) {
+        /* if($c_id) {
             $field = '*';
             $mop['id'] = $c_id;
             $mop['invite_id'] = $invite_id;
             $mop['flag'] = 0;
             $cus_info = $m_dinner_customer->getOne($field, $mop);
-            if($cus_info) {
+             if($cus_info) {
                 $mobile = $cus_info['mobile'];
                 $mobile1 = $cus_info['mobile1'];
                 //没更新改过
@@ -981,9 +982,53 @@ class CustomerController extends BaseController{
 
         } else {
             $this->to_back(60107);
+        } */
+        $field = '*';
+        $mop['id'] = $c_id;
+        $mop['invite_id'] = $invite_id;
+        $mop['flag'] = 0;
+        $cus_info = $m_dinner_customer->getOne($field, $mop);
+        if(empty($cus_info)){
+            $this->to_back(60108);
         }
-
-
+        if($tel_a && $tel_b){
+            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id}";
+            $nums = $m_dinner_customer->countNums($where);
+            if(!empty($nums)){
+                $this->to_back(60105);
+            }
+            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id}";
+            $nums = $m_dinner_customer->countNums($where);
+            if(!empty($nums)){
+                $this->to_back(60106);
+            }
+        }else if($tel_a  && empty($tel_b)){
+            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id}";
+            $nums = $m_dinner_customer->countNums($where);
+            if(!empty($nums)){
+                $this->to_back(60105);
+            }
+        }else if(empty($tel_a) && !empty($tel_b)){
+            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id}";
+            $nums = $m_dinner_customer->countNums($where);
+            if(!empty($nums)){
+                $this->to_back(60106);
+            }
+        }
+        $save['mobile'] = $tel_a;
+        $save['mobile1'] = $tel_b;
+        $rp['id'] = $c_id;
+        $bool = $m_dinner_customer->saveData($save, $rp);
+        if($bool) {
+            $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+            $log_arr['action_id'] = $c_id;
+            $log_arr['type'] = 2;
+            $log_arr['invite_id'] = $invite_id;
+            $m_dinner_customer_log->addData($log_arr);
+            $this->to_back(10000);
+        } else {
+            $this->to_back(60110);
+        }
     }
 
     public function addCustomer() {
@@ -1011,11 +1056,11 @@ class CustomerController extends BaseController{
         }
 
         //验证手机格式
-        foreach ($usermobile_arr as $uv ) {
+        /* foreach ($usermobile_arr as $uv ) {
             if(!empty($uv) &&!check_mobile($uv)){
                 $this->to_back(60002);
             }
-        }
+        } */
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
@@ -1164,7 +1209,7 @@ class CustomerController extends BaseController{
             $this->to_back(60015);
         }
         $flag = 0;
-        if(!empty($book_info)){
+        /* if(!empty($book_info)){
             $count = count($book_info);
             if($count==1){
                 $bi = $book_info[0];
@@ -1187,13 +1232,11 @@ class CustomerController extends BaseController{
                     if(!empty($nums)){
                         $this->to_back(60119);
                     }
-                    /*  $v['invite_id'] = $invite_id;
-                     $m_dinner_customer->add($v); */
+                    
                 }
                 
                 
             }
-            //print_r($book_info);exit;
             foreach($book_info as $key=>$v){
                 $where = '';
                 if(!empty($v['mobile'])){//第一个手机号不为空
@@ -1213,8 +1256,7 @@ class CustomerController extends BaseController{
                     if(!empty($nums)){
                         continue;
                     }
-                   /*  $v['invite_id'] = $invite_id;
-                    $m_dinner_customer->add($v); */
+                   
                 }
                 $v['invite_id'] = $invite_id;
                 $m_dinner_customer->add($v);
@@ -1231,6 +1273,49 @@ class CustomerController extends BaseController{
             }else {
                 $this->to_back(60016);
             }
+        }else {
+            $this->to_back(60017);
+        } */
+        if(!empty($book_info)){
+            $where = '';
+            foreach($book_info as $key=>$v){
+                /* $v['mobile'] = str_replace('+86', '', $v['mobile']);
+                $v['mobile1']= str_replace('+86', '', $v['mobile1']); */
+                if(!empty($v['mobile']) && !empty($v['mobile1'])){
+                    $where = " mobile ='".$v['mobile']."' or mobile1='{$v['mobile1']}' and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+                    if(!empty($nums)){
+                        continue;
+                    }
+                }else if(!empty($v['mobile']) && empty($v['mobile1'])){
+                    $where = " mobile ='".$v['mobile']."'  and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+                    if(!empty($nums)){
+                        continue;
+                    }
+                }else if(empty($v['mobile']) && !empty($v['mobile1'])){
+                    $where = "  mobile1='{$v['mobile1']}' and invite_id=$invite_id";
+                    $nums = $m_dinner_customer->countNums($where);
+                    if(!empty($nums)){
+                        continue;
+                    }
+                }
+                $v['invite_id'] = $invite_id;
+                $m_dinner_customer->add($v);
+                $customer_id = $m_dinner_customer->getLastInsID();
+                $v['customer_id'] = $customer_id;
+                $list[$flag] = $v;
+                
+                $flag ++;
+            }
+            if($flag){
+                $data = array();
+                $data['customer_list'] = $list;
+                $this->to_back($data);
+            }else {
+                $this->to_back(60016);
+            }
+            
         }else {
             $this->to_back(60017);
         }

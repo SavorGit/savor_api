@@ -408,7 +408,7 @@ class CustomerController extends BaseController{
             $config_abi = C('CONSUME_ABILITY');
             $cus_info['consume_ability'] = empty($config_abi[$abi_num])?'':$config_abi[$abi_num];
             $face = $cus_info['face_url'];
-            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face;
+            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face.'?x-oss-process=image/resize,w_100';
 
            /*  if($cus_info['sex'] == 1) {
                 $cus_info['sex'] = '男';
@@ -544,7 +544,7 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
-                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'];
+                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'].'?x-oss-process=image/resize,w_100';
                 $count++;
             }
         }

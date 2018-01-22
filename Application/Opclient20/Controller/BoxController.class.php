@@ -76,6 +76,7 @@ class BoxController extends BaseController{
         $where['box_mac'] = $box_info['mac'];
         
         $box_heart_info = $m_heart_log->getInfo('last_heart_time,ads_period,pro_period,adv_period,pro_download_period,ads_download_period,adv_period',$where);
+        $data['last_heart_time'] = $box_heart_info['last_heart_time'];
         $diff_time = time() - strtotime($box_heart_info['last_heart_time']);
         
         $diff_hours = $diff_time/3600;
@@ -148,7 +149,8 @@ class BoxController extends BaseController{
         //当前播放列表
         $data['pro_period'] = $box_heart_info['pro_period'];  //当前节目期号
         $data['ads_period'] = $box_heart_info['ads_period'];  //当前广告期号
-        //print_r($data);exit;    
+        //print_r($data);exit;  
+        $program_list = array();  
         if($data['pro_period']){
             $m_program_list = new \Common\Model\ProgramMenuListModel();
             $program_info  = $m_program_list->getOne('id', array('menu_num'=>$data['pro_period']));
@@ -162,6 +164,7 @@ class BoxController extends BaseController{
                 
                 foreach($program_list as $key=>$v){
                     if($v['type'] ==2){
+                        
                         if($pro_same_flag ==0){
                             $program_list[$key]['flag'] = 0;
                         }else {
@@ -198,8 +201,12 @@ class BoxController extends BaseController{
                     }
                     
                 }
+                $result = array();
+                foreach($program_list as $key=>$v){
+                    $result[] = $v;
+                }
                 
-                $data['program_list'] = $program_list;
+                $data['program_list'] = $result;
             }
         }
         $this->to_back($data);

@@ -144,109 +144,42 @@ class SystemController extends BaseController{
         $hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
         $data['list']['hotel']['hotel_all_freeze_nums'] = $hotel_all_freeze_nums;
         
-        //3.4一代酒楼总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['hotel_box_type'] = 1;
-        if($city_id) $where['area_id'] = $city_id;
-        $f_hotel_all_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['f_hotel_all_nums'] = $f_hotel_all_nums;
+        $hotel_type_arr = array( array('name'=>'一代','ids'=>'1'),array('name'=>'二代','ids'=>'2'),
+                                 array('name'=>'5G','ids'=>'3'),array('name'=>'三代','ids'=>'5,6'));
         
-        //3.5一代酒楼正常总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 1;
-        $where['hotel_box_type'] = 1;
-        if($city_id) $where['area_id'] = $city_id;
-        $f_hotel_all_normal_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['f_hotel_all_normal_nums'] = $f_hotel_all_normal_nums;
+        foreach($hotel_type_arr as $key=> $v){
+            $temp = array();
+            $temp['name'] = $v['name'];
+            //一代酒楼总数
+            $where = array();
+            $where['flag'] = 0;
+            $where['hotel_box_type'] = array('in',$v);
+            if($city_id) $where['area_id'] = $city_id;
+            $hotel_all_nums = $m_hotel->getHotelCount($where);
+            //$data['list']['hotel'][$key]['hotel_all_nums'] = $f_hotel_all_nums;
+            $temp['hotel_all_nums'] = $hotel_all_nums;
+            //一代酒楼正常总数
+            $where = array();
+            $where['flag'] = 0;
+            $where['state'] = 1;
+            $where['hotel_box_type'] = array('in',$v);
+            if($city_id) $where['area_id'] = $city_id;
+            $hotel_all_normal_nums = $m_hotel->getHotelCount($where);
+            //$data['list']['hotel'][$key]['hotel_all_normal_nums'] = $f_hotel_all_normal_nums;
+            $temp['hotel_all_normal_nums'] = $hotel_all_normal_nums;
+            //一代酒楼冻结总数
+            $where = array();
+            $where['flag'] = 0;
+            $where['state'] = 2;
+            $where['hotel_box_type'] = 1;
+            if($city_id) $where['area_id'] = $city_id;
+            $hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
+            //$data['list']['hotel'][$key]['hotel_all_freeze_nums'] = $f_hotel_all_freeze_nums;
+            $temp['hotel_all_freeze_nums'] = $hotel_all_freeze_nums;
+            
+            $data ['list']['hotel']['list'][] = $temp;
+        }
         
-        //3.6一代酒楼冻结总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 2;
-        $where['hotel_box_type'] = 1;
-        if($city_id) $where['area_id'] = $city_id;
-        $f_hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['f_hotel_all_freeze_nums'] = $f_hotel_all_freeze_nums;
-        
-        //3.7二代酒楼总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['hotel_box_type'] = 2;
-        if($city_id) $where['area_id'] = $city_id;
-        $s_hotel_all_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s_hotel_all_nums'] = $s_hotel_all_nums;
-        
-        //3.8二代酒楼正常总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 1;
-        $where['hotel_box_type'] = 2;
-        if($city_id) $where['area_id'] = $city_id;
-        $s_hotel_all_normal_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s_hotel_all_normal_nums'] = $s_hotel_all_normal_nums;
-        
-        //3.9二代酒楼冻结总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 2;
-        $where['hotel_box_type'] = 2;
-        if($city_id) $where['area_id'] = $city_id;
-        $s_hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s_hotel_all_freeze_nums'] = $s_hotel_all_freeze_nums;
-        
-        //3.10二代5G酒楼总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['hotel_box_type'] = 3;
-        if($city_id) $where['area_id'] = $city_id;
-        $s5_hotel_all_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s5_hotel_all_nums'] = $s5_hotel_all_nums;
-        
-        //3.11二代5G酒楼正常总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 1;
-        $where['hotel_box_type'] = 3;
-        if($city_id) $where['area_id'] = $city_id;
-        $s5_hotel_all_normal_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s5_hotel_all_normal_nums'] = $s5_hotel_all_normal_nums;
-        
-        //3.12二代5G酒楼冻结总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 2;
-        $where['hotel_box_type'] = 3;
-        if($city_id) $where['area_id'] = $city_id;
-        $s5_hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['s5_hotel_all_freeze_nums'] = $s5_hotel_all_freeze_nums;
-        
-        //3.13三代酒楼总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['hotel_box_type'] = array('in',array(5,6));
-        if($city_id) $where['area_id'] = $city_id;
-        $t_hotel_all_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['t_hotel_all_nums'] = $t_hotel_all_nums;
-        
-        //3.14三代酒楼正常总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 1;
-        $where['hotel_box_type'] = array('in',array(5,6));
-        if($city_id) $where['area_id'] = $city_id;
-        $t_hotel_all_normal_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['t_hotel_all_normal_nums'] = $t_hotel_all_normal_nums;
-        
-        //3.15三代酒楼冻结总数
-        $where = array();
-        $where['flag'] = 0;
-        $where['state'] = 2;
-        $where['hotel_box_type'] = array('in',array(5,6));
-        if($city_id) $where['area_id'] = $city_id;
-        $t_hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
-        $data['list']['hotel']['t_hotel_all_freeze_nums'] = $t_hotel_all_freeze_nums;
         
         
         //4.1小平台总数
@@ -317,7 +250,57 @@ class SystemController extends BaseController{
         $box_freeze_all_num = $m_box->countBoxNums($where);
         $data['list']['box']['freeze_all_num'] = $box_freeze_all_num;
         
-        //一代总数
+        
+        foreach($hotel_type_arr as $key=>$v){
+            $temp = array();
+            $temp['name'] = $v['name'];
+            //总数
+            $where = array();
+            $where['a.flag'] = 0;
+            $where['c.flag'] = 0;
+            $where['c.state'] = 1;
+            if($city_id) $where['c.area_id'] = $city_id;
+            $where['c.hotel_box_type'] = array('in',$v);
+            $box_normal_all_num = $m_box->countBoxNums($where);
+            //$data['list']['box']['f_all_num'] = $f_box_normal_all_num;
+            $temp['box_normal_all_num'] = $box_normal_all_num;
+            //正常
+            $where = array();
+            $where['a.flag'] = 0;
+            $where['a.state']= 1;
+            $where['c.flag'] = 0;
+            $where['c.state'] = 1;
+            if($city_id) $where['c.area_id'] = $city_id;
+            $where['c.hotel_box_type'] = array('in',$v);
+            $box_normal_all_num = $m_box->countBoxNums($where);
+            //$data['list']['box']['f_normal_all_num'] = $f_box_normal_all_num;
+            $temp['box_normal_all_num'] = $box_normal_all_num;
+            
+            //报损
+            $where = array();
+            $where['a.flag'] = 0;
+            $where['a.state']= 3;
+            $where['c.flag'] = 0;
+            $where['c.state'] = 1;
+            if($city_id) $where['c.area_id'] = $city_id;
+            $where['c.hotel_box_type'] = array('in',$v);
+            $box_freeze_all_num = $m_box->countBoxNums($where);
+            $temp['box_freeze_all_num'] = $box_freeze_all_num;
+            
+            //冻结
+            $where = array();
+            $where['a.flag'] = 0;
+            $where['a.state']= 2;
+            $where['c.flag'] = 0;
+            $where['c.state'] = 1;
+            if($city_id) $where['c.area_id'] = $city_id;
+            $where['c.hotel_box_type'] = 1;
+            $box_freeze_all_num = $m_box->countBoxNums($where);
+            $temp['freeze_all_num'] = $box_freeze_all_num;
+            $data['list']['box']['list'][] = $temp;
+        }
+        
+       /*  //一代总数
         $where = array();
         $where['a.flag'] = 0;
         $where['c.flag'] = 0;
@@ -480,7 +463,7 @@ class SystemController extends BaseController{
         if($city_id) $where['c.area_id'] = $city_id;
         $where['c.hotel_box_type'] = array('in',array(5,6));
         $t_box_freeze_all_num = $m_box->countBoxNums($where);
-        $data['list']['box']['t_freeze_all_num'] = $t_box_freeze_all_num;
+        $data['list']['box']['t_freeze_all_num'] = $t_box_freeze_all_num; */
         
         
         

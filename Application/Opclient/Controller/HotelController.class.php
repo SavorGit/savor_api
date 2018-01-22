@@ -333,7 +333,7 @@ class HotelController extends BaseController {
                 $box_list[$bk]['repair_record'] = $rinfo;
             }
             unset($box_list[$bk]['ltime']);
-            unset($box_list[$bk]['box_id']);
+            //unset($box_list[$bk]['box_id']);
         }
         $data['list']['box_info'] = $box_list;
         $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个)';

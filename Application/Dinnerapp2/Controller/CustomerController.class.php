@@ -319,14 +319,14 @@ class CustomerController extends BaseController{
                 if($rk['type'] == 1) {
                     $res_info[$ra]['type'] = '新增';
                 }
-                if($rk['type'] == 2) {
+                if($rk['type'] == 3) {
                     $res_info[$ra]['type'] = '修改';
                 }
-                if($rk['type'] == 3) {
+                if($rk['type'] == 2) {
                     $res_info[$ra]['type'] = '查看';
                 }
                 if($rk['type'] == 4) {
-                    $res_info[$ra]['type'] = '预定';
+                    $res_info[$ra]['type'] = '预订';
                 }
                 unset($res_info[$ra]['mobile']);
                 unset($res_info[$ra]['mobile1']);
@@ -435,7 +435,7 @@ class CustomerController extends BaseController{
             }
             $data['list'] = $cus_info;
             $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
-          
+
             $log_arr['action_id'] =  $this->params['customer_id'];
             $log_arr['type'] = 2;
             $log_arr['invite_id'] = $invite_id;
@@ -1018,7 +1018,7 @@ class CustomerController extends BaseController{
         if($bool) {
             $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
             $log_arr['action_id'] = $c_id;
-            $log_arr['type'] = 2;
+            $log_arr['type'] = 3;
             $log_arr['invite_id'] = $invite_id;
             $m_dinner_customer_log->addData($log_arr);
             $this->to_back(10000);

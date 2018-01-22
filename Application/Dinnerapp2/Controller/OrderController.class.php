@@ -245,6 +245,7 @@ class OrderController extends BaseController{
             $data = array();
             $data['action_id'] = $customer_id;
             $data['type']      = 4;
+            $data['invite_id'] = $invite_id;
             $m_dinner_action_log = new \Common\Model\DinnerActionLogModel();
             $m_dinner_action_log ->add($data);
             $data = array();

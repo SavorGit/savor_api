@@ -28,6 +28,12 @@ class DinnerCustomerLabelModel extends Model
 		$ret = $this->where($where)->save($data);
 		return $ret;
 	}
+
+	public function delData($where){
+		$ret = $this->where($where)->delete();
+		return $ret;
+	}
+
 	public function getOne($fields,$where){
 		$data = $this->field($fields)->where($where)->find();
 		return $data;

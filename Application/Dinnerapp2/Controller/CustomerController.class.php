@@ -408,7 +408,7 @@ class CustomerController extends BaseController{
             $config_abi = C('CONSUME_ABILITY');
             $cus_info['consume_ability'] = empty($config_abi[$abi_num])?'':$config_abi[$abi_num];
             $face = $cus_info['face_url'];
-            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face;
+            $cus_info['face_url'] = empty($face)?'':C('TASK_REPAIR_IMG').$face.'?x-oss-process=image/resize,w_100';
 
            /*  if($cus_info['sex'] == 1) {
                 $cus_info['sex'] = '男';
@@ -434,6 +434,12 @@ class CustomerController extends BaseController{
                 }
             }
             $data['list'] = $cus_info;
+            $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+          
+            $log_arr['action_id'] =  $this->params['customer_id'];
+            $log_arr['type'] = 2;
+            $log_arr['invite_id'] = $invite_id;
+            $m_dinner_customer_log->addData($log_arr);
             $this->to_back($data);
         } else {
             $this->to_back(60108);
@@ -544,7 +550,7 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
-                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'];
+                $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'].'?x-oss-process=image/resize,w_100';
                 $count++;
             }
         }
@@ -590,8 +596,7 @@ class CustomerController extends BaseController{
         }
         $rec_arr = array();
         foreach($recipt as $rv) {
-            $url_arr = parse_url($rv);
-            $rec_arr[]  = $url_arr['path'];
+            $rec_arr[]  = $this->judgeThumb($rv);
         }
         $save['invite_id'] = $invite_id;
         $username  = empty($this->params['name'])?'':$this->params['name'];
@@ -626,7 +631,7 @@ class CustomerController extends BaseController{
                 $cp = array();
                 $c['customer_id'] = $cas_info['id'];
                 $cp['flag'] = 1;
-                $m_dinner_c_label->saveData($cp, $c);
+                $m_dinner_c_label->delData($c);
                 foreach($lable_arr as $lv) {
                     $c_lab = array();
                     $c_lab['label_id'] = $lv;
@@ -715,7 +720,7 @@ class CustomerController extends BaseController{
                         $cp = array();
                         $c['customer_id'] = $cus_info['id'];
                         $cp['flag'] = 1;
-                        $m_dinner_c_label->saveData($cp, $c);
+                        $m_dinner_c_label->delData($c);
                         $c_lab = array();
                         foreach($lable_arr as $lv) {
                             $c_lab['label_id'] = $lv;
@@ -802,8 +807,7 @@ class CustomerController extends BaseController{
         }
         $rec_arr = array();
         foreach($recipt as $rv) {
-            $url_arr = parse_url($rv);
-            $rec_arr[]  = $url_arr['path'];
+            $rec_arr[]  = $this->judgeThumb($rv);
         }
         $save['invite_id'] = $invite_id;
         if($cus_num > 0) {
@@ -829,8 +833,6 @@ class CustomerController extends BaseController{
             } else{
                 $this->to_back(60114);
             }
-
-
         } else {
             $this->to_back(60017);
         }
@@ -860,12 +862,6 @@ class CustomerController extends BaseController{
         if ($tel_a == $tel_b) {
             $tel_b = '';
         }
-        //验证手机格式
-       /*  foreach ($usermobile_arr as $uv ) {
-            if(!empty($uv) &&!check_mobile($uv)){
-                $this->to_back(60002);
-            }
-        } */
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
@@ -894,7 +890,7 @@ class CustomerController extends BaseController{
         $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
         $save['flag']               = 0;
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
-        $save['face_url'] = '';
+        $save['face_url'] = $this->judgeThumb($fimg);
         if($fimg){
             $face_arr = parse_url($fimg);
             $save['face_url'] = $face_arr['path'];
@@ -1031,6 +1027,17 @@ class CustomerController extends BaseController{
         }
     }
 
+    public function judgeThumb($img) {
+        if($img == '') {
+            $thumb = '';
+        } else {
+            $url_arr = parse_url($img);
+            $thumb = $url_arr['path'];
+            $thumb = str_replace('?x-oss-process=image/resize,w_100','', $thumb);
+        }
+        return $thumb;
+    }
+
     public function addCustomer() {
         //type 1增加 2修改
         $mobile = $this->params['mobile'];
@@ -1055,12 +1062,6 @@ class CustomerController extends BaseController{
             $tel_b = '';
         }
 
-        //验证手机格式
-        /* foreach ($usermobile_arr as $uv ) {
-            if(!empty($uv) &&!check_mobile($uv)){
-                $this->to_back(60002);
-            }
-        } */
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array();
         $where['id'] = $invite_id;
@@ -1088,20 +1089,8 @@ class CustomerController extends BaseController{
         $save['remark']    = empty($this->params['remark'])?'':$this->params['remark'];
         $save['flag']               = 0;
         $fimg = empty($this->params['face_url'])?'':$this->params['face_url'];
-        $save['face_url'] = '';
-        /*if($fimg){
-            $fimg = str_replace('\\','', $fimg);
-            $fimg_arr = json_decode($fimg, true);
-            foreach($fimg_arr as $rv) {
-                $url_arr = parse_url($rv);
-                $save['face_url']  = $url_arr['path'];
-            }
+        $save['face_url'] = $this->judgeThumb($fimg);
 
-        }*/
-        if ($fimg) {
-            $url_arr = parse_url($fimg);
-            $save['face_url']  = $url_arr['path'];
-        }
         $map = array();
         $map['invite_id'] = $invite_id;
         $map['flag'] = 0;

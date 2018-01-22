@@ -92,6 +92,7 @@ class LabelController extends BaseController{
                 $m_manna_lab = new \Common\Model\DinnerManaLabelModel();
                 $field = 'scl.label_id,sdl.NAME label_name';
                 $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
+                $ma_info = array_merge($ma_info, $def_label_arr);
                 if($ma_info) {
                     foreach($ma_info as $mk=>$mv) {
                         if(array_key_exists($mv['label_id'], $cus_label)) {
@@ -104,6 +105,7 @@ class LabelController extends BaseController{
                     $ma_info = array();
                 }
 
+
             } else {
                 $this->to_back(60108);
             }
@@ -114,6 +116,7 @@ class LabelController extends BaseController{
             $m_manna_lab = new \Common\Model\DinnerManaLabelModel();
             $field = 'scl.label_id,sdl.NAME label_name';
             $ma_info = $m_manna_lab->getLabelNameByCid($field, $offer);
+            $ma_info = array_merge($ma_info, $def_label_arr);
             if($ma_info) {
                 foreach($ma_info as $mk=>$mv) {
                     $ma_info[$mk]['light'] = 0;
@@ -124,8 +127,10 @@ class LabelController extends BaseController{
 
         }
 
-        $count = count($ma_info);
+        /*$count = count($ma_info);
         $ma_info_id_arr = array_column($ma_info, 'label_id');
+        var_export($ma_info);
+        die;
         foreach($def_label_arr as $dk=>$dv) {
 
             if( in_array($dv['label_id'], $ma_info_id_arr) ) {
@@ -136,7 +141,7 @@ class LabelController extends BaseController{
                 $ma_info[$count]['label_name'] = $dv['label_name'];
                 $count++;
             }
-        }
+        }*/
 
         $data['list'] = $ma_info;
         $this->to_back($data);

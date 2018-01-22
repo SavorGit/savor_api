@@ -434,6 +434,11 @@ class CustomerController extends BaseController{
                 }
             }
             $data['list'] = $cus_info;
+            $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
+            $log_arr['action_id'] =  $map['id'];
+            $log_arr['type'] = 2;
+            $log_arr['invite_id'] = $invite_id;
+            $m_dinner_customer_log->addData($log_arr);
             $this->to_back($data);
         } else {
             $this->to_back(60108);

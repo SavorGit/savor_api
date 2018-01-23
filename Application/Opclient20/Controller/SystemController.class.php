@@ -263,7 +263,7 @@ class SystemController extends BaseController{
             $where['c.hotel_box_type'] = array('in',$v);
             $box_normal_all_num = $m_box->countBoxNums($where);
             //$data['list']['box']['f_all_num'] = $f_box_normal_all_num;
-            $temp['box_normal_all_num'] = $box_normal_all_num;
+            $temp['box_all_num'] = $box_normal_all_num;
             //正常
             $where = array();
             $where['a.flag'] = 0;
@@ -285,7 +285,7 @@ class SystemController extends BaseController{
             if($city_id) $where['c.area_id'] = $city_id;
             $where['c.hotel_box_type'] = array('in',$v);
             $box_freeze_all_num = $m_box->countBoxNums($where);
-            $temp['box_freeze_all_num'] = $box_freeze_all_num;
+            $temp['box_break_all_num'] = $box_freeze_all_num;
             
             //冻结
             $where = array();
@@ -296,7 +296,7 @@ class SystemController extends BaseController{
             if($city_id) $where['c.area_id'] = $city_id;
             $where['c.hotel_box_type'] = 1;
             $box_freeze_all_num = $m_box->countBoxNums($where);
-            $temp['freeze_all_num'] = $box_freeze_all_num;
+            $temp['box_freeze_all_num'] = $box_freeze_all_num;
             $data['list']['box']['list'][] = $temp;
         }
         

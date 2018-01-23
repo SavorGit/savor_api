@@ -21,6 +21,24 @@ class BoxController extends BaseController{
                 $this->is_verify = 1;;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
+            case 'getDownloadAds':
+                $this->is_verify = 1;
+                $this->valid_fields = array('ads_download_period'=>1001,'box_id'=>1001);
+                break;
+            case 'getDownloadPro':
+                $this->is_verify = 1;
+                $this->valid_fields = array('pro_download_period');
+                break;
+            
+            case 'getPubProgram':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_id'=>1001);
+                break;
+            case 'oneKeyCheck':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_id'=>1001);
+                break;
+            
         }
         parent::_init_();
     }
@@ -106,6 +124,8 @@ class BoxController extends BaseController{
             }  
             if($box_heart_info['pro_download_period'] && $box_heart_info['pro_download_period'] !=$box_heart_info['pro_period'] ){
                 $data['pro_download_period'] = $box_heart_info['pro_download_period'];
+            }else {
+                $data['pro_download_period'] = '';
             }
             
         }
@@ -127,6 +147,8 @@ class BoxController extends BaseController{
         }
         if($box_heart_info['ads_download_period'] && ($box_heart_info['ads_download_period'] !=$box_heart_info['ads_period'])){
             $data['ads_download_period'] = $box_heart_info['ads_download_period'];
+        }else {
+            $data['ads_download_period'] = '';
         }
         
         //宣传片状态
@@ -156,7 +178,7 @@ class BoxController extends BaseController{
             $program_info  = $m_program_list->getOne('id', array('menu_num'=>$data['pro_period']));
             $m_program_item = new \Common\Model\ProgramMenuItemModel();
             if($program_info){
-                $program_list = $m_program_item->field('ads_name,location_id,sort_num,type')
+                $program_list = $m_program_item->field('ads_name as name,location_id,sort_num,type')
                                                ->where(array('menu_id'=>$program_info['id'],'type'=>array('in','1,2,3')))
                                                ->order('sort_num asc')
                                                ->select();
@@ -170,6 +192,7 @@ class BoxController extends BaseController{
                         }else {
                             $program_list[$key]['flag'] = 1;
                         }
+                        $program_list[$key]['type'] = '节目';
                     }
                     
                     if($v['type'] ==3){
@@ -185,22 +208,26 @@ class BoxController extends BaseController{
                                 unset($program_list[$key]);
                             }
                         }
+                        $program_list[$key]['type'] = '宣传片';
                     }
                     if($v['type']==1){
                         if($ads_same_flag ==0){
                             $program_list[$key]['flag'] = 0;
                         }else {
                             if($box_ads_arr['media_list'][$v['location_id']]){
-                            
+                                
                                 $program_list[$key] = $box_ads_arr['media_list'][$v['location_id']];
                                 $program_list[$key]['flag'] = 1;
                             }else {
+                                
                                 unset($program_list[$key]);
                             }
                         }
+                        $program_list[$key]['type'] = '广告';
                     }
                     
                 }
+                //print_r($program_list);exit;
                 $result = array();
                 foreach($program_list as $key=>$v){
                     $result[] = $v;
@@ -325,7 +352,10 @@ class BoxController extends BaseController{
         
         $m_program_item = new \Common\Model\ProgramMenuItemModel();
         if($program_info){
-            $program_list = $m_program_item->field('ads_name,location_id,sort_num,type')
+            $program_list = $m_program_item->field("ads_name,location_id,sort_num,case type
+				when 1 then 'ads'
+				when 2 then 'pro'
+				when 3 then 'adv' END AS type")
             ->where(array('menu_id'=>$program_info['id'],'type'=>array('in','2,3')))
             ->order('sort_num asc')
             ->select();
@@ -347,9 +377,17 @@ class BoxController extends BaseController{
         $redis->select(12);
         $cache_key = C('PROGRAM_ADS_CACHE_PRE').$box_id;
         $ads_list = $redis->get($cache_key);
-        
+        $ads_list = json_decode($ads_list,true);
+        $data = array();
         if($ads_list && $ads_list['menu_num'] == $ads_download_period){
-            
+            $m_pub_ads = new \Common\Model\PubAdsModel();
+            foreach($ads_list['ads_list'] as $key=>$v){
+                $media_info = $m_pub_ads->getPubAdsInfoByid('med.name,med.oss_addr,med.duration',array('pads.id'=>$v['pub_ads_id']));
+                $temp['name'] = $media_info['name'];
+                $temp['type'] = '广告';
+                $data[] = $temp;
+            }
+            $this->to_back($data);
         }else {
             $this->to_back('30114');
         } 
@@ -378,7 +416,7 @@ class BoxController extends BaseController{
         
         $m_program_item = new \Common\Model\ProgramMenuItemModel();
         if($menu_info){
-            $program_list = $m_program_item->field('ads_name,location_id,sort_num,type')
+            $program_list = $m_program_item->field('ads_name name,location_id,sort_num,type')
             ->where(array('menu_id'=>$menu_info['menu_id'],'type'=>array('in','1,2,3')))
             ->order('sort_num asc')
             ->select();
@@ -396,6 +434,7 @@ class BoxController extends BaseController{
             $data = array();
             foreach($program_list as $key=>$v){
                 if($v['type'] ==2){
+                    $v['type'] = '节目';
                     $data[] = $v;
                 }
             
@@ -403,7 +442,7 @@ class BoxController extends BaseController{
                     
             
                     if($box_adv_arr['media_list'][$v['sort_num']]){
-        
+                        $box_adv_arr['media_list'][$v['sort_num']]['type'] = '宣传片';
                         $data[] = $box_adv_arr['media_list'][$v['sort_num']];
                         
                     }else {
@@ -414,7 +453,8 @@ class BoxController extends BaseController{
                 if($v['type']==1){
                     
                     if($box_ads_arr['media_list'][$v['location_id']]){
-        
+                        
+                        $box_ads_arr['media_list'][$v['location_id']]['type'] = '广告';
                         $data[] = $box_ads_arr['media_list'][$v['location_id']];
                         
                     }else {
@@ -451,10 +491,11 @@ class BoxController extends BaseController{
         $cache_key = C('NET_REPORT_KEY').$box_id;
         $net_info = $redis->get($cache_key);
         $data = array();
+        $m_heart_log = new \Common\Model\HeartLogModel();
         if(empty($net_info)){//如果没有网络上报
             
             //查看小平台心跳
-            $m_heart_log = new \Common\Model\HeartLogModel();
+            
             $where =  array();
             $where['hotel_id'] = $box_info['hotel_id'];
             $where['type']     = 1;

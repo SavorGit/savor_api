@@ -319,14 +319,14 @@ class CustomerController extends BaseController{
                 if($rk['type'] == 1) {
                     $res_info[$ra]['type'] = '新增';
                 }
-                if($rk['type'] == 2) {
+                if($rk['type'] == 3) {
                     $res_info[$ra]['type'] = '修改';
                 }
-                if($rk['type'] == 3) {
+                if($rk['type'] == 2) {
                     $res_info[$ra]['type'] = '查看';
                 }
                 if($rk['type'] == 4) {
-                    $res_info[$ra]['type'] = '预定';
+                    $res_info[$ra]['type'] = '预订';
                 }
                 unset($res_info[$ra]['mobile']);
                 unset($res_info[$ra]['mobile1']);
@@ -435,7 +435,7 @@ class CustomerController extends BaseController{
             }
             $data['list'] = $cus_info;
             $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
-          
+
             $log_arr['action_id'] =  $this->params['customer_id'];
             $log_arr['type'] = 2;
             $log_arr['invite_id'] = $invite_id;
@@ -550,7 +550,9 @@ class CustomerController extends BaseController{
                 unset($cv['hotel_id']);
                 unset($cv['room_type']);
                 unset($cv['order_id']);
+                $cv['bigrecipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'];
                 $cv['recipt'] = empty($cv['recipt'])?'':C('TASK_REPAIR_IMG').$cv['recipt'].'?x-oss-process=image/resize,w_100';
+
                 $count++;
             }
         }
@@ -874,6 +876,11 @@ class CustomerController extends BaseController{
         if($invite_info['bind_mobile'] != $mobile){
             $this->to_back(60019);
         }
+        foreach ($usermobile_arr as $uv ) {
+            if ( !empty($uv) && strlen($uv) > 20 ) {
+                $this->to_back(60002);
+            }
+        }
 
 
         //判断用户名是否存在
@@ -1018,7 +1025,7 @@ class CustomerController extends BaseController{
         if($bool) {
             $m_dinner_customer_log = new \Common\Model\DinnerActionLogModel();
             $log_arr['action_id'] = $c_id;
-            $log_arr['type'] = 2;
+            $log_arr['type'] = 3;
             $log_arr['invite_id'] = $invite_id;
             $m_dinner_customer_log->addData($log_arr);
             $this->to_back(10000);
@@ -1041,7 +1048,6 @@ class CustomerController extends BaseController{
     public function addCustomer() {
         //type 1增加 2修改
         $mobile = $this->params['mobile'];
-        //验证管理人手机格式
         if(!check_mobile($mobile)){
             $this->to_back(60002);
         }
@@ -1060,6 +1066,11 @@ class CustomerController extends BaseController{
         }
         if ($tel_a == $tel_b) {
             $tel_b = '';
+        }
+        foreach ($usermobile_arr as $uv ) {
+            if ( !empty($uv) && strlen($uv) > 20 ) {
+                $this->to_back(60002);
+            }
         }
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();

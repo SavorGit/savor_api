@@ -988,24 +988,24 @@ class CustomerController extends BaseController{
             $this->to_back(60108);
         }
         if($tel_a && $tel_b){
-            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id}";
+            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id} and invite_id={$invite_id} and flag=0";
             $nums = $m_dinner_customer->countNums($where);
             if(!empty($nums)){
                 $this->to_back(60105);
             }
-            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id}";
+            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id} and invite_id={$invite_id} and flag=0";
             $nums = $m_dinner_customer->countNums($where);
             if(!empty($nums)){
                 $this->to_back(60106);
             }
         }else if($tel_a  && empty($tel_b)){
-            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id}";
+            $where =" (mobile='".$tel_a."' or mobile1='".$tel_a."')  and id!={$c_id} and invite_id={$invite_id} and flag=0";
             $nums = $m_dinner_customer->countNums($where);
             if(!empty($nums)){
                 $this->to_back(60105);
             }
         }else if(empty($tel_a) && !empty($tel_b)){
-            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id}";
+            $where =" (mobile='".$tel_b."' or mobile1='".$tel_b."')  and id!={$c_id} and invite_id={$invite_id} and flag=0";
             $nums = $m_dinner_customer->countNums($where);
             if(!empty($nums)){
                 $this->to_back(60106);

@@ -29,7 +29,7 @@ class BoxController extends BaseController {
                     'state'=>'1001',
                     'type'=>'1001',
                     'hotel_id'=>'1001',
-                    'box_state'=>'1001'
+                    'box_state'=>'1000'
                 );
                 break;
             case 'getRepairRecordListByUserid':
@@ -244,7 +244,7 @@ class BoxController extends BaseController {
                 
                 
                 $box_state = $this->params['box_state'];
-                if($box_state){
+                if($box_state && $save['type']==1){//修改机顶盒状态
                     $m_box = new \Common\Model\BoxModel();
                     $where = array();
                     $box_mac = $this->params['box_mac'];

@@ -1091,7 +1091,7 @@ class CustomerController extends BaseController{
         $username = trim($username);
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
         $save['name']                = $username;
-        $save['sex']                = empty($this->params['sex'])?1:$this->params['sex'];
+        $save['sex']                = empty($this->params['sex'])?0:$this->params['sex'];
         $save['birthplace']         = empty($this->params['birthplace'])?'':$this->params['birthplace'];
         $save['birthday']           = empty($this->params['birthday'])?'':$this->params['birthday'];
         $save['invite_id']          = $invite_id;

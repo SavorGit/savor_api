@@ -100,11 +100,19 @@ class OrderController extends BaseController{
             } */
             $data[$key]['time_str'] = $order_date;
             $data[$key]['moment_str'] = date('H:i',strtotime($v['order_time']));
-            if(empty($v['ticket_url'])){//消费记录
+            /* if(empty($v['ticket_url'])){//消费记录
+                $data[$key]['is_expense'] = 0;
+            }else {
+                $data[$key]['is_expense'] = 1;
+            } */
+            $m_dinner_consume_record = new \Common\Model\DinnerConRecModel();
+            $nums = $m_dinner_consume_record->countNums(array('order_id'=>$v['order_id'],'flag'=>0));
+            if(empty($nums)){
                 $data[$key]['is_expense'] = 0;
             }else {
                 $data[$key]['is_expense'] = 1;
             }
+            
             if(empty($v['remark'])){
                 //unset($data[$key]['remark']);
                 $data[$key]['remark'] = "";
@@ -487,7 +495,7 @@ class OrderController extends BaseController{
             $m_room = new \Common\Model\RoomModel();
             $m_dinner_room = new \Common\Model\DinnerRoomModel();
             $oss_path = C('TASK_REPAIR_IMG');
-            
+            $m_dinner_consume_record = new \Common\Model\DinnerConRecModel();
             foreach($data as $key=>$v){
                 
                 if($v['room_type']==1){//酒楼包间
@@ -499,7 +507,14 @@ class OrderController extends BaseController{
                 
                 $data[$key]['time_str'] = date('Y-m-d',strtotime($v['order_time']));
                 $data[$key]['moment_str'] = date('H:i',strtotime($v['order_time']));
-                if(empty($v['ticket_url'])){//消费记录
+                /* if(empty($v['ticket_url'])){//消费记录
+                    $data[$key]['is_expense'] = 0;
+                }else {
+                    $data[$key]['is_expense'] = 1;
+                } */
+                
+                $nums = $m_dinner_consume_record->countNums(array('order_id'=>$v['order_id'],'flag'=>0));
+                if(empty($nums)){
                     $data[$key]['is_expense'] = 0;
                 }else {
                     $data[$key]['is_expense'] = 1;

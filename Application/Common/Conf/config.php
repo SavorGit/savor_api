@@ -227,4 +227,12 @@ return array(
     'RTB_TAG_PORTRAYAL_PERCENT'=>'0.3',
     'HEART_LOSS_HOURS'=>'72',
     'NET_REPORT_KEY'=>'net_report_',
+	'CONFIG_VOLUME_VAL' => array(
+		'system_ad_volume'=>60,
+		'system_pro_screen_volume'=>100,
+		'system_demand_video_volume'=>90,
+		'system_tv_volume'=>100,
+		'system_tv_volume'=>100,
+		'system_switch_time'=>30,
+	),
 );

@@ -609,7 +609,7 @@ class CustomerController extends BaseController{
         $lable_str  = empty($this->params['lable_id_str'])?0:$this->params['lable_id_str'];
         $lable_str = str_replace('\\','', $lable_str);
         $lable_arr = json_decode($lable_str, true);
-
+        $lable_arr = array_unique($lable_arr);
         //添加点亮的lable_id,客户端ID为空,手机号不存在
         if($cus['customer_id'] == 0) {
             //判断手机号是否存在

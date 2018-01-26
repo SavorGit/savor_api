@@ -477,14 +477,17 @@ class ApiController extends CommonController{
      */
     private function changesysconfigList($res){
         $vol_arr = C('CONFIG_VOLUME');
+        $vol_default = C('CONFIG_VOLUME_VAL');
         if($res){
             foreach ($res as $vk=>$val) {
+                $rc_key =  $val['config_key'];
                 foreach($vol_arr as $k=>$v){
-                    if($k == $val['config_key']){
+                    if($k == $rc_key){
                         $res[$vk]['label']  = $v;                                   }
                 }
                 $res[$vk]['configKey'] =  $res[$vk]['config_key'];
-                $res[$vk]['configValue'] =  $res[$vk]['config_value'];
+                $res[$vk]['configValue'] =  ($res[$vk]['config_value']==='')
+                ?$vol_default[$rc_key]:$res[$vk]['config_value'];
                 unset($res[$vk]['config_key']);
                 unset($res[$vk]['config_value']);
                 unset($res[$vk]['status']);
@@ -578,13 +581,10 @@ class ApiController extends CommonController{
             foreach ($res as $vk=>$val) {
                 $stime = $val['switch_time'];
                 $res[$vk]['volume'] =  $da['volume'];
-                $res[$vk]['switch_time'] = $da['switch_time']<0?(empty($stime)?$vol['system_switch_time']:$stime):$da['switch_time'];
+                $res[$vk]['switch_time'] = $da['switch_time']<0?(($stime==='')?$vol['system_switch_time']:$stime):$da['switch_time'];
 
                 foreach($val as $rk=>$rv){
                     if($rk != 'switch_time' && $rk != 'volume') {
-                        if(is_numeric($rv)){
-                            $res[$vk][$rk] = intval($rv);
-                        }
                         if($rv === null){
                             $res[$vk][$rk] = '';
                         }

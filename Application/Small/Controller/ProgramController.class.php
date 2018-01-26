@@ -8,6 +8,7 @@ class ProgramController extends CommonController{
      */
     public $max_adv_location = 50;
     var $menu_type;
+    var $heart_hotel_box_type_arr;
     function _init_() {
         switch(ACTION_NAME) {
             case 'getMenuByHotelid':
@@ -36,6 +37,10 @@ class ProgramController extends CommonController{
                 break;
         }
         $this->menu_type = array('pro'=>1,'adv'=>2,'all'=>3);
+        $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
+        $hotel_box_type_arr = array_keys($hotel_box_type_arr);
+        
+        $this->heart_hotel_box_type_arr = $hotel_box_type_arr;
         parent::_init_();
     }
     /**
@@ -57,7 +62,9 @@ class ProgramController extends CommonController{
         if($hotel_info['state'] !=1){ //该酒楼为非正常酒楼
             $this->to_back(16202);
         }
-        if(!in_array($hotel_info['hotel_box_type'], array(2,3))){//该酒楼为非网络版酒楼 
+        
+        
+        if(!in_array($hotel_info['hotel_box_type'], $this->heart_hotel_box_type_arr)){//该酒楼为非网络版酒楼 
             $this->to_back(16203);   
         }
         $m_box = new \Common\Model\BoxModel();
@@ -120,7 +127,7 @@ class ProgramController extends CommonController{
          if($hotel_info['state'] !=1){ //该酒楼为非正常酒楼
              $this->to_back(16202);
          }
-         if(!in_array($hotel_info['hotel_box_type'], array(2,3))){//该酒楼为非网络版酒楼
+         if(!in_array($hotel_info['hotel_box_type'], $this->heart_hotel_box_type_arr)){//该酒楼为非网络版酒楼
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();
@@ -190,7 +197,7 @@ class ProgramController extends CommonController{
          if($hotel_info['state'] !=1){ //该酒楼为非正常酒楼
              $this->to_back(16202);
          }
-         if(!in_array($hotel_info['hotel_box_type'], array(2,3))){//该酒楼为非网络版酒楼
+         if(!in_array($hotel_info['hotel_box_type'], $this->heart_hotel_box_type_arr)){//该酒楼为非网络版酒楼
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();

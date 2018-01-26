@@ -120,7 +120,6 @@ class ApiController extends CommonController{
 
         $where = " 'system_ad_volume','system_switch_time'";
         $sys_arr = $sysconfigModel->getInfo($where);
-        $sys_arr = $this->changesysconfigList($sys_arr);
         if(!empty($box_arr)){
             $data = $this->changeBoxList($box_arr, $sys_arr);
         }
@@ -468,6 +467,8 @@ class ApiController extends CommonController{
         //如果是空
     }
 
+
+
     /**
      * changeadvList  将已经数组修改字段名称
      * @access public
@@ -550,51 +551,50 @@ class ApiController extends CommonController{
      * @return array
      */
     private function changeBoxList($res, $sys_arr){        $da = array();
+        $vol = C('CONFIG_VOLUME_VAL');
+        $da = array();
 
         foreach ($sys_arr as $vk=>$val) {
-            foreach($val as $sk=>$sv){
-                if($sv == 'system_ad_volume') {
-                    if(empty($val['configValue'])){
-                        $da['volume'] = 0;
-                    }else{
-                        $da['volume'] = $val['configValue'];
-                    }
-                }
-                if($sv == 'system_switch_time') {
-                    if(empty($val['configValue'])){
-                        $da['switch_time'] = 0;
-                    }else{
-                        $da['switch_time'] = $val['configValue'];
-                    }
-                    break;
+            if($val['config_key'] == 'system_ad_volume') {
+                if( $val['config_value'] === '' ) {
+                    $da['volume'] = $vol['system_ad_volume'];
+                } else {
+                    $da['volume'] = intval($val['config_value']);
                 }
             }
-        
+            if($val['config_key'] == 'system_switch_time') {
+                if( $val['config_value'] === '' ) {
+                    $da['switch_time'] = $vol['system_switch_time'];
+                } else {
+                    $da['switch_time'] = intval($val['config_value']);
+                }
+            }
         }
+        if(!array_key_exists('switch_time', $da)) {
+            $da['switch_time'] = -8;
+        }
+
         if($res){
             foreach ($res as $vk=>$val) {
-                if (empty($da['volume'])) {
-                    $res[$vk]['volume'] = empty($val['volume'])?'':$val['volume'];
-                } else {
-                    $res[$vk]['volume'] = $da['volume'];
-                }
-                if (empty($da['switch_time'])) {
-                    $res[$vk]['switch_time'] =  empty($val['switch_time'])?'':$val['switch_time'];
-$val['switch_time'];
-                } else {
-                    $res[$vk]['switch_time'] = $da['switch_time'];
-                }
+                $stime = $val['switch_time'];
+                $res[$vk]['volume'] =  $da['volume'];
+                $res[$vk]['switch_time'] = $da['switch_time']<0?(empty($stime)?$vol['system_switch_time']:$stime):$da['switch_time'];
 
                 foreach($val as $rk=>$rv){
-                    if(is_numeric($rv)){
-                        $res[$vk][$rk] = intval($rv);
-                    }
-                    if($res[$vk][$rk] === null){
-                        $res[$vk][$rk] = '';
+                    if($rk != 'switch_time' && $rk != 'volume') {
+                        if(is_numeric($rv)){
+                            $res[$vk][$rk] = intval($rv);
+                        }
+                        if($rv === null){
+                            $res[$vk][$rk] = '';
+                        }
+                    } else {
+                        continue;
                     }
                 }
             }
         }
+
 
 
         return $res;

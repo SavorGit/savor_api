@@ -197,7 +197,7 @@ class OrderController extends BaseController{
             $this->to_back('60034');
         } */
         $m_dinner_customer = new \Common\Model\DinnerCustomerModel();
-        $where = " (`mobile`='$order_mobile' or `mobile1`='$order_mobile') and invite_id=".$invite_id;
+        $where = " (`mobile`='$order_mobile' or `mobile1`='$order_mobile') and invite_id=".$invite_id." and flag=0";
         $customer_info = $m_dinner_customer->getOne('id',$where);
         if(!empty($customer_id)){
             //如果客户id不为空

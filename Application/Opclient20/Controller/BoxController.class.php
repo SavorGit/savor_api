@@ -18,7 +18,7 @@ class BoxController extends BaseController{
                 $this->is_verify = 0;
             break;
             case 'contentDetail':
-                $this->is_verify = 1;;
+                $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
             case 'getDownloadAds':
@@ -65,13 +65,14 @@ class BoxController extends BaseController{
         $where['a.id'] = $box_id;
         $where['a.flag'] = 0;
         $where['a.state'] = 1;
-        $box_info = $m_box->getBoxInfo('a.name,a.mac,d.id hotel_id',$where);
+        $box_info = $m_box->getBoxInfo('a.name,a.mac,c.name room_name,d.id hotel_id',$where);
         $box_info = $box_info[0];
         if(empty($box_info)){
             $this->to_back(70001);
         }
         
         $data = array();
+        $data['room_name']= $box_info['room_name'];
         $data['box_name'] = $box_info['name'];
         $data['box_mac']  = $box_info['mac'];
         
@@ -557,7 +558,7 @@ class BoxController extends BaseController{
             
             
         }
-        $data['remark'] = array('离线原因(进攻参考)','1、机顶盒没开机','2、局域网拥堵','3、外网网络断开等等');
+        $data['remark'] = array('离线原因(仅供参考)','1、机顶盒没开机','2、局域网拥堵','3、外网网络断开等等');
         $this->to_back($data);
     }
     

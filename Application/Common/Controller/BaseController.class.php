@@ -162,7 +162,20 @@ class BaseController extends Controller {
 	    $info = $m_media->getMediaInfoById($id);
 	    return $info['oss_addr'];
 	}
-
+	/**
+	 * @desc 获取网络版酒楼类型ID字符串 例如 2,3,6
+	 */
+	public function getNetHotelTypeStr(){
+	    $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
+	    $hotel_box_type_arr = array_keys($hotel_box_type_arr);
+	    $space = '';
+	    $hotel_box_type_str = '';
+	    foreach($hotel_box_type_arr as $key=>$v){
+	        $hotel_box_type_str .= $space .$v;
+	        $space = ',';
+	    }
+	    return $hotel_box_type_str;
+	}
 
 
 	public function __destruct(){

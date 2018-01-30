@@ -68,10 +68,11 @@ class SystemController extends BaseController{
         $normal_small_plat_num = $m_heart_log->getHotelList('a.hotel_id',$where,'','','a.hotel_id');
         $data['list']['heart']['small_plat_normal_num'] = count($normal_small_plat_num);
        
+        $hotel_box_type_str = $this->getNetHotelTypeStr();
         //2.2异常小平台
         $m_hotel = new \Common\Model\HotelModel();
         $where = '';
-        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         if($city_id) $where .=" and a.area_id=".$city_id;
         $hotel_all_num = $m_hotel->getHotelCountNums($where);
         $data['list']['heart']['small_plat_not_normal_num'] = $hotel_all_num - count($normal_small_plat_num);
@@ -79,8 +80,8 @@ class SystemController extends BaseController{
         //正常酒楼 、异常酒楼
         $m_box = new \Common\Model\BoxModel();
         $where = array();
-        //$where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
-        $where = "  a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        //$where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $where = "  a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         
         if($city_id) $where .=" and a.area_id=".$city_id;
         $hotel_list = $m_hotel->getHotelLists($where,'','','a.id');

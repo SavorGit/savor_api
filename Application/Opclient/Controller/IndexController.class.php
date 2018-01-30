@@ -54,7 +54,8 @@ class IndexController extends BaseController{
         $where['a.state'] = 1;
         $where['a.hotel_box_type'] = array('in','2,3');
         $where['b.mac_addr'] = array('neq',array('','000000000000')); */
-        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $hotel_box_type_str = $this->getNetHotelTypeStr();
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_all_num = $m_hotel->getHotelCountNums($where);
         $data['list'][] = '酒楼总数:'.$hotel_all_num;
         //print_r($data);exit;
@@ -67,7 +68,7 @@ class IndexController extends BaseController{
         $where['a.hotel_box_type'] = array('in','2,3');
         $where['b.mac_addr'] = array('neq',''); */
         
-        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_list = $m_hotel->getHotelLists($where,'','','a.id');
         
         $normal_hotel_num = 0;
@@ -202,7 +203,8 @@ class IndexController extends BaseController{
          $where['a.state'] = 1;
          $where['a.hotel_box_type'] = array('in','2,3');
          $where['b.mac_addr'] = array('neq',array('','000000000000')); */
-        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $hotel_box_type_str = $this->getNetHotelTypeStr();
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_all_num = $m_hotel->getHotelCountNums($where);
         $data['list'][] = '酒楼总数:'.$hotel_all_num;
         //print_r($data);exit;
@@ -215,7 +217,7 @@ class IndexController extends BaseController{
          $where['a.hotel_box_type'] = array('in','2,3');
         $where['b.mac_addr'] = array('neq',''); */
     
-        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in(2,3) and b.mac_addr !='' and b.mac_addr !='000000000000'";
+        $where = " a.id not in(7,53)  and a.state=1 and a.flag =0 and a.hotel_box_type in($hotel_box_type_str) and b.mac_addr !='' and b.mac_addr !='000000000000'";
         $hotel_list = $m_hotel->getHotelLists($where,'','','a.id');
     
         $normal_hotel_num = 0;

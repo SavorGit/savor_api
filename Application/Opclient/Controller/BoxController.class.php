@@ -244,7 +244,7 @@ class BoxController extends BaseController {
                 
                 
                 $box_state = $this->params['box_state'];
-                if($box_state && $save['type']==1){//修改机顶盒状态
+                if($box_state && $save['type']==2){//修改机顶盒状态
                     $m_box = new \Common\Model\BoxModel();
                     $where = array();
                     $box_mac = $this->params['box_mac'];

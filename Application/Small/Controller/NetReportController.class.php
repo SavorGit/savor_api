@@ -33,6 +33,9 @@ class NetReportController extends CommonController{
         $redis->select(10);
         $cache_key = C('NET_REPORT_KEY');
         foreach($netparams as $key=>$val){
+            if(empty($val['box_id'])){
+                continue;
+            }
             $keys = $cache_key.$val['box_id'];
             $redis->set($keys, json_encode($val),300);
         }

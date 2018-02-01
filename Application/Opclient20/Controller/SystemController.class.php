@@ -123,8 +123,18 @@ class SystemController extends BaseController{
         $data['list']['heart']['remark'] = "在线指10分钟以内;离线指大于十分钟;异常指大于72小时";
         
         //3.1酒楼总数
+        $all_hotel_box_type_arr = C('HOTEL_BOX_TYPE');
+        $all_hotel_box_type_arr = array_keys($all_hotel_box_type_arr);
+        $all_hotel_box_type_str = '';
+        $space = '';
+        foreach($all_hotel_box_type_arr as $v){
+            $all_hotel_box_type_str .= $space . $v;
+            $space = ','; 
+        }
         $where = array();
         $where['flag'] = 0;
+        $where['hotel_box_type'] = array('in',$all_hotel_box_type_str);
+        
         if($city_id) $where['area_id'] = $city_id;
         $hotel_all_nums = $m_hotel->getHotelCount($where);
         $data['list']['hotel']['hotel_all_nums'] = $hotel_all_nums;
@@ -133,6 +143,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['flag'] = 0;
         $where['state'] = 1;
+        $where['hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['area_id'] = $city_id;
         $hotel_all_normal_nums = $m_hotel->getHotelCount($where);
         $data['list']['hotel']['hotel_all_normal_nums'] = $hotel_all_normal_nums;
@@ -141,6 +152,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['flag'] = 0;
         $where['state'] = 2;
+        $where['hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['area_id'] = $city_id;
         $hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
         $data['list']['hotel']['hotel_all_freeze_nums'] = $hotel_all_freeze_nums;
@@ -154,7 +166,7 @@ class SystemController extends BaseController{
             //一代酒楼总数
             $where = array();
             $where['flag'] = 0;
-            $where['hotel_box_type'] = array('in',$v);
+            $where['hotel_box_type'] = array('in',$v['ids']);
             if($city_id) $where['area_id'] = $city_id;
             $hotel_all_nums = $m_hotel->getHotelCount($where);
             //$data['list']['hotel'][$key]['hotel_all_nums'] = $f_hotel_all_nums;
@@ -163,7 +175,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['flag'] = 0;
             $where['state'] = 1;
-            $where['hotel_box_type'] = array('in',$v);
+            $where['hotel_box_type'] = array('in',$v['ids']);
             if($city_id) $where['area_id'] = $city_id;
             $hotel_all_normal_nums = $m_hotel->getHotelCount($where);
             //$data['list']['hotel'][$key]['hotel_all_normal_nums'] = $f_hotel_all_normal_nums;
@@ -172,7 +184,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['flag'] = 0;
             $where['state'] = 2;
-            $where['hotel_box_type'] = 1;
+            $where['hotel_box_type'] = array('in',$v['ids']);
             if($city_id) $where['area_id'] = $city_id;
             $hotel_all_freeze_nums = $m_hotel->getHotelCount($where);
             //$data['list']['hotel'][$key]['hotel_all_freeze_nums'] = $f_hotel_all_freeze_nums;
@@ -218,6 +230,7 @@ class SystemController extends BaseController{
         $where['a.flag'] = 0;
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
+        $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['c.area_id'] = $city_id;
         $box_all_num = $m_box->countBoxNums($where);
         $data['list']['box']['all_num'] = $box_all_num;
@@ -228,6 +241,7 @@ class SystemController extends BaseController{
         $where['a.state']= 1;
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
+        $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['c.area_id'] = $city_id;
         $box_normal_all_num = $m_box->countBoxNums($where);
         $data['list']['box']['normal_all_num'] = $box_normal_all_num;
@@ -237,6 +251,7 @@ class SystemController extends BaseController{
         $where['a.state']= 3;
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
+        $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['c.area_id'] = $city_id;
         $box_break_all_num = $m_box->countBoxNums($where);
         $data['list']['box']['break_all_num'] = $box_break_all_num;
@@ -247,6 +262,7 @@ class SystemController extends BaseController{
         $where['a.state']= 2;
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
+        $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
         if($city_id) $where['c.area_id'] = $city_id;
         $box_freeze_all_num = $m_box->countBoxNums($where);
         $data['list']['box']['freeze_all_num'] = $box_freeze_all_num;
@@ -261,7 +277,7 @@ class SystemController extends BaseController{
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
-            $where['c.hotel_box_type'] = array('in',$v);
+            $where['c.hotel_box_type'] = array('in',$v['ids']);
             $box_normal_all_num = $m_box->countBoxNums($where);
             //$data['list']['box']['f_all_num'] = $f_box_normal_all_num;
             $temp['box_all_num'] = $box_normal_all_num;
@@ -272,7 +288,7 @@ class SystemController extends BaseController{
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
-            $where['c.hotel_box_type'] = array('in',$v);
+            $where['c.hotel_box_type'] = array('in',$v['ids']);
             $box_normal_all_num = $m_box->countBoxNums($where);
             //$data['list']['box']['f_normal_all_num'] = $f_box_normal_all_num;
             $temp['box_normal_all_num'] = $box_normal_all_num;
@@ -284,7 +300,7 @@ class SystemController extends BaseController{
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
-            $where['c.hotel_box_type'] = array('in',$v);
+            $where['c.hotel_box_type'] = array('in',$v['ids']);
             $box_freeze_all_num = $m_box->countBoxNums($where);
             $temp['box_break_all_num'] = $box_freeze_all_num;
             
@@ -295,7 +311,7 @@ class SystemController extends BaseController{
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
-            $where['c.hotel_box_type'] = 1;
+            $where['c.hotel_box_type'] = array('in',$v['ids']);
             $box_freeze_all_num = $m_box->countBoxNums($where);
             $temp['box_freeze_all_num'] = $box_freeze_all_num;
             $data['list']['box']['list'][] = $temp;

@@ -64,8 +64,8 @@ class BoxController extends BaseController{
         $where = array();
         $where['a.id'] = $box_id;
         $where['a.flag'] = 0;
-        $where['a.state'] = 1;
-        $box_info = $m_box->getBoxInfo('a.name,a.mac,c.name room_name,d.id hotel_id',$where);
+        //$where['a.state'] = 1;
+        $box_info = $m_box->getBoxInfo('a.id box_id,a.name,a.mac,c.name room_name,d.id hotel_id',$where);
         $box_info = $box_info[0];
         if(empty($box_info)){
             $this->to_back(70001);
@@ -92,19 +92,25 @@ class BoxController extends BaseController{
         $m_heart_log = new \Common\Model\HeartLogModel();
         $where = array();
         $where['type'] = 2;
-        $where['box_mac'] = $box_info['mac'];
-        
+        //$where['box_mac'] = $box_info['mac'];
+        $where['box_id']  = $box_info['box_id'];
         $box_heart_info = $m_heart_log->getInfo('last_heart_time,ads_period,pro_period,adv_period,pro_download_period,ads_download_period,adv_period',$where);
-        $data['last_heart_time'] = $box_heart_info['last_heart_time'];
-        $diff_time = time() - strtotime($box_heart_info['last_heart_time']);
-        
-        $diff_hours = $diff_time/3600;
-        $heart_loss_hours = C('HEART_LOSS_HOURS');
-        if($diff_hours>$diff_hours){
-            $data['loss_hours'] = '失联'.floor($diff_hours).'小时';
+        if(empty($box_heart_info)){
+            $data['loss_hours'] = '失联30天以上';
         }else {
-            $data['loss_hours'] = '正常';
+            $data['last_heart_time'] = $box_heart_info['last_heart_time'];
+            $diff_time = time() - strtotime($box_heart_info['last_heart_time']);
+            
+            $diff_hours = $diff_time/3600;
+            $heart_loss_hours = C('HEART_LOSS_HOURS');
+            
+            if($diff_hours>$heart_loss_hours){
+                $data['loss_hours'] = '失联'.floor($diff_hours).'小时';
+            }else {
+                $data['loss_hours'] = '正常';
+            }
         }
+        
         
         $hotel_id = $box_info['hotel_id'];
         //节目状态
@@ -136,7 +142,6 @@ class BoxController extends BaseController{
         $box_ads_arr = $this->getBoxAdsList($box_id);
         if($box_ads_arr){
             $pub_ads_peroid = $box_ads_arr['box_ads_num'];  //发布的广告期号
-            
             if($pub_ads_peroid == $box_heart_info['ads_period']){
                 $data['ads_period_state'] = '已更新到最新';
                 $ads_same_flag = 1;
@@ -214,17 +219,20 @@ class BoxController extends BaseController{
                     if($v['type']==1){
                         if($ads_same_flag ==0){
                             $program_list[$key]['flag'] = 0;
+                            $program_list[$key]['type'] = '广告';
                         }else {
+                            
                             if($box_ads_arr['media_list'][$v['location_id']]){
                                 
                                 $program_list[$key] = $box_ads_arr['media_list'][$v['location_id']];
                                 $program_list[$key]['flag'] = 1;
+                                $program_list[$key]['type'] = '广告';
                             }else {
                                 
                                 unset($program_list[$key]);
                             }
                         }
-                        $program_list[$key]['type'] = '广告';
+                        
                     }
                     
                 }
@@ -463,9 +471,12 @@ class BoxController extends BaseController{
                     }
                 
                 }
-            
+                
             }
-            $this->to_back($data);exit;
+            $result['program_list'] = $data;
+            $result['menu_num'] = $menu_info['menu_num'];
+            $result['ads_menu_num'] = $box_ads_arr['box_ads_num'];
+            $this->to_back($result);
         
         }else {
             $this->to_back(30115);
@@ -481,7 +492,7 @@ class BoxController extends BaseController{
         $where['a.id'] = $box_id;
         $where['a.flag'] = 0;
         $where['a.state'] = 1;
-        $box_info = $m_box->getBoxInfo('a.name,a.mac,d.id hotel_id',$where);
+        $box_info = $m_box->getBoxInfo('a.id box_id,a.name,a.mac,d.id hotel_id',$where);
         $box_info = $box_info[0];
         if(empty($box_info)){//该机顶盒不存在
             $this->to_back(70001);
@@ -516,7 +527,7 @@ class BoxController extends BaseController{
             }
             //查看机顶盒心跳
             $where =  array();
-            $where['box_mac'] = $box_info['mac'];
+            $where['box_id'] = $box_info['box_id'];
             $where['type']     = 2;
             $box_heart_info = $m_heart_log->getInfo('last_heart_time',$where);
             $data['box_device_name'] = $box_info['name'];
@@ -540,12 +551,17 @@ class BoxController extends BaseController{
                 $data['small_device_state'] = '离线';
             }
             $where =  array();
-            $where['box_mac'] = $box_info['mac'];
+            $where['box_id'] = $box_info['box_id'];
             $where['type']     = 2;
             $box_heart_info = $m_heart_log->getInfo('last_heart_time',$where);
             $data['box_device_name'] = $box_info['name'];
             if(empty($box_heart_info)){
-                $data['box_device_state'] = '离线  无法投屏点播';
+                if($net_info['inn_delay']==''){
+                    $data['box_device_state'] = '离线  不可以投屏点播';
+                }else {
+                    $data['box_device_state'] = '离线  可以投屏点播';
+                }
+                
             }else {
                 $difff_time = time() - strtotime($box_heart_info['last_heart_time']);
                 if($difff_time>600){

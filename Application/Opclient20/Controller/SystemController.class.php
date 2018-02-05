@@ -115,17 +115,18 @@ class SystemController extends BaseController{
                 }
             }   
         }
-        //3.1正常机顶盒数量
-        $data['list']['heart']['box_normal_num'] = $normal_box_num;
-        //3.2异常机顶盒数量
-        $data['list']['heart']['box_not_normal_num'] = $not_normal_box_num;
+
         //3.3黑名单
         $m_black_list = new \Common\Model\BlacklistModel();
         $where = array();
         if($city_id) $where['b.area_id'] = $city_id;
         $black_box_num = $m_black_list->countNums($where);
-        
         $data['list']['heart']['black_box_num'] = $black_box_num;
+        //3.1正常机顶盒数量
+        $data['list']['heart']['box_normal_num'] = $normal_box_num;
+        //3.2异常机顶盒数量
+        $data['list']['heart']['box_not_normal_num'] = $not_normal_box_num-$black_box_num;
+
         $data['list']['heart']['remark'] = "在线指10分钟以内;离线指大于十分钟;异常指大于72小时";
         
         //3.1酒楼总数

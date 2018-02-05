@@ -274,14 +274,26 @@ class HotelController extends BaseController {
         }
         $unusual_num = 0;
         $box_total_num = count($box_list);
+        $m_black_list = new \Common\Model\BlacklistModel();
+        $bla_a = 0;
         foreach($box_list as $ks=>$vs){
             $where = '';
             $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_mac='".$vs['mac']."'";
 
             $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
 
-            //$box_list[$ks]['last_nginx'] = $this->getLastNginx($vs['mac']);
-            $box_list[$ks]['last_nginx'] = '';
+            //获取是否是黑名单
+            $black_ar = array();
+            $black_ar['mac'] = $vs['mac'];
+            $black_res = $m_black_list->countNums($black_ar);
+            if($black_res){
+                //黑名单机顶盒
+                $box_list[$ks]['blstate'] = 1;
+                $bla_a +=1;
+
+            } else {
+                $box_list[$ks]['blstate'] = 0;
+            }
             if(empty($rets)){
                 $unusual_num +=1;
                 $box_list[$ks]['ustate'] = 0;
@@ -318,8 +330,9 @@ class HotelController extends BaseController {
         {
 
             $volume[$key]  = $row['ltime'];
+            $blc[$key]  =   $row['blstate'];
         }
-        array_multisort($volume, SORT_ASC, $box_list);
+        array_multisort($blc,SORT_ASC, $volume, SORT_ASC, $box_list);
         $redMo = new \Common\Model\RepairBoxUserModel();
 
         foreach($box_list as $bk => $bv) {
@@ -336,7 +349,8 @@ class HotelController extends BaseController {
             //unset($box_list[$bk]['box_id']);
         }
         $data['list']['box_info'] = $box_list;
-        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个)';
+
+        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个,黑名单'.$bla_a.'个)';
         $this->to_back($data);
     }
 }

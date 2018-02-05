@@ -71,4 +71,12 @@ class OptiontaskModel extends Model
 	    $nums = $this->where($where)->count();
 	    return $nums;
 	}
+
+	public function getOpdatas($fields,$where,$group){
+		$data = $this->alias('a')
+			->join('savor_hotel hotel on a.hotel_id = hotel.id','left')
+			->group($group)
+			->field($fields)->where($where)->select();
+		return $data;
+	}
 }

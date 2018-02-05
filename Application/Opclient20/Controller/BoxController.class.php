@@ -188,7 +188,7 @@ class BoxController extends BaseController{
                                                ->where(array('menu_id'=>$program_info['id'],'type'=>array('in','1,2,3')))
                                                ->order('sort_num asc')
                                                ->select();
-                //print_r($box_adv_arr);exit;
+
                 
                 foreach($program_list as $key=>$v){
                     if($v['type'] ==2){
@@ -204,17 +204,19 @@ class BoxController extends BaseController{
                     if($v['type'] ==3){
                         if($adv_same_flag==0){
                             $program_list[$key]['flag'] = 0;
+                            $program_list[$key]['type'] = '宣传片';
                         }else {
                             
                             if($box_adv_arr['media_list'][$v['sort_num']]){
                                 
                                 $program_list[$key] = $box_adv_arr['media_list'][$v['sort_num']];
                                 $program_list[$key]['flag'] = 1;
+                                $program_list[$key]['type'] = '宣传片';
                             }else {
                                 unset($program_list[$key]);
                             }
                         }
-                        $program_list[$key]['type'] = '宣传片';
+
                     }
                     if($v['type']==1){
                         if($ads_same_flag ==0){
@@ -236,7 +238,7 @@ class BoxController extends BaseController{
                     }
                     
                 }
-                //print_r($program_list);exit;
+
                 $result = array();
                 foreach($program_list as $key=>$v){
                     $result[] = $v;

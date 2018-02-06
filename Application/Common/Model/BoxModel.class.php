@@ -118,6 +118,7 @@ class BoxModel extends Model
              
              ->join('savor_room b on a.room_id= b.id')
              ->join('savor_hotel c on b.hotel_id=c.id')
+             ->join('savor_hotel_ext d on d.hotel_id=c.id')
              ->where($where)
              ->count();
         return $nums;

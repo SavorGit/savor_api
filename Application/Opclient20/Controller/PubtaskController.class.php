@@ -61,16 +61,14 @@ class PubtaskController extends BaseController{
             $this->to_back(30058);
         }
         $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
-        $m_task = new \Common\Model\OptiontaskModel();
-        $field = ' a.hotel_id hid, hotel.state hstate';
-        $map['a.publish_user_id'] = $publish_user_id;
-        $map['hotel.hotel_box_type'] = array('in',$h_type);
-        $map['hotel.flag'] = 0;
+        $m_hotel = new \Common\Model\HotelModel();
+        $field = ' a.id hid, a.state hstate';
+        $map['b.maintainer_id'] = $publish_user_id;
+        $map['a.hotel_box_type'] = array('in',$h_type);
         $map['a.flag'] = 0;
-        //任务什么状态
-        $group = 'a.hotel_id';
+        $map['a.state'] = 1;
 
-        $hotel_info = $m_task->getOpdatas($field, $map, $group);
+        $hotel_info = $m_hotel->getHotelLists($map, '','', $field);
         $h_all_num = count($hotel_info);
         $nor_h = 0;
         $freez_h = 0;
@@ -88,24 +86,32 @@ class PubtaskController extends BaseController{
             if ( $hv['hstate'] == 1) {
                 $nor_h++;
                 $where = '';
-                $where .=" 1 and room.hotel_id=".$hv['hid'].' and a.state=1 and a.flag =0';
+                $where .=" 1 and room.hotel_id=".$hv['hid'].' and a.state=1 and a.flag =0 and room.flag=0 and room.state=1';
                 $box_list = $m_box->getList( 'a.id, a.mac',$where);
                 foreach($box_list as $ks=>$vs){
                     $where = '';
                     $where .=" 1 and hotel_id=".$hv['hid']." and type=2 and box_mac='".$vs['mac']."'";
                     $where .="  and last_heart_time>='".$start_time."'";
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
-                    if(empty($rets)){
-                        //判断异常机顶盒
-                        $not_normal_box_num +=1;
-
-                    }else {
-                        //判断正常机顶盒
-                        $normal_box_num +=1;
-                    }
                     $black_ar = array();
                     $black_ar['mac'] = $vs['mac'];
                     $black_res = $m_black_list->countNums($black_ar);
+                    if(empty($rets)){
+                        //判断异常机顶盒
+                        if(empty($black_res)){
+                            //不在72小时，有可能在黑名单，因为存的是5天不正常的
+                            $not_normal_box_num +=1;
+                        }
+
+                    }else {
+                        //判断正常机顶盒
+                        //在黑名单但有可能刚开机有心跳
+                        if(empty($black_res)){
+                            $normal_box_num +=1;
+                        }
+
+                    }
+
                     if($black_res){
                         //黑名单机顶盒
                         $black_box_num +=1;

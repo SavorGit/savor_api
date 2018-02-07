@@ -9,7 +9,7 @@ use Think\Model;
 
 class HotelDevtokenModel extends Model
 {
-    protected $tableName='hoteldevice_token';
+    protected $tableName='hotel_device_token';
 
 
 

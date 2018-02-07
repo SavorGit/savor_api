@@ -43,6 +43,48 @@ class LoginController extends BaseController{
             $this->to_back('30002');     //密码不正确
         }
         unset($userinfo['password']);
+        //登录获取device_token
+
+        $save = array();
+        $traceinfo = $this->traceinfo;
+        $clent_arr  = C('CLIENT_NAME_ARR');
+        $save['device_type'] = $clent_arr[$traceinfo['clientname']];
+        //android
+        if($save['device_type'] == 3) {
+            $save['v_type'] = 7;
+        } else {
+            $save['v_type'] = 8;
+        }
+        $save['user_id'] = $userinfo['userid'];
+
+        $dev_token = $this->params['device_token'];
+        if( !empty($dev_token) ) {
+            //判断是否存在
+            $save['flag'] = 0;
+            $hotelDetoken = new \Common\Model\HotelDevtokenModel();
+            $dev_info = $hotelDetoken->getOnerow($save);
+            $save['device_token']=  $dev_token;
+            if(empty($dev_info)) {
+                //新增
+                $hotelDetoken->add($save);
+
+            } else {
+                $get_dev_token = $dev_info['device_token'];
+
+                if($get_dev_token != $dev_token) {
+                    //更新
+                    $map = array();
+                    $map['device_token'] = $dev_token;
+                    $where = array();
+                    $where['id'] = $dev_info['id'];
+                    $hotelDetoken->saveData($map, $where);
+                }
+            }
+
+
+        }
+
+
         if($userinfo['groupId'] == 1){
             $skill_result['role_info'] = array('id'=>4,'name'=>'查看');
             $ret = $m_area_model->getHotelAreaList();
@@ -111,6 +153,8 @@ class LoginController extends BaseController{
             $skill_result['is_lead_install'] = $skill_info['is_lead_install'];
         }
         $userinfo['skill_list'] = $skill_result;
+
+
         $this->to_back($userinfo);
     }
 }

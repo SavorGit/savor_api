@@ -140,7 +140,7 @@ class ApiController extends CommonController{
         $field = "  id AS room_id,name as room_name,
         hotel_id,type as room_type,state,flag,remark,
         create_time,
-        update_time,probe";
+        update_time,probe ";
         $map['hotel_id'] = $hotelid;
         $room_arr = $romModel->getWhere($map, $field);
 

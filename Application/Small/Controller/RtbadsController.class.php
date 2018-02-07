@@ -16,6 +16,13 @@ class RtbadsController extends CommonController{
             case 'getTagPortrayalPercent':
                 $this->is_verify = 0;
                 break;
+            case 'getRtbConfig':
+                $this->is_verify = 0;
+                break;
+            case 'getHotelAttendant':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
            
         }
         parent::_init_();
@@ -65,6 +72,33 @@ class RtbadsController extends CommonController{
     public function getTagPortrayalPercent(){
         $percent = C('RTB_TAG_PORTRAYAL_PERCENT');
         $data['percent'] = $percent;
+        $this->to_back($data);
+    }
+    /**
+     * @desc 获取RTB广告配置项
+     */
+    public function getRtbConfig(){
+        $data = array();
+        $rtb_ads_config_arr = C('RTB_ADS_CONFIG_ARR');
+        $data['minMacNum'] = $rtb_ads_config_arr['minMacNum'];
+        $data['maxAdsNum'] = $rtb_ads_config_arr['maxAdsNum'];
+        $data['minLineNum']= $rtb_ads_config_arr['minLineNum'];
+        
+        $this->to_back($data);
+    }
+    /**
+     * @desc 获取餐厅工作人员mac
+     */
+    public function getHotelAttendant(){
+        $hotel_id = $this->params['hotel_id'];
+        $hotel_attendant = new \Common\Model\HotelAttendantModel();
+        $fields = 'hotel_id,device_mac'; 
+        $where = array();
+        $where['hotel_id'] = $hotel_id ;
+        $data =  $hotel_attendant->getWhere($fields, $where);
+        if(empty($data)){
+            $this->to_back(80001);
+        }
         $this->to_back($data);
     }
    

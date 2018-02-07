@@ -256,4 +256,17 @@ return array(
 		'system_tv_volume'=>100,
 		'system_switch_time'=>30,
 	),
+
+	'DEVICE_TYPE' => array(
+		'1'=>'小平台',
+		'2'=>'机顶盒',
+		'3'=>'android',
+		'4'=>'ios',
+		'5'=>'餐厅端_android',
+		'6'=>'餐厅端_ios',
+		'7'=>'运维端_android',
+		'8'=>'运维端_ios',
+		'9'=>'运维-单机版_android',
+		'10'=>'运维-单机版_ios',
+	),
 );

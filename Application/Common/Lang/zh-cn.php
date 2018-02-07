@@ -195,5 +195,8 @@ return array(
     'box_device_token_report_error'=>'机顶盒device_token上报失败',
     'box_room_empty' =>'包间不存在',
     'box_device_token_empty'=>'机顶盒设备号为空',
+    
+    'hotel_attendant_empty'=>'酒楼工作人员mac为空',
+    'not_in_rtb_ads_push_time'=>'不在推送时间范围内',
 
 );

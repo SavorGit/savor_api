@@ -196,5 +196,8 @@ return array(
 	    '70003'=>'box_device_token_report_error',
 	    '70004'=>'box_room_empty',
 	    '70005'=>'box_device_token_empty',
+	    //RTB广告错误码
+	    '80001'=>'hotel_attendant_empty',
+	    '80002'=>'not_in_rtb_ads_push_time',
 	),
 );

@@ -224,6 +224,12 @@ return array(
             //'ios_appkey'=>'59b1260a734be41803000022',
             //'ios_master_secret' =>'wgyklqy5uu8dacj9yartpic9xmpkezs4',
         ),
+        'optionclient'=>array(
+            'android_appkey'=>'59acb7f0f29d98425d000cfa',
+            'android_master_secret'=>'75h0agzaqlibje6t2rtph4uuuocjyfse',
+            'ios_appkey'=>'59b1260a734be41803000022',
+            'ios_master_secret' =>'wgyklqy5uu8dacj9yartpic9xmpkezs4',
+        ),
      ),
     'AFTER_APP'=>array(
         0=>"go_app",
@@ -232,6 +238,14 @@ return array(
         3=>"go_custom",
     ),
     'RTB_TAG_PORTRAYAL_PERCENT'=>'0.3',
+    'RTB_ADS_CONFIG_ARR'=>array(
+        'minMacNum'=>3,
+        'maxAdsNum'=>18,
+        'minLineNum'=>5,
+        'hotel_meal_time'=>array('lunch_time'=>array('start_time'=>"11:00:00",'end_time'=>"15:00:00"),
+                                 'dinner_time'=>array('start_time'=>"17:00:00",'end_time'=>"23:00:00"),   
+        )
+    ),
     'HEART_LOSS_HOURS'=>'72',
     'NET_REPORT_KEY'=>'net_report_',
 	'CONFIG_VOLUME_VAL' => array(

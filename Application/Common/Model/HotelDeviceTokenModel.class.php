@@ -7,7 +7,7 @@
 namespace Common\Model;
 use Think\Model;
 
-class HotelDevtokenModel extends Model
+class HotelDeviceTokenModel extends Model
 {
     protected $tableName='hotel_device_token';
 

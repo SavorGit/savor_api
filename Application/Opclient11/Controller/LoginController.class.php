@@ -61,7 +61,7 @@ class LoginController extends BaseController{
         if( !empty($dev_token) ) {
             //判断是否存在
             $save['flag'] = 0;
-            $hotelDetoken = new \Common\Model\HotelDevtokenModel();
+            $hotelDetoken = new \Common\Model\HotelDeviceTokenModel();
             $dev_info = $hotelDetoken->getOnerow($save);
             $save['device_token']=  $dev_token;
             if(empty($dev_info)) {

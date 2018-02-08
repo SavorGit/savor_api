@@ -46,7 +46,7 @@ class ReportController extends CommonController{
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
         $data['teamviewer_id'] = I('get.teamviewer_id'); //远程id
         
-        //20170115 新增
+        //20180115 新增
         $data['pro_period'] = I('get.pro_period','','trim');  //当前节目号
         $data['adv_period'] = I('get.adv_period','','trim');  //当前宣传片期号
         $data['pro_download_period'] = I('get.pro_download_period','','trim'); //下载节目期号

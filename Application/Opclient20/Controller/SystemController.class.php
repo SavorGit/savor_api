@@ -101,7 +101,8 @@ class SystemController extends BaseController{
         foreach($hotel_list as $key=>$v){
             $flag = 0;
             $where = '';
-            $where .=" 1 and room.hotel_id=".$v['id'].' and a.state=1 and a.flag =0 and room.flag=0 and room.state=1';
+            //$where .=" 1 and room.hotel_id=".$v['id'].' and a.state=1 and a.flag =0 and room.flag=0 and room.state=1';
+            $where .=" 1 and room.hotel_id=".$v['id'].' and a.state=1 and a.flag =0 ';
             $box_list = $m_box->getList( 'a.id, a.mac',$where);
             foreach($box_list as $ks=>$vs){
                 $where = '';
@@ -245,8 +246,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['a.flag'] = 0;
 
-        $where['b.flag'] =0 ;
-        $where['b.state'] = 1;
+        
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
         $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
@@ -258,8 +258,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['a.flag'] = 0;
         $where['a.state']= 1;
-        $where['b.flag'] =0 ;
-        $where['b.state'] = 1;
+        
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
         $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
@@ -270,8 +269,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['a.flag'] = 0;
         $where['a.state']= 3;
-        $where['b.flag'] =0 ;
-        $where['b.state'] = 1;
+        
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
         $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
@@ -283,8 +281,7 @@ class SystemController extends BaseController{
         $where = array();
         $where['a.flag'] = 0;
         $where['a.state']= 2;
-        $where['b.flag'] =0 ;
-        $where['b.state'] = 1;
+        
         $where['c.flag'] = 0;
         $where['c.state'] = 1;
         $where['c.hotel_box_type'] = array('in',$all_hotel_box_type_str);
@@ -300,8 +297,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['a.flag'] = 0;
             
-            $where['b.flag'] =0 ;
-            $where['b.state'] = 1;
+            
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
@@ -314,8 +310,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['a.flag'] = 0;
             $where['a.state']= 1;
-            $where['b.flag'] =0 ;
-            $where['b.state'] = 1;
+            
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             
@@ -330,8 +325,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['a.flag'] = 0;
             $where['a.state']= 3;
-            $where['b.flag'] =0 ;
-            $where['b.state'] = 1;
+            
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;
@@ -344,8 +338,7 @@ class SystemController extends BaseController{
             $where = array();
             $where['a.flag'] = 0;
             $where['a.state']= 2;
-            $where['b.flag'] =0 ;
-            $where['b.state'] = 1;
+            
             $where['c.flag'] = 0;
             $where['c.state'] = 1;
             if($city_id) $where['c.area_id'] = $city_id;

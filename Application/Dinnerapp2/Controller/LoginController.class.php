@@ -26,9 +26,9 @@ class LoginController extends BaseController{
     }
     
     public function dologin(){
-        $mobile = $this->params['mobile'];           //手机号
-        $verify_code = $this->params['verify_code']; //手机验证码
-        $invite_code = $this->params['invite_code']; //邀请码
+        $mobile = trim($this->params['mobile']);           //手机号
+        $verify_code = trim($this->params['verify_code']); //手机验证码
+        $invite_code = trim($this->params['invite_code']); //邀请码
         //验证手机格式
         if(!check_mobile($mobile)){
             $this->to_back(60002);

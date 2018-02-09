@@ -48,13 +48,9 @@ class LoginController extends BaseController{
         $save = array();
         $traceinfo = $this->traceinfo;
         $clent_arr  = C('CLIENT_NAME_ARR');
-        $save['device_type'] = $clent_arr[$traceinfo['clientname']];
-        //android
-        if($save['device_type'] == 3) {
-            $save['v_type'] = 7;
-        } else {
-            $save['v_type'] = 8;
-        }
+        $device_type = $clent_arr[$traceinfo['clientname']];
+
+
         $save['user_id'] = $userinfo['userid'];
 
         $dev_token = $this->params['device_token'];
@@ -62,10 +58,17 @@ class LoginController extends BaseController{
             //判断是否存在
             $save['flag'] = 0;
             $hotelDetoken = new \Common\Model\HotelDeviceTokenModel();
+            $save['v_type'] =array(array('eq',7),array('eq',8), 'or');
             $dev_info = $hotelDetoken->getOnerow($save);
             $save['device_token']=  $dev_token;
+            if($device_type == 3) {
+                $save['v_type'] = 7;
+            } else {
+                $save['v_type'] = 8;
+            }
             if(empty($dev_info)) {
                 //新增
+                $save['device_type'] = $device_type;
                 $hotelDetoken->add($save);
 
             } else {
@@ -75,9 +78,22 @@ class LoginController extends BaseController{
                     //更新
                     $map = array();
                     $map['device_token'] = $dev_token;
+                    $map['device_type'] = $device_type;
+                    $map['v_type'] = $save['v_type'];
                     $where = array();
                     $where['id'] = $dev_info['id'];
                     $hotelDetoken->saveData($map, $where);
+                } else {
+                    $get_dev_type = $dev_info['device_type'];
+                    if($device_type != $get_dev_type) {
+                        //更新
+                        $map = array();
+                        $map['device_type'] = $device_type;
+                        $map['v_type'] = $save['v_type'];
+                        $where = array();
+                        $where['id'] = $dev_info['id'];
+                        $hotelDetoken->saveData($map, $where);
+                    }
                 }
             }
 

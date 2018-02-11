@@ -775,7 +775,7 @@ class TaskController extends BaseController{
                 $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                 $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                     $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-                    $extra,alert);
+                    $extra,$ticker);
             }
             
             $this->to_back(10000);
@@ -878,10 +878,10 @@ class TaskController extends BaseController{
                 
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
-                $m_sys_user->getUserInfo(array('id'=>$appoin_user_id),'remark',1);
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$appoin_user_id),'remark',1);
                 $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                           $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
-                          $m_sys_user['remark'].' 指派';
+                          $sys_user['remark'].' 指派';
                 $title = '小热点运维端';
                 $text  = '小热点运维端';
                 $production_mode = 'false';
@@ -892,7 +892,7 @@ class TaskController extends BaseController{
                 $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                 $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                                 $device_tokens, $ticker, $title, $text,$production_mode,$custom, 
-                                $extra,alert);
+                                $extra,$ticker);
             }
             $this->to_back(10000);
         }else {
@@ -952,7 +952,7 @@ class TaskController extends BaseController{
         $after_array = C('AFTER_APP');
         $after_open = $after_array[3];
         
-        $device_tokens = '81132e473e478b04408363732565df8fccb90e4e5b1d6826d52122932a3c6f05';
+        $device_tokens = 'bdee2583c89b73e8aa903b60a1a5b15c1be59e414d3fce007c327b9f473f3a92';
         $task_info['hotel_name'] = '永峰测试';
         $task_type_arr = C('OPTION_USER_SKILL_ARR'); 
         $m_sys_user= new \Common\Model\SysUserModel();
@@ -960,8 +960,8 @@ class TaskController extends BaseController{
         $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
             $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
             $sys_user['remark'].' 指派';
-        $title = '小热点运维端任务推送';
-        $text  = '小热点运维端任务推送';
+        $title = '';
+        $text  = '';
         $production_mode = 'false';
         $alert['title'] = $ticker;
         $alert['subtitle'] = $title;
@@ -971,7 +971,7 @@ class TaskController extends BaseController{
         $extra = $ext_arr = array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
         $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
             $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-            $extra,$alert);
+            $extra,$ticker);
     }
     public function testAdPush(){
         $task_id = 1;
@@ -1001,6 +1001,6 @@ class TaskController extends BaseController{
         $extra = $ext_arr = array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
         $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
             $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-            $extra,$alert);
+            $extra,$ticker);
     }
 }

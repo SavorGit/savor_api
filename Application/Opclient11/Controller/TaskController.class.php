@@ -727,7 +727,7 @@ class TaskController extends BaseController{
         $task_id     = $this->params['task_id'];    //任务id
         $refuse_desc = $this->params['refuse_desc'];  //拒绝描述
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $fields = 'a.state,a.appoint_user_id';
+        $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
         $where = array();
         $where['a.id'] = $task_id;
         $where['a.flag'] = 0;
@@ -747,6 +747,37 @@ class TaskController extends BaseController{
         $data['state']        =5;
         $ret = $m_option_task->updateInfo($map,$data);
         if($ret){
+            $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+            $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+            if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                $display_type = 'notification';//通知
+                $device_type  = $user_token['device_type'];
+                $type = 'listcast' ;  //多列播
+                $option_name  = 'optionclient';//运维端app
+                $after_array = C('AFTER_APP');
+                $after_open = $after_array[3];
+            
+                $device_tokens = $user_token['device_token'];
+            
+                $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                $m_sys_user= new \Common\Model\SysUserModel();
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$user_id),'remark',1);
+                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 拒绝';
+                $title = '小热点运维端';
+                $text  = '小热点运维端';
+                $production_mode = 'false';
+                $alert['title'] = $ticker;
+                $alert['subtitle'] = $title;
+                $alert['body'] = $text;
+                $custom = array();
+                $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                    $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+                    $extra,alert);
+            }
+            
             $this->to_back(10000);
         }else {
             $this->to_back(30063);
@@ -814,7 +845,7 @@ class TaskController extends BaseController{
         $is_lead_install = $this->params['is_lead_install'] ? $this->params['is_lead_install']:0;  //是否带队安装
         $m_option_task = new \Common\Model\OptiontaskModel();
         
-        $fields = ' a.id,a.state';
+        $fields = ' a.id,a.state,a.publish_user_id,a.task_type,hotel.name hotel_name';
         $where['a.id'] = $task_id;
         $task_info = $m_option_task->getInfo($fields, $where);
         if(empty($task_info)){
@@ -833,6 +864,36 @@ class TaskController extends BaseController{
         $data['is_lead_install'] = $is_lead_install;
         $ret = $m_option_task->updateInfo($map,$data);
         if($ret){
+            $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+            $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+            if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                $display_type = 'notification';//通知
+                $device_type  = $user_token['device_type'];
+                $type = 'listcast' ;  //多列播
+                $option_name  = 'optionclient';//运维端app
+                $after_array = C('AFTER_APP');
+                $after_open = $after_array[3];
+                
+                $device_tokens = $user_token['device_token'];
+                
+                $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                $m_sys_user= new \Common\Model\SysUserModel();
+                $m_sys_user->getUserInfo(array('id'=>$appoin_user_id),'remark',1);
+                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                          $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                          $m_sys_user['remark'].' 指派';
+                $title = '小热点运维端';
+                $text  = '小热点运维端';
+                $production_mode = 'false';
+                $alert['title'] = $ticker;
+                $alert['subtitle'] = $title;
+                $alert['body'] = $text;
+                $custom = array();
+                $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                                $device_tokens, $ticker, $title, $text,$production_mode,$custom, 
+                                $extra,alert);
+            }
             $this->to_back(10000);
         }else {
             $this->to_back(30064);
@@ -881,5 +942,65 @@ class TaskController extends BaseController{
         $data = array();
         $data['nums'] = $nums;
         $this->to_back($data);
+    }
+    public function testPush(){
+        $task_id = 1;
+        $display_type = 'notification';//通知
+        $device_type  = 4;
+        $type = 'listcast' ;  //多列播
+        $option_name  = 'optionclient';//运维端app
+        $after_array = C('AFTER_APP');
+        $after_open = $after_array[3];
+        
+        $device_tokens = '81132e473e478b04408363732565df8fccb90e4e5b1d6826d52122932a3c6f05';
+        $task_info['hotel_name'] = '永峰测试';
+        $task_type_arr = C('OPTION_USER_SKILL_ARR'); 
+        $m_sys_user= new \Common\Model\SysUserModel();
+        $sys_user = $m_sys_user->getUserInfo(array('id'=>145),'remark',1);
+        $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+            $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
+            $sys_user['remark'].' 指派';
+        $title = '小热点运维端任务推送';
+        $text  = '小热点运维端任务推送';
+        $production_mode = 'false';
+        $alert['title'] = $ticker;
+        $alert['subtitle'] = $title;
+        $alert['body'] = $text;
+        //$alert = $alert;
+        $custom = array();
+        $extra = $ext_arr = array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+        $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+            $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+            $extra,$alert);
+    }
+    public function testAdPush(){
+        $task_id = 1;
+        $display_type = 'notification';//通知
+        $device_type  = 3;
+        $type = 'listcast' ;  //多列播
+        $option_name  = 'optionclient';//运维端app
+        $after_array = C('AFTER_APP');
+        $after_open = $after_array[3];
+        
+        $device_tokens = 'Ak6nFuL7K3nu4AVVAHMLUEL9Yc5IOvcO2JhxQysyGXmn';
+        $task_info['hotel_name'] = '永峰测试';
+        $task_type_arr = C('OPTION_USER_SKILL_ARR');
+        $m_sys_user= new \Common\Model\SysUserModel();
+        $sys_user = $m_sys_user->getUserInfo(array('id'=>145),'remark',1);
+        $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+            $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
+            $sys_user['remark'].' 指派';
+        $title = '小热点运维端任务推送';
+        $text  = '小热点运维端任务推送';
+        $production_mode = 'false';
+        $alert['title'] = $ticker;
+        $alert['subtitle'] = $title;
+        $alert['body'] = $text;
+        //$alert = $alert;
+        $custom = array();
+        $extra = $ext_arr = array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+        $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+            $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+            $extra,$alert);
     }
 }

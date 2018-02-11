@@ -17,6 +17,10 @@ class LoginController extends BaseController{
             case 'doLogout':
                 $this->is_verify = 0;
                 break;
+            case 'regDeviceToken':
+                $this->is_verify = 1;
+                $this->valid_fields = array('user_id'=>1001,'device_token'=>1001);
+                break;
         }
         parent::_init_();
         $this->option_user_skill_arr = C('OPTION_USER_SKILL_ARR');
@@ -54,7 +58,7 @@ class LoginController extends BaseController{
         $save['user_id'] = $userinfo['userid'];
 
         $dev_token = $this->params['device_token'];
-        if( !empty($dev_token) ) {
+        /* if( !empty($dev_token) ) {
             //判断是否存在
             $save['flag'] = 0;
             $hotelDetoken = new \Common\Model\HotelDeviceTokenModel();
@@ -98,7 +102,7 @@ class LoginController extends BaseController{
             }
 
 
-        }
+        } */
 
 
         if($userinfo['groupId'] == 1){
@@ -172,5 +176,74 @@ class LoginController extends BaseController{
 
 
         $this->to_back($userinfo);
+    }
+    /**
+     * @desc 注册第三方推送token
+     */
+    public function regDeviceToken(){
+        $user_id   = $this->params['user_id'];
+        
+        $m_sysuser = new \Common\Model\SysUserModel();
+        
+        $where['id'] = $user_id;
+        $where['status']   =1;
+        $userinfo = $m_sysuser->getUserInfo($where,'id as userid,groupId,username,remark as nickname,password');
+        
+        
+        if(empty($userinfo)){
+            $this->to_back('12002');    //用户不存在
+        }
+        
+        $dev_token = $this->params['device_token'];
+        
+        $save = array();
+        $traceinfo = $this->traceinfo;
+        $clent_arr  = C('CLIENT_NAME_ARR');
+        $device_type = $clent_arr[$traceinfo['clientname']];
+
+        $save['user_id'] = $user_id;
+
+        //判断是否存在
+        $save['flag'] = 0;
+        $hotelDetoken = new \Common\Model\HotelDeviceTokenModel();
+        $save['v_type'] =array(array('eq',7),array('eq',8), 'or');
+        $dev_info = $hotelDetoken->getOnerow($save);
+        $save['device_token']=  $dev_token;
+        if($device_type == 3) {
+            $save['v_type'] = 7;
+        } else {
+            $save['v_type'] = 8;
+        }
+        if(empty($dev_info)) {
+            //新增
+            $save['device_type'] = $device_type;
+            $hotelDetoken->add($save);
+    
+        } else {
+            $get_dev_token = $dev_info['device_token'];
+    
+            if($get_dev_token != $dev_token) {
+                //更新
+                $map = array();
+                $map['device_token'] = $dev_token;
+                $map['device_type'] = $device_type;
+                $map['v_type'] = $save['v_type'];
+                $where = array();
+                $where['id'] = $dev_info['id'];
+                $hotelDetoken->saveData($map, $where);
+            } else {
+                $get_dev_type = $dev_info['device_type'];
+                if($device_type != $get_dev_type) {
+                    //更新
+                    $map = array();
+                    $map['device_type'] = $device_type;
+                    $map['v_type'] = $save['v_type'];
+                    $where = array();
+                    $where['id'] = $dev_info['id'];
+                    $hotelDetoken->saveData($map, $where);
+                }
+            }
+        }
+        $this->to_back(10000);
     }
 }

@@ -170,7 +170,49 @@ $img_arr[$im]['repair_img'];
                 $dat['complete_time'] = $now_date;
                 $m_option_task = new \Common\Model\OptiontaskModel();
                 $m_option_task->saveData($dat, $map);
-
+                
+                //增加推送
+                $task_id = $this->params['task_id'];
+                $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
+                $where = array();
+                $where['a.id'] = $task_id;
+                $where['a.flag'] = 0;
+                $task_info = $m_option_task->getInfo($fields,$where);
+                
+                $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+                $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+                if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                    $display_type = 'notification';//通知
+                    $device_type  = $user_token['device_type'];
+                    $type = 'listcast' ;  //多列播
+                    $option_name  = 'optionclient';//运维端app
+                    $after_array = C('AFTER_APP');
+                    $after_open = $after_array[3];
+                
+                    $device_tokens = $user_token['device_token'];
+                
+                    $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                    $m_sys_user= new \Common\Model\SysUserModel();
+                    $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                    $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                        $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                        $sys_user['remark'].' 完成';
+                    $title = '小热点运维端';
+                    $text  = '小热点运维端';
+                    $production_mode = 'false';
+                    $alert['title'] = $ticker;
+                    $alert['subtitle'] = $title;
+                    $alert['body'] = $text;
+                    $custom = array();
+                    $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                    $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                        $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+                        $extra,alert);
+                }
+                 
+                //推送结束
+                
+                
             }
             $this->to_back(array('state'=>4));
         } else {
@@ -194,6 +236,47 @@ $img_arr[$im]['repair_img'];
             $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
+ 
+            //增加推送
+            $task_id = $this->params['task_id'];
+            $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
+            $where = array();
+            $where['a.id'] = $task_id;
+            $where['a.flag'] = 0;
+            $task_info = $m_option_task->getInfo($fields,$where);
+            
+            $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+            $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+            if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                $display_type = 'notification';//通知
+                $device_type  = $user_token['device_type'];
+                $type = 'listcast' ;  //多列播
+                $option_name  = 'optionclient';//运维端app
+                $after_array = C('AFTER_APP');
+                $after_open = $after_array[3];
+            
+                $device_tokens = $user_token['device_token'];
+            
+                $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                $m_sys_user= new \Common\Model\SysUserModel();
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成';
+                $title = '小热点运维端';
+                $text  = '小热点运维端';
+                $production_mode = 'false';
+                $alert['title'] = $ticker;
+                $alert['subtitle'] = $title;
+                $alert['body'] = $text;
+                $custom = array();
+                $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                    $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+                    $extra,alert);
+            }
+            //推送结束;
+            
             $this->to_back(array('state'=>4));
         } else {
             $this->to_back(30106);
@@ -222,6 +305,49 @@ $img_arr[$im]['repair_img'];
             $m_option_task = new \Common\Model\OptiontaskModel();
 
             $m_option_task->saveData($dat, $map);
+            
+            //增加推送
+            $task_id = $save['task_id'];
+            $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
+            $where = array();
+            $where['a.id'] = $task_id;
+            $where['a.flag'] = 0;
+            $task_info = $m_option_task->getInfo($fields,$where);
+            
+            $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+            $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+            if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                $display_type = 'notification';//通知
+                $device_type  = $user_token['device_type'];
+                $type = 'listcast' ;  //多列播
+                $option_name  = 'optionclient';//运维端app
+                $after_array = C('AFTER_APP');
+                $after_open = $after_array[3];
+            
+                $device_tokens = $user_token['device_token'];
+            
+                $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                $m_sys_user= new \Common\Model\SysUserModel();
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成';
+                $title = '小热点运维端';
+                $text  = '小热点运维端';
+                $production_mode = 'false';
+                $alert['title'] = $ticker;
+                $alert['subtitle'] = $title;
+                $alert['body'] = $text;
+                $custom = array();
+                $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                    $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+                    $extra,alert);
+            }
+           
+            //推送结束
+            
+            
             $this->to_back(array('state'=>4));
         }
     }
@@ -261,6 +387,49 @@ $img_arr[$im]['repair_img'];
             $dat['complete_time'] = $now_date;
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
+            
+            //增加推送
+            $task_id = $save['task_id'];
+            $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
+            $where = array();
+            $where['a.id'] = $task_id;
+            $where['a.flag'] = 0;
+            $task_info = $m_option_task->getInfo($fields,$where);
+            
+            $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
+            $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
+            if(!empty($user_token) && !empty($user_token['device_token'])){//推送
+                $display_type = 'notification';//通知
+                $device_type  = $user_token['device_type'];
+                $type = 'listcast' ;  //多列播
+                $option_name  = 'optionclient';//运维端app
+                $after_array = C('AFTER_APP');
+                $after_open = $after_array[3];
+            
+                $device_tokens = $user_token['device_token'];
+            
+                $task_type_arr = C('OPTION_USER_SKILL_ARR');
+                $m_sys_user= new \Common\Model\SysUserModel();
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成';
+                $title = '小热点运维端';
+                $text  = '小热点运维端';
+                $production_mode = 'false';
+                $alert['title'] = $ticker;
+                $alert['subtitle'] = $title;
+                $alert['body'] = $text;
+                $custom = array();
+                $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
+                $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
+                    $device_tokens, $ticker, $title, $text,$production_mode,$custom,
+                    $extra,alert);
+            }
+             
+            //推送结束
+            
+            
             
             $this->to_back(array('state'=>4));
             

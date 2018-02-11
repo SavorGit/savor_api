@@ -206,7 +206,7 @@ class LoginController extends BaseController{
         //判断是否存在
         $save['flag'] = 0;
         $hotelDetoken = new \Common\Model\HotelDeviceTokenModel();
-        $save['v_type'] =array(array('eq',7),array('eq',8), 'or');
+        //$save['v_type'] =array(array('eq',7),array('eq',8), 'or');
         $dev_info = $hotelDetoken->getOnerow($save);
         $save['device_token']=  $dev_token;
         if($device_type == 3) {

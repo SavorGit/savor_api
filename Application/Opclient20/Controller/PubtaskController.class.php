@@ -87,15 +87,15 @@ class PubtaskController extends BaseController{
             if ( $hv['hstate'] == 1) {
                 $nor_h++;
                 $where = '';
-                $where .=" 1 and room.hotel_id=".$hv['hid'].' and a.state=1 and a.flag =0 and room.flag=0 and room.state=1';
+                $where .=" 1 and room.hotel_id=".$hv['hid'].' and a.state=1 and a.flag =0 ';
                 $box_list = $m_box->getList( 'a.id, a.mac',$where);
                 foreach($box_list as $ks=>$vs){
                     $where = '';
-                    $where .=" 1 and hotel_id=".$hv['hid']." and type=2 and box_mac='".$vs['mac']."'";
+                    $where .=" 1 and hotel_id=".$hv['hid']." and type=2 and box_id='".$vs['id']."'";
                     $where .="  and last_heart_time>='".$start_time."'";
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
                     $black_ar = array();
-                    $black_ar['mac'] = $vs['mac'];
+                    $black_ar['box_id'] = $vs['id'];
                     $black_res = $m_black_list->countNums($black_ar);
                     if(empty($rets)){
                         //判断异常机顶盒

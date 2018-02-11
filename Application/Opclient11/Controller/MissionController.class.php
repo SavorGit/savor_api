@@ -193,7 +193,7 @@ $img_arr[$im]['repair_img'];
                 
                     $task_type_arr = C('OPTION_USER_SKILL_ARR');
                     $m_sys_user= new \Common\Model\SysUserModel();
-                    $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                    $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
                     $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                         $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                         $sys_user['remark'].' 完成';
@@ -207,7 +207,7 @@ $img_arr[$im]['repair_img'];
                     $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                     $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                         $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-                        $extra,alert);
+                        $extra,$ticker);
                 }
                  
                 //推送结束
@@ -259,7 +259,7 @@ $img_arr[$im]['repair_img'];
             
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
-                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
                 $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
@@ -273,7 +273,7 @@ $img_arr[$im]['repair_img'];
                 $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                 $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                     $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-                    $extra,alert);
+                    $extra,$ticker);
             }
             //推送结束;
             
@@ -342,7 +342,7 @@ $img_arr[$im]['repair_img'];
                 $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                 $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                     $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-                    $extra,alert);
+                    $extra,$ticker);
             }
            
             //推送结束
@@ -410,7 +410,7 @@ $img_arr[$im]['repair_img'];
             
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
-                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
                 $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
@@ -424,7 +424,7 @@ $img_arr[$im]['repair_img'];
                 $extra =  array('type'=>2,'params'=>json_encode(array('task_id'=>"{$task_id}")));
                 $this->pushData($display_type,$device_type,$type, $option_name, $after_open,
                     $device_tokens, $ticker, $title, $text,$production_mode,$custom,
-                    $extra,alert);
+                    $extra,$ticker);
             }
              
             //推送结束

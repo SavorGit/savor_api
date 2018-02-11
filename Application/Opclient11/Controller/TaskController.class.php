@@ -762,11 +762,13 @@ class TaskController extends BaseController{
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$user_id),'remark',1);
-                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 拒绝'; */
+                $ticker = $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 拒绝';
-                $title = '小热点运维端';
-                $text  = '小热点运维端';
+                $title = '小热点运维端通知';
+                $text  = $ticker;
                 $production_mode = 'false';
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
@@ -879,11 +881,13 @@ class TaskController extends BaseController{
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$appoin_user_id),'remark',1);
-                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                           $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                          $sys_user['remark'].' 指派'; */
+                $ticker = $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                           $sys_user['remark'].' 指派';
-                $title = '小热点运维端';
-                $text  = '小热点运维端';
+                $title = '小热点运维端通知';
+                $text  = $ticker;
                 $production_mode = 'false';
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
@@ -952,16 +956,18 @@ class TaskController extends BaseController{
         $after_array = C('AFTER_APP');
         $after_open = $after_array[3];
         
-        $device_tokens = 'bdee2583c89b73e8aa903b60a1a5b15c1be59e414d3fce007c327b9f473f3a92';
+        $device_tokens = 'c7fba38fa88d6d8d027e0f01e5069e3bbf1dd018c475b16358a5f0b6a655d50e';
         $task_info['hotel_name'] = '永峰测试';
         $task_type_arr = C('OPTION_USER_SKILL_ARR'); 
         $m_sys_user= new \Common\Model\SysUserModel();
         $sys_user = $m_sys_user->getUserInfo(array('id'=>145),'remark',1);
-        $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+        /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
             $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
-            $sys_user['remark'].' 指派';
-        $title = '';
-        $text  = '';
+            $sys_user['remark'].' 指派'; */
+        $ticker = $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.$sys_user['remark'].' 指派';
+        
+        $title = '小热点运维端通知';
+        $text  = $ticker;
         $production_mode = 'false';
         $alert['title'] = $ticker;
         $alert['subtitle'] = $title;
@@ -987,11 +993,11 @@ class TaskController extends BaseController{
         $task_type_arr = C('OPTION_USER_SKILL_ARR');
         $m_sys_user= new \Common\Model\SysUserModel();
         $sys_user = $m_sys_user->getUserInfo(array('id'=>145),'remark',1);
-        $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
-            $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
-            $sys_user['remark'].' 指派';
-        $title = '小热点运维端任务推送';
-        $text  = '小热点运维端任务推送';
+        $ticker = $task_info['hotel_name'].'的'.$task_type_arr[4].'任务已经被 '.
+            $sys_user['remark'].' 指派'; 
+        //$ticker = 'fdd';
+        $title = '小热点运维端通知';
+        $text  = $ticker;
         $production_mode = 'false';
         $alert['title'] = $ticker;
         $alert['subtitle'] = $title;

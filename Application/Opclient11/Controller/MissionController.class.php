@@ -194,11 +194,14 @@ $img_arr[$im]['repair_img'];
                     $task_type_arr = C('OPTION_USER_SKILL_ARR');
                     $m_sys_user= new \Common\Model\SysUserModel();
                     $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                    $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                    /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                         $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                        $sys_user['remark'].' 完成'; */
+                    
+                    $ticker = $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                         $sys_user['remark'].' 完成';
-                    $title = '小热点运维端';
-                    $text  = '小热点运维端';
+                    $title = '小热点运维端通知';
+                    $text  = $ticker;
                     $production_mode = 'false';
                     $alert['title'] = $ticker;
                     $alert['subtitle'] = $title;
@@ -260,11 +263,13 @@ $img_arr[$im]['repair_img'];
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成'; */
+                $ticker =  $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
-                $title = '小热点运维端';
-                $text  = '小热点运维端';
+                $title = '小热点运维端通知';
+                $text  = $ticker;
                 $production_mode = 'false';
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
@@ -328,12 +333,15 @@ $img_arr[$im]['repair_img'];
             
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
-                $sys_user = $m_sys_user->getUserInfo(array('id'=>$save['user_id']),'remark',1);
-                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
+                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成'; */
+                
+                $ticker = $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
-                $title = '小热点运维端';
-                $text  = '小热点运维端';
+                $title = '小热点运维端通知';
+                $text  = $ticker;
                 $production_mode = 'false';
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
@@ -411,11 +419,14 @@ $img_arr[$im]['repair_img'];
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
+                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
                     $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
+                    $sys_user['remark'].' 完成'; */
+                
+                $ticker =  $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
-                $title = '小热点运维端';
-                $text  = '小热点运维端';
+                $title = '小热点运维端通知';
+                $text  = $ticker;
                 $production_mode = 'false';
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;

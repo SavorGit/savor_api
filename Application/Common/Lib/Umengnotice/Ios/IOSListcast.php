@@ -22,14 +22,21 @@ class IOSListcast extends IOSNotification {
 			$this->setPredefinedKeyValue("alert", $pam['alert']);
 			$this->setPredefinedKeyValue("badge", $pam['badge']);
 			$this->setPredefinedKeyValue("sound", $pam['sound']);
+			
+			$this->setPredefinedKeyValue("title",            $pam['title']);
+			$this->setPredefinedKeyValue("text",             $pam['text']);
+			$this->setPredefinedKeyValue("after_open",       $pam['after_open']);
+			
 			$this->setPredefinedKeyValue("production_mode", $pam['production_mode']);
+			$this->setPredefinedKeyValue('display_type', $pam['display_type']);
 			// Set customized fields
 			$this->setCustomizedField($pam['customm']);
-			print("Sending unicast notification, please wait...\r\n");
+			$this->setCustomizedField($pam['extra']);
+			//print("Sending unicast notification, please wait...\r\n");
 			$this->send();
-			print("Sent SUCCESS\r\n");
+			//print("Sent SUCCESS\r\n");
 		} catch (Exception $e) {
-			print("Caught exception: " . $e->getMessage());
+			//print("Caught exception: " . $e->getMessage());
 		}
 	}
 

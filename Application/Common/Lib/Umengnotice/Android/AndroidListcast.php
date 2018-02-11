@@ -30,6 +30,7 @@ class AndroidListcast extends AndroidNotification {
 			// Set 'production_mode' to 'false' if it's a test device.
 			// For how to register a test device, please see the developer doc.
 			$this->setPredefinedKeyValue("production_mode", $pam['production_mode']);
+			$this->setPredefinedKeyValue("display_type", $pam['display_type']);
 
 			// Set extra fields
 			$this->setExtraField($pam['extra']);

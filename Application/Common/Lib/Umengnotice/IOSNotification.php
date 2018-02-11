@@ -10,17 +10,19 @@ abstract class IOSNotification extends UmengNotification {
 	// The array for payload, please see API doc for more information
 	protected $iosPayload = array(
 								"aps"       =>  array(
-													"alert"					=>  NULL
-													//"badge"				=>  xx,
-													//"sound"				=>	"xx",
-													//"content-available"	=>	xx	
+													"alert"					=>  NULL,
+													"badge"				=>  "0",
+													"sound"				=>	"chime",
+													"content-available"	=>	"",	
 												)
 			        			//"key1"	=>	"value1",
 			        			//"key2"	=>	"value2"
 							);
 
 	// Keys can be set in the aps level
-	protected $APS_KEYS    = array("alert", "badge", "sound", "content-available");
+	protected $APS_KEYS    = array("alert", "badge", "sound", "content-available","title" ,"text",
+	                               "after_open","display_type"
+	);
 
 	function __construct() {
 		parent::__construct();

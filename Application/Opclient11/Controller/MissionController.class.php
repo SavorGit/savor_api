@@ -8,6 +8,7 @@ class MissionController extends BaseController{
     private $task_emerge_arr;
     private $option_user_skill_arr;
     private $net_img_len = 2;
+    private $production_mode;
     /**
      * 构造函数
      */
@@ -26,6 +27,7 @@ class MissionController extends BaseController{
                 
         }
         parent::_init_();
+        $this->production_mode = C('UMENG_PRODUCTION_MODE');
     }
 
     public function getexecutorInfo() {
@@ -202,7 +204,7 @@ $img_arr[$im]['repair_img'];
                         $sys_user['remark'].' 完成';
                     $title = '小热点运维端通知';
                     $text  = $ticker;
-                    $production_mode = 'false';
+                    $production_mode = $this->production_mode;
                     $alert['title'] = $ticker;
                     $alert['subtitle'] = $title;
                     $alert['body'] = $text;
@@ -270,7 +272,7 @@ $img_arr[$im]['repair_img'];
                     $sys_user['remark'].' 完成';
                 $title = '小热点运维端通知';
                 $text  = $ticker;
-                $production_mode = 'false';
+                $production_mode = $this->production_mode;
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
                 $alert['body'] = $text;
@@ -342,7 +344,7 @@ $img_arr[$im]['repair_img'];
                     $sys_user['remark'].' 完成';
                 $title = '小热点运维端通知';
                 $text  = $ticker;
-                $production_mode = 'false';
+                $production_mode = $this->production_mode;
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
                 $alert['body'] = $text;
@@ -427,7 +429,7 @@ $img_arr[$im]['repair_img'];
                     $sys_user['remark'].' 完成';
                 $title = '小热点运维端通知';
                 $text  = $ticker;
-                $production_mode = 'false';
+                $production_mode = $this->production_mode;
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
                 $alert['body'] = $text;

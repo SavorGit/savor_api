@@ -145,7 +145,7 @@ class ErrorReportController extends BaseController{
                 if($v['box_report_time'] =='0000-00-00 00:00:00'){
                     $v['box_lost_hour'] = '未找到心跳;';
                 }
-                $data['list'][$key]['box_info'] = '机顶盒异常1个;'.$v['box_lost_hour'];
+                $data['list'][$key]['box_info'] = '机顶盒异常1个;'.'失联时长'.$v['box_lost_hour'].'小时';
             }else if($v['not_normal_box_num']>1){
 
                 $data['list'][$key]['box_info'] ='机顶盒异常'.$v['not_normal_box_num'].'个';

@@ -87,7 +87,7 @@ class PubtaskController extends BaseController{
             if ( $hv['hstate'] == 1) {
                 $nor_h++;
                 $where = '';
-                $where .=" 1 and room.hotel_id=".$hv['hid'].' and a.state=1 and a.flag =0 ';
+                $where .=" 1 and room.hotel_id=".$hv['hid'].'  and a.flag =0 and  room.flag=0 and room.state =1 ';
                 $box_list = $m_box->getList( 'a.id, a.mac',$where);
                 foreach($box_list as $ks=>$vs){
                     $where = '';

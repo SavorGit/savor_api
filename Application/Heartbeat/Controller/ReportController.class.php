@@ -217,7 +217,7 @@ class ReportController extends CommonController{
             $ret = $redis->get($v);
             $ret_arr = explode(',', $ret);
             
-            if($clientid==1){//小平台
+            if($clientid==1 && !empty($ret_arr)){//小平台
                 $hotelInfo = $m_hotel->getHotelInfoByMac($mac);
                 if($hotelInfo){
                     $hotelId = intval($ret_arr[9]);
@@ -264,7 +264,7 @@ class ReportController extends CommonController{
                 }//判断酒楼是否存在完毕
                 
                 
-            }else if($clientid==2) {//机顶盒
+            }else if($clientid==2 && !empty($ret_arr)) {//机顶盒
                 $hotelInfo =  $m_box->getHotelInfoByBoxMac($mac);
                 if($hotelInfo){
                     $heart_log_info = $m_heart_log->getInfo('hotel_id,last_heart_time',array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid));

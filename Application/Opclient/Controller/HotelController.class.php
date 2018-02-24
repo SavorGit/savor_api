@@ -332,7 +332,7 @@ class HotelController extends BaseController {
             $volume[$key]  = $row['ltime'];
             $blc[$key]  =   $row['blstate'];
         }
-        array_multisort($blc,SORT_ASC, $volume, SORT_ASC, $box_list);
+        array_multisort($blc,SORT_DESC, $volume, SORT_ASC, $box_list);
         $redMo = new \Common\Model\RepairBoxUserModel();
 
         foreach($box_list as $bk => $bv) {

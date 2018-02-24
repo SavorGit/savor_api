@@ -250,14 +250,15 @@ class HotelController extends BaseController {
 
         $box_lista = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id box_id',$where);
         //过滤黑名单
+        /*
         $bfield = 'box_id';
         $yestoday_time = strtotime('-1 day');
         $yestoday_start = date('Y-m-d 00:00:00',$yestoday_time);
         $yestoday_end   = date('Y-m-d 23:59:59',$yestoday_time);
         $where = array();
-        /* $bwhere['create_time'] = array(array('EGT',$yestoday_start),
-            array('elt',$yestoday_end)); */
-        $bwhere['hotel_id'] = $hotel_id;
+         $bwhere['create_time'] = array(array('EGT',$yestoday_start),
+            array('elt',$yestoday_end));
+       $bwhere['hotel_id'] = $hotel_id;
         $black_box = $black_model->getAll($bwhere, $bfield);
         if($black_box){
             $black_box = array_column($black_box, 'box_id');
@@ -271,7 +272,8 @@ class HotelController extends BaseController {
             });
         } else{
             $box_list = $box_lista;
-        }
+        }*/
+        $box_list = $box_lista;
         $unusual_num = 0;
         $box_total_num = count($box_list);
         $m_black_list = new \Common\Model\BlacklistModel();

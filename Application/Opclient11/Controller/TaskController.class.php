@@ -8,6 +8,7 @@ class TaskController extends BaseController{
     private $task_emerge_arr;
     private $option_user_skill_arr;
     private $option_user_skill_bref_arr;
+    private $production_mode;
     /**
      * 构造函数
      */
@@ -69,6 +70,7 @@ class TaskController extends BaseController{
             '2'=>'安装',
             '4'=>'维修',
         );
+        $this->production_mode = C('UMENG_PRODUCTION_MODE');
     }
     /**
      * @desc 发布任务
@@ -769,7 +771,7 @@ class TaskController extends BaseController{
                     $sys_user['remark'].' 拒绝';
                 $title = '小热点运维端通知';
                 $text  = $ticker;
-                $production_mode = 'false';
+                $production_mode = $this->production_mode;
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
                 $alert['body'] = $text;
@@ -888,7 +890,7 @@ class TaskController extends BaseController{
                           $sys_user['remark'].' 指派';
                 $title = '小热点运维端通知';
                 $text  = $ticker;
-                $production_mode = 'false';
+                $production_mode = $this->production_mode;
                 $alert['title'] = $ticker;
                 $alert['subtitle'] = $title;
                 $alert['body'] = $text;
@@ -968,7 +970,7 @@ class TaskController extends BaseController{
         
         $title = '小热点运维端通知';
         $text  = $ticker;
-        $production_mode = 'false';
+        $production_mode = $this->production_mode;
         $alert['title'] = $ticker;
         $alert['subtitle'] = $title;
         $alert['body'] = $text;
@@ -998,7 +1000,7 @@ class TaskController extends BaseController{
         //$ticker = 'fdd';
         $title = '小热点运维端通知';
         $text  = $ticker;
-        $production_mode = 'false';
+        $production_mode = $this->production_mode;
         $alert['title'] = $ticker;
         $alert['subtitle'] = $title;
         $alert['body'] = $text;

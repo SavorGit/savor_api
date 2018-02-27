@@ -68,7 +68,7 @@ class ProgramController extends CommonController{
             $this->to_back(16203);   
         }
         $m_box = new \Common\Model\BoxModel();
-        $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
+        $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
         
         if(empty($list)){//该酒楼下没有正常的机顶盒
             $this->to_back(16204);
@@ -101,7 +101,8 @@ class ProgramController extends CommonController{
         
         $data = array();
         foreach($list as $key=>$v){
-            $data[$key]['box_id']    = $v['boxId'];              //机顶盒id 
+            $data[$key]['box_id']    = $v['boxId'];
+            $data[$key]['room_id']    = $v['room_id']; //机顶盒id
             $data[$key]['box_mac']   = $v['mac'];
             $data[$key]['pub_time'] = $menu_info['pub_time'];
             $data[$key]['menu_num'] = $menu_num;
@@ -131,7 +132,7 @@ class ProgramController extends CommonController{
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();
-         $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
+         $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
          
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
@@ -169,6 +170,7 @@ class ProgramController extends CommonController{
          }
          foreach($list as $key=>$v){
              $data[$key]['box_id']    = $v['boxId'];              //机顶盒id
+             $data[$key]['room_id']    = $v['room_id'];
              $data[$key]['box_mac']   = $v['mac'];
              $data[$key]['menu_num'] = $adv_num.$menu_num;        //宣传片号 = 宣传片最后更新时间+节目单号
              $data[$key]['program_num'] = $menu_num;              //节目单号
@@ -201,7 +203,7 @@ class ProgramController extends CommonController{
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();
-         $list = $m_box->getBoxListByHotelid('a.id box_id,a.mac as box_mac', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
+         $list = $m_box->getBoxListByHotelid('a.id box_id,a.mac as box_mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
          }
@@ -251,6 +253,7 @@ class ProgramController extends CommonController{
                  
                  $data[$v_keys]['box_id'] = $v['box_id'];
                  $data[$v_keys]['box_mac'] = $v['box_mac'];
+                 $data[$v_keys]['room_id'] = $v['room_id'];
                  //$ads_num = md5(json_encode($ads_num_arr));
                  $box_ads_num = date('YmdHis',strtotime($ads_time_str));
                  $data[$v_keys]['menu_num'] = $box_ads_num;

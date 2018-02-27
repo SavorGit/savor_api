@@ -65,6 +65,7 @@ class PubtaskController extends BaseController{
         $field = ' a.id hid, a.state hstate';
         $map['b.maintainer_id'] = $publish_user_id;
         $map['a.hotel_box_type'] = array('in',$h_type);
+        $map['b.mac_addr'] = array('neq', '');
         $map['a.flag'] = 0;
         $map['a.state'] = 1;
 

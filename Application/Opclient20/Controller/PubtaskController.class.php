@@ -89,19 +89,24 @@ class PubtaskController extends BaseController{
                 $where = '';
                 $where .=" 1 and room.hotel_id=".$hv['hid'].'  and a.flag =0 and  room.flag=0 and room.state =1 ';
                 $box_list = $m_box->getList( 'a.id, a.mac',$where);
+
                 foreach($box_list as $ks=>$vs){
                     $where = '';
                     $where .=" 1 and hotel_id=".$hv['hid']." and type=2 and box_id='".$vs['id']."'";
                     $where .="  and last_heart_time>='".$start_time."'";
                     $rets  = $m_heart_log->getOnlineHotel($where,'hotel_id');
+
                     $black_ar = array();
                     $black_ar['box_id'] = $vs['id'];
                     $black_res = $m_black_list->countNums($black_ar);
                     if(empty($rets)){
                         //判断异常机顶盒
                         if(empty($black_res)){
-                            //不在72小时，有可能在黑名单，因为存的是5天不正常的
+                            //不在72小时，有可能在黑名单，因为存的是5天不正常
                             $not_normal_box_num +=1;
+                        }else{
+                            $black_box_num +=1;
+                            $black_hotel_boxn[$hv['hid']][] = 1;
                         }
 
                     }else {
@@ -109,16 +114,14 @@ class PubtaskController extends BaseController{
                         //在黑名单但有可能刚开机有心跳
                         if(empty($black_res)){
                             $normal_box_num +=1;
+                        }else{
+                            $black_box_num +=1;
+                            $black_hotel_boxn[$hv['hid']][] = 1;
                         }
 
                     }
 
-                    if($black_res){
-                        //黑名单机顶盒
-                        $black_box_num +=1;
-                        $black_hotel_boxn[$hv['hid']][] = 1;
 
-                    }
                 }
             }
             //冻结
@@ -175,7 +178,7 @@ class PubtaskController extends BaseController{
                     if($v['box_report_time'] =='0000-00-00 00:00:00'){
                         $v['box_lost_hour'] = '未找到心跳;';
                     }
-                    $box_str = '机顶盒异常1个;'.$v['box_lost_hour'];
+                    $box_str = '机顶盒异常1个;'.'失联时长'.$v['box_lost_hour'].'小时';
                 }else if($v['not_normal_box_num']>1){
 
                     $box_str ='机顶盒异常'.$v['not_normal_box_num'].'个';

@@ -128,6 +128,7 @@ class HotelController extends BaseController {
         $where .=" 1 and hotel_id=".$hotelid." and type=1";
         $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
+       
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
         if ( empty($rets) ) {
@@ -280,13 +281,13 @@ class HotelController extends BaseController {
         $bla_a = 0;
         foreach($box_list as $ks=>$vs){
             $where = '';
-            $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_mac='".$vs['mac']."'";
+            $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_id='".$vs['box_id']."'";
 
             $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
 
             //获取是否是黑名单
             $black_ar = array();
-            $black_ar['mac'] = $vs['mac'];
+            $black_ar['box_id'] = $vs['box_id'];
             $black_res = $m_black_list->countNums($black_ar);
             if($black_res){
                 //黑名单机顶盒

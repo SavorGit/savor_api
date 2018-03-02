@@ -96,7 +96,7 @@ class CalculationController extends CommonController{
                        $this->params['clientid'],$this->params['mac'],$this->params['outside_ip'],
                        $this->params['intranet_ip'],$this->params['period'],$this->params['demand'],
                        $this->params['apk'],$this->params['war'],$this->params['logo'],$this->params['hotelId'],
-                       date("YmdHis"),$this->params['pro_period'],$this->params['adv_period'],
+                       $this->params['date'],$this->params['pro_period'],$this->params['adv_period'],
                        $this->params['pro_download_period'],$this->params['ads_download_period']
                 );
         $bool = $redis->set($mac_str, $txt, 2592000);
@@ -107,19 +107,27 @@ class CalculationController extends CommonController{
 //{"clientid":"1","hotelId":"20","period":"0330095004061335","mac":"00E04C5E4F5D","demand":"20170406161345","apk":"2017030902","war":"2017032002","logo":"391","intranet_ip":"192.168.1.120","outside_ip":"221.218.166.232"}redis数据处理失败 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $hextModel = new \Common\Model\HotelExtModel();
-        $rkey = 'reportData';
+        /* $rkey = 'reportData';
         $redis->select(13);
         $roll_back_arr = array();
         $count = 0;
         $max = $redis->lsize($rkey);
-        $data = $redis->lgetrange($rkey,0,$max);
+        $data = $redis->lgetrange($rkey,0,$max); */
+        $cache_key = 'heartbeat:';
+        $redis->select(13);
+        $data = $redis->keys($cache_key.'*');
+        
         if(empty($data)){
             echo '数组为空'."\n";
             $boc = true;
             die;
         }
         foreach ($data as $val){
-            $this->params = json_decode($val, true);
+            
+            $heartbeat = $redis->get($val);
+            $heartbeat = json_decode($heartbeat,true); 
+            $this->params = $heartbeat;
+            
             $hid = $this->params['hotelId'];
             if ($hid) {
                 if(!is_numeric($hid)){

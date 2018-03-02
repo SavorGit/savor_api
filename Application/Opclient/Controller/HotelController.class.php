@@ -9,6 +9,7 @@
  * @purpose:HotelController
  */
 namespace Opclient\Controller;
+use Common\Lib\SavorRedis;
 use \Common\Controller\BaseController as BaseController;
 
 class HotelController extends BaseController {
@@ -128,7 +129,9 @@ class HotelController extends BaseController {
         $where .=" 1 and hotel_id=".$hotelid." and type=1";
         $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
         $rets  = $m_heart_log->getLastHeartVersion($field, $where);
-       
+        $redis = SavorRedis::getInstance();
+        
+        
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
         if ( empty($rets) ) {
@@ -145,32 +148,46 @@ class HotelController extends BaseController {
                 $dat['small_mac'] = $infos['mac_addr'];
             }
         } else {
-            $dat['small_mac'] = $rets[0]['small_mac'];
-            $ltime = $rets[0]['ltime'];
-            $diff = ($now-strtotime($ltime));
-            if($diff< 3600) {
-                $dp = floor($diff/60).'分钟';
-
-            }else if ($diff >= 3600 && $diff <= 86400) {
-                $hour = floor($diff/3600);
-                $min = floor($diff%3600/60);
-                $dp = $hour.'小时'.$min.'分钟';
-            }else if ($diff > 86400) {
-                $day = floor($diff/86400);
-                $hour = floor($diff%86400/3600);
-                $dp = $day.'天'.$hour.'小时';
+            if(!empty($infos['mac_addr'])){
+                $redis->select(13);
+                $key =  "heartbeat:".'1:'.$infos['mac_addr'];
+                $heartbeat = $redis->get($key);
+                $heartbeat_arr = json_decode($heartbeat,true);
+                $ltime = $heartbeat_arr['date'];
+                $dat['small_mac'] = $rets[0]['small_mac'];
+                //$ltime = $rets[0]['ltime'];
+                $diff = ($now-strtotime($ltime));
+                if($diff< 3600) {
+                    $dp = floor($diff/60).'分钟';
+                
+                }else if ($diff >= 3600 && $diff <= 86400) {
+                    $hour = floor($diff/3600);
+                    $min = floor($diff%3600/60);
+                    $dp = $hour.'小时'.$min.'分钟';
+                }else if ($diff > 86400) {
+                    $day = floor($diff/86400);
+                    $hour = floor($diff%86400/3600);
+                    $dp = $day.'天'.$hour.'小时';
+                }
+                $lp = strtotime($ltime);
+                $dp = $dp.'前';
+                if($lp <= $start_time) {
+                    $mstate = 0;
+                } else {
+                    $mstate = 1;
+                }
+                $dat['last_heart_time'] = array(
+                    'ltime'=>$dp,
+                    'lstate'=>$mstate,
+                );
+            }else {
+                $dat['last_heart_time'] = array(
+                    'ltime'=>'',
+                    'lstate'=>0,
+                );
             }
-            $lp = strtotime($ltime);
-            $dp = $dp.'前';
-            if($lp <= $start_time) {
-                $mstate = 0;
-            } else {
-                $mstate = 1;
-            }
-            $dat['last_heart_time'] = array(
-                'ltime'=>$dp,
-                'lstate'=>$mstate,
-            );
+            
+            
             $dat['last_small'] = $rets[0]['version_name'];
         }
         
@@ -279,12 +296,17 @@ class HotelController extends BaseController {
         $box_total_num = count($box_list);
         $m_black_list = new \Common\Model\BlacklistModel();
         $bla_a = 0;
+        $redis = SavorRedis::getInstance();
+        $redis->select(13);
+        $key = "heartbeat:".'2:';
         foreach($box_list as $ks=>$vs){
-            $where = '';
+            /* $where = '';
             $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_id='".$vs['box_id']."'";
 
-            $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac');
-
+            $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac'); */
+            $heartbeat = $redis->get($key.$vs['mac']);
+            $heartbeat = json_decode($heartbeat,true);
+            
             //获取是否是黑名单
             $black_ar = array();
             $black_ar['box_id'] = $vs['box_id'];
@@ -297,14 +319,19 @@ class HotelController extends BaseController {
             } else {
                 $box_list[$ks]['blstate'] = 0;
             }
-            if(empty($rets)){
+            if(empty($heartbeat)){
                 $unusual_num +=1;
                 $box_list[$ks]['ustate'] = 0;
                 $box_list[$ks]['last_heart_time'] = '无';
                 $box_list[$ks]['ltime'] = '-888';
             }else {
-                $ltime = $rets[0]['ltime'];
-                $diff = ($now-strtotime($ltime));
+                $ltime = $heartbeat['date'];
+                //echo date('Y-m-d H:i:s').'------';
+                //echo $ltime.'----';
+                $diff = (time()-strtotime($ltime));
+                //echo $diff.'---';
+                //echo floor($diff/60).'分钟';
+               // exit;
                 if($diff< 3600) {
                     $box_list[$ks]['last_heart_time'] = floor($diff/60).'分钟';
 

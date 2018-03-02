@@ -64,13 +64,18 @@ class ReportController extends CommonController{
         if(!is_numeric($data['hotelId']) || $data['hotelId']<1){
             $this->to_back(10007);
         }
+        $data['date'] = date('YmdHis');
         $redis = SavorRedis::getInstance();
         $redis->select(13);
-        $redis->rpush('reportData', json_encode($data));
+        //$redis->rpush('reportData', json_encode($data));
         
         $key = $this->countHeartlogPre.$data['mac'].'_'.date('YmdHis');
-        $data['date'] = date('YmdHis');
         $redis->set($key, json_encode($data));
+        
+        $key = "heartbeat:".$data['clientid'].':'.$data['mac'];
+        $redis->set($key,json_encode($data),2592000);
+        
+        
         
         //$bkey = 'bkheartlog_'.$data['mac'].'_'.date('YmdHis');
         //$redis->set($bkey,json_encode($data));

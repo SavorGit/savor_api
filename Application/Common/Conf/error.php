@@ -199,5 +199,6 @@ return array(
 	    //RTB广告错误码
 	    '80001'=>'hotel_attendant_empty',
 	    '80002'=>'not_in_rtb_ads_push_time',
+	    '80003'=>'rtb_push_ads_list_empty',
 	),
 );

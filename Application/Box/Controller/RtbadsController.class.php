@@ -71,7 +71,9 @@ class RtbadsController extends CommonController{
         $cacke_key = $probe;
         $ads_list = $redis->get($cacke_key);
         //
-        
+        if(empty($ads_list)){
+            $this->to_back(80003);
+        }
         foreach($box_list as $ks=>$vs){
             if(!empty($vs['device_token'])){
                 $device_tokens  .= $space . $vs['device_token'];

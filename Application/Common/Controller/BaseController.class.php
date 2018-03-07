@@ -38,6 +38,7 @@ class BaseController extends Controller {
 	    if(isset($this->params['is_head']) && $this->params['is_head'] ==0)    $this->is_head = 0;
 	    if(isset($this->params['is_js']) && $this->params['is_js'] ==1)        $this->is_js = 1;
 	    $this->forbid();
+
 		if($this->is_verify){
 		    if(empty($this->params)){
 		        $this->to_back(1001);
@@ -62,7 +63,9 @@ class BaseController extends Controller {
 	 * 校验签名
 	 */
 	protected function check_sign() {
-	    if (isset($_GET['time']) && isset($_GET['sign'])){
+
+
+		if (isset($_GET['time']) && isset($_GET['sign'])){
 	        $sign_time = $_GET['time'];
 	        $sign = $_GET['sign'];
 	        $compare = gen_request_sign($sign_time);

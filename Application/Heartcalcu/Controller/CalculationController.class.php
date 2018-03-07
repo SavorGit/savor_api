@@ -88,6 +88,8 @@ class CalculationController extends CommonController{
      * @param $data
      */
     public function numCount($data){
+        return true;
+        
         $bool = false;
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);

@@ -237,7 +237,7 @@ class HotelController extends BaseController {
 
     public function getLastNginx($mac){
         //获取机顶盒日志
-        $ossboxModel = new \Common\Model\OssBoxModel();
+        $ossboxModel = new \Common\Model\OSS\OssBoxModel();
         $last_time = $ossboxModel->getLastTime($mac);
         $time =  date("Y-m-d H:i",strtotime($last_time[0]['lastma']));
         if($time == '1970-01-01 00:00') {
@@ -353,6 +353,7 @@ class HotelController extends BaseController {
                     $box_list[$ks]['ustate'] = 1;
                 }
             }
+            $box_list[$ks]['last_nginx'] = $this->getLastNginx($vs['mac']);
         }
         //二维数组排序
 

@@ -122,6 +122,9 @@ return array(
 	    //2.1.1
 	    '30071'=>'box_report_download_empty',
 	    '30072'=>'box_report_download_same',
+		'30081'=>'box_mac_not_empty',
+		'30082'=>'box_mac_illegal',
+		'30083'=>'box_memory_state_illegal',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

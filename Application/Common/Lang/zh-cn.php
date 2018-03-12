@@ -201,4 +201,7 @@ return array(
     'rtb_push_ads_list_empty'=>'推送RTB广告列表为空',
     'box_report_download_empty'=>'上报下载资源为空',
     'box_report_download_same'=>'上报下载资源和当前记录下载资源相同',
+    'box_mac_not_empty'=>'机顶盒MAC不可为空',
+    'box_mac_illegal'=>'机顶盒MAC不存在',
+    'box_memory_state_illegal'=>'机顶盒内存状态上报值错误',
 );

@@ -50,30 +50,27 @@ class PubtaskController extends BaseController{
             $wherea = "1=1 and a.id= '".$box_id."'";
         }
         $fields = 'd.id hotel_id,d.contractor,
-        d.addr,d.tel,d.area_id,a.id box_id ';
+        d.addr,d.tel,d.area_id,a.id box_id,d.name hotel_name';
         $box_info = $boxModel->getBoxInfo($fields, $wherea);
         if (empty($box_info)) {
             $this->to_back(30082);
         }
         $box_info = $box_info[0];
-        $publish_user_id = 1;
         $data = array();
         $data['task_area']       = empty($box_info['area_id'])?1:$box_info['area_id'];
-        $data['publish_user_id'] = $publish_user_id;
+        $data['publish_user_id'] = -1;
         $data['palan_finish_time'] = date('Y-m-d H:i:s',time());
         $data['task_emerge']     = 2;
         $data['task_type']       = 4;
+        $data['hotel_name']        = $box_info['hotel_name'];
         $data['hotel_id']        = $box_info['hotel_id'];
         $data['hotel_address']   = $box_info['addr'];
         $data['hotel_linkman']   = $box_info['contractor'];
         $data['hotel_linkman_tel']= $box_info['tel'];
         $data['tv_nums']         = 1 ;
-        $this->to_back(10000);
-        die;
         $m_option_task = new \Common\Model\OptiontaskModel();
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
         $task_id = $m_option_task->addData($data, $type=1);
-
         $map = array();
         $map['task_id'] = $task_id;
         $map['box_id'] = $box_info['box_id'];

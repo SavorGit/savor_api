@@ -199,5 +199,6 @@ return array(
     'hotel_attendant_empty'=>'酒楼工作人员mac为空',
     'not_in_rtb_ads_push_time'=>'不在推送时间范围内',
     'rtb_push_ads_list_empty'=>'推送RTB广告列表为空',
-
+    'box_report_download_empty'=>'上报下载资源为空',
+    'box_report_download_same'=>'上报下载资源和当前记录下载资源相同',
 );

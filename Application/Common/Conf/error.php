@@ -119,6 +119,9 @@ return array(
 	    '30065'=>'option_task_type_empty',
 	    '30066'=>'option_task_upload_img_nums_err',
 	    '30067'=>'option_task_bind_mac_repeat',
+	    //2.1.1
+	    '30071'=>'box_report_download_empty',
+	    '30072'=>'box_report_download_same',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

@@ -58,7 +58,16 @@ class PubtaskController extends BaseController{
         $box_info = $box_info[0];
         $data = array();
         $data['task_area']       = empty($box_info['area_id'])?1:$box_info['area_id'];
-        $data['publish_user_id'] = -1;
+        //获取发布者为系统的账号
+        $m_opuser_role = new \Common\Model\OpuserRoleModel();
+        $fields = 'a.user_id';
+        $mop['a.state']   = 1;
+        $mop['a.role_id']   = 1;
+        $mop['user.remark']   = '系统';
+        $mop['a.manage_city']   = 1;
+        $user_info = $m_opuser_role->getList($fields,$mop,'' );
+
+        $data['publish_user_id'] = $user_info[0]['user_id'];
         $data['palan_finish_time'] = date('Y-m-d H:i:s',time());
         $data['task_emerge']     = 2;
         $data['task_type']       = 4;

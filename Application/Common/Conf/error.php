@@ -122,6 +122,8 @@ return array(
 	    //2.1.1
 	    '30071'=>'box_report_download_empty',
 	    '30072'=>'box_report_download_same',
+
+	    '30073'=>'box_report_play_same',
 		'30081'=>'box_mac_not_empty',
 		'30082'=>'box_mac_illegal',
 		'30083'=>'box_memory_state_illegal',

@@ -201,4 +201,6 @@ return array(
     'rtb_push_ads_list_empty'=>'推送RTB广告列表为空',
     'box_report_download_empty'=>'上报下载资源为空',
     'box_report_download_same'=>'上报下载资源和当前记录下载资源相同',
+    'box_report_play_same'=>'上报播放资源和当前记录播放资源相同',
+    
 );

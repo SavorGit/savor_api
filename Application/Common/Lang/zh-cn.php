@@ -202,5 +202,9 @@ return array(
     'box_report_download_empty'=>'上报下载资源为空',
     'box_report_download_same'=>'上报下载资源和当前记录下载资源相同',
     'box_report_play_same'=>'上报播放资源和当前记录播放资源相同',
-    
+
+    'box_mac_not_empty'=>'机顶盒MAC不可为空',
+    'box_mac_illegal'=>'机顶盒MAC不存在',
+    'box_memory_state_illegal'=>'机顶盒内存状态上报值错误',
+    'boxmem_data_insert_error'=>'数据入库失败',
 );

@@ -125,6 +125,7 @@ return array(
 		'30081'=>'box_mac_not_empty',
 		'30082'=>'box_mac_illegal',
 		'30083'=>'box_memory_state_illegal',
+		'30084'=>'boxmem_data_insert_error',
 	    //每日知享接口
 	    '40001'=>'daily_content_not_exist',
 	    '40002'=>'daily_content_collection_err',

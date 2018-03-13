@@ -324,7 +324,10 @@ class HotelController extends BaseController {
                 $box_list[$ks]['ustate'] = 0;
                 $box_list[$ks]['last_heart_time'] = '无';
                 $box_list[$ks]['ltime'] = '-888';
+                $box_list[$ks]['ip'] = empty($heartbeat['intranet_ip'])
+                ?'':$heartbeat['intranet_ip'];
             }else {
+                $box_list[$ks]['ip'] = '';
                 $ltime = $heartbeat['date'];
                 //echo date('Y-m-d H:i:s').'------';
                 //echo $ltime.'----';

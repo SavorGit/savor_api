@@ -80,11 +80,15 @@ class PubtaskController extends BaseController{
         $m_option_task = new \Common\Model\OptiontaskModel();
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
         $task_id = $m_option_task->addData($data, $type=1);
-        $map = array();
-        $map['task_id'] = $task_id;
-        $map['box_id'] = $box_info['box_id'];
-        $map['fault_desc'] = $box_memo[$box_mem_sta];
-        $m_option_task_repair->addData($map);
+        if($task_id) {
+            $map = array();
+            $map['task_id'] = $task_id;
+            $map['box_id'] = $box_info['box_id'];
+            $map['fault_desc'] = $box_memo[$box_mem_sta];
+            $m_option_task_repair->addData($map);
+        } else {
+            $this->to_back(30084);
+        }
         $this->to_back(10000);
     }
 

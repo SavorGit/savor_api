@@ -32,4 +32,18 @@ class PubAdsBoxModel extends Model
         $ret = $this->where($where)->save($data);
         return $ret;
     }
+    public function getBoxAdsList($fields,$box_id,$order,$group){
+        $now_date = date('Y-m-d H:i:s');
+        $data = $this->alias('a')
+        ->join('savor_pub_ads b on a.pub_ads_id= b.id','left')
+        ->join('savor_ads c on b.ads_id=c.id','left')
+        ->join('savor_media d on c.media_id=d.id')
+        ->field($fields)
+        				     ->where('a.box_id='.$box_id." and b.end_date>'".$now_date.  "'  and b.state=1 and c.state=1 and d.oss_addr is not null")
+        				     ->order($order)
+        				     ->group($group)
+        				     ->select();
+        //echo $this->getLastSql();exit;
+        return $data;
+    }
 }

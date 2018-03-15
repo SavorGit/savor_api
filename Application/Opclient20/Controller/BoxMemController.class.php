@@ -36,6 +36,23 @@ class BoxMemController extends CommonController{
         } else {
             $wherea = "1=1 and a.id= '".$box_id."'";
         }
+        if($box_mem_sta == 1) {
+            $rp_type = 2;
+        } else {
+            $rp_type = 14;
+        }
+        //判断是否有
+        $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+        $r_field = 'stas.id';
+        $r_where = $wherea.' and srp.repair_type='.$rp_type.'
+         and stas.flag=0 and stas.state
+         in (1,2,3)';
+         $m_rp = $m_option_task_repair->getOneMemInfo($r_field, $r_where);
+        if($m_rp) {
+            $this->to_back(30085);
+        }
+
+
         $fields = 'd.id hotel_id,d.contractor,
         d.addr,d.tel,d.area_id,a.id box_id,d.name hotel_name';
         $box_info = $boxModel->getBoxInfo($fields, $wherea);
@@ -43,6 +60,7 @@ class BoxMemController extends CommonController{
             $this->to_back(30082);
         }
         $box_info = $box_info[0];
+
         $data = array();
         $data['task_area']       = empty($box_info['area_id'])?1:$box_info['area_id'];
         //获取发布者为系统的账号
@@ -65,11 +83,12 @@ class BoxMemController extends CommonController{
         $data['hotel_linkman_tel']= $box_info['tel'];
         $data['tv_nums']         = 1 ;
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+
         $task_id = $m_option_task->addData($data, $type=1);
         if($task_id) {
             $map = array();
             $map['task_id'] = $task_id;
+            $map['repair_type'] = $rp_type;
             $map['box_id'] = $box_info['box_id'];
             $map['fault_desc'] = $box_memo[$box_mem_sta];
             $m_option_task_repair->addData($map);

@@ -140,7 +140,8 @@ class HotelController extends BaseController {
                 'lstate'=>0,
             );
             $dat['last_small'] = '';
-            
+            $dat['pla_inner_ip'] = '';
+            $dat['pla_out_ip'] = '';
             if( empty($infos['mac_addr']) ) {
                 $dat['last_small'] = '没有填写MAC地址';
                 $dat['small_mac'] = '';
@@ -155,6 +156,8 @@ class HotelController extends BaseController {
                 $heartbeat_arr = json_decode($heartbeat,true);
                 $ltime = $heartbeat_arr['date'];
                 $dat['small_mac'] = $rets[0]['small_mac'];
+                $dat['pla_inner_ip'] = $heartbeat_arr['intranet_ip'];
+                $dat['pla_out_ip'] = $heartbeat_arr['outside_ip'];
                 //$ltime = $rets[0]['ltime'];
                 $diff = ($now-strtotime($ltime));
                 if($diff< 3600) {
@@ -239,9 +242,12 @@ class HotelController extends BaseController {
         //获取机顶盒日志
         $ossboxModel = new \Common\Model\OSS\OssBoxModel();
         $last_time = $ossboxModel->getLastTime($mac);
-        $time =  date("Y-m-d H:i",strtotime($last_time[0]['lastma']));
-        if($time == '1970-01-01 00:00') {
+
+        if( empty($last_time[0]['lastma']) ) {
             $time = '无';
+
+        } else {
+            $time =  date("Y-m-d H:i",strtotime($last_time[0]['lastma']));
         }
         return $time;
     }
@@ -299,6 +305,7 @@ class HotelController extends BaseController {
         $redis = SavorRedis::getInstance();
         $redis->select(13);
         $key = "heartbeat:".'2:';
+
         foreach($box_list as $ks=>$vs){
             /* $where = '';
             $where .=" 1 and hotel_id=".$hotel_id." and type=2 and box_id='".$vs['box_id']."'";
@@ -306,6 +313,7 @@ class HotelController extends BaseController {
             $rets  = $m_heart_log->getHotelHeartBox($where,'max(last_heart_time) ltime', 'box_mac'); */
             $heartbeat = $redis->get($key.$vs['mac']);
             $heartbeat = json_decode($heartbeat,true);
+
             
             //获取是否是黑名单
             $black_ar = array();
@@ -324,10 +332,11 @@ class HotelController extends BaseController {
                 $box_list[$ks]['ustate'] = 0;
                 $box_list[$ks]['last_heart_time'] = '无';
                 $box_list[$ks]['ltime'] = '-888';
-                $box_list[$ks]['ip'] = empty($heartbeat['intranet_ip'])
-                ?'':$heartbeat['intranet_ip'];
+                $box_list[$ks]['box_ip'] = '';
             }else {
-                $box_list[$ks]['ip'] = '';
+                $box_list[$ks]['box_ip'] = empty($heartbeat['intranet_ip'])
+                    ?'':$heartbeat['intranet_ip'];
+
                 $ltime = $heartbeat['date'];
                 //echo date('Y-m-d H:i:s').'------';
                 //echo $ltime.'----';

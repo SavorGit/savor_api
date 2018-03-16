@@ -142,7 +142,7 @@ return array(
     
 	'HOTEL_DAMAGE_CONFIG' => array(
 		'1'=>'电源适配器',
-		'2'=>'SD卡',
+		'2'=>'SD卡损坏',
 		'3'=>'HDMI线',
 	    '4'=>'信号源错误',
 	    '5'=>'5G路由器',
@@ -154,6 +154,7 @@ return array(
 	    '11'=>'酒楼电视机',
 	    '12'=>'未开机',
 	    '13'=>'其它',
+		'14'=>'SD卡已满',
 	),
 	'HOTEL_STANDALONE_CONFIG' => array(
 		'1'=>'机顶盒坏',

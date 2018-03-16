@@ -16,6 +16,16 @@ class OptionTaskRepairModel extends Model
 	    return $ret;
 	}
 
+	public function getOneMemInfo($fields, $where){
+		$data = $this->alias('srp')
+					 ->join('savor_box as a on a.id=srp.box_id','left')
+					 ->join('savor_option_task as stas on stas.id=srp.task_id','left')
+					 ->field($fields)
+					 ->where($where)
+					 ->find();
+		return $data;
+	}
+
 
 	public function getOneRecord($fields, $where){
 		$data = $this->field($fields)->where($where)->find();

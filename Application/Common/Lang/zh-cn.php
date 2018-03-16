@@ -207,4 +207,5 @@ return array(
     'box_mac_illegal'=>'机顶盒MAC不存在',
     'box_memory_state_illegal'=>'机顶盒内存状态上报值错误',
     'boxmem_data_insert_error'=>'数据入库失败',
+    'boxmem_data_already_insert'=>'内存卡信息已经上报',
 );

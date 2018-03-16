@@ -18,7 +18,15 @@ class BoxContentController extends BaseController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
-            
+            case 'getDownloadAds':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+            case 'getDownloadMenu':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+             
             
         }
         parent::_init_();
@@ -32,26 +40,23 @@ class BoxContentController extends BaseController{
         $where = array();
         $where['a.id'] = $box_id;
         $where['a.flag'] = 0;
-        //$where['a.state'] = 1;
         $box_info = $m_box->getBoxInfo('a.id box_id,a.name,a.mac,c.name room_name,d.id hotel_id',$where);
         $box_info = $box_info[0];
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        
         $data = array();
-        $data['room_name']= $box_info['room_name'];
-        $data['box_name'] = $box_info['name'];
-        $data['box_mac']  = $box_info['mac'];
+        $data['room_name']= $box_info['room_name'];     //包间名称
+        $data['box_name'] = $box_info['name'];          //机顶盒名称
+        $data['box_mac']  = $box_info['mac'];           //机顶盒mac
         
         $m_oss_box_log = new \Common\Model\OSS\OssBoxModel();
         $rets = $m_oss_box_log->getLastTime($data['box_mac']);
         if(!empty($rets)){
-           $data['log_upload_time'] =  $rets[0]['lastma'];
+           $data['log_upload_time'] =  $rets[0]['lastma']; //最后上传日志时间
         }else {
-            $data['log_upload_time'] = '无';
+            $data['log_upload_time'] = '无';                //最后上传日志时间
         }
-        
         //获取机顶盒维修记录
         $redMo = new \Common\Model\RepairBoxUserModel();
         $field = 'sys.remark nickname, date_format(sru.create_time,"%m-%d  %H:%i") ctime ';
@@ -60,7 +65,7 @@ class BoxContentController extends BaseController{
         if (empty($rinfo)) {
             $data['repair_record'] = array();
         } else {
-            $data['repair_record'] = $rinfo;
+            $data['repair_record'] = $rinfo;               //机顶盒维修记录
         }
        
         $redis = SavorRedis::getInstance();
@@ -90,8 +95,12 @@ class BoxContentController extends BaseController{
         
         $hotel_id = $box_info['hotel_id'];
         //节目状态
-        $pro_same_flag = 0;
+        $cache_key = '';
+        $redis->get($key);
+        
         $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
+        
+        /* $pro_same_flag = 0;
         $ads = new \Common\Model\AdsModel();
         //获取最新节目单
         $menu_info = $m_new_menu_hotel->getLatestMenuid($hotel_id);   //获取最新的一期节目单
@@ -111,7 +120,7 @@ class BoxContentController extends BaseController{
                 $data['pro_download_period'] = '';
             }
             
-        }
+        } */
         //广告状态
         //获取该机顶盒最新广告
         $ads_same_flag = 0;
@@ -166,10 +175,6 @@ class BoxContentController extends BaseController{
         $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
         $fields = 'd.id';
         $ads_item_arr = $m_pub_ads_box->getBoxAdsList($fields,$box_id,'','a.pub_ads_id');
-        //print_r($menu_item_arr);exit;
-        //print_r($ads_item_arr);exit;
-        //print_r($adv_arr);exit;
-        //echo $m_pub_ads_box->getLastSql();exit;
         $bag_media_arr = array();
         foreach($menu_item_arr as $v){
             $bag_media_arr[] = $v['id'];
@@ -195,7 +200,7 @@ class BoxContentController extends BaseController{
                     break;
             }
             $dts = $m_media->getWhere(array('id'=>$v['media_id']),'name');
-            $program_diff_arr[$key]['name'] = $dts[0]['name'];
+            $program_diff_arr[$key]['name'] = $dts[0]['name']? $dts[0]['name'] : '';
             $program_diff_arr[$key]['type'] =$type;
             if(!in_array($v['media_id'], $bag_media_arr)){
                 $program_diff_arr[$key]['flag'] = 0;
@@ -205,16 +210,112 @@ class BoxContentController extends BaseController{
             
         }
         $data['program_list'] = $program_diff_arr;
-        
-        
-        
-        
-        
-        
-        
-        
         $this->to_back($data);
     }
+    /**
+     * @desc 获取机顶盒下载中的资源列表
+     */
+    public function getDownloadAds(){
+        $box_mac = $this->params['box_mac'];
+        $redis = new SavorRedis();
+        $redis->select(14);
+        $cache_key = 'box:download:1:'.$box_mac;
+        $download_list = $redis->get($cache_key);
+        if(empty($download_list)){
+            $this->to_back(30114);
+        }
+        $download_list = json_decode($download_list,true);
+        //print_r($download_list);exit;
+        $period = $download_list['period'];
+        $download_list = $download_list['list'];
+        $m_media = new \Common\Model\MediaModel();
+        $download_count = 0;
+        foreach($download_list as $key=>$v){
+            $ret = $m_media->getWhere(array('id'=>$v['media_id']), 'name');
+            $download_list[$key]['name'] = $ret[0]['name'];
+            $download_list[$key]['type'] = '广告';
+            if($v['state']==1){
+                $download_count ++;
+            }
+        }
+        $counts = count($download_list);
+        
+        $download_percent = floor($download_count/$counts*100);
+        
+        $download_percent .='%';
+        $data = array();
+        $data['period'] = $period;
+        $data['download_percent'] = $download_percent;
+        $data['list'] = $download_list;
+        $this->to_back($data);
+        
+    }
+    /**
+     * @desc 获取机顶盒节目下载列表
+     */
+    public function getDownloadMenu(){
+        $box_mac = $this->params['box_mac'];
+        $redis = new SavorRedis();
+        $redis->select(14);
+        $cache_key = 'box:download:2:'.$box_mac;
+        $download_pro_list = $redis->get($cache_key);
+        if(empty($download_pro_list)){
+            $this->to_back(30114);
+        }
+        $download_pro_list = json_decode($download_pro_list,true);
+        $menu_period = $download_pro_list['period'];  //节目单期号
+        //echo $menu_period;exit;
+        $download_pro_list = $download_pro_list['list'];
+        foreach($download_pro_list as $key=> $v){
+            $download_pro_list[$key]['type'] ='pro';
+        }
+        
+        $cache_key = 'box:download:3:'.$box_mac;
+        $download_adv_list = $redis->get($cache_key);
+        $download_adv_list = json_decode($download_adv_list,true);
+        $download_adv_list = $download_adv_list['list'];
+        foreach($download_adv_list as $key=> $v){
+            $download_adv_list[$key]['type'] ='adv';
+        }
+        //print_r($download_pro_list);exit;
+        if(!empty($download_adv_list)){
+            $menu_list = array_merge($download_pro_list,$download_adv_list);
+        }else {
+            $menu_list = $download_pro_list;
+        }
+        sortArrByOneField($menu_list,'order');
+        $m_media = new \Common\Model\MediaModel();
+        $download_count = 0;
+        $counts = count($menu_list);
+        foreach($menu_list as $key=>$v){
+            $rets = $m_media->getWhere(array('id'=>$v['media_id']), 'name');
+            
+            $menu_list[$key]['name'] = $rets[0]['name'];   
+            switch ($v['type']){
+                case 'pro':
+                    $type ='节目';
+                    break;
+                case 'adv':
+                    $type ='宣传片';
+                    break;
+            }
+            if($v['state'] ==1){
+                $download_count ++;
+            }
+            $menu_list[$key]['type'] = $type;
+        }
+        
+        $download_percent = floor($download_count/$counts*100);
+        $download_percent .='%';
+        
+        $data = array();
+        $data['period'] = $menu_period;
+        $data['download_percent'] = $download_percent;
+        $data['list'] = $menu_list;
+        $this->to_back($data);
+    }
+    
+    
     /**
      * @desc 获取机顶盒最新广告列表
      */

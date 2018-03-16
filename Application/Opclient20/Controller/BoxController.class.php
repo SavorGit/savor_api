@@ -89,19 +89,20 @@ class BoxController extends BaseController{
             $data['repair_record'] = $rinfo;
         }
         //获取心跳
-        $m_heart_log = new \Common\Model\HeartLogModel();
+        /* $m_heart_log = new \Common\Model\HeartLogModel();
         $where = array();
         $where['type'] = 2;
         //$where['box_mac'] = $box_info['mac'];
         $where['box_id']  = $box_info['box_id'];
         $box_heart_info = $m_heart_log->getInfo('last_heart_time,ads_period,pro_period,adv_period,pro_download_period,ads_download_period,adv_period',$where);
-         
-        /* $redis = SavorRedis::getInstance();
+         */ 
+        $redis = SavorRedis::getInstance();
         $redis->select(13);
         $key = "heartbeat:"."2:".$box_info['mac']; 
         $box_heart_info = $redis->get($key);
         $box_heart_info = json_decode($box_heart_info,true);
-        $box_heart_info['last_heart_time'] = date('Y-m-d H:i:s',strtotime($box_heart_info['date'])); */
+        $box_heart_info['last_heart_time'] = date('Y-m-d H:i:s',strtotime($box_heart_info['date'])); 
+        $box_heart_info['period'] = $box_heart_info['ads_period'] ;
         
         if(empty($box_heart_info)){
             $data['loss_hours'] = '失联30天以上';

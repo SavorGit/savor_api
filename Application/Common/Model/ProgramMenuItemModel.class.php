@@ -87,4 +87,13 @@ class ProgramMenuItemModel extends Model
 	    $result = $this->query($sql);
 	    return $result;
 	}
+	public function getwhere($fields,$where,$order,$limit){
+	    $data = $this->alias('a')
+	                 ->join('savor_programmenu_list list on a.menu_id= list.id')
+            	     ->field($fields)->where($where)
+	                 ->order($order)
+	                 ->limit($limit)
+	                 ->select();
+	    return $data;
+	}
 }

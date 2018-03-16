@@ -16,6 +16,16 @@ class HotelUnusualModel extends Model
 		$data = $this->field($fileds)->where($where)->order($order)->limit($start,$size)->select();
 		return $data;
 	}
+	public function getErrHotelList($fileds,$where,$order,$start, $size){
+	    $data = $this->alias('a')
+	                 ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
+	                 ->field($fileds)
+	                 ->where($where)
+	                 ->order($order)
+	                 ->limit($start,$size)
+	                 ->select();
+	    return $data;
+	}
 
 	public function getOneInfo($fileds,$where,$order){
 		$data = $this->field($fileds)->where($where)->order($order)->find();

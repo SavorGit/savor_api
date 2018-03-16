@@ -110,15 +110,16 @@ class ErrorReportController extends BaseController{
 
         }
         //获取数据
-        $fileds = '*';
-        $order = ' small_plat_status asc, pla_lost_hour desc,
+        $fileds = 'a.*';
+        $order = ' a.small_plat_status asc, a.pla_lost_hour desc,
 
-        not_box_percent desc,box_lost_hour desc,id desc';
+        a.not_box_percent desc,a.box_lost_hour desc,a.id desc';
         $start  = ($pageNum-1)*$pageSize;
         $hotelUnModel = new \Common\Model\HotelUnusualModel();
-        $where = '1=1 and small_plat_status != 2 ';
-        $error_info = $hotelUnModel->getList($fileds, $where, $order,$start, $pageSize);
-
+        $where = '1=1 and a.small_plat_status != 2 and hotel.state=1 and hotel.flag=0';
+        //$error_info = $hotelUnModel->getList($fileds, $where, $order,$start, $pageSize);
+        $error_info = $hotelUnModel->getErrHotelList($fileds, $where, $order,$start, $pageSize);
+        
         $m_hotel = new \Common\Model\HotelModel();
         foreach($error_info as $key=>$v){
             $data['list'][$key]['hotel_id'] = $v['hotel_id'];

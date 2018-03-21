@@ -88,7 +88,7 @@ class BoxMemController extends CommonController{
         if($task_id) {
             $map = array();
             $map['task_id'] = $task_id;
-            $map['state'] = 2;
+            $map['state'] = 0;
             $map['repair_type'] = $rp_type;
             $map['box_id'] = $box_info['box_id'];
             $map['fault_desc'] = $box_memo[$box_mem_sta];

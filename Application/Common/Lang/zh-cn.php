@@ -50,6 +50,8 @@ return array(
     'hotel_not_set_small_plat_upgrade_version'=>'该酒楼未设置升级包',
     'have_not_this_small_plat_upgrade_war'=>'升级包不存在',
     'have_not_upgrade_sql'=>'无升级sql',
+    'stas_time_illegal'=>'非标准时间戳格式',
+    'stas_time_insert_fail'=>'存入redis失败',
     //客户端获取投屏酒楼距离接口
     'lat_illegal'=>'纬度值非法',
     'lng_illegal'=>'经度值非法',

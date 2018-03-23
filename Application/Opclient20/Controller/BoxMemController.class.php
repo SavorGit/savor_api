@@ -19,6 +19,7 @@ class BoxMemController extends CommonController{
 
 
     public function boxMemoryInfo(){
+        $this->to_back(10000);
         $box_id = $this->params['box_id'];
         $box_mac = $this->params['box_mac'];
         $box_mem_sta = empty($this->params['box_mem_state'])?1:$this->params['box_mem_state'];

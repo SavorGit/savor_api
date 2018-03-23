@@ -100,7 +100,7 @@ class BoxContentController extends BaseController{
         
         $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
         
-        /* $pro_same_flag = 0;
+        $pro_same_flag = 0;
         $ads = new \Common\Model\AdsModel();
         //获取最新节目单
         $menu_info = $m_new_menu_hotel->getLatestMenuid($hotel_id);   //获取最新的一期节目单
@@ -120,7 +120,7 @@ class BoxContentController extends BaseController{
                 $data['pro_download_period'] = '';
             }
             
-        } */
+        } 
         //广告状态
         //获取该机顶盒最新广告
         $ads_same_flag = 0;

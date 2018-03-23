@@ -109,6 +109,8 @@ class LoginController extends BaseController{
             $skill_result['role_info'] = array('id'=>4,'name'=>'查看');
             $ret = $m_area_model->getHotelAreaList();
             
+            $tt = array(array('id'=>9999,'region_name'=>'全国'));
+            $ret = array_merge($tt,$ret);
             $skill_result['manage_city'] = $ret;
             $userinfo['skill_list'] = $skill_result;
             

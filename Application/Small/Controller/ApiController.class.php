@@ -7,6 +7,8 @@
 namespace Small\Controller;
 
 use \Common\Controller\CommonController as CommonController;
+use Common\Lib\SavorRedis;
+
 /**
  * Class ApiController
  * 云平台PHP接口
@@ -62,9 +64,35 @@ class ApiController extends CommonController{
                 $this->is_verify = 0;
                 $this->valid_fields = array('curVersion'=>'1000','downloadVersion'=>'1000');
                 break;
+            case 'reportStaTime':
+                $this->is_verify = 1;
+                $this->valid_fields = array('statistics_time'=>'1001');
+                break;
         }
         $this->upgrade_type_arr = array('wwar'=>1,'apk'=>2);
         parent::_init_();
+    }
+
+    public function reportStaTime(){
+        $time = $this->params['statistics_time']; //hotelid
+        if(  ctype_digit($time)
+            && strlen($time) >= 10
+            && $time <= 2147483647
+        ) {
+
+        } else {
+            $this->to_back(16209);
+        }
+        $redis = SavorRedis::getInstance();
+        $redis->select(13);
+        $key = 'statistics_hotel_time';
+        $bool = $redis->set($key, $time);
+        if($bool) {
+            $this->to_back(10000);
+        } else {
+            $this->to_back(16210);
+        }
+
     }
 
     public function getHotelTv(){

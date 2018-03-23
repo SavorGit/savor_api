@@ -60,6 +60,8 @@ return array(
 	    '16206'=>'program_ads_num_empty',
 	    '16207'=>'program_menu_update_donwstate_error',
 	    '16208'=>'program_hotel_have_donw_success',
+		'16209'=>'stas_time_illegal',
+		'16210'=>'stas_time_insert_fail',
 	    //客户端获取投屏酒楼距离接口
 		'17001'=>'lat_illegal',
 		'17002'=>'lng_illegal',

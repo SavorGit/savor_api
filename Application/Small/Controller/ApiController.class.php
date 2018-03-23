@@ -75,7 +75,12 @@ class ApiController extends CommonController{
 
     public function reportStaTime(){
         $time = $this->params['statistics_time']; //hotelid
-        if(  strlen($time) < 10) {
+        if(  ctype_digit($time)
+            && strlen($time) >= 10
+            && $time <= 2147483647
+        ) {
+
+        } else {
             $this->to_back(16209);
         }
         $redis = SavorRedis::getInstance();

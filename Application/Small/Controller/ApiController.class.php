@@ -75,8 +75,6 @@ class ApiController extends CommonController{
 
     public function reportStaTime(){
         $time = $this->params['statistics_time']; //hotelid
-        var_export(strtotime(date('Y-m-d H:i:s',$time)));
-        var_export($time);
         if(  strlen($time) < 10) {
             $this->to_back(16209);
         }

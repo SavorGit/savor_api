@@ -414,9 +414,12 @@ class TaskController extends BaseController{
             $where .= ' and a.state ='.$state;
         }
     
-        if($state ==0 || $state ==4){
+        if($state ==0){
             $order = ' a.create_time desc';
-        }else if($state ==1 || $state ==2){
+        }else if ($state==4){
+            $order = ' a.complete_time desc';
+        }
+        else if($state ==1 || $state ==2){
             $order = ' a.task_emerge asc ,a.create_time asc';
         }
     

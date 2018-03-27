@@ -46,7 +46,6 @@ class SystemController extends CommonController{
             foreach($name_arr as $nk=>$nv) {
                 if($nv != '.' && $nv != '..') {
                     $sub_dir = $path.DIRECTORY_SEPARATOR.$nv;
-                    echo $sub_dir."<br/>";
                     if(is_dir($sub_dir)) {
                         $this->removeDir($sub_dir, $bath);
                     } else {

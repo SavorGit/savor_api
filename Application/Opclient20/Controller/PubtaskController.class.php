@@ -68,7 +68,6 @@ class PubtaskController extends BaseController{
         $map['b.mac_addr'] = array('neq', '');
         $map['a.flag'] = 0;
         $map['a.state'] = 1;
-
         $hotel_info = $m_hotel->getHotelLists($map, '','', $field);
 
         $h_all_num = count($hotel_info);
@@ -145,15 +144,17 @@ class PubtaskController extends BaseController{
         //获取酒楼
         if($hotel_info) {
             $hotel_id_arr = array_column($hotel_info, 'hid');
+            sort($hotel_id_arr);
             $h_id_str = implode(',', $hotel_id_arr);
             $where = '1=1';
             $where .= " and hotel_id  in (".$h_id_str.")";
             //获取数据
             $fileds = '*';
-            $order = ' small_plat_status asc, pla_lost_hour desc,not_box_percent desc,box_lost_hour desc';
+            $order = ' small_plat_status asc, pla_lost_hour desc,not_box_percent desc,box_lost_hour desc,hotel_id desc';
             $start  = ($pageNum-1)*$pageSize;
             $hotelUnModel = new \Common\Model\HotelUnusualModel();
             $error_info = $hotelUnModel->getList($fileds, $where, $order,$start, $pageSize);
+
             $m_hotel = new \Common\Model\HotelModel();
             foreach($error_info as $key=>$v){
                 $box_str = '';

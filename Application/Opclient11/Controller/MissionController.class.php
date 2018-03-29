@@ -162,6 +162,17 @@ $img_arr[$im]['repair_img'];
                     if(count($img_arr)>3) {
                         $this->to_back(30103);
                     } 
+                    
+                    $fields = 'suser.remark username';
+                    $map = array();
+                    $map['srepair.task_id'] = $task_id;
+                    $map['srepair.box_id'] = $box_id;
+                    $r_info = $m_option_task_repair->getMultMissionRepairInfo($fields,$map,1);
+                    
+                    $comp_username = $r_info[0]['username'];
+                    
+                    $this->to_back(30070,1,$comp_username);
+                    
                 }
                 return $user_task;
             }

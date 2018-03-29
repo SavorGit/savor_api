@@ -102,8 +102,9 @@ class BaseController extends Controller {
 	/**
 	 * @param  $data
 	 * @param  $type 1为明文json 2为加密
+	 * @param $rep   替换提示字符串
 	 */
-	public function to_back($data,$type=1) {
+	public function to_back($data,$type=1,$rep = '') {
 	    $apiResp = new \ApiResp();
 	    $errorinfo = C('errorinfo');
 	    if(is_numeric($data)){
@@ -121,7 +122,14 @@ class BaseController extends Controller {
 	    }
 	    
 	    $apiResp->code = $resp_code;
-	    $apiResp->msg = L("$resp_msg");
+	    if(!empty($rep)){
+	        $msg = L("$resp_msg");
+	        $msg = str_replace('#', $rep, $msg);
+	        $apiResp->msg = $msg;
+	    }else {
+	        $apiResp->msg = L("$resp_msg");
+	    }
+	    
 	    $apiResp->result = $resp_result;
 	    if($this->is_js ==1){
 	        $result = "h5turbine(".json_encode($resp_result).")";

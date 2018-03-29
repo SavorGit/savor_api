@@ -108,6 +108,9 @@ return array(
     'option_task_bind_mac_repeat'=>'绑定MAC与机顶盒MAC相同',
     'option_ads_list_err'=>'由于正在下载历史数据，无法查看列表',
     'option_pro_empty'=>'该节目单不存在',
+    'option_task_box_have_repaired'=>'该版位已经维修处理过,请勿重复操作',
+    'option_task_have_completed'=>'该任务已经由#处理为完成状态',
+    'option_task_box_have_completed'=>'该版位已经由#维修，请处理其它版位',
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

@@ -103,7 +103,8 @@ $img_arr[$im]['repair_img'];
         $field = 'state,tv_nums,task_type ';
         $where['flag'] = 0;
         $where['id'] = $save['task_id'];
-        $where['exe_user_id'] = $save['user_id'];
+        $where['_string'] = "FIND_IN_SET(".$save['user_id'].",exe_user_id)";
+        //$where['exe_user_id'] = $save['user_id'];
         $m_option_task = new \Common\Model\OptiontaskModel();
         $user_task = $m_option_task->getTaskInfoByUserid($field, $where);
         if($user_task['task_type']!=$save['task_type']){
@@ -116,6 +117,31 @@ $img_arr[$im]['repair_img'];
                 return $user_task;
             }
             if ( $user_task['state'] !=2 ) {
+                
+                if($user_task['state']==4){
+                    $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+                    if($user_task['task_type']==4){
+                        
+                        $fields = 'suser.remark username';
+                        $map = array();
+                        $map['srepair.task_id'] = $save['task_id'];
+                        $map['srepair.box_id'] = $this->params['box_id'];
+                        $r_info = $m_option_task_repair->getMultMissionRepairInfo($fields,$map,1);
+                        
+                        $comp_username = $r_info[0]['username'];
+                        
+                        $this->to_back(30070,1,$comp_username);
+                    }else {
+                        $fields = 'suser.remark username';
+                        $map = array();
+                        $map['srepair.task_id'] = $save['task_id'];
+                        
+                        $r_info = $m_option_task_repair->getMultMissionRepairInfo($fields,$map,2);
+                        $comp_username = $r_info[0]['username'];
+                        
+                        $this->to_back(30069,1,$comp_username);
+                    }  
+                }
                 //该任务状态不对
                 $this->to_back(30102);
             } else {
@@ -154,6 +180,12 @@ $img_arr[$im]['repair_img'];
         $where['task_id'] = $this->params['task_id'];
         $where['box_id'] = $this->params['box_id'];
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
+        
+        $info_arr = $m_repair_task->getOneRecord('user_id',$where);
+        if(!empty($info_arr['user_id'])){
+            $this->to_back('30068');
+        }
+        
         $bool = $m_repair_task->saveData($save, $where);
         if($bool) {
             $where = array();
@@ -265,9 +297,7 @@ $img_arr[$im]['repair_img'];
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
-                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
-                    $sys_user['remark'].' 完成'; */
+                
                 $ticker =  $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
                 $title = '小热点运维端通知';
@@ -295,12 +325,7 @@ $img_arr[$im]['repair_img'];
      * @desc 网络改造
      */
     public function disposeModify($save, $task_info) {
-        /* 
-        $save['create_time'] = $now_date; */
-        /* $field = 'repair_img,id';
-        $where = array();
-        $where['task_id'] = $save['task_id'];
-         */
+   
         $m_repair_task = new \Common\Model\OptionTaskRepairModel();
         $ret = $m_repair_task->addData($save);
         if($ret){
@@ -336,9 +361,6 @@ $img_arr[$im]['repair_img'];
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
-                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
-                    $sys_user['remark'].' 完成'; */
                 
                 $ticker = $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
@@ -388,6 +410,8 @@ $img_arr[$im]['repair_img'];
             $data = array();
             $data['task_id'] = $save['task_id'];
             $data['repair_img'] = $save['repair_img'];
+            $data['real_tv_nums'] = $this->params['real_tv_nums'];
+            $data['user_id'] = $save['user_id'];
             $ret = $m_option_task_repair->add($data);
             if(!$ret){
                 $this->to_back(30106);
@@ -395,6 +419,7 @@ $img_arr[$im]['repair_img'];
             $dat['state'] = 4;
             $map['id'] = $save['task_id'];
             $dat['complete_time'] = $now_date;
+            
             $m_option_task = new \Common\Model\OptiontaskModel();
             $m_option_task->saveData($dat, $map);
             
@@ -421,9 +446,6 @@ $img_arr[$im]['repair_img'];
                 $task_type_arr = C('OPTION_USER_SKILL_ARR');
                 $m_sys_user= new \Common\Model\SysUserModel();
                 $sys_user = $m_sys_user->getUserInfo(array('id'=>$this->params['user_id']),'remark',1);
-                /* $ticker = date('m-d',time())."日".date('H',time()).'点'.date('i',time()).'分,'.
-                    $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
-                    $sys_user['remark'].' 完成'; */
                 
                 $ticker =  $task_info['hotel_name'].'的'.$task_type_arr[$task_info['task_type']].'的任务已经被 '.
                     $sys_user['remark'].' 完成';
@@ -486,19 +508,17 @@ $img_arr[$im]['repair_img'];
      */
     public function reportMission(){
 
-        //error_log(($this->params['repair_img']),3,LOG_PATH.'baiyutao.log');
         $save['task_id'] = $this->params['task_id'];  //任务id
         $save['task_type']  = $this->params['task_type'];//任务类型
         $save['user_id'] = $this->params['user_id'];//执行人id
         $repair_img = empty($this->params['repair_img'])?'':$this->params['repair_img'];
         $save['repair_img'] = str_replace('\\', '', $repair_img);
 
-    //   $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $this->params['repair_img']);
         $save['repair_img'] = str_replace( C('TASK_REPAIR_IMG'),'', $save['repair_img']);
         //判断是否有对任务执行权限,判断角色
         $task_info = $this->disposeTips($save);
 
-        unset($save['user_id']);
+        //unset($save['user_id']);
         $task_type = $save['task_type'];
         unset($save['task_type']);
         switch($task_type){

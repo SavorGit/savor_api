@@ -70,6 +70,21 @@ class OptionTaskRepairModel extends Model
 
 		return $data;
 	}
+	public function getMultMissionRepairInfo($fields, $where, $type=2) {
+		$joinb = '';
+		if($type == 1) {
+			$joinb = 'left join savor_box sbox ON srepair.box_id = sbox.id';
+		}
+		$data = $this->alias('srepair')
+			->join('left join savor_option_task stask  on stask.id= srepair.task_id')
+			->join($joinb)
+			->join('left join savor_sysuser suser ON srepair.user_id = suser.id')
+			->field($fields)
+			->where($where)
+			->select();
+
+		return $data;
+	}
 
 
 	public function getTaskState($fields,$where) {

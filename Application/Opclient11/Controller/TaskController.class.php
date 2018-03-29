@@ -167,7 +167,7 @@ class TaskController extends BaseController{
         
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
+                    a.exe_user_id,a.complete_time,a.refuse_time
                     ';
         $where = ' 1';
         if($city_id !=9999){
@@ -187,7 +187,7 @@ class TaskController extends BaseController{
         
         
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $data = $m_option_task->getList($fields, $where, $order, $limit);
+        $data = $m_option_task->getMultList($fields, $where, $order, $limit);
         
         foreach($data as $key=>$v){
             
@@ -243,14 +243,15 @@ class TaskController extends BaseController{
     
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
+                    a.exe_user_id,a.complete_time,a.refuse_time
                     ';
         
         $where = ' 1';
         if($city_id !=9999){
             $where .= " and a.task_area =$city_id";
         }
-        $where .= ' and a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
+        $where .= " and  FIND_IN_SET($user_id,a.exe_user_id) and a.flag=0"; //获取指派给自己的任务
+        //$where .= ' and a.exe_user_id='.$user_id.' and a.flag=0';   //获取指派给自己的任务
         $state = intval($state);
         if(!empty($state)){
             $where .= ' and a.state ='.$state;
@@ -264,7 +265,7 @@ class TaskController extends BaseController{
     
     
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $data = $m_option_task->getList($fields, $where, $order, $limit);
+        $data = $m_option_task->getMultList($fields, $where, $order, $limit);
     
         foreach($data as $key=>$v){
     
@@ -329,7 +330,7 @@ class TaskController extends BaseController{
         
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
+                    a.exe_user_id,a.complete_time,a.refuse_time
                     ';
         $where = ' 1';
         if($city_id !=9999){
@@ -348,7 +349,7 @@ class TaskController extends BaseController{
         
         
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $data = $m_option_task->getList($fields, $where, $order, $limit);
+        $data = $m_option_task->getMultList($fields, $where, $order, $limit);
         
         foreach($data as $key=>$v){
             $data[$key]['state_id'] = $v['state'];
@@ -401,7 +402,7 @@ class TaskController extends BaseController{
     
         $fields =  'a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                     a.hotel_address,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                    a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.refuse_time
+                    a.exe_user_id,a.complete_time,a.refuse_time
                     ';
         $where = ' 1';
         if($city_id !=9999){
@@ -425,7 +426,7 @@ class TaskController extends BaseController{
     
     
         $m_option_task = new \Common\Model\OptiontaskModel();
-        $data = $m_option_task->getList($fields, $where, $order, $limit);
+        $data = $m_option_task->getMultList($fields, $where, $order, $limit);
     
         foreach($data as $key=>$v){
     
@@ -478,14 +479,14 @@ class TaskController extends BaseController{
             
             $fields = ' a.id,a.task_type,a.state,replace(area.region_name,\'市\',\'\') as region_name,a.task_emerge,a.tv_nums,a.hotel_id,hotel.name hotel_name,a.create_time,a.publish_user_id,
                         a.is_lead_install,a.hotel_address,a.refuse_time,a.refuse_desc,user.remark as publish_user,a.appoint_time,a.appoint_user_id,appuser.remark as appoint_user,a.appoint_exe_time,
-                        a.exe_user_id,exeuser.remark as exeuser,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,a.desc';
+                        a.exe_user_id,a.complete_time,a.hotel_linkman,a.hotel_linkman_tel,a.hotel_id,a.desc';
             
             
             $where = array();
             $where['a.id'] = $task_id;
             $where['a.flag'] = 0;
-            $task_info = $m_option_task->getInfo($fields,$where);
-
+            //$task_info = $m_option_task->getInfo($fields,$where);
+            $task_info = $m_option_task->getMultInfo($fields,$where);
 
             if(empty($task_info)){
                 $this->to_back(30059);
@@ -514,11 +515,10 @@ class TaskController extends BaseController{
                 $hotel_standalone_config = C('HOTEL_STANDALONE_CONFIG');
                 
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                $fields = 'a.id as repair_id,box.name as box_name,a.box_id,a.fault_desc,a.repair_type,a.fault_img_url';
+                $fields = 'a.user_id,a.id as repair_id,box.name as box_name,a.box_id,a.fault_desc,a.repair_type,a.fault_img_url';
                 $where = array();
                 $where['a.task_id'] = $task_id;
                 $repair_list = $m_option_task_repair->getList($fields,$where);
-                
                 if(!empty($repair_list)){
                     foreach($repair_list as $key=>$v){
                         if(!empty($v['fault_img_url'])){
@@ -541,9 +541,9 @@ class TaskController extends BaseController{
                         $fieldd = ' suser.remark username,sbox.NAME box_name,
                     srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
                         
-                        $result = $m_option_task_repair->getMissionRepairInfo($fieldd,array('srepair.id'=>$v['repair_id']),1);
+                        $result = $m_option_task_repair->getMultMissionRepairInfo($fieldd,array('srepair.id'=>$v['repair_id']),1);
                         $result = $result[0];
-                        $repair_list[$key]['username'] = $result['username'] ? $result['username'] :'';
+                        $repair_list[$key]['username'] = $result['username'] ? $result['username'] :$task_info['exeuser'];
                         $repair_list[$key]['state'] = $result['state'] ? $result['state'] :'';
                         $repair_list[$key]['remark'] = $result['remark'] ? $result['remark'] :'';
                         
@@ -576,45 +576,16 @@ class TaskController extends BaseController{
             $rplist = array();
             if($mission_state == 4) {
                 $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-                /* if($task_type == 4) {
-                    $fielda = ' suser.remark username,sbox.NAME box_name,
-                    srepair.state,srepair.remark,srepair.repair_img,srepair.update_time repair_time';
-                    $map['srepair.task_id'] = $task_id;
-                    //1为机顶盒
-                    $type = 1;
-                   $rplist = $m_option_task_repair->getMissionRepairInfo
-                   ($fielda, $map, $type);
-                    foreach($rplist as $rk=>$rv) {
-                        if(!empty($rv['repair_img'])) {
-                            $tmp_img  = json_decode($rv['repair_img']);
-                            $repair_img_arr = array();
-                            foreach($tmp_img as $tk=>$tv) {
-                                $repair_img_arr[$tk]['type'] =0;
-                                if(!empty($tv)){
-                                    $repair_img_arr[$tk]['img'] = $task_repair_img.$tv;
-                                }else {
-                                    $repair_img_arr[$tk]['img'] = '';
-                                }
-                                
-                            }
-                            $rplist[$rk]['repair_img'] = $repair_img_arr;
-                        } else{
-                            $rplist[$rk]['repair_img'] = array();
-                        }
-                        $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
-                        $rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
-
-                    }
-                } else */
+                
                 if($task_type == 2) {
-                    $fielda = ' suser.remark username,srepair.repair_img,srepair.update_time repair_time';
+                    $fielda = ' suser.remark username,srepair.repair_img,srepair.update_time repair_time,srepair.real_tv_nums';
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                    $rplist = $m_option_task_repair->getMultMissionRepairInfo($fielda, $map, $type);
                    
                     $result = $rplist[0];
-                    
+                    $task_info['real_tv_nums'] = $result['real_tv_nums'];
                     $repair_img_arr = json_decode($result['repair_img'],true);
                     if(empty($repair_img_arr)){
                         $repair_img_arr = array();
@@ -633,7 +604,7 @@ class TaskController extends BaseController{
                         
                         $rets[$rk]['repair_img'] = $ttp;
                         //unset($repair_img_arr[$rk]['img']);
-                        $rets[$rk]['usernanme'] = $result['username'];
+                        $rets[$rk]['usernanme'] = $result['username'] ? $result['username'] : $task_info['exeuser'];
                         $rets[$rk]['repair_time']= $result['repair_time'];
                         
                     }
@@ -648,7 +619,7 @@ class TaskController extends BaseController{
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                    $rplist = $m_option_task_repair->getMultMissionRepairInfo($fielda, $map, $type);
                     $result = $rplist[0];
                     $repair_img =json_decode($result['repair_img'],true);
                     
@@ -664,17 +635,10 @@ class TaskController extends BaseController{
                         }
                         $repair_img_arr[$k]['repair_img'] = $ttp;
                         unset($repair_img_arr[$k]['img']);
-                        $repair_img_arr[$k]['username'] = $result['username'];
+                        $repair_img_arr[$k]['username'] = $result['username']?$result['username']:$task_info['exeuser'];
                         $repair_img_arr[$k]['repair_time'] = $result['repair_time'];
                     }
-                    //$rplist[$rk]['repair_img'] = $repair_img_arr;
-                        //} 
-                        //else{
-                            //$rplist[$rk]['repair_img'] = array();
-                        //}
-                       // $rplist[$rk]['remark'] = empty($rplist[$rk]['remark'])?'':$rplist[$rk]['remark'];
-                        //$rplist[$rk]['box_name'] = empty($rplist[$rk]['box_name'])?'':$rplist[$rk]['box_name'];
-                    //}
+                    
                     $rplist = $repair_img_arr;
                 }else if($task_type == 8){
                     $fielda = ' suser.remark username,sbox.NAME box_name,
@@ -682,27 +646,12 @@ class TaskController extends BaseController{
                     $map['srepair.task_id'] = $task_id;
                     //1为机顶盒
                     $type = 1;
-                    $rplist = $m_option_task_repair->getMissionRepairInfo($fielda, $map, $type);
+                    $rplist = $m_option_task_repair->getMultMissionRepairInfo($fielda, $map, $type);
                     $result = $rplist[0];
                     $repair_img =json_decode($result['repair_img'],true);
                     
                     $repair_img_arr = array();
-                    //print_r($repair_img);exit;
-                    /* foreach($repair_img as $k=>$v){
-                         $ttp = array();
-                        $ttp[0]['type'] = $v['type'];
-                        if(!empty($v['img'])){
-                            $ttp[0]['img'] = $task_repair_img .$v['img'];
-                            
-                        }else {
-                            $ttp[0]['img'] = '';
-                        }
-                        
-                        $repair_img_arr[$k]['repair_img'] = $ttp;
-                        unset($repair_img_arr[$k]['img']);
-                        $repair_img_arr[$k]['username'] = $result['username'];
-                        $repair_img_arr[$k]['repair_time'] = $result['repair_time'];
-                    } */
+                    
                     foreach($repair_img as $key=>$v){
                         if(!empty($v['img'])){
                             $repair_img[$key]['img'] = $task_repair_img.$v['img'];
@@ -711,7 +660,7 @@ class TaskController extends BaseController{
                         }
                         
                     }
-                    $repair_img_arr[0]['username']    = $result['username'];
+                    $repair_img_arr[0]['username']    = $result['username']?$result['username']:$task_info['exeuser'];
                     $repair_img_arr[0]['repair_time'] = $result['repair_time'];
                     $repair_img_arr[0]['repair_img']  = $repair_img;
                     $rplist = $repair_img_arr;
@@ -942,7 +891,8 @@ class TaskController extends BaseController{
                 
         }
         if($role_info['role_id']==3){//执行者
-            $where['exe_user_id'] = $user_id;
+            $where['_string']="FIND_IN_SET($user_id,exe_user_id)";
+            //$where['exe_user_id'] = array('find_in_set',) $user_id;
             $where['state']       = 2;
             $where['flag']        = 0;
         }
@@ -953,6 +903,7 @@ class TaskController extends BaseController{
         $this->to_back($data);
     }
     public function testPush(){
+        exit();
         $task_id = 1;
         $display_type = 'notification';//通知
         $device_type  = 4;
@@ -985,6 +936,7 @@ class TaskController extends BaseController{
             $extra,$ticker);
     }
     public function testAdPush(){
+        exit();
         $task_id = 1;
         $display_type = 'notification';//通知
         $device_type  = 3;

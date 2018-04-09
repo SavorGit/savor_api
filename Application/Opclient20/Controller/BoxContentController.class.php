@@ -163,53 +163,56 @@ class BoxContentController extends BaseController{
 
         $menu_id = $menu_info['menu_id'];
         $menu_num= $menu_info['menu_num'];
-        $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-        $menu_item_arr = $m_program_menu_item->getMenuInfo($menu_id); //获取节目单的节目列表
-        $menu_item_arr = $this->changeadvList($menu_item_arr);
-        
-        //获取后台最新宣传片
-        $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-        $adv_arr = $m_program_menu_item->getadvInfo($box_info['hotel_id'], $menu_id);
-        
-        //获取后台最新广告
-        $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
-        $fields = 'd.id';
-        $ads_item_arr = $m_pub_ads_box->getBoxAdsList($fields,$box_id,'','a.pub_ads_id');
-        $bag_media_arr = array();
-        foreach($menu_item_arr as $v){
-            $bag_media_arr[] = $v['id'];
-        }
-        foreach($adv_arr as $v){
-            $bag_media_arr[] = $v['id'];
-        }
-        foreach($ads_item_arr as $v){
-            $bag_media_arr[] = $v['id'];
-        }
-        $program_diff_arr = array();
-        $m_media = new \Common\Model\MediaModel();
-        foreach($box_program_list as $key=>$v){
-            switch ($v['type']){
-                case 'pro':
-                    $type ='节目';
-                    break;
-                case 'adv':
-                    $type ='宣传片';
-                    break;
-                case 'ads':
-                    $type ='广告';
-                    break;
-            }
-            $dts = $m_media->getWhere(array('id'=>$v['media_id']),'name');
-            $program_diff_arr[$key]['name'] = $dts[0]['name']? $dts[0]['name'] : '';
-            $program_diff_arr[$key]['type'] =$type;
-            if(!in_array($v['media_id'], $bag_media_arr)){
-                $program_diff_arr[$key]['flag'] = 0;
-            }else {
-                $program_diff_arr[$key]['flag'] = 1;
-            }
+        if($menu_id){
+            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+            $menu_item_arr = $m_program_menu_item->getMenuInfo($menu_id); //获取节目单的节目列表
+            $menu_item_arr = $this->changeadvList($menu_item_arr);
             
+            //获取后台最新宣传片
+            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+            $adv_arr = $m_program_menu_item->getadvInfo($box_info['hotel_id'], $menu_id);
+            
+            //获取后台最新广告
+            $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
+            $fields = 'd.id';
+            $ads_item_arr = $m_pub_ads_box->getBoxAdsList($fields,$box_id,'','a.pub_ads_id');
+            $bag_media_arr = array();
+            foreach($menu_item_arr as $v){
+                $bag_media_arr[] = $v['id'];
+            }
+            foreach($adv_arr as $v){
+                $bag_media_arr[] = $v['id'];
+            }
+            foreach($ads_item_arr as $v){
+                $bag_media_arr[] = $v['id'];
+            }
+            $program_diff_arr = array();
+            $m_media = new \Common\Model\MediaModel();
+            foreach($box_program_list as $key=>$v){
+                switch ($v['type']){
+                    case 'pro':
+                        $type ='节目';
+                        break;
+                    case 'adv':
+                        $type ='宣传片';
+                        break;
+                    case 'ads':
+                        $type ='广告';
+                        break;
+                }
+                $dts = $m_media->getWhere(array('id'=>$v['media_id']),'name');
+                $program_diff_arr[$key]['name'] = $dts[0]['name']? $dts[0]['name'] : '';
+                $program_diff_arr[$key]['type'] =$type;
+                if(!in_array($v['media_id'], $bag_media_arr)){
+                    $program_diff_arr[$key]['flag'] = 0;
+                }else {
+                    $program_diff_arr[$key]['flag'] = 1;
+                }
+            
+            }
+            $data['program_list'] = $program_diff_arr;
         }
-        $data['program_list'] = $program_diff_arr;
+        
         $this->to_back($data);
     }
     /**

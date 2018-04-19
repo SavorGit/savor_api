@@ -22,7 +22,8 @@ class HotelModel extends Model
     public function getPlaMac($field,$id){
         return $this->alias('a')
             ->field($field)
-            ->join('left join savor_hotel_ext b on a.id=b.hotel_id')
+            ->join(' savor_hotel_ext b on a.id=b.hotel_id','left')
+            ->join('savor_sysuser c on c.id=b.maintainer_id','left')
             ->where("a.id='".$id."'")->find();
     }
 

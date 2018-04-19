@@ -46,7 +46,13 @@ class HotelController extends BaseController {
         $menuHoModel = new \Common\Model\MenuHotelModel();
         $menlistModel = new \Common\Model\MenuListModel();
         $tvModel = new \Common\Model\TvModel();
-        $vinfo = $hotelModel->getOneById(' id hotel_id, name hotel_name,addr hotel_addr,area_id,iskey is_key,level,state_change_reason,install_date,state hotel_state,contractor,hotel_box_type,maintainer,tel,mobile,remote_id,tech_maintainer,hotel_wifi_pas,hotel_wifi,gps', $hotel_id);
+        $fields =  ' a.id hotel_id, a.name hotel_name,a.addr hotel_addr,a.area_id,a.iskey is_key,a.level,
+                     a.state_change_reason,a.install_date,a.state hotel_state,a.contractor,
+                     a.hotel_box_type,a.tel,a.mobile,a.remote_id,a.tech_maintainer,
+                     a.hotel_wifi_pas,a.hotel_wifi,a.gps,c.remark as maintainer';
+        //$vinfo = $hotelModel->getOneById(' id hotel_id, name hotel_name,addr hotel_addr,area_id,iskey is_key,level,state_change_reason,install_date,state hotel_state,contractor,hotel_box_type,maintainer,tel,mobile,remote_id,tech_maintainer,hotel_wifi_pas,hotel_wifi,gps', $hotel_id);
+        $vinfo   = $hotelModel->getPlaMac($fields, $hotel_id);
+        
         $vinfoa[] = $vinfo;
         $vinfo = $hotelModel->changeIdinfoToName($vinfoa);
 

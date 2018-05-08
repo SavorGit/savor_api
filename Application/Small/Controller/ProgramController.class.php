@@ -33,6 +33,10 @@ class ProgramController extends CommonController{
                 break;
             case 'rtbAdsList':
                 $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'program_list'=>1001);
+                break;
+            case 'uploadSmallProgramList':
+                $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
         }
@@ -416,6 +420,22 @@ class ProgramController extends CommonController{
          $result['media_list']   = $data;
          $this->to_back($result);
      }
+     /**
+      * @desc 接收小平台上传当前最新节目单下载情况
+      */
+     public function uploadSmallProgramList(){
+         $hotel_id     = $this->params['hotel_id'];
+         $program_list = $this->params['program_list'];
+         $redis = new SavorRedis();
+         $redis->select(8);
+         $cache_key = C('SMALL_PROGRAM_LIST_KEY').$hotel_id;
+         $date = date('Y-m-d H:i:s');
+         $program_list = json_decode($program_list,true);
+         $program_list['date'] = $date;
+         $redis->set($cache_key, json_encode($program_list));
+         $this->to_back(10000);
+     }
+     
      private function changeadvList($res,$type=1){
          if($res){
              foreach ($res as $vk=>$val) {

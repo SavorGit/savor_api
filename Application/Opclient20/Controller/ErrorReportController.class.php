@@ -116,7 +116,12 @@ class ErrorReportController extends BaseController{
         a.not_box_percent desc,a.box_lost_hour desc,a.id desc';
         $start  = ($pageNum-1)*$pageSize;
         $hotelUnModel = new \Common\Model\HotelUnusualModel();
-        $where = '1=1 and a.small_plat_status != 2 and hotel.state=1 and hotel.flag=0';
+        
+        $h_type = C('HEART_HOTEL_BOX_TYPE');
+        $h_type = array_keys($h_type);
+        $h_type = implode(',', $h_type);
+        
+        $where = '1=1 and a.small_plat_status != 2 and hotel.state=1 and hotel.flag=0 and hotel.hotel_box_type in('.$h_type.')';
         //$error_info = $hotelUnModel->getList($fileds, $where, $order,$start, $pageSize);
         $error_info = $hotelUnModel->getErrHotelList($fileds, $where, $order,$start, $pageSize);
         

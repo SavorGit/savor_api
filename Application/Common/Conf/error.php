@@ -215,5 +215,9 @@ return array(
 	    '80001'=>'hotel_attendant_empty',
 	    '80002'=>'not_in_rtb_ads_push_time',
 	    '80003'=>'rtb_push_ads_list_empty',
+	    //聚屏广告
+	    '90001'=>'poly_ads_empty',
+	    '90002'=>'poly_hotel_not_normal',
+	    '90003'=>'poly_box_empty',
 	),
 );

@@ -213,4 +213,7 @@ return array(
     'box_memory_state_illegal'=>'机顶盒内存状态上报值错误',
     'boxmem_data_insert_error'=>'数据入库失败',
     'boxmem_data_already_insert'=>'内存卡信息已经上报',
+    'poly_ads_empty'=>'聚屏广告列表为空',
+    'poly_hotel_not_normal'=>'酒楼不存在或者为非正常酒楼',
+    'poly_box_empty'=>'该酒楼下无聚屏广告的盒子',
 );

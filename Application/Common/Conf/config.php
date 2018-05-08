@@ -249,6 +249,7 @@ return array(
     ),
     'HEART_LOSS_HOURS'=>'72',
     'NET_REPORT_KEY'=>'net_report_',
+    'SMALL_PROGRAM_LIST_KEY'=>'small_program_list_',
 	'CONFIG_VOLUME_VAL' => array(
 		'system_ad_volume'=>60,
 		'system_pro_screen_volume'=>100,

@@ -8,6 +8,10 @@ use Think\Model;
 class SdkErrorModel extends Model
 {
 	protected $tableName='sdk_error';
+    public function getInfo($fields,$where){
+        $info = $this->field($fields)->where($where)->find();
+        return $info;
+    }
     public function countNums($where){
         $nums =  $this->where($where)->count();
         return $nums;

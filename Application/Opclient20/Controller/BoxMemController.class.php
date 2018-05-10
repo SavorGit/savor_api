@@ -10,15 +10,58 @@ class BoxMemController extends CommonController{
         switch(ACTION_NAME) {
             case 'boxMemoryInfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>'10001');
+                $this->valid_fields = array('box_id'=>1001);
                 break;
                 
         }
         parent::_init_();
     }
-
-
     public function boxMemoryInfo(){
+        $box_id = $this->params['box_id'];
+        /* $box_mac = $this->params['box_mac'];
+        $box_mem_sta = empty($this->params['box_mem_state'])?1:$this->params['box_mem_state'];
+        $box_memo = C('MEMORY_CONDITION');
+        if(!array_key_exists($box_mem_sta, $box_memo)) {
+            $this->to_back(30083);
+        }
+        if ( empty($box_mac) ) {
+            $this->to_back(30081);
+        } */
+        //根据box_id或者mac获取酒楼相关信息
+        $boxModel = new \Common\Model\BoxModel();
+        
+        $where = array();
+        $where['id']   = $box_id;
+        $where['flag'] = 0;
+        $box_info = $boxModel->getOnerow($where);
+        if (empty($box_info)) {
+            $this->to_back(30082);
+        }
+        $where = array();
+        $where['box_id'] = $box_id;
+        $m_sdk_error = new \Common\Model\SdkErrorModel();
+        $nums = $m_sdk_error->countNums($where);
+        if(empty($nums)){
+            $data = array();
+            $data['box_id'] = $box_id;
+            $data['erro_count'] =1;
+            $data['last_report_date'] = date('Y-m-d H:i:s');
+            $ret = $m_sdk_error->addInfo($data);
+        }else {
+            $where = array();
+            $where['box_id'] = $box_id;
+            $data = array();
+            
+            $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."'";
+            $ret = $m_sdk_error->execute($sql);
+        }
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(30084);
+        }   
+    }
+    public function boxMemoryInfo_20180509(){
         $this->to_back(10000);
         $box_id = $this->params['box_id'];
         $box_mac = $this->params['box_mac'];

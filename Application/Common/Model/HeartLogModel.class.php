@@ -39,6 +39,13 @@ class HeartLogModel extends Model
 		return $result;
 
 	}
+    public function getLastHeartVersionNew($field,$where ,$device_type=1){
+		$sql = " SELECT $field FROM savor_device_version sd JOIN (SELECT MAX(last_heart_time) ltime,MAX(war_version ) ak,box_mac FROM
+ savor_heart_log WHERE $where) sa ON sa.ak  =  sd.version_code and sd.device_type=$device_type";
+		$result = $this->query($sql);
+		return $result;
+
+	}
 	public function getHotelList($fields,$where,$order,$limit,$group){
 	    $data = $this->alias('a')
 	         ->join('savor_hotel b on a.hotel_id= b.id','left')

@@ -132,9 +132,10 @@ class HotelController extends BaseController {
         $m_heart_log = new \Common\Model\HeartLogModel();
         //获得小平台最后心跳时间
         $where = '';
-        $where .=" 1 and hotel_id=".$hotelid." and type=1";
+        $where .=" 1 and hotel_id=".$hotelid." and type=1 ";
         $field = " sd.`version_name`,sa.`ltime`,sa.`box_mac` small_mac ";
-        $rets  = $m_heart_log->getLastHeartVersion($field, $where);
+        //$rets  = $m_heart_log->getLastHeartVersion($field, $where);
+        $rets  = $m_heart_log->getLastHeartVersionNew($field, $where);
         $redis = SavorRedis::getInstance();
         
         

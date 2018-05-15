@@ -126,6 +126,12 @@ class TaskController extends BaseController{
         $task_id = $m_option_task->addData($data, $type=1); 
         
         if($task_type==4 || $task_type ==2){//如果是维修 或者是安装验收
+            if(empty($mobile)){
+                $this->to_back('30074');
+            }else  if(!check_mobile($mobile)){
+                $this->to_back('30075');
+            }
+            
             $repair_info = $this->params['repair_info'];
             /* $map['box_id'] = 1;
             $map['task_id'] =1;

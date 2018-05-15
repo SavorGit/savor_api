@@ -246,7 +246,42 @@ class BaseController extends Controller {
         }
         
     }
-	   
+    /**
+     * @desc 发送短信
+     */
+    public function sendToUcPa($info,$param,$type=1,$msg_type=2){
+        $to = $info['tel'];
+        $bool = true;
+        $ucconfig = C('SMS_CONFIG');
+        $options['accountsid'] = $ucconfig['accountsid'];
+        $options['token'] = $ucconfig['token'];
+        if($type==6){
+            $templateId = $ucconfig['option_repair_done_templateid'];
+        }
+    
+        $ucpass= new \Common\Lib\Ucpaas($options);
+        $appId = $ucconfig['appid'];
+        $sjson = $ucpass->templateSMS($appId,$to,$templateId,$param);
+        $sjson = json_decode($sjson,true);
+        $code = $sjson['resp']['respCode'];
+        if($code === '000000') {
+            $data = array();
+            $data['type'] = $type;
+            $data['status'] = 1;
+            $data['create_time'] = date('Y-m-d H:i:s');
+            $data['update_time'] = date('Y-m-d H:i:s');
+            $data['url'] = $param;
+            $data['tel'] = $to;
+            $data['resp_code'] = $code;
+            $data['msg_type'] = $msg_type;
+            $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
+            $m_account_sms_log->addData($data);
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
 	public function __destruct(){
 
         

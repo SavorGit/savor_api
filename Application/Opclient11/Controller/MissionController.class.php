@@ -198,7 +198,6 @@ $img_arr[$im]['repair_img'];
         if(!empty($info_arr['user_id'])){
             $this->to_back('30068');
         }
-        
         $bool = $m_repair_task->saveData($save, $where);
         if($bool) {
             $where = array();
@@ -218,14 +217,45 @@ $img_arr[$im]['repair_img'];
                 $m_option_task = new \Common\Model\OptiontaskModel();
                 $m_option_task->saveData($dat, $map);
                 
-                //增加推送
+                
+                
                 $task_id = $this->params['task_id'];
-                $fields = 'a.state,a.appoint_user_id,a.publish_user_id,a.task_type,hotel.name hotel_name';
+                $fields = 'a.task_area,a.state,a.appoint_user_id,a.publish_user_id,a.task_type,
+                           hotel.name hotel_name,a.hotel_linkman_tel,exeuser.remark,role.mobile,
+                           user.remark as pub_user_name,puser.mobile pubmobile';
                 $where = array();
                 $where['a.id'] = $task_id;
                 $where['a.flag'] = 0;
                 $task_info = $m_option_task->getInfo($fields,$where);
+                //增加发送酒楼联系人短信
+                if(!empty($task_info['hotel_linkman_tel']) && check_mobile($task_info['hotel_linkman_tel'])){
+                    $info = array();
+                    $info['tel'] = $task_info['hotel_linkman_tel'];
+                    if(empty($task_info['mobile'])){//如果酒楼维护人的手机号为空取该区域经理的联系方式
+                        $maps = array();
+                        $m_opuser_role = new \Common\Model\OpuserRoleModel();
+                        $sql ="select a.mobile,b.remark from savor_opuser_role a 
+                               left join savor_sysuser b on a.user_id = b.id
+                               where find_in_set(".$task_info['task_area'].",a.manage_city) 
+                               and a.is_leader=1 and a.state=1 and b.status=1 limit 1";
+                        $leader_info = $m_opuser_role->query($sql);
+                        if(!empty($leader_info) && !empty($leader_info[0]['mobile'])){
+                            $param = $leader_info[0]['remark'] . $leader_info[0]['mobile'];
+                            $this->sendToUcPa($info, $param,6);
+                        }
+                    }else {
+                        $param = $task_info['remark'].$task_info['mobile'];
+                        $this->sendToUcPa($info, $param,6);
+                    }     
+                }else if(!empty($task_info['pubmobile']) && check_mobile($task_info['pubmobile'])){
+                    $info = array();
+                    $info['tel'] = $task_info['pubmobile'];
+                    $param = $task_info['remark'].$task_info['mobile'];
+                    $this->sendToUcPa($info, $param,6);
+                }
+                //发送酒楼联系人短信结束
                 
+                //增加推送
                 $m_hotel_device_token = new \Common\Model\HotelDeviceTokenModel();
                 $user_token = $m_hotel_device_token->getOnerow(array('user_id'=>$task_info['publish_user_id']));
                 if(!empty($user_token) && !empty($user_token['device_token'])){//推送

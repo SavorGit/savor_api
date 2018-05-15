@@ -124,6 +124,8 @@ return array(
 	    '30068'=>'option_task_box_have_repaired',
 	    '30069'=>'option_task_have_completed',
 	    '30070'=>'option_task_box_have_completed',
+	    '30074'=>'option_task_mobile_empty',
+	    '30075'=>'option_task_mobile_illegal',
 	    //2.1.1
 	    '30071'=>'box_report_download_empty',
 	    '30072'=>'box_report_download_same',

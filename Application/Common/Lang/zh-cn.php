@@ -111,6 +111,8 @@ return array(
     'option_task_box_have_repaired'=>'该版位已经维修处理过,请勿重复操作',
     'option_task_have_completed'=>'该任务已经由#处理为完成状态',
     'option_task_box_have_completed'=>'该版位已经由#维修，请处理其它版位',
+    'option_task_mobile_empty'=>'酒楼联系人电话不能为空',
+    'option_task_mobile_illegal'=>'酒楼联系电话非法',
     //每日知享接口
     'daily_content_not_exist'=>'文章不存在',
     'daily_content_collection_err'=>'收藏失败',

@@ -181,7 +181,7 @@ return array(
 		'appid'     =>'a982fdb55a2441899f2eaa64640477c0',
 		'daily_login_templateid'=>'178978',
 	    'dinner_login_templateid'=>'238349',
-
+	    'option_repair_done_templateid'=>'322916',
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

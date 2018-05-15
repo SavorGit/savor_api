@@ -88,6 +88,8 @@ class OptiontaskModel extends Model
 	                 ->join(' savor_sysuser user on a.publish_user_id=user.id','left')
 	                 ->join('savor_sysuser appuser on a.appoint_user_id = appuser.id','left')
 	                 ->join('savor_sysuser exeuser on a.exe_user_id = exeuser.id','left')
+	                 ->join('savor_opuser_role role on exeuser.id=role.user_id','left')
+	                 ->join('savor_opuser_role puser  on a.publish_user_id=puser.user_id','left')
 	                 ->field($fields)->where($where)->find();
 	    return $data;
 	}

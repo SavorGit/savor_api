@@ -277,7 +277,7 @@ class HotelController extends BaseController {
         $black_model = new \Common\Model\BlacklistModel();
         $where = '';
 
-        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state =1 and a.flag =0 and room.state =1 and room.flag =0 ';
+        $where .=" 1 and room.hotel_id=".$hotel_id.' and a.state =1 and a.flag =0 ';
 
         $box_lista = $m_box->getList( 'room.name rname, a.name boxname, a.mac,a.id box_id',$where);
         //过滤黑名单

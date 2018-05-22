@@ -53,14 +53,14 @@ class SmsController extends BaseController{
         //发送短信
         $info['tel'] = $mobile;
         $param = $verify_code;
-        $ret = $this->sendToUcPa($info, $param);
+        $ret = $this->sendToUcPas($info, $param);
         if($ret){
             $this->to_back(10000);
         }else {
             $this->to_back(40012);
         }
     }
-    private function sendToUcPa($info,$param,$type=1){
+    private function sendToUcPas($info,$param,$type=1){
         $to = $info['tel'];
         $bool = true;
         $ucconfig = C('SMS_CONFIG');

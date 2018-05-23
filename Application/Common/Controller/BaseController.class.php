@@ -274,6 +274,7 @@ class BaseController extends Controller {
             $data['tel'] = $to;
             $data['resp_code'] = $code;
             $data['msg_type'] = $msg_type;
+            $data['detail_id'] = $info['detail_id'];
             $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
             $m_account_sms_log->addData($data);
             return true;

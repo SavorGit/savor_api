@@ -228,64 +228,74 @@ $img_arr[$im]['repair_img'];
                 $where['a.flag'] = 0;
                 $task_info = $m_option_task->getInfo($fields,$where);
                 //增加发送酒楼联系人短信
-                $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
-                if(!empty($task_info['hotel_linkman_tel']) && check_mobile($task_info['hotel_linkman_tel'])){
-                    $info = array();
-                    $info['tel'] = $task_info['hotel_linkman_tel'];
-                    
-                    //判断今日是否给该账号发过维修短信  如果发过就不发了
-                    
-                    $maps = array();
-                    $maps['tel'] = $info['tel'];
-                    $maps['type'] = 6;
-                    $maps['msg_type'] = 2;
-                    $now_start_date = date('Y-m-d 00:00:00');
-                    
-                    $maps['create_time'] = array('egt',$now_start_date);
-                    
-                    $is_send_result = $m_account_sms_log->getOne($maps);
-                    if(empty($is_send_result)){
+                $m_task_repaire = new \Common\Model\OptionTaskRepairModel();
+                $mapd = array();
+                $mapd['task_id'] = $task_id;
+                $mapd['state']   = array('neq',1);
+                
+                $have_not_resove = $m_task_repaire->getRepairBoxInfo('id',$mapd);
+                if(empty($have_not_resove)){
+                
+                    $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
+                    if(!empty($task_info['hotel_linkman_tel']) && check_mobile($task_info['hotel_linkman_tel'])){
+                        $info = array();
+                        $info['tel'] = $task_info['hotel_linkman_tel'];
+                        $info['detail_id'] = $task_id;
+                        //判断今日是否给该账号发过维修短信  如果发过就不发了
                         
-                        //获取该酒楼合作维护人的用户手机号
-                        $m_hotel = new \Common\Model\HotelModel();
-                        $weihu_info = $m_hotel->getPlaMac('d.mobile,c.remark', $task_info['hotel_id']);
+                        $maps = array();
+                        $maps['tel'] = $info['tel'];
+                        $maps['type'] = 6;
+                        $maps['msg_type'] = 2;
+                        $now_start_date = date('Y-m-d 00:00:00');
                         
-                        if(empty($weihu_info['mobile'])){//如果酒楼维护人的手机号为空取该区域经理的联系方式
-                            $maps = array();
-                            $m_opuser_role = new \Common\Model\OpuserRoleModel();
-                            $sql ="select a.mobile,b.remark from savor_opuser_role a
-                               left join savor_sysuser b on a.user_id = b.id
-                               where find_in_set(".$task_info['task_area'].",a.manage_city)
-                               and a.is_leader=1 and a.state=1 and b.status=1 limit 1";
-                            $leader_info = $m_opuser_role->query($sql);
-                            if(!empty($leader_info) && !empty($leader_info[0]['mobile'])){
-                                $param = $leader_info[0]['remark'] . $leader_info[0]['mobile'];
+                        $maps['create_time'] = array('egt',$now_start_date);
+                        
+                        $is_send_result = $m_account_sms_log->getOne($maps);
+                        if(empty($is_send_result)){
+                            
+                            //获取该酒楼合作维护人的用户手机号
+                            $m_hotel = new \Common\Model\HotelModel();
+                            $weihu_info = $m_hotel->getPlaMac('d.mobile,c.remark', $task_info['hotel_id']);
+                            
+                            if(empty($weihu_info['mobile'])){//如果酒楼维护人的手机号为空取该区域经理的联系方式
+                                $maps = array();
+                                $m_opuser_role = new \Common\Model\OpuserRoleModel();
+                                $sql ="select a.mobile,b.remark from savor_opuser_role a
+                                   left join savor_sysuser b on a.user_id = b.id
+                                   where find_in_set(".$task_info['task_area'].",a.manage_city)
+                                   and a.is_leader=1 and a.state=1 and b.status=1 limit 1";
+                                $leader_info = $m_opuser_role->query($sql);
+                                if(!empty($leader_info) && !empty($leader_info[0]['mobile'])){
+                                    $param = $leader_info[0]['remark'] . $leader_info[0]['mobile'];
+                                    $this->sendToUcPa($info, $param,6);
+                                }
+                            }else {
+                                $param = $weihu_info['remark'].$weihu_info['mobile'];
                                 $this->sendToUcPa($info, $param,6);
                             }
-                        }else {
-                            $param = $weihu_info['remark'].$weihu_info['mobile'];
+                        }
+                        
+                        
+                    }else if(!empty($task_info['pubmobile']) && check_mobile($task_info['pubmobile'])){
+                        $info = array();
+                        $info['tel'] = $task_info['pubmobile'];
+                        $info['detail_id']= $task_id;
+                        $param = $task_info['remark'].$task_info['mobile'];
+                        
+                        //判断今日是否给该账号发过维修短信  如果发过就不发了
+                        
+                        $maps = array();
+                        $maps['tel'] = $info['tel'];
+                        $maps['type'] = 6;
+                        $maps['msg_type'] = 2;
+                        $now_start_date = date('Y-m-d 00:00:00');
+                        
+                        $maps['create_time'] = array('egt',$now_start_date);
+                        $is_send_result = $m_account_sms_log->getOne($maps);
+                        if(empty($is_send_result)){
                             $this->sendToUcPa($info, $param,6);
                         }
-                    }
-                    
-                    
-                }else if(!empty($task_info['pubmobile']) && check_mobile($task_info['pubmobile'])){
-                    $info = array();
-                    $info['tel'] = $task_info['pubmobile'];
-                    $param = $task_info['remark'].$task_info['mobile'];
-                    
-                    //判断今日是否给该账号发过维修短信  如果发过就不发了
-                    
-                    $maps = array();
-                    $maps['tel'] = $info['tel'];
-                    $maps['type'] = 6;
-                    $maps['msg_type'] = 2;
-                    $now_start_date = date('Y-m-d 00:00:00');
-                    
-                    $maps['create_time'] = array('egt',$now_start_date);
-                    $is_send_result = $m_account_sms_log->getOne($maps);
-                    if(empty($is_send_result)){
-                        $this->sendToUcPa($info, $param,6);
                     }
                 }
                 //发送酒楼联系人短信结束

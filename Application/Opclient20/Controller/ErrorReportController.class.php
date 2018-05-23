@@ -113,7 +113,7 @@ class ErrorReportController extends BaseController{
         $fileds = 'a.*';
         $order = ' a.small_plat_status asc, a.pla_lost_hour desc,
 
-        a.not_box_percent desc,a.box_lost_hour desc,a.id desc';
+        a.not_normal_box_num desc,a.box_lost_hour desc,a.id desc';
         $start  = ($pageNum-1)*$pageSize;
         $hotelUnModel = new \Common\Model\HotelUnusualModel();
         

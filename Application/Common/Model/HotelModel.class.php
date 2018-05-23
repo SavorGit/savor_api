@@ -24,6 +24,7 @@ class HotelModel extends Model
             ->field($field)
             ->join(' savor_hotel_ext b on a.id=b.hotel_id','left')
             ->join('savor_sysuser c on c.id=b.maintainer_id','left')
+            ->join('savor_opuser_role d on c.id=d.user_id','left')
             ->where("a.id='".$id."'")->find();
     }
 

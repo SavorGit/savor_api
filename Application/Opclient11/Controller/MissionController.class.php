@@ -221,7 +221,7 @@ $img_arr[$im]['repair_img'];
                 
                 $task_id = $this->params['task_id'];
                 $fields = 'a.task_area,a.state,a.appoint_user_id,a.publish_user_id,a.task_type,
-                           hotel.name hotel_name,a.hotel_linkman_tel,exeuser.remark,role.mobile,
+                           hotel.name hotel_name,a.hotel_linkman_tel,a.hotel_id,exeuser.remark,role.mobile,
                            user.remark as pub_user_name,puser.mobile pubmobile';
                 $where = array();
                 $where['a.id'] = $task_id;
@@ -245,7 +245,12 @@ $img_arr[$im]['repair_img'];
                     
                     $is_send_result = $m_account_sms_log->getOne($maps);
                     if(empty($is_send_result)){
-                        if(empty($task_info['mobile'])){//如果酒楼维护人的手机号为空取该区域经理的联系方式
+                        
+                        //获取该酒楼合作维护人的用户手机号
+                        $m_hotel = new \Common\Model\HotelModel();
+                        $weihu_info = $m_hotel->getPlaMac('d.mobile,c.remark', $task_info['hotel_id']);
+                        
+                        if(empty($weihu_info['mobile'])){//如果酒楼维护人的手机号为空取该区域经理的联系方式
                             $maps = array();
                             $m_opuser_role = new \Common\Model\OpuserRoleModel();
                             $sql ="select a.mobile,b.remark from savor_opuser_role a
@@ -258,7 +263,7 @@ $img_arr[$im]['repair_img'];
                                 $this->sendToUcPa($info, $param,6);
                             }
                         }else {
-                            $param = $task_info['remark'].$task_info['mobile'];
+                            $param = $weihu_info['remark'].$weihu_info['mobile'];
                             $this->sendToUcPa($info, $param,6);
                         }
                     }

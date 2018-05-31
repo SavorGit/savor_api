@@ -72,44 +72,62 @@ class ProgramController extends CommonController{
             $this->to_back(16203);   
         }
         $m_box = new \Common\Model\BoxModel();
-        $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
-        
+        $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常机顶盒
         if(empty($list)){//该酒楼下没有正常的机顶盒
             $this->to_back(16204);
         }
-        $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
-        $ads = new \Common\Model\AdsModel();
-        //获取最新节目单
-        $menu_info = $m_new_menu_hotel->getLatestMenuid($hotelid);   //获取最新的一期节目单
-        if(empty($menu_info)){//该酒楼未设置节目单
-            $this->to_back(16205);
-        }
-        $menu_id = $menu_info['menu_id'];
-        $menu_num= $menu_info['menu_num'];
-        $m_program_menu_item = new \Common\Model\ProgramMenuItemModel(); 
-        $menu_item_arr = $m_program_menu_item->getMenuInfo($menu_id); //获取节目单的节目列表
-        $menu_item_arr = $this->changeadvList($menu_item_arr);
-        
-        $adv_item_arr = $m_program_menu_item->getMenuAds($menu_id);
-        foreach($adv_item_arr as $key=>$v){
-            if($v['type']=='adv'){
-                $adv_item_arr[$key]['location_id'] = $v['order'];
+        $redis = new SavorRedis();
+        $redis->select(12);
+        $cache_key = C('PROGRAM_PRO_CACHE_PRE').$hotelid;
+        $menu_cache_info = $redis->get($cache_key);
+        $menu_cache_info = json_decode($menu_cache_info,true);
+        if(empty($menu_cache_info['media_list'])){//如果缓存中没有 ，查询该酒楼对应的节目单
+            $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
+            $ads = new \Common\Model\AdsModel();
+            //获取最新节目单
+            $menu_info = $m_new_menu_hotel->getLatestMenuid($hotelid);   //获取最新的一期节目单
+            if(empty($menu_info)){//该酒楼未设置节目单
+                $this->to_back(16205);
             }
+            $menu_id = $menu_info['menu_id'];
+            $menu_num= $menu_info['menu_num'];
+            $pub_time = $menu_info['pub_time'];
+            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+            $menu_item_arr = $m_program_menu_item->getMenuInfo($menu_id); //获取节目单的节目列表
+            $menu_item_arr = $this->changeadvList($menu_item_arr);
             
+            $adv_item_arr = $m_program_menu_item->getMenuAds($menu_id);
+            foreach($adv_item_arr as $key=>$v){
+                if($v['type']=='adv'){
+                    $adv_item_arr[$key]['location_id'] = $v['order'];
+                }
+            
+            }
+            $menu_arr =  array_merge($menu_item_arr,$adv_item_arr);
+            foreach($menu_arr as $key=>$v){
+                $order_arr[$key] = $v['order'];
+            }
+            $menu_list = $this->array_sort($menu_arr,'order','asc');
+            
+            $cache_value = array();
+            $cache_value['menu_num'] = $menu_num;
+            $cache_value['menu_id']  = $menu_id;
+            $cache_value['pub_time'] = $pub_time;
+            $cache_value['media_list']= $menu_list;
+            $redis->set($cache_key, json_encode($cache_value));
+            
+        }else {//如果缓存中有该酒楼的节目单信息
+            $menu_num  = $menu_cache_info['menu_num'];
+            $pub_time  = $menu_cache_info['pub_time'];
+            $menu_list = $menu_cache_info['media_list'];
         }
-        $menu_arr =  array_merge($menu_item_arr,$adv_item_arr);
-        foreach($menu_arr as $key=>$v){
-            $order_arr[$key] = $v['order'];
-        }
-        $menu_list = $this->array_sort($menu_arr,'order','asc');
-        
         $data = array();
         foreach($list as $key=>$v){
-            $data[$key]['box_id']    = $v['boxId'];
+            $data[$key]['box_id']     = $v['boxId'];
             $data[$key]['room_id']    = $v['room_id']; //机顶盒id
-            $data[$key]['box_mac']   = $v['mac'];
-            $data[$key]['pub_time'] = $menu_info['pub_time'];
-            $data[$key]['menu_num'] = $menu_num;
+            $data[$key]['box_mac']    = $v['mac'];
+            $data[$key]['pub_time']   = $pub_time;
+            $data[$key]['menu_num']   = $menu_num;
             $data[$key]['media_list'] = $menu_list; 
         }
         $this->to_back($data);
@@ -136,7 +154,7 @@ class ProgramController extends CommonController{
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();
-         $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
+         $list = $m_box->getBoxListByHotelid('a.id boxId,a.mac,a.room_id', $hotelid);   //获取该酒楼下正常机顶盒
          
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
@@ -144,34 +162,57 @@ class ProgramController extends CommonController{
          
          $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
          //获取最新节目单
+         
+         
          $menu_info = $m_new_menu_hotel->getLatestMenuid($hotelid);   //获取最新的一期节目单
          if(empty($menu_info)){//该酒楼未设置节目单
              $this->to_back(16205);
-         }
-         
+         }   
          $menu_id = $menu_info['menu_id'];
          $menu_num= $menu_info['menu_num'];
          
-         $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-         $adv_arr = $m_program_menu_item->getadvInfo($hotelid, $menu_id);
-
-         $m_ads= new \Common\Model\AdsModel();
-         $redis_arr = $m_ads->getWhere(array('hotel_id'=>$hotelid,'type'=>3),'max(update_time) as max_update_time');
+         $redis = SavorRedis::getInstance();
+         $redis->select(12);
          
-         /* foreach($adv_arr as $key=>$v){
-             $redis_arr[] = $v['update_time'];
-             unset($adv_arr[$key]['update_time']);
-         } */
+         $adv_cache_key = C('PROGRAM_ADV_CACHE_PRE').$hotelid;
+         $adv_arr = $redis->get($adv_cache_key);
+         $redis_arr = json_decode($adv_arr,true);
          
-         $data = array();
-         $adv_arr = $this->changeadvList($adv_arr,2);
-         
-         if(empty($redis_arr)){
-             $adv_num = date('Ymdhis');
+         if(empty($redis_arr['adv_arr'])){
+             $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+             $adv_arr = $m_program_menu_item->getadvInfo($hotelid, $menu_id);
+             $m_ads= new \Common\Model\AdsModel();
+             $redis_arr = $m_ads->getWhere(array('hotel_id'=>$hotelid,'type'=>3),'max(update_time) as max_update_time');
+              
+             /* foreach($adv_arr as $key=>$v){
+              $redis_arr[] = $v['update_time'];
+              unset($adv_arr[$key]['update_time']);
+             } */
+              
+             $data = array();
+             $adv_arr = $this->changeadvList($adv_arr,2);
+              
+             if(empty($redis_arr)){
+                 $adv_num = date('Ymdhis');
+             }else {
+                 $adv_num = $redis_arr[0]['max_update_time'];
+                 $adv_num = date('YmdHis',strtotime($adv_num));
+             }
+             $redis_arr = array();
+             $redis_arr['adv_num'] = $adv_num;
+             $redis_arr['menu_num']= $menu_num;
+             $redis_arr['adv_arr'] = $adv_arr;
+             
+             $redis->set($adv_cache_key, json_encode($redis_arr));
+             
          }else {
-             $adv_num = $redis_arr[0]['max_update_time'];
-             $adv_num = date('YmdHis',strtotime($adv_num));
+             
+             $adv_arr   = $redis_arr['adv_arr'];
+             $adv_num   = $redis_arr['adv_num'];
+             $menu_num  = $redis_arr['menu_num'];
          }
+         
+         
          foreach($list as $key=>$v){
              $data[$key]['box_id']    = $v['boxId'];              //机顶盒id
              $data[$key]['room_id']    = $v['room_id'];
@@ -207,7 +248,7 @@ class ProgramController extends CommonController{
              $this->to_back(16203);
          }
          $m_box = new \Common\Model\BoxModel();
-         $list = $m_box->getBoxListByHotelid('a.id box_id,a.mac as box_mac,a.room_id', $hotelid);   //获取该酒楼下正常包间下正常机顶盒
+         $list = $m_box->getBoxListByHotelid('a.id box_id,a.mac as box_mac,a.room_id', $hotelid);   //获取该酒楼下正常机顶盒
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
          }
@@ -220,68 +261,116 @@ class ProgramController extends CommonController{
          $now_date = date('Y-m-d H:i:s');
          $data =  array();
          $v_keys = 0;
+         
+         $program_ads_key = C('PROGRAM_ADS_CACHE_PRE');
          foreach($list as $key=>$v){
+             $cache_key = '';
+             $cache_key = $program_ads_key.$v['box_id'];
+             $cache_value = $redis->get($cache_key);
              $ads_num_arr = array();
              $ads_time_arr = array();
-             for($i=1;$i<=$max_adv_location;$i++){
-                 $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
-                 $adv_arr = $this->changeadvList($adv_arr);
-                 
-                 if(!empty($adv_arr)){
-                     $flag =0;
-                     foreach($adv_arr as $ak=>$av){
-                         if($av['start_date']>$now_date){
-                             $flag ++;
+             
+             if(empty($cache_value)){
+                 for($i=1;$i<=$max_adv_location;$i++){
+                     $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
+                     $adv_arr = $this->changeadvList($adv_arr);
+                      
+                     if(!empty($adv_arr)){
+                         $flag =0;
+                         foreach($adv_arr as $ak=>$av){
+                             if($av['start_date']>$now_date){
+                                 $flag ++;
+                             }
+                             if($flag==2){
+                                 unset($adv_arr[$ak]);
+                                 break;
+                             }
+                              
+                             $ads_arr['id']          = $av['id'];
+                             $ads_arr['name']        = $av['name'];
+                             $ads_arr['md5']         = $av['md5'];
+                             $ads_arr['md5_type']    = $av['md5_type'];
+                             $ads_arr['chinese_name']= $av['chinese_name'];
+                             $ads_arr['type']        = $av['type'];
+                             $ads_arr['oss_path']    = $av['oss_path'];
+                             $ads_arr['duration']    = $av['duration'];
+                             $ads_arr['suffix']      = $av['suffix'];
+                             $ads_arr['start_date']  = $av['start_date'];
+                             $ads_arr['end_date']    = $av['end_date'];
+                             $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
+                             $ads_arr['create_time'] = $av['create_time'];
+                             $ads_arr['location_id'] = $av['location_id'];
+                              
+                             $ads_num_arr[] = $ads_arr;
+                             $ads_time_arr[] = $av['create_time'];
+                             unset($av['pub_ads_id']);
+                             unset($av['create_time']);
+                             $data[$v_keys]['media_list'][] = $av;
+                              
                          }
-                         if($flag==2){
-                             unset($adv_arr[$ak]);
-                             break;
-                         }
-                         
-                         $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
-                         $ads_arr['create_time'] = $av['create_time'];
-                         $ads_arr['location_id'] = $av['location_id'];
-                         $ads_num_arr[] = $ads_arr;
-                         $ads_time_arr[] = $av['create_time'];
-                         
-                         unset($av['pub_ads_id']);
-                         unset($av['create_time']);
-                         $data[$v_keys]['media_list'][] = $av;
-                         
-                     }
-                 } 
-             }
-             if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
-                 
-                 $ads_time_str = max($ads_time_arr);
-                 
-                 $data[$v_keys]['box_id'] = $v['box_id'];
-                 $data[$v_keys]['box_mac'] = $v['box_mac'];
-                 $data[$v_keys]['room_id'] = $v['room_id'];
-                 //$ads_num = md5(json_encode($ads_num_arr));
-                 $box_ads_num = date('YmdHis',strtotime($ads_time_str));
-                 $data[$v_keys]['menu_num'] = $box_ads_num;
-                 
-                 $redis_arr['menu_num'] = $box_ads_num;
-                 $redis_arr['ads_list'] = $ads_num_arr;
-                 $program_ads_cache_pre = C('PROGRAM_ADS_CACHE_PRE');
-                 $cache_key = $program_ads_cache_pre.$v['box_id'];
-                 $redis_value = $redis->get($cache_key);
-                 if(empty($redis_value)){
-                    $redis_value = json_encode($redis_arr);
-                    $redis->set($cache_key, $redis_value);
-                 }else {
-                     $new_redis_str = md5(json_encode($redis_arr));
-                     $old_redis_str = md5($redis_value);
-                     if($new_redis_str!= $old_redis_str){
-                         $redis_value = json_encode($redis_arr);
-                         $redis->set($cache_key, $redis_value);
                      }
                  }
-                 $v_keys ++;
-             }else {
-                 unset($data[$v_keys]);
-             } 
+                 if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
+                      
+                     $ads_time_str = max($ads_time_arr);
+                      
+                     $data[$v_keys]['box_id'] = $v['box_id'];
+                     $data[$v_keys]['box_mac'] = $v['box_mac'];
+                     $data[$v_keys]['room_id'] = $v['room_id'];
+                     //$ads_num = md5(json_encode($ads_num_arr));
+                     $box_ads_num = date('YmdHis',strtotime($ads_time_str));
+                     $data[$v_keys]['menu_num'] = $box_ads_num;
+                      
+                     $redis_arr['menu_num'] = $box_ads_num;
+                     $redis_arr['ads_list'] = $ads_num_arr;
+                     $program_ads_cache_pre = C('PROGRAM_ADS_CACHE_PRE');
+                     $cache_key = $program_ads_cache_pre.$v['box_id'];
+                     $redis_value = $redis->get($cache_key);
+                     if(empty($redis_value)){
+                         $redis_value = json_encode($redis_arr);
+                         $redis->set($cache_key, $redis_value);
+                     }else {
+                         $new_redis_str = md5(json_encode($redis_arr));
+                         $old_redis_str = md5($redis_value);
+                         if($new_redis_str!= $old_redis_str){
+                             $redis_value = json_encode($redis_arr);
+                             $redis->set($cache_key, $redis_value);
+                         }
+                     }
+                     $v_keys ++;
+                 }else {
+                     unset($data[$v_keys]);
+                 }
+             }else {//如果缓存有广告数据
+                 $media_list = $media_arr = array();
+                 $cache_value = json_decode($cache_value,true); 
+                 $media_arr = $cache_value['ads_list'];  
+                 
+                 foreach($media_arr as $kk=>$vv){
+                     $media_list[$kk]['id']          = $vv['id'];
+                     $media_list[$kk]['name']        = $vv['name'];
+                     $media_list[$kk]['md5']         = $vv['md5'];
+                     $media_list[$kk]['md5_type']    = $vv['md5_type'];
+                     $media_list[$kk]['chinese_name']= $vv['chinese_name'];
+                     $media_list[$kk]['type']        = $vv['type'];
+                     $media_list[$kk]['oss_path']    = $vv['oss_path'];
+                     $media_list[$kk]['duration']    = $vv['duration'];
+                     $media_list[$kk]['suffix']      = $vv['suffix'];
+                     $media_list[$kk]['start_date']  = $vv['start_date'];
+                     $media_list[$kk]['end_date']    = $vv['end_date'];
+                     $media_list[$kk]['location_id'] = $vv['location_id'];
+                 }
+                 
+                 $data[$v_keys]['media_list'] = $media_list;
+                 $data[$v_keys]['box_id']     = $v['box_id'];
+                 $data[$v_keys]['box_mac']    = $v['box_mac'];
+                 $data[$v_keys]['room_id']    = $v['room_id'];
+                 $data[$v_keys]['menu_num']   = $cache_value['menu_num'];
+                 
+                 $v_keys++;
+             }
+             
+             
          }
          $this->to_back($data);
      }

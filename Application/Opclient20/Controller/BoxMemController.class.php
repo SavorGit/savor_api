@@ -59,7 +59,7 @@ class BoxMemController extends CommonController{
                 $where = array();
                 $where['box_id'] = $box_id;
                 $data = array();
-                $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."'";
+                $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
                 $ret = $m_sdk_error->execute($sql);
             }else {
                 $ret = false;

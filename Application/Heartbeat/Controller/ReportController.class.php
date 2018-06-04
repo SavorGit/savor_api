@@ -51,6 +51,9 @@ class ReportController extends CommonController{
         $data['adv_period'] = I('get.adv_period','','trim');  //当前宣传片期号
         $data['pro_download_period'] = I('get.pro_download_period','','trim'); //下载节目期号
         $data['ads_download_period'] = I('get.ads_download_period','','trim');  //下载广告期号
+        
+        //20180531新增
+        $data['net_speed']  = I('get.net_speed','','trim');   //机顶盒下载速度
                 
         if(empty($data['mac'])){
             $this->to_back(10004);
@@ -95,6 +98,7 @@ class ReportController extends CommonController{
         $ret['adv_period'] = $data['adv_period'];
         $ret['pro_download_period'] = $data['pro_download_period'];
         $ret['ads_download_period'] = $data['ads_download_period'];
+        $ret['net_speed']  = $data['net_speed'];
         $this->to_back($ret);
     }
     /**
@@ -302,6 +306,7 @@ class ReportController extends CommonController{
                         $map['adv_period']  = $ret_arr['adv_period'];
                         $map['pro_download_period'] = $ret_arr['pro_download_period'];
                         $map['ads_download_period'] = $ret_arr['ads_download_period'];
+                        $map['net_speed']           = $ret_arr['net_speed'];
                         $ret = $m_heart_log->add($map);
                     }else {
                         $last_heart_time = date('Y-m-d H:i:s',strtotime($ret_arr['date']));
@@ -329,6 +334,7 @@ class ReportController extends CommonController{
                             $map['adv_period']  = $ret_arr['adv_period'];
                             $map['pro_download_period'] = $ret_arr['pro_download_period'];
                             $map['ads_download_period'] = $ret_arr['ads_download_period'];
+                            $map['net_speed']           = $ret_arr['net_speed'];
                             $m_heart_log->where(array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid))->save($map);
                                     
                         }

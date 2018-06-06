@@ -34,7 +34,7 @@ return array(
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
-	                                 'Dinnerapp2','Box','Opclient20'), //模块配置
+	                                 'Dinnerapp2','Box','Opclient20','Forscreen'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -219,6 +219,11 @@ return array(
     'PROGRAM_ADS_CACHE_PRE'=>'program_ads_',
     'PROGRAM_PRO_CACHE_PRE'=>'program_pro_',
     'PROGRAM_ADV_CACHE_PRE'=>'program_adv_',
+    'SMALL_ROOM_LIST'     =>'small_room_list_',
+    'SMALL_HOTEL_INFO'    =>'small_hotel_info_',
+    'SYSTEM_CONFIG'       =>'system_config',
+    'SMALL_BOX_LIST'      =>'small_box_list_',
+    'SMALL_TV_LIST'       =>'small_tv_list_',  
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

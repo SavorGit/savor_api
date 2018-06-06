@@ -13,7 +13,7 @@ use \Common\Controller\CommonController as CommonController;
 class IndexController extends CommonController{ 
     private $production_mode ;
     /**
-     * 构造函数
+     * 构造函数 
      */
     function _init_() {
         switch(ACTION_NAME) {

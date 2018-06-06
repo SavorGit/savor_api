@@ -218,4 +218,6 @@ return array(
     'poly_ads_empty'=>'聚屏广告列表为空',
     'poly_hotel_not_normal'=>'酒楼不存在或者为非正常酒楼',
     'poly_box_empty'=>'该酒楼下无聚屏广告的盒子',
+    'for_screen_failed'=>'投屏失败',
+    'stop_screen_failed'=>'结束投屏失败',
 );

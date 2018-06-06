@@ -221,5 +221,9 @@ return array(
 	    '90001'=>'poly_ads_empty',
 	    '90002'=>'poly_hotel_not_normal',
 	    '90003'=>'poly_box_empty',
+	    
+	    //4G投屏
+	    '91001'=>'for_screen_failed',
+	    '91002'=>'stop_screen_failed',
 	),
 );

@@ -297,13 +297,13 @@ class HotelController extends BaseController {
 
     public function getHotelVersionById(){
 
-
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $hotel_id = intval( $this->params['hotel_id'] );
         $m_heart_log = new \Common\Model\HeartLogModel();
         $this->disposeTips($hotel_id);
         //获取版本信息
         $now = time();
-        $start_time = strtotime('-72 hours');
+        $start_time = strtotime('-'.$heart_loss_hours.' hours');
         $version_info = $this->getNewVerson($hotel_id, $now, $start_time);
         $data['list']['version'] = $version_info;
 
@@ -453,7 +453,7 @@ class HotelController extends BaseController {
         }
         $data['list']['box_info'] = $box_list;
 
-        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过72个小时'.$unusual_num.'个,黑名单'.$bla_a.'个)';
+        $data['list']['banwei'] = '版位信息(共'.$box_total_num.'个,'.'失联超过'.$heart_loss_hours.'个小时'.$unusual_num.'个,黑名单'.$bla_a.'个)';
         $this->to_back($data);
     }
 }

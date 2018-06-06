@@ -47,6 +47,7 @@ class PubtaskController extends BaseController{
     }
 
     public function getMytaskHotel() {
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         //只显示心跳的
         $h_type = C('HEART_HOTEL_BOX_TYPE');
         $h_type = array_keys($h_type);
@@ -60,7 +61,7 @@ class PubtaskController extends BaseController{
         if($role_info['role_id'] !=1){ //不是对应的发布者角色
             $this->to_back(30058);
         }
-        $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-'.$heart_loss_hours.' hours'));
         $m_hotel = new \Common\Model\HotelModel();
         $field = ' a.id hid, a.state hstate';
         $map['b.maintainer_id'] = $publish_user_id;
@@ -102,7 +103,7 @@ class PubtaskController extends BaseController{
                     if(empty($rets)){
                         //判断异常机顶盒
                         if(empty($black_res)){
-                            //不在72小时，有可能在黑名单，因为存的是5天不正常
+                            //不在48小时，有可能在黑名单，因为存的是5天不正常
                             $not_normal_box_num +=1;
                         }else{
                             $black_box_num +=1;
@@ -136,7 +137,7 @@ class PubtaskController extends BaseController{
         $data['list']['heart']['box_normal_num'] = $normal_box_num;
         $data['list']['heart']['box_not_normal_num'] = $not_normal_box_num;
         $data['list']['heart']['black_box_num'] = $black_box_num;
-        $data['list']['heart']['remark'] = "在线为心跳72小时以内;异常指大于72小时;黑名单为连续三天失联的版位";
+        $data['list']['heart']['remark'] = "在线为心跳".$heart_loss_hours."小时以内;异常指大于".$heart_loss_hours."小时;黑名单为连续三天失联的版位";
 
         //获取第二块牌位信息
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;

@@ -16,7 +16,7 @@ class IndexController extends BaseController{
         parent::_init_();
     }
     public function index(){
-        
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $where = $data =  array();
         //当前在线酒楼 10分钟之内有心跳
         $m_heart_log = new \Common\Model\HeartLogModel();
@@ -28,7 +28,7 @@ class IndexController extends BaseController{
         
         //当前离线酒楼 超过10分钟 
         $where = '1=1';
-        $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-'.$heart_loss_hours.' hours'));
         //$where .=" and last_heart_time>='".$start_time."'";
         $where .=" and last_heart_time<='".$end_time."'";
         $where .=" and type=1";
@@ -46,7 +46,7 @@ class IndexController extends BaseController{
         $not_online_hotel_2_num = count($not_online_hotel_2);
         
         
-        $data['list'][] = '当前离线酒楼(离线超过10分钟)'.$not_online_hotel_all_num.' (其中'.$not_online_hotel_1_num.'个酒楼离线72小时以内，'.$not_online_hotel_2_num.'个酒楼离线大于72小时)';
+        $data['list'][] = '当前离线酒楼(离线超过10分钟)'.$not_online_hotel_all_num.' (其中'.$not_online_hotel_1_num.'个酒楼离线'.$heart_loss_hours.'小时以内，'.$not_online_hotel_2_num.'个酒楼离线大于'.$heart_loss_hours.'小时)';
         //酒楼总数
         $m_hotel = new \Common\Model\HotelModel();
         $where = '';
@@ -161,11 +161,11 @@ class IndexController extends BaseController{
         $data['list'][] = '异常机顶盒:'.$real_normal_box_num;
         $data['list'][] = '黑名单机顶盒:'.$black_box_num;
         $data['list'][] = '更新时间:'. date('Y-m-d H:i:s');
-        $data['remark'] = '注:异常为心跳失联超过72小时以上';
+        $data['remark'] = '注:异常为心跳失联超过'.$heart_loss_hours.'小时以上';
         $this->to_back($data);
     }
     public function testinfo(){
-    
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $where = $data =  array();
         //当前在线酒楼 10分钟之内有心跳
         $m_heart_log = new \Common\Model\HeartLogModel();
@@ -177,7 +177,7 @@ class IndexController extends BaseController{
     
         //当前离线酒楼 超过10分钟
         $where = '1=1';
-        $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-'.$heart_loss_hours.' hours'));
         //$where .=" and last_heart_time>='".$start_time."'";
         $where .=" and last_heart_time<='".$end_time."'";
         $where .=" and type=1";
@@ -195,7 +195,7 @@ class IndexController extends BaseController{
         $not_online_hotel_2_num = count($not_online_hotel_2);
     
     
-        $data['list'][] = '当前离线酒楼(离线超过10分钟)'.$not_online_hotel_all_num.' (其中'.$not_online_hotel_1_num.'个酒楼离线72小时以内，'.$not_online_hotel_2_num.'个酒楼离线大于72小时)';
+        $data['list'][] = '当前离线酒楼(离线超过10分钟)'.$not_online_hotel_all_num.' (其中'.$not_online_hotel_1_num.'个酒楼离线'.$heart_loss_hours.'小时以内，'.$not_online_hotel_2_num.'个酒楼离线大于'.$heart_loss_hours.'小时)';
         //酒楼总数
         $m_hotel = new \Common\Model\HotelModel();
         $where = '';
@@ -311,7 +311,7 @@ class IndexController extends BaseController{
         $data['list'][] = '异常机顶盒:'. ($not_normal_box_num - $black_box_num);            //异常机顶盒
         $data['list'][] = '黑名单机顶盒:'.$black_box_num;
         $data['list'][] = '更新时间:'. date('Y-m-d H:i:s');
-        $data['remark'] = '注:异常为心跳失联超过72小时以上';
+        $data['remark'] = '注:异常为心跳失联超过'.$heart_loss_hours.'小时以上';
         $this->to_back($data);
     }
 }

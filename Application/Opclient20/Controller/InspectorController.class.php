@@ -20,6 +20,7 @@ class InspectorController extends BaseController{
      * @desc 获取巡视酒楼
      */
     public function getMyInspect(){
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $pageNum= $this->params['pageNum'] ? $this->params['pageNum'] :1;
         $publish_user_id = $this->params['user_id'];  //发布者用户id
@@ -31,7 +32,7 @@ class InspectorController extends BaseController{
         if($role_info['role_id'] !=6){ //不是对应的发布者角色
             $this->to_back(30058);
         }
-        $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-'.$heart_loss_hours.' hours'));
         $now = date("Y-m-d H:i:s");
         $now_time = strtotime($now);
         if ($role_info['hotel_id_str']) {

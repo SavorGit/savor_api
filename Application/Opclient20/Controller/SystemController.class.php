@@ -25,6 +25,7 @@ class SystemController extends BaseController{
      * @desc 系统状态页面
      */
     public function index(){
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $city_id = $this->params['city_id'];
         $where = $data =  array();
         //1.1当前在线酒楼 10分钟之内有心跳
@@ -42,7 +43,7 @@ class SystemController extends BaseController{
 
         //1.2当前离线酒楼 
         $where = '1=1';
-        $start_time = date('Y-m-d H:i:s',strtotime('-72 hours'));
+        $start_time = date('Y-m-d H:i:s',strtotime('-'.$heart_loss_hours.' hours'));
         //$where .=" and last_heart_time>='".$start_time."'";
         $where .=" and a.last_heart_time<='".$end_time."'";
         $where .=" and a.type=1  and a.hotel_id>0 and  b.state=1 and b.flag=0";
@@ -51,18 +52,18 @@ class SystemController extends BaseController{
         $not_online_hotel_all_num = count($not_online_hotel_all);
 
         $data['list']['heart']['hotel_not_onlie'] = $not_online_hotel_all_num;
-        //1.3当前离线酒楼  超过10分 但离线在72小时以内
+        //1.3当前离线酒楼  超过10分 但离线在48小时以内
         $where .=" and a.last_heart_time>='".$start_time."'";
         $not_online_hotel_1 = $m_heart_log->getHotelList('a.hotel_id',$where,'','','a.hotel_id');
         $not_online_hotel_1_num = count($not_online_hotel_1);
         
-        //1.4离线超过72小时
+        //1.4离线超过48小时
         $where = '';
         $where .="  a.last_heart_time<='".$start_time."' and a.type=1 and a.hotel_id>0 and b.state=1 and b.flag=0 ";
         if($city_id) $where .=" and b.area_id=".$city_id;
         $not_online_hotel_2 = $m_heart_log->getHotelList('a.hotel_id',$where,'','','a.hotel_id');
         $not_online_hotel_2_num = count($not_online_hotel_2);
-        $data['list']['heart']['hotel_10_72_not_onlie'] = "(离线小于72小时:$not_online_hotel_1_num   离线大于72小时:$not_online_hotel_2_num)";
+        $data['list']['heart']['hotel_10_72_not_onlie'] = "(离线小于".$heart_loss_hours."小时:$not_online_hotel_1_num   离线大于".$heart_loss_hours."小时:$not_online_hotel_2_num)";
         
         //2.1正常小平台
         $where ="";
@@ -134,7 +135,7 @@ class SystemController extends BaseController{
         //3.2异常机顶盒数量
         $data['list']['heart']['box_not_normal_num'] = $not_normal_box_num;
 
-        $data['list']['heart']['remark'] = "在线指10分钟以内;离线指大于十分钟;异常指大于72小时";
+        $data['list']['heart']['remark'] = "在线指10分钟以内;离线指大于十分钟;异常指大于".$heart_loss_hours."小时";
         
         //3.1酒楼总数
         $all_hotel_box_type_arr = C('HOTEL_BOX_TYPE');

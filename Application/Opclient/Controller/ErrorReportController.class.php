@@ -195,6 +195,7 @@ class ErrorReportController extends BaseController{
      * @desc 异常报告列表
      */
     public function getList(){
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $id = $this->params['id'];
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $m_hotel_error_report = new \Common\Model\HotelErrorReportModel();
@@ -218,7 +219,7 @@ class ErrorReportController extends BaseController{
             $report_time = intval(date('H',strtotime($v['create_time'])));
             $data['list'][$key]['id'] = $v['id'];
             $data['list'][$key]['info'] = '截止到'.$report_date.' '.$report_time.'点，共有'.$v['hotel_all_num'].'家酒楼('.$v['not_normal_hotel_num'].'家酒楼异常,'.
-                            $v['not_normal_smallplat_num'].'个小平台失联超过72小时,'.$v['not_normal_box_num'].'个机顶盒失联超过72小时)';
+                            $v['not_normal_smallplat_num'].'个小平台失联超过'.$heart_loss_hours.'小时,'.$v['not_normal_box_num'].'个机顶盒失联超过'.$heart_loss_hours.'小时)';
             $data['list'][$key]['date'] = $v['create_time'];
         }
         
@@ -239,6 +240,7 @@ class ErrorReportController extends BaseController{
      * 新的异常详情
      */
     public function getNewErrorDetail(){
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $id = $this->params['error_id'];    //异常报告主键id
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $pageNum= $this->params['pageNum'] ? $this->params['pageNum'] :1;
@@ -265,7 +267,7 @@ class ErrorReportController extends BaseController{
             $report_date = date('m-d',strtotime($info['create_time']));
             $report_time = intval(date('H',strtotime($info['create_time'])));
             $data['info'] = '截止到'.$report_date.' '.$report_time.'点，共有'.$info['hotel_all_num'].'家酒楼('.$info['not_normal_hotel_num'].'家酒楼异常,'.
-                $info['not_normal_smallplat_num'].'个小平台失联超过72小时,'.$info['not_normal_box_num'].'个机顶盒失联超过72小时)';
+                $info['not_normal_smallplat_num'].'个小平台失联超过'.$heart_loss_hours.'小时,'.$info['not_normal_box_num'].'个机顶盒失联超过'.$heart_loss_hours.'小时)';
             $data['date'] = $info['create_time'];
 
         }else {
@@ -329,6 +331,7 @@ class ErrorReportController extends BaseController{
      * @desc 异常详情
      */
     public function getErrorDetail(){
+        $heart_loss_hours = C('HEART_LOSS_HOURS');
         $id = $this->params['error_id'];    //异常报告主键id
         $pageSize = $this->params['pageSize'] ? $this->params['pageSize'] :15;
         $detail_id = $this->params['detail_id'];     //异常报告详情id
@@ -357,7 +360,7 @@ class ErrorReportController extends BaseController{
             $report_date = date('m-d',strtotime($info['create_time']));
             $report_time = intval(date('H',strtotime($info['create_time'])));
             $data['info'] = '截止到'.$report_date.' '.$report_time.'点，共有'.$info['hotel_all_num'].'家酒楼('.$info['not_normal_hotel_num'].'家酒楼异常,'.
-                            $info['not_normal_smallplat_num'].'个小平台失联超过72小时,'.$info['not_normal_box_num'].'个机顶盒失联超过72小时)';
+                            $info['not_normal_smallplat_num'].'个小平台失联超过'.$heart_loss_hours.'小时,'.$info['not_normal_box_num'].'个机顶盒失联超过'.$heart_loss_hours.'小时)';
             $data['date'] = $info['create_time'];
             
             

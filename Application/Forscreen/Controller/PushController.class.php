@@ -38,7 +38,7 @@ class PushController extends CommonController{
         $obj = new UmengNotice();
         $m_box = new \Common\Model\BoxModel();
         $m_push_log = new \Common\Model\PushLogModel();
-        while(1==1){
+        //while(1==1){
             $len = $redis->lsize($cache_key);
             if(!empty($len)){
                 $redis_value = $redis->lpop($cache_key);
@@ -56,7 +56,7 @@ class PushController extends CommonController{
                 
                 $data_arr = pathinfo($data['resource_url']);
                 $data_arr_1 = parse_url($data['resource_url']);
-                $data['resource_url'] = $data_arr_1['path'];
+                $data['resource_url'] = substr($data_arr_1['path'], 1);
                 $data['resource_name'] = $data_arr['basename'];
                 $extension = strtolower($data_arr['extension']);
                 if(in_array($extension, array('bmp','jpg','jpeg','png','gif'))){
@@ -98,7 +98,7 @@ class PushController extends CommonController{
                 $push_list['push_type']= 2;
                 $m_push_log->addInfo($push_list,1); 
             }    
-        }
+        //}
         
         $this->to_back(10000);
     }

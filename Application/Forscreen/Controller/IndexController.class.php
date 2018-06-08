@@ -33,7 +33,7 @@ class IndexController extends BaseController{
      */
     public function receiveStartInfo(){
         $data = array();
-        $data['box_mac']      = $this->params['box_mac'] ? $this->params['box_mac'] :'00226D2FB21D';
+        $data['box_mac']      = $this->params['box_mac'] ? $this->params['box_mac'] :'00226D2FB217';
         $data['resource_url'] = $this->params['resource_url'];
         
         $obj = new UmengNotice();
@@ -116,7 +116,7 @@ class IndexController extends BaseController{
      */
     public function receiveStopInfo(){
         $data = array();
-        $data['box_mac'] = $this->params['box_mac'] ? $this->params['box_mac'] :'00226D2FB21D';
+        $data['box_mac'] = $this->params['box_mac'] ? $this->params['box_mac'] :'00226D2FB217';
         //while(1==1){
         //$len = $redis->lsize($cache_key);
         //if(!empty($len)){//判断是否有要结束的投屏推送数据
@@ -184,5 +184,6 @@ class IndexController extends BaseController{
         }else {
             $this->to_back(10000);
         }  */
+        $this->to_back(10000);
     }
 }

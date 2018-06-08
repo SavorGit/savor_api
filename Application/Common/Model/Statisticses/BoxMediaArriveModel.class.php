@@ -11,7 +11,7 @@ class BoxMediaArriveModel extends Model{
 
 	protected $tablePrefix = 'statistics_';
 
-    protected $tableName='box_media_arrive_summary';
+    protected $tableName='box_media_arrive';
     
     public function getCount($where){
         $nums = $this->where($where)->count();

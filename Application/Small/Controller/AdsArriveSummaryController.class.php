@@ -5,8 +5,8 @@
  * @author zhang.yingtao
  */
 namespace Small\Controller;
+
 use \Common\Controller\CommonController as CommonController;
-use Common\Lib\SavorRedis;
 
 class AdsArriveSummaryController extends CommonController{
     /**
@@ -16,17 +16,21 @@ class AdsArriveSummaryController extends CommonController{
         switch(ACTION_NAME) {
             case 'genHistorySummary':
                 $this->is_verify = 1;
-                $this->valid_fields=array('date'=>'1001');
+                $this->valid_fields=array('arrive_date'=>'1001');
                 break;
         }
+        parent::_init_();
     }
     /**
      * @desc 生成广告到达情况总结历史数据
      */
     public function genHistorySummary(){
         
+        
         $result = array();
-        $arrive_date = $this->params['date'];
+        //$hotelid = $this->params['hotelid'];    //酒楼id
+        $arrive_date = $this->params['arrive_date'];
+        
         //网络机顶盒数
         $hotel_box_type_arr = C('heart_hotel_box_type');
         $hotel_box_type_arr = array_keys($hotel_box_type_arr);
@@ -38,12 +42,14 @@ class AdsArriveSummaryController extends CommonController{
         }
         $m_box = new \Common\Model\BoxModel();
         $where = array();
-        $where['c.state'] = 1;
-        $where['c.flag']  = 0;
+        $where['d.state'] = 1;
+        $where['d.flag']  = 0;
         $where['a.state']   = 1;
         $where['a.flag']   = 0;
-        $where['c.hotel_box_type'] = array('in',$hotel_box_type_str);
-        $net_box_nums = $m_box->countBoxNums($where);
+        $where['d.hotel_box_type'] = array('in',$hotel_box_type_str);
+        $where['d.id'] = array('not in',array(7,53,791,747,508));
+        $tmp = $m_box->getBoxInfo('a.id', $where);
+        $net_box_nums = count($tmp);
         $result['net_box_nums'] = $net_box_nums;
         //在投广告数
         $m_pub_ads = new \Common\Model\PubAdsModel();
@@ -56,6 +62,7 @@ class AdsArriveSummaryController extends CommonController{
         $where['a.state']      = array('neq',2);
         //$where['a.id']         = array('not in','115,116,117,118,119,120,121,122');
         $online_ads_nums = $m_pub_ads->countNums($where);
+
         $result['online_ads_nums'] = $online_ads_nums;
         
         //北上广深数据统计
@@ -106,15 +113,15 @@ class AdsArriveSummaryController extends CommonController{
             $area_list[$key]['area_online_ads_nums'] = $area_online_ads_nums;
             //网络机顶盒数
             $where = array();
-            $where['hotel.state']   = 1;
-            $where['hotel.flag']    = 0;
-            $where['box.state']     = 1;
-            $where['box.flag']      = 0;
-            $where['hotel.area_id'] = $v['id'];
-            $where['hotel.id'] = array('not in',array(7,53,791,747,508));
-            $where['hotel.hotel_box_type'] = array('in',$hotel_box_type_str);
+            $where['c.state']   = 1;
+            $where['c.flag']    = 0;
+            $where['a.state']     = 1;
+            $where['a.flag']      = 0;
+            $where['c.area_id'] = $v['id'];
+            $where['c.id'] = array('not in',array(7,53,791,747,508));
+            $where['c.hotel_box_type'] = array('in',$hotel_box_type_str);
         
-            $area_net_box_nums = $m_box->countNums($where);
+            $area_net_box_nums = $m_box->countBoxNums($where);
             $all_net_box_nums +=$area_net_box_nums;
             $area_list[$key]['area_net_box_nums'] = $area_net_box_nums;
             //广告到达率
@@ -135,7 +142,24 @@ class AdsArriveSummaryController extends CommonController{
         $result['area_list'] = $area_list;
         $all_ads_arrive_rate = sprintf("%1.2f",$jisuan_arrive_box_num/$jisuan_all_area_pub_box_num*100);
         $result['all_ads_arrive_rate'] = $all_ads_arrive_rate;
-        print_r($result);
+        $data = array();
+        $data['summary_data'] = json_encode($result);
+        $data['date']         = $arrive_date;
+        $data['create_time']  = date('Y-m-d H:i:s');
+        
+        
+        $m_box_media_arrive_summary = new \Common\Model\Statisticses\BoxMediaArriveSummaryModel();
+        $info = $m_box_media_arrive_summary->getCount(array('date'=>$arrive_date));
+        if(empty($info)){
+            $m_box_media_arrive_summary->addInfo($data);
+        }else {
+            $data = array();
+            $data['summary_data'] = json_encode($result);
+            
+            $data['update_time']  = date('Y-m-d H:i:s');
+            $m_box_media_arrive_summary->updateInfo($data,array('date'=>$arrive_date));
+        }
+        $this->to_back(10000);
     }
     
 }

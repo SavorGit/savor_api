@@ -20,4 +20,10 @@ class PubAdsModel extends Model
 	    ->find();
 	    return $list;
 	}
+	public function countNums($where){
+	    $nums = $this->alias('a')
+	    ->where($where)
+	    ->count();
+	    return $nums;
+	}
 }

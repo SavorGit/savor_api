@@ -116,9 +116,9 @@ class BoxModel extends Model
     public function countBoxNums($where){
         $nums = $this->alias('a')
              
-             ->join('savor_room b on a.room_id= b.id')
-             ->join('savor_hotel c on b.hotel_id=c.id')
-             ->join('savor_hotel_ext d on d.hotel_id=c.id')
+             ->join('savor_room b on a.room_id= b.id','left')
+             ->join('savor_hotel c on b.hotel_id=c.id','left')
+             ->join('savor_hotel_ext d on d.hotel_id=c.id','left')
              ->where($where)
              ->count();
         return $nums;

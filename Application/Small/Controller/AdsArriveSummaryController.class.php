@@ -50,7 +50,7 @@ class AdsArriveSummaryController extends CommonController{
         $where['d.id'] = array('not in',array(7,53,791,747,508));
         $tmp = $m_box->getBoxInfo('a.id', $where);
         $net_box_nums = count($tmp);
-        $result['net_box_nums'] = $net_box_nums;
+        $result['all_net_box_nums'] = $net_box_nums;
         //在投广告数
         $m_pub_ads = new \Common\Model\PubAdsModel();
         $where = array();
@@ -60,6 +60,14 @@ class AdsArriveSummaryController extends CommonController{
         $where['a.start_date'] = array('lt',$yesterday_end_time);
         $where['a.end_date']   = array('gt',$yesterday_start_time);
         $where['a.state']      = array('neq',2);
+        
+        $ads_arr = $m_pub_ads->getPubAdsList('med.id as media_id', $where);
+        $ads_str = '';
+        foreach($ads_arr as $key=>$v){
+            $ads_str .= $space .$v['media_id'];
+        }
+        $space = '';
+        
         //$where['a.id']         = array('not in','115,116,117,118,119,120,121,122');
         $online_ads_nums = $m_pub_ads->countNums($where);
 
@@ -129,8 +137,8 @@ class AdsArriveSummaryController extends CommonController{
             $where = array();
             $where['area_id'] = $v['id'];
             $where['media_id'] = array('neq','-10000');
-            $where['report_date '] = array(array('egt',$arrive_date.' 00:00:00'),array('elt',$arrive_date.' 23:59:59'),'and');
-            
+            $where['report_date '] = array('ELT',$arrive_date.' 23:59:59');
+            $where['media_id'] = array('in',$ads_str);
             $arrive_box_num = $m_statistics_box_media_arrive->getCount($where);
              
             $jisuan_arrive_box_num +=$arrive_box_num;

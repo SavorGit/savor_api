@@ -26,4 +26,13 @@ class PubAdsModel extends Model
 	    ->count();
 	    return $nums;
 	}
+	public function getPubAdsList($field, $where,$order,$limit) {
+	    $list = $this->alias('a')
+	    ->where($where)
+	    ->join('savor_ads ads ON a.ads_id = ads.id')
+	    ->join('savor_media  med ON med.id = ads.media_id')
+	    ->field($field)
+	    ->select();
+	    return $list;
+	}
 }

@@ -129,8 +129,9 @@ class AdsArriveSummaryController extends CommonController{
             $where = array();
             $where['area_id'] = $v['id'];
             $where['media_id'] = array('neq','-10000');
+            $where['report_date '] = array(array('egt',$arrive_date.' 00:00:00'),array('elt',$arrive_date.' 23:59:59'),'and');
+            
             $arrive_box_num = $m_statistics_box_media_arrive->getCount($where);
-        
              
             $jisuan_arrive_box_num +=$arrive_box_num;
             $jisuan_all_area_pub_box_num += $all_area_pub_box_num;

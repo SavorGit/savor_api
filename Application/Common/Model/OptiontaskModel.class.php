@@ -12,8 +12,8 @@ class OptiontaskModel extends Model
 {
 	protected $tableName='option_task';
 
-	public function getTaskInfoByUserid($fields, $where){
-		$data = $this->field($fields)->where($where)->find();
+	public function getTaskInfoByUserid($fields, $where,$order){
+		$data = $this->field($fields)->where($where)->order($order)->find();
 		return $data;
 	}
 

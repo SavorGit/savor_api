@@ -104,6 +104,17 @@ class TaskController extends BaseController{
         if(empty($hotel_info)){
             $this->to_back('16200');
         }
+        //判断该用户10秒之前是否发布过任务
+        
+        $m_option_task = new \Common\Model\OptiontaskModel();
+        $p_info = $m_option_task->getTaskInfoByUserid('create_time',array('publish_user_id'),'id desc');
+        if(!empty($p_info) && !empty($p_info['create_time'])){
+           $diff_time = time() - strtotime($p_info['create_time']) ;
+           if($diff_time<=10){
+               $this->to_back(30076);
+           }
+        }
+        
         $area_id = $hotel_info['area_id'];    //城市
         
         $task_emerge     = $this->params['task_emerge'];  //任务紧急程度 
@@ -121,7 +132,7 @@ class TaskController extends BaseController{
         $data['tv_nums']         = $tv_nums ;
         $data['desc']            = $desc;
      
-        $m_option_task = new \Common\Model\OptiontaskModel();
+        
         $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
         $task_id = $m_option_task->addData($data, $type=1); 
         

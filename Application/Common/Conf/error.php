@@ -126,6 +126,7 @@ return array(
 	    '30070'=>'option_task_box_have_completed',
 	    '30074'=>'option_task_mobile_empty',
 	    '30075'=>'option_task_mobile_illegal',
+	    '30076'=>'option_task_pub_task_too_often',
 	    //2.1.1
 	    '30071'=>'box_report_download_empty',
 	    '30072'=>'box_report_download_same',

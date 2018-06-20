@@ -131,19 +131,18 @@ class TaskController extends BaseController{
         $data['hotel_linkman_tel']= $mobile;
         $data['tv_nums']         = $tv_nums ;
         $data['desc']            = $desc;
-     
-        
-        $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
-        $task_id = $m_option_task->addData($data, $type=1); 
-        
-        if($task_type==4 || $task_type ==2){//如果是维修 或者是安装验收
+       /*  if($task_type==4 || $task_type ==2){
             $mobile = trim($mobile);
             if(empty($mobile)){
                 $this->to_back('30074');
             }else  if(!check_mobile($mobile)){
                 $this->to_back('30075');
             }
-            
+        } */
+        $m_option_task_repair = new \Common\Model\OptionTaskRepairModel();
+        $task_id = $m_option_task->addData($data, $type=1); 
+        
+        if($task_type==4 || $task_type ==2){//如果是维修 或者是安装验收
             $repair_info = $this->params['repair_info'];
             /* $map['box_id'] = 1;
             $map['task_id'] =1;

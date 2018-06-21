@@ -127,7 +127,7 @@ class IndexController extends BaseController{
         $obj = new UmengNotice();
         $m_box = new \Common\Model\BoxModel();
         $m_push_log = new \Common\Model\PushLogModel();
-        $device_token  = '';
+        $device_tokens  = '';
         $push_box_mac = '';
         
         foreach($box_mac as $v){
@@ -153,6 +153,7 @@ class IndexController extends BaseController{
             $push_list['push_time']= date('Y-m-d H:i:s');
             $push_list['push_type']= 2;
             $m_push_log->addInfo($push_list,1);
+            $space = $space1 = ',';
         }
         $data['box_mac'] = $push_box_mac;
         $custom = array();

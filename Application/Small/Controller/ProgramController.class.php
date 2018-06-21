@@ -328,13 +328,13 @@ class ProgramController extends CommonController{
                      $redis_value = $redis->get($cache_key);
                      if(empty($redis_value)){
                          $redis_value = json_encode($redis_arr);
-                         $redis->set($cache_key, $redis_value);
+                         $redis->set($cache_key, $redis_value,86400);
                      }else {
                          $new_redis_str = md5(json_encode($redis_arr));
                          $old_redis_str = md5($redis_value);
                          if($new_redis_str!= $old_redis_str){
                              $redis_value = json_encode($redis_arr);
-                             $redis->set($cache_key, $redis_value);
+                             $redis->set($cache_key, $redis_value,86400);
                          }
                      }
                      $v_keys ++;

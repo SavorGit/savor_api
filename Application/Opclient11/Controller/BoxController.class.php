@@ -22,7 +22,7 @@ class BoxController extends BaseController{
     public function getBoxList(){
         $hotel_id = $this->params['hotel_id'];
         $m_box = new \Common\Model\BoxModel();
-        $data = $m_box->getInfoByHotelid($hotel_id,'box.id as box_id,box.mac,box.name as box_name ',' and room.flag=0 and box.flag=0');
+        $data = $m_box->getInfoByHotelid($hotel_id,'box.id as box_id,box.mac,box.name as box_name ','  and box.flag=0 and box.state !=3');
         $this->to_back($data);
     }
 }

@@ -103,6 +103,7 @@ class ApiController extends CommonController{
         $hotelid = $this->params['hotelid']; //hotelid
         $where = array();
         $result = array();
+        $res = array();
         if(!is_numeric($hotelid)){
             $this->to_back(10007);
         }
@@ -111,12 +112,24 @@ class ApiController extends CommonController{
             $this->to_back(10007);
         }
         $boxs = $hotelModel->getStatisticalNumByHotelId($hotelid,'box');
+        $redis = SavorRedis::getInstance();
         $field = " id as tv_id,tv_brand as tv_Brand,tv_size,tv_source,box_id, flag,state";
         if($boxs['box_num']){
-            $box_str = join(',', $boxs['box']);
-            $where['box_id'] = array('IN',"$box_str");
-            $res = $tvModel->getList($where, $field);
+            $redis->select(12);
+            $cache_key = C('SMALL_TV_LIST').$hotelid;
+            $redis_value = $redis->get($cache_key);
+            
+            if(!empty($redis_value)){
+                $res = json_decode($redis_value,true);
+            }else {
+                $box_str = join(',', $boxs['box']);
+                $where['box_id'] = array('IN',"$box_str");
+                $res = $tvModel->getList($where, $field);
+                $redis->set($cache_key, json_encode($res));
+            }
+            
         }
+        
         if($res){
             foreach ($res as $vk=>$val) {
                 foreach($val as $rk=>$rv){
@@ -142,12 +155,32 @@ class ApiController extends CommonController{
         if($count == 0){
             $this->to_back(10007);
         }
-        $field = "  box.id AS box_id,box.room_id,box.name as box_name,
-        room.hotel_id,box.mac as box_mac,box.state,box.flag,box.switch_time,box.volum as volume ";
-        $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
-
-        $where = " 'system_ad_volume','system_switch_time'";
-        $sys_arr = $sysconfigModel->getInfo($where);
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        $cache_key = C('SMALL_BOX_LIST').$hotelid;
+        $redis_box_list = $redis->get($cache_key);
+        if(!empty($redis_box_list)){
+            $box_arr = json_decode($redis_box_list,true);    
+        }else {
+            $field = "  box.id AS box_id,box.room_id,box.name as box_name,
+                        room.hotel_id,box.mac as box_mac,box.state,box.flag,
+                        box.switch_time,box.volum as volume ";
+            $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
+            $redis->set($cache_key, json_encode($box_arr));
+        }
+        $cache_key = C('SYSTEM_CONFIG');
+        $redis_sys_config = $redis->get($cache_key);
+        if(!empty($redis_sys_config)){
+            $redis_sys_config = json_decode($redis_sys_config,true);
+            foreach($redis_sys_config as $key=>$v){
+                if(in_array($v['config_key'], array('system_ad_volume','system_switch_time'))){
+                    $sys_arr[] = $v;
+                }
+            }
+        }else {
+            $where = " 'system_ad_volume','system_switch_time'";
+            $sys_arr = $sysconfigModel->getInfo($where);
+        }
         if(!empty($box_arr)){
             $data = $this->changeBoxList($box_arr, $sys_arr);
         }
@@ -165,17 +198,23 @@ class ApiController extends CommonController{
         if($count == 0){
             $this->to_back(10007);
         }
-        $field = "  id AS room_id,name as room_name,
-        hotel_id,type as room_type,state,flag,remark,
-        create_time,
-        update_time,probe ";
-        $map['hotel_id'] = $hotelid;
-        $room_arr = $romModel->getWhere($map, $field);
-
-        if(!empty($room_arr)){
-            $room_arr =  $this->changeroomList($room_arr);
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        
+        $cache_key = C('SMALL_ROOM_LIST').$hotelid;
+        $redis_value = $redis->get($cache_key);
+        if(empty($redis_value)){
+            $field = "  id AS room_id,name as room_name,hotel_id,type as room_type,
+                    state,flag,remark,create_time,update_time,probe ";
+            $map['hotel_id'] = $hotelid;
+            $room_arr = $romModel->getWhere($map, $field);
+            if(!empty($room_arr)){
+                $room_arr =  $this->changeroomList($room_arr);
+                $redis->set($cache_key, json_encode($room_arr));
+            }
+        }else {
+            $room_arr = json_decode($redis_value,true);
         }
-
         $this->to_back($room_arr);
     }
 
@@ -191,12 +230,33 @@ class ApiController extends CommonController{
         if($count == 0){
             $this->to_back(10007);
         }
-        $ho_arr = $hotelModel->getHotelMacInfo($hotelid);
-        $where = " 'system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume' ";
-        $sys_vol_arr = $sysconfigModel->getInfo($where);
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        $cache_key = C('SMALL_HOTEL_INFO').$hotelid;
+        $hotel_info = $redis->get($cache_key);
+        if(empty($hotel_info)){
+            $ho_arr = $hotelModel->getHotelMacInfo($hotelid);
+            $ho_arr = $ho_arr[0];
+        }else {
+            $ho_arr = json_decode($hotel_info,true);
+        }
+        $cache_key = C('SYSTEM_CONFIG');
+        $redis_sys_config = $redis->get($cache_key);
+        
+        if(!empty($redis_sys_config)){
+            $redis_sys_config = json_decode($redis_sys_config,true);
+            foreach($redis_sys_config as $key=>$v){
+                if(in_array($v['config_key'], array('system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume'))){
+                    $sys_vol_arr [] = $v;
+                }
+            }
+        }else {
+            $where = " 'system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume' ";
+            $sys_vol_arr = $sysconfigModel->getInfo($where);
+        }
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
         $data = array();
-        $data= $ho_arr[0];
+        $data= $ho_arr;
         //print_r($data);exit;
         $data['install_date'] = $data['install_date'].' 00:00:00';
         $data['hotel_id'] = intval($data['hotel_id']);
@@ -224,18 +284,25 @@ class ApiController extends CommonController{
         if($count == 0){
             $this->to_back(10007);
         }
-        $ho_arr = $hotelModel->getHotelMacInfo($hotelid);
-        $data = array();
-        $data= $ho_arr[0];
-        foreach($data as $dk=>$dv){
-            $data['hotel_id'] = intval($data['hotel_id']);
-            $data['area_id'] = intval($data['area_id']);
-            $data['key_point'] = intval($data['key_point']);
-            $data['state'] = intval($data['state']);
-            $data['state_reason'] = intval($data['state_reason']);
-            $data['flag'] = intval($data['flag']);
-            $data['hotel_box_type'] = intval($data['hotel_box_type']);
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        $cache_key = C('SMALL_HOTEL_INFO').$hotelid;
+        $redis_value = $redis->get($cache_key);
+        if(empty($redis_value)){
+            $ho_arr = $hotelModel->getHotelMacInfo($hotelid);
+            $data = array();
+            $data= $ho_arr[0];
+            $redis->set($cache_key, json_encode($data),86400);   
+        }else {
+            $data = json_decode($redis_value,true);
         }
+        $data['hotel_id'] = intval($data['hotel_id']);
+        $data['area_id'] = intval($data['area_id']);
+        $data['key_point'] = intval($data['key_point']);
+        $data['state'] = intval($data['state']);
+        $data['state_reason'] = intval($data['state_reason']);
+        $data['flag'] = intval($data['flag']);
+        $data['hotel_box_type'] = intval($data['hotel_box_type']);
         $this->to_back($data);
     }
 

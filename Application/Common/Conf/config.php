@@ -223,7 +223,7 @@ return array(
     'SMALL_HOTEL_INFO'    =>'small_hotel_info_',
     'SYSTEM_CONFIG'       =>'system_config',
     'SMALL_BOX_LIST'      =>'small_box_list_',
-    'SMALL_TV_LIST'       =>'small_tv_list_',  
+    'SMALL_TV_LIST'       =>'small_tv_list_',   
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(
@@ -254,7 +254,7 @@ return array(
                                  'dinner_time'=>array('start_time'=>"17:00:00",'end_time'=>"23:00:00"),   
         )
     ),
-    'HEART_LOSS_HOURS'=>'72',
+    'HEART_LOSS_HOURS'=>'48',
     'NET_REPORT_KEY'=>'net_report_',
     'SMALL_PROGRAM_LIST_KEY'=>'small_program_list_',
 	'CONFIG_VOLUME_VAL' => array(

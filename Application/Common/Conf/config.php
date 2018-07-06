@@ -34,7 +34,7 @@ return array(
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
-	                                 'Dinnerapp2','Box','Opclient20','Forscreen'), //模块配置
+	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -85,6 +85,7 @@ return array(
 	'ORIGINAL_CATCH_TIME'   => '3600',
 	//列表缓存时间
 	'LIST_CATCH_TIME'       => '7200',
+    'OSS_FORSCREEN_ADDR_PATH'=>'forscreen/resource',
 	'HOST_NAME'             => 'http://'.$_SERVER['HTTP_HOST'],
 	'CLIENT_NAME_ARR'=> array('android'=>3,'ios'=>4),
     'HOTEL_CLIENT_NAME_ARR'=>array('android'=>5,'ios'=>6),
@@ -96,7 +97,9 @@ return array(
 	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量'),
 	'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),
     'ALL_LOTTERY_NUMBER' => 5,
-	'HOTEL_KEY' => array(
+    //热点投屏小程序配置
+	'SMALLAPP_CONFIG'=>array('cache_key'=>'smallapp_token','appid'=>'wxfdf0346934bb672f','appsecret'=>'b9b93aef8d6609722596e35385ff05c5'),
+    'HOTEL_KEY' => array(
 		'1'=>'重点',
 		'2'=>'非重点',
 	),
@@ -223,7 +226,8 @@ return array(
     'SMALL_HOTEL_INFO'    =>'small_hotel_info_',
     'SYSTEM_CONFIG'       =>'system_config',
     'SMALL_BOX_LIST'      =>'small_box_list_',
-    'SMALL_TV_LIST'       =>'small_tv_list_',   
+    'SMALL_TV_LIST'       =>'small_tv_list_',
+    'HOTEL_BOX_STATE_LIST'=>'hotel_box_state_list_' ,  
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

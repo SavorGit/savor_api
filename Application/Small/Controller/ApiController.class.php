@@ -68,6 +68,10 @@ class ApiController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('statistics_time'=>'1001');
                 break;
+            case 'getAllBoxList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>'1001');
+                break;
         }
         $this->upgrade_type_arr = array('wwar'=>1,'apk'=>2);
         parent::_init_();
@@ -799,6 +803,32 @@ class ApiController extends CommonController{
             $this->to_back('16105');
         }
     }
+    /**
+     * @desc 获取酒楼下所有的机顶盒
+     */
+    public function getAllBoxList(){
+        $hotel_id = $this->params['hotel_id'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        $cache_key = C('HOTEL_BOX_STATE_LIST').$hotel_id;
+        $data = $redis->get($cache_key);
+        $box_list = array();
+        if(empty($data)){
+            $m_box = new \Common\Model\BoxModel();
+            $where = array();
+            $where['d.id'] = $hotel_id;
+            $box_list = $m_box->getBoxInfo('a.id box_id,a.mac box_mac,a.state,a.flag', $where);
+            if(!empty($box_list)){
+                $redis->set($cache_key, json_encode($box_list),7200);
+            }
+        }else {
+            $box_list = json_decode($data,true);
+        }
+        $this->to_back($box_list);
+        
+    }
+    
+    
     public function changeadsList($res){
         if($res){
             foreach ($res as $vk=>$val) {

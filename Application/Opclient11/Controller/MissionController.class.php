@@ -198,15 +198,24 @@ $img_arr[$im]['repair_img'];
         if(!empty($info_arr['user_id'])){
             $this->to_back('30068');
         }
+        //解决主从同步慢  导致任务完成不了
+        $wheres = array();
+        $fieldss = 'id';
+        $wheres['state'] = 0;
+        $wheres['task_id'] = $this->params['task_id'];
+        $repair_list = $m_repair_task->getRepairBoxInfo($fieldss,$wheres);
+        $nums = count($repair_list);
         $bool = $m_repair_task->saveData($save, $where);
         if($bool) {
-            $where = array();
+            /* $where = array();
             $fields = 'id';
             $where['state'] = 0;
             $where['task_id'] = $this->params['task_id'];
-            $repair_list = $m_repair_task->getRepairBoxInfo($fields,$where);
+            $repair_list = $m_repair_task->getRepairBoxInfo($fields,$where); */
             //$repair_list = $m_repair_task->getList($fields,$where);
-            if($repair_list) {
+            
+            if($nums>1){
+            //if($repair_list) {
                 $this->to_back(array('state'=>$save['state']));
             } else {
                 $dat = array();

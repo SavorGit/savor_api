@@ -18,6 +18,7 @@ class Smallapp_api {
 	private $url_getticket = 'https://api.weixin.qq.com/cgi-bin/ticket/getticket';
 	private $url_get_userinfo = 'https://api.weixin.qq.com/sns/userinfo';
 	private $url_get_smallapp_code = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
+	private $url_get_smallapp_openid = "https://api.weixin.qq.com/sns/jscode2session";
 
 	public function __construct(){
 	    $wx_config = C('SMALLAPP_CONFIG');
@@ -172,7 +173,23 @@ class Smallapp_api {
         $output = curl_exec($ch);
         curl_close($ch);
         $out = json_decode($output);
-        print_r($out);exit;
         return $out;
+    }
+    public function getSmallappOpenid($code){
+        
+        $appid = $this->appid;
+        $appsecret = $this->appsecret;
+        $url = $this->url_get_smallapp_openid."?appid=$appid&secret=$appsecret".'&js_code='. $code .'&grant_type=authorization_code';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,$url);
+        
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $re = curl_exec($ch);
+        
+        curl_close($ch);
+        $result = json_decode($re,true);
+        return $result;
     }
 }

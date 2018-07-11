@@ -3,6 +3,7 @@ namespace Smallapp\Controller;
 use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
+use Common\Lib\SavorRedis;
 class IndexController extends CommonController{
     /**
      * 构造函数
@@ -15,6 +16,10 @@ class IndexController extends CommonController{
             case 'getBoxQr':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>'1001');
+            break;
+            case 'getOpenid':
+                $this->is_verify  =1;
+                $this->valid_fields = array('code'=>1001);
             break;
         }
         parent::_init_();
@@ -80,8 +85,8 @@ class IndexController extends CommonController{
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/gif');
         $data = array();
-        $data['scene'] = "scene";//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
-        $data['page'] = "pages/index/index";//扫描后对应的path
+        $data['scene'] = $box_mac;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
         $data['width'] = 400;//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色
         $color = array(
@@ -90,9 +95,99 @@ class IndexController extends CommonController{
             "b"=>"0",
         );
         $data['line_color'] = $color;//自定义的颜色值
-        $data['is_hyaline'] = true;
+        $data['is_hyaline'] = false;
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
+    }
+    /**
+     *@desc 获取openid
+     */
+    public function getOpenid(){
+        $code = $this->params['code'];
+        $m_small_app = new Smallapp_api();
+        $data  = $m_small_app->getSmallappOpenid($code);
+        $this->to_back($data);
+        
+    }
+    /**
+     * @desc 发送随机验证码给电视
+     */
+    public function genCode(){
+        $box_mac = $this->params['box_mac'];
+        $openid    = $this->params['openid'];
+        $code = rand(100, 999);
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        if(empty($info)){
+            $info = array();
+            $info['is_have'] = 0;
+            $info['code'] = $code;
+            $redis->set($cache_key, json_encode($info),7200);
+            echo json_encode($info);
+            exit;
+        }else {
+            echo $info;
+            exit;
+        }
+        
+    }
+    /**
+     * @desc 查看是否有验证码
+     */
+    public function isHaveCode(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $code    = $this->params['code'];
+        $redis   = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        $result = array();
+        if(empty($info)){
+            $result['is_have'] = 0;
+        }else {
+            $info = json_decode($info,true);
+            
+            $result['is_have'] = $info['is_have'];
+        }
+        echo json_encode($result);
+        exit;
+    }
+    /**
+     * @param 获取该机顶盒该用户的随机码
+     */
+    public function checkcode(){
+        $code = $this->params['code'];
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        $result = array();
+        if(empty($info)){//没有该用户的记录
+            $result['is_right'] = 0;
+            echo json_encode($result);
+            exit;
+        }else {
+            $info = json_decode($info,true);
+            if($code==$info['code']){//验证码一致
+                $info['is_have'] = 1;
+                $redis->set($cache_key, json_encode($info),7200);
+                $result['is_right'] =2;
+                echo json_encode($result);
+                exit;
+            }else {//验证码不一致
+                $result['is_right'] =1;
+                echo json_encode($result);
+                exit;
+            }
+        }
     }
     
     private function _gmt_iso8601($time){

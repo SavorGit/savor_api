@@ -99,6 +99,7 @@ return array(
     'ALL_LOTTERY_NUMBER' => 5,
     //热点投屏小程序配置
 	'SMALLAPP_CONFIG'=>array('cache_key'=>'smallapp_token','appid'=>'wxfdf0346934bb672f','appsecret'=>'b9b93aef8d6609722596e35385ff05c5'),
+    'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
     'HOTEL_KEY' => array(
 		'1'=>'重点',
 		'2'=>'非重点',

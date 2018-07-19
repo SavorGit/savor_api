@@ -226,5 +226,7 @@ return array(
 	    //4G投屏
 	    '91001'=>'for_screen_failed',
 	    '91002'=>'stop_screen_failed',
+	    //小程序投屏
+	    '91010'=>'forscreen_record_failed',
 	),
 );

@@ -120,8 +120,8 @@ class Smallapp_api {
     		$appsecret = $this->appsecret;
     		$url = $this->url_oauth_token."?appid=$appid&secret=$appsecret&code=$code&grant_type=authorization_code";
     		
-    		//$re =  file_get_contents($url);
-		$ch = curl_init();
+        $re =  file_get_contents($url);
+		/* $ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,$url);
 
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -129,7 +129,7 @@ class Smallapp_api {
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 		$re = curl_exec($ch);
 
-		curl_close($ch);
+		curl_close($ch); */
 		$result = json_decode($re,true);
 		if(!is_array($result) || isset($result['errcode'])){
 	       if(!empty($jumUrl)){

@@ -21,6 +21,8 @@ class IndexController extends CommonController{
                 $this->is_verify  =1;
                 $this->valid_fields = array('code'=>1001);
             break;
+            case 'recordForScreenPics':
+                
         }
         parent::_init_();
     }
@@ -32,7 +34,7 @@ class IndexController extends CommonController{
         $id = C('OSS_ACCESS_ID');
         $key = C('OSS_ACCESS_KEY');
         //$host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST');
-        $host = 'http://'.C('OSS_HOST');
+        $host = 'https://'.C('OSS_HOST');
         $callbackUrl = C('HOST_NAME').'/'.C('OSS_SYNC_CALLBACK_URL');
         $callback_param = array(
             'callbackUrl'=>$callbackUrl,
@@ -188,6 +190,29 @@ class IndexController extends CommonController{
                 exit;
             }
         }
+    }
+    /**
+     * @desc 记录用户投屏的图片
+     */
+    public function recordForScreenPics(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $imgs    = $this->params['imgs'];
+        
+        $data = array();
+        $data['openid'] = $openid;
+        $data['box_mac']= $box_mac;
+        $data['imgs']   = $imgs;
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $m_smallapp_forscreen_record = new \Common\Model\ForscreenRecordModel();  
+        $ret = $m_smallapp_forscreen_record->addInfo($data);
+        if($ret){
+            $this->to_back(10000);
+        }else {
+            $this->to_back();
+        }
+        
+        
     }
     
     private function _gmt_iso8601($time){

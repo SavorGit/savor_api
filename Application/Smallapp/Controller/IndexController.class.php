@@ -22,6 +22,13 @@ class IndexController extends CommonController{
                 $this->valid_fields = array('code'=>1001);
             break;
             case 'recordForScreenPics':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'imgs'=>1001);
+            break;
+            case 'getHotelInfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+            break;
                 
         }
         parent::_init_();
@@ -204,7 +211,7 @@ class IndexController extends CommonController{
         $data['box_mac']= $box_mac;
         $data['imgs']   = $imgs;
         $data['create_time'] = date('Y-m-d H:i:s');
-        $m_smallapp_forscreen_record = new \Common\Model\ForscreenRecordModel();  
+        $m_smallapp_forscreen_record = new \Common\Model\Smallapp\ForscreenRecordModel();  
         $ret = $m_smallapp_forscreen_record->addInfo($data);
         if($ret){
             $this->to_back(10000);
@@ -212,6 +219,16 @@ class IndexController extends CommonController{
             $this->to_back();
         }
         
+        
+    }
+    /**
+     * @desc 
+     */
+    public function getHotelInfo(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $info = $m_box->getHotelInfoByBoxMac($box_mac);
+        $this->to_back($info);
         
     }
     

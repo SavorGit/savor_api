@@ -2,7 +2,7 @@
 /**
  * @desc 小程序投屏日志记录
  */
-namespace Common\Model;
+namespace Common\Model\Smallapp;
 use Think\Model;
 
 class ForscreenRecordModel extends Model

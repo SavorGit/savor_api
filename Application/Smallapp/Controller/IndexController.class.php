@@ -29,6 +29,10 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
             break;
+            case 'isSmallappForscreen':
+                $this->is_verify =1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
                 
         }
         parent::_init_();
@@ -104,7 +108,7 @@ class IndexController extends CommonController{
             "b"=>"255",
         );
         $data['line_color'] = $color;//自定义的颜色值
-        $data['is_hyaline'] = false;
+        $data['is_hyaline'] = true;
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
@@ -231,6 +235,26 @@ class IndexController extends CommonController{
         $this->to_back($info);
         
     }
+    /**
+     * @DESC 判断机顶盒是否支持小程序投屏
+     */
+    public function isSmallappForscreen(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $where = array();
+        $where['mac'] = $box_mac;
+        $where['state'] = 1;
+        $where['flag']  = 0 ;
+        $box_info = $m_box->getOnerow($where);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $data = array();
+        $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
+        $this->to_back($data);
+        
+    }
+    
     
     private function _gmt_iso8601($time){
         $dtStr = date("c", $time);

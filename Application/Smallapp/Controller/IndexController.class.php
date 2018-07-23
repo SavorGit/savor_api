@@ -96,12 +96,12 @@ class IndexController extends CommonController{
         $data = array();
         $data['scene'] = $box_mac;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
-        $data['width'] = 400;//自定义的尺寸
+        $data['width'] = 200;//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色
         $color = array(
-            "r"=>"221",
-            "g"=>"0",
-            "b"=>"0",
+            "r"=>"255",
+            "g"=>"255",
+            "b"=>"255",
         );
         $data['line_color'] = $color;//自定义的颜色值
         $data['is_hyaline'] = false;

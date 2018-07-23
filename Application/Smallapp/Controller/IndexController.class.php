@@ -96,11 +96,11 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $m_small_app = new Smallapp_api();
         $tokens  = $m_small_app->getWxAccessToken();
-        header('content-type:image/gif');
+        header('content-type:image/png');
         $data = array();
         $data['scene'] = $box_mac;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
-        $data['width'] = 200;//自定义的尺寸
+        $data['width'] = "280";//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色
         $color = array(
             "r"=>"255",

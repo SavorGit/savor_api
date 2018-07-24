@@ -175,3 +175,8 @@ function sortArrByOneField(&$array, $field, $desc = false){
     $sort = $desc == false ? SORT_ASC : SORT_DESC;
     array_multisort($fieldArr, $sort, $array);
 }
+//获取13位时间戳
+function getMillisecond() {
+    list($t1, $t2) = explode(' ', microtime());
+    return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+}

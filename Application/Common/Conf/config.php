@@ -229,6 +229,7 @@ return array(
     'SMALL_BOX_LIST'      =>'small_box_list_',
     'SMALL_TV_LIST'       =>'small_tv_list_',
     'HOTEL_BOX_STATE_LIST'=>'hotel_box_state_list_' ,  
+    'SAPP_SCRREN'         =>'smallapp:forscreen',  //小程序用户投屏图片
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

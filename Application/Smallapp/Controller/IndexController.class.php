@@ -208,22 +208,19 @@ class IndexController extends CommonController{
     public function recordForScreenPics(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
-        $imgs    = $this->params['imgs'];
+        $imgs    = str_replace("\\", '', $this->params['imgs']);
         
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
         $data['imgs']   = $imgs;
         $data['create_time'] = date('Y-m-d H:i:s');
-        $m_smallapp_forscreen_record = new \Common\Model\Smallapp\ForscreenRecordModel();  
-        $ret = $m_smallapp_forscreen_record->addInfo($data);
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back();
-        }
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_SCRREN').":".$openid;
         
-        
+        $redis->rpush($cache_key, json_encode($data));
+        $this->to_back(10000);
     }
     /**
      * @desc 

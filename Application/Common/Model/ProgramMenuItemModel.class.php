@@ -26,7 +26,8 @@ class ProgramMenuItemModel extends Model
 				media.duration AS duration,
 				media.surfix AS suffix,
 				item.sort_num AS sortNum,
-				item.ads_name AS chinese_name";
+				item.ads_name AS chinese_name,
+	            ads.is_sapp_qrcode";
 		$sql = "select ".$field;
 
 		$sql .= "  FROM savor_ads ads LEFT JOIN savor_programmenu_item item
@@ -73,7 +74,8 @@ class ProgramMenuItemModel extends Model
 				media.surfix AS suffix,
 				item.sort_num AS sortNum,
 				item.ads_name AS chinese_name,
-	            ads.update_time";
+	            ads.update_time,
+	            ads.is_sapp_qrcode";
 	    $sql = "select ".$field;
 	    
 	    $sql .= " FROM savor_ads ads

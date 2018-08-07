@@ -114,7 +114,7 @@ class ProgramController extends CommonController{
             $cache_value['menu_id']  = $menu_id;
             $cache_value['pub_time'] = $pub_time;
             $cache_value['media_list']= $menu_list;
-            $redis->set($cache_key, json_encode($cache_value));
+            $redis->set($cache_key, json_encode($cache_value),86400);
             
         }else {//如果缓存中有该酒楼的节目单信息
             $menu_num  = $menu_cache_info['menu_num'];
@@ -203,7 +203,7 @@ class ProgramController extends CommonController{
              $redis_arr['menu_num']= $menu_num;
              $redis_arr['adv_arr'] = $adv_arr;
              
-             $redis->set($adv_cache_key, json_encode($redis_arr));
+             $redis->set($adv_cache_key, json_encode($redis_arr),86400);
              
          }else {
              
@@ -252,7 +252,7 @@ class ProgramController extends CommonController{
          if(empty($list)){//该酒楼下没有正常的机顶盒
              $this->to_back(16204);
          }
-         
+
          $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
          $redis = new SavorRedis();
          $redis->select(12);
@@ -300,6 +300,7 @@ class ProgramController extends CommonController{
                              $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
                              $ads_arr['create_time'] = $av['create_time'];
                              $ads_arr['location_id'] = $av['location_id'];
+                             $ads_arr['is_sapp_qrcode'] = $av['is_sapp_qrcode'];
                               
                              $ads_num_arr[] = $ads_arr;
                              $ads_time_arr[] = $av['create_time'];
@@ -359,6 +360,7 @@ class ProgramController extends CommonController{
                      $media_list[$kk]['start_date']  = $vv['start_date'];
                      $media_list[$kk]['end_date']    = $vv['end_date'];
                      $media_list[$kk]['location_id'] = $vv['location_id'];
+                     $media_list[$kk]['is_sapp_qrcode'] = $vv['is_sapp_qrcode'];
                  }
                  
                  $data[$v_keys]['media_list'] = $media_list;
@@ -542,6 +544,7 @@ class ProgramController extends CommonController{
                      $ttp = explode('/', $val['name']);
                      $res[$vk]['name'] = $ttp[2];
                  }
+                 $res[$vk]['is_sapp_qrcode'] = intval($val['is_sapp_qrcode']);
              }
      
          }

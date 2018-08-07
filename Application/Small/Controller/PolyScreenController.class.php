@@ -50,7 +50,7 @@ class PolyScreenController extends CommonController{
                 
                 $fields = "a.update_time,media.id,media.oss_addr name,media.md5,'easyMd5' as md5_type,a.media_md5  tp_md5,
                    'poly' as type,media.oss_addr oss_path,media.duration,media.surfix,
-                    media.name chinese_name,a.tpmedia_id";
+                    media.name chinese_name,a.tpmedia_id,ads.is_sapp_qrcode";
                 $where = array();
                 $where['a.state'] = 1;
                 $where['a.flag'] =0;
@@ -70,6 +70,7 @@ class PolyScreenController extends CommonController{
                 foreach($list as $k=>$vv){
                     $name = explode('/', $vv['name']);
                     $list[$k]['name'] = $name[2];
+                    $list[$k]['is_sapp_qrcode'] = intval($vv['is_sapp_qrcode']);
                     unset($list[$k]['update_time']);
                 }
                 

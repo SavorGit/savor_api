@@ -20,7 +20,7 @@ class PubAdsBoxModel extends Model
     				 'ads' AS `type`,
 				     d.oss_addr AS oss_path,
 				     d.duration AS duration,
-				     d.surfix AS suffix,b.start_date,b.end_date,a.location_id")
+				     d.surfix AS suffix,b.start_date,b.end_date,a.location_id,c.is_sapp_qrcode")
 		    ->where('a.box_id='.$box_id." and b.end_date>'".$now_date.  "' and location_id=".$location_id." and b.state=1 and c.state=1 and d.oss_addr is not null")
 		    ->order('b.start_date asc')
 		    ->limit($limit)

@@ -23,7 +23,8 @@ class IndexController extends CommonController{
             break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'imgs'=>1001);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,
+                                             'imgs'=>1001,'mobile_brand'=>1000,'mobile_model'=>1000);
             break;
             case 'getHotelInfo':
                 $this->is_verify = 1;
@@ -208,11 +209,15 @@ class IndexController extends CommonController{
     public function recordForScreenPics(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
         $imgs    = str_replace("\\", '', $this->params['imgs']);
         
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
+        $data['mobile_brand'] = $mobile_brand;
+        $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs;
         $data['create_time'] = date('Y-m-d H:i:s');
         $redis = SavorRedis::getInstance();

@@ -32,7 +32,7 @@ class IndexController extends CommonController{
             break;
             case 'isSmallappForscreen':
                 $this->is_verify =1;
-                $this->valid_fields = array('box_mac'=>1001);
+                $this->valid_fields = array('box_mac'=>1001,'versionCode'=>1000);
                 break;
                 
         }
@@ -211,6 +211,7 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $mobile_brand = $this->params['mobile_brand'];
         $mobile_model = $this->params['mobile_model'];
+        $forscreen_char = $this->params['forscreen_char'];
         $imgs    = str_replace("\\", '', $this->params['imgs']);
         
         $data = array();
@@ -219,6 +220,7 @@ class IndexController extends CommonController{
         $data['mobile_brand'] = $mobile_brand;
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs;
+        $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
         $data['create_time'] = date('Y-m-d H:i:s');
         $redis = SavorRedis::getInstance();
         $redis->select(5);
@@ -241,23 +243,28 @@ class IndexController extends CommonController{
      * @DESC 判断机顶盒是否支持小程序投屏
      */
     public function isSmallappForscreen(){
+        $box_min_version_code = C('SAPP_FORSCREEN_VERSION_CODE');
         $box_mac = $this->params['box_mac'];
-        $m_box = new \Common\Model\BoxModel();
-        $where = array();
-        $where['mac'] = $box_mac;
-        $where['state'] = 1;
-        $where['flag']  = 0 ;
-        $box_info = $m_box->getOnerow($where);
-        if(empty($box_info)){
-            $this->to_back(70001);
-        }
+        $versionCode = intval($this->params['versionCode']);
         $data = array();
-        $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
-        $this->to_back($data);
-        
+        if(empty($versionCode)|| $versionCode <$box_min_version_code ){  //上线前替换1234
+            $data['is_sapp_forscreen'] = 0;
+            $this->to_back($data);
+        }else if($versionCode>=$box_min_version_code){                   //上线前替换1234
+            $m_box = new \Common\Model\BoxModel();
+            $where = array();
+            $where['mac'] = $box_mac;
+            $where['state'] = 1;
+            $where['flag']  = 0 ;
+            $box_info = $m_box->getOnerow($where);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            
+            $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
+            $this->to_back($data);
+        }        
     }
-    
-    
     private function _gmt_iso8601($time){
         $dtStr = date("c", $time);
         $mydatetime = new \DateTime($dtStr);

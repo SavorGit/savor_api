@@ -289,4 +289,5 @@ return array(
 		'2'=>'内存卡存储空间不足，请及时处理',
 	),
     'SDK_ERROR_REPORT_TIME'=>'10',
+    'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404'
 );

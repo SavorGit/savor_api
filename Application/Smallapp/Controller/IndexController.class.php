@@ -34,6 +34,13 @@ class IndexController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001,'versionCode'=>1000);
                 break;
+            case 'getBoxProgramList':    //获取该机顶盒下的节目单列表 在小程序中展示
+                $this->is_verify =1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+            case 'getBirthdayMedia':
+                $this->is_verify = 0;
+                break;
                 
         }
         parent::_init_();
@@ -265,6 +272,15 @@ class IndexController extends CommonController{
             $this->to_back($data);
         }        
     }
+    /**
+     * @desc 
+     */
+    public function getBirthdayMedia(){
+        $data['vedio_url'] = 'http://oss.littlehotspot.com/media/resource/jda24z7C8Z.mp4';
+        $this->to_back($data);
+    }
+    
+    
     private function _gmt_iso8601($time){
         $dtStr = date("c", $time);
         $mydatetime = new \DateTime($dtStr);

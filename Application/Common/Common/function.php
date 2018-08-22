@@ -180,3 +180,22 @@ function getMillisecond() {
     list($t1, $t2) = explode(' ', microtime());
     return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
 }
+/**
+ * @desc 秒转换为分秒
+ */
+function secToMinSec($secs){
+    $secs = intval($secs);
+    if($secs<=0){
+        return "0″";
+    }else if($secs>0 && $secs<=60){
+        return $secs."″";
+    }else if($secs > 60){
+        $min = floor($secs / 60);
+        $sec  = $secs % 60;
+        if($sec==0){
+            return $min."′";
+        }else if($sec>0){
+            return $min."′".$sec."″";
+        }
+    }
+}

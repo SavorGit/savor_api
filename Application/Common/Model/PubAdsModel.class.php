@@ -35,4 +35,14 @@ class PubAdsModel extends Model
 	    ->select();
 	    return $list;
 	}
+	public function getPubAdsInfo($fields,$where){
+	    $data = $this->alias('a')
+	                 ->join('savor_ads ads ON a.ads_id = ads.id','left')
+	                 ->join('savor_media  med ON med.id = ads.media_id','left')
+	                 ->join('savor_media  mda on a.cover_img_media_id= mda.id','left')
+	                 ->field($fields)
+	                 ->where($where)
+	                 ->find();
+	    return $data;
+	}
 }

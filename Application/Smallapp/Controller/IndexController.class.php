@@ -24,7 +24,10 @@ class IndexController extends CommonController{
             case 'recordForScreenPics':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,
-                                             'imgs'=>1001,'mobile_brand'=>1000,'mobile_model'=>1000);
+                                            'imgs'=>1001,'mobile_brand'=>1000,
+                                            'mobile_model'=>1000,'action'=>1000,
+                                            'resource_type'=>1000
+                );
             break;
             case 'getHotelInfo':
                 $this->is_verify = 1;
@@ -220,10 +223,14 @@ class IndexController extends CommonController{
         $mobile_model = $this->params['mobile_model'];
         $forscreen_char = $this->params['forscreen_char'];
         $imgs    = str_replace("\\", '', $this->params['imgs']);
+        $action  = $this->params['action'] ? $this->params['action'] : 0;
+        $resource_type = $this->params['resource_type'] ? $this->params['resource_type'] : 0;
         
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
+        $data['action'] = $action;
+        $data['resource_type'] = $resource_type;
         $data['mobile_brand'] = $mobile_brand;
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs;
@@ -242,7 +249,11 @@ class IndexController extends CommonController{
     public function getHotelInfo(){
         $box_mac = $this->params['box_mac'];
         $m_box = new \Common\Model\BoxModel();
+        $info = array();
         $info = $m_box->getHotelInfoByBoxMac($box_mac);
+        $info['vedio_url'] = 'http://oss.littlehotspot.com/media/resource/jda24z7C8Z.mp4';
+        $info['file_name'] = 'jda24z7C8Z.mp4';
+        $info['name']     = 'Happy Birthday';
         $this->to_back($info);
         
     }
@@ -277,6 +288,7 @@ class IndexController extends CommonController{
      */
     public function getBirthdayMedia(){
         $data['vedio_url'] = 'http://oss.littlehotspot.com/media/resource/jda24z7C8Z.mp4';
+        $data['file_name'] = 'jda24z7C8Z.mp4';
         $this->to_back($data);
     }
     

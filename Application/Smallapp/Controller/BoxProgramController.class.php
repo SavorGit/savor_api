@@ -65,7 +65,7 @@ class BoxProgramController extends CommonController{
               
               if(!empty($media_info)){
                   $media_info = $media_info[0];
-                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/NRsrwrhift.png';
+                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/EDBAEDArdh.png';
                   $media_info['img_url'] = $oss_host.$media_info['img_url'];
                   $media_info['oss_addr']= $oss_host.$media_info['oss_addr'];
                   $media_info['duration']= secToMinSec($media_info['duration']); 
@@ -80,7 +80,7 @@ class BoxProgramController extends CommonController{
               
               if(!empty($media_info)){
                   $media_info = $media_info[0];
-                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/NRsrwrhift.png';
+                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/EDBAEDArdh.png';
                   $media_info['img_url'] = $oss_host.$media_info['img_url'];
                   $media_info['oss_addr']= $oss_host.$media_info['oss_addr'];
                   $media_info['duration']= secToMinSec($media_info['duration']);
@@ -95,7 +95,7 @@ class BoxProgramController extends CommonController{
               $m_pub_ads = new \Common\Model\PubAdsModel();
               $media_info = $m_pub_ads->getPubAdsInfo('ads.name,mda.oss_addr img_url,ads.duration,med.oss_addr', $map);
               if(!empty($media_info)){
-                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/NRsrwrhift.png';
+                  $media_info['img_url'] = $media_info['img_url']? $media_info['img_url'] :'media/resource/EDBAEDArdh.png';
                   $media_info['img_url'] = $oss_host.$media_info['img_url'];
                   $media_info['oss_addr']= $oss_host.$media_info['oss_addr'];
                   $media_info['duration']= secToMinSec($media_info['duration']);

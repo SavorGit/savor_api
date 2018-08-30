@@ -17,7 +17,7 @@ class ActivityController extends CommonController{
                 break;
             case 'orgGameLog':   //发起游戏
                 $this->is_verify = 1;
-                $this->valid_fields = array('activity_id'=>1001);
+                $this->valid_fields = array('activity_id'=>1001,'box_mac'=>1001);
                 break;
             case 'joinGameLog':
                 $this->is_verify = 1;
@@ -61,9 +61,11 @@ class ActivityController extends CommonController{
      */
     public function orgGameLog(){
         $activity_id = $this->params['activity_id'];
+        $box_mac     = $this->params['box_mac'];
         $data = array();
         $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
         $data['activity_id'] = $activity_id;
+        $data['box_mac']     = $box_mac;
         $data['join_num']    = 1;
         $data['create_time'] = date('Y-m-d H:i:s');
         $data['is_start']    = 0;

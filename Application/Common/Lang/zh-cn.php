@@ -222,4 +222,6 @@ return array(
     'stop_screen_failed'=>'结束投屏失败',
     'option_task_pub_task_too_often'=>'您发布任务太过频繁，请10秒后再发',
     'forscreen_record_failed'=>'投屏记录失败',
+    'forscreen_push_suggestion_failed'=>'反馈意见失败',
+    'smallapp_turntable_log_failed'=>'日志添加失败',
 );

@@ -228,5 +228,7 @@ return array(
 	    '91002'=>'stop_screen_failed',
 	    //小程序投屏
 	    '91010'=>'forscreen_record_failed',
+	    '91011'=>'forscreen_push_suggestion_failed',
+	    '91012'=>'smallapp_turntable_log_failed',
 	),
 );

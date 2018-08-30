@@ -15,7 +15,7 @@ class IndexController extends CommonController{
             break;
             case 'getBoxQr':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>'1001');
+                $this->valid_fields = array('box_mac'=>'1001','r'=>1000,'g'=>1000,'b'=>1000);
             break;
             case 'getOpenid':
                 $this->is_verify  =1;
@@ -43,6 +43,14 @@ class IndexController extends CommonController{
                 break;
             case 'getBirthdayMedia':
                 $this->is_verify = 0;
+                break;
+            case 'isHaveCallBox':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'delCallCode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
                 break;
                 
         }
@@ -105,6 +113,9 @@ class IndexController extends CommonController{
      */
     public function getBoxQr(){
         $box_mac = $this->params['box_mac'];
+        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
+        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
+        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
         $m_small_app = new Smallapp_api();
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/png');
@@ -114,9 +125,9 @@ class IndexController extends CommonController{
         $data['width'] = "280";//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色
         $color = array(
-            "r"=>"255",
-            "g"=>"255",
-            "b"=>"255",
+            "r"=>$r,
+            "g"=>$g,
+            "b"=>$b,
         );
         $data['line_color'] = $color;//自定义的颜色值
         $data['is_hyaline'] = true;
@@ -291,6 +302,40 @@ class IndexController extends CommonController{
         $data['file_name'] = 'jda24z7C8Z.mp4';
         $this->to_back($data);
     }
+    /**
+     * @desc 判断该用户两个小时内是否有过呼码
+     */
+    public function isHaveCallBox(){
+        $openid = $this->params['openid'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+        $keys = $redis->keys($key);
+        if(!empty($keys)){
+            $keys = $keys[0];
+            $key_arr = explode(':', $keys);
+            $box_mac = $key_arr['2'];
+            $code_info = $redis->get($keys);
+            $code_info = json_decode($code_info,true);
+            $this->to_back(array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac));
+        }else {
+            $this->to_back(array('is_have'=>0));
+        }
+        
+    } 
+    /**
+     * @desc 断开连接删除投屏呼玛缓存
+     */
+    public function delCallCode(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $cache_key = C('SMALLAPP_CHECK_CODE').$box_mac.":".$openid;
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $redis->remove($cache_key);
+        $this->to_back(10000);
+    }
+    
     
     
     private function _gmt_iso8601($time){

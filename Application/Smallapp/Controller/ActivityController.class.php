@@ -17,15 +17,25 @@ class ActivityController extends CommonController{
                 break;
             case 'orgGameLog':   //发起游戏
                 $this->is_verify = 1;
-                $this->valid_fields = array('activity_id'=>1001,'box_mac'=>1001);
+                $this->valid_fields = array('activity_id'=>1001,'box_mac'=>1001,
+                                            'openid'=>1001,'mobile_brand'=>1001,
+                                            'mobile_model'=>1001
+                );
                 break;
-            case 'joinGameLog':
+            case 'joinGameLog': //加入游戏
                 $this->is_verify = 1;
-                $this->valid_fields = array('activity_id'=>1001);
+                $this->valid_fields = array('activity_id'=>1001,'openid'=>1001,
+                                            'mobile_brand'=>1001,'mobile_model'=>1001
+                );
                 break;   
             case 'startGameLog':
                 $this->is_verify = 1;
                 $this->valid_fields = array('activity_id'=>1001);
+                break;
+            case 'wantGameLog':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,
+                                            'mobile_brand'=>1001,'mobile_model'=>1001);
                 break;
         }
         parent::_init_();
@@ -62,11 +72,17 @@ class ActivityController extends CommonController{
     public function orgGameLog(){
         $activity_id = $this->params['activity_id'];
         $box_mac     = $this->params['box_mac'];
+        $openid      = $this->params['openid'];
+        $mobile_brand= $this->params['mobile_brand'];
+        $mobile_model= $this->params['mobile_model'];
         $data = array();
         $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
         $data['activity_id'] = $activity_id;
         $data['box_mac']     = $box_mac;
-        $data['join_num']    = 1;
+        $data['openid']      = $openid;
+        $data['mobile_brand']= $mobile_brand;
+        $data['mobile_model']= $mobile_model;
+        //$data['join_num']    = 1;
         $data['create_time'] = date('Y-m-d H:i:s');
         $data['is_start']    = 0;
         $ret = $m_turntable_log->addInfo($data);
@@ -81,8 +97,18 @@ class ActivityController extends CommonController{
      */
     public function joinGameLog(){
         $activity_id = $this->params['activity_id'];
-        $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
-        $ret = $m_turntable_log->update_join_info($activity_id);
+        $openid      = $this->params['openid'];
+        $mobile_brand= $this->params['mobile_brand'];
+        $mobile_model= $this->params['mobile_model'];
+        /* $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
+        $ret = $m_turntable_log->update_join_info($activity_id); */
+        $data = array();
+        $data['activity_id'] = $activity_id;
+        $data['openid']      = $openid;
+        $data['mobile_brand']= $mobile_brand;
+        $data['mobile_model']= $mobile_model;
+        $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel(); 
+        $ret = $m_turntable_detail->addInfo($data,1);
         if($ret){
             $this->to_back(10000);
         }else {
@@ -101,5 +127,29 @@ class ActivityController extends CommonController{
         }else {
             $this->to_back(91012);
         }
+    }
+    /**
+     * @desc 记录想要玩游戏的用户信息
+     */
+    public function wantGameLog(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+        
+        $data = array();
+        $data['action'] = 7;
+        $data['box_mac'] = $box_mac;
+        $data['openid']  = $openid;
+        $data['mobile_brand'] = $mobile_brand;
+        $data['mobile_model'] = $mobile_model;
+        $data['create_time']  = date('Y-m-d H:i:s');
+        
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_WANT_GAME').":".$openid;
+        
+        $redis->rpush($cache_key, json_encode($data));
+        $this->to_back(10000);
     }
 }

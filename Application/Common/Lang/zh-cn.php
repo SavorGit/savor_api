@@ -224,4 +224,5 @@ return array(
     'forscreen_record_failed'=>'投屏记录失败',
     'forscreen_push_suggestion_failed'=>'反馈意见失败',
     'smallapp_turntable_log_failed'=>'日志添加失败',
+    'smallapp_order_time_failed'=>'记录指令时间失败',
 );

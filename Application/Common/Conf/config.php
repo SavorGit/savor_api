@@ -230,7 +230,9 @@ return array(
     'SMALL_TV_LIST'       =>'small_tv_list_',
     'HOTEL_BOX_STATE_LIST'=>'hotel_box_state_list_' ,  
     'SAPP_SCRREN'         =>'smallapp:forscreen',  //小程序用户投屏图片
+    'SAPP_UPRES_FORSCREEN'=>'smallapp:upresouce',
     'SAPP_WANT_GAME'      =>'smallapp:wantgame', //想要点开小程序互动游戏
+    'SAPP_PLAY_GAME'      =>'smallapp:playgame',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

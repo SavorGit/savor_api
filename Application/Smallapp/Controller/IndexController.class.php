@@ -26,7 +26,7 @@ class IndexController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,
                                             'imgs'=>1001,'mobile_brand'=>1000,
                                             'mobile_model'=>1000,'action'=>1000,
-                                            'resource_type'=>1000
+                                            'resource_type'=>1000,'resource_id'=>1000
                 );
             break;
             case 'getHotelInfo':
@@ -225,7 +225,7 @@ class IndexController extends CommonController{
         }
     }
     /**
-     * @desc 记录用户投屏的图片
+     * @desc 记录用户投屏的图片、视频
      */
     public function recordForScreenPics(){
         $openid = $this->params['openid'];
@@ -236,17 +236,24 @@ class IndexController extends CommonController{
         $imgs    = str_replace("\\", '', $this->params['imgs']);
         $action  = $this->params['action'] ? $this->params['action'] : 0;
         $resource_type = $this->params['resource_type'] ? $this->params['resource_type'] : 0;
-        
+        $resource_id   = $this->params['resource_id'] ? $this->params['resource_id'] : 0;
+        $resource_size = $this->params['resource_size'] ? $this->params['resource_size'] :0;
+        $res_sup_time  = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
+        $res_eup_time  = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
         $data['action'] = $action;
         $data['resource_type'] = $resource_type;
+        $data['resource_id']   = $resource_id;
         $data['mobile_brand'] = $mobile_brand;
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs;
         $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
         $data['create_time'] = date('Y-m-d H:i:s');
+        $data['res_sup_time']= $res_sup_time;
+        $data['res_eup_time']= $res_eup_time;
+        $data['resource_size'] = $resource_size;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $cache_key = C('SAPP_SCRREN').":".$openid;

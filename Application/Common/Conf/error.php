@@ -230,5 +230,6 @@ return array(
 	    '91010'=>'forscreen_record_failed',
 	    '91011'=>'forscreen_push_suggestion_failed',
 	    '91012'=>'smallapp_turntable_log_failed',
+	    '91013'=>'smallapp_order_time_failed',
 	),
 );

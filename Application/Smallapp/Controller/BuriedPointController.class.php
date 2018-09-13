@@ -27,7 +27,12 @@ class BuriedPointController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('video_id'=>1001,'action'=>1001,'order_time'=>1001);
             break;
-            
+            case 'sunCodeLog':
+                $this->is_verify = 1;
+                $this->valid_fields = array('id'=>1001,'media_id'=>1001,'box_mac'=>1001,
+                                            'log_time'=>1001,'action'=>1001
+                );
+            break;
         }
         parent::_init_();
         
@@ -118,5 +123,28 @@ class BuriedPointController extends CommonController{
         }else {
             $this->to_back(91013);
         } */
+    }
+    /**
+     * @desc 小程序码显示日志
+     */
+    public function sunCodeLog(){
+        $this->to_back(10000);
+        /*$data = array();
+        $action    = $this->params['action'];
+        $data['log_id']        = $this->params['id'];
+        $data['media_id']  = $this->params['media_id'];
+        $data['box_mac']   = $this->params['box_mac'];
+        
+        if($action==1){
+            $data['start_time']      = $this->params['log_time'];
+        }else if($action==2){
+            $data['end_time']      = $this->params['log_time'];
+        }
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_SUNCODE_LOG').$data['box_mac'] ; 
+        $redis->rpush($cache_key, json_encode($data));
+        $this->to_back(10000);*/
     }
 }

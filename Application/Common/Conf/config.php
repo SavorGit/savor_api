@@ -233,6 +233,7 @@ return array(
     'SAPP_UPRES_FORSCREEN'=>'smallapp:upresouce',
     'SAPP_WANT_GAME'      =>'smallapp:wantgame', //想要点开小程序互动游戏
     'SAPP_PLAY_GAME'      =>'smallapp:playgame',
+    'SAPP_SUNCODE_LOG'    =>'smallapp:suncodelog:', //电视显示小程序码时长日志
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

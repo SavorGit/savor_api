@@ -40,4 +40,9 @@ class TurntableLogModel extends Model
 	    return $ret;
 	}
 	
+	public function getOne($fields,$where){
+	    $data = $this->field($fields)->where($where)->find();
+	    return $data;
+	}
+	
 }

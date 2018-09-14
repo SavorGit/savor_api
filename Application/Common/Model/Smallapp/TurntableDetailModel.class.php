@@ -22,5 +22,12 @@ class TurntableDetailModel extends Model
 	    $ret = $this->where($where)->save($data);
 	    return $ret;
 	}
-	
+	public function countWhere($where){
+	    $nums = $this->where($where)->count();
+	    return $nums;
+	}
+	public function getOne($fields,$where,$order){
+	    $data = $this->field($fields)->where($where)->order($order)->find();
+	    return $data;
+	}
 }

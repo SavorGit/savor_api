@@ -37,6 +37,14 @@ class ActivityController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,
                                             'mobile_brand'=>1001,'mobile_model'=>1001);
                 break;
+            case 'jugeGamePerson': //判断当前游戏是否有人加入
+                $this->is_verify = 1;
+                $this->valid_fields = array('activity_id'=>1001);
+                break;
+            case 'canJoinGame':
+                $this->is_verify = 1;
+                $this->valid_fields = array('activity_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -93,6 +101,56 @@ class ActivityController extends CommonController{
         }else {
             $this->to_back(91012);
         }
+    }
+    /**
+     * @dfesc 是否可以加入游戏
+     */
+    public function canJoinGame(){
+        $activity_id = $this->params['activity_id'];
+        $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
+        $where = $data =  array();
+        $where['activity_id'] = $activity_id;
+        
+        $activity_info = $m_turntable_log->getOne('is_start,create_time',$where);
+        if($activity_info['is_start'] ==1){ //如果已经开始游戏 不能加入
+            $data['can_join'] = 0;
+            $this->to_back($data);
+        }else {//没有开始 
+            $juge_time = time() - 120;
+            $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel();
+            $nums = $m_turntable_detail->countWhere($where);
+            if(empty($nums)){//暂无人员加入
+                //创建时间是否在两分钟前
+                $create_time = strtotime($activity_info['create_time']);
+                if($juge_time>=$create_time){//创建时间在两分钟之前
+                    $data['can_join'] = 0;
+                    $this->to_back($data);
+                }else {//创建时间在两分钟之内
+                    $data['can_join'] = 1;
+                    $this->to_back($data);
+                }
+            }else {//有人员加入
+                
+                //判断最后一个加入的人是否在两分钟之内
+                $order = "create_time desc";
+                $activity_detail = $m_turntable_detail->getOne('create_time',$where,$order);
+                $join_time = strtotime($activity_detail['create_time']);
+                if($juge_time>=$join_time){
+                    $data['can_join'] = 0;
+                    $this->to_back($data);
+                }else {
+                    $data['can_join'] = 1;
+                    $this->to_back($data);
+                }
+            }
+            
+            
+        }
+        
+        
+        
+        
+        
     }
     /**
      * @desc 记录加入游戏日志
@@ -176,5 +234,14 @@ class ActivityController extends CommonController{
         
         $redis->rpush($cache_key, json_encode($data));
         $this->to_back(10000);
+    }
+    public function jugeGamePerson(){
+        $activity_id = $this->params['activity_id'];
+        $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel(); 
+        $where['activity_id'] = $activity_id;
+        $nums = $m_turntable_detail->countWhere($where);
+        $data = array();
+        $data['nums'] = $nums;
+        $this->to_back($data);
     }
 }

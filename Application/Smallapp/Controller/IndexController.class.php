@@ -23,10 +23,12 @@ class IndexController extends CommonController{
             break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
                                             'imgs'=>1001,'mobile_brand'=>1000,
                                             'mobile_model'=>1000,'action'=>1000,
-                                            'resource_type'=>1000,'resource_id'=>1000
+                                            'resource_type'=>1000,'resource_id'=>1000,
+                                            'is_pub_hotelinfo'=>1000,'is_share'=>1000,
+                                            'forscreen_id'=>1000
                 );
             break;
             case 'getHotelInfo':
@@ -51,6 +53,9 @@ class IndexController extends CommonController{
             case 'delCallCode':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
+                break;
+            case 'test':
+                $this->is_verify = 0;
                 break;
                 
         }
@@ -228,6 +233,7 @@ class IndexController extends CommonController{
      * @desc 记录用户投屏的图片、视频
      */
     public function recordForScreenPics(){
+        $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $mobile_brand = $this->params['mobile_brand'];
@@ -240,7 +246,11 @@ class IndexController extends CommonController{
         $resource_size = $this->params['resource_size'] ? $this->params['resource_size'] :0;
         $res_sup_time  = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
         $res_eup_time  = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
+        $is_pub_hotelinfo = $this->params['is_pub_hotelinfo'] ?$this->params['is_pub_hotelinfo']:0;
+        $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;
+        $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
         $data = array();
+        $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
         $data['action'] = $action;
@@ -254,11 +264,36 @@ class IndexController extends CommonController{
         $data['res_sup_time']= $res_sup_time;
         $data['res_eup_time']= $res_eup_time;
         $data['resource_size'] = $resource_size;
+        $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
+        $data['is_share']    = $is_share;
+        $data['duration']    = $duration;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $cache_key = C('SAPP_SCRREN').":".$openid;
         
         $redis->rpush($cache_key, json_encode($data));
+        
+        if(!empty($is_share)){
+            $map = array();
+            $map['forscreen_id'] = $forscreen_id;
+            $map['openid'] = $openid;
+            $map['box_mac']= $box_mac;
+            if($action==4){
+                $map['res_type'] = 1;
+            }else if($action==2 && $resource_type==2){
+                $map['res_type'] = 2;
+                $map['duration'] = $duration;
+            }
+            $map['resource_size'] = $resource_size;
+            $map['resource_id']   = $resource_id;
+            $forscreen_res = json_decode($imgs,true);
+            
+            $map['res_url']   = $forscreen_res[0]; 
+            $map['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+            
+            $cache_key = C('SAPP_SCRREN_SHARE').$box_mac.':'.$openid.":".$forscreen_id;
+            $redis->rpush($cache_key, json_encode($map));
+        }
         $this->to_back(10000);
     }
     /**
@@ -322,9 +357,22 @@ class IndexController extends CommonController{
             $keys = $keys[0];
             $key_arr = explode(':', $keys);
             $box_mac = $key_arr['2'];
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.flag']=0;
+            $map['a.state'] =1;
+            $map['d.flag'] =0;
+            $map['d.state'] = 1;
+            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name', $map);
+            $hotel_info = $rets[0];
             $code_info = $redis->get($keys);
             $code_info = json_decode($code_info,true);
-            $this->to_back(array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac));
+            $this->to_back(array('is_have'=>$code_info['is_have'],
+                                 'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
+                                 'room_name'=>$hotel_info['room_name']
+                                )
+                          );
         }else {
             $this->to_back(array('is_have'=>0));
         }
@@ -342,7 +390,10 @@ class IndexController extends CommonController{
         $redis->remove($cache_key);
         $this->to_back(10000);
     }
-    
+    public function test(){
+        $data['employId'] = 1;
+        $this->to_back($data);
+    }
     
     
     private function _gmt_iso8601($time){

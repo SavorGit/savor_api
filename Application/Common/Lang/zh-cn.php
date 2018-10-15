@@ -225,4 +225,8 @@ return array(
     'forscreen_push_suggestion_failed'=>'反馈意见失败',
     'smallapp_turntable_log_failed'=>'日志添加失败',
     'smallapp_order_time_failed'=>'记录指令时间失败',
+    'smallapp_user_exist'=>'用户已存在',
+    'smallapp_user_add_failed'=>'用户添加失败',
+    'small_app_add_failed'=>'新增失败',
+    'small_app_del_failed'=>'删除失败',
 );

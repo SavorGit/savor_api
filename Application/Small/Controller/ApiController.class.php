@@ -170,7 +170,7 @@ class ApiController extends CommonController{
                         room.hotel_id,box.mac as box_mac,box.state,box.flag,
                         box.switch_time,box.volum as volume ";
             $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
-            $redis->set($cache_key, json_encode($box_arr),86400);
+            $redis->set($cache_key, json_encode($box_arr),7200);
         }
         $cache_key = C('SYSTEM_CONFIG');
         $redis_sys_config = $redis->get($cache_key);

@@ -231,5 +231,9 @@ return array(
 	    '91011'=>'forscreen_push_suggestion_failed',
 	    '91012'=>'smallapp_turntable_log_failed',
 	    '91013'=>'smallapp_order_time_failed',
+	    '91014'=>'smallapp_user_exist',
+	    '91015'=>'smallapp_user_add_failed',
+	    '90106'=>'small_app_add_failed',
+	    '90107'=>'small_app_del_failed',
 	),
 );

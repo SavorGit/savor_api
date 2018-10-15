@@ -89,4 +89,14 @@ class HomeModel extends Model{
 	    return $data;
 	    
 	}
+	public function getWhere($fields,$where,$order,$limit){
+	    $data = $this->alias('a')
+	                 ->join('savor_mb_content as content on a.content_id= content.id','left')
+	                 ->field($fields)
+	                 ->where($where)
+	                 ->order($order)
+	                 ->limit($limit)
+	                 ->select();
+	   return $data;
+	}
 }

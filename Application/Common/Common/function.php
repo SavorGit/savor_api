@@ -199,3 +199,19 @@ function secToMinSec($secs){
         }
     }
 }
+function viewTimes($strtime){
+    $now = time();
+    $diff_time =  $now-$strtime;
+    if($diff_time<=600){
+        $view_time = '刚刚';
+    }else if($diff_time<3600){
+        $d_view = floor($diff_time/60);
+        $view_time = $d_view.'分钟前';
+    }else if($diff_time<=86400){
+        $d_view = floor($diff_time/3600);
+        $view_time = $d_view.'小时前';
+    }else {
+        $view_time = date('n月j日',$strtime);
+    }
+    return $view_time;
+}

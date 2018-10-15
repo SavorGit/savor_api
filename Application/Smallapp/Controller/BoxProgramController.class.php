@@ -57,8 +57,12 @@ class BoxProgramController extends CommonController{
         $play_info = array_slice($play_info, 0,$offset);
         
         foreach($play_info as $key=>$v){
+          /*if($v['media_id']==17614) {
+              unset($play_info[$key]);
+              continue;
+          }*/ 
           $map = array();
-          if($v['type']=='pro'){//节目
+          if($v['type']=='pro' && $v['media_id'] !=17614){//节目
               $map['a.media_id']= $v['media_id'];
               $map['a.type']    = 2;
               $media_info = $m_ads->getAdsList('a.name,a.img_url,a.duration,b.oss_addr', $map,'',' limit 1');

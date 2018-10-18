@@ -229,4 +229,5 @@ return array(
     'smallapp_user_add_failed'=>'用户添加失败',
     'small_app_add_failed'=>'新增失败',
     'small_app_del_failed'=>'删除失败',
+    'small_app_breanlink_failed'=>'断开连接失败',
 );

@@ -1,0 +1,240 @@
+<?php
+namespace Smallapp21\Controller;
+use Think\Controller;
+use Common\Lib\Smallapp_api;
+use \Common\Controller\CommonController as CommonController;
+use Common\Lib\SavorRedis;
+class IndexController extends CommonController{
+    /**
+     * 构造函数
+     */
+    function _init_() {
+        switch(ACTION_NAME) {
+            case 'genCode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000);
+                break;
+            case 'getBoxQr':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+                break;
+            case 'recOverQrcodeLog':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000,'is_overtime'=>1001);
+                break;
+            case 'breakLink':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
+                break;
+            case 'getBoxType':
+               $this->is_verify = 1;
+               $this->valid_fields = array('box_mac'=>1001);
+               break;
+           case 'getTestBoxQr':
+               $this->is_verify = 1;
+               $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+               break;
+        }
+        parent::_init_();
+    }
+    public function getTestBoxQr(){
+        $box_mac = $this->params['box_mac'];
+        $type    = $this->params['type'];
+        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
+        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
+        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
+        $m_small_app = new Smallapp_api();
+        $tokens  = $m_small_app->getWxAccessToken();
+        header('content-type:image/png');
+        $data = array();
+        $times = getMillisecond();
+        $times -= 7200000;
+        $data['scene'] = $box_mac.'_'.$type.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
+        $data['width'] = "280";//自定义的尺寸
+        $data['auto_color'] = false;//是否自定义颜色
+        $color = array(
+            "r"=>$r,
+            "g"=>$g,
+            "b"=>$b,
+        );
+        $data['line_color'] = $color;//自定义的颜色值
+        $data['is_hyaline'] = true;
+        $data = json_encode($data);
+        $m_small_app->getSmallappCode($tokens,$data);
+    }
+    
+    /**
+     * @des  获取当前机顶盒小程序码
+     */
+    public function getBoxQr(){
+        $box_mac = $this->params['box_mac'];
+        $type    = $this->params['type'];
+        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
+        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
+        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
+        $m_small_app = new Smallapp_api();
+        $tokens  = $m_small_app->getWxAccessToken();
+        header('content-type:image/png');
+        $data = array();
+        $times = getMillisecond();
+        $data['scene'] = $box_mac.'_'.$type.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
+        $data['width'] = "280";//自定义的尺寸
+        $data['auto_color'] = false;//是否自定义颜色
+        $color = array(
+            "r"=>$r,
+            "g"=>$g,
+            "b"=>$b,
+        );
+        $data['line_color'] = $color;//自定义的颜色值
+        $data['is_hyaline'] = true;
+        $data = json_encode($data);
+        $m_small_app->getSmallappCode($tokens,$data);
+    }
+    
+    public function isHaveCallBox(){
+        $openid = $this->params['openid'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+        $keys = $redis->keys($key);
+        if(!empty($keys)){
+            $keys = $keys[0];
+            $key_arr = explode(':', $keys);
+            $box_mac = $key_arr['2'];
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.flag']=0;
+            $map['a.state'] =1;
+            $map['d.flag'] =0;
+            $map['d.state'] = 1;
+            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name', $map);
+            $hotel_info = $rets[0];
+            $code_info = $redis->get($keys);
+            $code_info = json_decode($code_info,true);
+            $this->to_back(array('is_have'=>$code_info['is_have'],
+                'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
+                'room_name'=>$hotel_info['room_name']
+            )
+            );
+        }else {
+            $this->to_back(array('is_have'=>0,'openid'=>$openid));
+        }
+    
+    }
+    /**
+     * @desc 发送随机验证码给电视
+     */
+    public function genCode(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $type    = $this->params['type'];
+        $code = rand(100, 999);
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        if(empty($info)){
+            $info = array();
+            $m_box = new \Common\Model\BoxModel();
+            $maps['a.mac'] = $box_mac;
+            $maps['a.state'] = 1;
+            $maps['a.flag']  = 0;
+            $box_info = $m_box->alias('a')
+            ->join('savor_room room on a.room_id= room.id','left')
+            ->field('room.type type')->where($maps)->find();
+            
+            if($box_info['type']==1){
+                $info['is_have'] = 1;
+            }else {
+                $info['is_have'] = 0;
+            }
+            
+            $info['code'] = $code;
+            $redis->set($cache_key, json_encode($info),7200);
+            
+            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+            $keys = $redis->keys($key);
+            foreach($keys as $v){
+                $key_arr = explode(':', $v);
+                if($key_arr[2]!=$box_mac){
+                    $redis->remove($v);
+                }
+            }       
+        }else {
+            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+            $keys = $redis->keys($key);
+            foreach($keys as $v){
+                $key_arr = explode(':', $v);
+                if($key_arr[2]!=$box_mac){
+                    $redis->remove($v);
+                }
+            }
+            
+            $info = json_decode($info,true);
+        }
+        //记录日志
+        $this->recodeScannCode($box_mac,$openid,$type);
+        $this->to_back($info);
+    }
+    public function recOverQrcodeLog(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $type    = $this->params['type'];
+        $is_overtime = $this->params['is_overtime'];
+        $this->recodeScannCode($box_mac,$openid,$type,$is_overtime);
+        $this->to_back(10000);
+    }
+    //断开连接
+    public function breakLink(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        if(!empty($info)){
+            $ret = $redis->remove($cache_key);
+            if($ret) $this->to_back(10000);
+            else $this->to_back(90108);
+        }else {
+            $this->to_back(90108);
+        }
+    }
+    public function getBoxType(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $where = array();
+        $where['a.mac'] = $box_mac;
+        $where['a.state'] = 1;
+        $where['a.flag']  = 0;
+        $box_info = $m_box->alias('a')
+              ->join('savor_room room on a.room_id= room.id','left')
+              ->field('room.type')->where($where)->find();
+        list($t1, $t2) = explode(' ', microtime());
+        $nowtime = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+        $data['box_type'] = $box_info['type'];
+        $data['nowtime']  = $nowtime;
+        $this->to_back($data);
+        
+    }
+    /**
+     * @desc 记录扫码日志
+     * @param varchar $box_mac  盒子mac
+     * @param varchar $openid   openid
+     * @param tinyint $type     1:小码2:大码3:手机小程序呼码
+     */
+    private function recodeScannCode($box_mac,$openid,$type,$is_overtime){
+        $data = array();
+        $data['box_mac'] = $box_mac;
+        $data['openid']  = $openid;
+        $data['type']    = !empty($type) ? $type :1;
+        $data['is_overtime'] = $is_overtime ? $is_overtime :0;
+        $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
+        $m_qrcode_log->addInfo($data);
+    }
+}

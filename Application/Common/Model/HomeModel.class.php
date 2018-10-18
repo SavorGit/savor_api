@@ -92,6 +92,7 @@ class HomeModel extends Model{
 	public function getWhere($fields,$where,$order,$limit){
 	    $data = $this->alias('a')
 	                 ->join('savor_mb_content as content on a.content_id= content.id','left')
+	                 ->join('savor_media media on media.id = content.media_id')
 	                 ->field($fields)
 	                 ->where($where)
 	                 ->order($order)

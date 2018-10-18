@@ -235,5 +235,6 @@ return array(
 	    '91015'=>'smallapp_user_add_failed',
 	    '90106'=>'small_app_add_failed',
 	    '90107'=>'small_app_del_failed',
+	    '90108'=>'small_app_breanlink_failed',
 	),
 );

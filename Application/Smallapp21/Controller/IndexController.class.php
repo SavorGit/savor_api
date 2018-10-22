@@ -34,6 +34,13 @@ class IndexController extends CommonController{
                $this->is_verify = 1;
                $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
                break;
+           case 'closeauthLog':
+               $this->is_verify =1;
+               $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
+               break;
+           case 'getConfig':
+               $this->is_verify = 0;
+               break;
         }
         parent::_init_();
     }
@@ -48,7 +55,6 @@ class IndexController extends CommonController{
         header('content-type:image/png');
         $data = array();
         $times = getMillisecond();
-        $times -= 7200000;
         $data['scene'] = $box_mac.'_'.$type.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
         $data['width'] = "280";//自定义的尺寸
@@ -221,6 +227,25 @@ class IndexController extends CommonController{
         $data['nowtime']  = $nowtime;
         $this->to_back($data);
         
+    }
+    public function closeauthLog(){
+        $openid  = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $data = array();
+        $data['openid'] = $openid;
+        $data['box_mac']= $box_mac;
+        $m_closeauth_log = new \Common\Model\Smallapp\CloseauthLogModel();
+        $m_closeauth_log->addInfo($data);
+        $this->to_back(10000);
+    }
+    public function getConfig(){
+        list($t1, $t2) = explode(' ', microtime());
+        $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+        $exp_time = 7200000;
+        //$exp_time = 300000;
+        $data['sys_time'] = $sys_time;
+        $data['exp_time'] = $exp_time;
+        $this->to_back($data);
     }
     /**
      * @desc 记录扫码日志

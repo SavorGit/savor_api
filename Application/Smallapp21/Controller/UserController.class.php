@@ -17,6 +17,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,'nickName'=>1000,'gender'=>1000);
                 break;
+            case 'refuseRegister':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -60,5 +64,22 @@ class UserController extends CommonController{
             $data['openid'] = $openid;
             $this->to_back($data);
         }
+    }
+    public function refuseRegister(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $data = array();
+        $data['is_wx_auth'] = 1;
+        
+        $ret = $m_user->updateInfo($where, $data);
+        if($ret){
+                
+            $this->to_back(10000);
+        }else {
+            $this->to_back(91015);
+        }
+        
     }
 }

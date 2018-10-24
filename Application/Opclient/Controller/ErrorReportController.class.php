@@ -205,7 +205,7 @@ class ErrorReportController extends BaseController{
             $where['id'] = array('LT',$id);
         }  
 
-        $where['is_push'] = 1;
+        $where['is_push'] = array('in','1,2,3');
         $fields = '*';
         $order = ' id desc';
         $limit = ' limit '.$pageSize;

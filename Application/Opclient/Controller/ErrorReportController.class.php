@@ -250,9 +250,9 @@ class ErrorReportController extends BaseController{
         $traceinfo = $this->traceinfo;
         $clientname = $traceinfo['clientname'];
         if($clientname=='android'){
-            $where['is_push'] = array('in','1,2');
+            $where['is_push'] = array('in','1,2,3');
         }else if($clientname =='ios'){
-            $where['is_push'] = array('in','1,3');
+            $where['is_push'] = array('in','1,3,2');
         }
 
         $info = $m_hotel_error_report->getInfo($fields,$where);
@@ -341,9 +341,9 @@ class ErrorReportController extends BaseController{
         $traceinfo = $this->traceinfo;
         $clientname = $traceinfo['clientname'];
         if($clientname=='android'){
-            $where['is_push'] = array('in','1,2');
+            $where['is_push'] = array('in','1,2,3');
         }else if($clientname =='ios'){
-            $where['is_push'] = array('in','1,3');
+            $where['is_push'] = array('in','1,3,2');
         }
         
         $info = $m_hotel_error_report->getInfo($fields,$where);

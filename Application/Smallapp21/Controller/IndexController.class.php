@@ -41,6 +41,19 @@ class IndexController extends CommonController{
            case 'getConfig':
                $this->is_verify = 0;
                break;
+           case 'recordForScreenPics':
+               $this->is_verify = 1;
+               $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
+                   'imgs'=>1001,'mobile_brand'=>1000,
+                   'mobile_model'=>1000,'action'=>1000,
+                   'resource_type'=>1000,'resource_id'=>1000,
+                   'is_pub_hotelinfo'=>1000,'is_share'=>1000,
+                   'forscreen_id'=>1000
+               );
+               break;
+           case 'isFind':
+               $this->is_verify = 0;
+               break;
         }
         parent::_init_();
     }
@@ -241,10 +254,87 @@ class IndexController extends CommonController{
     public function getConfig(){
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
-        $exp_time = 7200000;
-        //$exp_time = 300000;
+        //$exp_time = 7200000;
+        $exp_time = 14400000;
         $data['sys_time'] = $sys_time;
         $data['exp_time'] = $exp_time;
+        $this->to_back($data);
+    }
+    /**
+     * @desc 记录用户投屏的图片、视频
+     */
+    public function recordForScreenPics(){
+        $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+        $forscreen_char = $this->params['forscreen_char'];
+        $imgs    = str_replace("\\", '', $this->params['imgs']);
+        $action  = $this->params['action'] ? $this->params['action'] : 0;
+        $resource_type = $this->params['resource_type'] ? $this->params['resource_type'] : 0;
+        $resource_id   = $this->params['resource_id'] ? $this->params['resource_id'] : 0;
+        $resource_size = $this->params['resource_size'] ? $this->params['resource_size'] :0;
+        $res_sup_time  = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
+        $res_eup_time  = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
+        $is_pub_hotelinfo = $this->params['is_pub_hotelinfo'] ?$this->params['is_pub_hotelinfo']:0;
+        $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;
+        $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
+        $data = array();
+        $data['forscreen_id'] = $forscreen_id;
+        $data['openid'] = $openid;
+        $data['box_mac']= $box_mac;
+        $data['action'] = $action;
+        $data['resource_type'] = $resource_type;
+        $data['resource_id']   = $resource_id;
+        $data['mobile_brand'] = $mobile_brand;
+        $data['mobile_model'] = $mobile_model;
+        $data['imgs']   = $imgs;
+        $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $data['res_sup_time']= $res_sup_time;
+        $data['res_eup_time']= $res_eup_time;
+        $data['resource_size'] = $resource_size;
+        $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
+        $data['is_share']    = $is_share;
+        $data['duration']    = $duration;
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_SCRREN').":".$openid;
+    
+        $redis->rpush($cache_key, json_encode($data));
+        $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
+        if($action==4 || ($action==2 && $resource_type==2)){
+            $redis->rpush($history_cache_key, json_encode($data));
+        }
+        
+    
+        if(!empty($is_share)){
+            $map = array();
+            $map['forscreen_id'] = $forscreen_id;
+            $map['openid'] = $openid;
+            $map['box_mac']= $box_mac;
+            if($action==4){
+                $map['res_type'] = 1;
+            }else if($action==2 && $resource_type==2){
+                $map['res_type'] = 2;
+                $map['duration'] = $duration;
+            }
+            $map['resource_size'] = $resource_size;
+            $map['resource_id']   = $resource_id;
+            $forscreen_res = json_decode($imgs,true);
+    
+            $map['res_url']   = $forscreen_res[0];
+            $map['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+    
+            $cache_key = C('SAPP_SCRREN_SHARE').$box_mac.':'.$openid.":".$forscreen_id;
+            $redis->rpush($cache_key, json_encode($map));
+        }
+        $this->to_back(10000);
+    }
+    public function isFind(){
+        $data = array();
+        $data['is_open'] = 1;
         $this->to_back($data);
     }
     /**

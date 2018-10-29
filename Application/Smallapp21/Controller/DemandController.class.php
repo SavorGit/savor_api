@@ -25,7 +25,7 @@ class DemandController extends CommonController{
         $openid = $this->params['openid'] ;
         $fields = "content.id,content.title,content.duration,
                    CONCAT('".$oss_host."',content.`img_url`) img_url,
-                   CONCAT('".$oss_host."',media.oss_addr) tx_url";
+                   CONCAT('".$oss_host."',media.oss_addr) tx_url,'1' as type";
         $where = array();
         $where['a.state'] = 1;
         $order = 'a.sort_num asc';

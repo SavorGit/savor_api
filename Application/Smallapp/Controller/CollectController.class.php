@@ -11,7 +11,7 @@ class CollectController extends CommonController{
         switch(ACTION_NAME) {
             case 'recLogs':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'res_id'=>1001,'type'=>1001,'status'=>$status);
+                $this->valid_fields = array('openid'=>1001,'res_id'=>1001,'type'=>1001,'status'=>1000);
             break;
         }
         parent::_init_();

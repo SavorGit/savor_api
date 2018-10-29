@@ -235,6 +235,7 @@ return array(
     'SAPP_PLAY_GAME'      =>'smallapp:playgame',
     'SAPP_SUNCODE_LOG'    =>'smallapp:suncodelog:', //电视显示小程序码时长日志
     'SAPP_SCRREN_SHARE'   =>'smallapp:public:forscreen:',
+    'SAPP_HISTORY_SCREEN' =>'smallapp:history:forscreen:',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

@@ -12,7 +12,7 @@ class UserController extends CommonController{
             
             case 'isRegister':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'page_id'=>1000);
                 break;
             case 'register':
                 $this->is_verify = 1;
@@ -35,6 +35,7 @@ class UserController extends CommonController{
     }
     public function isRegister(){
         $openid = $this->params['openid'];
+        $page_id = $this->params['page_id'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -47,6 +48,16 @@ class UserController extends CommonController{
             $userinfo['openid'] = $openid;
         }
         $data['userinfo'] = $userinfo;
+        if($page_id){
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SAPP_PAGEVIEW_LOG').$openid;
+            $map = array();
+            $map['openid'] = $openid;
+            $map['page_id']= $page_id;
+            $map['create_time'] = date('Y-m-d H:i:s');
+            $redis->rpush($cache_key, json_encode($map));
+        }
         $this->to_back($data);
     }
     public function register(){

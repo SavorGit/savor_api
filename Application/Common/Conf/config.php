@@ -231,11 +231,13 @@ return array(
     'HOTEL_BOX_STATE_LIST'=>'hotel_box_state_list_' ,  
     'SAPP_SCRREN'         =>'smallapp:forscreen',  //小程序用户投屏图片
     'SAPP_UPRES_FORSCREEN'=>'smallapp:upresouce',
+    'SAPP_UPDOWN_FORSCREEN'=>'smallapp:boxupdown:',
     'SAPP_WANT_GAME'      =>'smallapp:wantgame', //想要点开小程序互动游戏
     'SAPP_PLAY_GAME'      =>'smallapp:playgame',
     'SAPP_SUNCODE_LOG'    =>'smallapp:suncodelog:', //电视显示小程序码时长日志
     'SAPP_SCRREN_SHARE'   =>'smallapp:public:forscreen:',
     'SAPP_HISTORY_SCREEN' =>'smallapp:history:forscreen:',
+    'SAPP_PAGEVIEW_LOG'   =>'smallap:pageview:log:',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

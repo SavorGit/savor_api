@@ -34,9 +34,11 @@ class ForscreenHistoryController extends CommonController{
         }else {
             $data = array();
             $list = $redis->lgetrange($cache_key, 0, -1);
+            //$nums = count($list);
             foreach($list as $key=>$v){
                 $v = json_decode($v,true);
                 $imgs = json_decode($v['imgs']);
+                
                 $tmp = array();
                 if($v['action']==2){
                     $tmp['resource_id'] = $v['resource_id'];
@@ -46,9 +48,12 @@ class ForscreenHistoryController extends CommonController{
                     $tmp['forscreen_url']= $imgs[0];
                     $imgs_arr = explode('/', $imgs[0]);
                     $tmp['filename'] = $imgs_arr[2];
+                    $tmp['duration'] = secToMinSec(intval($v['duration']));
                     $data[$v['forscreen_id']]['res_type'] = 2;
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
+                    //$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
+                    $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
                 }else if($v['action']==4){
                     $tmp['resource_id'] = $v['resource_id'];
                     $tmp['imgurl']      = $oss_host.$imgs[0];
@@ -59,8 +64,13 @@ class ForscreenHistoryController extends CommonController{
                     $tmp['filename'] = $imgs_arr[2];
                     $data[$v['forscreen_id']]['res_type'] = 1;
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
+                    ///$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
+                    $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
                 }  
+            }
+            foreach($data as $key=>$v){
+                $data[$key]['res_nums'] = count($v['list']);
             }
             sortArrByOneField($data, 'forscreen_id',true);
             $data = array_slice($data, 0,$pagesize*$page);

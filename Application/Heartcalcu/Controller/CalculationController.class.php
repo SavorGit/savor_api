@@ -106,16 +106,10 @@ class CalculationController extends CommonController{
     }
     
     public function getHeartdata(){
-//{"clientid":"1","hotelId":"20","period":"0330095004061335","mac":"00E04C5E4F5D","demand":"20170406161345","apk":"2017030902","war":"2017032002","logo":"391","intranet_ip":"192.168.1.120","outside_ip":"221.218.166.232"}redis数据处理失败 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $hextModel = new \Common\Model\HotelExtModel();
-        /* $rkey = 'reportData';
-        $redis->select(13);
-        $roll_back_arr = array();
-        $count = 0;
-        $max = $redis->lsize($rkey);
-        $data = $redis->lgetrange($rkey,0,$max); */
-        $cache_key = 'heartbeat:';
+        
+        $cache_key = 'heartbeat:1';
         $redis->select(13);
         $data = $redis->keys($cache_key.'*');
         
@@ -124,6 +118,7 @@ class CalculationController extends CommonController{
             $boc = true;
             die;
         }
+        $flag = 0;
         foreach ($data as $val){
             
             $heartbeat = $redis->get($val);
@@ -145,39 +140,28 @@ class CalculationController extends CommonController{
             $client_id = $this->params['clientid'];
             $boc = false;
             if ($client_id == 1) {
+                //判断该该酒楼和mac是否对应
+                $tmps = $hextModel->isHaveMac('h.id', "1 and he.mac_addr='".$heartbeat['mac']."' and h.id=".$heartbeat['hotelId']);
+                if(empty($tmps)){
+                    $redis->remove($val);
+                    continue;
+                }
+                
                 //IP统计db0
                 $res_ip = $this->ipCalcu($this->params);
 
                 if($res_ip){
-                    //次数统计
-                    //mac*client_id key值是
-                    $res_num = $this->numCount($this->params);
-                    if($res_num){
-                        $boc = true;
-                    }
+                   $boc = true;  
                 }
-            } else {
-                $res_ip  = true;
-                $res_num = $this->numCount($this->params);
-                if($res_num){
-                    $boc = true;
-                }
-            }
-            $redis->select(13);
-            $bp = $redis->lPop($rkey);
-            //var_dump($bp);
+            } 
+            $flag ++;
         }
         if($boc){
-            echo 'redis数据处理成功'."\n";
+            echo date('Y-m-d H:i:s').'redis数据处理成功'.$flag."\n";
         }else{
             
-            echo 'redis数据处理失败'."\n";
+            echo date('Y-m-d H:i:s').'redis数据处理失败'."\n";
         }
-       /* foreach($roll_back_arr as $k=>$v){
-            $redis->rpush($k,$v);
-        }*/
-
-       // var_dump($this->params);
-
+       
     }
 }

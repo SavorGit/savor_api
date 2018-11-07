@@ -129,7 +129,7 @@ class ApiController extends CommonController{
                 $box_str = join(',', $boxs['box']);
                 $where['box_id'] = array('IN',"$box_str");
                 $res = $tvModel->getList($where, $field);
-                $redis->set($cache_key, json_encode($res));
+                $redis->set($cache_key, json_encode($res),7200);
             }
             
         }
@@ -214,7 +214,7 @@ class ApiController extends CommonController{
             $room_arr = $romModel->getWhere($map, $field);
             if(!empty($room_arr)){
                 $room_arr =  $this->changeroomList($room_arr);
-                $redis->set($cache_key, json_encode($room_arr));
+                $redis->set($cache_key, json_encode($room_arr),7200);
             }
         }else {
             $room_arr = json_decode($redis_value,true);

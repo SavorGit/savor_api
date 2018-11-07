@@ -18,11 +18,11 @@ class CalculationController extends CommonController{
     public function ipCalcu ($data) {
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(0);
-        $out_ip = $this->params['outside_ip'];
-        $hid = $this->params['hotelId'];
-        $teamviewer_id = $this->params['teamviewer_id'];
+        $out_ip = $data['outside_ip'];
+        $hid = $data['hotelId'];
+        $teamviewer_id = $data['teamviewer_id'];
         $bool = false;
-        $r_data = $this->params['intranet_ip'].'*'.$hid;
+        $r_data = $data['intranet_ip'].'*'.$hid;
         $bool = $redis->set($out_ip, $r_data);
 
         $hotelModel = new \Common\Model\HotelModel();
@@ -51,6 +51,7 @@ class CalculationController extends CommonController{
                         $bool = $redis->set($hid, $sub);
                     }
                     if($bool){
+                        $h_dat = $redis->get($hid);
                         $dat['ip'] = $h_dat;
                         $where =  'hotel_id='.$hid;
                         $hextModel = new \Common\Model\HotelExtModel();
@@ -63,7 +64,7 @@ class CalculationController extends CommonController{
                 } else {
                     //hotelid为key，查找值不存在
                     //更新value
-                    $bool = $redis->set($hid, $this->params['outside_ip']);
+                    $bool = $redis->set($hid, $data['outside_ip']);
                     //更新数据库存
                     if ($bool) {
 
@@ -120,12 +121,12 @@ class CalculationController extends CommonController{
         }
         $flag = 0;
         foreach ($data as $val){
-            
+            $redis->select(13);
             $heartbeat = $redis->get($val);
             $heartbeat = json_decode($heartbeat,true); 
-            $this->params = $heartbeat;
+            //$this->params = $heartbeat;
             
-            $hid = $this->params['hotelId'];
+            $hid = $heartbeat['hotelId'];
             if ($hid) {
                 if(!is_numeric($hid)){
                     continue;
@@ -137,30 +138,32 @@ class CalculationController extends CommonController{
                     continue;
                 }
             }
-            $client_id = $this->params['clientid'];
+            $client_id = $heartbeat['clientid'];
             $boc = false;
             if ($client_id == 1) {
                 //判断该该酒楼和mac是否对应
                 $tmps = $hextModel->isHaveMac('h.id', "1 and he.mac_addr='".$heartbeat['mac']."' and h.id=".$heartbeat['hotelId']);
                 if(empty($tmps)){
+                    
                     $redis->remove($val);
                     continue;
                 }
                 
                 //IP统计db0
-                $res_ip = $this->ipCalcu($this->params);
-
+                $res_ip = $this->ipCalcu($heartbeat);
+                
                 if($res_ip){
+                    $flag++;
                    $boc = true;  
                 }
             } 
-            $flag ++;
+            
         }
         if($boc){
             echo date('Y-m-d H:i:s').'redis数据处理成功'.$flag."\n";
         }else{
             
-            echo date('Y-m-d H:i:s').'redis数据处理失败'."\n";
+            echo date('Y-m-d H:i:s').'redis数据处理失败'.$flag."\n";
         }
        
     }

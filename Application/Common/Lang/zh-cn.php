@@ -230,4 +230,5 @@ return array(
     'small_app_add_failed'=>'新增失败',
     'small_app_del_failed'=>'删除失败',
     'small_app_breanlink_failed'=>'断开连接失败',
+    'netty_box_empty' => '该机顶盒暂不支持投屏',
 );

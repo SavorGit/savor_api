@@ -34,7 +34,7 @@ return array(
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
-	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21'), //模块配置
+	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -238,6 +238,7 @@ return array(
     'SAPP_SCRREN_SHARE'   =>'smallapp:public:forscreen:',
     'SAPP_HISTORY_SCREEN' =>'smallapp:history:forscreen:',
     'SAPP_PAGEVIEW_LOG'   =>'smallap:pageview:log:',
+    'SAPP_CALL_NETY_CMD'=>'call-mini-program',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

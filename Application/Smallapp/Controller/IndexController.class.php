@@ -318,8 +318,12 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $versionCode = intval($this->params['versionCode']);
         $data = array();
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $is_support_nett = $redis->get('support_netty_balance');
         if(empty($versionCode)|| $versionCode <$box_min_version_code ){  //上线前替换1234
             $data['is_sapp_forscreen'] = 0;
+            $data['support_netty_balance'] =  $is_support_nett;
             $this->to_back($data);
         }else if($versionCode>=$box_min_version_code){                   //上线前替换1234
             $m_box = new \Common\Model\BoxModel();
@@ -333,6 +337,7 @@ class IndexController extends CommonController{
             }
             
             $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
+            $data['support_netty_balance'] =  $is_support_nett;
             $this->to_back($data);
         }        
     }

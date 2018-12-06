@@ -35,6 +35,9 @@ class CollectController extends CommonController{
             $map['res_id']  = $res_id;
             $map['status']  = 1;
             $nums = $m_collect->countNum($map);
+            $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+            $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
+            $nums +=$ret['nums'];
             $this->to_back(array('nums'=>$nums));
         }else {
             $data['status']  = $status;
@@ -44,6 +47,10 @@ class CollectController extends CommonController{
                 $map['res_id']  = $res_id;
                 $map['status']  = 1;
                 $nums = $m_collect->countNum($map);
+                
+                $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+                $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
+                $nums +=$ret['nums'];
                 $this->to_back(array('nums'=>$nums));
             }else {
                 $this->to_back(90106);

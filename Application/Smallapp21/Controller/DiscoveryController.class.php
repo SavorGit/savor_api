@@ -13,6 +13,10 @@ class DiscoveryController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 break;
+            case 'showPic':
+                $this->is_verify = 1;
+                $this->valid_fields = array('forscreen_id'=>1001,'openid'=>1001);
+                break;
             
         }
         parent::_init_();
@@ -211,7 +215,11 @@ class DiscoveryController extends CommonController{
             
             $map['status'] = 1;
             $collect_num = $m_collect->countNum($map);
-            $public_list[$key]['collect_num'] = $collect_num;
+            
+            $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+            $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['forscreen_id']))->find();
+            
+            $public_list[$key]['collect_num'] = $collect_num + $ret['nums'];
             //分享个数
             $map = array();
             $map['res_id'] =$v['forscreen_id'];
@@ -224,5 +232,97 @@ class DiscoveryController extends CommonController{
         }
         $this->to_back($public_list);
     }
-    
+    public function showPic(){
+        $forscreen_id = $this->params['forscreen_id'];
+        $openid       = $this->params['openid'];
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $m_share   = new \Common\Model\Smallapp\ShareModel();
+        $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
+        
+        //echo $v['create_time'];exit;
+        $fields= 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,
+                    a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+        $order = 'a.res_type desc,a.create_time desc';
+        $rec_pub_list = $m_public->getList($fields, array('forscreen_id'=>$forscreen_id));
+        $pub_info = $rec_pub_list[0];
+        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $field = "forscreen_id,resource_id,openid,box_mac,resource_type,imgs";
+        $where = array();
+        $where['forscreen_id'] = $forscreen_id;
+        $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url,duration,resource_size";
+        $where = array();
+        $where['forscreen_id'] = $forscreen_id;
+        $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
+        foreach($pubdetail_info as $kk=>$vv){
+            if($pub_info['res_type']==2){
+                $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
+                
+                $pubdetail_info[$kk]['filename'] = $filename[2];
+                $tmp_arr = explode('.', $filename[2]);
+                $pubdetail_info[$kk]['res_id']   = $tmp_arr[$kk];
+                $pubdetail_info[$kk]['vide_img'] = $pubdetail_info[$kk]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
+                $pubdetail_info[$kk]['duration'] = secToMinSec(intval($pubdetail_info[$kk]['duration']));
+            }else{
+                $filename = explode('/', $vv['forscreen_url']);
+                
+                $pubdetail_info[$kk]['filename'] = $filename[2];
+                $tmp_arr = explode('.', $filename[2]);
+                $pubdetail_info[$kk]['res_id']   = $tmp_arr[0];
+            }
+            
+            
+        }
+       
+        $map = array();
+        $map['openid']=$openid;
+        $map['res_id'] =$forscreen_id;
+        
+        $map['status'] = 1;
+        $is_collect = $m_collect->countNum($map);
+        
+        
+        $data = array();
+        if(!empty($rec_pub_list)){
+            
+            if(empty($pub_info['avatarUrl'])){
+                $pub_info['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+            
+            }
+            if(empty($pub_info['nickName'])){
+                $pub_info['nickName'] = '游客';
+            }
+            $create_time = viewTimes(strtotime($pub_info['create_time']));
+            //收藏个数
+            $map = array();
+            $map['res_id'] =$forscreen_id;
+            $map['type']   = 2;
+            
+            $map['status'] = 1;
+            $collect_num = $m_collect->countNum($map);
+            $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+            $ret = $m_collect_count->field('nums')->where(array('res_id'=>$forscreen_id))->find();
+            //分享个数
+            $map = array();
+            $map['res_id'] =$forscreen_id;
+            $map['type']   = 2;
+            $map['status'] = 1;
+            $share_num = $m_share->countNum($map);
+            
+            
+            if(empty($is_collect)){
+                $pub_info['is_collect'] = "0";
+            }else {
+                $pub_info['is_collect'] = "1";
+            }
+            $pub_info['create_time'] = $create_time;
+            $pub_info['collect_num'] = $collect_num + $ret['nums'];
+            $pub_info['share_num']   = $share_num;
+            
+            $pub_info['pubdetail']   = $pubdetail_info;
+            $this->to_back($pub_info);
+        }else {
+            $this->to_back($data);
+        }
+    }
 }

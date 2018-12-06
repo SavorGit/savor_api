@@ -269,7 +269,7 @@ class IndexController extends CommonController{
         $data['duration']    = $duration;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
-        $cache_key = C('SAPP_SCRREN').":".$openid;
+        $cache_key = C('SAPP_SCRREN').":".$box_mac;
         
         $redis->rpush($cache_key, json_encode($data));
         

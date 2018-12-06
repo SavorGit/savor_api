@@ -215,3 +215,12 @@ function viewTimes($strtime){
     }
     return $view_time;
 }
+function getgeoByloa($lat,$lon){
+    $ak = C('BAIDU_GEO_KEY');
+    $url = 'http://api.map.baidu.com/geocoder/v2/?location='.$lat.','.$lon.'&output=json&pois=0&ak='.$ak;
+    $result = file_get_contents($url);
+    $re = json_decode($result,true);
+    if($re && $re['status'] == 0){
+        return $re['result'];
+    }
+}

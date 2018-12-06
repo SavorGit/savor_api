@@ -161,7 +161,7 @@ class IndexController extends CommonController{
         $info = $redis->get($cache_key);
         if(empty($info)){
             $info = array();
-            $m_box = new \Common\Model\BoxModel();
+            /* $m_box = new \Common\Model\BoxModel();
             $maps['a.mac'] = $box_mac;
             $maps['a.state'] = 1;
             $maps['a.flag']  = 0;
@@ -173,7 +173,8 @@ class IndexController extends CommonController{
                 $info['is_have'] = 1;
             }else {
                 $info['is_have'] = 0;
-            }
+            } */
+            $info['is_have'] = 1;
             
             $info['code'] = $code;
             $redis->set($cache_key, json_encode($info),7200);
@@ -303,7 +304,7 @@ class IndexController extends CommonController{
         $data['duration']    = $duration;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
-        $cache_key = C('SAPP_SCRREN').":".$openid;
+        $cache_key = C('SAPP_SCRREN').":".$box_mac;
     
         $redis->rpush($cache_key, json_encode($data));
         $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;

@@ -239,6 +239,7 @@ return array(
     'SAPP_HISTORY_SCREEN' =>'smallapp:history:forscreen:',
     'SAPP_PAGEVIEW_LOG'   =>'smallap:pageview:log:',
     'SAPP_CALL_NETY_CMD'=>'call-mini-program',
+    'SAPP_BOX_FORSCREEN_NET'=>'smallapp:net:forscreen:',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(
@@ -298,5 +299,6 @@ return array(
 		'2'=>'内存卡存储空间不足，请及时处理',
 	),
     'SDK_ERROR_REPORT_TIME'=>'10',
-    'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404'
+    'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404',
+    'BAIDU_GEO_KEY'=>'q1pQnjOG28z8xsCaoby2oqLTLaPgelyq',
 );

@@ -18,4 +18,8 @@ class ProgramMenuListModel extends Model
         $ret = $this->where($where)->save($data);
         return $ret;
     }
+    public function getInfo($fields,$where,$order){
+        $data = $this->field($fields)->where($where)->order($order)->find();
+        return $data;
+    }
 }

@@ -106,7 +106,19 @@ class CommonController extends Controller {
 	    $content_host = C('CONTENT_HOST');
 	    return $content_host.$url;
 	}
-	
+	public function getParentAreaid($area_id){
+	    switch ($area_id){
+	        case '1':
+	            $parent_id = 35;
+	            break;
+	        case '9':
+	            $parent_id = 107;
+	            break;
+	        default:
+	            $parent_id = $area_id;
+	    }
+	    return $parent_id;
+	}
 
 
 

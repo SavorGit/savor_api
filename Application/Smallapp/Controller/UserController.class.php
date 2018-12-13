@@ -212,8 +212,10 @@ class UserController extends CommonController{
             $map['res_id'] =$v['forscreen_id'];
             $map['type']   = 2;
             $map['status'] = 1;
+            $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+            $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['forscreen_id']))->find();
             $collect_num = $m_collect->countNum($map);
-            $public_list[$key]['collect_num'] = $collect_num;
+            $public_list[$key]['collect_num'] = $collect_num + $ret['nums'];
             //分享个数
             $map = array();
             $map['res_id'] =$v['forscreen_id'];
@@ -291,7 +293,10 @@ class UserController extends CommonController{
             $map['res_id'] =$v['res_id'];
             $map['status'] = 1;
             $collect_num = $m_collect->countNum($map);
-            $collect_info[$key]['collect_num'] = $collect_num;
+            
+            $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+            $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['res_id']))->find();
+            $collect_info[$key]['collect_num'] = $collect_num + $ret['nums'];
             //分享个数
             $m_share = new \Common\Model\Smallapp\ShareModel();
             $map = array();

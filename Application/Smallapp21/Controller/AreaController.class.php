@@ -91,11 +91,25 @@ class AreaController extends CommonController{
     public function getSecArea(){
         $area_id = $this->params['area_id'];
         $parent_id = $this->getParentAreaid($area_id);
+        
+        
+        $m_hotel = new \Common\Model\HotelModel();
+        $where = array();
+        $where['area_id'] = $area_id;
+        $group = 'county_id';
+        $county_arr = $m_hotel->field('county_id')->where($where)->group($group)->select();
+        
+        $tmps = array();
+        foreach($county_arr as $key=>$v){
+            $tmps[]= $v['county_id'];
+        }
+        
         $m_area = new \Common\Model\AreaModel();
         $fields = 'id,region_name';
         $where = array();
         $where['parent_id'] = $parent_id;
         $where['is_valid']    = 1;
+        $where['id'] = array('in',$tmps);
         $order = 'id asc';
         $area_list = $m_area->getWhere($fields, $where, $order, '',2);
         $tmp = array('id'=>0,'region_name'=>'全部区域');

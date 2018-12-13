@@ -24,7 +24,7 @@ class BuriedPointController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('forscreen_id'=>1001,'resource_id'=>1001,
                     'box_mac'=>1001,'openid'=>1001,
-                    'used_time'=>1001,'is_exist'=>1001,'is_break'=>1001);
+                    'used_time'=>1001,'is_exist'=>1001,'is_break'=>1000);
             break;  
         }
         parent::_init_();

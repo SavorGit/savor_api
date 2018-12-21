@@ -237,5 +237,12 @@ return array(
 	    '90107'=>'small_app_del_failed',
 	    '90108'=>'small_app_breanlink_failed',
 	    '90109'=>'netty_box_empty',
+	    //小程序游戏
+	    '90110'=>'small_app_launch_game_failed',
+	    '90111'=>'small_app_game_have_start',
+	    '90112'=>'small_app_game_start_failed',
+	    '90113'=>'small_app_game_score_report_error',
+	    '90114'=>'small_app_game_not_exist',
+	    '90115'=>'small_app_game_have_not_lunch',
 	),
 );

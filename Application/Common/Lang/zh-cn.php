@@ -231,4 +231,10 @@ return array(
     'small_app_del_failed'=>'删除失败',
     'small_app_breanlink_failed'=>'断开连接失败',
     'netty_box_empty' => '该机顶盒暂不支持投屏',
+    'small_app_launch_game_failed'=>'发起游戏失败',
+    'small_app_game_have_start'=>'游戏已开始',
+    'small_app_game_start_failed'=>'游戏开始失败',
+    'small_app_game_score_report_error'=>'游戏数据上报失败',
+    'small_app_game_not_exist'=>'该游戏不存在或已下线',
+    'small_app_game_have_not_lunch'=>'游戏尚未发起，请等待',
 );

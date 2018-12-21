@@ -38,7 +38,7 @@ class BuriedPointController extends CommonController{
         $resource_id  = $this->params['resource_id'];    //资源id
         $openid       = $this->params['openid'];         //openid
         $box_mac      = $this->params['box_mac'];         //机顶盒mac
-        $used_time    = $this->params['used_time'];       //用时
+        $used_time    = abs($this->params['used_time']);       //用时
         $is_exist     = $this->params['is_exist'];         //是否存在
         if($is_exist==1){//资源已存在于机顶盒，不走下载逻辑
             $this->to_back(10000);

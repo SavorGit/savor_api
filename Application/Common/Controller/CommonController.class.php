@@ -6,6 +6,7 @@ class CommonController extends Controller {
     protected $is_verify = 1;//检验接口 0不校验 1校验
     protected $is_login = 0;
     protected $is_des = 0;
+    protected $is_js =0;
     protected $params = array();
     protected $valid_fields = array(); //数据有效性验证(必参)
     protected $traceinfo = array();
@@ -31,6 +32,7 @@ class CommonController extends Controller {
 		if(empty($input_params))  $input_params=array();
 	    $this->params = array_merge($input_params,$_GET,$_POST);
 	    if(isset($this->params['token']) && $this->params['token']=='null')    $this->params['token']='';
+	    if(isset($this->params['is_js']) && $this->params['is_js'] ==1)        $this->is_js = 1;
 		if($this->is_verify){
 		    if(empty($this->params)){
 		        $this->to_back(1001);
@@ -75,7 +77,14 @@ class CommonController extends Controller {
 	    $apiResp->code = $resp_code;
 	    $apiResp->msg = L("$resp_msg");
 	    $apiResp->result = $resp_result;
-	    $result = json_encode($apiResp);
+	    if($this->is_js ==1){
+	        $result = "h5turbine(".json_encode($apiResp).")";
+	        echo $result;
+	        exit;
+	    }else {
+	        $result = json_encode($apiResp);
+	    }
+	    
 	    if($type == 2){
 	        $this->is_des = 1;   
 	    }else{

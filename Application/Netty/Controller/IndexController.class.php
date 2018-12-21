@@ -19,6 +19,7 @@ class IndexController extends CommonController{
     public function index(){
         
         $box_mac = $this->params['box_mac'];
+        $is_js   = $this->params['is_js'];
         $req_id  = getMillisecond();
         $data['box_mac'] = $box_mac;
         $data['req_id']  = $req_id;
@@ -35,7 +36,12 @@ class IndexController extends CommonController{
                 $map = array();
                 $map['box_mac'] = $box_mac;
                 $map['cmd']     = C('SAPP_CALL_NETY_CMD');
-                $map['msg']     = $this->params['msg'];
+                if($is_js==1){
+                    $map['msg']     = urldecode($this->params['msg']);
+                }else {
+                    $map['msg']     = $this->params['msg'];
+                }
+                
                 $map['req_id']  = $req_id;
                 $post_data = http_build_query($map);
                 

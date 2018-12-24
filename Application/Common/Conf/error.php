@@ -23,6 +23,9 @@ return array(
 		'12002'=>'user_not_exist',
 		'12003' =>'user_login_err',
 
+		//短信
+        '21001'=>'send_sms_error',
+
 		//记录用手首次使用app
 	    '20001'=>'first_use_have_data',
 	    '20002'=>'first_use_push_err',

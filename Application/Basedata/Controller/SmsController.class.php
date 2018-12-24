@@ -15,7 +15,7 @@ class SmsController extends CommonController{
         parent::_init_();
     }
 
-    private function sendSms(){
+    public function sendSms(){
         $tel = I('tel',0,'intval');
         $templateId = I('templateid',0,'intval');
 
@@ -42,9 +42,11 @@ class SmsController extends CommonController{
             $data['msg_type'] = 3;//通知类型
             $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
             $m_account_sms_log->addData($data);
-            return true;
+            $res = array('message'=>'发送短信成功');
+            $this->to_back($res);
         }else{
-            return false;
+            $this->to_back(21001);
         }
+
     }
 }

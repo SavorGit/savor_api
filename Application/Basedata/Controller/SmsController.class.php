@@ -18,11 +18,12 @@ class SmsController extends CommonController{
     public function sendSms(){
         $tel = I('tel',0,'intval');
         $templateId = I('templateid',0,'intval');
+        $content = I('content','','trim');
 
         if(empty($tel) || empty($templateId)){
             $this->to_back(1001);
         }
-        $param = null;
+        $param = $content;
 
         $ucconfig = C('SMS_CONFIG');
         $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
@@ -36,7 +37,7 @@ class SmsController extends CommonController{
             $data['status'] = 1;
             $data['create_time'] = date('Y-m-d H:i:s');
             $data['update_time'] = date('Y-m-d H:i:s');
-            $data['url'] = '';
+            $data['url'] = $param;
             $data['tel'] = $tel;
             $data['resp_code'] = $res_data['resp']['respCode'];
             $data['msg_type'] = 3;//通知类型

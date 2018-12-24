@@ -8,6 +8,10 @@ class IndexController extends CommonController{
      */
     function _init_(){
        switch(ACTION_NAME){
+           case 'isViewGame':
+               $this->is_verify = 1;
+               $this->valid_fields = array('game_id'=>1001);
+               break;
            case 'gameList':
                $this->is_verify = 1;
                $this->valid_fields = array('page'=>1001);
@@ -18,6 +22,16 @@ class IndexController extends CommonController{
                break;
        } 
        parent::_init_();
+    }
+    /**
+     * @desc 是否显示游戏banner
+     */
+    public function isViewGame(){
+        $game_id = $this->params['game_id'];
+        $m_games = new \Common\Model\Smallapp\GamesModel();
+        $where['id'] = $game_id;
+        $data = $m_games->getOne('status', $where);
+        $this->to_back($data);
     }
     /**
      * @desc 游戏列表

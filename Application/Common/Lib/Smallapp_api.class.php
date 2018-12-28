@@ -20,8 +20,13 @@ class Smallapp_api {
 	private $url_get_smallapp_code = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
 	private $url_get_smallapp_openid = "https://api.weixin.qq.com/sns/jscode2session";
 
-	public function __construct(){
-	    $wx_config = C('SMALLAPP_CONFIG');
+	public function __construct($flag = 1){
+	    if($flag==1){//小程序标准版
+	        $wx_config = C('SMALLAPP_CONFIG');
+	    }else if($flag ==2){//小程序极简版
+	        $wx_config = C('SMALLAPP_SIMPLE_CONFIG');
+	    }
+	    
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
 	}

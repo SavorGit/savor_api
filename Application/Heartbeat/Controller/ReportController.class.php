@@ -277,7 +277,7 @@ class ReportController extends CommonController{
                 
                 
             }else if($clientid==2 && !empty($ret_arr['date'])) {//机顶盒
-                $hotelInfo =  $m_box->getHotelInfoByBoxMac($mac);
+                $hotelInfo =  $m_box->getHotelInfoByBoxMacNew($mac);
                 
                 if($hotelInfo){
                     $heart_log_info = $m_heart_log->getInfo('hotel_id,last_heart_time',array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid));

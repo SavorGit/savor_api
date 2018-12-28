@@ -54,6 +54,9 @@ class IndexController extends CommonController{
            case 'isFind':
                $this->is_verify = 0;
                break;
+           case 'isOpenFind':
+               $this->is_verify = 0;
+               break;
            case 'happylist':
                $this->is_verify = 0;
                break;
@@ -341,6 +344,11 @@ class IndexController extends CommonController{
         $data['is_open'] = 1;
         $this->to_back($data);
     }
+    public function isOpenFind(){
+        $data = array();
+        $data['is_open'] = 0;
+        $this->to_back($data);
+    }
     /**
      * @desc 生日歌列表
      */
@@ -349,7 +357,8 @@ class IndexController extends CommonController{
         $where = array();
         $oss_host = "http://".C('OSS_HOST').'/';
         
-        $where['a.id'] = array('in','4803,4795,4794,4793');
+        //$where['a.id'] = array('in','4803,4795,4794,4793');
+        $where['a.id'] = array('in','4803,4795,4794,5233');
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
                     CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
         

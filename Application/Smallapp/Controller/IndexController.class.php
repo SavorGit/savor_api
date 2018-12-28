@@ -303,7 +303,7 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $m_box = new \Common\Model\BoxModel();
         $info = array();
-        $info = $m_box->getHotelInfoByBoxMac($box_mac);
+        $info = $m_box->getHotelInfoByBoxMacNew($box_mac);
         $info['vedio_url'] = 'http://oss.littlehotspot.com/media/resource/jda24z7C8Z.mp4';
         $info['file_name'] = 'jda24z7C8Z.mp4';
         $info['name']     = 'Happy Birthday';

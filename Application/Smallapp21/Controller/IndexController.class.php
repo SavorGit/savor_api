@@ -57,6 +57,9 @@ class IndexController extends CommonController{
            case 'isOpenFind':
                $this->is_verify = 0;
                break;
+           case 'setOpenFind':
+               $this->is_verify = 0;
+               break;
            case 'happylist':
                $this->is_verify = 0;
                break;
@@ -346,8 +349,19 @@ class IndexController extends CommonController{
     }
     public function isOpenFind(){
         $data = array();
-        $data['is_open'] = 0;
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $is_open = $redis->get('small_app_is_open_find');
+        
+        $data['is_open'] = $is_open;
         $this->to_back($data);
+    }
+    public function setOpenFind(){
+        $is_open_find = $this->params['is_open_find'] ? $this->params['is_open_find'] :0;
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $redis->set('small_app_is_open_find', $is_open_find);
+        $this->to_back(10000);
     }
     /**
      * @desc 生日歌列表

@@ -99,6 +99,11 @@ class ReportController extends CommonController{
         $ret['pro_download_period'] = $data['pro_download_period'];
         $ret['ads_download_period'] = $data['ads_download_period'];
         $ret['net_speed']  = $data['net_speed'];
+        
+        $m_box = new \Common\Model\BoxModel();
+        $info = $m_box->field('is_4g')->where(array('state'=>1,'flag'=>0,'mac'=>$data['mac']))->find();
+        
+        $ret['is_4g'] = intval($info['is_4g']);
         $this->to_back($ret);
     }
     /**

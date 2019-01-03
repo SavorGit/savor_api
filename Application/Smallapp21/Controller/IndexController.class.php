@@ -372,7 +372,8 @@ class IndexController extends CommonController{
         $oss_host = "http://".C('OSS_HOST').'/';
         
         //$where['a.id'] = array('in','4803,4795,4794,4793');
-        $where['a.id'] = array('in','4803,4795,4794,5233');
+        //$where['a.id'] = array('in','4803,4795,4794,5233');
+        $where['a.id'] = array('in','5248,5246,5245,5244');
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
                     CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
         
@@ -380,7 +381,7 @@ class IndexController extends CommonController{
                       ->join('savor_media media on a.media_id = media.id','left')
                       ->field($fields)
                       ->where($where)
-                      ->order('a.id desc')->select();
+                      ->order('a.sort_num asc')->select();
         $this->to_back($data);
         
     }

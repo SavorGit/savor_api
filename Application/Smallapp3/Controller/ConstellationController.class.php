@@ -61,7 +61,7 @@ class ConstellationController extends CommonController{
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
                 $img_url = $res_media['oss_addr'];
                 $date = $v['start_month'].'.'.$v['start_day'].'-'.$v['end_month'].'.'.$v['end_day'];
-                $result[] = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'date'=>$date,'intro'=>$v['intro']);
+                $result[] = array('id'=>$v['id'],'name'=>$v['name'],'is_now'=>$is_now,'img_url'=>$img_url,'date'=>$date,'intro'=>$v['intro']);
             }
         }
         $this->to_back($result);
@@ -79,8 +79,8 @@ class ConstellationController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($result['media_id']);
             $result['img_url'] = $res_media['oss_addr'];
-            $url = "h5/constellation/detail?id=$constellation_id";
-            $result['detail_url'] = $this->getContentUrl($url);
+            $url = 'https://'.$_SERVER['HTTP_HOST']."/h5/constellation/detail?id=$constellation_id";
+            $result['detail_url'] = $url;
             $result['date'] = $result['start_month'].'.'.$result['start_day'].'-'.$result['end_month'].'.'.$result['end_day'];
             unset($result['content'],$result['media_id'],$result['status'],$result['create_time']);
         }

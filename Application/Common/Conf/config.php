@@ -30,7 +30,7 @@ return array(
     'VAR_TEMPLATE'          =>  'savort',    // 默认模板切换变量
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
 
-	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo',
+	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','H5',
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',

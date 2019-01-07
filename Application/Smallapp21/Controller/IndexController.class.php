@@ -382,8 +382,14 @@ class IndexController extends CommonController{
                       ->field($fields)
                       ->where($where)
                       ->order('a.sort_num asc')->select();
-        $this->to_back($data);
-        
+        $result = array();
+        foreach ($data as $v){
+            $name_arr = explode('-',$v['name']);
+            $v['title'] = $name_arr[0];
+            $v['sub_title'] = $name_arr[1];
+            $result[] = $v;
+        }
+        $this->to_back($result);
     }
     
     

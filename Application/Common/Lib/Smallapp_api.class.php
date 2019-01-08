@@ -96,8 +96,10 @@ class Smallapp_api {
 	public function getWxAccessToken(){
 	    if($this->flag==1){
 	        $smallapp_config = C('SMALLAPP_CONFIG');
-	    }else {
+	    }else if($this->flag==2){
 	        $smallapp_config = C('SMALLAPP_SIMPLE_CONFIG');
+	    }else if($this->flag==3){
+	        $smallapp_config = C('SMALLAPP_JIJIAN_CONFIG');
 	    }
 	    
 		$key_token = $smallapp_config['cache_key'];

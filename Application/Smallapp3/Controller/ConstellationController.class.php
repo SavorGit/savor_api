@@ -79,7 +79,7 @@ class ConstellationController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($result['media_id']);
             $result['img_url'] = $res_media['oss_addr'];
-            $url = 'https://'.$_SERVER['HTTP_HOST']."/h5/constellation/detail?id=$constellation_id";
+            $url = 'https://'.$_SERVER['HTTP_HOST']."/h5/constellation/detail/id/$constellation_id";
             $result['detail_url'] = $url;
             $result['date'] = $result['start_month'].'.'.$result['start_day'].'-'.$result['end_month'].'.'.$result['end_day'];
             unset($result['content'],$result['media_id'],$result['status'],$result['create_time']);

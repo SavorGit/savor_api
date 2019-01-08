@@ -101,6 +101,7 @@ return array(
     //热点投屏小程序配置
 	'SMALLAPP_CONFIG'=>array('cache_key'=>'smallapp_token','appid'=>'wxfdf0346934bb672f','appsecret'=>'b9b93aef8d6609722596e35385ff05c5'),
     'SMALLAPP_SIMPLE_CONFIG'=>array('cache_key'=>'smallapp_simple_token','appid'=>'wxe59b125a3f073901','appsecret'=>'423b1a65b84eacd4c13ab791b3a7edb1'),
+    'SMALLAPP_JIJIAN_CONFIG'=>array('cache_key'=>'smallapp_jijian_token','appid'=>'wx7883a4327329a67c','appsecret'=>'da423755cc5b734db6f7a8dd7563a581'),
     'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
     'HOTEL_KEY' => array(
 		'1'=>'重点',

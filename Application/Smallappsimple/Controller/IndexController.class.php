@@ -15,6 +15,10 @@ class IndexController extends CommonController{
                 $this->is_verify  =1;
                 $this->valid_fields = array('code'=>1001);
             break;
+            case 'getJjOpenid': //极简版openid
+                $this->is_verify  =1;
+                $this->valid_fields = array('code'=>1001);
+                break;
             case 'getHotelInfo':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
@@ -27,6 +31,10 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
             break;
+            case 'getBoxQr':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
                 
         }
         parent::_init_();
@@ -38,6 +46,15 @@ class IndexController extends CommonController{
     public function getOpenid(){
         $code = $this->params['code'];
         $m_small_app = new Smallapp_api($flag = 2);
+        $data  = $m_small_app->getSmallappOpenid($code);
+        $this->to_back($data);
+    }
+    /**
+     *@desc 获取新极简版openid
+     */
+    public function getJjOpenid(){
+        $code = $this->params['code'];
+        $m_small_app = new Smallapp_api($flag = 3);
         $data  = $m_small_app->getSmallappOpenid($code);
         $this->to_back($data);
     }
@@ -79,4 +96,31 @@ class IndexController extends CommonController{
             
         }
     }
+    /**
+     * @des  获取当前机顶盒小程序码
+     */
+    public function getBoxQr(){
+        $box_mac = $this->params['box_mac'];
+        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
+        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
+        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
+        $m_small_app = new Smallapp_api(2);
+        $tokens  = $m_small_app->getWxAccessToken();
+        header('content-type:image/png');
+        $data = array();
+        $data['scene'] = $box_mac;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['page'] = "pages/index/index";//扫描后对应的path
+        $data['width'] = "280";//自定义的尺寸
+        $data['auto_color'] = false;//是否自定义颜色
+        $color = array(
+            "r"=>$r,
+            "g"=>$g,
+            "b"=>$b,
+        );
+        $data['line_color'] = $color;//自定义的颜色值
+        $data['is_hyaline'] = true;
+        $data = json_encode($data);
+        $m_small_app->getSmallappCode($tokens,$data);
+    }
+    
 }

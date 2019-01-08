@@ -40,7 +40,7 @@ class CollectCountController extends CommonController{
                 $m_collect_count->addInfo($data);
             }
         }
-        $this->to_back(1000);
+        $this->to_back(10000);
         
     }
 }

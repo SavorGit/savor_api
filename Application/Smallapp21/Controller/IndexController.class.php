@@ -48,7 +48,7 @@ class IndexController extends CommonController{
                    'mobile_model'=>1000,'action'=>1000,
                    'resource_type'=>1000,'resource_id'=>1000,
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
-                   'forscreen_id'=>1000
+                   'forscreen_id'=>1000,'public_text'=>1000,
                );
                break;
            case 'isFind':
@@ -280,6 +280,7 @@ class IndexController extends CommonController{
         $mobile_brand = $this->params['mobile_brand'];
         $mobile_model = $this->params['mobile_model'];
         $forscreen_char = $this->params['forscreen_char'];
+        $public_text   = $this->params['public_text'];
         $imgs    = str_replace("\\", '', $this->params['imgs']);
         $action  = $this->params['action'] ? $this->params['action'] : 0;
         $resource_type = $this->params['resource_type'] ? $this->params['resource_type'] : 0;
@@ -324,6 +325,7 @@ class IndexController extends CommonController{
             $map['forscreen_id'] = $forscreen_id;
             $map['openid'] = $openid;
             $map['box_mac']= $box_mac;
+            $map['public_text'] = $public_text;
             if($action==4){
                 $map['res_type'] = 1;
             }else if($action==2 && $resource_type==2){

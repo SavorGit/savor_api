@@ -164,7 +164,7 @@ class FindController extends CommonController{
         }
         
         //echo $v['create_time'];exit;
-        $fields= 'a.forscreen_id,a.forscreen_char,a.res_type,a.res_nums,a.is_pub_hotelinfo,
+        $fields= 'a.forscreen_id,a.forscreen_char,a.public_text,a.res_type,a.res_nums,a.is_pub_hotelinfo,
                     a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
         $order = 'a.res_type desc,a.create_time desc';
         $rec_pub_list = $m_public->getList($fields, array('forscreen_id'=>$forscreen_id));

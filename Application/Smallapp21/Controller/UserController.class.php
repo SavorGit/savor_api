@@ -43,7 +43,7 @@ class UserController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,gender,status,is_wx_auth', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,gender,status,is_wx_auth,close_hotel_hint', $where);
         $data = array();
         if(empty($userinfo)){
             $data['openid'] = $openid;

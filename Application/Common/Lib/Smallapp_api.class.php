@@ -19,14 +19,16 @@ class Smallapp_api {
 	private $url_get_userinfo = 'https://api.weixin.qq.com/sns/userinfo';
 	private $url_get_smallapp_code = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
 	private $url_get_smallapp_openid = "https://api.weixin.qq.com/sns/jscode2session";
-
+    private $flag;
 	public function __construct($flag = 1){
+	    $this->flag =$flag;
 	    if($flag==1){//小程序标准版
 	        $wx_config = C('SMALLAPP_CONFIG');
 	    }else if($flag ==2){//小程序极简版
 	        $wx_config = C('SMALLAPP_SIMPLE_CONFIG');
+	    }else if($flag==3){//新极简版配置
+	        $wx_config = C('SMALLAPP_JIJIAN_CONFIG');
 	    }
-	    
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
 	}
@@ -92,7 +94,12 @@ class Smallapp_api {
 	 * @return Ambigous <mixed, string>
 	 */
 	public function getWxAccessToken(){
-	    $smallapp_config = C('SMALLAPP_CONFIG');
+	    if($this->flag==1){
+	        $smallapp_config = C('SMALLAPP_CONFIG');
+	    }else {
+	        $smallapp_config = C('SMALLAPP_SIMPLE_CONFIG');
+	    }
+	    
 		$key_token = $smallapp_config['cache_key'];
 		$redis = SavorRedis::getInstance();
 		$redis->select(5);

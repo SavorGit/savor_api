@@ -369,13 +369,14 @@ class IndexController extends CommonController{
             $map['a.state'] =1;
             $map['d.flag'] =0;
             $map['d.state'] = 1;
-            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name', $map);
+            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.is_open_simple', $map);
             $hotel_info = $rets[0];
             $code_info = $redis->get($keys);
             $code_info = json_decode($code_info,true);
             $this->to_back(array('is_have'=>$code_info['is_have'],
                                  'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
-                                 'room_name'=>$hotel_info['room_name']
+                                 'room_name'=>$hotel_info['room_name'],
+                                 'is_open_simple'=>$hotel_info['is_open_simple']
                                 )
                           );
         }else {

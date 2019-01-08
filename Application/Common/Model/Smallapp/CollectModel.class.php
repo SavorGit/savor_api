@@ -37,6 +37,7 @@ class CollectModel extends Model
 	public function getList($fields,$where,$order,$limit,$group){
 	    $data = $this->alias('a')
 	                ->join('savor_smallapp_public b on a.res_id = b.forscreen_id','left')
+	                ->join('savor_smallapp_user c on b.openid=c.openid','left')
 	                ->field($fields)->where($where)
 	                ->order($order)->group($group)
 	                ->limit($limit)

@@ -104,7 +104,7 @@ class IndexController extends CommonController{
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;
         $b = $this->params['b'] !='' ? $this->params['b'] : 255;
-        $m_small_app = new Smallapp_api(2);
+        $m_small_app = new Smallapp_api(3);
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/png');
         $data = array();

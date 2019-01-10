@@ -77,10 +77,21 @@ class IndexController extends CommonController{
         if(empty($info)){
             $this->to_back(70001);
         }else {
+            $redis = SavorRedis::getInstance();
+            $redis->select(13);
+            $cache_key = 'heartbeat:2:'.$box_mac;
+            $data = $redis->get($cache_key);
+            $intranet_ip = '';
+            if(!empty($data)){
+                $data = json_decode($data,true);
+                $intranet_ip = $data['intranet_ip'];
+            }
             $info = $info[0];
+            $info['intranet_ip'] = $intranet_ip;
             $this->to_back($info);
         }
     }
+
     public function getInnerIp(){
         $box_mac = $this->params['box_mac'];
         

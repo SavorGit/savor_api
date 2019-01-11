@@ -31,6 +31,7 @@ class IndexController extends CommonController{
         $m_games = new \Common\Model\Smallapp\GamesModel();
         $where['id'] = $game_id;
         $data = $m_games->getOne('status', $where);
+        $data['img_url'] = 'http://oss.littlehotspot.com/media/resource/6h5RQdmAKn.jpg';
         $this->to_back($data);
     }
     /**

@@ -375,7 +375,7 @@ class IndexController extends CommonController{
         
         //$where['a.id'] = array('in','4803,4795,4794,4793');
         //$where['a.id'] = array('in','4803,4795,4794,5233');
-        $where['a.id'] = array('in','5248,5246,5245,5244');
+        $where['a.id'] = array('in','5288,5246,5245,5244');
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
                     CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
         

@@ -60,11 +60,10 @@ class LoginController extends CommonController{
         }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid,'status'=>0);
+        $where = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid,'status'=>1);
         $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
         if(empty($userinfo)){
             $data = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid);
-            $data['status'] = 1;
             $res = $m_user->addInfo($data);
             if(!$res){
                 $this->to_back(92007);

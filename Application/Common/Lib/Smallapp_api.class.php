@@ -24,10 +24,12 @@ class Smallapp_api {
 	    $this->flag =$flag;
 	    if($flag==1){//小程序标准版
 	        $wx_config = C('SMALLAPP_CONFIG');
-	    }else if($flag ==2){//小程序极简版
+	    }else if($flag ==2){//小程序极简版 已弃用
 	        $wx_config = C('SMALLAPP_SIMPLE_CONFIG');
 	    }else if($flag==3){//新极简版配置
 	        $wx_config = C('SMALLAPP_JIJIAN_CONFIG');
+	    }else if($flag==4){
+	        $wx_config = C('SMALLAPP_DINNER_CONFIG');
 	    }
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
@@ -100,6 +102,8 @@ class Smallapp_api {
 	        $smallapp_config = C('SMALLAPP_SIMPLE_CONFIG');
 	    }else if($this->flag==3){
 	        $smallapp_config = C('SMALLAPP_JIJIAN_CONFIG');
+	    }else if($this->flag==4){
+	        $smallapp_config = C('SMALLAPP_DINNER_CONFIG');
 	    }
 	    
 		$key_token = $smallapp_config['cache_key'];

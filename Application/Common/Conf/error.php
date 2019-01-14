@@ -256,6 +256,7 @@ return array(
         '92005'=>'smallappdinner_verify_code_sendfail',
         '92006'=>'smallappdinner_verify_code_checkfail',
         '92007'=>'smallappdinner_login_fail',
+        '92008'=>'smallappdinner_invite_code_checkerror',
 
 	),
 );

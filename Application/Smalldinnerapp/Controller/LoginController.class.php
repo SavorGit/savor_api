@@ -35,7 +35,7 @@ class LoginController extends CommonController{
         }
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $where = array('a.bind_mobile'=>$mobile,'a.code'=>$invite_code,'a.flag'=>0);
+        $where = array('a.code'=>$invite_code,'a.flag'=>0);
         $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.state,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(empty($invite_code_info)) {
             $this->to_back(92002);

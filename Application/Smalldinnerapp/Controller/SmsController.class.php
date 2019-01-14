@@ -28,7 +28,7 @@ class SmsController extends CommonController{
             $this->to_back(92001);
         }
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $where = array('a.bind_mobile'=>$mobile,'a.code'=>$invite_code,'a.flag'=>0);
+        $where = array('a.code'=>$invite_code,'a.flag'=>0);
         $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.is_import_customer,a.code,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(empty($invite_code_info)) {//输入的邀请码不正确
             $this->to_back(92002);
@@ -37,7 +37,7 @@ class SmsController extends CommonController{
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
         //发送短信
-        $info['tel'] = $mobile;
+        $info = array('tel'=>$mobile);
         $param = $verify_code;
         $ret = $this->sendToUcPas($info, $param);
         if($ret){
@@ -60,7 +60,6 @@ class SmsController extends CommonController{
         if($type==1){
             $templateId = $ucconfig['dinner_login_templateid'];
         }
-
         $ucpass= new \Common\Lib\Ucpaas($options);
         $appId = $ucconfig['appid'];
         $sjson = $ucpass->templateSMS($appId,$to,$templateId,$param);

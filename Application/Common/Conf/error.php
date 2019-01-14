@@ -247,5 +247,15 @@ return array(
 	    '90113'=>'small_app_game_score_report_error',
 	    '90114'=>'small_app_game_not_exist',
 	    '90115'=>'small_app_game_have_not_lunch',
+
+        //小程序餐厅端
+        '92001'=>'smallappdinner_mobile_error',
+        '92002'=>'smallappdinner_invite_code_error',
+        '92003'=>'smallappdinner_invite_code_isuse',
+        '92004'=>'smallappdinner_verify_code_hassend',
+        '92005'=>'smallappdinner_verify_code_sendfail',
+        '92006'=>'smallappdinner_verify_code_checkfail',
+        '92007'=>'smallappdinner_login_fail',
+
 	),
 );

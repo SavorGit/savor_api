@@ -238,4 +238,14 @@ return array(
     'small_app_game_not_exist'=>'该游戏不存在或已下线',
     'small_app_game_have_not_lunch'=>'游戏尚未发起，请等待',
     'send_sms_error'=>'短信发送失败',
+    'smallappdinner_mobile_error'=>'手机号码格式错误',
+    'smallappdinner_invite_code_error'=>'邀请码错误',
+    'smallappdinner_invite_code_isuse'=>'邀请码已使用',
+    'smallappdinner_verify_code_hassend'=>'验证码已发送',
+    'smallappdinner_verify_code_sendfail'=>'验证码发送失败,请重试',
+    'smallappdinner_verify_code_checkfail'=>'验证码输入错误',
+    'smallappdinner_login_fail'=>'登录失败',
+
+
+
 );

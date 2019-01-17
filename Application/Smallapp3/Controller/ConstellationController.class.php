@@ -102,7 +102,7 @@ class ConstellationController extends CommonController{
             foreach ($res as $v){
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
                 $video_url = $res_media['oss_addr'];
-                $video_img = $video_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
+                $video_img = $video_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
                 $result[] = array('name'=>$v['name'],'video_img'=>$video_img,'video_url'=>$video_url);
             }
         }

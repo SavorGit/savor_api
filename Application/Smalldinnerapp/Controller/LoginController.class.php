@@ -43,14 +43,14 @@ class LoginController extends CommonController{
 
         if(empty($invite_code_info)){
             $where = array('a.code'=>$invite_code,'a.flag'=>0);
-            $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.state,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
+            $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
             if(empty($invite_code_info)){//输入的邀请码不正确
                 $this->to_back(92002);
             }
-            if($invite_code_info['state'] ==1){
+            if($invite_code_info['state'] ==1 && $invite_code_info['bind_mobile']!=$mobile){
                 $this->to_back(92003);
             }
-            $where = array('code'=>$invite_code,'flag'=>0);
+            $where = array('id'=>$invite_code_info['id']);
             $data = array('state'=>1,'bind_mobile'=>$mobile);
             $data['bind_time'] = date('Y-m-d H:i:s');
             $m_hotel_invite_code->saveInfo($where,$data);
@@ -60,15 +60,20 @@ class LoginController extends CommonController{
         }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid,'status'=>1);
+        $where = array('openid'=>$openid);
         $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
         if(empty($userinfo)){
-            $data = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid);
+            $data = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid,'status'=>1);
             $res = $m_user->addInfo($data);
             if(!$res){
                 $this->to_back(92007);
             }
             $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
+        }else{
+            $data = array('mobile'=>$mobile,'small_app_id'=>4,'openid'=>$openid,'status'=>1);
+            $where = array('id'=>$userinfo['user_id']);
+            $m_user->updateInfo($where,$data);
+            $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
         }
         $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
         $userinfo['hotel_name'] = $invite_code_info['hotel_name'];

@@ -63,7 +63,7 @@ class BoxProgramController extends CommonController{
               continue;
           }*/ 
           $map = array();
-          if($v['type']=='pro' && $v['media_id'] !=17614){//节目
+          if($v['type']=='pro' && !in_array($v['media_id'], array('17614','19533')) ){//节目
               $map['a.media_id']= $v['media_id'];
               $map['a.type']    = 2;
               $media_info = $m_ads->getAdsList('a.id,a.name title,a.img_url,a.duration,b.oss_addr tx_url', $map,'',' limit 1');

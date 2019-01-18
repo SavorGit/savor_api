@@ -63,6 +63,9 @@ class IndexController extends CommonController{
            case 'happylist':
                $this->is_verify = 0;
                break;
+           case 'getQrCode':
+               $this->is_verify = 0;
+               break;
         }
         parent::_init_();
     }
@@ -392,6 +395,30 @@ class IndexController extends CommonController{
             $result[] = $v;
         }
         $this->to_back($result);
+    }
+    public function getQrCode(){
+        
+        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
+        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
+        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
+        $m_small_app = new Smallapp_api();
+        $tokens  = $m_small_app->getWxAccessToken();
+        header('content-type:image/png');
+        $data = array();
+        $times = getMillisecond();
+        $data['scene'] ='_';
+        $data['page'] = "pages/index/index";//扫描后对应的path
+        $data['width'] = "280";//自定义的尺寸
+        $data['auto_color'] = false;//是否自定义颜色
+        $color = array(
+            "r"=>$r,
+            "g"=>$g,
+            "b"=>$b,
+        );
+        $data['line_color'] = $color;//自定义的颜色值
+        $data['is_hyaline'] = true;
+        $data = json_encode($data);
+        $m_small_app->getSmallappCode($tokens,$data);
     }
     
     

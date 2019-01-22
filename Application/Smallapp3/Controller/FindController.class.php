@@ -167,7 +167,13 @@ class FindController extends CommonController{
         $fields= 'a.forscreen_id,a.forscreen_char,a.public_text,a.res_type,a.res_nums,a.is_pub_hotelinfo,
                     a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
         $order = 'a.res_type desc,a.create_time desc';
-        $rec_pub_list = $m_public->getList($fields, array('forscreen_id'=>$forscreen_id));
+        $maps = array();
+        $maps['a.forscreen_id'] = $forscreen_id;
+        $maps['hotel.state'] = 1;
+        $maps['hotel.flag']  = 0;
+        $maps['box.flag']    = 0;
+        $maps['box.state']   = 1;
+        $rec_pub_list = $m_public->getList($fields, $maps);
         $pub_info = $rec_pub_list[0];
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $field = "forscreen_id,resource_id,openid,box_mac,resource_type,imgs";

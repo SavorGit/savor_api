@@ -110,55 +110,19 @@ class DiscoveryController extends CommonController{
           }
         }else {//如果该用户没有朋友公开的内容
             //获取系统推荐（最近三天）
-            $where = array();
-            //$where['a.openid']       = array('not in',$friend_str);
-            $where['a.create_time']  = array('EGT',$jz_date);
-            $where['a.is_recommend'] = 1;
-            $where['a.status']       = 2;
-              
-            $where['box.flag']       = 0;
-            $where['box.state']      = 1;
-            $where['hotel.flag']     = 0;
-            $where['hotel.state']    = 1;
-            $rec_nums = $m_public->countWhere($where);
-            $limit = "limit 0,".$page*$pagesize;
+               
+            $limit = "0,".$page*$pagesize;
             $fields= 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,
-                    a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-            $order = 'a.res_type desc,a.create_time desc';
-            $rec_pub_list = $m_public->getList($fields, $where, $order, $limit);
-            if(!empty($rec_nums)){
-                if($rec_nums>=$all_nums){
-                    $public_list = $rec_pub_list;
-                }else {//获取其他用户公开的内容
-                    $diff_nums_1 = $all_nums - $rec_nums;
-                    $where = array();
-                    
-                    $where['a.is_recommend'] = 0;
-                    $where['a.status']       = 2;
-                    $where['box.flag']       = 0;
-                    $where['box.state']      = 1;
-                    $where['hotel.flag']     = 0;
-                    $where['hotel.state']    = 1;
-                    $limit = "limit 0,".$diff_nums_1;
-                    $order = 'a.create_time desc';
-                    $common_pub_list = $m_public->getList($fields, $where, $order, $limit);
-                    $public_list = array_merge($rec_pub_list,$common_pub_list);
-                }
-            }else {//没有推荐
-                
-                $limit = "0,".$page*$pagesize;
-                $fields= 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,
-                          a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-                $where = array();
-                $where['box.flag']   = 0;
-                $where['box.state']  = 1;
-                $where['hotel.flag'] = 0;
-                $where['hotel.state']= 1;
-                $where['a.status']   = 2; 
-                $order = 'a.create_time desc';
-                $public_list = $m_public->getList($fields, $where, $order, $limit);
-                 
-            }
+                      a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $where = array();
+            $where['box.flag']   = 0;
+            $where['box.state']  = 1;
+            $where['hotel.flag'] = 0;
+            $where['hotel.state']= 1;
+            $where['a.status']   = 2; 
+            $order = 'a.create_time desc';
+            $public_list = $m_public->getList($fields, $where, $order, $limit);
+    
         }
         foreach($public_list as $key=>$v){
             

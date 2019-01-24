@@ -33,7 +33,7 @@ class ProgramController extends CommonController{
                 break;
             case 'rtbAdsList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'program_list'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'program_list'=>1000);
                 break;
             case 'uploadSmallProgramList':
                 $this->is_verify = 1;

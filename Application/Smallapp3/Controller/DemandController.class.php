@@ -53,7 +53,8 @@ class DemandController extends CommonController{
         $where = array();
         $where['a.menu_id'] = $menu_id;
         $where['a.type']    = 2;
-        $where['media.id']     = array('neq',17614);
+        $where['media.id']  = array('not in',array('17614','19533')) ;
+        //$where['media.id']     = array('neq',17614);
         $order  = ' a.sort_num asc';
         $menu_item_arr = $m_program_menu_item->alias('a')
         ->join('savor_ads ads on a.ads_id = ads.id','left')

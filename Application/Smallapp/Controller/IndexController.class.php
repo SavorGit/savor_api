@@ -324,6 +324,7 @@ class IndexController extends CommonController{
         if(empty($versionCode)|| $versionCode <$box_min_version_code ){  //上线前替换1234
             $data['is_sapp_forscreen'] = 0;
             $data['support_netty_balance'] =  $is_support_nett;
+            $data['is_simple_sapp_forscreen'] = 0;
             $this->to_back($data);
         }else if($versionCode>=$box_min_version_code){                   //上线前替换1234
             $m_box = new \Common\Model\BoxModel();
@@ -338,6 +339,7 @@ class IndexController extends CommonController{
             
             $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
             $data['support_netty_balance'] =  $is_support_nett;
+            $data['is_simple_sapp_forscreen']  = intval($box_info['is_open_simple']);
             $this->to_back($data);
         }        
     }

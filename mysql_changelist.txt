@@ -50,3 +50,70 @@ ALTER TABLE `cloud`.`savor_repair_box_user`  ADD INDEX `reparir_ind` (`datetime`
 alter table `cloud`.`savor_option_task_repair` add `gps` varchar(50) not Null DEFAULT '' comment '纬经度';
 alter table `cloud`.`savor_option_task_repair` add `repari_type` varchar(250) not Null DEFAULT '' comment '1,2,3错误类型';
 ALTER TABLE `cloud`.`savor_option_task_repair`  ADD `current_location` varchar(255) not null default '';
+
+增加说明：新增红包业务相关表
+修改时间：2019-02-25 18:33
+修改人：刘斌
+执行SQL：
+ALTER TABLE `cloud`.`savor_smallapp_user`
+ADD COLUMN `mpopenid` varchar(100) NOT NULL DEFAULT '' COMMENT '微信服务号用户openid' AFTER `is_wx_auth`;
+
+CREATE TABLE IF NOT EXISTS `savor_smallapp_redpacket` (
+  `id` bigint(16) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL COMMENT '用户ID',
+  `total_fee` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总金额',
+  `amount` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '红包个数',
+  `surname` varchar(30) NOT NULL DEFAULT '' COMMENT '姓名',
+  `sex` tinyint(1) NOT NULL DEFAULT '1'  COMMENT '性别 1男,2女',
+  `greetings` varchar(100) NOT NULL DEFAULT '' COMMENT '祝福语',
+  `scope` tinyint(1) NOT NULL DEFAULT '1'  COMMENT '发送范围 1当前包间,2当前餐厅所有电视,3全网餐厅所有电视',
+  `mac` varchar(12) NOT NULL DEFAULT '' COMMENT 'mac地址',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0:未付款,1:付款码到电视,2:付款完成,3:已抢完,4未抢完',
+  `pay_time` timestamp NULL DEFAULT NULL COMMENT '付款时间',
+  `pay_type` int(5) NOT NULL DEFAULT '0' COMMENT '0未知 10微信支付',
+  `isdel` tinyint(1) NOT NULL COMMENT '是否删除 0未删除 1删除',
+  `add_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='红包';
+
+CREATE TABLE IF NOT EXISTS `savor_smallapp_redpacket_receive` (
+  `id` bigint(16) NOT NULL AUTO_INCREMENT,
+  `redpacket_id` int(11) NOT NULL COMMENT '红包id',
+  `user_id` int(11) NOT NULL COMMENT '领取用户id',
+  `money` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '红包金额',
+  `barrage` varchar(150) NOT NULL DEFAULT '' COMMENT '弹幕',
+  `receive_time` timestamp NULL DEFAULT NULL COMMENT '领取时间',
+  `add_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='红包领取记录';
+
+
+CREATE TABLE IF NOT EXISTS `savor_smallapp_orderserial` (
+  `id` int(13) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `trade_no` varchar(30) NOT NULL DEFAULT '' COMMENT '订单号',
+  `serial_order` varchar(200) NOT NULL DEFAULT '' COMMENT '第三方流水号',
+  `goods_id` int(11) NOT NULL DEFAULT '0' COMMENT '产品ID',
+  `pay_type` int(5) NOT NULL DEFAULT '0' COMMENT '0未知 10 微信支付',
+  `add_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+  PRIMARY KEY (`id`),
+  KEY `trade_no` (`trade_no`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COMMENT='订单流水号记录';
+
+CREATE TABLE IF NOT EXISTS `savor_smallapp_refund` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `trade_no` varchar(50) DEFAULT NULL COMMENT '订单号',
+  `user_id` int(11) unsigned NOT NULL COMMENT '购买用户ID',
+  `refund_money` decimal(9,2) DEFAULT '0.00' COMMENT '退款金额',
+  `goods_id` int(11) NOT NULL DEFAULT '0' COMMENT '商品ID',
+  `batch_no` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '退款批次号',
+  `detail_data` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '退款数据',
+  `code_str` varchar(200) NOT NULL DEFAULT '' COMMENT '退款的票号',
+  `type` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0整单退1部分退',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '0未处理1已提交至第三方2退款完成',
+  `reason_way` tinyint(1) DEFAULT '1' COMMENT '退款方式1原路退回2退银行卡',
+  `reason_type` tinyint(1) DEFAULT '1' COMMENT '原因类型',
+  `refund_time` timestamp NULL DEFAULT NULL COMMENT '退款时间',
+  `succ_time` timestamp NULL DEFAULT NULL COMMENT '完成时间',
+  `add_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='退款';

@@ -8,20 +8,30 @@ class RedpacketController extends CommonController{
     function _init_() {
         switch(ACTION_NAME) {
             case 'getConfig'://获取红包业务配置
-                $this->is_verify =0;
+                $this->is_verify =1;
+                $this->valid_fields = array('type'=>1001);
                 break;
             case 'sendTvbonus':
                 $this->is_verify =1;
                 $this->valid_fields = array('open_id'=>1001,'total_money'=>1001,'amount'=>1001,
                     'surname'=>1001,'sex'=>1001,'greetings'=>1001,'scope'=>1001,'mac'=>1002);
                 break;
+            
         }
         parent::_init_();
     }
 
     public function getConfig(){
+        $type = $this->params['type'];
         $data = array();
-        $data['is_open_red_packet'] = 1;
+        if($type==1){//红包开关
+            
+            $data['is_open_red_packet'] = 1;
+        }else if($type==2){//发红包配置
+            $data['bless'] = C('SMALLAPP_REDPACKET_BLESS');
+            $data['range'] = C('SMALLAPP_REDPACKET_SEND_RANGE');
+        }
+        
         $this->to_back($data);
     }
 

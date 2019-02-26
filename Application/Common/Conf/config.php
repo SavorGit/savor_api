@@ -309,5 +309,10 @@ return array(
     'SDK_ERROR_REPORT_TIME'=>'10',
     'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404',
     'BAIDU_GEO_KEY'=>'q1pQnjOG28z8xsCaoby2oqLTLaPgelyq',
-
+    'SMALLAPP_REDPACKET_BLESS'=>array(
+        1=>'生日快乐',2=>'happy birthday',3=>'寿比南山',4=>'大吉大利，貌美如花' 
+    ),
+    'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
+       1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视' 
+     ),
 );

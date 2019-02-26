@@ -14,7 +14,7 @@ class RedpacketController extends CommonController{
             case 'sendTvbonus':
                 $this->is_verify =1;
                 $this->valid_fields = array('open_id'=>1001,'total_money'=>1001,'amount'=>1001,
-                    'surname'=>1001,'sex'=>1001,'greetings'=>1001,'scope'=>1001,'mac'=>1002);
+                    'surname'=>1001,'sex'=>1001,'bless_id'=>1001,'scope'=>1001,'mac'=>1001);
                 break;
             
         }
@@ -25,7 +25,6 @@ class RedpacketController extends CommonController{
         $type = $this->params['type'];
         $data = array();
         if($type==1){//红包开关
-            
             $data['is_open_red_packet'] = 1;
         }else if($type==2){//发红包配置
             $data['bless'] = C('SMALLAPP_REDPACKET_BLESS');
@@ -44,7 +43,7 @@ class RedpacketController extends CommonController{
         $amount = $this->params['amount'];
         $surname = $this->params['surname'];
         $sex = $this->params['sex'];
-        $greetings = $this->params['greetings'];
+        $bless_id = $this->params['bless_id'];
         $scope = $this->params['scope'];
         $box_mac = $this->params['mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -61,7 +60,7 @@ class RedpacketController extends CommonController{
         if(!$check_name){
             $this->to_back(90118);
         }
-        if(!in_array($scope,array(1,2,3))){
+        if(!array_key_exists($scope,C('SMALLAPP_REDPACKET_SEND_RANGE'))){
             $this->to_back(90119);
         }
         $m_box = new \Common\Model\BoxModel();
@@ -74,7 +73,7 @@ class RedpacketController extends CommonController{
             $this->to_back(15003);
         }
         $redpacket = array('user_id'=>$user_info['id'],'total_fee'=>$total_money,'amount'=>$amount,'surname'=>$surname,
-            'sex'=>$sex,'greetings'=>$greetings,'scope'=>$scope,'mac'=>$box_mac);
+            'sex'=>$sex,'bless_id'=>$bless_id,'scope'=>$scope,'mac'=>$box_mac);
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
         $order_id = $m_redpacket->addData($redpacket);
         if(!$order_id){

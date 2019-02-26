@@ -16,6 +16,10 @@ class RedpacketController extends CommonController{
                 $this->valid_fields = array('open_id'=>1001,'total_money'=>1001,'amount'=>1001,
                     'surname'=>1001,'sex'=>1001,'bless_id'=>1001,'scope'=>1001,'mac'=>1001);
                 break;
+            case 'getresult':
+                $this->is_verify =1;
+                $this->valid_fields = array('open_id'=>1001,'order_id'=>1001);
+                break;
             
         }
         parent::_init_();
@@ -97,5 +101,21 @@ class RedpacketController extends CommonController{
         $this->to_back($result);
     }
 
+    public function getresult(){
+        $open_id = $this->params['open_id'];
+        $order_id = $this->params['order_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$open_id,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
+        $status = $res_order['status'];
+        $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
+        $data = array('status'=>$status,'jump_url'=>$jump_url);
+        $this->to_back($data);
+    }
 
 }

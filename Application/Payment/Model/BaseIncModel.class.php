@@ -2,7 +2,9 @@
 namespace Payment\Model;
 use Think\Model;
 class BaseIncModel extends Model{
-    
+
+    protected $tableName='smallapp_redpacket';
+
     /**
      * 获取支付信息
      * @param array $trade_info

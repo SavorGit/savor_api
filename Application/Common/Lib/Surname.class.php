@@ -44,8 +44,8 @@ class Surname {
             "段干", "百里", "东郭", "南门", "呼延", "羊舌", "梁丘", "左丘", "东门", "西门", "南宫"
         );
 
-        $first_name = utf8sub($user_name, 1);
-        $double_name = utf8sub($user_name, 2);
+        $first_name = $this->utf8sub($user_name, 1);
+        $double_name = $this->utf8sub($user_name, 2);
         if(in_array($first_name,$array) || in_array($double_name, $double_array)) {
             return true;
         }else{
@@ -59,7 +59,7 @@ class Surname {
      * @param type $len
      * @return string
      */
-    function utf8sub($str,$len,$offset=0){
+    public function utf8sub($str,$len,$offset=0){
         if($len<0){
             return '';
         }

@@ -66,6 +66,7 @@ class WxpayModel extends Model{
   
     
     private function get_payurl_pc(){
+
         require_once "wxpay_lib/WxPay.Api.php";
 		$notify_url = $this->host_name.'/payment/wxNotify/pc';
 		

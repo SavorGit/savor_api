@@ -27,8 +27,18 @@ class RedpacketController extends CommonController{
         if($type==1){//红包开关
             $data['is_open_red_packet'] = 1;
         }else if($type==2){//发红包配置
-            $data['bless'] = C('SMALLAPP_REDPACKET_BLESS');
-            $data['range'] = C('SMALLAPP_REDPACKET_SEND_RANGE');
+            
+            $cf_bless_arr = C('SMALLAPP_REDPACKET_BLESS');
+            $cf_range_arr = C('SMALLAPP_REDPACKET_SEND_RANGE');
+            foreach($cf_bless_arr as $v){
+                $bless_tmp[] = $v;
+            }
+            foreach($cf_range_arr as $v){
+                $range_tmp[] = $v;
+            }
+            
+            $data['bless'] = $bless_tmp;
+            $data['range'] = $range_tmp;
         }
         
         $this->to_back($data);

@@ -310,9 +310,10 @@ return array(
     'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404',
     'BAIDU_GEO_KEY'=>'q1pQnjOG28z8xsCaoby2oqLTLaPgelyq',
     'SMALLAPP_REDPACKET_BLESS'=>array(
-        1=>'生日快乐',2=>'happy birthday',3=>'寿比南山',4=>'大吉大利，貌美如花' 
+        1=>'生日快乐',2=>'happy birthday',3=>'福如东海，寿比南山',4=>'大吉大利，今晚吃鸡',
+        5=>'貌美如花，人见人夸',6=>'健康成长，天天快乐',
     ),
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
-       1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视' 
+       1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',
      ),
 );

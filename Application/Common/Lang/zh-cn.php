@@ -246,6 +246,11 @@ return array(
     'smallappdinner_verify_code_checkfail'=>'验证码输入错误',
     'smallappdinner_login_fail'=>'登录失败',
     'smallappdinner_invite_code_checkerror'=>'邀请码错误',
+    'smallapp_user_notexist'=>'用户不存在',
+    'smallapp_bonus_money_error'=>'单个红包额度过低',
+    'smallapp_surname_error'=>'请输入百家姓中的姓氏',
+    'smallapp_bonus_range_error'=>'红包发送不在范围之内',
+    'smallapp_sendtvbonus_error'=>'发送电视红包失败',
 
 
 

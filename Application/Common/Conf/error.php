@@ -247,6 +247,13 @@ return array(
 	    '90113'=>'small_app_game_score_report_error',
 	    '90114'=>'small_app_game_not_exist',
 	    '90115'=>'small_app_game_have_not_lunch',
+	    '90116'=>'smallapp_user_notexist',
+	    '90117'=>'smallapp_bonus_money_error',
+	    '90118'=>'smallapp_surname_error',
+	    '90119'=>'smallapp_bonus_range_error',
+	    '90120'=>'smallapp_sendtvbonus_error',
+
+
 
         //小程序餐厅端
         '92001'=>'smallappdinner_mobile_error',

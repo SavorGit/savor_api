@@ -1,5 +1,11 @@
 <?php
 use Common\Lib\Crypt3Des;
+
+function http_host(){
+    $http = 'https://';
+    return $http.$_SERVER['HTTP_HOST'];
+}
+
 function gen_request_sign($sign_time)
 {
 	$key = C('SIGN_KEY');

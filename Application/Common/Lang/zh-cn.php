@@ -251,6 +251,7 @@ return array(
     'smallapp_surname_error'=>'请输入百家姓中的姓氏',
     'smallapp_bonus_range_error'=>'红包发送不在范围之内',
     'smallapp_sendtvbonus_error'=>'发送电视红包失败',
+    'smallapp_redpacket_status_error'=>'该红包为非正常红包',
 
 
 

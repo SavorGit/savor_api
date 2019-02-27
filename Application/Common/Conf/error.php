@@ -252,6 +252,8 @@ return array(
 	    '90118'=>'smallapp_surname_error',
 	    '90119'=>'smallapp_bonus_range_error',
 	    '90120'=>'smallapp_sendtvbonus_error',
+	    
+	    '90130'=>'smallapp_redpacket_status_error',
 
 
 

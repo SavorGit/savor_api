@@ -20,7 +20,14 @@ class RedpacketController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('open_id'=>1001,'order_id'=>1001);
                 break;
-            
+            case 'sendList':   //发送红包列表
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                break;
+            case 'redpacketDetail':  //红包领取详情
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001,'page'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -115,6 +122,69 @@ class RedpacketController extends CommonController{
         $status = $res_order['status'];
         $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
         $data = array('status'=>$status,'jump_url'=>$jump_url);
+        $this->to_back($data);
+    }
+    public function sendList(){
+        $openid = $this->params['openid'];
+        $page   = $this->params['page'];
+        
+        $pagesize = 15;
+        $all_nums = $page * $pagesize;
+        $limit = "limit 0,$all_nums";
+        $order = 'a.add_time desc';
+        $fields = "a.id order_id,a.bless_id,a.pay_fee,a.pay_time";
+        $where= array();
+        $where['user.openid'] = $openid;
+        $where['a.status'] = array('in','4,5,6');
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $data = $m_redpacket->getList($fields,$where,$order,$limit);
+        $redpacket_bless = C('SMALLAPP_REDPACKET_BLESS');
+        foreach($data as $key=>$v){
+            $data[$key]['bless'] = $redpacket_bless[$v['bless_id']];
+        }
+        $this->to_back($data);
+    }
+    public function redpacketDetail(){
+        $openid   = $this->params['openid'];
+        $order_id = $this->params['order_id']; 
+        $page     = $this->params['page'];
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status';
+        
+        $where = array();
+        $where['a.id'] = $order_id;
+        
+        $info = $m_redpacket->getInfo($fields,$where);
+        
+        if(!in_array($info['status'], array(4,5,6))){
+            $this->to_back(90130);
+        }
+        //领取详情
+        $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+        
+        $pagesize = 15;
+        $all_nums = $page* $pagesize;
+        $fields = 'user.avatarUrl,user.nickName,a.add_time,a.money';
+        $order  = 'a.receive_time desc';
+        $limit  = "limit 0,$all_nums";
+        $where = array();
+        $where['a.redpacket_id'] = $order_id;
+        $receive_list = $m_redpacket_receive->getList($fields, $where, $order, $limit);
+        $where = array();
+        $where['redpacket_id'] = $order_id;
+        $receive_nums = $m_redpacket_receive->where($where)->count(); //领取个数
+        
+        if($receive_nums>0){
+            $rt = $m_redpacket_receive->field('sum(`money`) as receive_money')->find();
+            $info['receive_nums'] = $receive_nums;
+            $info['receive_money']= $rt['receive_money'];
+        }else {
+            $info['receive_nums'] = 0;
+            $info['receive_money']= 0;
+        }
+        $data = array();
+        $data['info'] = $info;
+        $data['receive_list'] = $receive_list;
         $this->to_back($data);
     }
 

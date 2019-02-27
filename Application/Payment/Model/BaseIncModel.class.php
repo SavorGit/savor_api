@@ -82,13 +82,13 @@ class BaseIncModel extends Model{
             $no_pay_fee = sprintf("%01.2f",$tmp_no_pay_fee);
     
             if($no_pay_fee<=0){
-                $status = 3;
+                $status = 4;
             }else{
-                $status = 2;
+                $status = 3;
             }
             $pay_time = date('Y-m-d H:i:s');
-            $update_condition = "update cms_order set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
-            $sql_uporder = "$update_condition where trade_no='$trade_no'";
+            $update_condition = "update savor_smallapp_redpacket set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
+            $sql_uporder = "$update_condition where id='$trade_no'";
             $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
             $row_num = $this->execute($sql_uporder);
             if($row_num){

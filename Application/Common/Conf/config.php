@@ -35,7 +35,7 @@ return array(
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
-	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp',), //模块配置
+	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -106,6 +106,7 @@ return array(
     'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
     'WX_FWH_CONFIG'=>array('appid'=>'wx7036d73746ff1a14','appsecret'=>'8b658fc90d7105d5cf66cb2193edb7d4'),
     'PAY_WEIXIN_CONFIG'=>array('partner'=>'1513051731','key'=>'A13df3gg45d4fg32F223fgg33GG51112'),
+    'PAYLOGS_PATH'  =>  str_replace('Application/', 'paylogs/', APP_PATH),//支付回调日志目录
     'HOTEL_KEY' => array(
 		'1'=>'重点',
 		'2'=>'非重点',

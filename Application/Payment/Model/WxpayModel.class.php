@@ -49,9 +49,10 @@ class WxpayModel extends Model{
     }
     
     public function pay_notify(){
-    	$payconfig = 'wxpay';
-    	$payinfo = $this->baseInc->init_pay_config($payconfig);
-    	$this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key']);
+        $fwh_config = C('WX_FWH_CONFIG');
+        $appid = $fwh_config['appid'];
+        $pay_config = C('PAY_WEIXIN_CONFIG');
+    	$this->payconfig = array('APPID'=>$appid,'MCHID'=>$pay_config['partner'],'KEY'=>$pay_config['key']);
     	$GLOBALS['wxpay_config'] = $this->payconfig;
     	if($this->os_type == 1){
     		$this->paylog_type = 1;
@@ -140,8 +141,10 @@ class WxpayModel extends Model{
         require_once "wxpay_lib/WxPay.Api.php";
         //获取通知的数据
         libxml_disable_entity_loader(true);
-        $post_data = $GLOBALS['HTTP_RAW_POST_DATA'];
+//        $post_data = $GLOBALS['HTTP_RAW_POST_DATA'];
+        $post_data = file_get_contents('php://input');
         $this->baseInc->paynotify_log($paylog_type,'','nofity_data:'.$post_data);
+
         $result = \WxPayResults::Init($post_data);
         $code = $msg = 'FAIL';
         if($result == false){

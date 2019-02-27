@@ -249,6 +249,8 @@ return array(
     'SAPP_BOX_FORSCREEN_NET'=>'smallapp:net:forscreen:',
     'SAPP_CALL_CLIMBTREE'=>'smallapp:callclimbtree:',
     'SAPP_CALL_CLIMBTREE_LOGOUT'=>'smallapp:callclimbtree:logout:',
+    'SAPP_REDPACKET'=>'smallapp:redpacket:',
+
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

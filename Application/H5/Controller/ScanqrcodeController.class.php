@@ -72,9 +72,20 @@ class ScanqrcodeController extends Controller {
         $order_id = I('get.oid',0,'intval');
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
+        $all_bless = C('SMALLAPP_REDPACKET_BLESS');
         $status = $res_order['status'];
-        if($status >2){
+        $all_status = array(0=>'未付款',1=>'付款码到电视',2=>'付款中',3=>'付款失败',4=>'红包发送成功');
+        $tips = '';
+        $status_str = '';
+        if($status == 4){
+            $tips = '红包即将在电视中出现，提醒大家扫码领红包哦~';
         }
+        if(isset($all_status[$status])){
+            $status_str = $all_status[$status];
+        }
+        $this->assign('status_str',$status_str);
+        $this->assign('tips',$tips);
+        $this->assign('bless',$all_bless[$res_order['bless_id']]);
         $this->display('pay_result');
 
     }
@@ -93,10 +104,8 @@ class ScanqrcodeController extends Controller {
     private function wxpay($order){
         $http_host = http_host();
         //调用微信支付
-        $redirect_url = $http_host.'/payment/wxNotify/pc';
         $trade_info = array('trade_no'=>$order['id'],'total_fee'=> $order['total_fee'],
-            'trade_name'=>'小热点红包','body'=>'小热点红包','buy_time'=>$order['add_time'],
-            'redirect_url'=>$redirect_url,'wx_openid'=>$order['open_id']
+            'trade_name'=>'小热点红包','body'=>'小热点红包','buy_time'=>$order['add_time'],'wx_openid'=>$order['open_id']
         );
         $fwh_config = C('WX_FWH_CONFIG');
         $appid = $fwh_config['appid'];
@@ -110,7 +119,13 @@ class ScanqrcodeController extends Controller {
         $url = $m_payment->pay($trade_info,$payconfig);
         $qrcode = $http_host.'/h5/qrcode?url='.$url;
         //推送付款二维码到电视
-
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('id'=>$order['user_id']);
+        $user_info = $m_user->getOne('*',$where,'');
+        $message = array('action'=>120,'nickName'=>$user_info['nickName'],
+            'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$qrcode);
+        $m_netty = new \Common\Model\NettyModel();
+        $m_netty->pushBox($order['mac'],json_encode($message));
         //end
         return $qrcode;
     }

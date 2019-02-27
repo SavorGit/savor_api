@@ -6,6 +6,18 @@ function http_host(){
     return $http.$_SERVER['HTTP_HOST'];
 }
 
+function bonus_random($money,$num,$min_money=0.3){
+    $all_money = array();
+    for($i=1;$i<$num;$i++){
+        $safe_total=($money-($num-$i)*$min_money)/($num-$i);//随机安全上限
+        $now_money=mt_rand($min_money*100,$safe_total*100)/100;
+        $money=$money-$now_money;
+        $all_money[] = $now_money;
+    }
+    $all_money[] = $money;
+    shuffle($all_money);
+    return $all_money;
+}
 function gen_request_sign($sign_time)
 {
 	$key = C('SIGN_KEY');

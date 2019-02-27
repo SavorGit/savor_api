@@ -93,12 +93,39 @@ class BaseIncModel extends Model{
             $row_num = $this->execute($sql_uporder);
             if($row_num){
                 $is_succ = true;
+                $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
+                $this->paynotify_log($pay_type, $serial_no, $sql_serialno);
+                if($status == 4){
+                    //根据红包总金额和人数进行分配红包
+                    $money = $result_order[0]['total_fee'];
+                    $num = $result_order[0]['amount'];
+                    $all_money = bonus_random($money,$num);
+
+                    $redis  =  \Common\Lib\SavorRedis::getInstance();
+                    $redis->select(5);
+                    $key = C('SAPP_REDPACKET').$trade_no.':bonus';
+                    $redis->set($key,json_encode($all_money),86400);
+
+                    $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money).' 总金额:'.array_sum($all_money);
+                    $this->paynotify_log($pay_type, $serial_no, $log_content);
+                    //end
+                }
             }
         }else{
             $is_succ = true;
         }
         if($is_succ){
-            //推送红包到电视
+            //推送红包小程序码到电视
+            $http_host = http_host();
+            $mpcode = $http_host.'/h5/qrcode/mpQrcode?oid='.$trade_no;
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = array('id'=>$result_order[0]['user_id']);
+            $user_info = $m_user->getOne('*',$where,'');
+            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+            $m_netty = new \Common\Model\NettyModel();
+            $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
+            //end
         }
         return $is_succ;
     }

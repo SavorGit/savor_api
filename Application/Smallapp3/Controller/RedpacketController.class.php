@@ -26,7 +26,7 @@ class RedpacketController extends CommonController{
                 break;
             case 'redpacketDetail':  //红包领取详情
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'order_id'=>1001,'page'=>1001);
+                $this->valid_fields = array('order_id'=>1001,'page'=>1001);
                 break;
         }
         parent::_init_();
@@ -145,11 +145,11 @@ class RedpacketController extends CommonController{
         $this->to_back($data);
     }
     public function redpacketDetail(){
-        $openid   = $this->params['openid'];
+        //$openid   = $this->params['openid'];
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status';
+        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status,a.mac';
         
         $where = array();
         $where['a.id'] = $order_id;

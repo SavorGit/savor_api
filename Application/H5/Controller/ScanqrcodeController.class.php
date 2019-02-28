@@ -26,11 +26,13 @@ class ScanqrcodeController extends Controller {
             $error = array('msg'=>'order has pay');
             die(json_encode($error));
         }
+        $user_id = $res_order['user_id'];
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('id'=>$res_order['user_id']);
+        $where = array('id'=>$user_id);
         $user_info = $m_user->getOne('id,mpopenid',$where,'');
         if(empty($user_info['mpopenid'])){
-            $this->wx_oauth($id);
+            $url = http_host().'/h5/scanqrcode/showpage/u/'.$user_id;
+            $this->wx_oauth($url);
         }else{
             $res_order['open_id'] = $user_info['mpopenid'];
 
@@ -43,17 +45,13 @@ class ScanqrcodeController extends Controller {
 
     public function showpage(){
         $code = I('code', '');
-        $u = I('u','');
-        $order_id = substr($u,32);
-        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
-        $user_id = $res_order['user_id'];
-
+        $user_id = I('u','');
         $m_weixin_api = new \Common\Lib\Weixin_api();
         $result = $m_weixin_api->getWxOpenid($code);
         $open_id = $result['openid'];
         if(empty($open_id)){
-            $this->wx_oauth($u);
+            $url = http_host().'/h5/scanqrcode/showpage/u/'.$user_id;
+            $this->wx_oauth($url);
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('id'=>$user_id);
@@ -64,7 +62,6 @@ class ScanqrcodeController extends Controller {
         $qrcode = $this->wxpay($res_order);
 
         $this->assign('qrcode',$qrcode);
-        $this->assign('order_id',$order_id);
         $this->display('scanpage');
     }
 
@@ -90,11 +87,121 @@ class ScanqrcodeController extends Controller {
 
     }
 
-    private function wx_oauth($u){
+    public function grabBonus(){
+        $order_id = I('get.oid');
+        $grap_userid = I('get.guid');
+        $token = I('get.token','');
+        $now_token = create_sign($order_id.$grap_userid);
+        if(!empty($token) && $token!=$now_token){
+            $error = array('msg'=>'token error');
+            die(json_encode($error));
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if($token){
+            $where = array('id'=>$res_order['user_id']);
+            $user_info = $m_user->getOne('*',$where,'');
+            $info = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+            $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+            $info['bless'] = $all_bless[$res_order['bless_id']];
+            $status = 4;
+            $sign = create_sign($status.$order_id.$grap_userid);
+            $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$grap_userid,'sign'=>$sign,'money'=>0);
+
+            $this->assign('params',$params);
+            $this->assign('info',$info);
+            $this->display('grap');
+        }else{
+            $ou = $order_id.'o'.$grap_userid;
+            $url = http_host().'/h5/scanqrcode/grabpage/ou/'.$ou;
+            $this->wx_oauth($url);
+        }
+    }
+
+    public function grabpage(){
+        $code = I('code', '');
+        $ou = I('ou','');
+        $m_weixin_api = new \Common\Lib\Weixin_api();
+        $result = $m_weixin_api->getWxOpenid($code);
+        $open_id = $result['openid'];
+        if(empty($open_id)){
+            $url = http_host().'/h5/scanqrcode/grabBonus/ou/'.$ou;
+            $this->wx_oauth($url);
+        }
+        $ou_arr = explode('o',$ou);
+        $order_id = $ou_arr[0];
+        $user_id = $ou_arr[1];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('id'=>$user_id);
+        $data = array('mpopenid'=>$open_id);
+        $m_user->updateInfo($where,$data);
+
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
+        $res_hasget = $redis->get($key_hasget);
+        $get_money = '';
+        if($res_hasget){
+            $hasget_users = json_decode($res_hasget,true);
+            if(array_key_exists($user_id,$hasget_users)){
+                $status = 1;//已领取红包
+                $get_money = $hasget_users[$user_id];
+            }
+        }
+        if($status!=1){
+            $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
+            $res_redpacket = $redis->get($key_bonus);
+            $resdata = json_decode($res_redpacket,true);
+            if(empty($resdata['unused'])){
+                $status = 2;//红包已领完,未领到
+            }else{
+                $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
+                $res_getbonus = $redis->lgetrange($key_getbonus,0,1000);
+                if(in_array($user_id,$res_getbonus)){
+                    $status = 3;//正在领红包
+                }else{
+                    $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
+                    $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+                    if(empty($res_grabbonus)){
+                        $redis->rpush($key_grabbonus,$user_id);
+                        $status = 4;//进入抢红包队列,同时生成token
+                    }else{
+                        if(count($res_grabbonus)>=$res_order['amount']*2){
+                            $status = 2;//红包已领完,未领到
+                        }else{
+                            $redis->rpush($key_grabbonus,$user_id);
+                            $status = 4;//进入抢红包队列,同时生成token
+                        }
+                    }
+                }
+            }
+        }
+        $where = array('id'=>$res_order['user_id']);
+        $user_info = $m_user->getOne('*',$where,'');
+        $info = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+        $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+        $info['bless'] = $all_bless[$res_order['bless_id']];
+        $sign = create_sign($status.$order_id.$user_id);
+        $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign,'money'=>$get_money);
+
+        $this->assign('params',$params);
+        $this->assign('info',$info);
+        $this->display('grap');
+    }
+
+
+
+    private function wx_oauth($url){
         $fwh_config = C('WX_FWH_CONFIG');
         $appid = $fwh_config['appid'];
-        $uri = http_host().'/h5/scanqrcode/showpage/u/'.$u;
-        $uri = urlencode($uri);
+        $uri = urlencode($url);
         $state = 'wxrs001';
         $url_oauth = 'https://open.weixin.qq.com/connect/oauth2/authorize';
         $wx_url = $url_oauth."?appid=$appid&redirect_uri=$uri&response_type=code&scope=snsapi_base&state=$state#wechat_redirect";

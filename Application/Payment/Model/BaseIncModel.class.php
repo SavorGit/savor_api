@@ -104,7 +104,8 @@ class BaseIncModel extends Model{
                     $redis  =  \Common\Lib\SavorRedis::getInstance();
                     $redis->select(5);
                     $key = C('SAPP_REDPACKET').$trade_no.':bonus';
-                    $redis->set($key,json_encode($all_money),86400);
+                    $all_moneys = array('unused'=>$all_money,'used'=>array());
+                    $redis->set($key,json_encode($all_moneys),86400);
 
                     $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money).' 总金额:'.array_sum($all_money);
                     $this->paynotify_log($pay_type, $serial_no, $log_content);

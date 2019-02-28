@@ -15,6 +15,13 @@
 		<link rel="stylesheet" type="text/css" href="http://oss.littlehotspot.com/Html5/script/money_blessing/commons.css" />
 		<link rel="stylesheet" type="text/css" href="http://oss.littlehotspot.com/Html5/script/money_blessing/grab.css" />
 		<script type="text/javascript" charset="UTF-8" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/plugins/JSON-js-master/json2.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/my-js/jlNamespace.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/jquery/core/1.11.1/jquery-1.11.1.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/jquery/migrate/1.1.1/jquery-migrate-1.1.1.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/my-js/StringUtil.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/my-js/jquery.ui.Toast-1.0.1.class.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="http://oss.littlehotspot.com/Html5/script/money_blessing/grab.js?2019-02-27 16:48:01"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -22,13 +29,19 @@
 			<div class="page-main full_width">
 				<div class='package'>
 					<div class='head'>
-						<img class='BorderColor' src='http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default.jpeg'/>
+						<img class='BorderColor' src='{$info.avatarUrl}'/>
 					</div>
+					<input type="hidden" id="money" value="{$params.money}"/>
+					<input type="hidden" id="status" value="{$params.status}"/>
+					<input type="hidden" id="order_id" value="{$params.order_id}"/>
+					<input type="hidden" id="user_id" value="{$params.user_id}"/>
+					<input type="hidden" id="sign" value="{$params.sign}"/>
+
 					<div class='body PackageColor'>
-						<div class='user_name'>奔波霸的红包</div>
-						<div class='blessing'>恭喜发财，大吉大利</div>
+						<div class='user_name'>{$info.nickName}的红包</div>
+						<div class='blessing'>{$info.bless}</div>
 						<div class='grab'>
-							<a class='button' href='/pages/thematic/money_blessing/receive_success'>抢红包</a>
+							<a class='button' href='javascript:;'>抢红包</a>
 							<!-- <button class='button'>抢红包</button> -->
 						</div>
 					</div>

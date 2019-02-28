@@ -158,6 +158,10 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
+
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -269,6 +273,9 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
 
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -301,7 +308,7 @@ class RedpacketController extends CommonController{
                     if(!in_array($user_id,$res_grabbonus)){
                         $status = 2;
                     }else{
-                        if(!in_array($user_id,$key_getbonus)){
+                        if(!in_array($user_id,$res_getbonus)){
                             $redis->rpush($key_getbonus,$user_id);
                         }
                         $status = 3;//正在领红包
@@ -345,6 +352,15 @@ class RedpacketController extends CommonController{
             $this->to_back(1007);
         }
 
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
+
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -362,11 +378,6 @@ class RedpacketController extends CommonController{
             $res_hasget = array();
         }
 
-        $m_order = new \Common\Model\Smallapp\RedpacketModel();
-        $res_order = $m_order->getInfo(array('id'=>$order_id));
-        if(empty($res_order)){
-            $this->to_back(90122);
-        }
         if($status!=1){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
@@ -421,13 +432,13 @@ class RedpacketController extends CommonController{
                     }
                 }
                 if(empty($unused_bonus)){
-                    $data = array('status'=>4);
+                    $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){
                         $data['grab_time'] = date('Y-m-d H:i:s');
                     }
                     $m_order->updateData(array('id'=>$order_id),$data);
                 }else{
-                    $data = array('status'=>5);
+                    $data = array('status'=>6);
                     $m_order->updateData(array('id'=>$order_id),$data);
                 }
                 if($status!=1){

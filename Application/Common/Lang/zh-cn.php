@@ -253,6 +253,7 @@ return array(
     'smallapp_sendtvbonus_error'=>'发送电视红包失败',
     'smallapp_redpacket_status_error'=>'该红包为非正常红包',
     'smallapp_grabbonus_status_error'=>'抢红包状态错误',
+    'smallapp_bonus_error'=>'该红包不存在',
 
 
 

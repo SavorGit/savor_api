@@ -133,6 +133,10 @@ class RedpacketController extends CommonController{
         $user_id = $user_info['id'];
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -239,6 +243,9 @@ class RedpacketController extends CommonController{
         }
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
         $status = $res_order['status'];
         $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
         $data = array('status'=>$status,'jump_url'=>$jump_url);
@@ -257,6 +264,10 @@ class RedpacketController extends CommonController{
 
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
 
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -350,7 +361,9 @@ class RedpacketController extends CommonController{
 
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
-
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
         if($status!=1){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
@@ -367,7 +380,7 @@ class RedpacketController extends CommonController{
                 $m_netty = new \Common\Model\NettyModel();
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
-                $all_barrage = C('BARRAGES');
+                $all_barrage = C('SMALLAPP_BARRAGES');
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
                     $now_money = $unused_bonus[$i];
@@ -472,7 +485,7 @@ class RedpacketController extends CommonController{
         $where = array();
         $where['a.id'] = $order_id;
         
-        $info = $m_redpacket->getInfo($fields,$where);
+        $info = $m_redpacket->getOrderAndUserInfo($fields,$where);
         
         if(!in_array($info['status'], array(4,5,6))){
             $this->to_back(90130);

@@ -113,7 +113,7 @@ class ScanqrcodeController extends Controller {
             $this->assign('params',$params);
             $this->assign('info',$info);
             $this->assign('time',time());
-            $this->display('grap');
+            $this->display('grab');
         }else{
             $ou = $order_id.'o'.$grap_userid;
             $url = http_host().'/h5/scanqrcode/grabpage/ou/'.$ou;
@@ -194,7 +194,7 @@ class ScanqrcodeController extends Controller {
         $this->assign('time',time());
         $this->assign('params',$params);
         $this->assign('info',$info);
-        $this->display('grap');
+        $this->display('grab');
     }
 
 

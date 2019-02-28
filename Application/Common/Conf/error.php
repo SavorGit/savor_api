@@ -253,6 +253,7 @@ return array(
 	    '90119'=>'smallapp_bonus_range_error',
 	    '90120'=>'smallapp_sendtvbonus_error',
 	    '90121'=>'smallapp_grabbonus_status_error',
+	    '90122'=>'smallapp_bonus_error',
 
 	    '90130'=>'smallapp_redpacket_status_error',
 

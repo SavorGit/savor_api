@@ -14,7 +14,7 @@ class RedpacketModel extends BaseModel{
 	         ->select();
 	    return $data;
 	}
-	public function getInfo($fields,$where){
+	public function getOrderAndUserInfo($fields,$where){
 	    $data = $this->alias('a')
             	     ->join('savor_smallapp_user user on a.user_id=user.id','left')
             	     ->field($fields)

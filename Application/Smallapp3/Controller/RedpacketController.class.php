@@ -364,6 +364,10 @@ class RedpacketController extends CommonController{
                 $unused_bonus = $resdata['unused'];
                 $used_bonus = $resdata['used'];
 
+                $m_netty = new \Common\Model\NettyModel();
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+                $all_barrage = C('BARRAGES');
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
                     $now_money = $unused_bonus[$i];
@@ -378,9 +382,23 @@ class RedpacketController extends CommonController{
 
                     $res_hasget[$grab_user_id] = $now_money;
                     $redis->set($key_hasget,json_encode($res_hasget));
-                    //增加电视推送
-                    
+
+                    shuffle($all_barrage);
+                    $barrage = $all_barrage[0];
+
+                    //红包记录进入数据库
+                    $get_data = array('redpacket_id'=>$order_id,'user_id'=>$grab_user_id,'money'=>$now_money,
+                        'barrage'=>$barrage);
+                    $m_redpacketreceive->addData($get_data);
                     //end
+
+                    //增加电视弹幕推送
+                    $user_info = $m_user->getOne('*',array('id'=>$grab_user_id),'');
+                    $message = array('action'=>122,'nickName'=>$user_info['nickName'],
+                        'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+                    $m_netty->pushBox($res_order['mac'],json_encode($message));
+                    //end
+
                     if($grab_user_id == $user_id){
                         $status = 1;
                         $get_money = $now_money;
@@ -412,7 +430,6 @@ class RedpacketController extends CommonController{
         }
         $this->to_back($res_data);
     }
-
 
 
     public function sendList(){

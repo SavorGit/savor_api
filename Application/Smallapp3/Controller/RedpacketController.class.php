@@ -404,6 +404,16 @@ class RedpacketController extends CommonController{
                         $get_money = $now_money;
                     }
                 }
+                if(empty($unused_bonus)){
+                    $data = array('status'=>4);
+                    if(empty($res_order['grab_time'])){
+                        $data['grab_time'] = date('Y-m-d H:i:s');
+                    }
+                    $m_order->updateData(array('id'=>$order_id),$data);
+                }else{
+                    $data = array('status'=>5);
+                    $m_order->updateData(array('id'=>$order_id),$data);
+                }
                 if($status!=1){
                     $status = 2;
                 }

@@ -112,6 +112,7 @@ class ScanqrcodeController extends Controller {
 
             $this->assign('params',$params);
             $this->assign('info',$info);
+            $this->assign('time',time());
             $this->display('grap');
         }else{
             $ou = $order_id.'o'.$grap_userid;
@@ -190,7 +191,7 @@ class ScanqrcodeController extends Controller {
         $info['bless'] = $all_bless[$res_order['bless_id']];
         $sign = create_sign($status.$order_id.$user_id);
         $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign,'money'=>$get_money);
-
+        $this->assign('time',time());
         $this->assign('params',$params);
         $this->assign('info',$info);
         $this->display('grap');

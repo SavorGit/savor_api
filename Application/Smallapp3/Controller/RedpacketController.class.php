@@ -20,6 +20,18 @@ class RedpacketController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('open_id'=>1001,'order_id'=>1001);
                 break;
+            case 'getScanresult':
+                $this->is_verify =1;
+                $this->valid_fields = array('open_id'=>1001,'order_id'=>1001);
+                break;
+            case 'grabBonus':
+                $this->is_verify =1;
+                $this->valid_fields = array('order_id'=>1001,'status'=>1001,'user_id'=>1001,'sign'=>1001);
+                break;
+            case 'grabBonusResult':
+                $this->is_verify =1;
+                $this->valid_fields = array('order_id'=>1001,'user_id'=>1001,'sign'=>1001);
+                break;
             case 'sendList':   //发送红包列表
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
@@ -108,6 +120,114 @@ class RedpacketController extends CommonController{
         $this->to_back($result);
     }
 
+    //获取扫电视红包码结果
+    public function getScanresult(){
+        $open_id = $this->params['open_id'];
+        $order_id = $this->params['order_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$open_id,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $user_id = $user_info['id'];
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+
+        $status = 0;
+        if(empty($user_info['mpopenid'])){
+            $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
+            $res_redpacket = $redis->get($key_bonus);
+            $resdata = json_decode($res_redpacket,true);
+
+            $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
+            $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+            if(empty($resdata['unused']) || count($res_grabbonus)>=$res_order['amount']*2){
+                $status = 2;//红包已领完,未领到
+            }
+        }else{
+            $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
+            $res_hasget = $redis->get($key_hasget);
+            $get_money = '';
+            if($res_hasget){
+                $hasget_users = json_decode($res_hasget,true);
+                if(array_key_exists($user_id,$hasget_users)){
+                    $status = 1;//已领取红包
+                    $get_money = $hasget_users[$user_id];
+                }
+            }
+            if($status!=1){
+                $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
+                $res_redpacket = $redis->get($key_bonus);
+                $resdata = json_decode($res_redpacket,true);
+                if(empty($resdata['unused'])){
+                    $status = 2;//红包已领完,未领到
+                }else{
+                    $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
+                    $res_getbonus = $redis->lgetrange($key_getbonus,0,1000);
+                    if(in_array($user_id,$res_getbonus)){
+                        $status = 3;//正在领红包
+                    }else{
+                        $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
+                        $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+                        if(empty($res_grabbonus)){
+                            $redis->rpush($key_grabbonus,$user_id);
+                            $status = 4;//进入抢红包队列,同时生成token
+                        }else{
+                            if(count($res_grabbonus)>=$res_order['amount']*2){
+                                $status = 2;//红包已领完,未领到
+                            }else{
+                                $redis->rpush($key_grabbonus,$user_id);
+                                $status = 4;//进入抢红包队列,同时生成token
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $sign = create_sign($status.$order_id.$user_id);
+        $res_data = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign);
+        switch ($status){
+            case 0:
+                $jump_url = http_host().'/h5/scanqrcode/grabBonus?oid='.$order_id.'&guid='.$user_id;
+                $res_data['jump_url'] = $jump_url;
+                break;
+            case 1:
+                $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+                $res_data['bless'] = $all_bless[$res_order['bless_id']];
+                $res_data['money'] = $get_money;
+
+                $where = array('id'=>$res_order['user_id']);
+                $user_info = $m_user->getOne('*',$where,'');
+                $res_data['nickName'] = $user_info['nickName'];
+                $res_data['avatarUrl'] = $user_info['avatarUrl'];
+                break;
+            case 2:
+                $res_data['bless'] = '手慢了，红包抢完了';
+                $res_data['money'] = 0;
+                $where = array('id'=>$res_order['user_id']);
+                $user_info = $m_user->getOne('*',$where,'');
+                $res_data['nickName'] = $user_info['nickName'];
+                $res_data['avatarUrl'] = $user_info['avatarUrl'];
+                break;
+            case 3:
+                $res_data['tips'] = '正在领红包,请稍后';
+                break;
+            case 4:
+                $token = create_sign($order_id.$user_id);
+                $jump_url = http_host().'/h5/scanqrcode/grabBonus?oid='.$order_id.'&guid='.$user_id.'&token='.$token;
+                $res_data['jump_url'] = $jump_url;
+                break;
+        }
+
+        $this->to_back($res_data);
+    }
+
+
+    //获取发红包结果
     public function getresult(){
         $open_id = $this->params['open_id'];
         $order_id = $this->params['order_id'];
@@ -124,6 +244,177 @@ class RedpacketController extends CommonController{
         $data = array('status'=>$status,'jump_url'=>$jump_url);
         $this->to_back($data);
     }
+
+    public function grabBonus(){
+        $order_id = $this->params['order_id'];
+        $status = $this->params['status'];
+        $user_id = $this->params['user_id'];
+        $sign = $this->params['sign'];
+        $now_sign = create_sign($status.$order_id.$user_id);
+        if($sign!=$now_sign){
+            $this->to_back(90121);
+        }
+
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+
+        $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
+        $res_hasget = $redis->get($key_hasget);
+        $get_money = '';
+        if($res_hasget){
+            $hasget_users = json_decode($res_hasget,true);
+            if(array_key_exists($user_id,$hasget_users)){
+                $status = 1;//已领取红包
+                $get_money = $hasget_users[$user_id];
+            }
+        }
+        if($status!=1){
+            $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
+            $res_redpacket = $redis->get($key_bonus);
+            $resdata = json_decode($res_redpacket,true);
+            if(empty($resdata['unused'])){
+                $status = 2;//红包已领完,未领到
+            }else{
+                $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
+                $res_getbonus = $redis->lgetrange($key_getbonus,0,1000);
+                if(in_array($user_id,$res_getbonus)){
+                    $status = 3;//正在领红包
+                }else{
+                    $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
+                    $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+                    if(!in_array($user_id,$res_grabbonus)){
+                        $status = 2;
+                    }else{
+                        $redis->rpush($key_getbonus,$user_id);
+                        $status = 3;//正在领红包
+                    }
+                }
+            }
+        }
+        $sign = create_sign($order_id.$user_id);
+        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign,'status'=>$status);
+        switch ($status){
+            case 1:
+                $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+                $res_data['bless'] = $all_bless[$res_order['bless_id']];
+                $res_data['money'] = $get_money;
+
+                $where = array('id'=>$res_order['user_id']);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $user_info = $m_user->getOne('*',$where,'');
+                $res_data['nickName'] = $user_info['nickName'];
+                $res_data['avatarUrl'] = $user_info['avatarUrl'];
+                break;
+            case 2:
+                $res_data['bless'] = '手慢了，红包抢完了';
+                $res_data['money'] = 0;
+                $where = array('id'=>$res_order['user_id']);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $user_info = $m_user->getOne('*',$where,'');
+                $res_data['nickName'] = $user_info['nickName'];
+                $res_data['avatarUrl'] = $user_info['avatarUrl'];
+                break;
+        }
+        $this->to_back($res_data);
+    }
+
+    public function grabBonusResult(){
+        $order_id = $this->params['order_id'];
+        $user_id = $this->params['user_id'];
+        $sign = $this->params['sign'];
+        $now_sign = create_sign($order_id.$user_id);
+        if($sign!=$now_sign){
+            $this->to_back(1007);
+        }
+
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
+        $res_hasget = $redis->get($key_hasget);
+        $get_money = '';
+        $status = 0;
+        if($res_hasget){
+            $hasget_users = json_decode($res_hasget,true);
+            if(array_key_exists($user_id,$hasget_users)){
+                $status = 1;//已领取红包
+                $get_money = $hasget_users[$user_id];
+            }
+        }else{
+            $res_hasget = array();
+        }
+
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if($status!=1){
+            $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
+            $res_redpacket = $redis->get($key_bonus);
+            $resdata = json_decode($res_redpacket,true);
+            if(empty($resdata['unused'])){
+                $status = 2;//红包已领完,未领到
+            }else{
+                $grab_num = $res_order['amount']*2;
+                $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
+
+                $unused_bonus = $resdata['unused'];
+                $used_bonus = $resdata['used'];
+
+                for ($i=0;$i<$grab_num;$i++){
+                    $grab_user_id = $redis->lpop($key_getbonus);
+                    $now_money = $unused_bonus[$i];
+                    if(empty($now_money)){
+                        break;
+                    }
+                    unset($unused_bonus[$i]);
+                    $used_bonus[] = $now_money;
+
+                    $all_bonus = array('unused'=>$unused_bonus,'used'=>$used_bonus);
+                    $redis->set($key_bonus,json_encode($all_bonus));
+
+                    $res_hasget[$grab_user_id] = $now_money;
+                    $redis->set($key_hasget,json_encode($res_hasget));
+                    //增加电视推送
+                    
+                    //end
+                    if($grab_user_id == $user_id){
+                        $status = 1;
+                        $get_money = $now_money;
+                    }
+                }
+                if($status!=1){
+                    $status = 2;
+                }
+            }
+        }
+        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'status'=>$status);
+
+        $where = array('id'=>$res_order['user_id']);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $user_info = $m_user->getOne('*',$where,'');
+        $res_data['nickName'] = $user_info['nickName'];
+        $res_data['avatarUrl'] = $user_info['avatarUrl'];
+
+        switch ($status){
+            case 1:
+                $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+                $res_data['bless'] = $all_bless[$res_order['bless_id']];
+                $res_data['money'] = $get_money;
+                break;
+            case 2:
+                $res_data['bless'] = '手慢了，红包抢完了';
+                $res_data['money'] = 0;
+                break;
+        }
+        $this->to_back($res_data);
+    }
+
+
+
     public function sendList(){
         $openid = $this->params['openid'];
         $page   = $this->params['page'];

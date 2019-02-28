@@ -252,6 +252,7 @@ return array(
     'smallapp_bonus_range_error'=>'红包发送不在范围之内',
     'smallapp_sendtvbonus_error'=>'发送电视红包失败',
     'smallapp_redpacket_status_error'=>'该红包为非正常红包',
+    'smallapp_grabbonus_status_error'=>'抢红包状态错误',
 
 
 

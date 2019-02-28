@@ -177,7 +177,9 @@ class ScanqrcodeController extends Controller {
                         if(count($res_grabbonus)>=$res_order['amount']*2){
                             $status = 2;//红包已领完,未领到
                         }else{
-                            $redis->rpush($key_grabbonus,$user_id);
+                            if(!in_array($user_id,$res_grabbonus)){
+                                $redis->rpush($key_grabbonus,$user_id);
+                            }
                             $status = 4;//进入抢红包队列,同时生成token
                         }
                     }

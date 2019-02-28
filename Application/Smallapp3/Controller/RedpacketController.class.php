@@ -120,6 +120,27 @@ class RedpacketController extends CommonController{
         $this->to_back($result);
     }
 
+    //获取发红包结果
+    public function getresult(){
+        $open_id = $this->params['open_id'];
+        $order_id = $this->params['order_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$open_id,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        $status = $res_order['status'];
+        $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
+        $data = array('status'=>$status,'jump_url'=>$jump_url);
+        $this->to_back($data);
+    }
+
     //获取扫电视红包码结果
     public function getScanresult(){
         $open_id = $this->params['open_id'];
@@ -184,7 +205,9 @@ class RedpacketController extends CommonController{
                             if(count($res_grabbonus)>=$res_order['amount']*2){
                                 $status = 2;//红包已领完,未领到
                             }else{
-                                $redis->rpush($key_grabbonus,$user_id);
+                                if(!in_array($user_id,$res_grabbonus)){
+                                    $redis->rpush($key_grabbonus,$user_id);
+                                }
                                 $status = 4;//进入抢红包队列,同时生成token
                             }
                         }
@@ -228,28 +251,6 @@ class RedpacketController extends CommonController{
         }
 
         $this->to_back($res_data);
-    }
-
-
-    //获取发红包结果
-    public function getresult(){
-        $open_id = $this->params['open_id'];
-        $order_id = $this->params['order_id'];
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$open_id,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
-        if(empty($user_info)){
-            $this->to_back(90116);
-        }
-        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
-        if(empty($res_order)){
-            $this->to_back(90122);
-        }
-        $status = $res_order['status'];
-        $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
-        $data = array('status'=>$status,'jump_url'=>$jump_url);
-        $this->to_back($data);
     }
 
     public function grabBonus(){
@@ -300,7 +301,9 @@ class RedpacketController extends CommonController{
                     if(!in_array($user_id,$res_grabbonus)){
                         $status = 2;
                     }else{
-                        $redis->rpush($key_getbonus,$user_id);
+                        if(!in_array($user_id,$key_getbonus)){
+                            $redis->rpush($key_getbonus,$user_id);
+                        }
                         $status = 3;//正在领红包
                     }
                 }

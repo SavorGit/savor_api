@@ -493,7 +493,7 @@ class RedpacketController extends CommonController{
         $receive_nums = $m_redpacket_receive->where($where)->count(); //领取个数
         
         if($receive_nums>0){
-            $rt = $m_redpacket_receive->field('sum(`money`) as receive_money')->find();
+            $rt = $m_redpacket_receive->where($where)->field('sum(`money`) as receive_money')->find();
             $info['receive_nums'] = $receive_nums;
             $info['receive_money']= $rt['receive_money'];
         }else {

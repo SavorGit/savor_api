@@ -518,7 +518,7 @@ class RedpacketController extends CommonController{
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status,a.mac';
+        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status,a.mac,a.pay_time,a.grab_time';
         
         $where = array();
         $where['a.id'] = $order_id;
@@ -528,6 +528,10 @@ class RedpacketController extends CommonController{
         if(!in_array($info['status'], array(4,5,6))){
             $this->to_back(90130);
         }
+        if($info['status']==5){
+            $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
+        }
+        
         //领取详情
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         

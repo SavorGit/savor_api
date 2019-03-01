@@ -118,14 +118,30 @@ class BaseIncModel extends Model{
         if($is_succ){
             //推送红包小程序码到电视
             $http_host = http_host();
-            $mpcode = $http_host.'/h5/qrcode/mpQrcode?oid='.$trade_no;
             $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_netty = new \Common\Model\NettyModel();
+
+            $box_mac = $result_order[0]['mac'];
+            $qrinfo =  $trade_no.'_'.$box_mac;
+            $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
             $where = array('id'=>$result_order[0]['user_id']);
             $user_info = $m_user->getOne('*',$where,'');
             $message = array('action'=>121,'nickName'=>$user_info['nickName'],
                 'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
-            $m_netty = new \Common\Model\NettyModel();
             $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
+            //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
+            $all_box = $m_netty->getPushBox($result_order[0]['scope'],$box_mac);
+            if(!empty($all_box)){
+                foreach ($all_box as $v){
+                    $qrinfo =  $trade_no.'_'.$v['box_mac'];
+                    $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                    $where = array('id'=>$result_order[0]['user_id']);
+                    $user_info = $m_user->getOne('*',$where,'');
+                    $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                        'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                    $m_netty->pushBox($v['box_mac'],json_encode($message));
+                }
+            }
             //end
         }
         return $is_succ;

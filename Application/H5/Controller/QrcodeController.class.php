@@ -14,7 +14,7 @@ class QrcodeController extends Controller {
     }
 
     public function mpQrcode(){
-        $order_id = I('get.oid',0,'intval');
+        $qrinfo = I('get.qrinfo','');
         $color = array("r"=>255,"g"=>255,"b"=>255);
 
         $m_small_app = new \Common\Lib\Smallapp_api();
@@ -22,7 +22,7 @@ class QrcodeController extends Controller {
         header('content-type:image/png');
         $data = array();
         $times = getMillisecond();
-        $data['scene'] = $order_id.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['scene'] = $qrinfo.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/thematic/money_blessing/grab";//扫描后对应的path
         $data['width'] = "280";//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色

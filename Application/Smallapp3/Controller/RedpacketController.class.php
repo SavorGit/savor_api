@@ -158,7 +158,7 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
-        if(!in_array($res_order['status'],array(4,6))){
+        if(!in_array($res_order['status'],array(4,5,6))){
             $this->to_back(90130);
         }
 
@@ -167,7 +167,19 @@ class RedpacketController extends CommonController{
         $redis->select(5);
 
         $status = 0;
-        if(empty($user_info['mpopenid'])){
+        if($res_order['status'] == 5) {
+            $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
+            $res_hasget = $redis->get($key_hasget);
+            $get_money = '';
+            if($res_hasget){
+                $hasget_users = json_decode($res_hasget,true);
+                if(array_key_exists($user_id,$hasget_users)){
+                    $status = 5;//本人已领到
+                }else{
+                    $status = 2;//红包已领完,未领到
+                }
+            }
+        }elseif(empty($user_info['mpopenid'])){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
@@ -237,7 +249,9 @@ class RedpacketController extends CommonController{
                 $res_data['avatarUrl'] = $user_info['avatarUrl'];
                 break;
             case 2:
-                $res_data['bless'] = '手慢了，红包抢完了';
+                $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+                $res_data['bless'] = $all_bless[$res_order['bless_id']];
+                $res_data['message'] = '手慢了，红包抢完了';
                 $res_data['money'] = 0;
                 $where = array('id'=>$res_order['user_id']);
                 $user_info = $m_user->getOne('*',$where,'');
@@ -308,9 +322,7 @@ class RedpacketController extends CommonController{
                     if(!in_array($user_id,$res_grabbonus)){
                         $status = 2;
                     }else{
-                        if(!in_array($user_id,$res_getbonus)){
-                            $redis->rpush($key_getbonus,$user_id);
-                        }
+                        $redis->rpush($key_getbonus,$user_id);
                         $status = 3;//正在领红包
                     }
                 }
@@ -357,7 +369,8 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
-        if(!in_array($res_order['status'],array(4,6))){
+
+        if(!in_array($res_order['status'],array(4,5,6))){
             $this->to_back(90130);
         }
 
@@ -405,10 +418,10 @@ class RedpacketController extends CommonController{
                     $used_bonus[] = $now_money;
 
                     $all_bonus = array('unused'=>$unused_bonus,'used'=>$used_bonus);
-                    $redis->set($key_bonus,json_encode($all_bonus));
+                    $redis->set($key_bonus,json_encode($all_bonus),86400);
 
                     $res_hasget[$grab_user_id] = $now_money;
-                    $redis->set($key_hasget,json_encode($res_hasget));
+                    $redis->set($key_hasget,json_encode($res_hasget),86400);
 
                     shuffle($all_barrage);
                     $barrage = $all_barrage[0];
@@ -424,6 +437,17 @@ class RedpacketController extends CommonController{
                     $message = array('action'=>122,'nickName'=>$user_info['nickName'],
                         'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
+
+
+                    //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
+                    $all_box = $m_netty->getPushBox($res_order['scope'],$res_order['mac']);
+                    if(!empty($all_box)){
+                        foreach ($all_box as $v){
+                            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                                'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+                            $m_netty->pushBox($v['box_mac'],json_encode($message));
+                        }
+                    }
                     //end
 
                     if($grab_user_id == $user_id){

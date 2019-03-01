@@ -17,7 +17,7 @@ class QrcodeController extends Controller {
         $order_id = I('get.oid',0,'intval');
         $color = array("r"=>255,"g"=>255,"b"=>255);
 
-        $m_small_app = new Smallapp_api();
+        $m_small_app = new \Common\Lib\Smallapp_api();
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/png');
         $data = array();

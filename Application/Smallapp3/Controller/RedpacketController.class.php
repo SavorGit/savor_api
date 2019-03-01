@@ -120,6 +120,27 @@ class RedpacketController extends CommonController{
         $this->to_back($result);
     }
 
+    //获取发红包结果
+    public function getresult(){
+        $open_id = $this->params['open_id'];
+        $order_id = $this->params['order_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$open_id,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        $status = $res_order['status'];
+        $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
+        $data = array('status'=>$status,'jump_url'=>$jump_url);
+        $this->to_back($data);
+    }
+
     //获取扫电视红包码结果
     public function getScanresult(){
         $open_id = $this->params['open_id'];
@@ -133,6 +154,14 @@ class RedpacketController extends CommonController{
         $user_id = $user_info['id'];
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
+
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -180,7 +209,9 @@ class RedpacketController extends CommonController{
                             if(count($res_grabbonus)>=$res_order['amount']*2){
                                 $status = 2;//红包已领完,未领到
                             }else{
-                                $redis->rpush($key_grabbonus,$user_id);
+                                if(!in_array($user_id,$res_grabbonus)){
+                                    $redis->rpush($key_grabbonus,$user_id);
+                                }
                                 $status = 4;//进入抢红包队列,同时生成token
                             }
                         }
@@ -226,25 +257,6 @@ class RedpacketController extends CommonController{
         $this->to_back($res_data);
     }
 
-
-    //获取发红包结果
-    public function getresult(){
-        $open_id = $this->params['open_id'];
-        $order_id = $this->params['order_id'];
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$open_id,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
-        if(empty($user_info)){
-            $this->to_back(90116);
-        }
-        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
-        $status = $res_order['status'];
-        $jump_url = http_host().'/h5/scanqrcode/getresult?oid='.$order_id;
-        $data = array('status'=>$status,'jump_url'=>$jump_url);
-        $this->to_back($data);
-    }
-
     public function grabBonus(){
         $order_id = $this->params['order_id'];
         $status = $this->params['status'];
@@ -257,6 +269,13 @@ class RedpacketController extends CommonController{
 
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
+
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
 
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -289,7 +308,9 @@ class RedpacketController extends CommonController{
                     if(!in_array($user_id,$res_grabbonus)){
                         $status = 2;
                     }else{
-                        $redis->rpush($key_getbonus,$user_id);
+                        if(!in_array($user_id,$res_getbonus)){
+                            $redis->rpush($key_getbonus,$user_id);
+                        }
                         $status = 3;//正在领红包
                     }
                 }
@@ -331,6 +352,15 @@ class RedpacketController extends CommonController{
             $this->to_back(1007);
         }
 
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(90122);
+        }
+        if(!in_array($res_order['status'],array(4,6))){
+            $this->to_back(90130);
+        }
+
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -348,9 +378,6 @@ class RedpacketController extends CommonController{
             $res_hasget = array();
         }
 
-        $m_order = new \Common\Model\Smallapp\RedpacketModel();
-        $res_order = $m_order->getInfo(array('id'=>$order_id));
-
         if($status!=1){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
@@ -367,7 +394,7 @@ class RedpacketController extends CommonController{
                 $m_netty = new \Common\Model\NettyModel();
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
-                $all_barrage = C('BARRAGES');
+                $all_barrage = C('SMALLAPP_BARRAGES');
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
                     $now_money = $unused_bonus[$i];
@@ -405,13 +432,13 @@ class RedpacketController extends CommonController{
                     }
                 }
                 if(empty($unused_bonus)){
-                    $data = array('status'=>4);
+                    $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){
                         $data['grab_time'] = date('Y-m-d H:i:s');
                     }
                     $m_order->updateData(array('id'=>$order_id),$data);
                 }else{
-                    $data = array('status'=>5);
+                    $data = array('status'=>6);
                     $m_order->updateData(array('id'=>$order_id),$data);
                 }
                 if($status!=1){
@@ -472,7 +499,7 @@ class RedpacketController extends CommonController{
         $where = array();
         $where['a.id'] = $order_id;
         
-        $info = $m_redpacket->getInfo($fields,$where);
+        $info = $m_redpacket->getOrderAndUserInfo($fields,$where);
         
         if(!in_array($info['status'], array(4,5,6))){
             $this->to_back(90130);

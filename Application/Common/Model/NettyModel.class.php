@@ -6,6 +6,7 @@ class NettyModel extends Model{
     protected $tableName='box';
 
     public function pushBox($box_mac,$message){
+        return true;
         $req_id  = getMillisecond();
         $params = array('box_mac'=>$box_mac,'req_id'=>$req_id);
         $post_data = http_build_query($params);

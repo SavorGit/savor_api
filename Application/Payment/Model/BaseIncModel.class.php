@@ -94,7 +94,7 @@ class BaseIncModel extends Model{
             if($row_num){
                 $is_succ = true;
                 $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
-                $this->paynotify_log($pay_type, $serial_no, $sql_serialno);
+                $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
                 if($status == 4){
                     //根据红包总金额和人数进行分配红包
                     $money = $result_order[0]['total_fee'];
@@ -108,7 +108,7 @@ class BaseIncModel extends Model{
                     $redis->set($key,json_encode($all_moneys),86400);
 
                     $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money).' 总金额:'.array_sum($all_money);
-                    $this->paynotify_log($pay_type, $serial_no, $log_content);
+                    $this->paynotify_log($paylog_type, $serial_no, $log_content);
                     //end
                 }
             }

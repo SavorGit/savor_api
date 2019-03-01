@@ -505,7 +505,7 @@ class RedpacketController extends CommonController{
             $this->to_back(90130);
         }
         if($info['status']==5){
-            $info['diff_time'] = strtotime($info['grab_time']) - strtotime($info['pay_time']);
+            $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
         }
         
         //领取详情

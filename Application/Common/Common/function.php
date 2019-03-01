@@ -217,6 +217,16 @@ function secToMinSec($secs){
         }
     }
 }
+function changeTimeType($seconds){
+    if ($seconds > 3600){
+        $hours = intval($seconds/3600);
+        $minutes = $seconds % 3600;
+        $time = $hours.":".gmstrftime('%M:%S', $minutes);
+    }else{
+        $time = gmstrftime('%H:%M:%S', $seconds);
+    }
+    return $time;
+}
 function viewTimes($strtime){
     $now = time();
     $diff_time =  $now-$strtime;

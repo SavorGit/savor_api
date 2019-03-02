@@ -99,7 +99,7 @@ class BaseIncModel extends Model{
                     //根据红包总金额和人数进行分配红包
                     $money = $result_order[0]['total_fee'];
                     $num = $result_order[0]['amount'];
-                    $all_money = bonus_random($money,$num);
+                    $all_money = bonus_random($money,$num,0.3,$money);
 
                     $redis  =  \Common\Lib\SavorRedis::getInstance();
                     $redis->select(5);
@@ -208,6 +208,9 @@ class BaseIncModel extends Model{
                 break;
             case 100:
                 $file_name = C('PAYLOGS_PATH').'wxrefund_'.date('Ym').'.log';
+                break;
+            case 200:
+                $file_name = C('PAYLOGS_PATH').'wxmmpay_'.date('Ym').'.log';
                 break;
             default:
                 $file_name = C('PAYLOGS_PATH').'notify_'.date('Ym').'.log';

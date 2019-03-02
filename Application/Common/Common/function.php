@@ -6,18 +6,31 @@ function http_host(){
     return $http.$_SERVER['HTTP_HOST'];
 }
 
-function bonus_random($money,$num,$min_money=0.3){
-    $all_money = array();
-    for($i=1;$i<$num;$i++){
-        $safe_total=($money-($num-$i)*$min_money)/($num-$i);//随机安全上限
-        $now_money=mt_rand($min_money*100,$safe_total*100)/100;
-        $money=$money-$now_money;
-        $all_money[] = $now_money;
+function bonus_random($total,$num,$min,$max){
+    $data = array();
+    if ($min * $num > $total) {
+        return array();
     }
-    $all_money[] = $money;
-    shuffle($all_money);
-    return $all_money;
+    if($max*$num < $total){
+        return array();
+    }
+    while ($num >= 1) {
+        $num--;
+        $kmix = max($min, $total - $num * $max);
+        $kmax = min($max, $total - $num * $min);
+        $kAvg = $total / ($num + 1);
+        //获取最大值和最小值的距离之间的最小值
+        $kDis = min($kAvg - $kmix, $kmax - $kAvg);
+        //获取0到1之间的随机数与距离最小值相乘得出浮动区间，这使得浮动区间不会超出范围
+        $r = ((float)(rand(1, 10000) / 10000) - 0.5) * $kDis * 2;
+        $k = sprintf("%.2f", $kAvg + $r);
+        $total -= $k;
+        $data[] = $k;
+    }
+    shuffle($data);
+    return $data;
 }
+
 function gen_request_sign($sign_time)
 {
 	$key = C('SIGN_KEY');

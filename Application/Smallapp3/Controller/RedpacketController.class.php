@@ -388,7 +388,7 @@ class RedpacketController extends CommonController{
                 $get_money = $hasget_users[$user_id];
             }
         }else{
-            $res_hasget = array();
+            $hasget_users = array();
         }
 
         if($status!=1){
@@ -410,6 +410,9 @@ class RedpacketController extends CommonController{
                 $all_barrage = C('SMALLAPP_BARRAGES');
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
+                    if(empty($grab_user_id)){
+                        break;
+                    }
                     $now_money = $unused_bonus[$i];
                     if(empty($now_money)){
                         break;
@@ -417,11 +420,12 @@ class RedpacketController extends CommonController{
                     unset($unused_bonus[$i]);
                     $used_bonus[] = $now_money;
 
+                    shuffle($unused_bonus);
                     $all_bonus = array('unused'=>$unused_bonus,'used'=>$used_bonus);
                     $redis->set($key_bonus,json_encode($all_bonus),86400);
 
-                    $res_hasget[$grab_user_id] = $now_money;
-                    $redis->set($key_hasget,json_encode($res_hasget),86400);
+                    $hasget_users[$grab_user_id] = $now_money;
+                    $redis->set($key_hasget,json_encode($hasget_users),86400);
 
                     shuffle($all_barrage);
                     $barrage = $all_barrage[0];

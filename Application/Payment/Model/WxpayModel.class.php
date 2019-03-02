@@ -10,6 +10,7 @@ class WxpayModel extends Model{
     private $os_type;//1pc 2mobile 3公众号支付
     private $paylog_type;
     private $refund_type = 100;
+    private $mmpay_type = 200;
     private $pay_type = 10;//10微信支付
     private $host_name='';
     
@@ -192,7 +193,7 @@ class WxpayModel extends Model{
         $xml = $obj_WxPayNotifyReply->ToXml();
         echo $xml;
     }
-    
+
     public function wxrefund($trade_info=array(),$payconfig=array()){
     	require_once "wxpay_lib/WxPay.Api.php";
     	$paylog_type = $this->refund_type;
@@ -224,6 +225,114 @@ class WxpayModel extends Model{
     		return 0;
     	}
     }
+
+    public function mmpaymkttransfers($trade_info=array(),$payconfig=array()){
+        require_once "wxpay_lib/WxPay.Api.php";
+        $paylog_type = $this->mmpay_type;
+        if(empty($trade_info) || empty($payconfig)){
+            die(json_encode(array('error'=>'订单号或支付账号信息为空，请检查相关代码')));
+        }
+
+        $money = $trade_info['money']*100;//单位为分
+        $key = $payconfig['key'];
+        $params = array();
+        $params["mch_appid"]=$payconfig['appid'];
+        $params["mchid"] = $payconfig['partner'];
+        $params["nonce_str"]= \WxPayApi::getNonceStr();
+        $params["partner_trade_no"] = uniqid();
+        $params["openid"]= $trade_info['open_id'];
+        $params["check_name"]= 'NO_CHECK';
+        $params["amount"]= $money;
+        $params["desc"]= '红包零钱';
+        $params['spbill_create_ip'] = $_SERVER['SERVER_ADDR'];
+
+        //生成签名
+        $str = 'amount='.$params["amount"].'&check_name='.$params["check_name"].'&desc='.$params["desc"].'&mch_appid='.$params["mch_appid"].'&mchid='.$params["mchid"].'&nonce_str='.$params["nonce_str"].'&openid='.$params["openid"].'&partner_trade_no='.$params["partner_trade_no"].'&spbill_create_ip='.$params['spbill_create_ip'].'&key='.$key;
+        //md5加密 转换成大写
+        $sign = strtoupper(md5($str));
+        //生成签名
+        $params['sign'] = $sign;
+        //构造XML数据
+        $xmldata = $this->array_to_xml($params); //数组转XML
+        $url='https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
+        //发送post请求
+        $res = $this->curl_post_ssl($url, $xmldata); //curl请求
+        if(!$res){
+            return array('code'=>10001,'msg'=>"服务器连接失败");
+        }
+        //付款结果分析
+        $content = $this->xml_to_array($res); //xml转数组
+        $log = '订单号:'.$trade_info['trade_no'].'pay_result'.json_encode($content);
+        $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
+
+        if($content["return_code"]=="SUCCESS"){
+            $log = '订单号:'.$trade_info['trade_no'].'success支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
+            $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
+            $info = array('code'=>10000,'msg'=>"支付零钱成功");
+        }else if($content["return_code"]=="FAIL"){
+            $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
+            $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
+            $info = array('code'=>10002,'msg'=>"支付零钱成功");
+        }else{
+            $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
+            $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
+            $info = array('code'=>10002,'msg'=>"支付零钱成功");
+        }
+        return $info;
+    }
+
+
+
+    public function curl_post_ssl($url, $xmldata,  $second=30,$aHeader=array()){
+        $ch = curl_init();
+        //超时时间
+        curl_setopt($ch,CURLOPT_TIMEOUT,$second);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
+        curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
+
+        //默认格式为PEM，可以注释
+        curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
+        curl_setopt($ch,CURLOPT_SSLCERT,APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_cert.pem');
+        curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
+        curl_setopt($ch,CURLOPT_SSLKEY,APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_key.pem');
+        if( count($aHeader) >= 1 ){
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $aHeader);
+        }
+        curl_setopt($ch,CURLOPT_POST, 1);
+        curl_setopt($ch,CURLOPT_POSTFIELDS,$xmldata);
+        $data = curl_exec($ch);
+        if($data){
+            curl_close($ch);
+            return $data;
+        } else {
+            $error = curl_errno($ch);
+            curl_close($ch);
+            return 'curl error:'.$error;
+        }
+    }
+
+    public function xml_to_array($xml){
+        libxml_disable_entity_loader(true);
+        $values = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+        return $values;
+    }
+
+    public function array_to_xml($arr){
+        $xml = "<xml>";
+        foreach ($arr as $key => $val) {
+            if (is_numeric($val)) {
+                $xml .= "<" .$key.">".$val."</".$key.">";
+            } else
+                $xml .= "<".$key."><![CDATA[".$val."]]></".$key.">";
+        }
+        $xml .= "</xml>";
+        return $xml;
+    }
+
+
+
     
     
 }

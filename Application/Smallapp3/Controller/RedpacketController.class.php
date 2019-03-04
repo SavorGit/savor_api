@@ -267,7 +267,6 @@ class RedpacketController extends CommonController{
                 $res_data['jump_url'] = $jump_url;
                 break;
         }
-
         $this->to_back($res_data);
     }
 
@@ -408,6 +407,7 @@ class RedpacketController extends CommonController{
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
                 $all_barrage = C('SMALLAPP_BARRAGES');
+                $user_barrages = array();
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
                     if(empty($grab_user_id)){
@@ -438,30 +438,39 @@ class RedpacketController extends CommonController{
 
                     //增加电视弹幕推送
                     $user_info = $m_user->getOne('*',array('id'=>$grab_user_id),'');
-                    $message = array('action'=>122,'nickName'=>$user_info['nickName'],
-                        'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
-                    $m_netty->pushBox($res_order['mac'],json_encode($message));
-
-
-                    //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
-                    $all_box = $m_netty->getPushBox($res_order['scope'],$res_order['mac']);
-                    if(!empty($all_box)){
-                        foreach ($all_box as $v){
-                            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                                'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
-                            $m_netty->pushBox($v['box_mac'],json_encode($message));
-                        }
-                    }
+                    $user_barrages[] = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
                     //end
-
-                    //推送消息到订阅
-                    sendTopicMessage($order_id,20);
 
                     if($grab_user_id == $user_id){
                         $status = 1;
                         $get_money = $now_money;
                     }
                 }
+                if(!empty($user_barrages)){
+                    $message = array('action'=>122,'userBarrages'=>$user_barrages);
+                    $m_netty->pushBox($res_order['mac'],json_encode($message));
+                    //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
+                    $scope = $res_order['scope'];
+                    if(in_array($scope,array(1,2))){
+                        $all_box = $m_netty->getPushBox(2,$res_order['mac']);
+                        if(!empty($all_box)){
+                            foreach ($all_box as $v){
+                                $m_netty->pushBox($v,json_encode($message));
+                            }
+                        }
+                        if($scope == 1){
+                            $key = C('SAPP_REDPACKET').'barrages';
+                            $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
+                                'user_barrages'=>$user_barrages);
+                            $redis->set($key,json_encode($res_data));
+                        }
+                    }
+                }
+
+                //发现金红包 推送消息到订阅
+                sendTopicMessage($order_id,20);
+                //end
+
                 if(empty($unused_bonus)){
                     $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){
@@ -477,7 +486,7 @@ class RedpacketController extends CommonController{
                 }
             }
         }
-        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'status'=>$status);
+        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'status'=>$status,'mac'=>$res_order['mac']);
 
         $where = array('id'=>$res_order['user_id']);
         $m_user = new \Common\Model\Smallapp\UserModel();

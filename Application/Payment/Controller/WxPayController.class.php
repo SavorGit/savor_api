@@ -10,6 +10,12 @@ class WxPayController extends BaseController{
     }
 
 
+    public function refundMoney(){
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        $res = $m_wxpay->wxrefund();
+    }
+
+
     public function mchpaychange(){
         $fwh_config = C('WX_FWH_CONFIG');
         $appid = $fwh_config['appid'];
@@ -34,10 +40,16 @@ class WxPayController extends BaseController{
         }
 
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+        $m_refund = new \Common\Model\Smallapp\RefundModel();
         $m_wxpay = new \Payment\Model\WxpayModel();
         if(!empty($orders)){
             foreach ($orders as $v){
                 $order_id = $v['order_id'];
+                $res_refund = $m_refund->getInfo(array('trade_no'=>$order_id));
+                if(!empty($res_refund)){
+                    die("redpacket_id:$order_id has refund");
+                }
+
                 $fields = 'a.id,a.redpacket_id,a.user_id,a.money,user.mpopenid as openid';
                 $where = "a.redpacket_id=$order_id and a.status=0";
                 $order = 'id asc';

@@ -110,39 +110,45 @@ class BaseIncModel extends Model{
                     $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money).' 总金额:'.array_sum($all_money);
                     $this->paynotify_log($paylog_type, $serial_no, $log_content);
                     //end
-                }
-            }
-        }else{
-            $is_succ = true;
-        }
-        if($is_succ){
-            //推送红包小程序码到电视
-            $http_host = http_host();
-            $m_user = new \Common\Model\Smallapp\UserModel();
-            $m_netty = new \Common\Model\NettyModel();
 
-            $box_mac = $result_order[0]['mac'];
-            $qrinfo =  $trade_no.'_'.$box_mac;
-            $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
-            $where = array('id'=>$result_order[0]['user_id']);
-            $user_info = $m_user->getOne('*',$where,'');
-            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
-            $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
-            //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
-            $all_box = $m_netty->getPushBox($result_order[0]['scope'],$box_mac);
-            if(!empty($all_box)){
-                foreach ($all_box as $v){
-                    $qrinfo =  $trade_no.'_'.$v['box_mac'];
+                    //推送红包小程序码到电视
+                    $http_host = http_host();
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $m_netty = new \Common\Model\NettyModel();
+
+                    $box_mac = $result_order[0]['mac'];
+                    $qrinfo =  $trade_no.'_'.$box_mac;
                     $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                     $where = array('id'=>$result_order[0]['user_id']);
                     $user_info = $m_user->getOne('*',$where,'');
                     $message = array('action'=>121,'nickName'=>$user_info['nickName'],
                         'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
-                    $m_netty->pushBox($v['box_mac'],json_encode($message));
+                    $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
+                    //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
+                    $scope = $result_order[0]['scope'];
+                    if(in_array($scope,array(1,2))){
+                        $all_box = $m_netty->getPushBox(2,$box_mac);
+                        if(!empty($all_box)){
+                            foreach ($all_box as $v){
+                                $qrinfo =  $trade_no.'_'.$v;
+                                $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                                $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                                    'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                                $m_netty->pushBox($v,json_encode($message));
+                            }
+                        }
+                        if($scope == 1){
+                            $key = C('SAPP_REDPACKET').'smallprogramcode';
+                            $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
+                                'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+                            $redis->set($key,json_encode($res_data));
+                        }
+                    }
+                    //end
                 }
             }
-            //end
+        }else{
+            $is_succ = true;
         }
         return $is_succ;
     }

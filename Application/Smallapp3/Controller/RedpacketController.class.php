@@ -454,6 +454,9 @@ class RedpacketController extends CommonController{
                     }
                     //end
 
+                    //推送消息到订阅
+                    sendTopicMessage($order_id,20);
+
                     if($grab_user_id == $user_id){
                         $status = 1;
                         $get_money = $now_money;

@@ -1,5 +1,6 @@
 <?php
 use Common\Lib\Crypt3Des;
+use Common\Lib\AliyunMsn;
 
 function http_host(){
     $http = 'https://';
@@ -29,6 +30,43 @@ function bonus_random($total,$num,$min,$max){
     }
     shuffle($data);
     return $data;
+}
+
+/**
+ * 发送主题消息
+ * @param $message消息内容
+ * @param $type 20 发红包到用户零钱
+ * @return Ambigous <boolean, mixed>
+ */
+function sendTopicMessage($message,$type){
+    if(empty($message) || empty($type)){
+        return false;
+    }
+    $all_type = array('20'=>'bonustomoney');
+    $accessId = C('OSS_ACCESS_ID');
+    $accessKey= C('OSS_ACCESS_KEY');
+    $endPoint = C('QUEUE_ENDPOINT');
+    $topicName = C('TOPIC_NAME');
+
+    $ali_msn = new AliyunMsn($accessId, $accessKey, $endPoint);
+    $mir_time = getmicrotime();
+    $serial_num = $mir_time*10000;
+    if(!is_array($message)){
+        $message = array($message);
+    }
+    $now_message = array();
+    foreach ($message as $v){
+        $now_message[] = array('order_id'=>$v,'serial_num'=>"$serial_num");
+    }
+    $messageBody = base64_encode(json_encode($now_message));
+    $messageTag = $all_type[$type];
+    $res = $ali_msn->sendTopicMessage($topicName,$messageBody,$messageTag);
+    return $res;
+}
+
+function getmicrotime(){
+    list($usec, $sec) = explode(" ",microtime());
+    return ((float)$usec + (float)$sec);
 }
 
 function gen_request_sign($sign_time)

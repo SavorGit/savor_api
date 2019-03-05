@@ -4,23 +4,6 @@ use Think\Controller;
 
 class ScanqrcodeController extends Controller {
 
-
-    public function wxinfo(){
-        $url = http_host().'/h5/scanqrcode/wxnotify';
-        $this->wx_oauth($url);
-    }
-
-    public function wxnotify(){
-        $code = I('code', '');
-        $m_weixin_api = new \Common\Lib\Weixin_api();
-        $result = $m_weixin_api->getWxOpenid($code);
-        $content = json_encode($result);
-        $log_content = date("Y-m-d H:i:s").'[params]'.json_encode($_REQUEST).'[resp_result]'.$content.'[client_ip]'.get_client_ip()."\n";
-        $log_file_name = APP_PATH.'Runtime/Logs/'.'wxnotify_'.date("Ymd").".log";
-        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
-    }
-
-
     /**
      * @desc 发送电视红包帮助页面
      */
@@ -55,8 +38,6 @@ class ScanqrcodeController extends Controller {
 
             $qrcode = $this->wxpay($res_order);
 
-            $wx_sign = $this->wx_sign();
-            $this->assign('wxsign',$wx_sign);
             $this->assign('qrcode',$qrcode);
             $this->display('scanpage');
         }
@@ -79,9 +60,6 @@ class ScanqrcodeController extends Controller {
 
         $res_order['open_id'] = $open_id;
         $qrcode = $this->wxpay($res_order);
-
-        $wx_sign = $this->wx_sign();
-        $this->assign('wxsign',$wx_sign);
 
         $this->assign('qrcode',$qrcode);
         $this->display('scanpage');
@@ -182,7 +160,7 @@ class ScanqrcodeController extends Controller {
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
-            if(empty($resdata['unused'])){
+            if(empty($resdata) || empty($resdata['unused'])){
                 $status = 2;//红包已领完,未领到
             }else{
                 $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
@@ -221,8 +199,6 @@ class ScanqrcodeController extends Controller {
         $this->display('grab');
     }
 
-
-
     private function wx_oauth($url){
         $fwh_config = C('WX_FWH_CONFIG');
         $appid = $fwh_config['appid'];
@@ -231,25 +207,6 @@ class ScanqrcodeController extends Controller {
         $url_oauth = 'https://open.weixin.qq.com/connect/oauth2/authorize';
         $wx_url = $url_oauth."?appid=$appid&redirect_uri=$uri&response_type=code&scope=snsapi_base&state=$state#wechat_redirect";
         header("Location:".$wx_url);
-    }
-
-    public function wx_sign(){
-        $url = http_host().$_SERVER['REQUEST_URI'];
-        $log_content = date("Y-m-d H:i:s").'[resp_result]'.$url.'[client_ip]'.get_client_ip()."\n";
-        $log_file_name = APP_PATH.'Runtime/Logs/'.'weixin_'.date("Ymd").".log";
-        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
-
-        $wx_api = new \Common\Lib\Weixin_api();
-        $wx_config = $wx_api->showShareConfig($url,'');
-        $str = "wx.config({
-          debug: false,
-          appId: '{$wx_config['appid']}',
-          timestamp: {$wx_config['timestamp']},
-          nonceStr: '{$wx_config['noncestr']}',
-          signature: '{$wx_config['signature']}',
-          jsApiList: ['scanQRCode']
-         });";
-        return $str;
     }
 
     private function wxpay($order){

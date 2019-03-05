@@ -158,7 +158,9 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
-        if(!in_array($res_order['status'],array(4,5,6))){
+        $now_time = time();
+        $remain_time = $now_time - strtotime($res_order['add_time']);
+        if(!in_array($res_order['status'],array(4,5,6)) || $remain_time>86400){
             $this->to_back(90130);
         }
 
@@ -171,6 +173,7 @@ class RedpacketController extends CommonController{
             $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
             $res_hasget = $redis->get($key_hasget);
             $get_money = '';
+            $status = 2;//红包已领完,未领到
             if($res_hasget){
                 $hasget_users = json_decode($res_hasget,true);
                 if(array_key_exists($user_id,$hasget_users)){
@@ -286,7 +289,9 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
-        if(!in_array($res_order['status'],array(4,6))){
+        $now_time = time();
+        $remain_time = $now_time - strtotime($res_order['add_time']);
+        if(!in_array($res_order['status'],array(4,6)) || $remain_time>86400){
             $this->to_back(90130);
         }
 
@@ -368,8 +373,9 @@ class RedpacketController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90122);
         }
-
-        if(!in_array($res_order['status'],array(4,5,6))){
+        $now_time = time();
+        $remain_time = $now_time - strtotime($res_order['add_time']);
+        if(!in_array($res_order['status'],array(4,6)) || $remain_time>86400){
             $this->to_back(90130);
         }
 
@@ -394,7 +400,7 @@ class RedpacketController extends CommonController{
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
-            if(empty($resdata['unused'])){
+            if(empty($resdata) || empty($resdata['unused'])){
                 $status = 2;//红包已领完,未领到
             }else{
                 $grab_num = $res_order['amount']*2;
@@ -494,14 +500,13 @@ class RedpacketController extends CommonController{
         $res_data['nickName'] = $user_info['nickName'];
         $res_data['avatarUrl'] = $user_info['avatarUrl'];
 
+        $all_bless = C('SMALLAPP_REDPACKET_BLESS');
+        $res_data['bless'] = $all_bless[$res_order['bless_id']];
         switch ($status){
             case 1:
-                $all_bless = C('SMALLAPP_REDPACKET_BLESS');
-                $res_data['bless'] = $all_bless[$res_order['bless_id']];
                 $res_data['money'] = $get_money;
                 break;
             case 2:
-                $res_data['bless'] = '手慢了，红包抢完了';
                 $res_data['money'] = 0;
                 break;
         }

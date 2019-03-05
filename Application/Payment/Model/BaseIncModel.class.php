@@ -39,21 +39,6 @@ class BaseIncModel extends Model{
         return $payinfo;
     }
     
-    public function update_refund($refund_data){
-        $row_refund = 0;
-        if(!empty($refund_data)){
-            $sql_refund = "update cms_refund set ";
-            $fields = "";
-            foreach ($refund_data as $k=>$v){
-                $fields.="$k='$v',";
-            }
-            $trade_no = $refund_data['trade_no'];
-            $sql=$sql_refund.rtrim($fields,','). " where trade_no='$trade_no'";
-            $row_refund = $this->execute($sql);
-        }
-        return $row_refund;
-    }
-    
     /**
      * 更新红包订单支付数据
      * @param array $order_extend 订单扩展信息
@@ -94,6 +79,7 @@ class BaseIncModel extends Model{
             if($row_num){
                 $is_succ = true;
                 $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
+                $this->execute($sql_serialno);
                 $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
                 if($status == 4){
                     //根据红包总金额和人数进行分配红包
@@ -149,48 +135,6 @@ class BaseIncModel extends Model{
             }
         }else{
             $is_succ = true;
-        }
-        return $is_succ;
-    }
-
-    /**
-     * 更新退款数据
-     * @param array $order_extend 订单扩展信息
-     * array(
-    'serial_no'=>流水号
-    'trade_no'=>订单号,
-    'paylog_type'=>支付类型,
-    ）
-     * @param boolean $is_code 是否发放券
-     * @return boolean
-     */
-    public function handle_refund_notify($order_extend){
-        $is_succ = false;
-        $serial_no = $order_extend['serial_no'];
-        $paylog_type = $order_extend['paylog_type'];
-        $trade_no = empty($order_extend['trade_no'])?0:$order_extend['trade_no'];
-
-        if(empty($trade_no)){
-            $sql_serial = "select trade_no from cms_orderserial where serial_order='$serial_no'";
-            $this->paynotify_log($paylog_type, $serial_no, $sql_serial);
-            $res_serial = $this->execute($sql_serial);
-            $trade_no = $res_serial[0]['trade_no'];
-        }
-        $sql_order = "select o.*,r.batch_no,r.status from cms_order as o,cms_refund as r where o.trade_no='$trade_no'
-        and o.trade_no=r.trade_no";
-        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
-        $result_order = $this->execute($sql_order);
-        if($result_order[0]['status'] == 1 && $result_order[0]['status'] == 5){
-            $sql_uporder = "update cms_order set status=6 where trade_no='$trade_no'";
-            $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
-            $row_uporder = $this->execute($sql_uporder);
-
-            $sql_uprefund = "update cms_refund set status=2,succ_time=now() where trade_no='$trade_no'";
-            $this->paynotify_log($paylog_type, $serial_no, $sql_uprefund);
-            $row_uprefund = $this->execute($sql_uprefund);
-            if($row_uprefund){
-                $is_succ = true;
-            }
         }
         return $is_succ;
     }

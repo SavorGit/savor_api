@@ -518,7 +518,7 @@ class WxPayApi
 	 * @throws WxPayException
 	 */
 	private static function postXmlCurl($xml, $url, $useCert = false, $second = 30)
-	{		
+	{
 		$ch = curl_init();
 		$curlVersion = curl_version();
 		$ua = "WXPaySDK/0.9 (".PHP_OS.") PHP/".PHP_VERSION." CURL/".$curlVersion['version']." ".$GLOBALS['wxpay_config']['MCHID'];		

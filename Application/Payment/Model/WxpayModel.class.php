@@ -208,22 +208,24 @@ class WxpayModel extends Model{
     	$input->SetOut_trade_no($trade_info['trade_no']);
     	$input->SetOut_refund_no($trade_info['batch_no']);
     	$input->SetTotal_fee($trade_info['pay_fee']*100);
-    	$input->SetRefund_fee($trade_info['pay_fee']*100);
+    	$input->SetRefund_fee($trade_info['refund_money']*100);
     	$input->SetOp_user_id($this->payconfig['MCHID']);
     	$order = \WxPayApi::refund($input);
+
+        $log = '订单号:'.$order['out_trade_no'].'微信api返回数据:'.json_encode($order);
+        $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
+
     	if($order["return_code"]=="SUCCESS"){
     		$log = '订单号:'.$order['out_trade_no'].'退款成功';
     		$this->baseInc->paynotify_log($paylog_type,$order['out_trade_no'],$log);
-    		return $order;
     	}else if($order["return_code"]=="FAIL"){
     		$log = '订单号:'.$order['out_trade_no'].'退款失败';
     		$this->baseInc->paynotify_log($paylog_type,$order['out_trade_no'],$log);
-    		return 0;
     	}else{
     		$log = '订单号:'.$order['out_trade_no'].'退款失败';
     		$this->baseInc->paynotify_log($paylog_type,$order['out_trade_no'],$log);
-    		return 0;
     	}
+        return $order;
     }
 
     public function mmpaymkttransfers($trade_info=array(),$payconfig=array()){

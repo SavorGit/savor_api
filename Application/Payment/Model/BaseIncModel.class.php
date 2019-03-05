@@ -113,21 +113,26 @@ class BaseIncModel extends Model{
                     //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
                     $scope = $result_order[0]['scope'];
                     if(in_array($scope,array(1,2))){
-                        $all_box = $m_netty->getPushBox(2,$box_mac);
-                        if(!empty($all_box)){
-                            foreach ($all_box as $v){
-                                $qrinfo =  $trade_no.'_'.$v;
-                                $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
-                                $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                                    'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
-                                $m_netty->pushBox($v,json_encode($message));
+                        //北京发红包只能发当前包间
+                        $m_box = new \Common\Model\BoxModel();
+                        $res = $m_box->getHotelInfoByBoxMacNew($box_mac);
+                        if($res['area_id']!=1){
+                            $all_box = $m_netty->getPushBox(2,$box_mac);
+                            if(!empty($all_box)){
+                                foreach ($all_box as $v){
+                                    $qrinfo =  $trade_no.'_'.$v;
+                                    $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                                    $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                                        'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                                    $m_netty->pushBox($v,json_encode($message));
+                                }
                             }
-                        }
-                        if($scope == 1){
-                            $key = C('SAPP_REDPACKET').'smallprogramcode';
-                            $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
-                                'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
-                            $redis->set($key,json_encode($res_data));
+                            if($scope == 1){
+                                $key = C('SAPP_REDPACKET').'smallprogramcode';
+                                $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
+                                    'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+                                $redis->set($key,json_encode($res_data));
+                            }
                         }
                     }
                     //end

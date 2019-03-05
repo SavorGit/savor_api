@@ -105,6 +105,7 @@ class RedpacketController extends CommonController{
         if(empty($box_info)){
             $this->to_back(15003);
         }
+
         $redpacket = array('user_id'=>$user_info['id'],'total_fee'=>$total_money,'amount'=>$amount,'surname'=>$surname,
             'sex'=>$sex,'bless_id'=>$bless_id,'scope'=>$scope,'mac'=>$box_mac);
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();

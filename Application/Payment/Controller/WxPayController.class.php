@@ -19,9 +19,10 @@ class WxPayController extends BaseController{
             'key'=>$pay_config['key']
         );
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
-        $where = array('status'=>6);
+        $where = array('status'=>array('in','4,6'));
+        $where['add_time'] = array('egt','2019-03-05 00:00:00');
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
-
+        $diff_time = 86400;
         $now_time = time();
         $m_wxpay = new \Payment\Model\WxpayModel();
         $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
@@ -31,14 +32,14 @@ class WxPayController extends BaseController{
             $trade_no = $v['id'];
             $pay_fee = $v['pay_fee'];
             $order_time = strtotime($v['add_time']);
-            if($now_time-$order_time<86400){
+            if($now_time-$order_time<$diff_time){
                 continue;
             }
             $res_receive = $m_redpacketreceive->getDataList('money',array('redpacket_id'=>$trade_no,'status'=>1));
             $get_money = 0;
             if(!empty($res_receive)){
-                foreach ($res_receive as $v){
-                    $get_money+=$v;
+                foreach ($res_receive as $vm){
+                    $get_money+=$vm['money'];
                 }
             }
             $refund_money = sprintf("%01.2f",$pay_fee-$get_money);

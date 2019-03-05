@@ -540,7 +540,7 @@ class RedpacketController extends CommonController{
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
-        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status,a.mac,a.pay_time,a.grab_time';
+        $fields = 'user.avatarUrl,user.nickName,a.amount,a.pay_fee,a.status,a.mac,a.pay_time,a.grab_time,a.mac';
         
         $where = array();
         $where['a.id'] = $order_id;

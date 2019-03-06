@@ -22,7 +22,10 @@ class WxPayController extends BaseController{
         $where = array('status'=>array('in','4,6'));
         $where['add_time'] = array('egt','2019-03-05 00:00:00');
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
-        $diff_time = 86400;
+        if(empty($res_order)){
+            die('refund over');
+        }
+        $diff_time = 7200;
         $now_time = time();
         $m_wxpay = new \Payment\Model\WxpayModel();
         $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();

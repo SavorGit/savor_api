@@ -449,6 +449,9 @@ class ProgramController extends CommonController{
          $where['menu_num'] = $menu_num;
          $where['state']    = 1;
          $menu_info = $m_programmenu_list->getOne('id',$where); 
+         if(empty($menu_info)){
+             $this->to_back(30115);
+         }
          $menu_id = $menu_info['id']; 
          $menu_hotel_info = $m_programmenu_hotel->getMenuHotelDownState('down_state',$menu_id,$hotel_id);
          

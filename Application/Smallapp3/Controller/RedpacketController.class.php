@@ -63,7 +63,6 @@ class RedpacketController extends CommonController{
             $data['bless'] = $bless_tmp;
             $data['range'] = $range_tmp;
         }
-        
         $this->to_back($data);
     }
 
@@ -459,17 +458,22 @@ class RedpacketController extends CommonController{
                     //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
                     $scope = $res_order['scope'];
                     if(in_array($scope,array(1,2))){
-                        $all_box = $m_netty->getPushBox(2,$res_order['mac']);
-                        if(!empty($all_box)){
-                            foreach ($all_box as $v){
-                                $m_netty->pushBox($v,json_encode($message));
+                        //北京发红包只能发当前包间
+                        $m_box = new \Common\Model\BoxModel();
+                        $res = $m_box->getHotelInfoByBoxMacNew($res_order['mac']);
+                        if($res['area_id']!=1){
+                            $all_box = $m_netty->getPushBox(2,$res_order['mac']);
+                            if(!empty($all_box)){
+                                foreach ($all_box as $v){
+                                    $m_netty->pushBox($v,json_encode($message));
+                                }
                             }
-                        }
-                        if($scope == 1){
-                            $key = C('SAPP_REDPACKET').'barrages';
-                            $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
-                                'user_barrages'=>$user_barrages);
-                            $redis->set($key,json_encode($res_data));
+                            if($scope == 1){
+                                $key = C('SAPP_REDPACKET').'barrages';
+                                $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
+                                    'user_barrages'=>$user_barrages);
+                                $redis->set($key,json_encode($res_data));
+                            }
                         }
                     }
                 }

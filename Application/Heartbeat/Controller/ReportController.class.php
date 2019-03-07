@@ -54,6 +54,8 @@ class ReportController extends CommonController{
         
         //20180531新增
         $data['net_speed']  = I('get.net_speed','','trim');   //机顶盒下载速度
+
+        $data['apk_time'] = I('get.apk_time','','trim');
                 
         if(empty($data['mac'])){
             $this->to_back(10004);
@@ -99,7 +101,8 @@ class ReportController extends CommonController{
         $ret['pro_download_period'] = $data['pro_download_period'];
         $ret['ads_download_period'] = $data['ads_download_period'];
         $ret['net_speed']  = $data['net_speed'];
-        
+        $ret['apk_time']  = $data['apk_time'];
+
         $m_box = new \Common\Model\BoxModel();
         $info = $m_box->field('is_4g')->where(array('state'=>1,'flag'=>0,'mac'=>$data['mac']))->find();
         
@@ -312,6 +315,9 @@ class ReportController extends CommonController{
                         $map['pro_download_period'] = $ret_arr['pro_download_period'];
                         $map['ads_download_period'] = $ret_arr['ads_download_period'];
                         $map['net_speed']           = $ret_arr['net_speed'];
+                        if(isset($ret_arr['apk_time'])){
+                            $map['apk_time']  = $ret_arr['apk_time'];
+                        }
                         $ret = $m_heart_log->add($map);
                     }else {
                         $last_heart_time = date('Y-m-d H:i:s',strtotime($ret_arr['date']));
@@ -340,6 +346,9 @@ class ReportController extends CommonController{
                             $map['pro_download_period'] = $ret_arr['pro_download_period'];
                             $map['ads_download_period'] = $ret_arr['ads_download_period'];
                             $map['net_speed']           = $ret_arr['net_speed'];
+                            if(isset($ret_arr['apk_time'])){
+                                $map['apk_time']  = $ret_arr['apk_time'];
+                            }
                             $m_heart_log->where(array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid))->save($map);
                                     
                         }

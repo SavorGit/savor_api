@@ -22,7 +22,7 @@ class RedpacketController extends CommonController{
                 break;
             case 'getScanresult':
                 $this->is_verify =1;
-                $this->valid_fields = array('open_id'=>1001,'order_id'=>1001);
+                $this->valid_fields = array('open_id'=>1001,'order_id'=>1001,'box_mac'=>1002);
                 break;
             case 'grabBonus':
                 $this->is_verify =1;
@@ -145,6 +145,7 @@ class RedpacketController extends CommonController{
     public function getScanresult(){
         $open_id = $this->params['open_id'];
         $order_id = $this->params['order_id'];
+        $box_mac = $this->params['box_mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$open_id,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
@@ -167,6 +168,20 @@ class RedpacketController extends CommonController{
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
+
+        $key_box = $red_packet_key.$order_id.':boxs';
+        $resbox = $redis->get($key_box);
+        if(!empty($resbox)){
+            $res_boxdata= json_decode($resbox,true);
+        }else{
+            $res_boxdata = array();
+        }
+        if($box_mac){
+            $res_boxdata[$user_id] = $box_mac;
+        }
+        if(!empty($res_boxdata)){
+            $redis->set($key_box,json_encode($res_boxdata),86400);
+        }
 
         $status = 0;
         if($res_order['status'] == 5) {
@@ -505,7 +520,17 @@ class RedpacketController extends CommonController{
                 }
             }
         }
-        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'status'=>$status,'mac'=>$res_order['mac']);
+        $mac = $res_order['mac'];
+        $key_box = $red_packet_key.$order_id.':boxs';
+        $resbox = $redis->get($key_box);
+        $box_mac = '';
+        if(!empty($resbox)){
+            $res_boxdata= json_decode($resbox,true);
+            if(isset($res_boxdata[$user_id])){
+                $box_mac = $res_boxdata[$user_id];
+            }
+        }
+        $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'status'=>$status,'box_mac'=>$box_mac,'mac'=>$mac);
 
         $where = array('id'=>$res_order['user_id']);
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -548,7 +573,7 @@ class RedpacketController extends CommonController{
         $this->to_back($data);
     }
     public function redpacketDetail(){
-        //$openid   = $this->params['openid'];
+//        $openid   = $this->params['openid'];
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
@@ -559,13 +584,12 @@ class RedpacketController extends CommonController{
         
         $info = $m_redpacket->getOrderAndUserInfo($fields,$where);
         
-        if(!in_array($info['status'], array(4,5,6))){
+        if(!in_array($info['status'], array(4,5,6,7))){
             $this->to_back(90130);
         }
         if($info['status']==5){
             $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
         }
-        
         //领取详情
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         

@@ -110,13 +110,25 @@ class BaseIncModel extends Model{
                     $message = array('action'=>121,'nickName'=>$user_info['nickName'],
                         'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
                     $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
+
+                    $log_content = '订单号:'.$trade_no.' 当前包间红包小程序码:'.$mpcode;
+                    $this->paynotify_log($paylog_type, $serial_no, $log_content);
+
                     //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
                     $scope = $result_order[0]['scope'];
                     if(in_array($scope,array(1,2))){
                         //北京发红包只能发当前包间
                         $m_box = new \Common\Model\BoxModel();
                         $res = $m_box->getHotelInfoByBoxMacNew($box_mac);
-                        if($res['area_id']!=1){
+                        if($res['area_id']==1){
+                            if($scope == 1){
+                                $all_box = $m_netty->getPushBox(2,$box_mac);
+                                $key = C('SAPP_REDPACKET').'smallprogramcode';
+                                $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
+                                    'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+                                $redis->set($key,json_encode($res_data));
+                            }
+                        }else{
                             $all_box = $m_netty->getPushBox(2,$box_mac);
                             if(!empty($all_box)){
                                 foreach ($all_box as $v){

@@ -461,7 +461,15 @@ class RedpacketController extends CommonController{
                         //北京发红包只能发当前包间
                         $m_box = new \Common\Model\BoxModel();
                         $res = $m_box->getHotelInfoByBoxMacNew($res_order['mac']);
-                        if($res['area_id']!=1){
+                        if($res['area_id']==1){
+                            if($scope == 1){
+                                $all_box = $m_netty->getPushBox(2,$res_order['mac']);
+                                $key = C('SAPP_REDPACKET').'barrages';
+                                $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
+                                    'user_barrages'=>$user_barrages);
+                                $redis->set($key,json_encode($res_data));
+                            }
+                        }else{
                             $all_box = $m_netty->getPushBox(2,$res_order['mac']);
                             if(!empty($all_box)){
                                 foreach ($all_box as $v){

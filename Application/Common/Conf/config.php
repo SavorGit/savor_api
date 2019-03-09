@@ -250,6 +250,7 @@ return array(
     'SAPP_CALL_CLIMBTREE'=>'smallapp:callclimbtree:',
     'SAPP_CALL_CLIMBTREE_LOGOUT'=>'smallapp:callclimbtree:logout:',
     'SAPP_REDPACKET'=>'smallapp:redpacket:',
+    'SAPP_BIRTHDAYDEMAND'=>'smallapp:birthdaydemand',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

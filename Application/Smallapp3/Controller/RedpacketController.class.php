@@ -14,7 +14,7 @@ class RedpacketController extends CommonController{
             case 'sendTvbonus':
                 $this->is_verify =1;
                 $this->valid_fields = array('open_id'=>1001,'total_money'=>1001,'amount'=>1001,
-                    'surname'=>1001,'sex'=>1001,'bless_id'=>1001,'scope'=>1001,'mac'=>1001);
+                    'surname'=>1001,'sex'=>1001,'bless_id'=>1001,'scope'=>1001,'mac'=>1002);
                 break;
             case 'getresult':
                 $this->is_verify =1;
@@ -95,6 +95,21 @@ class RedpacketController extends CommonController{
         if(!array_key_exists($scope,C('SMALLAPP_REDPACKET_SEND_RANGE'))){
             $this->to_back(90119);
         }
+
+        if(empty($box_mac)){
+            $red_packet_key = C('SAPP_REDPACKET');
+            $key_tmpbox = $red_packet_key.':tmpboxs';
+            $redis  =  \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $res_tmpbox = $redis->get($key_tmpbox);
+            if(!empty($res_tmpbox)){
+                $tmp_boxs = json_decode($res_tmpbox,true);
+                if(isset($tmp_boxs[$user_info['id']])){
+                    $box_mac = $tmp_boxs[$user_info['id']];
+                }
+            }
+        }
+
         $m_box = new \Common\Model\BoxModel();
         $where = array();
         $where['mac'] = $box_mac;
@@ -573,7 +588,7 @@ class RedpacketController extends CommonController{
         $this->to_back($data);
     }
     public function redpacketDetail(){
-//        $openid   = $this->params['openid'];
+        $openid   = $this->params['openid'];
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
@@ -587,6 +602,13 @@ class RedpacketController extends CommonController{
         if(!in_array($info['status'], array(4,5,6,7))){
             $this->to_back(90130);
         }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
         if($info['status']==5){
             $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
         }
@@ -613,6 +635,31 @@ class RedpacketController extends CommonController{
             $info['receive_nums'] = 0;
             $info['receive_money']= 0;
         }
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key_box = $red_packet_key.$order_id.':boxs';
+        $resbox = $redis->get($key_box);
+        $box_mac = '';
+        if(!empty($resbox)){
+            $res_boxdata= json_decode($resbox,true);
+            if(isset($res_boxdata[$user_info['id']])){
+                $box_mac = $res_boxdata[$user_info['id']];
+
+                $key_tmpbox = $red_packet_key.':tmpboxs';
+                $res_tmpbox = $redis->get($key_tmpbox);
+                if(!empty($res_tmpbox)){
+                    $tmp_boxs = json_decode($res_tmpbox,true);
+                }else{
+                    $tmp_boxs = array();
+                }
+                $tmp_boxs[$user_info['id']] = $box_mac;
+                $redis->set($key_tmpbox,json_encode($tmp_boxs),86400);
+
+            }
+        }
+        $info['box_mac'] = $box_mac;
+
         $data = array();
         $data['info'] = $info;
         $data['receive_list'] = $receive_list;

@@ -391,7 +391,7 @@ class RedpacketController extends CommonController{
         }
         $now_time = time();
         $remain_time = $now_time - strtotime($res_order['add_time']);
-        if(!in_array($res_order['status'],array(4,6)) || $remain_time>86400){
+        if(!in_array($res_order['status'],array(4,5,6)) || $remain_time>86400){
             $this->to_back(90130);
         }
 
@@ -407,12 +407,19 @@ class RedpacketController extends CommonController{
             if(array_key_exists($user_id,$hasget_users)){
                 $status = 1;//已领取红包
                 $get_money = $hasget_users[$user_id];
+            }else{
+                if($res_order['status']==5){
+                    $status = 2;
+                }
             }
         }else{
             $hasget_users = array();
+            if($res_order['status']==5){
+                $status = 2;
+            }
         }
 
-        if($status!=1){
+        if($status==0){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);

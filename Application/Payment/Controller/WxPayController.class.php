@@ -25,7 +25,7 @@ class WxPayController extends BaseController{
         if(empty($res_order)){
             die('refund over');
         }
-        $diff_time = 7200;
+        $diff_time = 86400/2;
         $now_time = time();
         $m_wxpay = new \Payment\Model\WxpayModel();
         $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();

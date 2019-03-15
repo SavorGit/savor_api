@@ -4,6 +4,88 @@ use Think\Controller;
 
 class ScanqrcodeController extends Controller {
 
+    public function sendtv(){
+        $trade_no = I('oid',0,'intval');
+        $http_host = http_host();
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $m_netty = new \Common\Model\NettyModel();
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SAPP_REDPACKET').'smallprogramcode';
+        $res = $redis->get($key);
+        if(!empty($res)){
+            $bonus = json_decode($res,true);
+            if(isset($bonus['order_id'])){
+                die('Grabbing red packets ID:'.$bonus['order_id']);
+            }
+        }
+        $result_order = $m_user->query('select * from savor_smallapp_redpacket where id='.$trade_no);
+        if(!in_array($result_order[0]['status'],array(4,6))){
+            die('bonus over');
+        }
+        $where = array('id'=>$result_order[0]['user_id']);
+        $user_info = $m_user->getOne('*',$where,'');
+
+        $box_mac = $result_order[0]['mac'];
+        $scope = $result_order[0]['scope'];
+        if(in_array($scope,array(1,2))){
+            //北京发红包只能发当前包间
+            $m_box = new \Common\Model\BoxModel();
+            $res = $m_box->getHotelInfoByBoxMacNew($box_mac);
+            if($res['area_id']==1){
+                if($scope == 1){
+                    $all_box = $m_netty->getPushBox(2,$box_mac);
+                    $key = C('SAPP_REDPACKET').'smallprogramcode';
+                    $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
+                        'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+                    $redis->set($key,json_encode($res_data));
+                }
+            }else{
+                $all_box = $m_netty->getPushBox(2,$box_mac);
+                if(!empty($all_box)){
+                    foreach ($all_box as $v){
+                        $qrinfo =  $trade_no.'_'.$v;
+                        $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                        $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                            'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                        $m_netty->pushBox($v,json_encode($message));
+                    }
+                }
+                if($scope == 1){
+                    $key = C('SAPP_REDPACKET').'smallprogramcode';
+                    $res_data = array('order_id'=>$trade_no,'add_time'=>$result_order[0]['add_time'],'box_list'=>$all_box,
+                        'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']);
+                    $redis->set($key,json_encode($res_data));
+                }
+            }
+        }
+        $key = C('SAPP_REDPACKET').'smallprogramcode';
+        $res = $redis->get($key);
+        if(!empty($res)){
+            $bonus = json_decode($res,true);
+            if(isset($bonus['order_id'])){
+                die('red packets ready to grab ID:'.$bonus['order_id']);
+            }
+        }
+    }
+
+    public function bjmac(){
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $sql = "SELECT b.id AS box_id,b.NAME AS box_name,b.room_id,r.NAME AS room_name,h.id AS hotel_id,h.NAME AS hotel_name,a.id AS area_id,a.region_name AS area_name,b.mac FROM savor_box AS b LEFT JOIN savor_room AS r ON b.room_id=r.id LEFT JOIN savor_hotel AS h ON r.hotel_id=h.id LEFT JOIN savor_area_info AS a ON h.area_id=a.id WHERE h.area_id=1 AND h.state=1 AND h.flag=0 AND b.state=1 AND b.flag=0";
+        $res = $m_user->query($sql);
+        $all_mac = array();
+        $key = C('SAPP_REDPACKET').'bjboxmac';
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        if(!empty($res)){
+            foreach ($res as $v){
+                $all_mac[] = $v['mac'];
+            }
+            $redis->select(5);
+            $redis->set($key,json_encode($all_mac));
+        }
+        print_r($redis->get($key));
+    }
+
     /**
      * @desc 发送电视红包帮助页面
      */
@@ -96,6 +178,7 @@ class ScanqrcodeController extends Controller {
             $error = array('msg'=>'token error');
             die(json_encode($error));
         }
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
@@ -109,7 +192,6 @@ class ScanqrcodeController extends Controller {
             $status = 4;
             $sign = create_sign($status.$order_id.$grap_userid);
             $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$grap_userid,'sign'=>$sign,'money'=>0);
-
             $this->assign('params',$params);
             $this->assign('info',$info);
             $this->assign('time',time());
@@ -226,6 +308,12 @@ class ScanqrcodeController extends Controller {
         $m_payment = new \Payment\Model\WxpayModel(1);
         $url = $m_payment->pay($trade_info,$payconfig);
         $qrcode = $http_host.'/h5/qrcode?url='.$url;
+
+        $log_content = date("Y-m-d H:i:s").'[order_id]'.$order['id'].'[pay_url]'.$qrcode."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'paycode_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+
         //推送付款二维码到电视
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('id'=>$order['user_id']);

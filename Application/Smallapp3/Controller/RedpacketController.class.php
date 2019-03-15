@@ -95,6 +95,7 @@ class RedpacketController extends CommonController{
         if(!array_key_exists($scope,C('SMALLAPP_REDPACKET_SEND_RANGE'))){
             $this->to_back(90119);
         }
+
         $m_box = new \Common\Model\BoxModel();
         $where = array();
         $where['mac'] = $box_mac;
@@ -390,7 +391,7 @@ class RedpacketController extends CommonController{
         }
         $now_time = time();
         $remain_time = $now_time - strtotime($res_order['add_time']);
-        if(!in_array($res_order['status'],array(4,6)) || $remain_time>86400){
+        if(!in_array($res_order['status'],array(4,5,6)) || $remain_time>86400){
             $this->to_back(90130);
         }
 
@@ -406,12 +407,19 @@ class RedpacketController extends CommonController{
             if(array_key_exists($user_id,$hasget_users)){
                 $status = 1;//已领取红包
                 $get_money = $hasget_users[$user_id];
+            }else{
+                if($res_order['status']==5){
+                    $status = 2;
+                }
             }
         }else{
             $hasget_users = array();
+            if($res_order['status']==5){
+                $status = 2;
+            }
         }
 
-        if($status!=1){
+        if($status==0){
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
@@ -470,41 +478,10 @@ class RedpacketController extends CommonController{
                 if(!empty($user_barrages)){
                     $message = array('action'=>122,'userBarrages'=>$user_barrages);
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
-                    //发送范围 1全网餐厅电视,2当前餐厅所有电视,3当前包间电视
-                    $scope = $res_order['scope'];
-                    if(in_array($scope,array(1,2))){
-                        //北京发红包只能发当前包间
-                        $m_box = new \Common\Model\BoxModel();
-                        $res = $m_box->getHotelInfoByBoxMacNew($res_order['mac']);
-                        if($res['area_id']==1){
-                            if($scope == 1){
-                                $all_box = $m_netty->getPushBox(2,$res_order['mac']);
-                                $key = C('SAPP_REDPACKET').'barrages';
-                                $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
-                                    'user_barrages'=>$user_barrages);
-                                $redis->set($key,json_encode($res_data));
-                            }
-                        }else{
-                            $all_box = $m_netty->getPushBox(2,$res_order['mac']);
-                            if(!empty($all_box)){
-                                foreach ($all_box as $v){
-                                    $m_netty->pushBox($v,json_encode($message));
-                                }
-                            }
-                            if($scope == 1){
-                                $key = C('SAPP_REDPACKET').'barrages';
-                                $res_data = array('order_id'=>$order_id,'add_time'=>$res_order['add_time'],'box_list'=>$all_box,
-                                    'user_barrages'=>$user_barrages);
-                                $redis->set($key,json_encode($res_data));
-                            }
-                        }
-                    }
                 }
-
                 //发现金红包 推送消息到订阅
                 sendTopicMessage($order_id,20);
                 //end
-
                 if(empty($unused_bonus)){
                     $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){
@@ -573,7 +550,7 @@ class RedpacketController extends CommonController{
         $this->to_back($data);
     }
     public function redpacketDetail(){
-//        $openid   = $this->params['openid'];
+        $openid   = $this->params['openid'];
         $order_id = $this->params['order_id']; 
         $page     = $this->params['page'];
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
@@ -587,6 +564,13 @@ class RedpacketController extends CommonController{
         if(!in_array($info['status'], array(4,5,6,7))){
             $this->to_back(90130);
         }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
         if($info['status']==5){
             $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
         }
@@ -613,6 +597,19 @@ class RedpacketController extends CommonController{
             $info['receive_nums'] = 0;
             $info['receive_money']= 0;
         }
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key_box = $red_packet_key.$order_id.':boxs';
+        $resbox = $redis->get($key_box);
+        $box_mac = '';
+        if(!empty($resbox)){
+            $res_boxdata= json_decode($resbox,true);
+            if(isset($res_boxdata[$user_info['id']])){
+                $box_mac = $res_boxdata[$user_info['id']];
+            }
+        }
+        $info['box_mac'] = $box_mac;
         $data = array();
         $data['info'] = $info;
         $data['receive_list'] = $receive_list;

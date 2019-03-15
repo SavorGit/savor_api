@@ -104,6 +104,7 @@ return array(
     'SMALLAPP_JIJIAN_CONFIG'=>array('cache_key'=>'smallapp_jijian_token','appid'=>'wx7883a4327329a67c','appsecret'=>'da423755cc5b734db6f7a8dd7563a581'),
     'SMALLAPP_DINNER_CONFIG'=>array('cache_key'=>'smallapp_dinner_token','appid'=>'wxc395eb4b44563af1','appsecret'=>'12bdfa28a3a1e842e965034a0a277ed3'),
     'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
+    'SMALLAPP_FORSCREEN_ADS'=>'smallapp:forscreen:ads:',
     'WX_FWH_CONFIG'=>array('appid'=>'wx7036d73746ff1a14','appsecret'=>'8b658fc90d7105d5cf66cb2193edb7d4'),
     'PAY_WEIXIN_CONFIG'=>array('partner'=>'1513051731','key'=>'A13df3gg45d4fg32F223fgg33GG51112'),
     'PAYLOGS_PATH'  =>  str_replace('Application/', 'paylogs/', APP_PATH),//支付回调日志目录

@@ -301,6 +301,7 @@ class ProgramController extends CommonController{
                              $ads_arr['create_time'] = $av['create_time'];
                              $ads_arr['location_id'] = $av['location_id'];
                              $ads_arr['is_sapp_qrcode'] = $av['is_sapp_qrcode'];
+                             $ads_arr['media_type']  = $av['media_type'];
                               
                              $ads_num_arr[] = $ads_arr;
                              $ads_time_arr[] = $av['create_time'];
@@ -361,6 +362,7 @@ class ProgramController extends CommonController{
                      $media_list[$kk]['end_date']    = $vv['end_date'];
                      $media_list[$kk]['location_id'] = $vv['location_id'];
                      $media_list[$kk]['is_sapp_qrcode'] = $vv['is_sapp_qrcode'];
+                     $media_list[$kk]['media_type']  = $vv['media_type'] ? $vv['media_type'] : 1;
                  }
                  
                  $data[$v_keys]['media_list'] = $media_list;

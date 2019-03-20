@@ -48,9 +48,10 @@ class ForscreenAdsController extends CommonController{
                        media.surfix AS suffix,fads.start_date,fads.end_date,ads.resource_type media_type,fads.play_position";
             $where = array();
             $where['a.box_id'] = $box_id;
-            $where['fads.state']= 2;
             $where['fads.start_date'] = array('ELT',$now_date);
             $where['fads.end_date']   = array('EGT',$now_date);
+            $where['fads.state']= 2;
+            
             $order = "fads.id asc";
             $list = $m_forscreen_ads_box->getList($fields, $where, $order);
             
@@ -69,7 +70,7 @@ class ForscreenAdsController extends CommonController{
             $data = array();
             $data['period'] = $proid;
             $data['media_list'] = $list;
-            $redis->set($cache_key, json_encode($data),86400);
+            $redis->set($cache_key, json_encode($data),7200);
             $this->to_back($data);
             
         }

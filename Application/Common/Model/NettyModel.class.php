@@ -36,7 +36,8 @@ class NettyModel extends Model{
                 $sql_box = "SELECT box.mac box_mac FROM savor_box box LEFT JOIN savor_room room ON box.`room_id`=room.`id` LEFT JOIN savor_hotel hotel ON room.`hotel_id`=hotel.`id` WHERE hotel.`state`=1 AND hotel.`flag`=0 AND box.`state`=1 AND box.`flag`=0 AND hotel.`hotel_box_type` IN ($all_box_type)";
                 break;
             case 2:
-                $res_hotel = $this->query("select hotel.id as hotel_id from savor_box as box left join savor_room as room on box.room_id=room.id left join savor_hotel as hotel on room.hotel_id=hotel.id where box.mac='$box_mac'");
+                $sql_hotel = "select hotel.id as hotel_id from savor_box as box left join savor_room as room on box.room_id=room.id left join savor_hotel as hotel on room.hotel_id=hotel.id where box.mac='$box_mac' and box.state=1 and box.flag=0";
+                $res_hotel = $this->query($sql_hotel);
                 $hotel_id = $res_hotel[0]['hotel_id'];
                 $sql_box = "SELECT box.mac box_mac FROM savor_box box LEFT JOIN savor_room room ON box.`room_id`=room.`id` LEFT JOIN savor_hotel hotel ON room.`hotel_id`=hotel.`id` WHERE hotel.`id`=$hotel_id AND hotel.`state`=1 AND hotel.`flag`=0 AND box.`state`=1 AND box.`flag`=0 AND hotel.`hotel_box_type` IN ($all_box_type)";
                 break;

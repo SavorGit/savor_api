@@ -22,7 +22,7 @@ class DownloadController extends CommonController{
         $order = 'a.sort desc';
         $where = array();
         $where['a.status'] = 1;
-        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_host = 'https://'.C('OSS_HOST').'/';
         $fields = "concat('".$oss_host."',media.`oss_addr`) oss_url,a.id,a.name";
         $pagesize = 10;
         $limit = "limit 0,".$page*$pagesize;

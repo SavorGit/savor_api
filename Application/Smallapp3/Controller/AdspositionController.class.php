@@ -33,10 +33,10 @@ class AdspositionController extends CommonController{
         if(!empty($res_positions)){
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_positions as $k=>$v){
-                unset($v['media_id']);
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
                 $v['oss_addr'] = $res_media['oss_addr'];
-                $result[] = $v;
+                unset($v['media_id']);
+		        $result[] = $v;
             }
         }
         $this->to_back($result);

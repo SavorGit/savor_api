@@ -20,12 +20,12 @@ class AdspositionController extends CommonController{
      */
     public function getAdspositionList(){
         $position = intval($this->params['position']);
-        $fields = 'id,name,media_id,linkcontent,clicktype,appid,position';
+        $fields = 'id,name,media_id,linkcontent,clicktype,appid,position,bindtap';
         $where = array('status'=>1);
         if($position){
             $where['position'] = $position;
         }
-        $orderby = 'id desc';
+        $orderby = 'sort desc,id desc';
         $m_adsposition = new \Common\Model\Smallapp\AdspositionModel();
         $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
 

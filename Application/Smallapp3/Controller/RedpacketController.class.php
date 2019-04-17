@@ -62,6 +62,10 @@ class RedpacketController extends CommonController{
             
             $data['bless'] = $bless_tmp;
             $data['range'] = $range_tmp;
+        }else if($type==3){
+            list($t1, $t2) = explode(' ', microtime());
+            $data['systemtime'] = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+            $data['diff_time'] = 90000;
         }
         $this->to_back($data);
     }

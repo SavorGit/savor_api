@@ -549,6 +549,9 @@ class ProgramController extends CommonController{
                      $ttp = explode('/', $val['name']);
                      $res[$vk]['name'] = $ttp[2];
                  }
+                 if($val['media_type']==2){
+                     $res[$vk]['md5_type'] = 'fullMd5';
+                 }
                  $res[$vk]['is_sapp_qrcode'] = intval($val['is_sapp_qrcode']);
              }
      

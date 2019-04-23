@@ -11,6 +11,8 @@ return array(
 		'1005'=>'token_not_null',
 		'1006'=>'token_has_expired',
 		'1007'=>'sign_error',
+        '1008'=>'wechat_encrypts_data_decrypts_failed',
+
 		'10000'=>'success',
 	    //心跳上报
 	    '10004'=>'heart_mac_period_not_null',

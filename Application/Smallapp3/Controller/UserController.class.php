@@ -25,6 +25,14 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1000);
                 break;
+            case 'registerCom':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,
+                                            'nickName'=>1000,'gender'=>1000,
+                                            'session_key'=>1001,'iv'=>1001,
+                                            'encryptedData'=>1001,
+                );
+                break;
         }
         parent::_init_();
     }
@@ -390,5 +398,35 @@ class UserController extends CommonController{
         $data['user_info'] = $user_info;
         $data['list'] = $public_list;
         $this->to_back($data);
+    }
+    //用户注册 获取unionid
+    public function registerCom(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $nums = $m_user->countNum($where);
+        $encryptedData = $this->params['encryptedData'];
+        
+        if(empty($nums)){
+            $data['openid']    = $openid;
+            $data['avatarUrl'] = $this->params['avatarUrl'];
+            $data['nickName']  = $this->params['nickName'];
+            $data['gender']    = $this->params['gender'];
+            $data['unionId']   = $encryptedData['unionId'];
+            $data['is_wx_auth']= 3;
+            $m_user->addInfo($data);
+            $this->to_back($data);
+        }else {
+            $data = array();
+            $data['avatarUrl'] = $this->params['avatarUrl'];
+            $data['nickName']  = $this->params['nickName'];
+            $data['gender']    = $this->params['gender'];
+            $data['unionId']   = $encryptedData['unionId'];
+            $data['is_wx_auth']= 3;
+            $m_user->updateInfo($where, $data);
+            $data['openid'] = $openid;
+            $this->to_back($data);
+        }
     }
 }

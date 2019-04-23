@@ -14,6 +14,7 @@ class CommonController extends Controller {
     public function __construct(){
         parent::__construct();
         $this->_init_();
+        $this->wxdata_decrypt();
     }
     
 	/*
@@ -129,10 +130,22 @@ class CommonController extends Controller {
 	    return $parent_id;
 	}
 
-
+    protected function wxdata_decrypt(){
+        if(isset($this->params['encryptedData']) && isset($this->params['iv']) && isset($this->params['session_key'])){
+            $aes_key = base64_decode($this->params['session_key']);
+            $aes_iv = base64_decode($this->params['iv']);
+            $aes_cipher = base64_decode($this->params['encryptedData']);
+            $result = openssl_decrypt($aes_cipher, "AES-128-CBC", $aes_key, 1, $aes_iv);
+            $decrypt_data = json_decode($result,true);
+            if($decrypt_data == NULL){
+                $this->to_back(1008);
+            }
+            $this->params['encryptedData'] = $decrypt_data;
+        }
+        return true;
+    }
 
 	public function __destruct(){
-
         
     }
 }

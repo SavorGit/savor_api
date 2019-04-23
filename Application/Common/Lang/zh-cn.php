@@ -12,6 +12,7 @@ return array(
 	'token_has_expired'=>'token已失效',
 	'sign_error'=>'签名错误',
 	'success'=>'成功',
+    'wechat_encrypts_data_decrypts_failed'=>'微信加密数据,解密失败',
     
     //心跳上报
     'heart_mac_period_not_null'=>'mac地址不能为空',

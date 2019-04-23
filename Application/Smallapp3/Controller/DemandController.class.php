@@ -54,6 +54,7 @@ class DemandController extends CommonController{
         $where['a.menu_id'] = $menu_id;
         $where['a.type']    = 2;
         $where['media.id']  = array('not in',array('17614','19533')) ;
+        $where['media.type'] = 1;
         //$where['media.id']     = array('neq',17614);
         $order  = ' a.sort_num asc';
         $menu_item_arr = $m_program_menu_item->alias('a')
@@ -130,6 +131,7 @@ class DemandController extends CommonController{
             if($v['type']=='pro' && !in_array($v['media_id'], array('17614','19533')) ){//节目
                 $map['a.media_id']= $v['media_id'];
                 $map['a.type']    = 2;
+                $map['b.type']    = 1;
                 $media_info = $m_ads->getAdsList('a.id,a.name title,a.img_url,a.duration,b.oss_addr tx_url', $map,'',' limit 1');
         
                 if(!empty($media_info)){

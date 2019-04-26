@@ -47,9 +47,8 @@ class PolyScreenController extends CommonController{
             
             $list = array();
             if(!empty($v['tpmedia_id'])){
-                
-                $fields = "a.update_time,media.id,media.oss_addr name,media.md5,'easyMd5' as md5_type,a.media_md5  tp_md5,
-                   'poly' as type,media.oss_addr oss_path,media.duration,media.surfix,
+                $fields = "a.update_time,media.id,media.oss_addr name,media.md5,media.type as mtype,a.media_md5  tp_md5,
+                   a.type as media_type,'poly' as type,media.oss_addr oss_path,media.duration,media.surfix,
                     media.name chinese_name,a.tpmedia_id,ads.is_sapp_qrcode";
                 $where = array();
                 $where['a.state'] = 1;
@@ -64,16 +63,21 @@ class PolyScreenController extends CommonController{
             $result[$key]['box_mac']= $v['box_mac'];
             
             if(!empty($list)){
-                //$m_pub_poly_ads->getLastSql();exit;
                 $update_time_arr = array_column($list,'update_time');
                 $period = max($update_time_arr);
                 foreach($list as $k=>$vv){
                     $name = explode('/', $vv['name']);
                     $list[$k]['name'] = $name[2];
+                    if($vv['mtype']==1){
+                        $list[$k]['md5_type']='easyMd5';
+                    }elseif($vv['mtype']==2){
+                        $list[$k]['md5_type']='fullMd5';
+                    }else{
+                        $list[$k]['md5_type']='easyMd5';
+                    }
                     $list[$k]['is_sapp_qrcode'] = intval($vv['is_sapp_qrcode']);
-                    unset($list[$k]['update_time']);
+                    unset($list[$k]['update_time'],$list[$k]['mtype']);
                 }
-                
                 $result[$key]['menu_num'] = date('YmdHis',strtotime($period));
                 $result[$key]['media_list'] = $list;
             }else {

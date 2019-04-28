@@ -28,6 +28,18 @@ class ScanqrcodeController extends Controller {
 
         $box_mac = $result_order[0]['mac'];
         $scope = $result_order[0]['scope'];
+
+        //碧草测试
+        if($result_order[0]['user_id']=='10047'){
+            $qrinfo =  $trade_no.'_'.$box_mac;
+            $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+            $m_netty->pushBox($box_mac,json_encode($message));
+            echo 'bicao push ok';
+        }
+        //end
+
         if(in_array($scope,array(1,2))){
             $all_box = $m_netty->getPushBox(2,$box_mac);
             if(!empty($all_box)){
@@ -136,8 +148,8 @@ class ScanqrcodeController extends Controller {
 
             $qrcode = $this->wxpay($res_order);
 
-            $this->assign('qrcode',$qrcode);
-            $this->display('scanpage');
+            $url = http_host().'/h5/scanqrcode/scanhelppage';
+            header("location: $url");
         }
     }
 
@@ -159,7 +171,20 @@ class ScanqrcodeController extends Controller {
         $res_order['open_id'] = $open_id;
         $qrcode = $this->wxpay($res_order);
 
-        $this->assign('qrcode',$qrcode);
+        $url = http_host().'/h5/scanqrcode/scanhelppage';
+        header("location: $url");
+
+    }
+
+    public function scanhelppage(){
+        $url = http_host().'/h5/scanqrcode/scanhelppage';
+        $m_weixin_api = new \Common\Lib\Weixin_api();
+        $res_config =$m_weixin_api->showShareConfig($url);
+        $this->assign('appid',$res_config['appid']);
+        $this->assign('timestamp',$res_config['timestamp']);
+        $this->assign('noncestr',$res_config['noncestr']);
+        $this->assign('signature',$res_config['signature']);
+
         $this->display('scanpage');
     }
 

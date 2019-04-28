@@ -24,7 +24,8 @@ class WxPayController extends BaseController{
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
         $nowdtime = date('Y-m-d H:i:s');
         if(empty($res_order)){
-            die($nowdtime.' refund over');
+            echo $nowdtime.' refund over'."\r\n";
+            exit;
         }
         $diff_time = 86400/2;
         $now_time = time();

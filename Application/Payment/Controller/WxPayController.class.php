@@ -22,8 +22,10 @@ class WxPayController extends BaseController{
         $where = array('status'=>array('in','4,6'));
         $where['add_time'] = array('egt','2019-03-05 00:00:00');
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
+        $nowdtime = date('Y-m-d H:i:s');
         if(empty($res_order)){
-            die('refund over');
+            echo $nowdtime.' refund over'."\r\n";
+            exit;
         }
         $diff_time = 86400/2;
         $now_time = time();
@@ -51,7 +53,7 @@ class WxPayController extends BaseController{
                 if(!empty($res_orderserial) && !empty($res_orderserial['serial_order'])){
                     $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
                     $res = $m_wxpay->wxrefund($trade_info,$payconfig);
-                    if($res['return_code']=='SUCCESS'){
+                    if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                         if($pay_fee==$refund_money){
                             $type = 0;
                         }else{
@@ -61,7 +63,10 @@ class WxPayController extends BaseController{
                             'type'=>$type,'status'=>2,'refund_time'=>date('Y-m-d H:i:s'),'succ_time'=>date('Y-m-d H:i:s'));
                         $m_refund->addData($refund_data);
                         $m_order->updateData(array('id'=>$trade_no),array('status'=>7));
-                        echo 'trade_no:'.$trade_no.' refund success'."\r\n";
+                        $nowdtime = date('Y-m-d H:i:s');
+                        echo $nowdtime.' trade_no:'.$trade_no.' refund success'."\r\n";
+                    }else{
+                        echo $nowdtime.' trade_no:'.$trade_no.' refund fail'."\r\n";
                     }
                 }
             }

@@ -215,11 +215,8 @@ class WxpayModel extends Model{
         $log = '订单号:'.$order['out_trade_no'].'微信api返回数据:'.json_encode($order);
         $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
 
-    	if($order["return_code"]=="SUCCESS"){
+    	if($order["return_code"]=="SUCCESS" && $order["result_code"]=="SUCCESS" && !isset($order['err_code'])){
     		$log = '订单号:'.$order['out_trade_no'].'退款成功';
-    		$this->baseInc->paynotify_log($paylog_type,$order['out_trade_no'],$log);
-    	}else if($order["return_code"]=="FAIL"){
-    		$log = '订单号:'.$order['out_trade_no'].'退款失败';
     		$this->baseInc->paynotify_log($paylog_type,$order['out_trade_no'],$log);
     	}else{
     		$log = '订单号:'.$order['out_trade_no'].'退款失败';

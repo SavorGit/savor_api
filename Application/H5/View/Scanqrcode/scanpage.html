@@ -13,18 +13,15 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 		<link rel="icon" href="https://oss.littlehotspot.com/Html5/favicon.ico">
 		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/money_blessing/commons.css" />
-		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/money_blessing/scan_code.css?v=201903011754" />
-		<script type="text/javascript" charset="UTF-8" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/plugins/JSON-js-master/json2.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jlNamespace.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/core/1.11.1/jquery-1.11.1.min.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/migrate/1.1.1/jquery-migrate-1.1.1.min.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/StringUtil.js"></script>
 		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jquery.ui.Toast-1.0.1.class.js"></script>
-		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/money_blessing/scan_code.js?v=201903011754"></script>
-		<script type="text/javascript">
-            {$wxsign}
-		</script>
+		<!--<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/money_blessing/scan_code.js?v=20190428"></script>-->
+		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/money_blessing/scan_code.css?v=201903011754" />
+		<script type="text/javascript" charset="UTF-8" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -32,11 +29,44 @@
 			<div class="main">
 				<img src="https://oss.littlehotspot.com/Html5/images/money_blessing/scan_tv_code.png" />
 			</div>
-			<!--
+
 			<div class="bottom">
-				<button class="PackingButtonColor">扫码支付</button>
+				<button class="PackingButtonColor" id="scanQRCode">扫码支付</button>
 			</div>
-			-->
+
 		</div>
 	</body>
 </html>
+<script>
+    wx.config({
+        debug: false,
+        appId: "{$appid}",
+        timestamp:"{$timestamp}",
+        nonceStr:"{$noncestr}",
+        signature:"{$signature}",
+        jsApiList : [ 'checkJsApi', 'scanQRCode' ]
+    });
+
+    wx.error(function(res) {
+        alert(res.errMsg);//这个地方的好处就是wx.config配置错误，会弹出窗口哪里错误，然后根据微信文档查询即可。
+    });
+
+    wx.ready(function() {
+        wx.checkJsApi({
+            jsApiList : ['scanQRCode'],
+            success : function(res) {
+            }
+        });
+
+        //点击按钮扫描二维码
+        document.querySelector('#scanQRCode').onclick = function() {
+            wx.scanQRCode({
+                needResult : 0, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+                scanType : [ "qrCode"], // 可以指定扫二维码还是一维码，默认二者都有
+                success : function(res) {
+                }
+            });
+        };
+
+    });
+</script>

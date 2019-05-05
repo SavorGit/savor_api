@@ -268,7 +268,8 @@ class IndexController extends CommonController{
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         //$exp_time = 7200000;
-        $exp_time = 14400000;
+        //$exp_time = 14400000;
+        $exp_time = 36000000;
         $data['sys_time'] = $sys_time;
         $data['exp_time'] = $exp_time;
         $this->to_back($data);

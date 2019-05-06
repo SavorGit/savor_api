@@ -466,8 +466,14 @@ class RedpacketController extends CommonController{
                     //红包记录进入数据库
                     $get_data = array('redpacket_id'=>$order_id,'user_id'=>$grab_user_id,'money'=>$now_money,
                         'barrage'=>$barrage);
-                    $m_redpacketreceive->addData($get_data);
+                    $receive_id = $m_redpacketreceive->addData($get_data);
                     //end
+
+                    //发现金红包 推送消息到订阅
+                    $message_oid = $order_id.'_'.$receive_id;
+                    sendTopicMessage($message_oid,20);
+                    //end
+
 
                     //增加电视弹幕推送
                     $user_info = $m_user->getOne('*',array('id'=>$grab_user_id),'');
@@ -484,7 +490,7 @@ class RedpacketController extends CommonController{
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
                 }
                 //发现金红包 推送消息到订阅
-                sendTopicMessage($order_id,20);
+//                sendTopicMessage($order_id,20);
                 //end
                 if(empty($unused_bonus)){
                     $data = array('status'=>5);

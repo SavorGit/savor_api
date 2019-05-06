@@ -270,6 +270,7 @@ return array(
         '92006'=>'smallappdinner_verify_code_checkfail',
         '92007'=>'smallappdinner_login_fail',
         '92008'=>'smallappdinner_invite_code_checkerror',
+	    '92009'=>'smallappdinner_bdhotel_dqhotel_error',
 
 	),
 );

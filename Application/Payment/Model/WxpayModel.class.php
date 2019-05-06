@@ -264,18 +264,14 @@ class WxpayModel extends Model{
         $log = '订单号:'.$trade_info['trade_no'].'pay_result'.json_encode($content);
         $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
 
-        if($content["return_code"]=="SUCCESS"){
+        if($content['return_code']=='SUCCESS' && $content['result_code']=='SUCCESS'){
             $log = '订单号:'.$trade_info['trade_no'].'success支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
             $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
             $info = array('code'=>10000,'msg'=>"支付零钱成功");
-        }else if($content["return_code"]=="FAIL"){
-            $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
-            $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
-            $info = array('code'=>10002,'msg'=>"支付零钱成功");
         }else{
             $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
             $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
-            $info = array('code'=>10002,'msg'=>"支付零钱成功");
+            $info = array('code'=>10002,'msg'=>"支付零钱失败");
         }
         return $info;
     }

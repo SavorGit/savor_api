@@ -18,8 +18,10 @@ class WxPayController extends BaseController{
             'partner'=>$pay_config['partner'],
             'key'=>$pay_config['key']
         );
+        $operation_uid = 42996;
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $where = array('status'=>array('in','4,6'));
+        $where['user_id'] = array('egt',$operation_uid);
         $where['add_time'] = array('egt','2019-03-05 00:00:00');
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
         $nowdtime = date('Y-m-d H:i:s');

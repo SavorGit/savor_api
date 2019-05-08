@@ -18,8 +18,10 @@ class WxPayController extends BaseController{
             'partner'=>$pay_config['partner'],
             'key'=>$pay_config['key']
         );
+        $operation_uid = 42996;
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $where = array('status'=>array('in','4,6'));
+        $where['user_id'] = array('egt',$operation_uid);
         $where['add_time'] = array('egt','2019-03-05 00:00:00');
         $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
         $nowdtime = date('Y-m-d H:i:s');
@@ -106,14 +108,12 @@ class WxPayController extends BaseController{
                 $order_id = $message_oidinfo[0];
                 $receive_id = $message_oidinfo[1];
 
-//                $order_id = $v['order_id'];
                 $res_refund = $m_refund->getInfo(array('trade_no'=>$order_id));
                 if(!empty($res_refund)){
                     die("redpacket_id:$order_id has refund");
                 }
                 $fields = 'a.id,a.redpacket_id,a.user_id,a.money,user.mpopenid as openid';
                 $where = "a.id=$receive_id and a.status=0";
-//                $where = "a.redpacket_id=$order_id and a.status=0";
                 $order = 'id asc';
                 $res_receive = $m_redpacket_receive->getList($fields,$where,$order);
                 if(empty($res_receive)){
@@ -121,6 +121,18 @@ class WxPayController extends BaseController{
                 }
 
                 foreach ($res_receive as $v){
+
+                    $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
+                    $res_hasget = $redis->get($key_hasget);
+                    if(!empty($res_hasget)){
+                        $res_hasget = json_decode($res_hasget,true);
+                    }else{
+                        $res_hasget = array();
+                    }
+                    if(!array_key_exists($v['user_id'],$res_hasget)){
+                        continue;
+                    }
+
                     $key_getmoney = $red_packet_key.$order_id.':getmoney';//已经抢到红包的用户列表
                     $res_getmoney = $redis->get($key_getmoney);
                     if(!empty($res_getmoney)){
@@ -128,6 +140,10 @@ class WxPayController extends BaseController{
                     }else{
                         $res_moneyuser = array();
                     }
+                    if(empty($v['openid']) || array_key_exists($v['user_id'],$res_moneyuser)){
+                        continue;
+                    }
+
                     $key_lockuser = $red_packet_key.$order_id.':lockuser';//加锁用户
                     $res_lockuser = $redis->get($key_lockuser);
                     if(!empty($res_lockuser)){
@@ -135,25 +151,20 @@ class WxPayController extends BaseController{
                     }else{
                         $res_lockuser = array();
                     }
-
-                    if(empty($v['openid']) || array_key_exists($v['openid'],$res_moneyuser)){
+                    if(array_key_exists($v['user_id'],$res_lockuser)){
                         continue;
                     }
-
-                    if(array_key_exists($v['openid'],$res_lockuser)){
-                        continue;
-                    }
-                    $res_lockuser[$v['openid']] = date('Y-m-d H:i:s');
+                    $res_lockuser[$v['user_id']] = date('Y-m-d H:i:s');
                     $redis->set($key_lockuser,json_encode($res_lockuser),86400);
 
                     $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$v['openid']);
                     $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
 
-                    unset($res_lockuser[$v['openid']]);
+                    unset($res_lockuser[$v['user_id']]);
                     $redis->set($key_lockuser,json_encode($res_lockuser),86400);
 
                     if($res['code']==10000){
-                        $res_moneyuser[$v['openid']] = $v['money'];
+                        $res_moneyuser[$v['user_id']] = $v['money'];
                         $redis->set($key_getmoney,json_encode($res_moneyuser),86400);
 
                         $condition = array('id'=>$v['id']);
@@ -161,10 +172,6 @@ class WxPayController extends BaseController{
                         echo "redpacket_id:$order_id redpacket_receive_id:{$v['id']} send bonus ok"."\r\n";
                     }
                 }
-
-//                if(!empty($res_moneyuser)){
-//                    $redis->set($key_getmoney,json_encode($res_moneyuser),86400);
-//                }
             }
         }
     }

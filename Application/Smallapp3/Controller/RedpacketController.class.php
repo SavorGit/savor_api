@@ -189,7 +189,7 @@ class RedpacketController extends CommonController{
         }
 
         $status = 0;
-        if($res_order['status'] == 5) {
+        if($res_order['status'] == 5){
             $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表
             $res_hasget = $redis->get($key_hasget);
             $get_money = '';
@@ -430,7 +430,7 @@ class RedpacketController extends CommonController{
             if(empty($resdata) || empty($resdata['unused'])){
                 $status = 2;//红包已领完,未领到
             }else{
-                $grab_num = $res_order['amount']*2;
+                $grab_num = $res_order['amount'];
                 $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
 
                 $unused_bonus = $resdata['unused'];
@@ -473,7 +473,6 @@ class RedpacketController extends CommonController{
                     $message_oid = $order_id.'_'.$receive_id;
                     sendTopicMessage($message_oid,20);
                     //end
-
 
                     //增加电视弹幕推送
                     $user_info = $m_user->getOne('*',array('id'=>$grab_user_id),'');
@@ -594,9 +593,11 @@ class RedpacketController extends CommonController{
         $limit  = "limit 0,$all_nums";
         $where = array();
         $where['a.redpacket_id'] = $order_id;
+        $where['a.status'] = 1;
         $receive_list = $m_redpacket_receive->getList($fields, $where, $order, $limit);
         $where = array();
         $where['redpacket_id'] = $order_id;
+        $where['status'] = 1;
         $receive_nums = $m_redpacket_receive->where($where)->count(); //领取个数
         
         if($receive_nums>0){

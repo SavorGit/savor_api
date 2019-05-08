@@ -9,6 +9,10 @@ class UserController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+            case 'isRegister':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000);
+                break;
             case 'index':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
@@ -35,6 +39,43 @@ class UserController extends CommonController{
                 break;
         }
         parent::_init_();
+    }
+    public function isRegister(){
+        $openid  = $this->params['openid'];
+        $page_id = $this->params['page_id'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,gender,status,is_wx_auth,close_hotel_hint', $where);
+        $data = array();
+        if(empty($userinfo)){
+            $data['openid'] = $openid;
+            $data['status'] = 1;
+            $m_user->addInfo($data);
+            $userinfo['openid'] = $openid;
+        }
+        $data['userinfo'] = $userinfo;
+        if(!empty($box_mac) && $box_mac!='undefined'){
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['mac']   = $box_mac;
+            $map['state'] = 1;
+            $map['flag']  = 0;
+            $ret = $m_box->field('is_open_simple')->where($map)->find();
+            $data['userinfo']['is_open_simple'] = $ret['is_open_simple'];
+        }
+        if($page_id){
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SAPP_PAGEVIEW_LOG').$openid;
+            $map = array();
+            $map['openid'] = $openid;
+            $map['page_id']= $page_id;
+            $map['create_time'] = date('Y-m-d H:i:s');
+            $redis->rpush($cache_key, json_encode($map));
+        }
+        $this->to_back($data);
     }
     public function closeHotelHind(){
         $openid = $this->params['openid'];

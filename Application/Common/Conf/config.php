@@ -252,6 +252,7 @@ return array(
     'SAPP_CALL_CLIMBTREE_LOGOUT'=>'smallapp:callclimbtree:logout:',
     'SAPP_REDPACKET'=>'smallapp:redpacket:',
     'SAPP_BIRTHDAYDEMAND'=>'smallapp:birthdaydemand',
+    'SAPP_REDPACKET_JX'=>'smallapp:redpacket:jx',//抢红包页面精选内容
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

@@ -102,8 +102,11 @@ class BaseIncModel extends Model{
                     $m_user = new \Common\Model\Smallapp\UserModel();
                     $m_netty = new \Common\Model\NettyModel();
 
+                    list($t1, $t2) = explode(' ', microtime());
+                    $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+
                     $box_mac = $result_order[0]['mac'];
-                    $qrinfo =  $trade_no.'_'.$box_mac;
+                    $qrinfo =  $trade_no.'_'.$box_mac.'_'.$sys_time;
                     $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                     $where = array('id'=>$result_order[0]['user_id']);
                     $user_info = $m_user->getOne('*',$where,'');
@@ -122,7 +125,7 @@ class BaseIncModel extends Model{
                         $all_box = $m_netty->getPushBox(2,$box_mac);
                         if(!empty($all_box)){
                             foreach ($all_box as $v){
-                                $qrinfo =  $trade_no.'_'.$v;
+                                $qrinfo =  $trade_no.'_'.$v.'_'.$sys_time;;
                                 $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                                 $message = array('action'=>121,'nickName'=>$user_info['nickName'],
                                     'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);

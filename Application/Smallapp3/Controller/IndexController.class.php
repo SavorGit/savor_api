@@ -14,6 +14,9 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000);
                 break;
+            case 'getConfig':
+                $this->is_verify = 0;
+                break;
         }
     }
     /**
@@ -55,5 +58,18 @@ class IndexController extends CommonController{
             $info = json_decode($info,true);
         }
         $this->to_back($info);
+    }
+    public function getConfig(){
+        list($t1, $t2) = explode(' ', microtime());
+        $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+        //$exp_time = 7200000;
+        //$exp_time = 14400000;
+        //$exp_time = 36000000;        
+        $exp_time   = 7200000;  //扫码失效时间
+        $redpacket_exp_time = 1800000;
+        $data['sys_time'] = $sys_time;
+        $data['exp_time'] = $exp_time;
+        $data['redpacket_exp_time'] = $redpacket_exp_time;
+        $this->to_back($data);
     }
 }

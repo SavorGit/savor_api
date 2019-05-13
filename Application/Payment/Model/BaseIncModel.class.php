@@ -102,11 +102,8 @@ class BaseIncModel extends Model{
                     $m_user = new \Common\Model\Smallapp\UserModel();
                     $m_netty = new \Common\Model\NettyModel();
 
-                    list($t1, $t2) = explode(' ', microtime());
-                    $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
-
                     $box_mac = $result_order[0]['mac'];
-                    $qrinfo =  $trade_no.'_'.$box_mac.'_'.$sys_time;
+                    $qrinfo =  $trade_no.'_'.$box_mac;
                     $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                     $where = array('id'=>$result_order[0]['user_id']);
                     $user_info = $m_user->getOne('*',$where,'');

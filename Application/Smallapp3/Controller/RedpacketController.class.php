@@ -227,7 +227,37 @@ class RedpacketController extends CommonController{
                 $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
                 $res_redpacket = $redis->get($key_bonus);
                 $resdata = json_decode($res_redpacket,true);
-                if(empty($resdata['unused'])){
+
+                //红包黑名单
+                $key_invaliduser = $red_packet_key.'invaliduser';
+                $res_invaliduser = $redis->get($key_invaliduser);
+                if(!empty($res_invaliduser)){
+                    $invaliduser = json_decode($res_invaliduser,true);
+                }else{
+                    $invaliduser = array();
+                    $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+                    $res_invalids = $m_invalidlist->getDataList('invalidid',array('type'=>4),'id desc');
+                    if(!empty($res_invalids)) {
+                        foreach ($res_invalids as $iv) {
+                            $invaliduser[] = $iv['invalidid'];
+                        }
+                        $redis->set($key_invaliduser,json_encode($invaliduser),86400);
+                    }
+                }
+                $is_finish = 0;
+                if(!empty($invaliduser) && in_array($open_id,$invaliduser)){
+                    $key_invaliduserdate = $red_packet_key.'invaliduser'.date('Ymd');
+                    $res_invaliduserdate = $redis->get($key_invaliduserdate);
+                    if(!empty($res_invaliduserdate)){
+                        $invaliduserdate = json_decode($res_invaliduserdate,true);
+                        $getnum = C('REDPACKET_GETNUM');
+                        if(array_key_exists($open_id,$invaliduserdate) && $invaliduserdate[$open_id]>=$getnum){
+                            $is_finish = 1;
+                        }
+                    }
+                }
+
+                if(empty($resdata['unused']) || $is_finish){
                     $status = 2;//红包已领完,未领到
                 }else{
                     $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
@@ -290,6 +320,38 @@ class RedpacketController extends CommonController{
                 $res_data['jump_url'] = $jump_url;
                 break;
         }
+
+        //连接当前版位
+        $code = rand(100, 999);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$open_id;
+        $info = $redis->get($cache_key);
+        if(empty($info)){
+            $info = array();
+            $info['is_have'] = 1;
+            $info['code'] = $code;
+            $redis->set($cache_key, json_encode($info),7200);
+
+            $key = C('SMALLAPP_CHECK_CODE')."*".$open_id;
+            $keys = $redis->keys($key);
+            foreach($keys as $v){
+                $key_arr = explode(':', $v);
+                if($key_arr[2]!=$box_mac){
+                    $redis->remove($v);
+                }
+            }
+        }else{
+            $key = C('SMALLAPP_CHECK_CODE')."*".$open_id;
+            $keys = $redis->keys($key);
+            foreach($keys as $v){
+                $key_arr = explode(':', $v);
+                if($key_arr[2]!=$box_mac){
+                    $redis->remove($v);
+                }
+            }
+        }
+        //end
+
         $this->to_back($res_data);
     }
 
@@ -441,6 +503,7 @@ class RedpacketController extends CommonController{
                 $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
                 $all_barrage = C('SMALLAPP_BARRAGES');
                 $user_barrages = array();
+                $getnum = C('REDPACKET_GETNUM');
                 for ($i=0;$i<$grab_num;$i++){
                     $grab_user_id = $redis->lpop($key_getbonus);
                     if(empty($grab_user_id)){
@@ -479,6 +542,28 @@ class RedpacketController extends CommonController{
                     $user_barrages[] = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
                     //end
 
+                    //红包黑名单
+                    $key_invaliduser = $red_packet_key.'invaliduser';
+                    $res_invaliduser = $redis->get($key_invaliduser);
+                    if(!empty($res_invaliduser)) {
+                        $invaliduser = json_decode($res_invaliduser, true);
+                        if(!empty($invaliduser) && in_array($user_info['openid'],$invaliduser)){
+                            $key_invaliduserdate = $red_packet_key.'invaliduser'.date('Ymd');
+                            $res_invaliduserdate = $redis->get($key_invaliduserdate);
+                            if(!empty($res_invaliduserdate)){
+                                $invaliduserdate = json_decode($res_invaliduserdate,true);
+                            }else{
+                                $invaliduserdate = array();
+                            }
+                            if(isset($invaliduserdate[$user_info['openid']])){
+                                $invaliduserdate[$user_info['openid']] = $invaliduserdate[$user_info['openid']]+1;
+                            }else{
+                                $invaliduserdate[$user_info['openid']] = 1;
+                            }
+                            $redis->set($key_invaliduserdate,json_encode($invaliduserdate),86400);
+                        }
+                    }
+
                     if($grab_user_id == $user_id){
                         $status = 1;
                         $get_money = $now_money;
@@ -488,9 +573,6 @@ class RedpacketController extends CommonController{
                     $message = array('action'=>122,'userBarrages'=>$user_barrages);
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
                 }
-                //发现金红包 推送消息到订阅
-//                sendTopicMessage($order_id,20);
-                //end
                 if(empty($unused_bonus)){
                     $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){

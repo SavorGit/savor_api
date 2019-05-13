@@ -315,6 +315,7 @@ return array(
     'SDK_ERROR_REPORT_TIME'=>'10',
     'SAPP_FORSCREEN_VERSION_CODE'=>'2018081404',
     'BAIDU_GEO_KEY'=>'q1pQnjOG28z8xsCaoby2oqLTLaPgelyq',
+    'REDPACKET_GETNUM' => 1,
     'SMALLAPP_REDPACKET_BLESS'=>array(
         1=>'生日快乐',2=>'happy birthday',3=>'福如东海，寿比南山',4=>'大吉大利，今晚吃鸡',
         5=>'貌美如花，人见人夸',6=>'健康成长，天天快乐',

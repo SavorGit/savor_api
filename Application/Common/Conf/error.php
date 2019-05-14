@@ -67,6 +67,8 @@ return array(
 	    '16208'=>'program_hotel_have_donw_success',
 		'16209'=>'stas_time_illegal',
 		'16210'=>'stas_time_insert_fail',
+	    '16211'=>'virtual_small_data_erro',
+	    '16212'=>'virtual_small_code_erro',
 	    //客户端获取投屏酒楼距离接口
 		'17001'=>'lat_illegal',
 		'17002'=>'lng_illegal',

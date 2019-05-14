@@ -63,6 +63,24 @@ function sendTopicMessage($message,$type){
     $res = $ali_msn->sendTopicMessage($topicName,$messageBody,$messageTag);
     return $res;
 }
+/**
+ * @desc   发送虚拟小平台消息
+ * @param  $message消息内容
+ * @param  $type
+ * @return  
+ */
+function sedVsTopicMessage($messageBody,$type){
+    if(empty($messageBody) || empty($type)){
+        return false;
+    }
+    $accessId = C('OSS_ACCESS_ID');
+    $accessKey= C('OSS_ACCESS_KEY');
+    $endPoint = C('QUEUE_ENDPOINT');
+    $topicName = C('TOPIC_NAME');
+    $ali_msn = new AliyunMsn($accessId, $accessKey, $endPoint);
+    $res = $ali_msn->sendTopicMessage($topicName,$messageBody,$type);
+    return $res;
+}
 
 function getmicrotime(){
     list($usec, $sec) = explode(" ",microtime());

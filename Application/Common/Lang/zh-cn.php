@@ -256,7 +256,8 @@ return array(
     'smallapp_grabbonus_status_error'=>'抢红包状态错误',
     'smallapp_bonus_error'=>'该红包不存在',
     'smallappdinner_bdhotel_dqhotel_error'=>'邀请码为非本酒楼邀请码，请核实后重试',
-
+    'virtual_small_data_erro'=>'虚拟小平台推送数据错误',
+    'virtual_small_code_erro'=>'虚拟小平台推送数据已处理',
 
 
 );

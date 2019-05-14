@@ -330,4 +330,7 @@ return array(
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
        1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',
      ),
+    'VIRTUAL_SMALL_SEND_MESSAGE_TYPE'=>array('1'=>'hotel','2'=>'room','3'=>'box','4'=>'tv','5'=>'volume','6'=>'programmenu',
+        '7'=>'promotionalvideo','8'=>'adsa','9'=>'adsb','10'=>'adsc','11'=>'demand','12'=>'recommendation',
+        '13'=>'apk','14'=>'loading','15'=>'logo','20'=>'bonustomoney'),
 );

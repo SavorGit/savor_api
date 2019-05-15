@@ -181,6 +181,7 @@ class DemandController extends CommonController{
             }else if($v['type']=='ads'){//广告
                 $map['ads.media_id'] = $v['media_id'];
                 $map['ads.type']     = '1';
+                $map['med.type']     = 1;
                  
                 $m_pub_ads = new \Common\Model\PubAdsModel();
                 $media_info = $m_pub_ads->getPubAdsInfo('ads.id,ads.name title,mda.oss_addr img_url,ads.duration,med.oss_addr tx_url', $map);

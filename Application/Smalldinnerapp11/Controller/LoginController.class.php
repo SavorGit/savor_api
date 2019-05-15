@@ -166,7 +166,7 @@ class LoginController extends CommonController{
                 $invite_info = $m_hotel_invite_code->getInfo($fields,$where);
                 if(!empty($invite_info)){//找到绑定的手机号
                     $m_box = new \Common\Model\BoxModel();
-                    $fields  = 'd.id hotel_id,d.name hotel_name,c.name room_name,a.wifi_name,a.wifi_password,a.wifi_mac,a.is_open_simple';
+                    $fields  = 'd.id hotel_id,d.name hotel_name,c.name room_name,a.wifi_name,a.wifi_password,a.wifi_mac,a.is_open_simple,a.box_type';
                     $where = array();
                     $where['a.mac'] = $box_mac;
                     $where['a.state'] = 1;
@@ -194,6 +194,7 @@ class LoginController extends CommonController{
                         $data = $hotel_info;
                         $data['intranet_ip'] = $intranet_ip;
                         $data['bd_status']   = 1;
+                        $data['hotel_box_type'] = $hotel_info['hotel_box_type'];
                     }
                     
                 }else {//未找到绑定的手机号

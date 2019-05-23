@@ -18,9 +18,9 @@ class PlaytimeController extends CommonController{
     public function getTimeList(){
         $res_data = array(
             array('name'=>'单次','value'=>0,'checked'=>true),
-            array('name'=>'5分钟','value'=>300000,'checked'=>false),//单位为毫秒
-            array('name'=>'10分钟','value'=>600000,'checked'=>false),
-            array('name'=>'15分钟','value'=>900000,'checked'=>false),
+            array('name'=>'10分钟','value'=>600000,'checked'=>false),//单位为毫秒
+            array('name'=>'20分钟','value'=>1200000,'checked'=>false),
+            array('name'=>'30分钟','value'=>1800000,'checked'=>false),
         );
         $this->to_back($res_data);
     }

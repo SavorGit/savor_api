@@ -321,3 +321,12 @@ function getgeoByloa($lat,$lon){
         return $re['result'];
     }
 }
+function getRandNums($min=0,$max=100,$num=10){
+    $numbers = range ($min,$max);
+    //shuffle 将数组顺序随即打乱
+    shuffle ($numbers);
+    //array_slice 取该数组中的某一段
+    
+    $result = array_slice($numbers,0,$num);
+    return $result;
+}

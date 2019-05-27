@@ -111,7 +111,7 @@ class FindController extends CommonController{
             $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
             $where = array();
             $where['forscreen_id'] = $v['forscreen_id'];
-            $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
+            $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'','limit 0,1');
             if($v['res_type']==2){
                 $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
         

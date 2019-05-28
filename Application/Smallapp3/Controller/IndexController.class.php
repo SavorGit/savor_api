@@ -17,7 +17,25 @@ class IndexController extends CommonController{
             case 'getConfig':
                 $this->is_verify = 0;
                 break;
+            case 'recodeQrcodeLog':
+                $this->is_verify= 0;
+                $this->valid_fields = array('openid'=>1001,'type'=>1001);
+                break;
         }
+        parent::_init_();
+    }
+    public function recodeQrcodeLog(){
+        
+        $openid = $this->params['openid'];
+        $type   = intval($this->params['type']);
+        $data = array();
+        $data['box_mac'] = '';
+        $data['openid']  = $openid;
+        $data['type']    = $type;
+        $data['is_overtime'] = 0;
+        $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
+        $m_qrcode_log->addInfo($data);
+        $this->to_back(10000);
     }
     /**
      * @desc 扫码链接电视

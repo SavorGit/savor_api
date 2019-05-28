@@ -254,6 +254,7 @@ return array(
     'SAPP_BIRTHDAYDEMAND'=>'smallapp:birthdaydemand',
     'SAPP_REDPACKET_JX'=>'smallapp:redpacket:jx',//抢红包页面精选内容
     'SAPP_FIND_INDEX_RAND'=>'smallapp:find:index:rand:',
+    'BOX_TPMEDIA'=>'box:tpmedia:',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

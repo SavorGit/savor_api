@@ -14,6 +14,10 @@ class BaiduPolyController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1001,'media_id'=>1000,
                                             'media_name'=>1000,'media_md5'=>1000,
                                             'chinese_name'=>1000,'tpmedia_id'=>1001);
+                break;
+            case 'getBoxTpmedias':  //获取机顶盒当前支持的第三方聚屏媒体
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
                 break;    
         }
         parent::_init_(); 
@@ -48,6 +52,41 @@ class BaiduPolyController extends CommonController{
         } */
         
         $this->to_back(10000);
+        
+    }
+    /**
+     * @desc 获取机顶盒当前支持的第三方聚屏媒体
+     */
+    public function getBoxTpmedias(){
+        $box_mac = $this->params['box_mac'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(10);
+        
+        $cache_key = C('BOX_TPMEDIA').$box_mac;
+        
+        $ret = $redis->get($cache_key);
+        if(empty($ret)){
+            $m_box = new \Common\Model\BoxModel();
+            $fileds = "a.tpmedia_id";
+            $where  = array();
+            $where['a.mac'] = $box_mac;
+            $where['d.state'] = 1;
+            $where['d.flag']  = 0;
+            $where['a.state'] = 1;
+            $where['a.flag']  = 0;
+            $data = $m_box->getBoxInfo($fileds, $where);
+            if(empty($data)){
+                $this->to_back(70001);
+            }else {
+                $data = $data[0];
+                $redis->set($cache_key, json_encode($data),3600);
+                $this->to_back($data);
+            } 
+        }else {
+            $data = json_decode($ret,true);
+            $this->to_back($data);
+        }
+        
         
     }
 }

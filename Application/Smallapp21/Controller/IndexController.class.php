@@ -81,7 +81,8 @@ class IndexController extends CommonController{
         $data = array();
         $times = getMillisecond();
         $data['scene'] = $box_mac.'_'.$type.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
-        $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
+        
+        $data['page'] = "pages/index/index";//扫描后对应的path
         $data['width'] = "280";//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色
         $color = array(

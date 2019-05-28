@@ -27,14 +27,14 @@ class DiscoveryController extends CommonController{
         $pagesize = 10;
         
         //获取用户的好友列表
-        $m_friend = new \Common\Model\Smallapp\FriendModel();
+        /*$m_friend = new \Common\Model\Smallapp\FriendModel();
         $fields = "f_openid";
         $where =array();
         $where['status'] = 1;
         
-        $friend_list = $m_friend->getWhere($fields, $where);
+        $friend_list = $m_friend->getWhere($fields, $where);*/
         //print_r($friend_list);exit;
-        //$friend_list = array();
+        $friend_list = array();
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
@@ -109,9 +109,9 @@ class DiscoveryController extends CommonController{
               }  
           }
         }else {//如果该用户没有朋友公开的内容
-            //获取系统推荐（最近三天）
-               
-            $limit = "0,".$page*$pagesize;
+            //获取系统推荐（最近三天） 
+            if($all_nums>1000) $all_nums=1000; 
+            $limit = "0,".$all_nums;
             $fields= 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,
                       a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array();
@@ -136,7 +136,7 @@ class DiscoveryController extends CommonController{
             $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
             $where = array();
             $where['forscreen_id'] = $v['forscreen_id'];
-            $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
+            $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'','limit 0,1');
             if($v['res_type']==2){
                 $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
                 

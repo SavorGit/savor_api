@@ -183,9 +183,9 @@ class FindController extends CommonController{
         $where =array();
         $where['status'] = 1;
         
-        $friend_list = $m_friend->getWhere($fields, $where);
+        //$friend_list = $m_friend->getWhere($fields, $where);
         //print_r($friend_list);exit;
-        //$friend_list = array();
+        $friend_list = array();
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
@@ -228,7 +228,7 @@ class FindController extends CommonController{
             $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
             $where = array();
             $where['forscreen_id'] = $v['forscreen_id'];
-            $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
+            $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'','limit 0,1');
             if($v['res_type']==2){
                 $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
                 

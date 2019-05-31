@@ -234,7 +234,7 @@ class HotelController extends BaseController {
             }
             
             
-            $dat['last_small'] = $rets[0]['version_name'];
+            $dat['last_small'] = $rets[0]['version_name'] ? $rets[0]['version_name'] :'';
         }
         
         //小平台

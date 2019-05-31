@@ -142,7 +142,7 @@ class HotelController extends BaseController {
         
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $infos = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotelid));
-        if ( empty($rets) ) {
+        if ( empty($rets[0]['ltime']) ) {
             $dat['last_heart_time'] = array(
                 'ltime'=>'无',
                 'lstate'=>0,

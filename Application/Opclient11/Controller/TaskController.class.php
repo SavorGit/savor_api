@@ -831,6 +831,28 @@ class TaskController extends BaseController{
         if($task_info['state'] !=1){
             $this->to_back(30062);
         }
+        $m_user = new \Common\Model\SysUserModel();
+        if(strstr($exe_user_id, ',')){
+            $exe_user_arr = explode(',', $exe_user_id);
+            $tmp_exe_user_id = '';
+            foreach($exe_user_arr as $v){
+                $u_info = $m_user->getUserInfo(array('id'=>$v),'id',1);
+                if(empty($u_info)){
+                    $tmp_exe_user_id .= substr($v, 0,strlen($v)/2).',';  
+                }else {
+                    $tmp_exe_user_id .= $v.',';
+                }
+            }
+            $exe_user_id = substr($tmp_exe_user_id, 0,strlen($tmp_exe_user_id)-1);
+        }else {
+            
+            $u_info = $m_user->getUserInfo(array('id'=>$exe_user_id),'id',1);
+            if(empty($u_info)){
+                $exe_user_id = substr($exe_user_id, 0,strlen($exe_user_id)/2);  
+            }
+        }
+        
+        
         $map = $data = array();
         $map['id'] = $task_id;
         $data['appoint_user_id'] = $appoin_user_id;

@@ -152,6 +152,7 @@ class DiscoveryController extends CommonController{
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id']   = $tmp_arr[0];
+                    $pubdetail_info[$kk]['res_url']  = $vv['res_url'].'?x-oss-process=image/resize,p_20';
                 }
             }
             $map = array();

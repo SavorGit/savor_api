@@ -85,6 +85,7 @@ class HotelController extends CommonController{
             if(empty($v['food_name'])){
                 $hotel_list[$key]['food_name'] = '';
             }
+            $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
         }
         $this->to_back($hotel_list);
         

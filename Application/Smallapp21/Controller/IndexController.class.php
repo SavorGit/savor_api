@@ -1,9 +1,9 @@
 <?php
 namespace Smallapp21\Controller;
-use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
+use Common\Lib\Qrcode;
 class IndexController extends CommonController{
     /**
      * 构造函数
@@ -130,7 +130,17 @@ class IndexController extends CommonController{
      */
     public function getBoxQr(){
         $box_mac = $this->params['box_mac'];
-        $type    = $this->params['type'];
+        $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码
+        if($type == 8){
+            $times = getMillisecond();
+            $scene = $box_mac.'_'.$type.'_'.$times;
+            $content = "https://dev-mobile.littlehotspot.com/?scene=$scene";
+            $errorCorrectionLevel = 'L';//容错级别
+            $matrixPointSize = 5;//生成图片大小
+            //生成二维码图片
+            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            exit;
+        }
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;
         $b = $this->params['b'] !='' ? $this->params['b'] : 255;

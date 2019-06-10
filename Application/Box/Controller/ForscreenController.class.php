@@ -41,11 +41,12 @@ class ForscreenController extends CommonController{
             }
             $m_sys_config = new \Common\Model\SysConfigModel();
             $sys_info = $m_sys_config->getInfo("'system_sapp_forscreen_nums'");
-            $data['is_sapp_forscreen'] = intval($box_info['is_sapp_forscreen']);
             
+            $data['is_sapp_forscreen']         = intval($box_info['is_sapp_forscreen']);
             $data['is_simple_sapp_forscreen']  = intval($box_info['is_open_simple']);
             $data['is_open_interactscreenad']  = intval($box_info['is_open_interactscreenad']);
-            $data['system_sapp_forscreen_nums'] = intval($sys_info[0]['config_value']);
+            $data['system_sapp_forscreen_nums']= intval($sys_info[0]['config_value']);
+            $data['qrcode_type']               = intval($box_info['qrcode_type']);
             $this->to_back($data);
         }
     }

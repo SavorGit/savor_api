@@ -134,8 +134,7 @@ class IndexController extends CommonController{
         if($type == 8){
             $times = getMillisecond();
             $scene = $box_mac.'_'.$type.'_'.$times;
-            //$content = C('CONTENT_HOST')."q?scene=$scene";
-            $content ="https://mobile.littlehotspot.com/qrcode?scene=$scene";
+            $content ="http://rd0.cn/qrcode?scene=$scene";
             $errorCorrectionLevel = 'L';//容错级别
             $matrixPointSize = 5;//生成图片大小
             //生成二维码图片

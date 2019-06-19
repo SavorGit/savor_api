@@ -4,6 +4,7 @@ use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
+use Common\Lib\Qrcode;
 class IndexController extends CommonController{
     /**
      * 构造函数
@@ -115,6 +116,22 @@ class IndexController extends CommonController{
      */
     public function getBoxQr(){
         $box_mac = $this->params['box_mac'];
+        $type    = $this->params['type'] ? intval($this->params['type']) : 6;
+        $small_jj_erwei_code_arr = C('SMALLAPP_JJ_ERWEI_CODE_TYPES');
+        $small_jj_erwei_code_arr = array_keys($small_jj_erwei_code_arr);
+        
+        if(in_array($type, $small_jj_erwei_code_arr)){
+            
+            $scene = $box_mac.'_'.$type;
+            $content ="http://rd0.cn/ewm?sc=$scene";
+            $errorCorrectionLevel = 'L';//容错级别
+            $matrixPointSize = 5;//生成图片大小
+            //生成二维码图片
+            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            exit;
+        }
+        
+        
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;
         $b = $this->params['b'] !='' ? $this->params['b'] : 255;
@@ -122,7 +139,7 @@ class IndexController extends CommonController{
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/png');
         $data = array();
-        $data['scene'] = $box_mac;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
+        $data['scene'] = $box_mac."_".$type;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/index/index";//扫描后对应的path
         $data['width'] = "280";//自定义的尺寸
         $data['auto_color'] = false;//是否自定义颜色

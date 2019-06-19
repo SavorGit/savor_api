@@ -131,7 +131,10 @@ class IndexController extends CommonController{
     public function getBoxQr(){
         $box_mac = $this->params['box_mac'];
         $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码
-        if($type == 8){
+        $small_erwei_code_arr = C('SMALLAPP_ERWEI_CODE_TYPES');
+        $small_erwei_code_arr = array_keys($small_erwei_code_arr);
+        
+        if(in_array($type, $small_erwei_code_arr)){
             $times = getMillisecond();
             $scene = $box_mac.'_'.$type.'_'.$times;
             $content ="http://rd0.cn/qrcode?scene=$scene";

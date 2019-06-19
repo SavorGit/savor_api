@@ -397,20 +397,53 @@ class BoxController extends BaseController{
         $redis->select(12);
         $cache_key = C('PROGRAM_ADS_CACHE_PRE').$box_id;
         $ads_list = $redis->get($cache_key);
-        $ads_list = json_decode($ads_list,true);
-        $data = array();
-        if($ads_list && $ads_list['menu_num'] == $ads_download_period){
-            $m_pub_ads = new \Common\Model\PubAdsModel();
-            foreach($ads_list['ads_list'] as $key=>$v){
-                $media_info = $m_pub_ads->getPubAdsInfoByid('med.name,med.oss_addr,med.duration',array('pads.id'=>$v['pub_ads_id']));
-                $temp['name'] = $media_info['name'];
-                $temp['type'] = '广告';
-                $data[] = $temp;
+        if(!empty($ads_list)){
+            $ads_list = json_decode($ads_list,true);
+            $data = array();
+            if($ads_list && $ads_list['menu_num'] == $ads_download_period){
+                $m_pub_ads = new \Common\Model\PubAdsModel();
+                foreach($ads_list['ads_list'] as $key=>$v){
+                    $media_info = $m_pub_ads->getPubAdsInfoByid('med.name,med.oss_addr,med.duration',array('pads.id'=>$v['pub_ads_id']));
+                    $temp['name'] = $media_info['name'];
+                    $temp['type'] = '广告';
+                    $data[] = $temp;
+                }
+                $this->to_back($data);
+            }else {
+                $this->to_back('30114');
             }
-            $this->to_back($data);
-        }else {
-            $this->to_back('30114');
-        } 
+        }else {//虚拟小平台盒子
+            $m_box = new \Common\Model\BoxModel();
+            $where = array();
+            $where['a.id'] = $box_id;
+            
+            $result = $m_box->getBoxInfo('d.id hotel_id,a.mac box_mac', $where);
+            $hotel_info = $result[0];
+            
+            $redis->select(10);
+            $cache_key = C('VSMALL_PREFIX').'ads:'.$hotel_info['hotel_id'].":".$hotel_info['box_mac'];
+            $ads_list = $redis->get($cache_key);
+            
+            if(!empty($ads_list)){
+               $ads_list = json_decode($ads_list,true);
+               $data = array();
+               if($ads_list['menu_num']==$ads_download_period){
+                   foreach($ads_list['media_lib'] as $key=>$v){
+                       $tmp['name'] = $v['chinese_name'];
+                       $temp['type'] = '广告';
+                       $data[] = $temp;
+                   }
+                   $this->to_back($data);
+               }else {
+                   $this->to_back('30114');
+               }
+            }else {
+                $this->to_back('30114');
+            }
+            
+        }
+        
+        
     }
     
     /**

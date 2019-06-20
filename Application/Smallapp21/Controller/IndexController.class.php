@@ -70,13 +70,18 @@ class IndexController extends CommonController{
                $this->is_verify = 1;
                $this->valid_fields = array('type'=>1001);
                break;
-           case 'getBoxQrNew':   //主干版小程序盒子请求的二维码 小程序码接口
+           case 'getBoxQrcode'://主干版小程序盒子请求的二维码 小程序码接口
                $this->is_verify = 1;
                $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
                break;
+            case 'getQrcontent':
+                $this->is_verify = 1;
+                $this->valid_fields = array('content'=>1001);
+                break;
         }
         parent::_init_();
     }
+
     public function getIndexBoxQr(){
         $box_mac = 0;
         $type    = $this->params['type'];
@@ -102,57 +107,65 @@ class IndexController extends CommonController{
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
-    public function getTestBoxQr(){
+
+    public function getBoxQrcode(){
         $box_mac = $this->params['box_mac'];
         $type    = $this->params['type'];
-        $r = $this->params['r'] !='' ? $this->params['r'] : 255;
-        $g = $this->params['g'] !='' ? $this->params['g'] : 255;
-        $b = $this->params['b'] !='' ? $this->params['b'] : 255;
-        $m_small_app = new Smallapp_api();
-        $tokens  = $m_small_app->getWxAccessToken();
-        header('content-type:image/png');
-        $data = array();
-        $times = getMillisecond();
-        $data['scene'] = $box_mac.'_'.$type.'_'.$times;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
-        
-        $data['page'] = "pages/index/index";//扫描后对应的path
-        $data['width'] = "280";//自定义的尺寸
-        $data['auto_color'] = false;//是否自定义颜色
-        $color = array(
-            "r"=>$r,
-            "g"=>$g,
-            "b"=>$b,
-        );
-        $data['line_color'] = $color;//自定义的颜色值
-        $data['is_hyaline'] = true;
-        $data = json_encode($data);
-        $m_small_app->getSmallappCode($tokens,$data);
-    }
-    public function getBoxQrNew(){
-        $box_mac = $this->params['box_mac'];
-        $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码
-        $small_erwei_code_arr = C('SMALLAPP_ERWEI_CODE_TYPES');
-        $small_erwei_code_arr = array_keys($small_erwei_code_arr);
-        if(in_array($type, $small_erwei_code_arr)){
-            $times = getMillisecond();
-            $m_box = new \Common\Model\BoxModel();
-            $map = array();
-            $map['a.mac'] = $box_mac;
-            $map['a.state'] = 1;
-            $map['a.flag']  = 0;
-            $map['d.state'] = 1;
-            $map['d.flag']  = 0;
-            $box_info = $m_box->getBoxInfo('a.id box_id', $map);
-            if(empty($box_info)){
-                $this->to_back(70001);
-            }
-            $scene = $box_mac.'_'.$type.'_'.$times;
-            $hash_ids_key = C('HASH_IDS_KEY');
-            $hashids = new \Common\Lib\Hashids($hash_ids_key);
-            $id = $hashids->encode('10123');
-            echo $id;exit;
+        if(!array_key_exists($type,C('SMALLAPP_ERWEI_CODE_TYPES'))){
+            $this->to_back(90100);
         }
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $encode_key = "$type{$box_info['id']}";
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $times = getMillisecond();
+        $scene = $box_mac.'_'.$type.'_'.$times;
+        $cache_key = C('SAPP_QRCODE').$encode_key;
+        $redis->set($cache_key,$scene,86400);
+
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $s = $hashids->encode($encode_key);
+
+        $content ="http://rd0.cn/p?s=$s";
+        $errorCorrectionLevel = 'L';//容错级别
+        $matrixPointSize = 5;//生成图片大小
+        //生成二维码图片
+        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+        exit;
     }
+
+    public function getQrcontent(){
+        $content = $this->params['content'];
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($content);
+        if(empty($decode_info)){
+            $this->to_back(90101);
+        }
+        $cache_key = C('SAPP_QRCODE').$decode_info[0];
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res = $redis->get($cache_key);
+        if(empty($res)){
+            $this->to_back(90101);
+        }
+        $content = array('content'=>$res);
+        $this->to_back($content);
+    }
+
+
+
     /**
      * @des  获取当前机顶盒小程序码
      */

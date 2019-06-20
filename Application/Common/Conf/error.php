@@ -244,7 +244,10 @@ return array(
 	    '90107'=>'small_app_del_failed',
 	    '90108'=>'small_app_breanlink_failed',
 	    '90109'=>'netty_box_empty',
-	    //小程序游戏
+	    '90100'=>'smallapp_qrcode_type_error',
+	    '90101'=>'smallapp_qrcode_content_error',
+
+        //小程序游戏
 	    '90110'=>'small_app_launch_game_failed',
 	    '90111'=>'small_app_game_have_start',
 	    '90112'=>'small_app_game_start_failed',

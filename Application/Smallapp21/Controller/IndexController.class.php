@@ -70,6 +70,10 @@ class IndexController extends CommonController{
                $this->is_verify = 1;
                $this->valid_fields = array('type'=>1001);
                break;
+           case 'getBoxQrNew':   //主干版小程序盒子请求的二维码 小程序码接口
+               $this->is_verify = 1;
+               $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+               break;
         }
         parent::_init_();
     }
@@ -124,7 +128,31 @@ class IndexController extends CommonController{
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
-    
+    public function getBoxQrNew(){
+        $box_mac = $this->params['box_mac'];
+        $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码
+        $small_erwei_code_arr = C('SMALLAPP_ERWEI_CODE_TYPES');
+        $small_erwei_code_arr = array_keys($small_erwei_code_arr);
+        if(in_array($type, $small_erwei_code_arr)){
+            $times = getMillisecond();
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $box_info = $m_box->getBoxInfo('a.id box_id', $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            $scene = $box_mac.'_'.$type.'_'.$times;
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $id = $hashids->encode('10123');
+            echo $id;exit;
+        }
+    }
     /**
      * @des  获取当前机顶盒小程序码
      */

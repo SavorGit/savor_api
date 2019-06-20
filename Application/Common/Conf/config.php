@@ -338,4 +338,5 @@ return array(
         '13'=>'apk','14'=>'loading','15'=>'logo','20'=>'bonustomoney'),
     'SMALLAPP_ERWEI_CODE_TYPES'=>array('8'=>'小程序二维码','12'=>'大二维码（节目）','13'=>'小程序呼二维码','16'=>'大二维码（新节目）'),
     'SMALLAPP_JJ_ERWEI_CODE_TYPES'=>array('16'=>'极简版二维码','19'=>'极简版节目大二维码','20'=>'极简版大二维码','21'=>'极简版呼二维码'),
+    'HASH_IDS_KEY'=>'Q1t80oXSKl',
 );

@@ -111,6 +111,7 @@ class IndexController extends CommonController{
             
         }
     }
+
     /**
      * @des  获取当前机顶盒小程序码
      */
@@ -130,8 +131,7 @@ class IndexController extends CommonController{
             Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
             exit;
         }
-        
-        
+
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;
         $b = $this->params['b'] !='' ? $this->params['b'] : 255;
@@ -153,6 +153,64 @@ class IndexController extends CommonController{
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
+
+    public function getBoxQrcode(){
+        $box_mac = $this->params['box_mac'];
+        $type    = $this->params['type'];
+        if(!array_key_exists($type,C('SMALLAPP_JJ_ERWEI_CODE_TYPES'))){
+            $this->to_back(90100);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $encode_key = "$type{$box_info[0]['box_id']}";
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $times = getMillisecond();
+        $scene = $box_mac.'_'.$type.'_'.$times;
+        $cache_key = C('SAPP_QRCODE').$encode_key;
+        $redis->set($cache_key,$scene,86400);
+
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $s = $hashids->encode($encode_key);
+
+        $content ="http://rd0.cn/e?s=$s";
+        $errorCorrectionLevel = 'L';//容错级别
+        $matrixPointSize = 5;//生成图片大小
+        //生成二维码图片
+        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+        exit;
+    }
+
+    public function getQrcontent(){
+        $content = $this->params['content'];
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($content);
+        if(empty($decode_info)){
+            $this->to_back(90101);
+        }
+        $cache_key = C('SAPP_QRCODE').$decode_info[0];
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res = $redis->get($cache_key);
+        if(empty($res)){
+            $this->to_back(90101);
+        }
+        $content = array('content'=>$res);
+        $this->to_back($content);
+    }
+
+
     public function recordWifiErr(){
         $box_mac = $this->params['box_mac'];
         $err_info = str_replace('\\', '', $this->params['err_info']);

@@ -125,7 +125,7 @@ class IndexController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        $encode_key = "$type{$box_info['id']}";
+        $encode_key = "$type{$box_info[0]['box_id']}";
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $times = getMillisecond();

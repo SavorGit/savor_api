@@ -174,8 +174,7 @@ class IndexController extends CommonController{
         $encode_key = "$type{$box_info[0]['box_id']}";
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
-        $times = getMillisecond();
-        $scene = $box_mac.'_'.$type.'_'.$times;
+        $scene = $box_mac.'_'.$type;
         $cache_key = C('SAPP_QRCODE').$encode_key;
         $redis->set($cache_key,$scene,86400);
 

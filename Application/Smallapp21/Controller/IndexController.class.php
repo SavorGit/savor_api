@@ -141,8 +141,45 @@ class IndexController extends CommonController{
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         //生成二维码图片
-        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
-        exit;
+
+        if(in_array($type,array(12,13))){
+            // generating frame
+            $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            $outerFrame = 0;
+            $pixelPerPoint = $matrixPointSize;
+            $h = count($frame);
+            $w = strlen($frame[0]);
+            $imgW = $w + 2*$outerFrame;
+            $imgH = $h + 2*$outerFrame;
+            $base_image = imagecreate($imgW, $imgH);
+
+//                $col[0] = imagecolorallocate($base_image,255,255,255);//BG, white
+            $col[0] = imagecolorallocatealpha($base_image, 255, 255, 255, 127);
+            $col[1] = imagecolorallocate($base_image,94,84,77);
+
+            imagefill($base_image, 0, 0, $col[0]);
+            for($y=0; $y<$h; $y++) {
+                for($x=0; $x<$w; $x++) {
+                    if ($frame[$y][$x] == '1') {
+                        imagesetpixel($base_image,$x+$outerFrame,$y+$outerFrame,$col[1]);
+                    }
+                }
+            }
+            $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+            imagecopyresized(
+                $target_image,
+                $base_image,
+                0, 0, 0, 0,
+                $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH
+            );
+            imagedestroy($base_image);
+            header('content-type:image/png');
+            imagepng($target_image);
+            imagedestroy($target_image);
+            exit;
+        }else{
+            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+        }
     }
 
     public function getQrcontent(){
@@ -182,8 +219,44 @@ class IndexController extends CommonController{
             $errorCorrectionLevel = 'L';//容错级别
             $matrixPointSize = 5;//生成图片大小
             //生成二维码图片
-            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
-            exit;
+            if(in_array($type,array(12,13))){
+                // generating frame
+                $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+                $outerFrame = 0;
+                $pixelPerPoint = $matrixPointSize;
+                $h = count($frame);
+                $w = strlen($frame[0]);
+                $imgW = $w + 2*$outerFrame;
+                $imgH = $h + 2*$outerFrame;
+                $base_image = imagecreate($imgW, $imgH);
+
+//                $col[0] = imagecolorallocate($base_image,255,255,255);//BG, white
+                $col[0] = imagecolorallocatealpha($base_image, 255, 255, 255, 127);
+                $col[1] = imagecolorallocate($base_image,94,84,77);
+
+                imagefill($base_image, 0, 0, $col[0]);
+                for($y=0; $y<$h; $y++) {
+                    for($x=0; $x<$w; $x++) {
+                        if ($frame[$y][$x] == '1') {
+                            imagesetpixel($base_image,$x+$outerFrame,$y+$outerFrame,$col[1]);
+                        }
+                    }
+                }
+                $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+                imagecopyresized(
+                    $target_image,
+                    $base_image,
+                    0, 0, 0, 0,
+                    $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH
+                );
+                imagedestroy($base_image);
+                header('content-type:image/png');
+                imagepng($target_image);
+                imagedestroy($target_image);
+                exit;
+            }else{
+                Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            }
         }
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;

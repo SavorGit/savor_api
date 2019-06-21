@@ -122,14 +122,71 @@ class IndexController extends CommonController{
         $small_jj_erwei_code_arr = array_keys($small_jj_erwei_code_arr);
         
         if(in_array($type, $small_jj_erwei_code_arr)){
-            
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            $encode_key = "$type{$box_info[0]['box_id']}";
+            $redis  =  \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
             $scene = $box_mac.'_'.$type;
-            $content ="http://rd0.cn/ewm?sc=$scene";
+            $cache_key = C('SAPP_QRCODE').$encode_key;
+            $redis->set($cache_key,$scene,86400);
+
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $s = $hashids->encode($encode_key);
+
+            $content ="http://rd0.cn/e?s=$s";
             $errorCorrectionLevel = 'L';//容错级别
             $matrixPointSize = 5;//生成图片大小
             //生成二维码图片
-            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
-            exit;
+            if(in_array($type,array(20,21))){
+                // generating frame
+                $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+                $outerFrame = 0;
+                $pixelPerPoint = $matrixPointSize;
+                $h = count($frame);
+                $w = strlen($frame[0]);
+                $imgW = $w + 2*$outerFrame;
+                $imgH = $h + 2*$outerFrame;
+                $base_image = imagecreate($imgW, $imgH);
+
+//                $col[0] = imagecolorallocate($base_image,255,255,255);//BG, white
+                $col[0] = imagecolorallocatealpha($base_image, 255, 255, 255, 127);
+                $col[1] = imagecolorallocate($base_image,94,84,77);
+
+                imagefill($base_image, 0, 0, $col[0]);
+                for($y=0; $y<$h; $y++) {
+                    for($x=0; $x<$w; $x++) {
+                        if ($frame[$y][$x] == '1') {
+                            imagesetpixel($base_image,$x+$outerFrame,$y+$outerFrame,$col[1]);
+                        }
+                    }
+                }
+                $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+                imagecopyresized(
+                    $target_image,
+                    $base_image,
+                    0, 0, 0, 0,
+                    $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH
+                );
+                imagedestroy($base_image);
+                header('content-type:image/png');
+                imagepng($target_image);
+                imagedestroy($target_image);
+                exit;
+            }else{
+                Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+                exit;
+            }
         }
 
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
@@ -186,8 +243,45 @@ class IndexController extends CommonController{
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         //生成二维码图片
-        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
-        exit;
+        if(in_array($type,array(20,21))){
+            // generating frame
+            $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+            $outerFrame = 0;
+            $pixelPerPoint = $matrixPointSize;
+            $h = count($frame);
+            $w = strlen($frame[0]);
+            $imgW = $w + 2*$outerFrame;
+            $imgH = $h + 2*$outerFrame;
+            $base_image = imagecreate($imgW, $imgH);
+
+//                $col[0] = imagecolorallocate($base_image,255,255,255);//BG, white
+            $col[0] = imagecolorallocatealpha($base_image, 255, 255, 255, 127);
+            $col[1] = imagecolorallocate($base_image,94,84,77);
+
+            imagefill($base_image, 0, 0, $col[0]);
+            for($y=0; $y<$h; $y++) {
+                for($x=0; $x<$w; $x++) {
+                    if ($frame[$y][$x] == '1') {
+                        imagesetpixel($base_image,$x+$outerFrame,$y+$outerFrame,$col[1]);
+                    }
+                }
+            }
+            $target_image = imagecreate($imgW * $pixelPerPoint, $imgH * $pixelPerPoint);
+            imagecopyresized(
+                $target_image,
+                $base_image,
+                0, 0, 0, 0,
+                $imgW * $pixelPerPoint, $imgH * $pixelPerPoint, $imgW, $imgH
+            );
+            imagedestroy($base_image);
+            header('content-type:image/png');
+            imagepng($target_image);
+            imagedestroy($target_image);
+            exit;
+        }else{
+            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+            exit;
+        }
     }
 
     public function getQrcontent(){

@@ -144,7 +144,7 @@ class IndexController extends CommonController{
 
         if(in_array($type,array(12,13))){
             // generating frame
-            $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
             $outerFrame = 0;
             $pixelPerPoint = $matrixPointSize;
             $h = count($frame);
@@ -178,7 +178,7 @@ class IndexController extends CommonController{
             imagedestroy($target_image);
             exit;
         }else{
-            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+            Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
         }
     }
 
@@ -221,7 +221,7 @@ class IndexController extends CommonController{
             //生成二维码图片
             if(in_array($type,array(12,13))){
                 // generating frame
-                $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+                $frame = QRcode::text($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
                 $outerFrame = 0;
                 $pixelPerPoint = $matrixPointSize;
                 $h = count($frame);
@@ -255,7 +255,7 @@ class IndexController extends CommonController{
                 imagedestroy($target_image);
                 exit;
             }else{
-                Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 2);
+                Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
             }
         }
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;

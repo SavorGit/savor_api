@@ -213,9 +213,31 @@ class IndexController extends CommonController{
         $small_erwei_code_arr = array_keys($small_erwei_code_arr);
         
         if(in_array($type, $small_erwei_code_arr)){
+
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            $encode_key = "$type{$box_info[0]['box_id']}";
+            $redis  =  \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
             $times = getMillisecond();
             $scene = $box_mac.'_'.$type.'_'.$times;
-            $content ="http://rd0.cn/qrcode?scene=$scene";
+            $cache_key = C('SAPP_QRCODE').$encode_key;
+            $redis->set($cache_key,$scene,86400);
+
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $s = $hashids->encode($encode_key);
+
+            $content ="http://rd0.cn/p?s=$s";
             $errorCorrectionLevel = 'L';//容错级别
             $matrixPointSize = 5;//生成图片大小
             //生成二维码图片

@@ -19,7 +19,7 @@ class ForscreenLogController extends CommonController{
                    'resource_type'=>1000,'resource_id'=>1000,
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                    'forscreen_id'=>1000,'small_app_id'=>1000,
-                   'small_app_id'=>1001
+                   'small_app_id'=>1001,'create_time'=>1000,
                );
                break;
         }
@@ -43,6 +43,7 @@ class ForscreenLogController extends CommonController{
         $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;                  //是否公开
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;               //视频时长
         $small_app_id  = $this->params['small_app_id'] ? $this->params['small_app_id'] :1;
+        $create_time   = $this->params['create_time'] ? $this->params['create_time'] :  date('Y-m-d H:i:s');
         $data = array();
         $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
@@ -54,7 +55,7 @@ class ForscreenLogController extends CommonController{
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs ? $imgs :'[]';
         $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
-        $data['create_time'] = date('Y-m-d H:i:s');
+        $data['create_time'] = $create_time;
         $data['res_sup_time']= $res_sup_time;
         $data['res_eup_time']= $res_eup_time;
         $data['resource_size'] = $resource_size;

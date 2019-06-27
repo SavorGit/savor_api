@@ -151,6 +151,7 @@ class BoxController extends BaseController{
         $box_ads_arr = $this->getBoxAdsList($box_id);
         if($box_ads_arr){
             $pub_ads_peroid = $box_ads_arr['box_ads_num'];  //发布的广告期号
+            
             if($pub_ads_peroid == $box_heart_info['ads_period']){
                 $data['ads_period_state'] = '已更新到最新';
                 $ads_same_flag = 1;
@@ -262,48 +263,80 @@ class BoxController extends BaseController{
      * @desc 获取机顶盒最新广告列表 
      */
     private function getBoxAdsList($box_id){
-        $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
-        $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
-        $now_date = date('Y-m-d H:i:s');
         $data =  array();
-        //$v_keys = 0;
-        for($i=1;$i<=$max_adv_location;$i++){
-            $adv_arr = $m_pub_ads_box->getAdsList($box_id,$i);  //获取当前机顶盒得某一个位置得广告
-            $adv_arr = $this->changeadvList($adv_arr);
-             
-            if(!empty($adv_arr)){
-                $flag =0;
-                foreach($adv_arr as $ak=>$av){
-                    if($av['start_date']>$now_date){
-                        $flag ++;
+        $m_box = new \Common\Model\BoxModel();
+        $fileds = 'ext.mac_addr  ';
+        $box_info = $m_box->alias('a')
+                          ->join('savor_room room on a.room_id=room.id','left')
+                          ->join('savor_hotel hotel on room.hotel_id=hotel.id','left')
+                          ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+                          ->where('a.id='.$box_id)
+                          ->find();
+        if($box_info['mac_addr']=='000000000000'){
+            $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
+            
+            $pub_ads_list = $m_pub_ads_box->getVsmallAdsList($box_id);
+            $ads_period_info = $m_pub_ads_box->getVsmallBoxPorid($box_id);
+            foreach($pub_ads_list as $key=>$v){
+                $tmp = array();
+                $tmp['name'] = $v['chinese_name'];
+                $tmp['type'] = 1;
+                $tmp['location_id'] = $v['location_id'];
+                $data['media_list'][$v['location_id']] = $tmp;
+            }
+            if(!empty($ads_period_info)){//如果该机顶盒下广告位不为空
+                 
+                
+                $box_ads_num = date('YmdHis',strtotime($ads_period_info['create_time']));
+                $data['box_ads_num'] = $box_ads_num;
+            }
+        }else {
+            $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
+            $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
+            $now_date = date('Y-m-d H:i:s');
+            $data =  array();
+            //$v_keys = 0;
+            for($i=1;$i<=$max_adv_location;$i++){
+                $adv_arr = $m_pub_ads_box->getAdsList($box_id,$i);  //获取当前机顶盒得某一个位置得广告
+                $adv_arr = $this->changeadvList($adv_arr);
+                 
+                if(!empty($adv_arr)){
+                    $flag =0;
+                    foreach($adv_arr as $ak=>$av){
+                        if($av['start_date']>$now_date){
+                            $flag ++;
+                        }
+                        if($flag==2){
+                            unset($adv_arr[$ak]);
+                            break;
+                        }
+                         
+                        $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
+                        $ads_arr['create_time'] = $av['create_time'];
+                        $ads_arr['location_id'] = $av['location_id'];
+                        $ads_num_arr[] = $ads_arr;
+                        $ads_time_arr[] = $av['create_time'];
+            
+                        $tmp = array();
+                        $tmp['name'] = $av['chinese_name'];
+                        $tmp['type'] = 1;
+                        $tmp['location_id'] = $av['location_id'];
+                        $data['media_list'][$av['location_id']] = $tmp;
+                         
                     }
-                    if($flag==2){
-                        unset($adv_arr[$ak]);
-                        break;
-                    }
-                     
-                    $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
-                    $ads_arr['create_time'] = $av['create_time'];
-                    $ads_arr['location_id'] = $av['location_id'];
-                    $ads_num_arr[] = $ads_arr;
-                    $ads_time_arr[] = $av['create_time'];
-                    
-                    $tmp = array();
-                    $tmp['name'] = $av['chinese_name'];
-                    $tmp['type'] = 1;
-                    $tmp['location_id'] = $av['location_id'];
-                    $data['media_list'][$av['location_id']] = $tmp;
-                     
                 }
             }
+            if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
+                 
+                $ads_time_str = max($ads_time_arr);
+                $box_ads_num = date('YmdHis',strtotime($ads_time_str));
+                $data['box_ads_num'] = $box_ads_num;
+            }
+            //return $data;
         }
-        if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
-             
-            $ads_time_str = max($ads_time_arr);
-            $box_ads_num = date('YmdHis',strtotime($ads_time_str));
-            $data['box_ads_num'] = $box_ads_num;
-        }
+        
         return $data;
+        
     }
     /**
      * @desc 获取当前机顶盒的宣传片列表

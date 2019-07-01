@@ -125,18 +125,18 @@ class IndexController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        $encode_key = "$type{$box_info[0]['box_id']}";
+        $now_time = date('zH');
+        $encode_key = "$type{$box_info[0]['box_id']}$now_time";
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $times = getMillisecond();
         $scene = $box_mac.'_'.$type.'_'.$times;
         $cache_key = C('SAPP_QRCODE').$encode_key;
-        $redis->set($cache_key,$scene,86400);
+        $redis->set($cache_key,$scene,3600*3);
 
         $hash_ids_key = C('HASH_IDS_KEY');
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $s = $hashids->encode($encode_key);
-
         $content ="http://rd0.cn/p?s=$s";
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
@@ -225,13 +225,14 @@ class IndexController extends CommonController{
             if(empty($box_info)){
                 $this->to_back(70001);
             }
-            $encode_key = "$type{$box_info[0]['box_id']}";
+            $now_time = date('zH');
+            $encode_key = "$type{$box_info[0]['box_id']}$now_time";
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(5);
             $times = getMillisecond();
             $scene = $box_mac.'_'.$type.'_'.$times;
             $cache_key = C('SAPP_QRCODE').$encode_key;
-            $redis->set($cache_key,$scene,86400);
+            $redis->set($cache_key,$scene,3600*3);
 
             $hash_ids_key = C('HASH_IDS_KEY');
             $hashids = new \Common\Lib\Hashids($hash_ids_key);

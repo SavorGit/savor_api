@@ -24,7 +24,11 @@ class AliyunImm{
         $request = new Imm\CreateOfficeConversionTaskRequest();
         $request->setProject($projectName);
         // 设置待转换对文件OSS路径
-        $request->setMaxSheetCol(-1);
+
+        $request->setEndPage(-1);//转换全部页，设置为-1
+        $request->setMaxSheetRow(-1);//转换所有行，设置为-1
+        $request->setMaxSheetCol(-1);//转换所有列，设置为-1
+        $request->setMaxSheetCount(-1);//转换所有Sheet，设置为-1
         $request->setSrcUri("oss://$oss_bucket/$oss_addr");
         // 设置文件输出格式
         $request->setTgtType("png");

@@ -80,14 +80,13 @@ class IndexController extends CommonController{
     public function getConfig(){
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
-        //$exp_time = 7200000;
-        //$exp_time = 14400000;
-        //$exp_time = 36000000;        
-        $exp_time   = 7200000;  //扫码失效时间
+        $file_exts = C('SAPP_FILE_FORSCREEN_TYPES');
+        $exp_time   = 7200000;//扫码失效时间
         $redpacket_exp_time = 1800000;
         $data['sys_time'] = $sys_time;
         $data['exp_time'] = $exp_time;
         $data['redpacket_exp_time'] = $redpacket_exp_time;
+        $data['file_exts'] = $file_exts;
         $this->to_back($data);
     }
 }

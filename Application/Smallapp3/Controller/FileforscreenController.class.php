@@ -96,6 +96,7 @@ class FileforscreenController extends CommonController{
 
     private function getCreateOfficeConversionResult($res){
         $oss_host = C('OSS_HOST');
+        $img_num = 0;
         switch ($res->Status){
             case 'Running':
                 $status = 1;
@@ -107,6 +108,7 @@ class FileforscreenController extends CommonController{
                 $status = 2;
                 $task_id = 0;
                 $percent = 100;
+                $img_num = $res->PageCount;
                 $img_host = str_replace('oss://redian-development',"http://$oss_host",$res->TgtUri);
                 $imgs = array();
                 for($i=1;$i<=$res->PageCount;$i++){
@@ -125,7 +127,7 @@ class FileforscreenController extends CommonController{
                 $percent = 0;
                 $imgs = array();
         }
-        $result = array('status'=>$status,'task_id'=>$task_id,'percent'=>$percent,'imgs'=>$imgs);
+        $result = array('status'=>$status,'task_id'=>$task_id,'percent'=>$percent,'imgs'=>$imgs,'img_num'=>$img_num);
         return $result;
     }
 

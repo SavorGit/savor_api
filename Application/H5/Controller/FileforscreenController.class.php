@@ -9,7 +9,7 @@ class FileforscreenController extends Controller {
 
     public function index(){
         $file_ext = C('SAPP_FILE_FORSCREEN_TYPES');
-        $this->assign('file_ext',join(',',$file_ext));
+        $this->assign('file_ext',join(',',array_keys($file_ext)));
         $this->display();
     }
 

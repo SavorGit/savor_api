@@ -10,7 +10,7 @@ use imm\Request\V20170906 as Imm;
 require_once APP_PATH.'Common/Lib/AliyunOpenapi/aliyun-php-sdk-core/Config.php';
 class AliyunImm{
 
-    public function file2img($oss_addr){
+    public function createOfficeConversion($oss_addr){
         $region_id = C('IMM_REGION_ID');
         $access_id = C('IMM_ACCESS_ID');
         $access_key = C('IMM_ACCESS_KEY');

@@ -6,7 +6,7 @@ use OSS\Core\OssException;
  * 阿里云OSS
  *
  */
-require_once APP_PATH.'Common/Lib/Aliyun/autoload.php';
+require_once APP_PATH.'Common/Lib/AliyunOss/autoload.php';
 class AliyunOss{
     private $ossClient = null;
     private $endpoint = '';

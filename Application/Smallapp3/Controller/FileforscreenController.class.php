@@ -59,6 +59,7 @@ class FileforscreenController extends CommonController{
         $bucket = C('OSS_BUCKET');
         $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
         $aliyunoss->setBucket($bucket);
+
         $fileinfo = $aliyunoss->getObject($oss_addr,'');
         $data['md5_file'] = md5($fileinfo);
 
@@ -96,6 +97,8 @@ class FileforscreenController extends CommonController{
 
     private function getCreateOfficeConversionResult($res){
         $oss_host = C('OSS_HOST');
+        $bucket = C('OSS_BUCKET');
+        $file_types = C('SAPP_FILE_FORSCREEN_TYPES');
         $img_num = 0;
         switch ($res->Status){
             case 'Running':
@@ -109,10 +112,30 @@ class FileforscreenController extends CommonController{
                 $task_id = 0;
                 $percent = 100;
                 $img_num = $res->PageCount;
-                $img_host = str_replace('oss://redian-development',"http://$oss_host",$res->TgtUri);
-                $imgs = array();
-                for($i=1;$i<=$res->PageCount;$i++){
-                    $imgs[] = $img_host.$i.'.'.$res->TgtType;
+                $img_host = str_replace("oss://$bucket","http://$oss_host",$res->TgtUri);
+                $oss_host = str_replace("oss://$bucket/","",$res->TgtUri);
+                $file_info = pathinfo($res->SrcUri);
+                if($file_types[$file_info['extension']]==1){
+                    $prefix = $oss_host;
+                    $accessKeyId = C('OSS_ACCESS_ID');
+                    $accessKeySecret = C('OSS_ACCESS_KEY');
+                    $endpoint = 'oss-cn-beijing.aliyuncs.com';
+                    $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
+                    $aliyunoss->setBucket($bucket);
+                    $exl_files = $aliyunoss->getObjectlist($prefix);
+                    $imgs = array();
+                    foreach ($exl_files as $v){
+                        $img_path = $img_host.'/'.$v;
+                        $oss_path = $v;
+                        $imgs[] = array('img_path'=>$img_path,'oss_path'=>$oss_path);
+                    }
+                }else{
+                    $imgs = array();
+                    for($i=1;$i<=$res->PageCount;$i++){
+                        $img_path = $img_host.$i.'.'.$res->TgtType;
+                        $oss_path = $oss_host.$i.'.'.$res->TgtType;
+                        $imgs[] = array('img_path'=>$img_path,'oss_path'=>$oss_path);
+                    }
                 }
                 break;
             case 'Failed':

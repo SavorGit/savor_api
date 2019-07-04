@@ -55,18 +55,16 @@ class FileforscreenController extends CommonController{
 
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');
-        $endpoint = C('OSS_HOST');
+        $endpoint = 'oss-cn-beijing.aliyuncs.com';
         $bucket = C('OSS_BUCKET');
         $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
         $aliyunoss->setBucket($bucket);
-
         $fileinfo = $aliyunoss->getObject($oss_addr,'');
         $data['md5_file'] = md5($fileinfo);
 
         $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         $forscreen_id = $m_forscreenrecord->add($data);
-
-
+        
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
@@ -85,7 +83,8 @@ class FileforscreenController extends CommonController{
             }
         }else{
             $imgs = json_decode($res_cache,true);
-            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs);
+            $img_num = count($imgs);
+            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs,'img_num'=>$img_num);
         }
         $result['forscreen_id'] = $forscreen_id;
         $this->to_back($result);
@@ -103,7 +102,8 @@ class FileforscreenController extends CommonController{
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $imgs = json_decode($res_cache,true);
-            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs);
+            $img_num = count($imgs);
+            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs,'img_num'=>$img_num);
         }else{
             $aliyun = new AliyunImm();
             $res = $aliyun->getImgResponse($task_id);

@@ -87,6 +87,7 @@ class IndexController extends CommonController{
         $data['exp_time'] = $exp_time;
         $data['redpacket_exp_time'] = $redpacket_exp_time;
         $data['file_exts'] = $file_exts;
+        $data['file_exts'] = array_keys($file_exts);
         $data['file_max_size'] = 41943040;
                                  
         $data['polling_time']  = 60;  //文件投屏默认轮询时间60s

@@ -147,6 +147,38 @@ class AliyunOss{
 	    }
 	    return $content;
 	}
+
+	public function getObjectlist($prefix,$nextMarker='',$maxkeys=1000){
+	    $file_list = array();
+        $ossClient = $this->ossClient;
+        $bucket = $this->bucket;
+        $delimiter = '';
+        $options = array(
+            'delimiter' => $delimiter,
+            'prefix' => $prefix,
+            'max-keys' => $maxkeys,
+            'marker' => $nextMarker,
+        );
+        try {
+            $listObjectInfo = $ossClient->listObjects($bucket, $options);
+        } catch (OssException $e) {
+            $this->error = __FUNCTION__ . ": FAILED". $e->getMessage();
+            return false;
+        }
+        $objectList = $listObjectInfo->getObjectList(); // object list
+        if (!empty($objectList)) {
+            foreach ($objectList as $objectInfo) {
+                $file_list[] = $objectInfo->getKey();
+            }
+        }
+//        $prefixList = $listObjectInfo->getPrefixList(); // directory list
+//        if (!empty($prefixList)) {
+//            foreach ($prefixList as $prefixInfo) {
+//                $file_list[] = $prefixInfo->getPrefix();
+//            }
+//        }
+        return $file_list;
+    }
 	
 }
 ?>

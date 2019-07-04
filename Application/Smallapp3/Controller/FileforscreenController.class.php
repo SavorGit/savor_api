@@ -55,7 +55,7 @@ class FileforscreenController extends CommonController{
 
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');
-        $endpoint = C('OSS_HOST');
+        $endpoint = 'oss-cn-beijing.aliyuncs.com';
         $bucket = C('OSS_BUCKET');
         $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
         $aliyunoss->setBucket($bucket);
@@ -64,8 +64,7 @@ class FileforscreenController extends CommonController{
 
         $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         $forscreen_id = $m_forscreenrecord->add($data);
-
-
+        
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
@@ -78,9 +77,14 @@ class FileforscreenController extends CommonController{
             if($result['status']==2){
                 $redis->set($cache_key,json_encode($result['imgs']));
             }
+            if($result['task_id']){
+                $task_key = $key.':'.$result['task_id'];
+                $redis->set($task_key,$data['md5_file'],1800);
+            }
         }else{
             $imgs = json_decode($res_cache,true);
-            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs);
+            $img_num = count($imgs);
+            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs,'img_num'=>$img_num);
         }
         $result['forscreen_id'] = $forscreen_id;
         $this->to_back($result);
@@ -88,14 +92,33 @@ class FileforscreenController extends CommonController{
 
     public function getresult(){
         $task_id = $this->params['task_id'];
-        $aliyun = new AliyunImm();
-        $res = $aliyun->getImgResponse($task_id);
-        $result = $this->getCreateOfficeConversionResult($res);
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SAPP_FILE_FORSCREEN');
+        $task_key = $key.':'.$task_id;
+        $md5_file = $redis->get($task_key);
+
+        $cache_key = $key.':'.$md5_file;
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $imgs = json_decode($res_cache,true);
+            $img_num = count($imgs);
+            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs,'img_num'=>$img_num);
+        }else{
+            $aliyun = new AliyunImm();
+            $res = $aliyun->getImgResponse($task_id);
+            $result = $this->getCreateOfficeConversionResult($res);
+            if($result['status']==2){
+                $redis->set($cache_key,json_encode($result['imgs']));
+            }
+        }
         $this->to_back($result);
     }
 
     private function getCreateOfficeConversionResult($res){
         $oss_host = C('OSS_HOST');
+        $bucket = C('OSS_BUCKET');
+        $file_types = C('SAPP_FILE_FORSCREEN_TYPES');
         $img_num = 0;
         switch ($res->Status){
             case 'Running':
@@ -109,10 +132,30 @@ class FileforscreenController extends CommonController{
                 $task_id = 0;
                 $percent = 100;
                 $img_num = $res->PageCount;
-                $img_host = str_replace('oss://redian-development',"http://$oss_host",$res->TgtUri);
-                $imgs = array();
-                for($i=1;$i<=$res->PageCount;$i++){
-                    $imgs[] = $img_host.$i.'.'.$res->TgtType;
+                $img_host = str_replace("oss://$bucket","http://$oss_host",$res->TgtUri);
+                $oss_url = str_replace("oss://$bucket/","",$res->TgtUri);
+                $file_info = pathinfo($res->SrcUri);
+                if($file_types[$file_info['extension']]==1){
+                    $prefix = $oss_url;
+                    $accessKeyId = C('OSS_ACCESS_ID');
+                    $accessKeySecret = C('OSS_ACCESS_KEY');
+                    $endpoint = 'oss-cn-beijing.aliyuncs.com';
+                    $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
+                    $aliyunoss->setBucket($bucket);
+                    $exl_files = $aliyunoss->getObjectlist($prefix);
+                    $imgs = array();
+                    foreach ($exl_files as $v){
+                        $img_path = "http://$oss_host/".$v;
+                        $oss_path = $v;
+                        $imgs[] = array('img_path'=>$img_path,'oss_path'=>$oss_path);
+                    }
+                }else{
+                    $imgs = array();
+                    for($i=1;$i<=$res->PageCount;$i++){
+                        $img_path = $img_host.$i.'.'.$res->TgtType;
+                        $oss_path = $oss_url.$i.'.'.$res->TgtType;
+                        $imgs[] = array('img_path'=>$img_path,'oss_path'=>$oss_path);
+                    }
                 }
                 break;
             case 'Failed':

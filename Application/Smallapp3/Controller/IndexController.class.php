@@ -90,7 +90,7 @@ class IndexController extends CommonController{
         $data['file_exts'] = array_keys($file_exts);
         $data['file_max_size'] = 41943040;
                                  
-        $data['polling_time']  = 60;  //文件投屏默认轮询时间60s
+        $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
         $this->to_back($data);
     }
 }

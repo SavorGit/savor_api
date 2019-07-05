@@ -59,9 +59,6 @@ class FileforscreenController extends CommonController{
         $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
         $aliyunoss->setBucket($bucket);
         $fileinfo = $aliyunoss->getObject($oss_addr,'');
-
-        $log_content = date("Y-m-d H:i:s")." oss_addr:".$oss_addr." getObjectError:".$aliyunoss->getError();
-
         $md5_file = '';
         if($fileinfo){
             $md5_file = md5($fileinfo);
@@ -78,8 +75,6 @@ class FileforscreenController extends CommonController{
         if(empty($res_cache)){
             $aliyun = new AliyunImm();
             $res = $aliyun->createOfficeConversion($oss_addr);
-            $log_content.=" createOfficeConversion:".json_encode($res);
-
             $result = $this->getCreateOfficeConversionResult($res);
             if($result['status']==2){
                 $redis->set($cache_key,json_encode($result['imgs']));
@@ -94,19 +89,11 @@ class FileforscreenController extends CommonController{
             $result = array('status'=>2,'task_id'=>0,'percent'=>100,'imgs'=>$imgs,'img_num'=>$img_num);
         }
         $result['forscreen_id'] = $forscreen_id;
-
-
-        $log_content.= " task_id:".$result['task_id']."\n";
-        $log_file_name = APP_PATH.'Runtime/Logs/'.'fileconversion_'.date("Ymd").".log";
-        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
-
-
         $this->to_back($result);
     }
 
     public function getresult(){
         $task_id = $this->params['task_id'];
-        $log_content= date("Y-m-d H:i:s")." task_id:".$task_id;
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
@@ -126,18 +113,11 @@ class FileforscreenController extends CommonController{
         }else{
             $aliyun = new AliyunImm();
             $res = $aliyun->getImgResponse($task_id);
-            print_r($res);
-            exit;
-            $log_content.= " getImgResponse:".json_encode($res)."\n";
             $result = $this->getCreateOfficeConversionResult($res);
             if($result['status']==2 && $md5_file){
                 $redis->set($cache_key,json_encode($result['imgs']));
             }
         }
-        $log_content.= "\n";
-        $log_file_name = APP_PATH.'Runtime/Logs/'.'fileconversion_'.date("Ymd").".log";
-        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
-
         $this->to_back($result);
     }
 
@@ -199,8 +179,4 @@ class FileforscreenController extends CommonController{
         $result = array('status'=>$status,'task_id'=>$task_id,'percent'=>$percent,'imgs'=>$imgs,'img_num'=>$img_num);
         return $result;
     }
-
-
-
-
 }

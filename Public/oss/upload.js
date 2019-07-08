@@ -176,15 +176,20 @@ var uploader = new plupload.Uploader({
         },
 
         FilesAdded: function(up, files) {
+            while(up.files.length > 1){
+                up.files.shift();
+            }
             if(up.files.length>1){ // 最多上传3张图
                 alert('最多一张');
                 return false;
             }
             plupload.each(files, function(file) {
-                document.getElementById('ossfile').innerHTML += '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
+                document.getElementById('ossfile').innerHTML = '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
+                //document.getElementById('ossfile').innerHTML += '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
                     +'<div class="progress"><div class="progress-bar" style="width: 0%"></div></div>'
                     +'</div>';
             });
+            $("#file_name").val(files[0].name).trigger("change");
         },
 
         BeforeUpload: function(up, file) {
@@ -193,7 +198,6 @@ var uploader = new plupload.Uploader({
         },
 
         UploadProgress: function(up, file) {
-            /*{"id":"o_1bb5phbji1qgv16knari1utj2ui2j","name":"酒楼名称_酒楼宣传片_播放时长.mp4","type":"video/mp4","size":16235222,"origSize":16235222,"loaded":16235222,"percent":100,"status":5,"lastModifiedDate":"2017-01-17T02:24:56.600Z"}*/
             var d = document.getElementById(file.id);
             d.getElementsByTagName('b')[0].innerHTML = '<span>' + file.percent + "%</span>";
             var prog = d.getElementsByTagName('div')[0];
@@ -206,14 +210,9 @@ var uploader = new plupload.Uploader({
         FileUploaded: function(up, file, info) {
             if (info.status == 200)
             {
-
-                document.getElementById(file.id).getElementsByTagName('b')[0].innerHTML = 'upload to oss success, object name:' + get_uploaded_object_name(file.name)  + 'file size' + file.size+' 回调服务器返回的内容是:' + info.response;
-                document.getElementById('oss_filesize').value = file.size;
-                document.getElementById('oss_addr').value = get_uploaded_object_name(file.name);
-                document.getElementById('media_url').value = document.getElementById('oss_host').value+get_uploaded_object_name(file.name);
-
-                document.getElementById('resource_name').value = file.name.substring(0,file.name.lastIndexOf('.'));
-                console && console.log(get_uploaded_object_name(file.name));
+                document.getElementById('oss_key').value = get_uploaded_object_name(file.name);
+                document.getElementById('oss_file_size').value = file.size;
+                $("#file_upload_status").val(info.status).trigger("change");
             }
             else if (info.status == 203)
             {

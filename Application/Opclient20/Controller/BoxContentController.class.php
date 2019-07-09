@@ -188,6 +188,7 @@ class BoxContentController extends BaseController{
             }
             $program_diff_arr = array();
             $m_media = new \Common\Model\MediaModel();
+            $m_ads   = new \Common\Model\AdsModel();
             foreach($box_program_list as $key=>$v){
                 switch ($v['type']){
                     case 'pro':
@@ -200,8 +201,18 @@ class BoxContentController extends BaseController{
                         $type ='广告';
                         break;
                 }
-                $dts = $m_media->getWhere(array('id'=>$v['media_id']),'name');
-                $program_diff_arr[$key]['name'] = $dts[0]['name']? $dts[0]['name'] : '';
+                
+                //
+                if($v['type']=='adv'){
+                    $dts = $m_ads->field('name')->where(array('media_id'=>$v['media_id'],'hotel_id'=>$hotel_id))->find();
+                    $program_diff_arr[$key]['name'] = $dts['name'];
+                }else {
+                    $dts = $m_media->getWhere(array('id'=>$v['media_id']),'name');
+                    $program_diff_arr[$key]['name'] = $dts[0]['name']? $dts[0]['name'] : '';
+                }
+                
+                
+               
                 $program_diff_arr[$key]['type'] =$type;
                 if(!in_array($v['media_id'], $bag_media_arr)){
                     $program_diff_arr[$key]['flag'] = 0;

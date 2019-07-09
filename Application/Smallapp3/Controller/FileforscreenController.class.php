@@ -108,7 +108,7 @@ class FileforscreenController extends CommonController{
         }else{
             $res_cache = array();
         }
-
+        
         if(!empty($res_cache)){
             $imgs = json_decode($res_cache,true);
             $img_num = count($imgs);
@@ -162,8 +162,24 @@ class FileforscreenController extends CommonController{
                         sort($img_list,SORT_NUMERIC);
                         $tmp_imgs[$k]=$img_list;
                     }
+
+                    $res_dir = array_keys($tmp_imgs);
+                    $exl_dirname = '';
+                    $tmp_dir = array();
+                    foreach ($res_dir as $v){
+                        $dir_info = pathinfo($v);
+                        $exl_dirname = $dir_info['dirname'];
+                        $dir_finfo = explode('s',$dir_info['filename']);
+                        $tmp_dir[] = $dir_finfo[1];
+                    }
+                    sort($tmp_dir);
+                    $tmp_imgs_sort = array();
+                    foreach ($tmp_dir as $v){
+                        $dir_key = $exl_dirname."/s$v";
+                        $tmp_imgs_sort[$dir_key] = $tmp_imgs[$dir_key];
+                    }
                     $imgs = array();
-                    foreach ($tmp_imgs as $k=>$v){
+                    foreach ($tmp_imgs_sort as $k=>$v){
                         foreach ($v as $vv){
                             $oss_path = $k."/$vv.png";
                             $imgs[] = $oss_path;

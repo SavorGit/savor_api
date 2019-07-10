@@ -175,14 +175,13 @@ var uploader = new plupload.Uploader({
             };
         },
 
-        FilesAdded: function(up, files) {
+        FileFiltered: function(up, file){
             while(up.files.length > 1){
                 up.files.shift();
             }
-            if(up.files.length>1){ // 最多上传3张图
-                alert('最多一张');
-                return false;
-            }
+        },
+
+        FilesAdded: function(up, files) {
             plupload.each(files, function(file) {
                 document.getElementById('ossfile').innerHTML = '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
                 //document.getElementById('ossfile').innerHTML += '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
@@ -232,6 +231,10 @@ var uploader = new plupload.Uploader({
                 console && console.log("\n选择的文件太大了,可以根据应用情况，在upload.js 设置一下上传的最大大小");
             }
             else if (err.code == -601) {
+                art.dialog({
+                    title: '错误',
+                    content: '<span>' + '不支持此格式' + '<span>'
+                }).lock();
                 document.getElementById('console').appendChild(document.createTextNode("\n选择的文件后缀不对,可以根据应用情况，在upload.js进行设置可允许的上传文件类型"));
                 console && console.log('\n选择的文件后缀不对,可以根据应用情况，在upload.js进行设置可允许的上传文件类型')
             }

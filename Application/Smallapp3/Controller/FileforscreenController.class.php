@@ -11,8 +11,9 @@ class FileforscreenController extends CommonController{
             case 'fileconversion':
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'oss_addr'=>1001,
-                    'resource_name'=>1001,'mobile_brand'=>1000,'mobile_model'=>1000,'action'=>1000,
-                    'resource_type'=>1000,'resource_size'=>1000,'res_sup_time'=>1000,'res_eup_time'=>1000
+                    'resource_name'=>1001,'mobile_brand'=>1002,'mobile_model'=>1002,'action'=>1002,
+                    'resource_type'=>1002,'resource_size'=>1002,'res_sup_time'=>1002,'res_eup_time'=>1002,
+                    'save_type'=>1002
                 );
                 break;
             case 'getresult':
@@ -36,6 +37,8 @@ class FileforscreenController extends CommonController{
         $resource_size = $this->params['resource_size'] ? $this->params['resource_size'] :0;
         $res_sup_time = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
         $res_eup_time = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
+        $save_type = intval($this->params['save_type']);
+
         $imgs = json_encode(array($oss_addr));
 
         $data = array();
@@ -51,6 +54,9 @@ class FileforscreenController extends CommonController{
         $data['resource_size'] = $resource_size;
         $data['resource_name'] = $resource_name;
         $data['create_time'] = date('Y-m-d H:i:s');
+        if($save_type){
+            $data['save_type'] = $save_type;
+        }
 
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');
@@ -108,7 +114,7 @@ class FileforscreenController extends CommonController{
         }else{
             $res_cache = array();
         }
-        
+
         if(!empty($res_cache)){
             $imgs = json_decode($res_cache,true);
             $img_num = count($imgs);

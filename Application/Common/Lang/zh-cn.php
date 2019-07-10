@@ -260,6 +260,7 @@ return array(
     'smallappdinner_bdhotel_dqhotel_error'=>'邀请码为非本酒楼邀请码，请核实后重试',
     'virtual_small_data_erro'=>'虚拟小平台推送数据错误',
     'virtual_small_code_erro'=>'虚拟小平台推送数据已处理',
+    'smallapp_forscreen_file_not_exist'=>'投屏文件已过期',
 
 
 );

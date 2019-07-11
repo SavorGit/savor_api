@@ -162,7 +162,7 @@ var uploader = new plupload.Uploader({
             { title : filesR, extensions: fileExtR}
         ],
 
-        max_file_size : '5000mb', //最大只能上传10mb的文件
+        max_file_size : '40mb', //最大只能上传10mb的文件
         prevent_duplicates : true //不允许选取重复文件
     },
 

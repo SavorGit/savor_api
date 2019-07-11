@@ -182,6 +182,15 @@ var uploader = new plupload.Uploader({
         },
 
         FilesAdded: function(up, files) {
+            if(files.length > 1){
+                art.dialog({
+                    title: '错误',
+                    content: '<span>最多一个文件<span>'
+                }).lock();
+            }
+            while(files.length > 1){
+                files.shift();
+            }
             plupload.each(files, function(file) {
                 document.getElementById('ossfile').innerHTML = '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
                 //document.getElementById('ossfile').innerHTML += '<div id="' + file.id + '"><p>' + file.name + '</p>(' + plupload.formatSize(file.size) + ')<b></b>'
@@ -227,18 +236,38 @@ var uploader = new plupload.Uploader({
 
         Error: function(up, err) {
             if (err.code == -600) {
+                var __DialogForErrorFileExt = art.dialog.get('__error_file_size_max');
+                if(typeof(__DialogForErrorFileExt) != "object"){
+                    __DialogForErrorFileExt = art.dialog({
+                        id: '__error_file_size_max',
+                        title: '错误',
+                        content: '<span>' + '请选择小于40M的文件' + '<span>'
+                    }).lock();
+                }
                 document.getElementById('console').appendChild(document.createTextNode("\n选择的文件太大了,可以根据应用情况，在upload.js 设置一下上传的最大大小"));
                 console && console.log("\n选择的文件太大了,可以根据应用情况，在upload.js 设置一下上传的最大大小");
             }
             else if (err.code == -601) {
-                art.dialog({
-                    title: '错误',
-                    content: '<span>' + '不支持此格式' + '<span>'
-                }).lock();
+                var __DialogForErrorFileExt = art.dialog.get('__error_file_ext');
+                if(typeof(__DialogForErrorFileExt) != "object"){
+                    __DialogForErrorFileExt = art.dialog({
+                    id: '__error_file_ext',
+                        title: '错误',
+                        content: '<span>' + '不支持此格式' + '<span>'
+                    }).lock();
+                }
                 document.getElementById('console').appendChild(document.createTextNode("\n选择的文件后缀不对,可以根据应用情况，在upload.js进行设置可允许的上传文件类型"));
                 console && console.log('\n选择的文件后缀不对,可以根据应用情况，在upload.js进行设置可允许的上传文件类型')
             }
             else if (err.code == -602) {
+                var __DialogForErrorFileExt = art.dialog.get('__error_file_has_upload');
+                if(typeof(__DialogForErrorFileExt) != "object"){
+                    __DialogForErrorFileExt = art.dialog({
+                        id: '__error_file_has_upload',
+                        title: '错误',
+                        content: '<span>' + '此文件已经上传过' + '<span>'
+                    }).lock();
+                }
                 document.getElementById('console').appendChild(document.createTextNode("\n这个文件已经上传过一遍了"));
                 console && console.log("\n这个文件已经上传过一遍了");
             }

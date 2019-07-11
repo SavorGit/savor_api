@@ -20,6 +20,10 @@ class FileforscreenController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('task_id'=>1001);
                 break;
+            case 'getforscreenbyid':
+                $this->is_verify = 1;
+                $this->valid_fields = array('forscreen_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -130,6 +134,28 @@ class FileforscreenController extends CommonController{
         }
         $this->to_back($result);
     }
+
+    public function getforscreenbyid(){
+        $forscreen_id = $this->params['forscreen_id'];
+        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $res_forscreen = $m_forscreenrecord->getInfo(array('id'=>$forscreen_id));
+
+        $md5_file = $res_forscreen['md5_file'];
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SAPP_FILE_FORSCREEN');
+        $cache_key = $key.':'.$md5_file;
+        $res_cache = $redis->get($cache_key);
+        if(empty($res_cache)) {
+            $this->to_back(90102);
+        }
+        $imgs = json_decode($res_cache, true);
+        $img_num = count($imgs);
+        $oss_host = C('OSS_HOST');
+        $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
+        $this->to_back($result);
+    }
+
 
     private function getCreateOfficeConversionResult($res){
         $oss_host = C('OSS_HOST');

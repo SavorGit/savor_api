@@ -8,12 +8,6 @@ use Think\Controller;
 class FileforscreenController extends Controller {
 
     public function index(){
-        $file_ext = C('SAPP_FILE_FORSCREEN_TYPES');
-        $this->assign('file_ext',join(',',array_keys($file_ext)));
-        $this->display();
-    }
-
-    public function launch_file(){
         $openid = I('get.openid','');
         if(empty($openid)){
             die('Parameter error');
@@ -32,7 +26,7 @@ class FileforscreenController extends Controller {
                 $latest_md5_file[] = $v['md5_file'];
                 $imgs = json_decode($v['imgs'],true);
                 $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'].".$file_type");
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name']);
                 $latest_screen[] = $info;
             }
             $fields.=',count(id) as num';
@@ -47,7 +41,7 @@ class FileforscreenController extends Controller {
                 }
                 $imgs = json_decode($v['imgs'],true);
                 $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'].".$file_type");
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name']);
                 $frequent_screen[] = $info;
             }
         }
@@ -56,6 +50,29 @@ class FileforscreenController extends Controller {
         $this->assign('latest_screen',$latest_screen);
         $this->assign('frequent_screen',$frequent_screen);
         $this->display();
+    }
+
+    public function addlog(){
+        $os_agent = $_SERVER['HTTP_USER_AGENT'];
+        $wx_browser = (bool) stripos($os_agent,'MicroMessenger');
+        $res = array('code'=>10001,'msg'=>'fail');
+        if($wx_browser){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $key = C('SAPP_FILE_FORSCREEN');
+            $cache_key = $key.':h5file_forscreen_report';
+            $res_cache = $redis->get($cache_key);
+            if(empty($res_cache)){
+                $num = 1;
+            }else{
+                $num = intval($res_cache)+1;
+            }
+            $redis->set($cache_key,$num);
+
+            $res['code'] = 10000;
+            $res['msg'] = 'success';
+        }
+        $this->ajaxReturn($res,'JSONP');
     }
 
 }

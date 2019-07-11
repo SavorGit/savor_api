@@ -14,7 +14,7 @@ class FileforscreenController extends Controller {
         }
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $fields = 'id,imgs,resource_name,md5_file';
-        $where = array('openid'=>$openid,'action'=>30);
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
         $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');

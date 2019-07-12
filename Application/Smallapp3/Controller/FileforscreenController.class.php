@@ -18,7 +18,7 @@ class FileforscreenController extends CommonController{
                 break;
             case 'getresult':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>1001,'forscreen_id'=>1000);
+                $this->valid_fields = array('task_id'=>1001,'forscreen_id'=>1002);
                 break;
             case 'getforscreenbyid':
                 $this->is_verify = 1;
@@ -230,6 +230,9 @@ class FileforscreenController extends CommonController{
                         $oss_path = $oss_url.$i.'.'.$res->TgtType;
                         $imgs[] = $oss_path;
                     }
+                }
+                if($img_num==0){
+                    $status = 3;
                 }
                 break;
             case 'Failed':

@@ -18,7 +18,7 @@ class FileforscreenController extends CommonController{
                 break;
             case 'getresult':
                 $this->is_verify = 1;
-                $this->valid_fields = array('task_id'=>1001);
+                $this->valid_fields = array('task_id'=>1001,'forscreen_id'=>1000);
                 break;
             case 'getforscreenbyid':
                 $this->is_verify = 1;
@@ -94,6 +94,8 @@ class FileforscreenController extends CommonController{
                 $redis->set($task_key,$md5_file,1800);
             }
         }else{
+            $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));
+
             $imgs = json_decode($res_cache,true);
             $img_num = count($imgs);
             $oss_host = C('OSS_HOST');
@@ -107,6 +109,7 @@ class FileforscreenController extends CommonController{
 
     public function getresult(){
         $task_id = $this->params['task_id'];
+        $forscreen_id = $this->params['forscreen_id'];
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
@@ -129,6 +132,10 @@ class FileforscreenController extends CommonController{
             $res = $aliyun->getImgResponse($task_id);
             $result = $this->getCreateOfficeConversionResult($res);
             if($result['status']==2 && $md5_file){
+                if($forscreen_id){
+                    $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));
+                }
                 $redis->set($cache_key,json_encode($result['imgs']));
             }
         }

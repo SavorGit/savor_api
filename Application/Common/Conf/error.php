@@ -277,6 +277,8 @@ return array(
         '92007'=>'smallappdinner_login_fail',
         '92008'=>'smallappdinner_invite_code_checkerror',
 	    '92009'=>'smallappdinner_bdhotel_dqhotel_error',
+        '92010'=>'smallappdinner_user_openid_error',
+        '92011'=>'smallappdinner_box_signin_error',
 
 	),
 );

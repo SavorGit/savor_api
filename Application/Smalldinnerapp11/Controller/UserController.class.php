@@ -2,6 +2,8 @@
 namespace Smalldinnerapp11\Controller;
 use \Common\Controller\CommonController;
 use Common\Lib\Smallapp_api;
+use Common\Lib\SavorRedis;
+
 class UserController extends CommonController{
     /**
      * 构造函数
@@ -31,13 +33,16 @@ class UserController extends CommonController{
                 break;
             case 'registerCom':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,
-                                            'nickName'=>1000,'gender'=>1000,
-                                            'session_key'=>1001,'iv'=>1001,
-                                            'encryptedData'=>1001,
+                $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,'nickName'=>1000,
+                    'gender'=>1000,'session_key'=>1001,'iv'=>1001,'encryptedData'=>1001,
                 );
                 break;
-            
+            case 'signin':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
+                break;
+
+
         }
         parent::_init_();
     }
@@ -212,5 +217,46 @@ class UserController extends CommonController{
             $data['hotel_id'] = $rts['hotel_id'];
             $this->to_back($data);
         }
+    }
+
+    public function signin(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 4;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = 'smallappdinner:signin:'.$box_mac;
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $this->to_back(92011);
+        }
+        $data = array('openid'=>$openid,'nowtime'=>date('Y-m-d H:i:s'));
+        $redis->set($cache_key,json_encode($data),3600*3);
+
+        $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
+        $add_data = array('openid'=>$openid,'box_mac'=>$box_mac);
+        $m_usersign->addData($add_data);
+        $res_data = array('message'=>'签到成功');
+        $this->to_back($res_data);
     }
 }

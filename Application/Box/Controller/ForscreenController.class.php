@@ -1,7 +1,5 @@
 <?php
 namespace Box\Controller;
-use Think\Controller;
-use Common\Lib\SavorRedis;
 use \Common\Controller\CommonController as CommonController;
 class ForscreenController extends CommonController{ 
     /**
@@ -22,14 +20,12 @@ class ForscreenController extends CommonController{
         $versionCode = intval($this->params['versionCode']);
         $data = array();
         
-        if(empty($versionCode)|| $versionCode <$box_min_version_code ){  //上线前替换1234
+        if(empty($versionCode) || $versionCode <$box_min_version_code){  //上线前替换1234
             $data['is_sapp_forscreen'] = 0;
-            
             $data['is_simple_sapp_forscreen'] = 0;
             $data['is_open_interactscreenad'] = 0;
-            
             $this->to_back($data);
-        }else if($versionCode>=$box_min_version_code){                   //上线前替换1234
+        }else if($versionCode>=$box_min_version_code){//上线前替换1234
             $m_box = new \Common\Model\BoxModel();
             $where = array();
             $where['mac'] = $box_mac;
@@ -47,6 +43,9 @@ class ForscreenController extends CommonController{
             $data['is_open_interactscreenad']  = intval($box_info['is_open_interactscreenad']);
             $data['system_sapp_forscreen_nums']= intval($sys_info[0]['config_value']);
             $data['qrcode_type']               = intval($box_info['qrcode_type']);
+            $data['is_open_signin']            = intval($box_info['is_open_signin']);
+            $data['activity_adv_playtype']     = 1;//1替换 2队列
+
             $this->to_back($data);
         }
     }

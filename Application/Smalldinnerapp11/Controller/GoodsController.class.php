@@ -16,6 +16,10 @@ class GoodsController extends CommonController{
     }
 
     public function getGoodslist(){
+        /*
+         * todo 待修改
+         */
+
         $offset = intval($this->params['offset']);
         $pagesize = intval($this->params['pagesize']);
         $type = $this->params['type'];//10官方活动促销,20我的活动
@@ -25,6 +29,13 @@ class GoodsController extends CommonController{
         $orderby = 'id desc';
         $res_goods = $m_goods->getDataList($fields,$where,$orderby,$offset,$pagesize);
         $datalist = $res_goods['list'];
+        $oss_host = 'http://'.C('OSS_HOST').'/';
+        foreach ($datalist as $k=>$v){
+            $datalist[$k]['img_addr'] = $v['img_addr'];
+            $datalist[$k]['img_addrurl'] = $oss_host.$v['img_addr'];
+            $datalist[$k]['video_addr'] = $v['video_addr'];
+            $datalist[$k]['video_addrurl'] = $oss_host.$v['video_addr'];
+        }
 
 
         if ($offset + $pagesize > $res_goods['total']) {
@@ -32,7 +43,7 @@ class GoodsController extends CommonController{
         } else {
             $offset += $pagesize;
         }
-        $data = array('offset'=>$offset,'pagesize'=>$pagesize,'datalist'=>$datalist,'total'=>$res_goods['total']);
+        $data = array('offset'=>intval($offset),'pagesize'=>$pagesize,'datalist'=>$datalist,'total'=>intval($res_goods['total']));
         $this->to_back($data);
     }
 }

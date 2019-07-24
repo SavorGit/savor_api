@@ -265,6 +265,12 @@ return array(
     'smallappdinner_box_signin_error'=>'当前盒子签到失败',
     'smallappdinner_addactivitygoods_time_error'=>'盒子添加商品活动时间错误',
     'smallappdinner_addactivitygoods_has_repeat'=>'请勿重复添加活动商品',
+    'smallappdinner_activitygoods_status_error'=>'活动商品状态错误',
+    'smallappdinner_program_play_error'=>'节目单播放失败',
+    'smallappdinner_activity_has_upper_limit'=>'活动已达上限',
+    'smallappdinner_upload_oss_md5_error'=>'获取文件md5失败',
+    'smallappdinner_hotel_nothas_goods'=>'该酒楼无此活动商品',
+    'smallappdinner_hotel_nothas_playprogram'=>'暂无节目单循环播放内容',
 
 
 );

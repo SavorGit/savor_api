@@ -19,6 +19,10 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>'1001','resource_info'=>'1000');
                 break;
+            case 'getActivitygoodsProgramList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
                  
         }
         parent::_init_();
@@ -64,5 +68,64 @@ class ProgramController extends CommonController{
         }else {
             $this->to_back(30073);
         }  
+    }
+
+    public function getActivitygoodsProgramList(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $hotel_id = $box_info[0]['hotel_id'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $loopplay_data = json_decode($res_cache,true);
+        }else{
+            $fields = 'h.hotel_id,h.goods_id';
+            $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+            $orderby = 'g.id desc';
+            $limit = "0,1";
+            $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+            $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
+            $redis->set($cache_key,json_encode($loopplay_data));
+        }
+        $fields = 'g.id as goods_id,g.name,g.img_addr,g.video_addr,g.price,g.resource_type,g.start_time,g.end_time';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+        $orderby = 'g.id desc';
+        $limit = "0,10";
+        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        $program_list = array();
+        foreach ($res_goods as $v){
+            $info = array('goods_id'=>$v['goods_id'],'name'=>$v['name'],'price'=>$v['price'],
+                'start_time'=>$v['start_time'],'end_time'=>$v['end_time'],'duration'=>15);
+            if($v['resource_type']==1){
+                $info['oss_addr'] = $v['video_addr'];
+            }else{
+                $info['oss_addr'] = $v['img_addr'];
+            }
+            $info['media_type'] = $v['resource_type'];
+            $info['md5'] = '';
+            $info['qrcode_url'] = '';
+            if(isset($loopplay_data[$v['goods_id']])){
+                $info['play_type'] = 1;
+            }else{
+                $info['play_type'] = 2;
+            }
+            $program_list[] = $info;
+        }
+        $period = getMillisecond();
+        $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
     }
 }

@@ -30,8 +30,8 @@ class QrcodeController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        $scene = $box_mac.'_'.$type.'_'.$goods_id;
-        $content ="http://rd0.cn/ag?s=$scene";
+        $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+        $content ="http://rd0.cn/ag?g=$scene";
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

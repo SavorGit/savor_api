@@ -281,6 +281,12 @@ return array(
         '92011'=>'smallappdinner_box_signin_error',
         '92012'=>'smallappdinner_addactivitygoods_time_error',
         '92013'=>'smallappdinner_addactivitygoods_has_repeat',
+        '92014'=>'smallappdinner_activitygoods_status_error',
+        '92015'=>'smallappdinner_program_play_error',
+        '92016'=>'smallappdinner_activity_has_upper_limit',
+        '92017'=>'smallappdinner_upload_oss_md5_error',
+        '92018'=>'smallappdinner_hotel_nothas_goods',
+        '92019'=>'smallappdinner_hotel_nothas_playprogram',
 
 	),
 );

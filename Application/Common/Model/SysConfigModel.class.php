@@ -4,6 +4,26 @@ use Think\Model;
 
 class SysConfigModel extends Model{
 	protected $tableName = 'sys_config';
+
+    public function getAllconfig(){
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(12);
+        $cache_key = 'system_config';
+        $res_config = $redis->get($cache_key);
+        if(!empty($res_config)){
+            $res_config = json_decode($res_config,true);
+        }else{
+            $where = array('status'=>1);
+            $res_config = $this->where($where)->select();
+            $redis->set($cache_key,json_encode($res_config));
+        }
+        $sysconfig = array();
+        foreach ($res_config as $v){
+            $sysconfig[$v['config_key']] = $v['config_value'];
+        }
+        return $sysconfig;
+    }
+
 	public function getInfo($where){
 	    if($where){
 	        $where =" config_key in(".$where.") and status=1";

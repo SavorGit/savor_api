@@ -59,6 +59,11 @@ class UserController extends CommonController{
             $userinfo['openid'] = $openid;
             $userinfo['is_wx_auth'] = 0;
         }
+        if(!empty($userinfo['mobile'])){
+            $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
+            $userinfo['hotel_id'] = $rts['hotel_id'];
+        }
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }
@@ -202,6 +207,9 @@ class UserController extends CommonController{
             $m_user->updateInfo($where, $data);
             $data['openid'] = $openid;
             $data['mobile'] = $userinfo['mobile'];
+            $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
+            $data['hotel_id'] = $rts['hotel_id'];
             $this->to_back($data);
         }
     }

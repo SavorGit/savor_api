@@ -87,6 +87,17 @@ class ProgramController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
+        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM');
+        $res_period = $redis->get($program_key);
+        if(empty($res_period)){
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
+        }else{
+            $period_info = json_decode($res_period,true);
+            $period = $period_info['period'];
+        }
+
         $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
@@ -100,23 +111,24 @@ class ProgramController extends CommonController{
             $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
             $redis->set($cache_key,json_encode($loopplay_data));
         }
-        $fields = 'g.id as goods_id,g.name,g.img_addr,g.video_addr,g.price,g.resource_type,g.start_time,g.end_time';
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
         $orderby = 'g.id desc';
         $limit = "0,10";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
         $program_list = array();
+        $host_name = C('HOST_NAME');
+        $m_media = new \Common\Model\MediaModel();
         foreach ($res_goods as $v){
-            $info = array('goods_id'=>$v['goods_id'],'name'=>$v['name'],'price'=>$v['price'],
-                'start_time'=>$v['start_time'],'end_time'=>$v['end_time'],'duration'=>15);
-            if($v['resource_type']==1){
-                $info['oss_addr'] = $v['video_addr'];
-            }else{
-                $info['oss_addr'] = $v['img_addr'];
-            }
-            $info['media_type'] = $v['resource_type'];
-            $info['md5'] = '';
-            $info['qrcode_url'] = '';
+            $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>$v['price'],
+                'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'duration'=>15);
+            $media_info = $m_media->getMediaInfoById($v['media_id']);
+            $info['oss_path'] = $media_info['oss_path'];
+            $name_info = pathinfo($info['oss_path']);
+            $info['name'] = $name_info['basename'];
+            $info['media_type'] = $media_info['type'];
+            $info['md5'] = $media_info['md5'];;
+            $info['qrcode_url'] = $host_name."/smalldinnerapp11/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
             if(isset($loopplay_data[$v['goods_id']])){
                 $info['play_type'] = 1;
             }else{
@@ -124,7 +136,6 @@ class ProgramController extends CommonController{
             }
             $program_list[] = $info;
         }
-        $period = getMillisecond();
         $res = array('period'=>$period,'datalist'=>$program_list);
         $this->to_back($res);
     }

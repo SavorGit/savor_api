@@ -267,6 +267,8 @@ return array(
     'SAPP_FIND_INDEX_RAND'=>'smallapp:find:index:rand:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
+    'SAPP_DINNER'=>'smallappdinner:',
+    'SAPP_DINNER_ACTIVITYGOODS_PROGRAM'=>'smallappdinner:activitygoodsprogram',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

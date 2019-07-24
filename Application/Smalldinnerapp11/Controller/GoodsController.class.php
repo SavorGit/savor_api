@@ -90,6 +90,32 @@ class GoodsController extends CommonController{
         $this->to_back($data);
     }
 
+    public function getdetail(){
+        $goods_id= intval($this->params['goods_id']);
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+        if($res_goods['status']!=2){
+            $this->to_back(92020);
+        }
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'jd_url'=>$res_goods['jd_url'],'type'=>$res_goods['type']);
+
+        $media_id = $res_goods['media_id'];
+        $imgmedia_id = $res_goods['imgmedia_id'];
+        $m_media = new \Common\Model\MediaModel();
+        $media_info = $m_media->getMediaInfoById($media_id);
+        if($media_info['type']==2){
+            $data['img_url'] = $media_info['oss_addr'];
+        }else{
+            if($imgmedia_id){
+                $media_info = $m_media->getMediaInfoById($imgmedia_id);
+                $data['img_url'] = $media_info['oss_addr'];
+            }else{
+                $data['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+            }
+        }
+        $this->to_back($data);
+    }
+
     public function addActivityGoods(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
@@ -328,6 +354,8 @@ class GoodsController extends CommonController{
         $redis->set($cache_key,json_encode($data));
         $this->to_back(array());
     }
+
+
 
 
 }

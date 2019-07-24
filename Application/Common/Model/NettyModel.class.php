@@ -18,7 +18,7 @@ class NettyModel extends Model{
             $box_params = array('box_mac'=>$box_mac,'msg'=>$message,'req_id'=>$req_id,'cmd'=>C('SAPP_CALL_NETY_CMD'));
             $post_data = http_build_query($box_params);
             $ret = $this->curlPost($netty_push_url,$post_data);
-            $ret = json_decode($ret);
+            $ret = json_decode($ret,true);
         }else{
             $ret = array('error_code'=>90109,'netty_data'=>$result);
         }

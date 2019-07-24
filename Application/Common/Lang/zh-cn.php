@@ -261,6 +261,10 @@ return array(
     'virtual_small_data_erro'=>'虚拟小平台推送数据错误',
     'virtual_small_code_erro'=>'虚拟小平台推送数据已处理',
     'smallapp_forscreen_file_not_exist'=>'投屏文件已过期',
+    'smallappdinner_user_openid_error'=>'餐厅端用户openid错误',
+    'smallappdinner_box_signin_error'=>'当前盒子签到失败',
+    'smallappdinner_addactivitygoods_time_error'=>'盒子添加商品活动时间错误',
+    'smallappdinner_addactivitygoods_has_repeat'=>'请勿重复添加活动商品',
 
 
 );

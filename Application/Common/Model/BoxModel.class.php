@@ -131,6 +131,7 @@ class BoxModel extends Model
              ->field($fileds)
              ->join('savor_room c on a.room_id= c.id','left')
              ->join('savor_hotel d on c.hotel_id=d.id','left')
+             ->join('savor_hotel_ext ext on d.id=ext.hotel_id','left')
              ->where($where)
              ->select();
         return $data;

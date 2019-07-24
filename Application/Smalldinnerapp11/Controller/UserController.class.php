@@ -41,7 +41,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
                 break;
-
+            case 'getSigninBoxList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -258,5 +261,40 @@ class UserController extends CommonController{
         $m_usersign->addData($add_data);
         $res_data = array('message'=>'签到成功');
         $this->to_back($res_data);
+    }
+
+    public function getSigninBoxList(){
+        $hotel_id = $this->params['hotel_id'];
+        $openid = $this->params['openid'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 4;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $fields = 'a.name,a.mac';
+        $res = $m_box->getBoxListByHotelid($fields,$hotel_id);
+        $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
+        $box_list = array();
+        foreach ($res as $v){
+            $info = array('name'=>$v['name'],'box_mac'=>$v['mac'],'status'=>1,'user'=>array());
+            $where = array('box_mac'=>$v['mac']);
+            $res_usersignin = $m_usersign->getDataList('openid,box_mac',$where,'id desc',0,1);
+            if($res_usersignin['total']){
+                $sign_openid = $res_usersignin['list'][0]['openid'];
+                $where = array('openid'=>$sign_openid,'small_app_id'=>4);
+                $fields = 'id user_id,openid,avatarUrl,nickName';
+                $res_user = $m_user->getOne($fields, $where);
+                $info['status'] = 2;
+                $info['user'] = $res_user;
+            }
+            $box_list[] = $info;
+        }
+        $this->to_back($box_list);
     }
 }

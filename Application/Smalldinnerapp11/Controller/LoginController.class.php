@@ -206,29 +206,6 @@ class LoginController extends CommonController{
         }else {
             $data['bd_status'] =0 ;   //未绑定 去登录
         }
-        $data['bd_status'] = 1;
-        $hotel_info['hotel_id'] = 883;
-        if($data['bd_status']==1){
-            $fields = 'a.name,a.mac';
-            $res = $m_box->getBoxListByHotelid($fields,$hotel_info['hotel_id']);
-            $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
-            $box_list = array();
-            foreach ($res as $v){
-                $info = array('name'=>$v['name'],'box_mac'=>$v['mac'],'status'=>1,'user'=>array());
-                $where = array('box_mac'=>$v['mac']);
-                $res_usersignin = $m_usersign->getDataList('openid,box_mac',$where,'id desc',0,1);
-                if($res_usersignin['total']){
-                    $sign_openid = $res_usersignin['list'][0]['openid'];
-                    $where = array('openid'=>$sign_openid,'small_app_id'=>4);
-                    $fields = 'id user_id,openid,avatarUrl,nickName';
-                    $res_user = $m_user->getOne($fields, $where);
-                    $info['status'] = 2;
-                    $info['user'] = $res_user;
-                    $box_list[] = $info;
-                }
-            }
-            $data['box_list'] = $box_list;
-        }
         $this->to_back($data);
     }
 }

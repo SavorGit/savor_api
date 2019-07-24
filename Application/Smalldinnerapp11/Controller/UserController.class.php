@@ -45,6 +45,15 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'center':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'integralrecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                break;
+
 
         }
         parent::_init_();
@@ -254,7 +263,7 @@ class UserController extends CommonController{
             $this->to_back(92011);
         }
         $data = array('openid'=>$openid,'nowtime'=>date('Y-m-d H:i:s'));
-        $redis->set($cache_key,json_encode($data),3600*3);
+        $redis->set($cache_key,json_encode($data),3600);
 
         $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac);
@@ -296,5 +305,57 @@ class UserController extends CommonController{
             $box_list[] = $info;
         }
         $this->to_back($box_list);
+    }
+
+    public function center(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 4;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        $res_userintegral = $m_userintegral->getInfo(array('openid'=>$openid));
+        $integral = 0;
+        if(!empty($res_userintegral)){
+            $integral = intval($res_userintegral['integral']);
+        }
+        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral);
+        $this->to_back($data);
+    }
+
+    public function integralrecord(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = 15;
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 4;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $all_nums = $page * $pagesize;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'room_name,integral,content,type,add_time';
+        $where = array('openid'=>$openid);
+        $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
+        $datalist = array();
+        foreach ($res_record as $v){
+            $v['add_time'] = date('Y-m-d',strtotime($v['add_time']));
+            $datalist[] = $v;
+        }
+        $datalist[] = array('room_name'=>'VIP包间1','integral'=>30,'content'=>'开机3小时','add_time'=>'2019-07-24');
+        $datalist[] = array('room_name'=>'VIP包间2','integral'=>80,'content'=>'互动10人','add_time'=>'2019-07-24');
+        $datalist[] = array('room_name'=>'VIP包间3','integral'=>1000,'content'=>'销售商品','add_time'=>'2019-07-24');
+        $datalist[] = array('room_name'=>'VIP包间4','integral'=>-1000,'content'=>'兑换','add_time'=>'2019-07-24');
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
     }
 }

@@ -287,6 +287,7 @@ return array(
         '92017'=>'smallappdinner_upload_oss_md5_error',
         '92018'=>'smallappdinner_hotel_nothas_goods',
         '92019'=>'smallappdinner_hotel_nothas_playprogram',
+        '92020'=>'smallappdinner_goods_not_approved',
 
 	),
 );

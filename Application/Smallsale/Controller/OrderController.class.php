@@ -1,5 +1,5 @@
 <?php
-namespace Smalldinnerapp11\Controller;
+namespace Smallsale\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class OrderController extends CommonController{

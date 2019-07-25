@@ -87,7 +87,7 @@ class ProgramController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM');
+        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";;
         $res_period = $redis->get($program_key);
         if(empty($res_period)){
             $period = getMillisecond();

@@ -87,7 +87,8 @@ class ProgramController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";;
+        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+
         $res_period = $redis->get($program_key);
         if(empty($res_period)){
             $period = getMillisecond();
@@ -128,7 +129,7 @@ class ProgramController extends CommonController{
             $info['name'] = $name_info['basename'];
             $info['media_type'] = $media_info['type'];
             $info['md5'] = $media_info['md5'];;
-            $info['qrcode_url'] = $host_name."/smalldinnerapp11/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
+            $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
             if(isset($loopplay_data[$v['goods_id']])){
                 $info['play_type'] = 1;
             }else{

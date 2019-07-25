@@ -30,6 +30,8 @@ class Smallapp_api {
 	        $wx_config = C('SMALLAPP_JIJIAN_CONFIG');
 	    }else if($flag==4){
 	        $wx_config = C('SMALLAPP_DINNER_CONFIG');
+	    }else if($flag==5){
+	        $wx_config = C('SMALLAPP_SALE_CONFIG');
 	    }
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
@@ -104,6 +106,8 @@ class Smallapp_api {
 	        $smallapp_config = C('SMALLAPP_JIJIAN_CONFIG');
 	    }else if($this->flag==4){
 	        $smallapp_config = C('SMALLAPP_DINNER_CONFIG');
+	    }else if($this->flag==5){
+	        $smallapp_config = C('SMALLAPP_SALE_CONFIG');
 	    }
 	    
 		$key_token = $smallapp_config['cache_key'];

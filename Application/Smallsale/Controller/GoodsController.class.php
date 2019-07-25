@@ -1,5 +1,5 @@
 <?php
-namespace Smalldinnerapp11\Controller;
+namespace Smallsale\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\AliyunOss;
 
@@ -41,7 +41,7 @@ class GoodsController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $where['small_app_id'] = 4;
+        $where['small_app_id'] = 5;
         $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
@@ -134,7 +134,7 @@ class GoodsController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $where['small_app_id'] = 4;
+        $where['small_app_id'] = 5;
         $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){

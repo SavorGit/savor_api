@@ -1,5 +1,5 @@
 <?php
-namespace Smalldinnerapp11\Controller;
+namespace Smallsale\Controller;
 use \Common\Controller\CommonController;
 use Common\Lib\SavorRedis;
 class DownloadController extends CommonController{

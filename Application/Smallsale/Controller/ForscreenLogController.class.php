@@ -1,5 +1,5 @@
 <?php
-namespace Smalldinnerapp11\Controller;
+namespace Smallsale\Controller;
 use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;

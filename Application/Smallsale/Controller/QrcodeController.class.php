@@ -1,5 +1,5 @@
 <?php
-namespace Smalldinnerapp11\Controller;
+namespace Smallsale\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\Qrcode;
 class QrcodeController extends CommonController{

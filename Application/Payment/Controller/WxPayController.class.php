@@ -178,7 +178,7 @@ class WxPayController extends BaseController{
 
     public function integralwithdraw(){
         $params = I('post.params');
-        $hash_ids_key = C('HASH_IDS_KEY');
+        $hash_ids_key = C('HASH_IDS_KEY_ADMIN');
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $decode_info = $hashids->decode($params);
         if(empty($decode_info)){

@@ -258,17 +258,48 @@ class UserController extends CommonController{
         }
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $cache_key = 'smallappdinner:signin:'.$box_mac;
+        $cache_key = C('SAPP_SALE').'signin:'.$box_mac;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
-            $this->to_back(92011);
+            $feast_time = C('FEAST_TIME');
+            $pre_data = json_decode($res_cache,true);
+            $pre_time = date('Y-m-d H:i',$pre_data['nowtime']);
+
+            $now_time = date('Y-m-d H:i');
+            $now_date = date('Y-m-d');
+            $lunch_stime = $now_date.' '.$feast_time['lunch'][0];
+            $lunch_etime = $now_date.' '.$feast_time['lunch'][1];
+
+            $dinner_stime = $feast_time['dinner'][0];
+            $dinner_etime = $feast_time['dinner'][1];
+
+            if($pre_time<$lunch_stime){
+                $over_time = $lunch_etime;
+            }elseif($pre_time>=$lunch_stime && $pre_time<=$lunch_etime){
+                $over_time = $lunch_etime;
+            }elseif($pre_time>$lunch_etime){
+                $over_time = $dinner_etime;
+            }else{
+                $over_time = $dinner_etime;
+            }
+            if($now_time<$over_time){
+                $this->to_back(92011);
+            }
+            $pre_id = $pre_data['id'];
+            $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
+            $res_usersign = $m_usersign->getInfo(array('id'=>$pre_id));
+            if($res_usersign['signout_time']=='0000-00-00 00:00:00'){
+                $m_usersign->updateData(array('id'=>$pre_id),array('signout_time'=>date('Y-m-d H:i:s')));
+            }
         }
-        $data = array('openid'=>$openid,'nowtime'=>date('Y-m-d H:i:s'));
-        $redis->set($cache_key,json_encode($data),3600);
 
         $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
-        $add_data = array('openid'=>$openid,'box_mac'=>$box_mac);
-        $m_usersign->addData($add_data);
+        $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'signin_time'=>date('Y-m-d H:i:s'));
+        $id = $m_usersign->addData($add_data);
+
+        $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
+        $redis->set($cache_key,json_encode($cache_data),18000);
+
         $res_data = array('message'=>'签到成功');
         $this->to_back($res_data);
     }

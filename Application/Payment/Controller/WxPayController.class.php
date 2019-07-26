@@ -175,6 +175,62 @@ class WxPayController extends BaseController{
             }
         }
     }
+
+    public function integralwithdraw(){
+        $params = I('post.params');
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($params);
+        if(empty($decode_info)){
+            $error = array('code'=>99001,'msg'=>'decode error');
+            $this->ajaxReturn($error);
+        }
+        $order_id = $decode_info;
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if(empty($res_order) || $res_order['status']!=20){
+            $error = array('code'=>99002,'msg'=>'status error');
+            $this->ajaxReturn($error);
+        }
+        $openid = $res_order['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $user_info = $m_user->getOne('id,mpopenid',$where,'');
+        if(empty($user_info) || empty($user_info['mpopenid'])){
+            $res = array('code'=>99003,'msg'=>'mpopenid error');
+            $this->ajaxReturn($res);
+        }
+
+        $goods_id = $res_order['goods_id'];
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+        if($res_goods['status']!=2 || $res_goods['type']!=30){
+            $error = array('code'=>99004,'msg'=>'goods info error');
+            $this->ajaxReturn($error);
+        }
+
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
+        if(empty($res_integral) || $res_integral['integral']<$res_goods['rebate_integral']){
+            $res = array('code'=>99005,'msg'=>'integral not enough');
+            $this->ajaxReturn($res);
+        }
+
+        $fwh_config = C('WX_FWH_CONFIG');
+        $appid = $fwh_config['appid'];
+        $pay_config = C('PAY_WEIXIN_CONFIG');
+        $payconfig = array(
+            'appid'=>$appid,
+            'partner'=>$pay_config['partner'],
+            'key'=>$pay_config['key']
+        );
+
+        $money = $res_goods['price'];
+        $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['mpopenid']);
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+        $this->ajaxReturn($res);
+    }
     
    
 }

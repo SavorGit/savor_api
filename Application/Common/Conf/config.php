@@ -268,8 +268,8 @@ return array(
     'SAPP_FIND_INDEX_RAND'=>'smallapp:find:index:rand:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
-    'SAPP_DINNER'=>'smallappdinner:',
-    'SAPP_DINNER_ACTIVITYGOODS_PROGRAM'=>'smallappdinner:activitygoodsprogram',
+    'SAPP_SALE'=>'smallappsale:',
+    'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
@@ -358,5 +358,6 @@ return array(
         'doc'=>2,'wps'=>2,'docx'=>2,
         'pdf'=>2,'rtf'=>2,'txt'=>2
     ),
+    'FEAST_TIME'=>array('lunch'=>array('11:30','14:30'),'dinner'=>array('18:00','21:00')),
     'HASH_IDS_KEY'=>'Q1t80oXSKl',
 );

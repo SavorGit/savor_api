@@ -87,7 +87,7 @@ class ProgramController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+        $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
 
         $res_period = $redis->get($program_key);
         if(empty($res_period)){
@@ -99,7 +99,7 @@ class ProgramController extends CommonController{
             $period = $period_info['period'];
         }
 
-        $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
+        $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $loopplay_data = json_decode($res_cache,true);

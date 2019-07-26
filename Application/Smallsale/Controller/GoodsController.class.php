@@ -219,7 +219,7 @@ class GoodsController extends CommonController{
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
 
-        $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
+        $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $loopplay_data = json_decode($res_cache,true);
@@ -232,7 +232,7 @@ class GoodsController extends CommonController{
             $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
             $redis->set($cache_key,json_encode($loopplay_data));
 
-            $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+            $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
             $period = getMillisecond();
             $period_data = array('period'=>$period);
             $redis->set($program_key,json_encode($period_data));
@@ -280,7 +280,7 @@ class GoodsController extends CommonController{
         }
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
+        $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(empty($res_cache)){
             $this->to_back(92019);
@@ -291,7 +291,7 @@ class GoodsController extends CommonController{
         }
         $redis->set($cache_key,json_encode($loopplay_data));
 
-        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+        $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
         $period = getMillisecond();
         $period_data = array('period'=>$period);
         $redis->set($program_key,json_encode($period_data));
@@ -329,7 +329,7 @@ class GoodsController extends CommonController{
         $hotel_id = $box_info[0]['hotel_id'];
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $cache_key = C('SAPP_DINNER').'activitygoods:loopplay:'.$hotel_id;
+        $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $data = json_decode($res_cache,true);
@@ -346,7 +346,7 @@ class GoodsController extends CommonController{
             }
         }
         $redis->select(14);
-        $program_key = C('SAPP_DINNER_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+        $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
         $period = getMillisecond();
         $period_data = array('period'=>$period);
         $redis->set($program_key,json_encode($period_data));

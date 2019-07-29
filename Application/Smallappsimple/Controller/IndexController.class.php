@@ -233,13 +233,13 @@ class IndexController extends CommonController{
         $redis->select(5);
         $scene = $box_mac.'_'.$type;
         $cache_key = C('SAPP_QRCODE').$encode_key;
-        $redis->set($cache_key,$scene,86400);
+        $redis->set($cache_key,$scene);
 
         $hash_ids_key = C('HASH_IDS_KEY');
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $s = $hashids->encode($encode_key);
 
-        $content ="http://rd0.cn/e?s=$s";
+        $content ="http://rd0.cn/e?j=$s";
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         //生成二维码图片

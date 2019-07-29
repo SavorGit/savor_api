@@ -120,7 +120,7 @@ class ProgramController extends CommonController{
         $host_name = C('HOST_NAME');
         $m_media = new \Common\Model\MediaModel();
         foreach ($res_goods as $v){
-            $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>$v['price'],
+            $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
                 'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
             $media_info = $m_media->getMediaInfoById($v['media_id']);
             $info['oss_path'] = $media_info['oss_path'];

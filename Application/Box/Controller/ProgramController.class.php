@@ -88,7 +88,6 @@ class ProgramController extends CommonController{
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
-
         $res_period = $redis->get($program_key);
         if(empty($res_period)){
             $period = getMillisecond();
@@ -122,13 +121,14 @@ class ProgramController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>$v['price'],
-                'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'duration'=>15);
+                'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
             $media_info = $m_media->getMediaInfoById($v['media_id']);
             $info['oss_path'] = $media_info['oss_path'];
             $name_info = pathinfo($info['oss_path']);
             $info['name'] = $name_info['basename'];
             $info['media_type'] = $media_info['type'];
-            $info['md5'] = $media_info['md5'];;
+            $info['md5'] = $media_info['md5'];
+            $info['duration'] = $media_info['duration'];
             $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
             if(isset($loopplay_data[$v['goods_id']])){
                 $info['play_type'] = 1;

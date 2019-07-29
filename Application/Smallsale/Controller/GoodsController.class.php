@@ -202,13 +202,17 @@ class GoodsController extends CommonController{
         }
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         if($goods_id){
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            $status = $res_goods['status'];
             $m_goods->updateData(array('id'=>$goods_id),$data);
         }else{
+            $status = 1;
+            $data['status'] = $status;
             $gid = $m_goods->addData($data);
             $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$gid);
             $m_hotelgoods->addData($hotelgoods_data);
         }
-        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type);
+        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type,'status'=>$status);
         $this->to_back($res_data);
     }
 
@@ -238,33 +242,36 @@ class GoodsController extends CommonController{
             $redis->set($program_key,json_encode($period_data));
         }
 
-        $goods_ids = array_keys($loopplay_data);
-        $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id as goods_id,name,media_id,imgmedia_id,price,rebate_integral,jd_url';
-        $where = array('status'=>2);
-        $where['id'] = array('in',$goods_ids);
-        $res_goods = $m_goods->getDataList($fields,$where,'id desc',0,5);
-        $m_media = new \Common\Model\MediaModel();
         $datalist = array();
-        foreach ($res_goods['list'] as $v){
-            $media_id = $v['media_id'];
-            $imgmedia_id = $v['imgmedia_id'];
-            $media_info = $m_media->getMediaInfoById($media_id);
-            $v['oss_addr'] = $media_info['oss_path'];
-            $v['media_type'] = $media_info['type'];
-            if($media_info['type']==2){
-                $v['img_url'] = $media_info['oss_addr'];
-            }else{
-                if($imgmedia_id){
-                    $media_info = $m_media->getMediaInfoById($imgmedia_id);
+        $goods_ids = array_keys($loopplay_data);
+        if(!empty($goods_ids)){
+            $m_goods = new \Common\Model\Smallapp\GoodsModel();
+            $fields = 'id as goods_id,name,media_id,imgmedia_id,price,rebate_integral,jd_url';
+            $where = array('status'=>2);
+            $where['id'] = array('in',$goods_ids);
+            $res_goods = $m_goods->getDataList($fields,$where,'id desc',0,5);
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_goods['list'] as $v){
+                $media_id = $v['media_id'];
+                $imgmedia_id = $v['imgmedia_id'];
+                $media_info = $m_media->getMediaInfoById($media_id);
+                $v['oss_addr'] = $media_info['oss_path'];
+                $v['media_type'] = $media_info['type'];
+                if($media_info['type']==2){
                     $v['img_url'] = $media_info['oss_addr'];
                 }else{
-                    $v['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                    if($imgmedia_id){
+                        $media_info = $m_media->getMediaInfoById($imgmedia_id);
+                        $v['img_url'] = $media_info['oss_addr'];
+                    }else{
+                        $v['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                    }
                 }
+                unset($v['media_id'],$v['imgmedia_id']);
+                $datalist[] = $v;
             }
-            unset($v['media_id'],$v['imgmedia_id']);
-            $datalist[] = $v;
         }
+
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
     }
@@ -319,20 +326,13 @@ class GoodsController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        $forscreen_id = getMillisecond();
-        $m_netty = new \Common\Model\NettyModel();
-        $message = array('action'=>41,'goods_id'=>$goods_id,'forscreen_id'=>$forscreen_id);
-        $res = $m_netty->pushBox($box_mac,json_encode($message));
-        if(isset($res['error_code']) && $res['error_code']==90109){
-            $this->to_back(92015);
-        }
         $hotel_id = $box_info[0]['hotel_id'];
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
-            $data = json_decode($res_cache,true);
+             $data = json_decode($res_cache,true);
         }else{
             $data = array();
         }

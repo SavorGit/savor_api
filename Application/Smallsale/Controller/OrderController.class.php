@@ -52,7 +52,7 @@ class OrderController extends CommonController{
         $total_fee = sprintf("%.2f",$amount*$res_goods['price']);
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'goods_id'=>$goods_id,
             'price'=>$res_goods['price'],'amount'=>$amount,'total_fee'=>$total_fee,
-            'status'=>10,'buy_type'=>$buy_type);
+            'status'=>10,'otype'=>1,'buy_type'=>$buy_type);
         $m_order->add($add_data);
         $res_data = array('message'=>'购买成功');
         $this->to_back($res_data);

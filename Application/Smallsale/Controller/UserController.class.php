@@ -370,18 +370,32 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,content,type,add_time';
+        $fields = 'room_name,integral,content,type,integral_time';
         $where = array('openid'=>$openid);
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
         foreach ($res_record as $v){
-            $v['add_time'] = date('Y-m-d',strtotime($v['add_time']));
-            $datalist[] = $v;
+            $add_time = date('Y-m-d',strtotime($v['integral_time']));
+            $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time);
+            switch ($v['type']){
+                case 1:
+                    $content = "开机{$v['content']}小时";
+                    break;
+                case 2:
+                    $content = "互动{$v['content']}人";
+                    break;
+                case 3:
+                    $content = "销售商品";
+                    break;
+                case 4:
+                    $content = "兑换";
+                    break;
+                default:
+                    $content = "";
+            }
+            $info['content'] = $content;
+            $datalist[] = $info;
         }
-//        $datalist[] = array('room_name'=>'VIP包间1','integral'=>30,'content'=>'开机3小时','add_time'=>'2019-07-24');
-//        $datalist[] = array('room_name'=>'VIP包间2','integral'=>80,'content'=>'互动10人','add_time'=>'2019-07-24');
-//        $datalist[] = array('room_name'=>'VIP包间3','integral'=>1000,'content'=>'销售商品','add_time'=>'2019-07-24');
-//        $datalist[] = array('room_name'=>'VIP包间4','integral'=>-1000,'content'=>'兑换','add_time'=>'2019-07-24');
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
     }

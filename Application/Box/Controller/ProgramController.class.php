@@ -111,14 +111,19 @@ class ProgramController extends CommonController{
             $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
             $redis->set($cache_key,json_encode($loopplay_data));
         }
+        $nowtime = date('Y-m-d H:i:s');
         $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+        $where['g.end_time'] = array('egt',$nowtime);
+        $where['g.start_time'] = array('elt',$nowtime);
         $orderby = 'g.id desc';
         $limit = "0,10";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
-        $program_list = array();
         $host_name = C('HOST_NAME');
         $m_media = new \Common\Model\MediaModel();
+
+        $goods_ids = array();
+        $program_list = array();
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
                 'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
@@ -136,6 +141,22 @@ class ProgramController extends CommonController{
                 $info['play_type'] = 2;
             }
             $program_list[] = $info;
+            $goods_ids[] = $v['goods_id'];
+        }
+        $is_newperiod = 0;
+        foreach ($loopplay_data as $k=>$v){
+            if(!in_array($v,$goods_ids)){
+                $is_newperiod = 1;
+                unset($loopplay_data[$k]);
+            }
+        }
+        if($is_newperiod){
+            $redis->set($cache_key,json_encode($loopplay_data));
+
+            $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
         }
         $res = array('period'=>$period,'datalist'=>$program_list);
         $this->to_back($res);

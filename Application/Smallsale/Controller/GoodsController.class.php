@@ -16,7 +16,7 @@ class GoodsController extends CommonController{
             case 'addActivityGoods':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'oss_addr'=>1001,'oss_filesize'=>1002,
-                    'price'=>1001, 'start_time'=>1001,'end_time'=>1001,'scope'=>1001,'goods_id'=>1002);
+                    'price'=>1001, 'start_time'=>1001,'end_time'=>1001,'scope'=>1001,'goods_id'=>1002,'duration'=>1002);
                 break;
             case 'getPlayList':
                 $this->is_verify = 1;
@@ -56,18 +56,25 @@ class GoodsController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'g.id as goods_id,g.name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url';
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type);
+        $nowtime = date('Y-m-d H:i:s');
         if($type==20){
             $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
             $where['h.openid'] = $openid;
         }else{
             $where['g.status'] = 2;
+            $where['g.end_time'] = array('egt',$nowtime);
+            $where['g.start_time'] = array('elt',$nowtime);
         }
+
         $orderby = 'g.id desc';
         $limit = "0,$all_nums";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
         $m_media = new \Common\Model\MediaModel();
         $datalist = array();
         foreach ($res_goods as $v){
+            if($type==20 && $nowtime>$v['end_time']){
+                $v['status'] = 5;
+            }
             $media_id = $v['media_id'];
             $imgmedia_id = $v['imgmedia_id'];
             $media_info = $m_media->getMediaInfoById($media_id);
@@ -126,6 +133,7 @@ class GoodsController extends CommonController{
         $end_time = $this->params['end_time'];
         $scope = intval($this->params['scope']);//0全部,1包间,2非包间
         $goods_id = intval($this->params['goods_id']);
+        $duration = $this->params['duration'];
         $tmp_start_time = strtotime($start_time);
         $tmp_end_time = strtotime($end_time);
         if($tmp_start_time>$tmp_end_time){
@@ -171,6 +179,7 @@ class GoodsController extends CommonController{
         $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
         $aliyunoss->setBucket($bucket);
         $media_id = 0;
+        $m_media = new \Common\Model\MediaModel();
         if($oss_filesize){
             if($type==1){//视频
                 $range = '0-199';
@@ -189,9 +198,13 @@ class GoodsController extends CommonController{
             }else{
                 $this->to_back(92017);
             }
-            $m_media = new \Common\Model\MediaModel();
             $add_mediadata = array('oss_addr'=>$oss_addr,'oss_filesize'=>$oss_filesize,'surfix'=>$surfix,
                 'type'=>$type,'md5'=>$md5,'create_time'=>date('Y-m-d H:i:s'));
+            if($type==1){
+                $add_mediadata['duration'] = floor($duration);
+            }else{
+                $add_mediadata['duration'] = 15;
+            }
             $media_id = $m_media->add($add_mediadata);
         }
         if(!$goods_id && !$media_id){
@@ -203,7 +216,14 @@ class GoodsController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         if($goods_id){
             $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if(!$media_id){
+                $media_id = $res_goods['media_id'];
+            }
             $status = $res_goods['status'];
+            $now_time = date('Y-m-d H:i:s');
+            if($now_time>$res_goods['end_time']){
+                $status = 5;
+            }
             $m_goods->updateData(array('id'=>$goods_id),$data);
         }else{
             $status = 1;
@@ -212,7 +232,15 @@ class GoodsController extends CommonController{
             $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$gid);
             $m_hotelgoods->addData($hotelgoods_data);
         }
-        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type,'status'=>$status);
+
+        $media_info = $m_media->getMediaInfoById($media_id);
+        if($media_info['type']==2){
+            $img_url = $media_info['oss_addr'];
+        }else{
+            $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+        }
+
+        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type,'status'=>$status,'img_url'=>$img_url);
         $this->to_back($res_data);
     }
 
@@ -340,18 +368,18 @@ class GoodsController extends CommonController{
         $res_config = $m_sysconfig->getAllconfig();
         if($res_config['activity_adv_playtype']==1){
             $data = array();
-        }else{
+        }
+        $redis->select(14);
+        if(!array_key_exists($goods_id,$data)){
+            $data[$goods_id] = $goods_id;
             if(count($data)>5){
                 $this->to_back(92016);
             }
+            $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
         }
-        $redis->select(14);
-        $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
-        $period = getMillisecond();
-        $period_data = array('period'=>$period);
-        $redis->set($program_key,json_encode($period_data));
-
-        $data[$goods_id] = $goods_id;
         $redis->set($cache_key,json_encode($data));
         $this->to_back(array());
     }

@@ -79,7 +79,7 @@ class ProgramController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,c.type as room_type', $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
@@ -112,7 +112,7 @@ class ProgramController extends CommonController{
             $redis->set($cache_key,json_encode($loopplay_data));
         }
         $nowtime = date('Y-m-d H:i:s');
-        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time';
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
         $where['g.end_time'] = array('egt',$nowtime);
         $where['g.start_time'] = array('elt',$nowtime);
@@ -136,7 +136,23 @@ class ProgramController extends CommonController{
             $info['duration'] = $media_info['duration'];
             $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
             if(isset($loopplay_data[$v['goods_id']])){
-                $info['play_type'] = 1;
+                if($v['type']==20 && $v['scope']){
+                    if($v['scope']==1){
+                        if($box_info['room_type']==1){
+                            $info['play_type'] = 1;
+                        }else{
+                            $info['play_type'] = 2;
+                        }
+                    }else{
+                        if($box_info['room_type']!=1){
+                            $info['play_type'] = 1;
+                        }else{
+                            $info['play_type'] = 2;
+                        }
+                    }
+                }else{
+                    $info['play_type'] = 1;
+                }
             }else{
                 $info['play_type'] = 2;
             }

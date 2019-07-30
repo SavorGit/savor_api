@@ -60,6 +60,7 @@ class GoodsController extends CommonController{
         if($type==20){
             $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
             $where['h.openid'] = $openid;
+            $where['g.status'] = array('neq',5);
         }else{
             $where['g.status'] = 2;
             $where['g.end_time'] = array('egt',$nowtime);
@@ -223,13 +224,19 @@ class GoodsController extends CommonController{
             $now_time = date('Y-m-d H:i:s');
             if($now_time>$res_goods['end_time']){
                 $status = 5;
+                $m_goods->updateData(array('id'=>$goods_id),array('status'=>5));
+
+                $goods_id = $m_goods->addData($data);
+                $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
+                $m_hotelgoods->addData($hotelgoods_data);
+            }else{
+                $m_goods->updateData(array('id'=>$goods_id),$data);
             }
-            $m_goods->updateData(array('id'=>$goods_id),$data);
         }else{
             $status = 1;
             $data['status'] = $status;
-            $gid = $m_goods->addData($data);
-            $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$gid);
+            $goods_id = $m_goods->addData($data);
+            $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
             $m_hotelgoods->addData($hotelgoods_data);
         }
 

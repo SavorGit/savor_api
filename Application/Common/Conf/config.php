@@ -204,6 +204,7 @@ return array(
 		'daily_login_templateid'=>'178978',
 	    'dinner_login_templateid'=>'238349',
 	    'option_repair_done_templateid'=>'322916',
+	    'activity_goods_addorder_templateid'=>'489211',
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

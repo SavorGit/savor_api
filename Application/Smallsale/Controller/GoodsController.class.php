@@ -105,7 +105,12 @@ class GoodsController extends CommonController{
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'jd_url'=>$res_goods['jd_url'],'type'=>$res_goods['type']);
+        $jd_url = $res_goods['jd_url'];
+        if(!empty($jd_url)){
+            $tmp_jd_url = rtrim($res_goods['jd_url'],'.html');
+            $jd_url = str_replace('https://item.jd.com/','pages/item_wqvue/detail/detail?sku=',$tmp_jd_url);
+        }
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'jd_url'=>$jd_url,'type'=>$res_goods['type']);
 
         $media_id = $res_goods['media_id'];
         $imgmedia_id = $res_goods['imgmedia_id'];

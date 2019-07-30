@@ -60,7 +60,7 @@ class GoodsController extends CommonController{
         if($type==20){
             $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
             $where['h.openid'] = $openid;
-            $where['g.status'] = array('neq',5);
+            $where['g.status'] = array('in',array(1,2,3));
         }else{
             $where['g.status'] = 2;
             $where['g.end_time'] = array('egt',$nowtime);
@@ -154,10 +154,17 @@ class GoodsController extends CommonController{
         if(empty($res_user)){
             $this->to_back(92010);
         }
+
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $res_hotelgoods = $m_hotelgoods->getInfo(array('hotel_id'=>$hotel_id,'openid'=>$openid));
+        $fields = 'g.id as goods_id,g.name,g.media_id';
+        $where = array('h.hotel_id'=>$hotel_id);
+        $where['h.openid'] = $openid;
+        $where['g.status'] = array('in',array(1,2,3));
+        $orderby = 'g.id desc';
+        $limit = "0,1";
+        $res_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
         if(!empty($res_hotelgoods)){
-            if(!$goods_id || ($goods_id && $res_hotelgoods['goods_id']!=$goods_id)){
+            if(!$goods_id || ($goods_id && $res_hotelgoods[0]['goods_id']!=$goods_id)){
                 $this->to_back(92013);
             }
         }

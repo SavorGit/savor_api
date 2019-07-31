@@ -91,6 +91,10 @@ class GoodsController extends CommonController{
                     $v['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
                 }
             }
+            if($type==20){
+                $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
+                $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
+            }
             unset($v['media_id'],$v['imgmedia_id']);
             $datalist[] = $v;
         }
@@ -238,15 +242,33 @@ class GoodsController extends CommonController{
                 $status = 5;
                 $m_goods->updateData(array('id'=>$goods_id),array('status'=>5));
 
+                if(empty($data['media_id'])){
+                    $this->to_back(92017);
+                }
                 $goods_id = $m_goods->addData($data);
                 $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
                 $m_hotelgoods->addData($hotelgoods_data);
             }else{
-                $m_goods->updateData(array('id'=>$goods_id),$data);
+                $old_data = array('price'=>$res_goods['price'],'type'=>$res_goods['type'],'scope'=>$res_goods['scope'],
+                    'start_time'=>$res_goods['start_time'],'end_time'=>$res_goods['end_time'],'media_id'=>$res_goods['media_id']
+                );
+                $old_data_md5 = md5(json_encode($old_data));
+
+                $new_data = array('price'=>$price,'type'=>20,'scope'=>$scope,
+                    'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
+                    'media_id'=>$media_id
+                );
+                $new_data_md5 = md5(json_encode($new_data));
+                if($old_data_md5!=$new_data_md5){
+                    $m_goods->updateData(array('id'=>$goods_id),$data);
+                }
             }
         }else{
             $status = 1;
             $data['status'] = $status;
+            if(empty($data['media_id'])){
+                $this->to_back(92017);
+            }
             $goods_id = $m_goods->addData($data);
             $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
             $m_hotelgoods->addData($hotelgoods_data);

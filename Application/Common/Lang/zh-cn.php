@@ -268,7 +268,7 @@ return array(
     'smallappdinner_activitygoods_status_error'=>'活动商品状态错误',
     'smallappdinner_program_play_error'=>'节目单播放失败',
     'smallappdinner_activity_has_upper_limit'=>'活动已达上限',
-    'smallappdinner_upload_oss_md5_error'=>'获取文件md5失败',
+    'smallappdinner_upload_oss_md5_error'=>'请重新选择上传图片或视频',
     'smallappdinner_hotel_nothas_goods'=>'该酒楼无此活动商品',
     'smallappdinner_hotel_nothas_playprogram'=>'暂无节目单循环播放内容',
     'smallappdinner_goods_not_approved'=>'商品未审核通过',

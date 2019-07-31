@@ -138,7 +138,7 @@ class ProgramController extends CommonController{
             if(isset($loopplay_data[$v['goods_id']])){
                 if($v['type']==20 && $v['scope']){
                     if($v['scope']==1){
-                        if($box_info['room_type']==1){
+                        if($box_info[0]['room_type']==1){
                             $info['play_type'] = 1;
                         }else{
                             $info['play_type'] = 2;

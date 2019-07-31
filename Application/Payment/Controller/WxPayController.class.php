@@ -185,7 +185,7 @@ class WxPayController extends BaseController{
             $error = array('code'=>99001,'msg'=>'decode error');
             $this->ajaxReturn($error);
         }
-        $order_id = $decode_info;
+        $order_id = $decode_info[0];
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
         if(empty($res_order) || $res_order['status']!=20){

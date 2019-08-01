@@ -112,7 +112,7 @@ class GoodsController extends CommonController{
         $jd_url = $res_goods['jd_url'];
         if(!empty($jd_url)){
             $tmp_jd_url = rtrim($res_goods['jd_url'],'.html');
-            $jd_url = str_replace('https://item.jd.com/','pages/item_wqvue/detail/detail?sku=',$tmp_jd_url);
+            $jd_url = str_replace('https://item.jd.com/','pages/item/detail/detail?sku=',$tmp_jd_url);
         }
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'jd_url'=>$jd_url,'type'=>$res_goods['type']);
 

@@ -275,6 +275,7 @@ return array(
     'smallappdinner_addorder_upperlimit'=>'下单次数已达上限',
     'smallappdinner_collection_upperlimit'=>'收藏次数已达上限',
     'smallappdinner_sendsms_repeatsend'=>'请勿重复发送短信',
+    'smallappdinner_addorder_repeat'=>'请勿重复下单',
 
 
 );

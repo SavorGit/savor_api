@@ -204,6 +204,8 @@ return array(
 		'daily_login_templateid'=>'178978',
 	    'dinner_login_templateid'=>'238349',
 	    'option_repair_done_templateid'=>'322916',
+	    'activity_goods_addorder_templateid'=>'489211',
+	    'activity_goods_collection_templateid'=>'489216',
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
@@ -268,8 +270,8 @@ return array(
     'SAPP_FIND_INDEX_RAND'=>'smallapp:find:index:rand:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
-    'SAPP_DINNER'=>'smallappdinner:',
-    'SAPP_DINNER_ACTIVITYGOODS_PROGRAM'=>'smallappdinner:activitygoodsprogram',
+    'SAPP_SALE'=>'smallappsale:',
+    'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
@@ -358,5 +360,7 @@ return array(
         'doc'=>2,'wps'=>2,'docx'=>2,
         'pdf'=>2,'rtf'=>2,'txt'=>2
     ),
+    'FEAST_TIME'=>array('lunch'=>array('11:30','14:30'),'dinner'=>array('18:00','21:00')),
     'HASH_IDS_KEY'=>'Q1t80oXSKl',
+    'HASH_IDS_KEY_ADMIN'=>'Q1xsCaoby2o',
 );

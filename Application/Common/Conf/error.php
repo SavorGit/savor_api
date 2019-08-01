@@ -288,6 +288,10 @@ return array(
         '92018'=>'smallappdinner_hotel_nothas_goods',
         '92019'=>'smallappdinner_hotel_nothas_playprogram',
         '92020'=>'smallappdinner_goods_not_approved',
+        '92021'=>'smallappdinner_addorder_upperlimit',
+        '92022'=>'smallappdinner_collection_upperlimit',
+        '92023'=>'smallappdinner_sendsms_repeatsend',
+        '92024'=>'smallappdinner_addorder_repeat',
 
 	),
 );

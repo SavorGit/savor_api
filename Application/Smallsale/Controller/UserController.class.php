@@ -258,18 +258,40 @@ class UserController extends CommonController{
         }
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $cache_key = 'smallappdinner:signin:'.$box_mac;
+        $cache_key = C('SAPP_SALE').'signin:'.$box_mac;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
-            $this->to_back(92011);
+            $pre_data = json_decode($res_cache,true);
+            $pre_time = $pre_data['nowtime'];
+            $signinfo = $this->checkSigninTime($pre_time);
+            if(!$signinfo['is_signin']){
+                $res_data = array('status'=>1);
+                $where = array('openid'=>$pre_data['openid'],'small_app_id'=>5);
+                $fields = 'id user_id,openid,avatarUrl,nickName';
+                $res_user = $m_user->getOne($fields, $where);
+                $res_data['user'] = $res_user;
+                $this->to_back($res_data);
+            }
+            $pre_id = $pre_data['id'];
+            $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
+            $res_usersign = $m_usersign->getInfo(array('id'=>$pre_id));
+            if($res_usersign['signout_time']=='0000-00-00 00:00:00'){
+                $m_usersign->updateData(array('id'=>$pre_id),array('signout_time'=>$signinfo['signout_time']));
+            }
         }
-        $data = array('openid'=>$openid,'nowtime'=>date('Y-m-d H:i:s'));
-        $redis->set($cache_key,json_encode($data),3600);
 
         $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
-        $add_data = array('openid'=>$openid,'box_mac'=>$box_mac);
-        $m_usersign->addData($add_data);
-        $res_data = array('message'=>'签到成功');
+        $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'signin_time'=>date('Y-m-d H:i:s'));
+        $id = $m_usersign->addData($add_data);
+
+        $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
+        $redis->set($cache_key,json_encode($cache_data),18000);
+
+        $res_data = array('status'=>2);
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $fields = 'id user_id,openid,avatarUrl,nickName';
+        $res_user = $m_user->getOne($fields, $where);
+        $res_data['user'] = $res_user;
         $this->to_back($res_data);
     }
 
@@ -294,14 +316,27 @@ class UserController extends CommonController{
         foreach ($res as $v){
             $info = array('name'=>$v['name'],'box_mac'=>$v['mac'],'status'=>1,'user'=>array());
             $where = array('box_mac'=>$v['mac']);
-            $res_usersignin = $m_usersign->getDataList('openid,box_mac',$where,'id desc',0,1);
+            $res_usersignin = $m_usersign->getDataList('id,openid,box_mac,signin_time,signout_time',$where,'id desc',0,1);
             if($res_usersignin['total']){
                 $sign_openid = $res_usersignin['list'][0]['openid'];
-                $where = array('openid'=>$sign_openid,'small_app_id'=>5);
-                $fields = 'id user_id,openid,avatarUrl,nickName';
-                $res_user = $m_user->getOne($fields, $where);
-                $info['status'] = 2;
-                $info['user'] = $res_user;
+                if($res_usersignin['list'][0]['signout_time']=='0000-00-00 00:00:00'){
+                    $pre_time = strtotime($res_usersignin['list'][0]['signin_time']);
+                    $signinfo = $this->checkSigninTime($pre_time);
+                    $is_signin = $signinfo['is_signin'];
+                    if($is_signin){
+                        $sign_id = $res_usersignin['list'][0]['id'];
+                        $m_usersign->updateData(array('id'=>$sign_id),array('signout_time'=>$signinfo['signout_time']));
+                    }
+                }else{
+                    $is_signin = 1;
+                }
+                if(!$is_signin){
+                    $where = array('openid'=>$sign_openid,'small_app_id'=>5);
+                    $fields = 'id user_id,openid,avatarUrl,nickName';
+                    $res_user = $m_user->getOne($fields, $where);
+                    $info['status'] = 2;
+                    $info['user'] = $res_user;
+                }
             }
             $box_list[] = $info;
         }
@@ -344,19 +379,63 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,content,type,add_time';
+        $fields = 'room_name,integral,content,type,integral_time';
         $where = array('openid'=>$openid);
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
         foreach ($res_record as $v){
-            $v['add_time'] = date('Y-m-d',strtotime($v['add_time']));
-            $datalist[] = $v;
+            $add_time = date('Y-m-d',strtotime($v['integral_time']));
+            $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time);
+            switch ($v['type']){
+                case 1:
+                    $content = "开机{$v['content']}小时";
+                    break;
+                case 2:
+                    $content = "互动{$v['content']}人";
+                    break;
+                case 3:
+                    $content = "销售商品";
+                    break;
+                case 4:
+                    $content = "兑换";
+                    break;
+                default:
+                    $content = "";
+            }
+            $info['content'] = $content;
+            $datalist[] = $info;
         }
-        $datalist[] = array('room_name'=>'VIP包间1','integral'=>30,'content'=>'开机3小时','add_time'=>'2019-07-24');
-        $datalist[] = array('room_name'=>'VIP包间2','integral'=>80,'content'=>'互动10人','add_time'=>'2019-07-24');
-        $datalist[] = array('room_name'=>'VIP包间3','integral'=>1000,'content'=>'销售商品','add_time'=>'2019-07-24');
-        $datalist[] = array('room_name'=>'VIP包间4','integral'=>-1000,'content'=>'兑换','add_time'=>'2019-07-24');
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
+    }
+
+    private function checkSigninTime($signin_time){
+        $is_signin = 0;
+        $feast_time = C('FEAST_TIME');
+
+        $pre_time = date('Y-m-d H:i',$signin_time);
+        $pre_date = date('Y-m-d',$signin_time);
+
+        $now_time = date('Y-m-d H:i');
+        $lunch_stime = $pre_date.' '.$feast_time['lunch'][0];
+        $lunch_etime = $pre_date.' '.$feast_time['lunch'][1];
+
+        $dinner_stime = $pre_date.' '.$feast_time['dinner'][0];
+        $dinner_etime = $pre_date.' '.$feast_time['dinner'][1];
+
+        if($pre_time<$lunch_stime){
+            $over_time = $lunch_etime;
+        }elseif($pre_time>=$lunch_stime && $pre_time<=$lunch_etime){
+            $over_time = $lunch_etime;
+        }elseif($pre_time>$lunch_etime){
+            $over_time = $dinner_etime;
+        }else{
+            $over_time = $dinner_etime;
+        }
+        if($now_time > $over_time){
+            $is_signin = 1;
+        }
+        $res = array('is_signin'=>$is_signin,'signout_time'=>$over_time);
+        return $res;
     }
 }

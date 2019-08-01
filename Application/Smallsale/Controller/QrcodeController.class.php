@@ -18,7 +18,7 @@ class QrcodeController extends CommonController{
     public function getBoxQrcode(){
         $box_mac = $this->params['box_mac'];
         $goods_id = $this->params['goods_id'];
-        $type = $this->params['type'];//1购物二维码
+        $type = $this->params['type'];//22购物二维码
         $m_box = new \Common\Model\BoxModel();
         $map = array();
         $map['a.mac'] = $box_mac;

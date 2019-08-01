@@ -134,7 +134,7 @@ class ProgramController extends CommonController{
             $info['media_type'] = $media_info['type'];
             $info['md5'] = $media_info['md5'];
             $info['duration'] = $media_info['duration'];
-            $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=1";
+            $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
             if(isset($loopplay_data[$v['goods_id']])){
                 if($v['type']==20 && $v['scope']){
                     if($v['scope']==1){

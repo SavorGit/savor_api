@@ -272,6 +272,9 @@ return array(
     'smallappdinner_hotel_nothas_goods'=>'该酒楼无此活动商品',
     'smallappdinner_hotel_nothas_playprogram'=>'暂无节目单循环播放内容',
     'smallappdinner_goods_not_approved'=>'商品未审核通过',
+    'smallappdinner_addorder_upperlimit'=>'下单次数已达上限',
+    'smallappdinner_collection_upperlimit'=>'收藏次数已达上限',
+    'smallappdinner_sendsms_repeatsend'=>'请勿重复发送短信',
 
 
 );

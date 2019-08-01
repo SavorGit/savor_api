@@ -1,5 +1,5 @@
 <?php
-namespace Smalldisale\Controller;
+namespace Smallsale\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class CollectionController extends CommonController{

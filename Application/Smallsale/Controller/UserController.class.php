@@ -265,7 +265,12 @@ class UserController extends CommonController{
             $pre_time = $pre_data['nowtime'];
             $signinfo = $this->checkSigninTime($pre_time);
             if(!$signinfo['is_signin']){
-                $this->to_back(92011);
+                $res_data = array('status'=>1);
+                $where = array('openid'=>$pre_data['openid'],'small_app_id'=>5);
+                $fields = 'id user_id,openid,avatarUrl,nickName';
+                $res_user = $m_user->getOne($fields, $where);
+                $res_data['user'] = $res_user;
+                $this->to_back($res_data);
             }
             $pre_id = $pre_data['id'];
             $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
@@ -282,7 +287,11 @@ class UserController extends CommonController{
         $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
         $redis->set($cache_key,json_encode($cache_data),18000);
 
-        $res_data = array('message'=>'签到成功');
+        $res_data = array('status'=>2);
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $fields = 'id user_id,openid,avatarUrl,nickName';
+        $res_user = $m_user->getOne($fields, $where);
+        $res_data['user'] = $res_user;
         $this->to_back($res_data);
     }
 

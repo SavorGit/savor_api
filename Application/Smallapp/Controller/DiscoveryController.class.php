@@ -144,7 +144,7 @@ class DiscoveryController extends CommonController{
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[0]['res_id']   = $tmp_arr[0];
                 $pubdetail_info[0]['vide_img'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
-                $pubdetail_info[0]['duration'] = secToMinSec(intval($pubdetail_info[0]['duration']));
+                //$pubdetail_info[0]['duration'] = secToMinSec(intval($pubdetail_info[0]['duration']));
             }else {
                 foreach($pubdetail_info as $kk=>$vv){
                     $filename = explode('/', $vv['forscreen_url']);

@@ -291,6 +291,7 @@ return array(
         '92021'=>'smallappdinner_addorder_upperlimit',
         '92022'=>'smallappdinner_collection_upperlimit',
         '92023'=>'smallappdinner_sendsms_repeatsend',
+        '92024'=>'smallappdinner_addorder_repeat',
 
 	),
 );

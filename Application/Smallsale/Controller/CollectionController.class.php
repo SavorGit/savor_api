@@ -75,9 +75,9 @@ class CollectionController extends CommonController{
         $m_goodscollection->add($add_data);
         $res_data = array('message'=>'收藏成功');
 
-        $redis->set($send_cache_key,1,86400);
+        $redis->set($send_cache_key,1,18000);
         $collection_num = $collection_num+1;
-        $redis->set($collection_cache_key,$collection_num,86400);
+        $redis->set($collection_cache_key,$collection_num,18000);
         $this->to_back($res_data);
     }
 

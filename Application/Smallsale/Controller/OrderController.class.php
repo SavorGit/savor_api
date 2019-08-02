@@ -17,7 +17,7 @@ class OrderController extends CommonController{
     }
 
     public function addOrder(){
-        $addorder_num = 5;
+        $addorder_num = 20;
 
         $goods_id= intval($this->params['goods_id']);
         $amount = intval($this->params['amount']);
@@ -52,11 +52,12 @@ class OrderController extends CommonController{
         }
         if($buy_type==1){
             $sale_key = C('SAPP_SALE');
-            $order_key = $sale_key.'addorder:'.$goods_id.$openid;
             $cache_key = $sale_key.'addorder:'.$openid;
+            $order_space_key = $sale_key.'addorder:spacetime'.$openid;
+
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
-            $res_ordercache = $redis->get($order_key);
+            $res_ordercache = $redis->get($order_space_key);
             if(!empty($res_ordercache)){
                 $this->to_back(92024);
             }
@@ -81,10 +82,10 @@ class OrderController extends CommonController{
         $order_id = $m_order->add($add_data);
 
         if($buy_type==1){
-            $redis->set($order_key,$order_id,43200);
+            $redis->set($order_space_key,$order_id,180);
 
             $user_order[] = $order_id;
-            $redis->set($cache_key,json_encode($user_order),43200);
+            $redis->set($cache_key,json_encode($user_order),18000);
         }
 
         if(!empty($box_info['activity_phone'])){

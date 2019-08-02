@@ -146,9 +146,12 @@ class GoodsController extends CommonController{
         $duration = $this->params['duration'];
         $tmp_start_time = strtotime($start_time);
         $tmp_end_time = strtotime($end_time);
-        if($tmp_start_time>$tmp_end_time){
+
+        $tmp_nowtime = strtotime(date('Y-m-d'));
+        if($tmp_start_time>$tmp_end_time || $tmp_end_time<$tmp_nowtime){
             $this->to_back(92012);
         }
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -184,7 +187,7 @@ class GoodsController extends CommonController{
         }else{
             $type = 3;
         }
-        $data = array('price'=>$price,'type'=>20,'scope'=>$scope,'status'=>1,
+        $data = array('price'=>intval($price),'type'=>20,'scope'=>$scope,'status'=>1,
             'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),
             'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
         );
@@ -249,17 +252,18 @@ class GoodsController extends CommonController{
                 $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
                 $m_hotelgoods->addData($hotelgoods_data);
             }else{
-                $old_data = array('price'=>$res_goods['price'],'type'=>$res_goods['type'],'scope'=>$res_goods['scope'],
+                $old_data = array('price'=>intval($res_goods['price']),'type'=>intval($res_goods['type']),'scope'=>intval($res_goods['scope']),
                     'start_time'=>$res_goods['start_time'],'end_time'=>$res_goods['end_time'],'media_id'=>$res_goods['media_id']
                 );
                 $old_data_md5 = md5(json_encode($old_data));
 
-                $new_data = array('price'=>$price,'type'=>20,'scope'=>$scope,
+                $new_data = array('price'=>intval($price),'type'=>20,'scope'=>$scope,
                     'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
                     'media_id'=>$media_id
                 );
                 $new_data_md5 = md5(json_encode($new_data));
                 if($old_data_md5!=$new_data_md5){
+                    $status = 1;
                     $m_goods->updateData(array('id'=>$goods_id),$data);
                 }
             }
@@ -280,8 +284,8 @@ class GoodsController extends CommonController{
         }else{
             $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
         }
-
-        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type,'status'=>$status,'img_url'=>$img_url);
+        $oss_addr = $media_info['oss_path'];
+        $res_data = array('goods_id'=>intval($goods_id),'media_type'=>$type,'status'=>$status,'img_url'=>$img_url,'oss_addr'=>$oss_addr);
         $this->to_back($res_data);
     }
 

@@ -50,6 +50,7 @@ class OrderController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
+        $box_info = $box_info[0];
         if($buy_type==1){
             $sale_key = C('SAPP_SALE');
             $cache_key = $sale_key.'addorder:'.$openid;

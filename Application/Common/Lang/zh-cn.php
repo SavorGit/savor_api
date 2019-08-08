@@ -238,6 +238,9 @@ return array(
     'small_app_game_score_report_error'=>'游戏数据上报失败',
     'small_app_game_not_exist'=>'该游戏不存在或已下线',
     'small_app_game_have_not_lunch'=>'游戏尚未发起，请等待',
+    'smallapp_forscreen_size_not_exist'=>'投屏文件大小不存在',
+    'smallapp_forscreen_md5_not_exist'=>'投屏文件md5不存在',
+
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',
     'smallappdinner_invite_code_error'=>'邀请码输入错误',

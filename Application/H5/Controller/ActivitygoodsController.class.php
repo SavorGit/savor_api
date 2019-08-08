@@ -25,13 +25,13 @@ class ActivitygoodsController extends Controller {
             $data = array('mpopenid'=>$mpopenid);
             $m_user->updateInfo($where,$data);
         }else{
-//            $m_user = new \Common\Model\Smallapp\UserModel();
-//            $where = array('openid'=>$openid);
-//            $user_info = $m_user->getOne('id,mpopenid',$where,'');
-//            if(empty($user_info['mpopenid'])){
-//                $url = http_host().'/h5/activitygoods/index/ou/'.$openid;
-//                $this->wx_oauth($url);
-//            }
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = array('openid'=>$openid);
+            $user_info = $m_user->getOne('id,mpopenid',$where,'');
+            if(empty($user_info['mpopenid'])){
+                $url = http_host().'/h5/activitygoods/index/ou/'.$openid;
+                $this->wx_oauth($url);
+            }
         }
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $fields = 'id as goods_id,name,media_id,price,rebate_integral,start_time,end_time';

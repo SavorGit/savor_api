@@ -4,6 +4,7 @@ use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
 use Common\Lib\Qrcode;
+use Common\Lib\AliyunOss;
 class IndexController extends CommonController{
     /**
      * 构造函数
@@ -458,7 +459,7 @@ class IndexController extends CommonController{
      * @desc 记录用户投屏的图片、视频
      */
     public function recordForScreenPics(){
-        $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
+        $forscreen_id = $this->params['forscreen_id'] ? intval($this->params['forscreen_id']) :0;
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $mobile_brand = $this->params['mobile_brand'];
@@ -473,10 +474,9 @@ class IndexController extends CommonController{
         $res_sup_time  = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
         $res_eup_time  = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
         $is_pub_hotelinfo = $this->params['is_pub_hotelinfo'] ?$this->params['is_pub_hotelinfo']:0;
-        $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;
+        $is_share      = $this->params['is_share'] ? intval($this->params['is_share']) : 0;
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
         $data = array();
-        $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
         $data['action'] = $action;
@@ -493,41 +493,94 @@ class IndexController extends CommonController{
         $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
         $data['is_share']    = $is_share;
         $data['duration']    = $duration;
-        $redis = SavorRedis::getInstance();
-        $redis->select(5);
-        $cache_key = C('SAPP_SCRREN').":".$box_mac;
-    
-        $redis->rpush($cache_key, json_encode($data));
-        $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
-        if($action==4 || ($action==2 && $resource_type==2)){
-            $redis->rpush($history_cache_key, json_encode($data));
+        if($forscreen_id){
+            $data['forscreen_id'] = $forscreen_id;
         }
-        
-    
-        if(!empty($is_share)){
-            $map = array();
-            $map['forscreen_id'] = $forscreen_id;
-            $map['openid'] = $openid;
-            $map['box_mac']= $box_mac;
-            $map['public_text'] = $public_text;
-            if($action==4){
-                $map['res_type'] = 1;
-            }else if($action==2 && $resource_type==2){
-                $map['res_type'] = 2;
-                $map['duration'] = $duration;
-            }
-            $map['resource_size'] = $resource_size;
-            $map['resource_id']   = $resource_id;
+
+        if($is_share){
             $forscreen_res = json_decode($imgs,true);
-    
-            $map['res_url']   = $forscreen_res[0];
-            $map['is_pub_hotelinfo'] =$is_pub_hotelinfo;
-    
-            $cache_key = C('SAPP_SCRREN_SHARE').$box_mac.':'.$openid.":".$forscreen_id;
-            $redis->rpush($cache_key, json_encode($map));
+            $oss_addr = $forscreen_res[0];
+            $tempInfo = pathinfo($oss_addr);
+            $surfix = $tempInfo['extension'];
+            if($surfix){
+                $surfix = strtolower($surfix);
+            }
+            $typeinfo = C('RESOURCE_TYPEINFO');
+            if(isset($typeinfo[$surfix])){
+                $type = $typeinfo[$surfix];
+            }else{
+                $type = 3;
+            }
+
+            $accessKeyId = C('OSS_ACCESS_ID');
+            $accessKeySecret = C('OSS_ACCESS_KEY');
+            $endpoint = 'oss-cn-beijing.aliyuncs.com';
+            $bucket = C('OSS_BUCKET');
+            $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
+            $aliyunoss->setBucket($bucket);
+
+            if(empty($resource_size)){
+                $this->to_back(90103);
+            }
+            if($type==1){//视频
+                $range = '0-199';
+                $bengin_info = $aliyunoss->getObject($oss_addr,$range);
+                $last_size = $resource_size-1;
+                $last_range = $last_size - 199;
+                $last_range = $last_range.'-'.$last_size;
+                $end_info = $aliyunoss->getObject($oss_addr,$last_range);
+                $file_str = md5($bengin_info).md5($end_info);
+                $fileinfo = strtoupper($file_str);
+            }else{
+                $fileinfo = $aliyunoss->getObject($oss_addr,'');
+            }
+            if(empty($fileinfo)){
+                $this->to_back(90104);
+            }
+            if($fileinfo){
+                $data['md5_file'] = md5($fileinfo);
+            }
+            if($type==1){
+                $data['duration'] = floor($duration);
+            }else{
+                $data['duration'] = 15;
+            }
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $forscreen_id = $m_forscreen->add($data);
+
+            $public_data = array();
+            $public_data['forscreen_id'] = $forscreen_id;
+            $public_data['openid'] = $openid;
+            $public_data['box_mac']= $box_mac;
+            $public_data['public_text'] = $public_text;
+            if($action==4){
+                $public_data['res_type'] = 1;
+            }else if($action==2 && $resource_type==2){
+                $public_data['res_type'] = 2;
+                $public_data['duration'] = $duration;
+            }
+            $public_data['resource_size'] = $resource_size;
+            $public_data['resource_id']   = $resource_id;
+
+            $public_data['res_url']   = $oss_addr;
+            $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+            $m_public = new \Common\Model\Smallapp\PublicModel();
+            $m_public->add($public_data);
+        }else{
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SAPP_SCRREN').":".$box_mac;
+
+            $redis->rpush($cache_key, json_encode($data));
+            $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
+            if($action==4 || ($action==2 && $resource_type==2)){
+                $redis->rpush($history_cache_key, json_encode($data));
+            }
         }
-        $this->to_back(10000);
+        $res = array('forscreen_id'=>$forscreen_id);
+        $this->to_back($res);
     }
+
     public function isFind(){
         $data = array();
         $data['is_open'] = 1;

@@ -247,6 +247,8 @@ return array(
 	    '90100'=>'smallapp_qrcode_type_error',
 	    '90101'=>'smallapp_qrcode_content_error',
 	    '90102'=>'smallapp_forscreen_file_not_exist',
+	    '90103'=>'smallapp_forscreen_size_not_exist',
+	    '90104'=>'smallapp_forscreen_md5_not_exist',
 
         //小程序游戏
 	    '90110'=>'small_app_launch_game_failed',

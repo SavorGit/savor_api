@@ -240,6 +240,9 @@ return array(
     'small_app_game_have_not_lunch'=>'游戏尚未发起，请等待',
     'smallapp_forscreen_size_not_exist'=>'投屏文件大小不存在',
     'smallapp_forscreen_md5_not_exist'=>'投屏文件md5不存在',
+    'smallapp_forscreen_record_not_exist'=>'投屏记录不存在',
+    'smallapp_forscreen_has_addhelpplay'=>'请勿重复添加助力',
+    'smallapp_forscreen_has_addhelp'=>'请勿重复助力',
 
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',

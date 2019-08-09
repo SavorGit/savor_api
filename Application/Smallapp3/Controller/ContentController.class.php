@@ -11,6 +11,10 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('page'=>1001,'pagesize'=>1002);
                 break;
+            case 'addFormid':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'formid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -57,5 +61,23 @@ class ContentController extends CommonController{
         }
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
+    }
+
+    public function addFormid(){
+        $openid = $this->params['openid'];
+        $formid = $this->params['formid'];
+        $key = C('SAPP_FORMID').$openid;
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $res_data = json_decode($res_cache,true);
+            $res_data[$formid] = time();
+        }else{
+            $res_data = array($formid=>time());
+        }
+        $redis->set($key,json_encode($res_data),86400*8);
+        $res = array();
+        $this->to_back($res);
     }
 }

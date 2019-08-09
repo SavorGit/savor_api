@@ -546,7 +546,7 @@ class IndexController extends CommonController{
                 $data['duration'] = 15;
             }
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-            $forscreen_id = $m_forscreen->add($data);
+            $m_forscreen->add($data);
 
             $public_data = array();
             $public_data['forscreen_id'] = $forscreen_id;

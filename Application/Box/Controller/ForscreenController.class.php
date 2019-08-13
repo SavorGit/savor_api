@@ -11,6 +11,10 @@ class ForscreenController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001,'versionCode'=>1000);
                 break;
+            case 'addPlaylog':
+                $this->is_verify =1;
+                $this->valid_fields = array('vid'=>1001,'type'=>1001);
+                break;
         }
         parent::_init_(); 
     }
@@ -49,4 +53,31 @@ class ForscreenController extends CommonController{
             $this->to_back($data);
         }
     }
+
+    public function addPlaylog(){
+        $vid = $this->params['vid'];
+        $type = $this->params['type'];
+
+        $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+        $res_play = $m_play_log->getOne('id,create_time',array('res_id'=>$vid,'type'=>4),'id desc');
+        if(!empty($res_play)){
+            $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
+            $m_config = new \Common\Model\SysConfigModel();
+            $res_config = $m_config->getAllconfig();
+            $play_time = intval($res_config['content_play_time'])*3600;
+            $last_time = strtotime($res_play['create_time'])+$play_time;
+            $now_time = time();
+            if($now_time>$last_time){
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $allkeys  = $redis->keys('smallapp:selectcontent:program:*');
+                foreach ($allkeys as $program_key){
+                    $period = getMillisecond();
+                    $redis->set($program_key,$period);
+                }
+            }
+        }
+        $this->to_back(array());
+    }
+
 }

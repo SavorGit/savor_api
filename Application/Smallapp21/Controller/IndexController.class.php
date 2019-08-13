@@ -541,9 +541,9 @@ class IndexController extends CommonController{
                 $data['md5_file'] = md5($fileinfo);
             }
             if($type==1){
-                $data['duration'] = floor($duration);
+                $data['duration'] = $duration;
             }else{
-                $data['duration'] = 15;
+                $data['duration'] = 0;
             }
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
@@ -566,6 +566,11 @@ class IndexController extends CommonController{
             $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
             $m_public = new \Common\Model\Smallapp\PublicModel();
             $m_public->add($public_data);
+
+            $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,
+                'res_url'=>$oss_addr,'duration'=>$duration,'resource_size'=>$resource_size);
+            $m_publicdetail = new \Common\Model\Smallapp\PubdetailModel();
+            $m_publicdetail->add($pubdetail_data);
         }else{
             $redis = SavorRedis::getInstance();
             $redis->select(5);

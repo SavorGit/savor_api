@@ -133,7 +133,8 @@ class ForscreenHelpController extends CommonController{
         foreach ($res_huser as $v){
             $datalist[] = $v;
         }
-        $res = array('datalist'=>$datalist);
+        $total_num = $m_forscreenhelpuser->countNum(array('help_id'=>$help_id));
+        $res = array('datalist'=>$datalist,'total_num'=>$total_num);
         $this->to_back($res);
     }
 

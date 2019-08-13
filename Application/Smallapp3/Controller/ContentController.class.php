@@ -28,7 +28,7 @@ class ContentController extends CommonController{
 
         $orderby = 'nums desc';
         $limit = "0,$all_nums";
-        $fields = 'res_id as forscreen_id,nums as res_nums';
+        $fields = 'res_id as forscreen_id,nums as play_nums';
         $res_play = $m_playlog->getWhere($fields,$where,$orderby,$limit,'');
         $datalist = array();
         $oss_host = 'http://'.C('OSS_HOST').'/';
@@ -37,6 +37,7 @@ class ContentController extends CommonController{
 
         foreach ($res_play as $v){
             $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['forscreen_id']));
+            $v['res_nums'] = $m_forscreen->getWhereCount(array('forscreen_id'=>$res_forscreen['forscreen_id']));
             $v['res_type'] = $res_forscreen['resource_type'];
 
             $where = array('openid'=>$res_forscreen['openid']);
@@ -49,7 +50,7 @@ class ContentController extends CommonController{
             if($v['res_type']==1){
                 $res_url = $oss_host.$forscreen_url;
             }else{
-                $res_url = $oss_host.$forscreen_url.'?x-oss-process=image/resize,p_20';
+                $res_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
             }
             $pubdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$res_forscreen['duration'],
                 'resource_size'=>$res_forscreen['resource_size'],'res_id'=>$res_forscreen['resource_id']);

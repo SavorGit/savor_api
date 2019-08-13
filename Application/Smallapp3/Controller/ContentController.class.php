@@ -56,7 +56,7 @@ class ContentController extends CommonController{
                 'resource_size'=>$res_forscreen['resource_size'],'res_id'=>$res_forscreen['resource_id']);
             $addr_info = pathinfo($forscreen_url);
             $pubdetail['filename'] = $addr_info['basename'];
-            $v['pubdetail'] = $pubdetail;
+            $v['pubdetail'][] = $pubdetail;
 
             $datalist[] = $v;
         }

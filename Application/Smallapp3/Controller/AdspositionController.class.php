@@ -19,26 +19,44 @@ class AdspositionController extends CommonController{
      * @desc 获取广告位列表
      */
     public function getAdspositionList(){
-        $position = intval($this->params['position']);
+        $position = $this->params['position'];
         $fields = 'id,name,media_id,linkcontent,clicktype,appid,position,bindtap';
         $where = array('status'=>1);
-        if($position){
-            $where['position'] = $position;
-        }
         $orderby = 'sort desc,id desc';
         $m_adsposition = new \Common\Model\Smallapp\AdspositionModel();
-        $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
-
+        
         $result = array();
-        if(!empty($res_positions)){
-            $m_media = new \Common\Model\MediaModel();
-            foreach ($res_positions as $k=>$v){
-                $res_media = $m_media->getMediaInfoById($v['media_id']);
-                $v['oss_addr'] = $res_media['oss_addr'];
-                unset($v['media_id']);
-		        $result[] = $v;
+        if($position && strstr($position, ',')){
+            
+            $where['position'] = array('in',$position);
+            $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
+            if(!empty($res_positions)){
+                $m_media = new \Common\Model\MediaModel();
+                foreach ($res_positions as $k=>$v){
+                    $res_media = $m_media->getMediaInfoById($v['media_id']);
+                    $v['oss_addr'] = $res_media['oss_addr'];
+                    unset($v['media_id']);
+                    $result[$v['position']][] = $v;
+                }
             }
+        }else {
+            $where['position'] = $position;
+            $order =" a.order desc";
+                        
+            $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
+            
+            if(!empty($res_positions)){
+                $m_media = new \Common\Model\MediaModel();
+                foreach ($res_positions as $k=>$v){
+                    $res_media = $m_media->getMediaInfoById($v['media_id']);
+                    $v['oss_addr'] = $res_media['oss_addr'];
+                    unset($v['media_id']);
+                    $result[] = $v;
+                }
+            }
+            
         }
         $this->to_back($result);
+        
     }
 }

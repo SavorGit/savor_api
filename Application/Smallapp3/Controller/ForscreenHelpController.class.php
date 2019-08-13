@@ -123,7 +123,7 @@ class ForscreenHelpController extends CommonController{
         $res_help = $m_forscreenhelp->getInfo($where);
         $help_id = $res_help['id'];
 
-        $fields = 'u.id user_id,u.avatarUrl,u.nickName';
+        $fields = 'u.id user_id,u.avatarUrl,u.nickName,h.add_time';
         $where = array('h.help_id'=>$help_id);
         $order = 'h.id asc';
         $limit = "0,$all_nums";

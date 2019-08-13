@@ -23,6 +23,10 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'getSelectcontentProgramList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
                  
         }
         parent::_init_();
@@ -173,6 +177,78 @@ class ProgramController extends CommonController{
             $period = getMillisecond();
             $period_data = array('period'=>$period);
             $redis->set($program_key,json_encode($period_data));
+        }
+        $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+    public function getSelectcontentProgramList(){
+        $box_mac = $this->params['box_mac'];
+
+        $m_box = new \Common\Model\BoxModel();
+        $fileds = 'd.id as hotel_id';
+        $where = array('a.mac'=>$box_mac,'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
+        $res_box = $m_box->getBoxInfo($fileds,$where);
+        $hotel_id = $res_box[0]['hotel_id'];
+
+        $m_programmenu = new \Common\Model\ProgramMenuHotelModel();
+        $res_menu = $m_programmenu->getLatestMenuid($hotel_id);
+        $menu_id = $res_menu['menu_id'];
+        $m_programitem = new \Common\Model\ProgramMenuItemModel();
+        $field = 'count(id) as num';
+        $where = array('menu_id'=>$menu_id,'type'=>7);
+        $res_item = $m_programitem->getData($field,$where,'id desc');
+
+        $selectcontent_num = 0;
+        if(!empty($res_item)){
+            $selectcontent_num = $res_item[0]['num'];
+        }
+        $program_list = array();
+
+        $content_key = C('SAPP_SELECTCONTENT_CONTENT');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res_cache = $redis->get($content_key);
+        if($selectcontent_num && !empty($res_cache)){
+            $help_forscreen = json_decode($res_cache,true);
+            if(!empty($help_forscreen)){
+                $help_forscreen = array_slice($help_forscreen,0,$selectcontent_num);
+                $m_config = new \Common\Model\SysConfigModel();
+                $res_config = $m_config->getAllconfig();
+                $play_time = intval($res_config['content_play_time'])*3600;
+
+                $m_play = new \Common\Model\Smallapp\PlayLogModel();
+                $typeinfo = C('RESOURCE_TYPEINFO');
+                foreach ($help_forscreen as $v){
+                    $info = array('vid'=>$v['id'],'chinese_name'=>'','duration'=>floor($v['duration']),'md5'=>$v['md5_file']);
+                    $imgs_info = json_decode($v['imgs'],true);
+                    $info['oss_addr'] = $imgs_info[0];
+                    $name_info = pathinfo($info['oss_addr']);
+                    $surfix = strtolower($name_info['extension']);
+                    $info['media_type'] = $typeinfo[$surfix];
+                    $info['name'] = $name_info['basename'];
+
+                    $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
+                    if(!empty($res_play)){
+                        $create_time = $res_play['create_time'];
+                    }else{
+                        $create_time = date('Y-m-d H:i:s');
+                        $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
+                        $m_play->add($add_data);
+                    }
+                    $info['start_date'] = $create_time;
+                    $end_date = strtotime($create_time)+$play_time;
+                    $info['end_date'] = date('Y-m-d H:i:s',$end_date);
+                    $program_list[] = $info;
+                }
+            }
+            $redis->select(5);
+            $program_key = C('SAPP_SELECTCONTENT_PROGRAM').":$hotel_id";
+            $period = $redis->get($program_key);
+            if(empty($period)){
+                $period = getMillisecond();
+                $redis->set($program_key,$period);
+            }
         }
         $res = array('period'=>$period,'datalist'=>$program_list);
         $this->to_back($res);

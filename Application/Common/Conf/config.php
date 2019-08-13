@@ -273,6 +273,8 @@ return array(
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
+    'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
+    'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

@@ -101,4 +101,9 @@ class ProgramMenuItemModel extends Model
 	                 ->select();
 	    return $data;
 	}
+
+    public function getData($fields,$where,$order){
+        $data = $this->field($fields)->where($where)->order($order)->select();
+        return $data;
+    }
 }

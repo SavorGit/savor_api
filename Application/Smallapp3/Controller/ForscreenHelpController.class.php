@@ -47,11 +47,10 @@ class ForscreenHelpController extends CommonController{
         $m_forscreenhelp = new \Common\Model\Smallapp\ForscreenHelpModel();
         $where = array('openid'=>$openid,'forscreen_record_id'=>$forscreen_record_id);
         $res_help = $m_forscreenhelp->getInfo($where);
-        if(!empty($res_help)){
-            $this->to_back(90106);
+        if(empty($res_help)){
+            $add_data = array('openid'=>$openid,'forscreen_record_id'=>$forscreen_record_id,'status'=>1);
+            $m_forscreenhelp->add($add_data);
         }
-        $add_data = array('openid'=>$openid,'forscreen_record_id'=>$forscreen_record_id,'status'=>1);
-        $m_forscreenhelp->add($add_data);
         $res = array('forscreen_id'=>$forscreen_record_id);
         $this->to_back($res);
     }

@@ -206,6 +206,7 @@ class ProgramController extends CommonController{
         $program_list = array();
 
         $content_key = C('SAPP_SELECTCONTENT_CONTENT');
+        $push_key = C('SAPP_SELECTCONTENT_PUSH').':ontv';
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $res_cache = $redis->get($content_key);
@@ -219,11 +220,12 @@ class ProgramController extends CommonController{
 
                 $m_play = new \Common\Model\Smallapp\PlayLogModel();
                 $typeinfo = C('RESOURCE_TYPEINFO');
+                $redis->select(5);
                 foreach ($help_forscreen as $v){
                     $info = array('vid'=>$v['id'],'chinese_name'=>'','duration'=>floor($v['duration']),'md5'=>$v['md5_file']);
                     $imgs_info = json_decode($v['imgs'],true);
-                    $info['oss_addr'] = $imgs_info[0];
-                    $name_info = pathinfo($info['oss_addr']);
+                    $info['oss_path'] = $imgs_info[0];
+                    $name_info = pathinfo($info['oss_path']);
                     $surfix = strtolower($name_info['extension']);
                     $info['media_type'] = $typeinfo[$surfix];
                     $info['name'] = $name_info['basename'];
@@ -232,6 +234,7 @@ class ProgramController extends CommonController{
                     if(!empty($res_play)){
                         $create_time = $res_play['create_time'];
                     }else{
+                        $redis->rpush($push_key,$v['openid']);
                         $create_time = date('Y-m-d H:i:s');
                         $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
                         $m_play->add($add_data);

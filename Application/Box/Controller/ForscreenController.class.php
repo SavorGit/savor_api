@@ -61,7 +61,6 @@ class ForscreenController extends CommonController{
         $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
         $res_play = $m_play_log->getOne('id,create_time',array('res_id'=>$vid,'type'=>4),'id desc');
         if(!empty($res_play)){
-            $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
             $m_config = new \Common\Model\SysConfigModel();
             $res_config = $m_config->getAllconfig();
             $play_time = intval($res_config['content_play_time'])*3600;
@@ -75,6 +74,17 @@ class ForscreenController extends CommonController{
                     $period = getMillisecond();
                     $redis->set($program_key,$period);
                 }
+            }else{
+                $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
+                $res_num = $m_play_log->getOne('nums',array('id'=>$res_play['id']),'id desc');
+                if($res_num['nums']==10 || $res_num['nums']==10000){
+                    $push_key = C('SAPP_SELECTCONTENT_PUSH').':playtv';
+                    $redis  =  \Common\Lib\SavorRedis::getInstance();
+                    $redis->select(5);
+                    $data = json_encode(array('id'=>$res_play['id'],'nums'=>$res_num['nums']));
+                    $redis->rpush($push_key,$data);
+                }
+
             }
         }
         $this->to_back(array());

@@ -275,6 +275,7 @@ return array(
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
+    'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

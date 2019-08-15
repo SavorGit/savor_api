@@ -218,6 +218,7 @@ class ProgramController extends CommonController{
                 $res_config = $m_config->getAllconfig();
                 $play_time = intval($res_config['content_play_time'])*3600;
 
+                $m_help = new \Common\Model\Smallapp\ForscreenHelpModel();
                 $m_play = new \Common\Model\Smallapp\PlayLogModel();
                 $typeinfo = C('RESOURCE_TYPEINFO');
                 $redis->select(5);
@@ -238,6 +239,7 @@ class ProgramController extends CommonController{
                         $create_time = date('Y-m-d H:i:s');
                         $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
                         $m_play->add($add_data);
+                        $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
                     }
                     $info['start_date'] = $create_time;
                     $end_date = strtotime($create_time)+$play_time;

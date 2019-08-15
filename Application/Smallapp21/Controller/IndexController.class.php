@@ -564,6 +564,7 @@ class IndexController extends CommonController{
 
             $public_data['res_url']   = $oss_addr;
             $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+            $public_data['status'] =1;
             $m_public = new \Common\Model\Smallapp\PublicModel();
             $m_public->add($public_data);
 

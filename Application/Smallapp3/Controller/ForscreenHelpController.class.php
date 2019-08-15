@@ -98,6 +98,7 @@ class ForscreenHelpController extends CommonController{
             $res_data['media_type'] = 3;
         }
 
+        $res_data['forscreen_url'] = $oss_addr;
         $res_data['oss_addr'] = $oss_host.$oss_addr;
         if($res_data['media_type']==2){
             $res_data['img_url'] = $oss_host.$oss_addr;

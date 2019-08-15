@@ -74,6 +74,27 @@ class ForscreenController extends CommonController{
                     $period = getMillisecond();
                     $redis->set($program_key,$period);
                 }
+
+                $content_key = C('SAPP_SELECTCONTENT_CONTENT');
+                $redis->select(5);
+                $res_cache = $redis->get($content_key);
+                if(!empty($res_cache)) {
+                    $help_id = 0;
+                    $help_forscreen = json_decode($res_cache, true);
+                    foreach ($help_forscreen as $k=>$v){
+                        if($v['id']==$vid){
+                            unset($help_forscreen[$k]);
+                            $help_id = $v['help_id'];
+                            break;
+                        }
+                    }
+                    if($help_id){
+                        $redis->set($content_key,json_encode($help_forscreen));
+                        $m_help = new \Common\Model\Smallapp\ForscreenHelpModel();
+                        $m_help->updateData(array('id'=>$help_id),array('status'=>4));
+                    }
+                }
+
             }else{
                 $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
                 $res_num = $m_play_log->getOne('nums',array('id'=>$res_play['id']),'id desc');
@@ -84,7 +105,6 @@ class ForscreenController extends CommonController{
                     $data = json_encode(array('id'=>$res_play['id'],'nums'=>$res_num['nums']));
                     $redis->rpush($push_key,$data);
                 }
-
             }
         }
         $this->to_back(array());

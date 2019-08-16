@@ -230,7 +230,9 @@ class ProgramController extends CommonController{
                     $surfix = strtolower($name_info['extension']);
                     $info['media_type'] = $typeinfo[$surfix];
                     $info['name'] = $name_info['basename'];
-
+                    if($info['media_type']==2 && $info['duration']==0){
+                        $info['duration']=15;
+                    }
                     $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
                     if(!empty($res_play)){
                         $create_time = $res_play['create_time'];

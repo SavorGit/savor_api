@@ -96,7 +96,10 @@ class ForscreenController extends CommonController{
                 }
 
             }else{
-                $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
+                $update_data = array('update_time'=>date('Y-m-d H:i:s'));
+                $update_data['nums'] = array('exp','nums+1');
+                $m_play_log->updateInfo(array('id'=>$res_play['id']),$update_data);
+
                 $res_num = $m_play_log->getOne('nums',array('id'=>$res_play['id']),'id desc');
                 if($res_num['nums']==10 || $res_num['nums']==10000){
                     $push_key = C('SAPP_SELECTCONTENT_PUSH').':playtv';

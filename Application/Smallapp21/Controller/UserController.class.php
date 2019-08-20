@@ -71,7 +71,7 @@ class UserController extends CommonController{
             $res_data = json_decode($res_cache, true);
             $guide_prompt = array_keys($res_data);
         }
-        $data['guide_prompt'] = $guide_prompt;
+        $data['userinfo']['guide_prompt'] = $guide_prompt;
         $this->to_back($data);
     }
     public function register(){

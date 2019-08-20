@@ -15,6 +15,9 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'formid'=>1001);
                 break;
+            case 'guidePrompt':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'type'=>1001);
         }
         parent::_init_();
     }
@@ -78,6 +81,24 @@ class ContentController extends CommonController{
             $res_data = array($formid=>time());
         }
         $redis->set($key,json_encode($res_data),86400*8);
+        $res = array();
+        $this->to_back($res);
+    }
+
+    public function guidePrompt(){
+        $openid = $this->params['openid'];
+        $type = $this->params['type'];
+        $key = C('SAPP_GUIDE_PROMPT').$openid;
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $res_data = json_decode($res_cache,true);
+            $res_data[$type] = array('is_prompt'=>1,'add_time'=>date('Y-m-d H:i:s'));
+        }else{
+            $res_data = array($type=>array('is_prompt'=>1,'add_time'=>date('Y-m-d H:i:s')));
+        }
+        $redis->set($key,json_encode($res_data));
         $res = array();
         $this->to_back($res);
     }

@@ -497,6 +497,13 @@ class IndexController extends CommonController{
             $data['forscreen_id'] = $forscreen_id;
         }
 
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
+        if($action==4 || ($action==2 && $resource_type==2)) {
+            $redis->rpush($history_cache_key, json_encode($data));
+        }
+
         if($is_share){
             $forscreen_res = json_decode($imgs,true);
             $oss_addr = $forscreen_res[0];
@@ -576,12 +583,7 @@ class IndexController extends CommonController{
             $redis = SavorRedis::getInstance();
             $redis->select(5);
             $cache_key = C('SAPP_SCRREN').":".$box_mac;
-
             $redis->rpush($cache_key, json_encode($data));
-            $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
-            if($action==4 || ($action==2 && $resource_type==2)){
-                $redis->rpush($history_cache_key, json_encode($data));
-            }
         }
         $res = array('forscreen_id'=>$forscreen_id);
         $this->to_back($res);

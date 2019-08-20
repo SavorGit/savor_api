@@ -249,13 +249,13 @@ class ProgramController extends CommonController{
                     $program_list[] = $info;
                 }
             }
-            $redis->select(5);
-            $program_key = C('SAPP_SELECTCONTENT_PROGRAM').":$hotel_id";
-            $period = $redis->get($program_key);
-            if(empty($period)){
-                $period = getMillisecond();
-                $redis->set($program_key,$period);
-            }
+        }
+        $redis->select(5);
+        $program_key = C('SAPP_SELECTCONTENT_PROGRAM').":$hotel_id";
+        $period = $redis->get($program_key);
+        if(empty($period)){
+            $period = getMillisecond();
+            $redis->set($program_key,$period);
         }
         $res = array('period'=>$period,'datalist'=>$program_list);
         $this->to_back($res);

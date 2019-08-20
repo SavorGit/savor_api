@@ -62,6 +62,16 @@ class UserController extends CommonController{
             $map['create_time'] = date('Y-m-d H:i:s');
             $redis->rpush($cache_key, json_encode($map));
         }
+        $guide_prompt = array();
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $key = C('SAPP_GUIDE_PROMPT').$openid;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)) {
+            $res_data = json_decode($res_cache, true);
+            $guide_prompt = array_keys($res_data);
+        }
+        $data['guide_prompt'] = $guide_prompt;
         $this->to_back($data);
     }
     public function register(){

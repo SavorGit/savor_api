@@ -51,7 +51,7 @@ class LoginController extends CommonController{
                 $this->to_back(92003);
             }
             $where = array('id'=>$invite_code_info['id']);
-            $data = array('state'=>1,'bind_mobile'=>$mobile);
+            $data = array('state'=>1,'bind_mobile'=>$mobile,'openid'=>$openid);
             $data['bind_time'] = date('Y-m-d H:i:s');
             $m_hotel_invite_code->saveInfo($where,$data);
         }
@@ -79,4 +79,6 @@ class LoginController extends CommonController{
         $userinfo['hotel_name'] = $invite_code_info['hotel_name'];
         $this->to_back($userinfo);
     }
+
+
 }

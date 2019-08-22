@@ -298,5 +298,8 @@ return array(
         '92023'=>'smallappdinner_sendsms_repeatsend',
         '92024'=>'smallappdinner_addorder_repeat',
 
+        //小程序销售单
+        '93001'=>'smallappsale_role_error',
+
 	),
 );

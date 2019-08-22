@@ -65,18 +65,20 @@ class SmsController extends CommonController{
         $sjson = $ucpass->templateSMS($appId,$to,$templateId,$param);
         $sjson = json_decode($sjson,true);
         $code = $sjson['resp']['respCode'];
+
+        $data = array();
+        $data['type'] = 5;
+        $data['status'] = 1;
+        $data['create_time'] = date('Y-m-d H:i:s');
+        $data['update_time'] = date('Y-m-d H:i:s');
+        $data['url'] = $param;
+        $data['tel'] = $to;
+        $data['resp_code'] = $code;
+        $data['msg_type'] = 2;
+        $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
         if($code === '000000') {
-            $data = array();
-            $data['type'] = 5;
-            $data['status'] = 1;
-            $data['create_time'] = date('Y-m-d H:i:s');
-            $data['update_time'] = date('Y-m-d H:i:s');
-            $data['url'] = $param;
-            $data['tel'] = $to;
-            $data['resp_code'] = $code;
-            $data['msg_type'] = 2;
-            $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
-            $m_account_sms_log->addData($data);
             return true;
         }else{
             return false;

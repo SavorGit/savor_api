@@ -274,6 +274,7 @@ return array(
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
+    'SAPP_SALE_INVITE_QRCODE'=>'smallappsale:inviteqrcode:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',

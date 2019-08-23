@@ -59,7 +59,7 @@ class UserController extends CommonController{
                 break;
             case 'removeEmployee':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'invite_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -86,9 +86,10 @@ class UserController extends CommonController{
         $hotel_id = 0;
         if(!empty($userinfo['openid'])){
             $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('openid'=>$userinfo['openid'],'flag'=>0))->find();
+            $rts = $m_hotel_invite_code->field('hotel_id,type')->where(array('openid'=>$userinfo['openid'],'flag'=>0))->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
+                $userinfo['role_type'] = $rts['type'];
             }
         }
         if($userinfo['is_wx_auth']!=3){
@@ -446,6 +447,7 @@ class UserController extends CommonController{
                 $where = array('openid'=>$v['openid']);
                 $fields = 'openid,avatarUrl,nickName';
                 $res_user = $m_user->getOne($fields, $where);
+                $res_user['invite_id'] = $res_invite_code['id'];
                 $datalist[] = $res_user;
             }
         }
@@ -455,6 +457,7 @@ class UserController extends CommonController{
 
     public function removeEmployee(){
         $openid = $this->params['openid'];
+        $invite_id = $this->params['invite_id'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -467,7 +470,7 @@ class UserController extends CommonController{
         $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
         $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
         $res_invite_code = $m_hotel_invite_code->getInfo($where);
-        if(empty($res_invite_code)){
+        if(empty($res_invite_code) || $res_invite_code['invite_id']!=$invite_id){
             $this->to_back(93002);
         }
         $m_hotel_invite_code->updateData(array('id'=>$res_invite_code['id']),array('flag'=>1));

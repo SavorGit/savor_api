@@ -40,14 +40,14 @@ class LoginController extends CommonController{
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0);
-        $invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.is_import_customer,a.code,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
+        $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a,type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(!empty($invite_code_info) && $invite_code!=$invite_code_info['code']){
             $this->to_back(92008);
         }
 
         if(empty($invite_code_info)){
             $where = array('a.code'=>$invite_code,'a.flag'=>0);
-            $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
+            $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,a,type,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
             if(empty($invite_code_info)){//输入的邀请码不正确
                 $this->to_back(92002);
             }
@@ -81,6 +81,7 @@ class LoginController extends CommonController{
         }
         $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
         $userinfo['hotel_name'] = $invite_code_info['hotel_name'];
+        $userinfo['role_type'] = $invite_code_info['type'];
         $this->to_back($userinfo);
     }
 

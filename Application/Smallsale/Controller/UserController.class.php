@@ -61,6 +61,11 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'invite_id'=>1001);
                 break;
+            case 'invite':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+
         }
         parent::_init_();
     }
@@ -477,6 +482,30 @@ class UserController extends CommonController{
         $this->to_back(array());
     }
 
+    public function invite(){
+        $openid = $this->params['openid'];
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $fields = 'id,hotel_id,bind_mobile,openid,type';
+        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
+        $res_invite_code = $m_hotel_invite_code->getOne($fields,$where);
+        if($res_invite_code['type']!=2){
+            $this->to_back(93001);
+        }
+
+        $cache_key = C('SAPP_SALE_INVITE_QRCODE');
+        $uniq_id = uniqid('',true);
+        $invite_cache_key = $res_invite_code['id'].'&'.$uniq_id;
+        $code_key = $cache_key.$res_invite_code['id'].":$invite_cache_key";
+
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $redis->set($code_key,$res_invite_code['id'],300);
+        $qrinfo = encrypt_data($invite_cache_key);
+        $host_name = C('HOST_NAME');
+        $qrcode_url = $host_name."/smallsale/qrcode/inviteQrcode?qrinfo=$qrinfo";
+        $res = array('qrcode_url'=>$qrcode_url,'qrcode'=>$qrinfo);
+        $this->to_back($res);
+    }
 
     private function checkSigninTime($signin_time){
         $is_signin = 0;

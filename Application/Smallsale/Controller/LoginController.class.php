@@ -148,7 +148,7 @@ class LoginController extends CommonController{
             $m_user->updateInfo($where,$data);
             $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid);
         }
-        $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
+        $userinfo['hotel_id'] = $hotel_id;
         $this->to_back($userinfo);
     }
 

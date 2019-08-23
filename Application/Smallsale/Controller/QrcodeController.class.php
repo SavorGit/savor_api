@@ -14,7 +14,7 @@ class QrcodeController extends CommonController{
                 break;
             case 'inviteQrcode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('qrinfo'=>1001);
                 break;
         }
         parent::_init_();
@@ -43,25 +43,8 @@ class QrcodeController extends CommonController{
     }
 
     public function inviteQrcode(){
-        $openid = $this->params['openid'];
-        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $fields = 'id,hotel_id,bind_mobile,openid,type';
-        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        $res_invite_code = $m_hotel_invite_code->getOne($fields,$where);
-        if($res_invite_code['type']!=2){
-            $this->to_back(93001);
-        }
-
-        $cache_key = C('SAPP_SALE_INVITE_QRCODE');
-        $uniq_id = uniqid('',true);
-        $invite_cache_key = $res_invite_code['id'].'&'.$uniq_id;
-        $code_key = $cache_key.$res_invite_code['id'].":$invite_cache_key";
-
-        $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(14);
-        $redis->set($code_key,$res_invite_code['id'],300);
-        $encode_key = encrypt_data($invite_cache_key);
-        $content ="http://rd0.cn/sale?p=$encode_key";
+        $qrinfo = $this->params['qrinfo'];
+        $content ="http://rd0.cn/sale?p=$qrinfo";
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

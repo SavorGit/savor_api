@@ -53,8 +53,14 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 break;
-
-
+            case 'employeelist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'pagesize'=>1000);
+                break;
+            case 'removeEmployee':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -77,11 +83,18 @@ class UserController extends CommonController{
             $userinfo['openid'] = $openid;
             $userinfo['is_wx_auth'] = 0;
         }
-        if(!empty($userinfo['mobile'])){
+        $hotel_id = 0;
+        if(!empty($userinfo['openid'])){
             $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
-            $userinfo['hotel_id'] = $rts['hotel_id'];
+            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('openid'=>$userinfo['openid'],'flag'=>0))->find();
+            if(!empty($rts)){
+                $hotel_id = $rts['hotel_id'];
+            }
         }
+        if($userinfo['is_wx_auth']!=3){
+            $hotel_id = 0;
+        }
+        $userinfo['hotel_id'] = $hotel_id;
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }
@@ -408,6 +421,59 @@ class UserController extends CommonController{
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
     }
+
+    public function employeelist(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = intval($this->params['pagesize']);
+        if(empty($pagesize)){
+            $pagesize = 15;
+        }
+        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
+        $res_invite_code = $m_hotel_invite_code->getInfo($where);
+        if($res_invite_code['type']!=2){
+            $this->to_back(93001);
+        }
+        $all_nums = $page * $pagesize;
+        $where = array('invite_id'=>$res_invite_code['id'],'state'=>1,'flag'=>0,'type'=>1);
+        $res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
+
+        $datalist = array();
+        if($res_invites['total']){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            foreach ($res_invites['list'] as $v){
+                $where = array('openid'=>$v['openid']);
+                $fields = 'openid,avatarUrl,nickName';
+                $res_user = $m_user->getOne($fields, $where);
+                $datalist[] = $res_user;
+            }
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function removeEmployee(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
+        $res_invite_code = $m_hotel_invite_code->getInfo($where);
+        if(empty($res_invite_code)){
+            $this->to_back(93002);
+        }
+        $m_hotel_invite_code->updateData(array('id'=>$res_invite_code['id']),array('flag'=>1));
+        $this->to_back(array());
+    }
+
 
     private function checkSigninTime($signin_time){
         $is_signin = 0;

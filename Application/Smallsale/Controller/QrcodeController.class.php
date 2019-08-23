@@ -62,8 +62,6 @@ class QrcodeController extends CommonController{
         $redis->set($code_key,$res_invite_code['id'],300);
         $encode_key = encrypt_data($invite_cache_key);
         $content ="http://rd0.cn/sale?p=$encode_key";
-        echo $content;
-        exit;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

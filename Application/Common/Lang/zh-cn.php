@@ -283,6 +283,10 @@ return array(
     'smallappdinner_sendsms_repeatsend'=>'请勿重复发送短信',
     'smallappdinner_addorder_repeat'=>'请勿重复下单',
     'smallappsale_role_error'=>'用户角色错误',
+    'smallappsale_user_has_remove'=>'用户已经移除',
+    'smallappsale_qrcode_decode_error'=>'二维码解码错误',
+    'smallappsale_qrcode_has_expired'=>'二维码已过期',
+    'smallappsale_invite_code_not_exists'=>'邀请码不存在',
 
 
 );

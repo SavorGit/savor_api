@@ -11,6 +11,10 @@ class LoginController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('mobile'=>1001,'openid'=>1001,'invite_code'=>1001,'verify_code'=>1001);
                 break;
+            case 'qrcodeLogin':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'qrcode'=>1001);
+
         }
         parent::_init_();
     }
@@ -80,5 +84,71 @@ class LoginController extends CommonController{
         $this->to_back($userinfo);
     }
 
+    public function scancodeLogin(){
+        $openid = $this->params['openid'];
+        $qrcode = $this->params['qrcode'];
+        $de_qrcode = decrypt_data($qrcode,false);
+        if(empty($de_qrcode)){
+            $this->to_back(93003);
+        }
+        $decode_info = explode('&',$de_qrcode);
+        $hotel_invite_id = intval($decode_info[0]);
+
+        $cache_key = C('SAPP_SALE_INVITE_QRCODE');
+        $code_key = $cache_key.$hotel_invite_id.":$de_qrcode";
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_cache = $redis->get($code_key);
+        if(empty($res_cache)){
+            $this->to_back(93004);
+        }
+        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        $res_invite = $m_hotel_invite_code->getInfo(array('id'=>$hotel_invite_id));
+        $hotel_id = $res_invite['hotel_id'];
+
+        $where = array('openid'=>$openid,'flag'=>0);
+        $invite_code_info = $m_hotel_invite_code->getInfo($where);
+        if(empty($invite_code_info)){
+            $where = array('hotel_id'=>$hotel_id,'type'=>1,'state'=>0,'flag'=>0);
+            $res = $m_hotel_invite_code->getDataList('id,code',$where,'id asc',0,1);
+            if($res['total']==0){
+                $this->to_back(93005);
+            }
+            $invite_code = $res['list'][0]['code'];
+            $id = $res['list'][0]['id'];
+
+            $where = array('id'=>$id);
+            $data = array('hotel_id'=>$hotel_id,'code'=>$invite_code,'openid'=>$openid,'invite_id'=>$hotel_invite_id,'state'=>1);
+            $data['bind_time'] = date('Y-m-d H:i:s');
+            $m_hotel_invite_code->updateData($where,$data);
+        }else{
+            if(empty($invite_code_info['invite_id'])){
+                $where = array('id'=>$invite_code_info['id']);
+                $data = array('invite_id'=>$hotel_invite_id);
+                $m_hotel_invite_code->updateData($where,$data);
+            }
+        }
+        $redis->select(14);
+        $redis->remove($code_key);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
+        if(empty($userinfo)){
+            $data = array('small_app_id'=>5,'openid'=>$openid,'status'=>1);
+            $res = $m_user->addInfo($data);
+            if(!$res){
+                $this->to_back(92007);
+            }
+            $userinfo = array('user_id'=>$res,'openid'=>$openid);
+        }else{
+            $data = array('small_app_id'=>5,'openid'=>$openid,'status'=>1);
+            $where = array('id'=>$userinfo['user_id']);
+            $m_user->updateInfo($where,$data);
+            $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid);
+        }
+        $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
+        $this->to_back($userinfo);
+    }
 
 }

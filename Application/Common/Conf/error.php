@@ -300,6 +300,10 @@ return array(
 
         //小程序销售单
         '93001'=>'smallappsale_role_error',
+        '93002'=>'smallappsale_user_has_remove',
+        '93003'=>'smallappsale_qrcode_decode_error',
+        '93004'=>'smallappsale_qrcode_has_expired',
+        '93005'=>'smallappsale_invite_code_not_exists',
 
 	),
 );

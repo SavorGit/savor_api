@@ -15,7 +15,7 @@ class GoodsController extends CommonController{
                 break;
             case 'addActivityGoods':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'oss_addr'=>1001,'oss_filesize'=>1002,
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'oss_addr'=>1001,'oss_filesize'=>1002,'goods_name'=>1002,
                     'price'=>1001, 'start_time'=>1001,'end_time'=>1001,'scope'=>1001,'goods_id'=>1002,'duration'=>1002);
                 break;
             case 'getPlayList':
@@ -136,6 +136,7 @@ class GoodsController extends CommonController{
     public function addActivityGoods(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
+        $goods_name = $this->params['goods_name'];
         $oss_addr = $this->params['oss_addr'];
         $oss_filesize = $this->params['oss_filesize'];
         $price = $this->params['price'];
@@ -191,6 +192,9 @@ class GoodsController extends CommonController{
             'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),
             'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
         );
+        if($goods_name){
+            $data['name'] = $goods_name;
+        }
 
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');
@@ -255,12 +259,18 @@ class GoodsController extends CommonController{
                 $old_data = array('price'=>intval($res_goods['price']),'type'=>intval($res_goods['type']),'scope'=>intval($res_goods['scope']),
                     'start_time'=>$res_goods['start_time'],'end_time'=>$res_goods['end_time'],'media_id'=>$res_goods['media_id']
                 );
+                if($res_goods['name']){
+                    $old_data['name'] = $res_goods['name'];
+                }
                 $old_data_md5 = md5(json_encode($old_data));
 
                 $new_data = array('price'=>intval($price),'type'=>20,'scope'=>$scope,
                     'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
                     'media_id'=>$media_id
                 );
+                if($goods_name){
+                    $new_data['name'] = $goods_name;
+                }
                 $new_data_md5 = md5(json_encode($new_data));
                 if($old_data_md5!=$new_data_md5){
                     $status = 1;

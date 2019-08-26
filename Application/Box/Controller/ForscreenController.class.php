@@ -101,7 +101,7 @@ class ForscreenController extends CommonController{
                 $m_play_log->updateInfo(array('id'=>$res_play['id']),$update_data);
 
                 $res_num = $m_play_log->getOne('nums',array('id'=>$res_play['id']),'id desc');
-                if($res_num['nums']==10 || $res_num['nums']==10000){
+                if($res_num['nums']==10000){
                     $push_key = C('SAPP_SELECTCONTENT_PUSH').':playtv';
                     $redis  =  \Common\Lib\SavorRedis::getInstance();
                     $redis->select(5);

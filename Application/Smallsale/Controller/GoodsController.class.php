@@ -54,7 +54,7 @@ class GoodsController extends CommonController{
         $all_nums = $page * $pagesize;
         $type = $this->params['type'];//10官方活动促销,20我的活动
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'g.id as goods_id,g.name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url';
+        $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url';
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type);
         $nowtime = date('Y-m-d H:i:s');
         if($type==20){

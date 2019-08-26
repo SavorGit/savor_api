@@ -95,6 +95,15 @@ class LoginController extends CommonController{
         $decode_info = explode('&',$de_qrcode);
         $hotel_invite_id = intval($decode_info[0]);
 
+        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        $where = array('openid'=>$openid,'flag'=>0);
+        $invite_code_info = $m_hotel_invite_code->getInfo($where);
+        if(!empty($invite_code_info) && $invite_code_info['invite_id']){
+            $userinfo = $this->getUserinfo($openid);
+            $userinfo['hotel_id'] = $hotel_id;
+            $this->to_back($userinfo);
+        }
+
         $cache_key = C('SAPP_SALE_INVITE_QRCODE');
         $code_key = $cache_key.$hotel_invite_id.":$de_qrcode";
 
@@ -104,13 +113,10 @@ class LoginController extends CommonController{
         if(empty($res_cache)){
             $this->to_back(93004);
         }
-        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        $res_invite = $m_hotel_invite_code->getInfo(array('id'=>$hotel_invite_id));
-        $hotel_id = $res_invite['hotel_id'];
 
-        $where = array('openid'=>$openid,'flag'=>0);
-        $invite_code_info = $m_hotel_invite_code->getInfo($where);
         if(empty($invite_code_info)){
+            $res_invite = $m_hotel_invite_code->getInfo(array('id'=>$hotel_invite_id));
+            $hotel_id = $res_invite['hotel_id'];
             $where = array('hotel_id'=>$hotel_id,'type'=>1,'state'=>0,'flag'=>0);
             $res = $m_hotel_invite_code->getDataList('id,code',$where,'id asc',0,1);
             if($res['total']==0){
@@ -132,6 +138,12 @@ class LoginController extends CommonController{
         }
         $redis->select(14);
         $redis->remove($code_key);
+        $userinfo = $this->getUserinfo($openid);
+        $userinfo['hotel_id'] = $hotel_id;
+        $this->to_back($userinfo);
+    }
+
+    private function getUserinfo($openid){
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
@@ -148,8 +160,7 @@ class LoginController extends CommonController{
             $m_user->updateInfo($where,$data);
             $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid);
         }
-        $userinfo['hotel_id'] = $hotel_id;
-        $this->to_back($userinfo);
+        return $userinfo;
     }
 
 }

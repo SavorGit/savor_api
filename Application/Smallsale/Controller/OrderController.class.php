@@ -94,6 +94,9 @@ class OrderController extends CommonController{
             $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
             $ucpass= new \Common\Lib\Ucpaas($options);
             $appId = $ucconfig['appid'];
+            if(empty($res_goods['name'])){
+                $res_goods['name'] = '您发布的商品';
+            }
             $param = "{$box_info['room_name']},{$res_goods['name']},$amount,$buy_time";
             $res_json = $ucpass->templateSMS($appId,$box_info['activity_phone'],$ucconfig['activity_goods_addorder_templateid'],$param);
             $res_data = json_decode($res_json,true);

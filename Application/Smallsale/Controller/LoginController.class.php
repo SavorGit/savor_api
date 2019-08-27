@@ -40,7 +40,7 @@ class LoginController extends CommonController{
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0);
-        $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a,type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
+        $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(!empty($invite_code_info) && $invite_code!=$invite_code_info['code']){
             $this->to_back(92008);
         }
@@ -130,7 +130,7 @@ class LoginController extends CommonController{
             $data['bind_time'] = date('Y-m-d H:i:s');
             $m_hotel_invite_code->updateData($where,$data);
         }else{
-            if(empty($invite_code_info['invite_id'])){
+            if($invite_code_info['type']==1 && empty($invite_code_info['invite_id'])){
                 $where = array('id'=>$invite_code_info['id']);
                 $data = array('invite_id'=>$hotel_invite_id);
                 $m_hotel_invite_code->updateData($where,$data);

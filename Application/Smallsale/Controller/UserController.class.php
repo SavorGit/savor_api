@@ -379,7 +379,14 @@ class UserController extends CommonController{
         if(!empty($res_userintegral)){
             $integral = intval($res_userintegral['integral']);
         }
-        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral);
+        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral,'is_open_integral'=>0);
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $fields = 'c.is_open_integral';
+        $where = array('a.openid'=>$openid);
+        $res = $m_hotel_invite_code->getInfo($fields,$where);
+        if($res){
+            $data['is_open_integral'] = $res['is_open_integral'];
+        }
         $this->to_back($data);
     }
 

@@ -100,7 +100,7 @@ class LoginController extends CommonController{
         $invite_code_info = $m_hotel_invite_code->getInfo($where);
         if(!empty($invite_code_info) && $invite_code_info['invite_id']){
             $userinfo = $this->getUserinfo($openid);
-            $userinfo['hotel_id'] = $m_hotel_invite_code['hotel_id'];
+            $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
             $this->to_back($userinfo);
         }
 

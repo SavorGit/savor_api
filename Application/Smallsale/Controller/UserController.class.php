@@ -29,7 +29,7 @@ class UserController extends CommonController{
                 break;
             case 'checkUser':
                 $this->is_verify  =1;
-                $this->valid_fields = array('mobile'=>1001);
+                $this->valid_fields = array('mobile'=>1002,'openid'=>1002);
                 break;
             case 'registerCom':
                 $this->is_verify = 1;
@@ -172,12 +172,20 @@ class UserController extends CommonController{
      */
     public function checkUser(){
         $mobile = $this->params['mobile'];
+        $openid = $this->params['openid'];
         $m_hotel_invite = new \Common\Model\HotelInviteCodeModel();
         $fields = 'id';
         $where = array();
-        $where['bind_mobile'] = $mobile;
+        if($openid){
+            $where['openid'] = $openid;
+        }
+        if($mobile){
+            $where['bind_mobile'] = $mobile;
+        }
+        if(empty($where)){
+            $this->to_back(92008);
+        }
         $where['flag']  = 0;
-        
         $info = $m_hotel_invite->getOne($fields, $where);
         if(empty($info)){
             $this->to_back(92008);
@@ -506,7 +514,7 @@ class UserController extends CommonController{
 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $redis->set($code_key,$res_invite_code['id'],300);
+        $redis->set($code_key,$res_invite_code['id'],3600*4);
         $qrinfo = encrypt_data($invite_cache_key);
         $host_name = C('HOST_NAME');
         $qrcode_url = $host_name."/smallsale/qrcode/inviteQrcode?qrinfo=$qrinfo";

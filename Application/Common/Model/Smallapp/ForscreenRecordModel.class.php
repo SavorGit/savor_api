@@ -14,6 +14,11 @@ class ForscreenRecordModel extends Model
         return $data;
     }
 
+    public function getWheredata($fields,$where,$order){
+        $data = $this->field($fields)->where($where)->order($order)->select();
+        return $data;
+    }
+
     public function getWhereCount($where){
         $count = $this->where($where)->count();
         return $count;

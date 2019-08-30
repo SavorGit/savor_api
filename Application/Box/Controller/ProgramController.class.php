@@ -222,31 +222,85 @@ class ProgramController extends CommonController{
                 $m_play = new \Common\Model\Smallapp\PlayLogModel();
                 $typeinfo = C('RESOURCE_TYPEINFO');
                 $redis->select(5);
-                foreach ($help_forscreen as $v){
-                    $info = array('vid'=>$v['id'],'chinese_name'=>'','duration'=>floor($v['duration']),'md5'=>$v['md5_file']);
-                    $imgs_info = json_decode($v['imgs'],true);
-                    $info['oss_path'] = $imgs_info[0];
-                    $name_info = pathinfo($info['oss_path']);
-                    $surfix = strtolower($name_info['extension']);
-                    $info['media_type'] = $typeinfo[$surfix];
-                    $info['name'] = $name_info['basename'];
-                    if($info['media_type']==2 && $info['duration']==0){
-                        $info['duration']=15;
+                $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
+                if($version>2019082101){
+                    foreach ($help_forscreen as $v){
+                        $info = array('id'=>$v['id'],'duration'=>floor($v['duration']));
+                        $imgs_info = json_decode($v['imgs'],true);
+                        $oss_path = $imgs_info[0];
+                        $name_info = pathinfo($oss_path);
+                        $surfix = strtolower($name_info['extension']);
+                        $info['media_type'] = $typeinfo[$surfix];
+                        $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
+                        if(!empty($res_play)){
+                            $create_time = $res_play['create_time'];
+                        }else{
+                            $redis->rpush($push_key,$v['openid']);
+                            $create_time = date('Y-m-d H:i:s');
+                            $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
+                            $m_play->add($add_data);
+                            $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
+                        }
+                        $info['start_date'] = $create_time;
+                        $end_date = strtotime($create_time)+$play_time;
+                        $info['end_date'] = date('Y-m-d H:i:s',$end_date);
+
+                        $subdata = array();
+                        switch ($info['media_type']){
+                            case 1:
+                                $subdata[] = array('vid'=>$v['resource_id'],'md5'=>$v['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
+                                break;
+                            case 2:
+                                $info['media_type']= 21;
+                                $fields = 'resource_id,imgs,md5_file';
+                                $where = array('forscreen_id'=>$v['forscreen_id']);
+                                $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+                                $res_forscreen = $m_forscreenrecord->getWheredata($fields,$where,'id asc');
+                                foreach ($res_forscreen as $fv){
+                                    $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$v['md5_file']);
+                                    $tmp_imgs_info = json_decode($fv['imgs'],true);
+                                    $sinfo['oss_path'] = $tmp_imgs_info[0];
+                                    $sname_info = pathinfo($sinfo['oss_path']);
+                                    $sinfo['name'] = $sname_info['basename'];
+                                    $subdata[]=$sinfo;
+                                }
+                                if(count($subdata)>1){
+                                    $info['duration']=3;
+                                }else{
+                                    $info['duration']=15;
+                                }
+                                break;
+                        }
+                        $info['subdata'] = $subdata;
+                        $program_list[] = $info;
                     }
-                    $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
-                    if(!empty($res_play)){
-                        $create_time = $res_play['create_time'];
-                    }else{
-                        $redis->rpush($push_key,$v['openid']);
-                        $create_time = date('Y-m-d H:i:s');
-                        $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
-                        $m_play->add($add_data);
-                        $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
+                }else{
+                    foreach ($help_forscreen as $v){
+                        $info = array('vid'=>$v['id'],'chinese_name'=>'','duration'=>floor($v['duration']),'md5'=>$v['md5_file']);
+                        $imgs_info = json_decode($v['imgs'],true);
+                        $info['oss_path'] = $imgs_info[0];
+                        $name_info = pathinfo($info['oss_path']);
+                        $surfix = strtolower($name_info['extension']);
+                        $info['media_type'] = $typeinfo[$surfix];
+                        $info['name'] = $name_info['basename'];
+                        if($info['media_type']==2 && $info['duration']==0){
+                            $info['duration']=15;
+                        }
+                        $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
+                        if(!empty($res_play)){
+                            $create_time = $res_play['create_time'];
+                        }else{
+                            $redis->rpush($push_key,$v['openid']);
+                            $create_time = date('Y-m-d H:i:s');
+                            $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
+                            $m_play->add($add_data);
+                            $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
+                        }
+                        $info['start_date'] = $create_time;
+                        $end_date = strtotime($create_time)+$play_time;
+                        $info['end_date'] = date('Y-m-d H:i:s',$end_date);
+                        $program_list[] = $info;
                     }
-                    $info['start_date'] = $create_time;
-                    $end_date = strtotime($create_time)+$play_time;
-                    $info['end_date'] = date('Y-m-d H:i:s',$end_date);
-                    $program_list[] = $info;
                 }
             }
         }

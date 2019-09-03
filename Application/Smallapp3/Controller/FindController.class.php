@@ -27,7 +27,7 @@ class FindController extends CommonController{
                 break;
             case 'findlist':  //发现列表
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1001,'find_ids'=>1002);
                 break;
             case 'recordViewfind':  //记录查看发现
                 $this->is_verify =1;
@@ -39,8 +39,10 @@ class FindController extends CommonController{
 
     public function findlist(){
         $openid = $this->params['openid'];
-        $page   = intval($this->params['page']) ? intval($this->params['page']) :1;
-        $pagesize = 10;
+        $find_ids   = $this->params['find_ids'];
+        $pagesize = 5;
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
 
         $redis = SavorRedis::getInstance();
         $redis->select(5);
@@ -49,16 +51,14 @@ class FindController extends CommonController{
         if(!empty($res_cache)){
             $find_data = json_decode($res_cache,true);
         }else{
-            $m_public = new \Common\Model\Smallapp\PublicModel();
-            $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
             $oss_host = 'http://'. C('OSS_HOST').'/';
             $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
 
-            //内容选择 点播10条 精选20 公开20
-            $content_num = array('num'=>50,'demand'=>0.2,'choice'=>0.4,'public'=>0.4);
+            //内容选择 1点播10条 2精选20 3公开20
+            $content_num = array('num'=>50,'1'=>0.2,'2'=>0.4,'3'=>0.4);
 
             //点播内容 获取最新一期设置为小程序的节目单
-            $demand_num = $content_num['num']*$content_num['demand'];
+            $demand_num = $content_num['num']*$content_num['1'];
             $m_program_list =  new \Common\Model\ProgramMenuListModel();
             $where  = array('is_small_app'=>1);
             $order = " id desc";
@@ -96,7 +96,7 @@ class FindController extends CommonController{
             }
 
             //精选内容
-            $choice_num = $content_num['num']*$content_num['choice'] + ($demand_num-count($demand_list));
+            $choice_num = $content_num['num']*$content_num['2'] + ($demand_num-count($demand_list));
             $where = array('a.is_recommend'=>1,'a.status'=>2);
             $where['box.flag'] = 0;
             $where['box.state'] = 1;
@@ -115,7 +115,7 @@ class FindController extends CommonController{
             }
 
             //公开内容
-            $public_num = $content_num['num']*$content_num['public'];
+            $public_num = $content_num['num']*$content_num['3'];
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
             if(!empty($choice_ids)){
@@ -174,7 +174,13 @@ class FindController extends CommonController{
             shuffle($find_data);
             $redis->set($find_key,json_encode($find_data),3600);
         }
-
+        $prev_findids = array();
+        if($find_ids){
+            $find_ids = json_decode($find_ids,true);
+            foreach ($find_ids as $v){
+                $prev_findids[$v['type']][]=$v['id'];
+            }
+        }
         $cache_key = C('SAPP_HAS_FIND').$openid;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
@@ -182,20 +188,31 @@ class FindController extends CommonController{
         }else{
             $hasfind_data = array();
         }
+        $all_hasfind = array();
+        foreach ($content_num as $k=>$v){
+            $type = intval($k);
+            if($type){
+                $prev_ids = isset($prev_findids[$type])?$prev_findids[$type]:array();
+                $hasfind_ids = isset($hasfind_data[$type])?$hasfind_data[$type]:array();
+                $tmp_hasfind = array_merge($prev_ids,$hasfind_ids);
+                if(!empty($tmp_hasfind)){
+                    $all_hasfind[$type] = $tmp_hasfind;
+                }
+            }
+        }
         foreach ($find_data as $k=>$v){
-            if(empty($hasfind_data)){
+            if(empty($all_hasfind)){
                 break;
             }
-            if(array_key_exists($v['id'],$hasfind_data[$v['type']])){
+            if((isset($all_hasfind[$v['type']]) && array_key_exists($v['id'],$all_hasfind[$v['type']]))){
                 unset($find_data[$k]);
             }
         }
         $find_total = count($find_data);
-        $find_page = ceil($find_total/$pagesize);
+        $last_find_total = $pagesize-$find_total;
 
-        $offset = ($page-1)*$pagesize;
-        if($find_total && $page<=$find_page){
-            $res_data = array_slice($find_data,$offset,$pagesize);
+        if($last_find_total<=0){
+            $res_data = array_slice($find_data,0,$pagesize);
         }else{
             $public_ids = array();
             foreach($find_data as $v){
@@ -203,13 +220,13 @@ class FindController extends CommonController{
                     $public_ids[] = $v['id'];
                 }
             }
-            if(!empty($hasfind_data)){
-                if(isset($hasfind_data[2])){
+            if(!empty($all_hasfind)){
+                if(isset($all_hasfind[2])){
                     foreach($hasfind_data[2] as $v){
                         $public_ids[] = $v;
                     }
                 }
-                if(isset($hasfind_data[3])){
+                if(isset($all_hasfind[3])){
                     foreach($hasfind_data[3] as $v){
                         $public_ids[] = $v;
                     }
@@ -227,7 +244,8 @@ class FindController extends CommonController{
             $where['hotel.flag'] = 0;
             $where['hotel.state']= 1;
             $order = 'a.id desc';
-            $all_public = $m_public->getList($fields, $where, $order, "$offset,$pagesize");
+            $size = $pagesize - $last_find_total;
+            $all_public = $m_public->getList($fields, $where, $order, "0,$size");
             foreach($all_public as $key=>$v){
                 if(empty($v['avatarUrl'])){
                     $all_public[$key]['avatarUrl'] = $default_avatar;
@@ -266,7 +284,12 @@ class FindController extends CommonController{
                 $all_public[$key]['share_num']  = $rets['share_num'];
                 $all_public[$key]['type']  = 3;
             }
-            $res_data = $all_public;
+            if($last_find_total<$pagesize){
+                $res_finddata = array_slice($find_data,0,$last_find_total);
+                $res_data = array_merge($res_finddata,$all_public);
+            }else{
+                $res_data = $all_public;
+            }
         }
         shuffle($res_data);
         $this->to_back($res_data);

@@ -64,7 +64,7 @@ class FindController extends CommonController{
             $order = " id desc";
             $program_info = $m_program_list->getInfo('id', $where, $order);
             $menu_id = $program_info['id'];
-            $fields = 'ads.id,ads.name title,ads.img_url,ads.duration,ads.create_time,media.oss_addr,media.oss_filesize as resource_size';
+            $fields = 'ads.id,ads.name title,ads.img_url,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
             $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
             $where['media.id']  = array('not in',array('17614','19533'));
             $where['media.type'] = 1;
@@ -83,11 +83,11 @@ class FindController extends CommonController{
                 $dinfo['collect_num']= $rets['collect_num'];
                 $dinfo['share_num']  = $rets['share_num'];
 
-                $pdetail = array('res_url'=>$oss_host.$v['oss_addr'],'forscreen_url'=>$v['oss_addr'],'duration'=>secToMinSec($v['duration']),
+                $pdetail = array('res_url'=>$oss_host.$v['oss_addr'],'forscreen_url'=>$v['oss_addr'],'duration'=>intval($v['duration']),
                     'resource_size'=>$v['resource_size']);
                 $oss_info = pathinfo($v['oss_addr']);
                 $pdetail['filename'] = $oss_info['basename'];
-                $pdetail['res_id'] = $oss_info['filename'];
+                $pdetail['res_id'] = $v['media_id'];
                 $img_url = $v['img_url']? $v['img_url'] :'media/resource/EDBAEDArdh.png';
                 $pdetail['img_url'] = $oss_host.$img_url;
                 $dinfo['pubdetail'] = array($pdetail);
@@ -151,7 +151,7 @@ class FindController extends CommonController{
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[0]['res_id']   = $tmp_arr[0];
                     $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
-                    $pubdetail_info[0]['duration'] = secToMinSec(intval($pubdetail_info[0]['duration']));
+                    $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
                 }else {
                     foreach($pubdetail_info as $kk=>$vv){
                         $filename = explode('/', $vv['forscreen_url']);
@@ -246,7 +246,7 @@ class FindController extends CommonController{
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[0]['res_id']   = $tmp_arr[0];
                     $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
-                    $pubdetail_info[0]['duration'] = secToMinSec(intval($pubdetail_info[0]['duration']));
+                    $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
                 }else {
                     foreach($pubdetail_info as $kk=>$vv){
                         $filename = explode('/', $vv['forscreen_url']);

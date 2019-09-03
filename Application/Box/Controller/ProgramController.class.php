@@ -258,7 +258,7 @@ class ProgramController extends CommonController{
                                 $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
                                 $res_forscreen = $m_forscreenrecord->getWheredata($fields,$where,'id asc');
                                 foreach ($res_forscreen as $fv){
-                                    $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$v['md5_file']);
+                                    $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
                                     $tmp_imgs_info = json_decode($fv['imgs'],true);
                                     $sinfo['oss_path'] = $tmp_imgs_info[0];
                                     $sname_info = pathinfo($sinfo['oss_path']);

@@ -74,17 +74,14 @@ class OptimizeController extends CommonController{
         $imgmedia_id = $res_goods['imgmedia_id'];
         $m_media = new \Common\Model\MediaModel();
         $media_info = $m_media->getMediaInfoById($media_id);
-        if($media_info['type']==2){
-            $data['img_url'] = $media_info['oss_addr'];
-        }else{
-            $data['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
-        }
+        $data['video_url'] = $media_info['oss_addr'];
+        $data['media_type'] = $media_info['type'];
         $oss_path_info = pathinfo($media_info['oss_path']);
-        $pinfo = array('res_url'=>$data['img_url'],'forscreen_url'=>$media_info['oss_path'],'duration'=>$media_info['duration'],
-            'resource_size'=>$media_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$media_id,'img_url'=>$data['img_url']);
+        $pinfo = array('res_url'=>$data['video_url'],'forscreen_url'=>$media_info['oss_path'],'duration'=>$media_info['duration'],
+            'resource_size'=>$media_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$media_id);
 
         $media_info = $m_media->getMediaInfoById($imgmedia_id);
-        $data['detail_img_url'] = $media_info['oss_addr'];
+        $data['detail_content'] = $media_info['oss_addr'];
         $rets = $this->getFindnums($openid,$goods_id,4);
         $data['is_collect'] = $rets['is_collect'];
         $data['collect_num'] = $rets['collect_num'];

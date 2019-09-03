@@ -70,9 +70,13 @@ class CollectionController extends CommonController{
             }
         }
 
-        $m_goodscollection = new \Common\Model\Smallapp\GoodscollectionModel();
-        $add_data = array('openid'=>$openid,'goods_id'=>$goods_id,'phone'=>$phone);
-        $m_goodscollection->add($add_data);
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $where = array('openid'=>$openid,'res_id'=>$goods_id);
+        $res_collect = $m_collect->countNum($where);
+        if(!$res_collect){
+            $add_data = array('openid'=>$openid,'res_id'=>$goods_id,'type'=>4);
+            $m_collect->add($add_data);
+        }
         $res_data = array('message'=>'收藏成功');
 
         $redis->set($send_cache_key,1,18000);

@@ -76,9 +76,15 @@ class OptimizeController extends CommonController{
         $media_info = $m_media->getMediaInfoById($media_id);
         $data['video_url'] = $media_info['oss_addr'];
         $data['media_type'] = $media_info['type'];
+        if($media_info['type']==2){
+            $img_url = $media_info['oss_addr'];
+        }else{
+            $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+        }
+
         $oss_path_info = pathinfo($media_info['oss_path']);
         $pinfo = array('res_url'=>$data['video_url'],'forscreen_url'=>$media_info['oss_path'],'duration'=>$media_info['duration'],
-            'resource_size'=>$media_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$media_id);
+            'resource_size'=>$media_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$media_id,'img_url'=>$img_url);
 
         $media_info = $m_media->getMediaInfoById($imgmedia_id);
         $data['detail_content'] = $media_info['oss_addr'];

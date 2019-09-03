@@ -42,22 +42,14 @@ class OptimizeController extends CommonController{
             $oss_path = $media_info['oss_path'];
             $oss_path_info = pathinfo($oss_path);
 
-            if($media_info['type']==1){
-                $res_type = 2;
-            }else{
-                $res_type = 1;
-            }
-            $dinfo = array('id'=>$v['id'],'forscreen_id'=>0,'res_type'=>$res_type,'res_nums'=>1,'is_pub_hotelinfo'=>0,
-                'create_time'=>'','hotel_name'=>'','avatarUrl'=>'','nickName'=>'');
             if($media_info['type']==2){
                 $img_url = $media_info['oss_addr'];
             }else{
                 $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
             }
-            $pinfo = array('res_url'=>$img_url,'forscreen_url'=>$oss_path,'duration'=>0,'resource_size'=>$media_info['oss_filesize'],
-                'filename'=>$oss_path_info['basename'],'res_id'=>$media_id,'img_url'=>$img_url);
-            $dinfo['pubdetail'] = array($pinfo);
 
+            $dinfo = array('id'=>$v['id'],'img_url'=>$img_url,'duration'=>$media_info['duration'],'tx_url'=>$media_info['oss_addr'],
+                'filename'=>$oss_path_info['basename']);
             $rets = $this->getFindnums($openid,$v['id'],4);
             $dinfo['is_collect'] = $rets['is_collect'];
             $dinfo['collect_num'] = $rets['collect_num'];

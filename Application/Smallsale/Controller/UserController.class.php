@@ -388,12 +388,19 @@ class UserController extends CommonController{
             $integral = intval($res_userintegral['integral']);
         }
         $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral,'is_open_integral'=>0);
+
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $fields = 'c.is_open_integral';
-        $where = array('a.openid'=>$openid);
-        $res = $m_hotel_invite_code->getInfo($fields,$where);
-        if($res){
-            $data['is_open_integral'] = $res['is_open_integral'];
+        $res_invite = $m_hotel_invite_code->getOne('hotel_id',array('openid'=>$openid));
+        $hotel_id = $res_invite['hotel_id'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id as goods_id';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+        $where['g.type']= 40;
+        $orderby = 'g.id desc';
+        $limit = "0,1";
+        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        if(!empty($res_goods)){
+            $data['is_open_integral'] = 1;
         }
         $this->to_back($data);
     }

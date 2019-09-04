@@ -40,23 +40,75 @@ class FindController extends CommonController{
     public function findlist(){
         $openid = $this->params['openid'];
         $find_ids   = $this->params['find_ids'];
-        $pagesize = 5;
+        $pagesize = 20;
+        //内容选择 1点播10条 2精选20 3公开20
+        $content_num = array('num'=>50,'1'=>0.2,'2'=>0.4,'3'=>0.4);
+        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+
         $m_public = new \Common\Model\Smallapp\PublicModel();
-        $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
 
         $redis = SavorRedis::getInstance();
         $redis->select(5);
+        $prev_findids = array();
+        if($find_ids){
+            $find_ids = json_decode(stripslashes($find_ids),true);
+            foreach ($find_ids as $v){
+                $prev_findids[$v['type']][$v['id']]=$v['id'];
+            }
+        }
+        $cache_key = C('SAPP_HAS_FIND').$openid;
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $hasfind_data = json_decode($res_cache,true);
+        }else{
+            $hasfind_data = array();
+        }
+        $all_hasfind = array();
+        foreach ($content_num as $k=>$v){
+            $type = intval($k);
+            if($type){
+                $prev_ids = isset($prev_findids[$type])?array_values($prev_findids[$type]):array();
+                $hasfind_ids = isset($hasfind_data[$type])?array_values($hasfind_data[$type]):array();
+                $tmp_hasfind = array_merge($prev_ids,$hasfind_ids);
+                if(!empty($tmp_hasfind)){
+                    $all_hasfind[$type] = array_unique($tmp_hasfind);
+                }
+            }
+        }
+        $key_findtop = C('SAPP_FIND_TOP');
+        $res_findtop = $redis->get($key_findtop);
+        $find_topids = array();
+        if($res_findtop){
+            $find_topids = json_decode($res_findtop,true);
+            if(!empty($find_topids)){
+                foreach ($find_topids as $tk=>$tv){
+                    if((isset($all_hasfind[2]) && in_array($tv,$all_hasfind[2])) || isset($all_hasfind[3]) && in_array($tv,$all_hasfind[3])){
+                        unset($find_topids[$tk]);
+                    }
+                }
+                $find_topids = array_values($find_topids);
+            }
+        }
+        $top_list = array();
+        if(!empty($find_topids)){
+            $where = array('a.id'=>array('in',$find_topids));
+            $where['box.flag'] = 0;
+            $where['box.state'] = 1;
+            $where['hotel.flag'] = 0;
+            $where['hotel.state'] = 1;
+            $where['user.status'] = 1;
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $res_top = $m_public->getList($fields, $where,'id desc','');
+            $top_list = $this->handleFindlist($res_top,$openid);
+        }
+
+
         $find_key = C('SAPP_FIND_CONTENT');
         $res_cache = $redis->get($find_key);
         if(!empty($res_cache)){
             $find_data = json_decode($res_cache,true);
         }else{
-            $oss_host = 'http://'. C('OSS_HOST').'/';
-            $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
-
-            //内容选择 1点播10条 2精选20 3公开20
-            $content_num = array('num'=>50,'1'=>0.2,'2'=>0.4,'3'=>0.4);
-
             //点播内容 获取最新一期设置为小程序的节目单
             $demand_num = $content_num['num']*$content_num['1'];
             $m_program_list =  new \Common\Model\ProgramMenuListModel();
@@ -74,7 +126,7 @@ class FindController extends CommonController{
             $demand_list = array();
             foreach($res_demand as $v){
                 $create_time = viewTimes(strtotime($v['create_time']));
-                $dinfo = array('id'=>$v['id'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
+                $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
                     'hotel_name'=>'','avatarUrl'=>$default_avatar,'nickName'=>'小热点');
 
                 //获取是否收藏、分享个数、收藏个数、获取播放次数
@@ -97,7 +149,10 @@ class FindController extends CommonController{
 
             //精选内容
             $choice_num = $content_num['num']*$content_num['2'] + ($demand_num-count($demand_list));
-            $where = array('a.is_recommend'=>1,'a.status'=>2);
+            $where = array('a.status'=>2,'a.is_recommend'=>1);
+            if(!empty($find_topids)){
+                $where['a.id'] = array('not in',$find_topids);
+            }
             $where['box.flag'] = 0;
             $where['box.state'] = 1;
             $where['hotel.flag'] = 0;
@@ -118,8 +173,9 @@ class FindController extends CommonController{
             $public_num = $content_num['num']*$content_num['3'];
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
-            if(!empty($choice_ids)){
-                $where['a.id'] = array('not in',$choice_ids);
+            $not_ids = array_merge($choice_ids,$find_topids);
+            if(!empty($not_ids)){
+                $where['a.id'] = array('not in',$not_ids);
             }
             $where['box.flag']   = 0;
             $where['box.state']  = 1;
@@ -133,78 +189,17 @@ class FindController extends CommonController{
                 $public_list[] = $v;
             }
             $all_public = array_merge($choice_list,$public_list);
-            foreach($all_public as $key=>$v){
-                if(empty($v['avatarUrl'])){
-                    $all_public[$key]['avatarUrl'] = $default_avatar;
-                }
-                if(empty($v['nickName'])){
-                    $all_public[$key]['nickName'] = '游客';
-                }
-                $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
-                $where = array();
-                $where['forscreen_id'] = $v['forscreen_id'];
-                $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'');
-                if($v['res_type']==2){
-                    $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
-
-                    $pubdetail_info[0]['filename'] = $filename[2];
-                    $tmp_arr = explode('.', $filename[2]);
-                    $pubdetail_info[0]['res_id']   = $tmp_arr[0];
-                    $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
-                    $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
-                }else {
-                    foreach($pubdetail_info as $kk=>$vv){
-                        $filename = explode('/', $vv['forscreen_url']);
-                        $pubdetail_info[$kk]['filename'] = $filename[2];
-                        $tmp_arr = explode('.', $filename[2]);
-                        $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                        $pubdetail_info[$kk]['img_url'] = $vv['res_url'].'?x-oss-process=image/resize,p_20';
-                    }
-                }
-                $all_public[$key]['pubdetail'] = $pubdetail_info;
-                $all_public[$key]['create_time'] = viewTimes(strtotime($v['create_time']));
-
-                //获取是否收藏、分享个数、收藏个数、获取播放次数
-                $rets = $this->getFindnums($openid,$v['forscreen_id'],2);
-                $all_public[$key]['is_collect'] = $rets['is_collect'];
-                $all_public[$key]['collect_num'] = $rets['collect_num'];
-                $all_public[$key]['share_num']  = $rets['share_num'];
-            }
+            $all_public = $this->handleFindlist($all_public,$openid);
             $find_data = array_merge($demand_list,$all_public);
             shuffle($find_data);
             $redis->set($find_key,json_encode($find_data),3600);
         }
-        $prev_findids = array();
-        if($find_ids){
-            $find_ids = json_decode($find_ids,true);
-            foreach ($find_ids as $v){
-                $prev_findids[$v['type']][]=$v['id'];
-            }
-        }
-        $cache_key = C('SAPP_HAS_FIND').$openid;
-        $res_cache = $redis->get($cache_key);
-        if(!empty($res_cache)){
-            $hasfind_data = json_decode($res_cache,true);
-        }else{
-            $hasfind_data = array();
-        }
-        $all_hasfind = array();
-        foreach ($content_num as $k=>$v){
-            $type = intval($k);
-            if($type){
-                $prev_ids = isset($prev_findids[$type])?$prev_findids[$type]:array();
-                $hasfind_ids = isset($hasfind_data[$type])?$hasfind_data[$type]:array();
-                $tmp_hasfind = array_merge($prev_ids,$hasfind_ids);
-                if(!empty($tmp_hasfind)){
-                    $all_hasfind[$type] = $tmp_hasfind;
-                }
-            }
-        }
+
         foreach ($find_data as $k=>$v){
             if(empty($all_hasfind)){
                 break;
             }
-            if((isset($all_hasfind[$v['type']]) && array_key_exists($v['id'],$all_hasfind[$v['type']]))){
+            if((isset($all_hasfind[$v['type']]) && in_array($v['id'],$all_hasfind[$v['type']]))){
                 unset($find_data[$k]);
             }
         }
@@ -246,44 +241,7 @@ class FindController extends CommonController{
             $order = 'a.id desc';
             $size = $pagesize - $last_find_total;
             $all_public = $m_public->getList($fields, $where, $order, "0,$size");
-            foreach($all_public as $key=>$v){
-                if(empty($v['avatarUrl'])){
-                    $all_public[$key]['avatarUrl'] = $default_avatar;
-                }
-                if(empty($v['nickName'])){
-                    $all_public[$key]['nickName'] = '游客';
-                }
-                $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
-                $where = array();
-                $where['forscreen_id'] = $v['forscreen_id'];
-                $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'');
-                if($v['res_type']==2){
-                    $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
-
-                    $pubdetail_info[0]['filename'] = $filename[2];
-                    $tmp_arr = explode('.', $filename[2]);
-                    $pubdetail_info[0]['res_id']   = $tmp_arr[0];
-                    $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
-                    $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
-                }else {
-                    foreach($pubdetail_info as $kk=>$vv){
-                        $filename = explode('/', $vv['forscreen_url']);
-                        $pubdetail_info[$kk]['filename'] = $filename[2];
-                        $tmp_arr = explode('.', $filename[2]);
-                        $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                        $pubdetail_info[$kk]['img_url'] = $vv['res_url'].'?x-oss-process=image/resize,p_20';
-                    }
-                }
-                $all_public[$key]['pubdetail'] = $pubdetail_info;
-                $all_public[$key]['create_time'] = viewTimes(strtotime($v['create_time']));
-
-                //获取是否收藏、分享个数、收藏个数、获取播放次数
-                $rets = $this->getFindnums($openid,$v['forscreen_id'],2);
-                $all_public[$key]['is_collect'] = $rets['is_collect'];
-                $all_public[$key]['collect_num'] = $rets['collect_num'];
-                $all_public[$key]['share_num']  = $rets['share_num'];
-                $all_public[$key]['type']  = 3;
-            }
+            $all_public = $this->handleFindlist($all_public,$openid);
             if($last_find_total<$pagesize){
                 $res_finddata = array_slice($find_data,0,$last_find_total);
                 $res_data = array_merge($res_finddata,$all_public);
@@ -292,6 +250,9 @@ class FindController extends CommonController{
             }
         }
         shuffle($res_data);
+        if(!empty($top_list)){
+            $res_data = array_merge($top_list,$res_data);
+        }
         $this->to_back($res_data);
     }
 
@@ -825,5 +786,52 @@ class FindController extends CommonController{
 
         $data = array('is_collect'=>$is_collect,'collect_num'=>$collect_num,'share_num'=>$share_num);
         return $data;
+    }
+
+    private function handleFindlist($all_public,$openid){
+        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
+        foreach($all_public as $key=>$v){
+            $all_public[$key]['title'] = '';
+            if(empty($v['avatarUrl'])){
+                $all_public[$key]['avatarUrl'] = $default_avatar;
+            }
+            if(empty($v['nickName'])){
+                $all_public[$key]['nickName'] = '游客';
+            }
+            $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url, duration,resource_size";
+            $where = array();
+            $where['forscreen_id'] = $v['forscreen_id'];
+            $pubdetail_info = $m_pubdetail->getWhere($fields, $where,'');
+            if($v['res_type']==2){
+                $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
+
+                $pubdetail_info[0]['filename'] = $filename[2];
+                $tmp_arr = explode('.', $filename[2]);
+                $pubdetail_info[0]['res_id']   = $tmp_arr[0];
+                $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
+                $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
+            }else {
+                foreach($pubdetail_info as $kk=>$vv){
+                    $filename = explode('/', $vv['forscreen_url']);
+                    $pubdetail_info[$kk]['filename'] = $filename[2];
+                    $tmp_arr = explode('.', $filename[2]);
+                    $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
+                    $pubdetail_info[$kk]['img_url'] = $vv['res_url'].'?x-oss-process=image/resize,p_20';
+                }
+            }
+            $all_public[$key]['pubdetail'] = $pubdetail_info;
+            $all_public[$key]['create_time'] = viewTimes(strtotime($v['create_time']));
+
+            //获取是否收藏、分享个数、收藏个数、获取播放次数
+            $rets = $this->getFindnums($openid,$v['forscreen_id'],2);
+            $all_public[$key]['is_collect'] = $rets['is_collect'];
+            $all_public[$key]['collect_num'] = $rets['collect_num'];
+            $all_public[$key]['share_num']  = $rets['share_num'];
+        }
+        return $all_public;
     }
 }

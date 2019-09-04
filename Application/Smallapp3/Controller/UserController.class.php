@@ -268,7 +268,7 @@ class UserController extends CommonController{
         $where = array();
         $where['a.openid'] = $openid;
         $where['a.status'] = 1;
-    
+        $where['a.type']   = array('in','1,2,3');
         $order="a.create_time desc";
         $collect_info = $m_collect->getList($fields, $where, $order, $limit);
     

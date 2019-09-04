@@ -104,10 +104,11 @@ class UserController extends CommonController{
         $where = array();
         $where['a.openid'] = $openid;
         $where['a.status'] = 1;
+        $where['a.type'] = array('in',array(1,2,3));
     
         $order="create_time desc";
         $collect_info = $m_collect->getList($fields, $where, $order, $limit);
-    
+
         $m_content  = new \Common\Model\ContentModel();
         $m_pubdetail= new \Common\Model\Smallapp\PubdetailModel();
         $m_public      = new \Common\Model\Smallapp\PublicModel();

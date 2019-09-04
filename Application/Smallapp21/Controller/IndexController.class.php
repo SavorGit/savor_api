@@ -554,26 +554,28 @@ class IndexController extends CommonController{
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
 
-            $public_data = array();
-            $public_data['forscreen_id'] = $forscreen_id;
-            $public_data['openid'] = $openid;
-            $public_data['box_mac']= $box_mac;
-            $public_data['public_text'] = $public_text;
-            if($action==4){
-                $public_data['res_type'] = 1;
-            }else if($action==2 && $resource_type==2){
-                $public_data['res_type'] = 2;
-                $public_data['duration'] = $duration;
-            }
-            $public_data['resource_size'] = $resource_size;
-            $public_data['resource_id']   = $resource_id;
-
-            $public_data['res_url']   = $oss_addr;
-            $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
-            $public_data['status'] =1;
             $m_public = new \Common\Model\Smallapp\PublicModel();
-            $m_public->add($public_data);
+            $res_public = $m_public->getOne('id',array('forscreen_id'=>$forscreen_id,'openid'=>$openid),'id desc');
+            if(empty($res_public)){
+                $public_data = array();
+                $public_data['forscreen_id'] = $forscreen_id;
+                $public_data['openid'] = $openid;
+                $public_data['box_mac']= $box_mac;
+                $public_data['public_text'] = $public_text;
+                if($action==4){
+                    $public_data['res_type'] = 1;
+                }else if($action==2 && $resource_type==2){
+                    $public_data['res_type'] = 2;
+                    $public_data['duration'] = $duration;
+                }
+                $public_data['resource_size'] = $resource_size;
+                $public_data['resource_id']   = $resource_id;
 
+                $public_data['res_url']   = $oss_addr;
+                $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+                $public_data['status'] =1;
+                $m_public->add($public_data);
+            }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,
                 'res_url'=>$oss_addr,'duration'=>$duration,'resource_size'=>$resource_size);
             $m_publicdetail = new \Common\Model\Smallapp\PubdetailModel();

@@ -278,6 +278,8 @@ return array(
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
+    'SAPP_FIND_CONTENT'=>'smallapp:findcontent',
+    'SAPP_HAS_FIND'=>'smallapp:hasfind:',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

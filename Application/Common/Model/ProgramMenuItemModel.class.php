@@ -10,6 +10,20 @@ use Think\Model;
 class ProgramMenuItemModel extends Model
 {
 	protected $tableName='programmenu_item';
+
+
+	public function getList($fields,$where,$order,$limit){
+        $res = $this->alias('a')
+                    ->join('savor_ads ads on a.ads_id = ads.id','left')
+                    ->join('savor_media media on ads.media_id =media.id ','left')
+                    ->field($fields)
+                    ->where($where)
+                    ->order($order)
+                    ->limit($limit)
+                    ->select();
+        return $res;
+    }
+
 	/**
 	 * @获取节目单节目数据
 	 */

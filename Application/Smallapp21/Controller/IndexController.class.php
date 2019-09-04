@@ -518,7 +518,6 @@ class IndexController extends CommonController{
             }else{
                 $type = 3;
             }
-
             $accessKeyId = C('OSS_ACCESS_ID');
             $accessKeySecret = C('OSS_ACCESS_KEY');
             $endpoint = 'oss-cn-beijing.aliyuncs.com';
@@ -526,7 +525,7 @@ class IndexController extends CommonController{
             $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
             $aliyunoss->setBucket($bucket);
 
-            if(empty($resource_size)){
+            if(empty($resource_size) || $resource_size=='undefined'){
                 $this->to_back(90103);
             }
             if($type==1){//视频

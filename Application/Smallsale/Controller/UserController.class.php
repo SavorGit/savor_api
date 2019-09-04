@@ -29,7 +29,7 @@ class UserController extends CommonController{
                 break;
             case 'checkUser':
                 $this->is_verify  =1;
-                $this->valid_fields = array('mobile'=>1001);
+                $this->valid_fields = array('mobile'=>1002,'openid'=>1002);
                 break;
             case 'registerCom':
                 $this->is_verify = 1;
@@ -172,12 +172,20 @@ class UserController extends CommonController{
      */
     public function checkUser(){
         $mobile = $this->params['mobile'];
+        $openid = $this->params['openid'];
         $m_hotel_invite = new \Common\Model\HotelInviteCodeModel();
         $fields = 'id';
         $where = array();
-        $where['bind_mobile'] = $mobile;
+        if($openid){
+            $where['openid'] = $openid;
+        }
+        if($mobile){
+            $where['bind_mobile'] = $mobile;
+        }
+        if(empty($where)){
+            $this->to_back(92008);
+        }
         $where['flag']  = 0;
-        
         $info = $m_hotel_invite->getOne($fields, $where);
         if(empty($info)){
             $this->to_back(92008);
@@ -379,7 +387,21 @@ class UserController extends CommonController{
         if(!empty($res_userintegral)){
             $integral = intval($res_userintegral['integral']);
         }
-        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral);
+        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral,'is_open_integral'=>0);
+
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $res_invite = $m_hotel_invite_code->getOne('hotel_id',array('openid'=>$openid));
+        $hotel_id = $res_invite['hotel_id'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id as goods_id';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+        $where['g.type']= 40;
+        $orderby = 'g.id desc';
+        $limit = "0,1";
+        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        if(!empty($res_goods)){
+            $data['is_open_integral'] = 1;
+        }
         $this->to_back($data);
     }
 
@@ -499,7 +521,7 @@ class UserController extends CommonController{
 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
-        $redis->set($code_key,$res_invite_code['id'],300);
+        $redis->set($code_key,$res_invite_code['id'],3600*4);
         $qrinfo = encrypt_data($invite_cache_key);
         $host_name = C('HOST_NAME');
         $qrcode_url = $host_name."/smallsale/qrcode/inviteQrcode?qrinfo=$qrinfo";

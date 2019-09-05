@@ -225,6 +225,7 @@ class ProgramController extends CommonController{
                 $redis->select(5);
                 $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
                 if($version>2019082101){
+                    $m_user = new \Common\Model\Smallapp\UserModel();
                     foreach ($help_forscreen as $v){
                         $info = array('id'=>$v['id'],'duration'=>floor($v['duration']));
                         $imgs_info = json_decode($v['imgs'],true);
@@ -273,6 +274,9 @@ class ProgramController extends CommonController{
                                 break;
                         }
                         $info['subdata'] = $subdata;
+                        $userinfo = $m_user->getOne('avatarUrl,nickName', array('openid'=>$v['openid']));
+                        $info['nickName'] = $userinfo['nickName'];
+                        $info['avatarUrl'] = $userinfo['avatarUrl'];
                         $program_list[] = $info;
                     }
                 }else{

@@ -44,7 +44,7 @@ class FindController extends CommonController{
         //内容选择 1点播10条 2精选20 3公开20
         $content_num = array('num'=>50,'1'=>0.2,'2'=>0.4,'3'=>0.4);
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 
         $m_public = new \Common\Model\Smallapp\PublicModel();
 
@@ -790,7 +790,7 @@ class FindController extends CommonController{
 
     private function handleFindlist($all_public,$openid){
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $default_avatar = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();

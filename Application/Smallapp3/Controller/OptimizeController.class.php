@@ -68,6 +68,12 @@ class OptimizeController extends CommonController{
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
+
+        $ip = get_client_ip();
+        $data = array('data_id'=>$goods_id,'name'=>$res_goods['name'],'openid'=>$openid,'action_type'=>2,'type'=>2,'ip'=>$ip);
+        $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+        $m_datalog->add($data);
+
         $data = array('goods_id'=>$goods_id,'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
             'jd_url'=>$res_goods['jd_url']);
         $media_id = $res_goods['media_id'];

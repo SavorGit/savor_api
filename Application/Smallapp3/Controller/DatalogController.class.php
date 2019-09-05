@@ -25,9 +25,9 @@ class DatalogController extends CommonController{
 
         switch ($type){
             case 1:
-                $m_ads = new \Common\Model\AdsModel();
-                $res_ads = $m_ads->getWhere(array('id'=>$data_id), 'name');
-                $name = $res_ads[0]['name'];
+                $m_ads = new \Common\Model\Smallapp\AdspositionModel();
+                $res_ads = $m_ads->getInfo(array('id'=>$data_id));
+                $name = $res_ads['name'];
                 break;
             case 2:
                 $m_goods = new \Common\Model\Smallapp\GoodsModel();

@@ -68,10 +68,15 @@ class OptimizeController extends CommonController{
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
+
+        $ip = get_client_ip();
+        $data = array('data_id'=>$goods_id,'name'=>$res_goods['name'],'openid'=>$openid,'action_type'=>2,'type'=>2,'ip'=>$ip);
+        $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+        $m_datalog->add($data);
+
         $data = array('goods_id'=>$goods_id,'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
             'jd_url'=>$res_goods['jd_url']);
         $media_id = $res_goods['media_id'];
-        $imgmedia_id = $res_goods['imgmedia_id'];
         $m_media = new \Common\Model\MediaModel();
         $media_info = $m_media->getMediaInfoById($media_id);
         $data['video_url'] = $media_info['oss_addr'];
@@ -86,8 +91,16 @@ class OptimizeController extends CommonController{
         $pinfo = array('res_url'=>$data['video_url'],'forscreen_url'=>$media_info['oss_path'],'duration'=>$media_info['duration'],
             'resource_size'=>$media_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$media_id,'img_url'=>$img_url);
 
-        $media_info = $m_media->getMediaInfoById($imgmedia_id);
-        $data['detail_content'] = $media_info['oss_addr'];
+        $detail_content = array();
+        $detail_imgmedia_ids = $res_goods['detail_imgmedia_ids'];
+        if(!empty($detail_imgmedia_ids)){
+            $detail_imgmedia_ids = json_decode($detail_imgmedia_ids,true);
+            foreach ($detail_imgmedia_ids as $v){
+                $media_info = $m_media->getMediaInfoById($v);
+                $detail_content[] = $media_info['oss_addr'];
+            }
+        }
+        $data['detail_content'] = $detail_content;
         $rets = $this->getFindnums($openid,$goods_id,4);
         $data['is_collect'] = $rets['is_collect'];
         $data['collect_num'] = $rets['collect_num'];

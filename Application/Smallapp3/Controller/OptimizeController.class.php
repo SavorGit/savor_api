@@ -96,8 +96,11 @@ class OptimizeController extends CommonController{
         if(!empty($detail_imgmedia_ids)){
             $detail_imgmedia_ids = json_decode($detail_imgmedia_ids,true);
             foreach ($detail_imgmedia_ids as $v){
-                $media_info = $m_media->getMediaInfoById($v);
-                $detail_content[] = $media_info['oss_addr'];
+                if(!empty($v)){
+                    $media_info = $m_media->getMediaInfoById($v);
+                    $detail_content[] = $media_info['oss_addr'];
+                }
+                
             }
         }
         $data['detail_content'] = $detail_content;

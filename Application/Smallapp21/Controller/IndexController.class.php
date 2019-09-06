@@ -49,7 +49,7 @@ class IndexController extends CommonController{
                    'mobile_model'=>1000,'action'=>1000,
                    'resource_type'=>1000,'resource_id'=>1000,
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
-                   'forscreen_id'=>1000,'public_text'=>1000,
+                   'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
                );
                break;
            case 'isFind':
@@ -476,6 +476,8 @@ class IndexController extends CommonController{
         $is_pub_hotelinfo = $this->params['is_pub_hotelinfo'] ?$this->params['is_pub_hotelinfo']:0;
         $is_share      = $this->params['is_share'] ? intval($this->params['is_share']) : 0;
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
+        $res_nums = $this->params['res_nums']?intval($this->params['res_nums']):0;
+
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
@@ -570,9 +572,11 @@ class IndexController extends CommonController{
                 }
                 $public_data['resource_size'] = $resource_size;
                 $public_data['resource_id']   = $resource_id;
-
                 $public_data['res_url']   = $oss_addr;
                 $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
+                if($res_nums){
+                    $public_data['res_nums'] = $res_nums;
+                }
                 $public_data['status'] =1;
                 $m_public->add($public_data);
             }

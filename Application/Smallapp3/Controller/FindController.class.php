@@ -40,7 +40,7 @@ class FindController extends CommonController{
     public function findlist(){
         $openid = $this->params['openid'];
         $find_ids   = $this->params['find_ids'];
-        $pagesize = 20;
+        $pagesize = 10;
         //内容选择 1点播10条 2精选20 3公开20
         $content_num = array('num'=>50,'1'=>0.2,'2'=>0.4,'3'=>0.4);
         $oss_host = 'http://'. C('OSS_HOST').'/';
@@ -100,9 +100,8 @@ class FindController extends CommonController{
             $where['user.status'] = 1;
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $res_top = $m_public->getList($fields, $where,'id desc','');
-            $top_list = $this->handleFindlist($res_top,$openid);
+            $top_list = $this->handleFindlist($res_top,$openid,2);
         }
-
 
         $find_key = C('SAPP_FIND_CONTENT');
         $res_cache = $redis->get($find_key);
@@ -205,7 +204,6 @@ class FindController extends CommonController{
         }
         $find_total = count($find_data);
         $last_find_total = $pagesize-$find_total;
-
         if($last_find_total<=0){
             $res_data = array_slice($find_data,0,$pagesize);
         }else{
@@ -241,7 +239,7 @@ class FindController extends CommonController{
             $order = 'a.id desc';
             $size = $pagesize - $last_find_total;
             $all_public = $m_public->getList($fields, $where, $order, "0,$size");
-            $all_public = $this->handleFindlist($all_public,$openid);
+            $all_public = $this->handleFindlist($all_public,$openid,3);
             if($last_find_total<$pagesize){
                 $res_finddata = array_slice($find_data,0,$last_find_total);
                 $res_data = array_merge($res_finddata,$all_public);
@@ -788,13 +786,15 @@ class FindController extends CommonController{
         return $data;
     }
 
-    private function handleFindlist($all_public,$openid){
+    private function handleFindlist($all_public,$openid,$type=0){
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 
-        $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
         foreach($all_public as $key=>$v){
+            if($type){
+                $all_public[$key]['type'] = $type;
+            }
             $all_public[$key]['title'] = '';
             if(empty($v['avatarUrl'])){
                 $all_public[$key]['avatarUrl'] = $default_avatar;
@@ -820,7 +820,7 @@ class FindController extends CommonController{
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                    $pubdetail_info[$kk]['img_url'] = $vv['res_url'].'?x-oss-process=image/resize,p_20';
+                    $pubdetail_info[$kk]['img_url'] = $vv['res_url'];
                 }
             }
             $all_public[$key]['pubdetail'] = $pubdetail_info;

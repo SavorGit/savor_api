@@ -269,6 +269,7 @@ return array(
 	    '90122'=>'smallapp_bonus_error',
 
 	    '90130'=>'smallapp_redpacket_status_error',
+	    '90131'=>'smallapp_have_collect',
 
 
 

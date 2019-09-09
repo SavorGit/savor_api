@@ -570,8 +570,6 @@ class IndexController extends CommonController{
                     $public_data['res_type'] = 2;
                     $public_data['duration'] = $duration;
                 }
-                $public_data['resource_size'] = $resource_size;
-                $public_data['resource_id']   = $resource_id;
                 $public_data['res_url']   = $oss_addr;
                 $public_data['is_pub_hotelinfo'] =$is_pub_hotelinfo;
                 if($res_nums){

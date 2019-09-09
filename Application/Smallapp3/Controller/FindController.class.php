@@ -203,8 +203,7 @@ class FindController extends CommonController{
             }
         }
         $find_total = count($find_data);
-        $last_find_total = $pagesize-$find_total;
-        if($last_find_total<=0){
+        if($find_total>=$pagesize){
             $res_data = array_slice($find_data,0,$pagesize);
         }else{
             $public_ids = array();
@@ -215,17 +214,16 @@ class FindController extends CommonController{
             }
             if(!empty($all_hasfind)){
                 if(isset($all_hasfind[2])){
-                    foreach($hasfind_data[2] as $v){
+                    foreach($all_hasfind[2] as $v){
                         $public_ids[] = $v;
                     }
                 }
                 if(isset($all_hasfind[3])){
-                    foreach($hasfind_data[3] as $v){
+                    foreach($all_hasfind[3] as $v){
                         $public_ids[] = $v;
                     }
                 }
             }
-
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
             if(!empty($public_ids)){
@@ -237,15 +235,12 @@ class FindController extends CommonController{
             $where['hotel.flag'] = 0;
             $where['hotel.state']= 1;
             $order = 'a.id desc';
-            $size = $pagesize - $last_find_total;
+            $size = $pagesize-$find_total;
             $all_public = $m_public->getList($fields, $where, $order, "0,$size");
-            $all_public = $this->handleFindlist($all_public,$openid,3);
-            if($last_find_total<$pagesize){
-                $res_finddata = array_slice($find_data,0,$last_find_total);
-                $res_data = array_merge($res_finddata,$all_public);
-            }else{
-                $res_data = $all_public;
-            }
+            $res_data = $this->handleFindlist($all_public,$openid,3);
+
+            $last_find_data = array_slice($find_data,0,$find_total);
+            $res_data = array_merge($last_find_data,$res_data);
         }
         shuffle($res_data);
         if(!empty($top_list)){
@@ -820,7 +815,7 @@ class FindController extends CommonController{
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                    $pubdetail_info[$kk]['img_url'] = $vv['res_url'];
+                    $pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/resize,p_50/quality,q_80";
                 }
             }
             $all_public[$key]['pubdetail'] = $pubdetail_info;

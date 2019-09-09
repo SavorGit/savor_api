@@ -33,10 +33,14 @@ class ActivitygoodsController extends Controller {
                 $this->wx_oauth($url);
             }
         }
-        $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id as goods_id,name,media_id,price,rebate_integral,start_time,end_time';
-        $where = array('type'=>30,'status'=>2);
-        $res_data = $m_goods->getDataList($fields,$where);
+        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        $res_invite = $m_hotel_invite_code->getOne('hotel_id',array('openid'=>$openid));
+        $hotel_id = $res_invite['hotel_id'];
+
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id as goods_id,g.name,g.media_id,g.price,g.rebate_integral,g.start_time,g.end_time';
+        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>40,'g.status'=>2);
+        $res_data = $m_hotelgoods->getList($fields,$where,'id desc','');
         $m_media = new \Common\Model\MediaModel();
         $goods = array();
         foreach ($res_data as $k=>$v){

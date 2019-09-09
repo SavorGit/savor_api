@@ -287,6 +287,7 @@ return array(
     'smallappsale_qrcode_decode_error'=>'二维码解码错误',
     'smallappsale_qrcode_has_expired'=>'二维码已过期',
     'smallappsale_invite_code_not_exists'=>'邀请码不存在',
+    'smallapp_have_collect'=>'您已经收藏过了',
 
 
 );

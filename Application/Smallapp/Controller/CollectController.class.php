@@ -24,13 +24,17 @@ class CollectController extends CommonController{
         $res_id  = $this->params['res_id'];
         $type    = $this->params['type'];
         $status  = $this->params['status'];
-        $only_co = $this->params['only_co'] ? $this->params['only_co']:1;
+        $only_co = $this->params['only_co'] ? $this->params['only_co']:0;
         
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $data = array();
         $data['openid'] = $openid;
         $data['res_id']  = $res_id;
         $data['type']    = $type;
+        if($only_co==1){
+            $data['status']  = 1;
+        }
+        //
         $info = $m_collect->getOne('status', $data);
         if(!empty($info)){
             if($only_co==1){

@@ -22,6 +22,11 @@ class ForscreenLogController extends CommonController{
                    'small_app_id'=>1001,'create_time'=>1000,
                );
                break;
+            case 'updateForscreen':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,
+                                            'resource_addr'=>1001);
+               break;
         }
         parent::_init_();
     }
@@ -85,5 +90,25 @@ class ForscreenLogController extends CommonController{
         $redis->rpush($cache_key, json_encode($map));
         
         $this->to_back(10000);
+    }
+    public function updateForscreen(){
+        $data = array();
+        $box_mac = $this->params['box_mac'];
+        $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
+        $imgs    = str_replace("\\", '', $this->params['resource_addr']);
+        $resource_id   = $this->params['resource_id'] ? $this->params['resource_id'] : 0;
+        
+        $data['box_mac']      = $box_mac;
+        $data['forscreen_id'] = $forscreen_id;
+        $data['imgs']         = $imgs;
+        $data['resource_id']  = $resource_id;
+        
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_SIMPLE_UPLOAD_RESOUCE').":".$box_mac;
+        $redis->rpush($cache_key, json_encode($data));
+        
+        $this->to_back(10000);
+        
     }
 }

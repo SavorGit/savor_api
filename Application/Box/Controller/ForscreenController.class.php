@@ -48,8 +48,8 @@ class ForscreenController extends CommonController{
             $data['system_sapp_forscreen_nums']= intval($sys_info['system_sapp_forscreen_nums']);
             $data['qrcode_type']               = intval($box_info['qrcode_type']);
             $data['is_open_signin']            = intval($box_info['is_open_signin']);
-            $data['activity_adv_playtype']     = intval($sys_info['activity_adv_playtype']);;//1替换 2队列
-
+            $data['activity_adv_playtype']     = intval($sys_info['activity_adv_playtype']);//1替换 2队列
+            $data['simple_upload_size']        = intval(C('SMALLAPP_JJ_UPLOAD_SIZE'));      //极简版投屏上传资源大小限制
             $this->to_back($data);
         }
     }

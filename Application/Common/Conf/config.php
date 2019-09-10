@@ -372,4 +372,5 @@ return array(
     'FEAST_TIME'=>array('lunch'=>array('11:30','14:30'),'dinner'=>array('18:00','21:00')),
     'HASH_IDS_KEY'=>'Q1t80oXSKl',
     'HASH_IDS_KEY_ADMIN'=>'Q1xsCaoby2o',
+    'SMALLAPP_JJ_UPLOAD_SIZE'=>'10240',
 );

@@ -283,6 +283,7 @@ return array(
     'SAPP_FIND_TOP'=>'smallapp:findtop',
     'SAPP_HAS_FIND'=>'smallapp:hasfind:',
     'SAPP_OPTIMIZE_PROGRAM'=>'smallapp:optimize:program',
+    'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

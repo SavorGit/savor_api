@@ -47,7 +47,6 @@ class FindController extends CommonController{
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 
         $m_public = new \Common\Model\Smallapp\PublicModel();
-
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $prev_findids = array();
@@ -224,19 +223,42 @@ class FindController extends CommonController{
                     }
                 }
             }
+            $key_publicids = C('SAPP_FIND_PUBLICIDS');
+            $all_publicids = $redis->get($key_publicids);
+            if(empty($all_publicids)){
+                $fields= 'a.id';
+                $where = array('a.status'=>2);
+                $where['box.flag']   = 0;
+                $where['box.state']  = 1;
+                $where['hotel.flag'] = 0;
+                $where['hotel.state']= 1;
+                $order = 'a.id desc';
+                $res_publicids = $m_public->getList($fields, $where, $order,'');
+                $all_publicids = array();
+                foreach ($res_publicids as $v){
+                    $all_publicids[]=$v['id'];
+                }
+                $redis->set($key_publicids,json_encode($all_publicids),3600*2);
+            }else{
+                $all_publicids = json_decode($all_publicids,true);
+            }
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
             if(!empty($public_ids)){
                 $public_ids = array_unique($public_ids);
-                $where['a.id'] = array('not in',$public_ids);
+                $not_publicids = array_diff($all_publicids,$public_ids);
+            }else{
+                $not_publicids = $all_publicids;
             }
+            $size = $pagesize-$find_total;
+            $public_in_ids = array_slice($not_publicids,0,$size);
+            $where['a.id'] = array('in',$public_in_ids);
             $where['box.flag']   = 0;
             $where['box.state']  = 1;
             $where['hotel.flag'] = 0;
             $where['hotel.state']= 1;
             $order = 'a.id desc';
-            $size = $pagesize-$find_total;
-            $all_public = $m_public->getList($fields, $where, $order, "0,$size");
+            $all_public = $m_public->getList($fields, $where, $order,'');
             $res_data = $this->handleFindlist($all_public,$openid,3);
 
             $last_find_data = array_slice($find_data,0,$find_total);

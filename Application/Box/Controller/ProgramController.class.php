@@ -183,6 +183,50 @@ class ProgramController extends CommonController{
         $this->to_back($res);
     }
 
+    public function getOptimizeProgramList(){
+        $box_mac = $this->params['box_mac'];
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $program_key = C('SAPP_OPTIMIZE_PROGRAM');
+        $res_period = $redis->get($program_key);
+        if(empty($res_period)){
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
+        }else{
+            $period_info = json_decode($res_period,true);
+            $period = $period_info['period'];
+        }
+
+        $type = 40;//10官方活动促销,20我的活动,30积分兑换现金,40优选
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $fields = 'id as goods_id,media_id,name,price,start_time,end_time';
+        $where = array('type'=>$type,'status'=>2);
+        $orderby = 'id desc';
+        $res_goods = $m_goods->getDataList($fields,$where,$orderby);
+
+        $m_media = new \Common\Model\MediaModel();
+        $program_list = array();
+        foreach ($res_goods as $v){
+            $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
+                'start_date'=>'','end_date'=>'');
+            $media_info = $m_media->getMediaInfoById($v['media_id']);
+            $info['oss_path'] = $media_info['oss_path'];
+            $name_info = pathinfo($info['oss_path']);
+            $info['name'] = $name_info['basename'];
+            $info['media_type'] = $media_info['type'];
+            $info['md5'] = $media_info['md5'];
+            $info['duration'] = $media_info['duration'];
+            $info['qrcode_url'] = '';
+            $info['play_type'] = 3;
+            $program_list[] = $info;
+        }
+        $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+
     public function getSelectcontentProgramList(){
         $box_mac = $this->params['box_mac'];
 

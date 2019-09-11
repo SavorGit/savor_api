@@ -131,7 +131,7 @@ class Smallapp_api {
 		    curl_close($ch);
 			$result = json_decode($re,true);
 			if(isset($result['access_token'])){
-				$redis->set($key_token,$result['access_token'],3600);
+				$redis->set($key_token,$result['access_token'],360);
 				$token = $result['access_token'];	
 			}
 		}

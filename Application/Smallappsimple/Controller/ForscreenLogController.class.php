@@ -105,7 +105,7 @@ class ForscreenLogController extends CommonController{
         
         $redis = SavorRedis::getInstance();
         $redis->select(5);
-        $cache_key = C('SAPP_SIMPLE_UPLOAD_RESOUCE').":".$box_mac;
+        $cache_key = C('SAPP_SIMPLE_UPLOAD_RESOUCE').$box_mac;
         $redis->rpush($cache_key, json_encode($data));
         
         $this->to_back(10000);

@@ -75,7 +75,7 @@ class OptimizeController extends CommonController{
         $m_datalog->add($data);
 
         $data = array('goods_id'=>$goods_id,'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
-            'jd_url'=>$res_goods['jd_url']);
+            'jd_url'=>$res_goods['page_url']);
         $media_id = $res_goods['media_id'];
         $m_media = new \Common\Model\MediaModel();
         $media_info = $m_media->getMediaInfoById($media_id);

@@ -97,9 +97,9 @@ class UserController extends CommonController{
                 $userinfo['role_type'] = $rts['type'];
             }
         }
-        if($userinfo['is_wx_auth']!=3){
+        /*if($userinfo['is_wx_auth']!=3){
             $hotel_id = 0;
-        }
+        }*/
         $userinfo['hotel_id'] = $hotel_id;
         $data['userinfo'] = $userinfo;
         $this->to_back($data);

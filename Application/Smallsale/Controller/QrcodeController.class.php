@@ -10,7 +10,7 @@ class QrcodeController extends CommonController{
         switch(ACTION_NAME) {
             case 'getBoxQrcode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'type'=>1001,'goods_id'=>1001);
+                $this->valid_fields = array('box_mac'=>1002,'uid'=>1002,'type'=>1001,'goods_id'=>1001);
                 break;
             case 'inviteQrcode':
                 $this->is_verify = 1;
@@ -23,19 +23,31 @@ class QrcodeController extends CommonController{
     public function getBoxQrcode(){
         $box_mac = $this->params['box_mac'];
         $goods_id = $this->params['goods_id'];
-        $type = $this->params['type'];//22购物二维码
-        $m_box = new \Common\Model\BoxModel();
-        $map = array();
-        $map['a.mac'] = $box_mac;
-        $map['a.state'] = 1;
-        $map['a.flag']  = 0;
-        $map['d.state'] = 1;
-        $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
-        if(empty($box_info)){
-            $this->to_back(70001);
+        $uid = $this->params['uid'];
+        $type = $this->params['type'];//22购物二维码 23销售二维码
+        if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
         }
-        $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+        switch ($type){
+            case 22:
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+                break;
+            case 23:
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid;
+                break;
+            default:
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+        }
         $short_urls = C('SHORT_URLS');
         $content = $short_urls['SALE_BOX_QR'].$scene;
         $errorCorrectionLevel = 'L';//容错级别

@@ -30,11 +30,86 @@ class GoodsController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'goods_id'=>1001);
                 break;
-
-
+            case 'myGoodslist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'box_mac'=>1002);
+                break;
         }
         parent::_init_();
     }
+
+    public function myGoodslist(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 15;
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $uid = $hashids->encode($res_user['user_id']);
+
+        $all_nums = $page * $pagesize;
+        $type = $this->params['type'];//10官方活动促销,20我的活动
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price';
+        $where = array('h.hotel_id'=>$hotel_id,'h.openid'=>$openid,'g.type'=>$type);
+        $nowtime = date('Y-m-d H:i:s');
+        if($type==20){
+            $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
+            $where['g.status'] = array('in',array(1,2,3));
+        }else{
+            $where['g.status'] = 2;
+            $where['g.end_time'] = array('egt',$nowtime);
+            $where['g.start_time'] = array('elt',$nowtime);
+        }
+
+        $orderby = 'g.id desc';
+        $limit = "0,$all_nums";
+        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        $m_media = new \Common\Model\MediaModel();
+        $datalist = array();
+        $host_name = C('HOST_NAME');
+        foreach ($res_goods as $v){
+            if($type==20 && $nowtime>$v['end_time']){
+                $v['status'] = 5;
+            }
+            if($type==20){
+                $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
+                $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
+            }
+            $media_id = $v['media_id'];
+            $imgmedia_id = $v['imgmedia_id'];
+            $media_info = $m_media->getMediaInfoById($media_id);
+            $v['oss_addr'] = $media_info['oss_path'];
+            $v['media_type'] = $media_info['type'];
+            if($media_info['type']==2){
+                $v['img_url'] = $media_info['oss_addr'];
+            }else{
+                if($imgmedia_id){
+                    $media_info = $m_media->getMediaInfoById($imgmedia_id);
+                    $v['img_url'] = $media_info['oss_addr'];
+                }else{
+                    $v['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                }
+            }
+            $v['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
+            unset($v['media_id'],$v['imgmedia_id']);
+            $datalist[] = $v;
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
 
     public function getGoodslist(){
         $openid = $this->params['openid'];
@@ -54,7 +129,7 @@ class GoodsController extends CommonController{
         $all_nums = $page * $pagesize;
         $type = $this->params['type'];//10官方活动促销,20我的活动
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url';
+        $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url,g.page_url';
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type);
         $nowtime = date('Y-m-d H:i:s');
         if($type==20){
@@ -95,7 +170,14 @@ class GoodsController extends CommonController{
                 $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
                 $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
             }
-            unset($v['media_id'],$v['imgmedia_id']);
+            $v['jd_url'] = $v['page_url'];
+            $is_add = 0;
+            $res_hotelgoods = $m_hotelgoods->getInfo(array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$v['goods_id']));
+            if(!empty($res_hotelgoods)){
+                $is_add = 1;
+            }
+            $v['is_add'] = $is_add;
+            unset($v['media_id'],$v['imgmedia_id'],$v['page_url']);
             $datalist[] = $v;
         }
         $data = array('datalist'=>$datalist);

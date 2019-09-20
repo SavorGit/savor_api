@@ -82,6 +82,12 @@ class LoginController extends CommonController{
         $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
         $userinfo['hotel_name'] = $invite_code_info['hotel_name'];
         $userinfo['role_type'] = $invite_code_info['type'];
+        $userinfo['hotel_has_room'] = 0;
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
+        if($res_room){
+            $userinfo['hotel_has_room'] = 1;
+        }
         $this->to_back($userinfo);
     }
 
@@ -101,6 +107,13 @@ class LoginController extends CommonController{
         if(!empty($invite_code_info) && $invite_code_info['invite_id']){
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
+
+            $userinfo['hotel_has_room'] = 0;
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
+            if($res_room){
+                $userinfo['hotel_has_room'] = 1;
+            }
             $this->to_back($userinfo);
         }
 
@@ -130,6 +143,7 @@ class LoginController extends CommonController{
             $data['bind_time'] = date('Y-m-d H:i:s');
             $m_hotel_invite_code->updateData($where,$data);
         }else{
+            $hotel_id = $invite_code_info['hotel_id'];
             if($invite_code_info['type']==1 && empty($invite_code_info['invite_id'])){
                 $where = array('id'=>$invite_code_info['id']);
                 $data = array('invite_id'=>$hotel_invite_id);
@@ -140,6 +154,13 @@ class LoginController extends CommonController{
         $redis->remove($code_key);
         $userinfo = $this->getUserinfo($openid);
         $userinfo['hotel_id'] = $hotel_id;
+
+        $userinfo['hotel_has_room'] = 0;
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_room = $m_hotel->getRoomNumByHotelId($hotel_id);
+        if($res_room){
+            $userinfo['hotel_has_room'] = 1;
+        }
         $this->to_back($userinfo);
     }
 

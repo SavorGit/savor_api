@@ -101,6 +101,12 @@ class UserController extends CommonController{
             $hotel_id = 0;
         }*/
         $userinfo['hotel_id'] = $hotel_id;
+        $userinfo['hotel_has_room'] = 0;
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_room = $m_hotel->getRoomNumByHotelId($hotel_id);
+        if($res_room){
+            $userinfo['hotel_has_room'] = 1;
+        }
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }

@@ -77,13 +77,6 @@ class HotelModel extends Model
         return $count;
     }
 
-    /**
-     * getHotelDis
-     * @desc ��ȡͬһ��������о�¥��
-     * @param $field
-     * @param $hotelid
-     * @return mixed
-     */
     public function getHotelDis($field,$hotelid){
         if($hotelid == 7 || $hotelid == 53){
             $sql ="select $field
@@ -97,12 +90,6 @@ class HotelModel extends Model
         return $result;
     }
 
-    /**
-     * getAllDis
-     * @��ȡ���о�¥���
-     * @param $field �ֶ�
-     * @return array
-     */
     public function getAllDis($field){
         $sql ="select $field
                from savor_hotel where id not in (7,53) and   hotel_box_type=3 and state=1 and flag=0";
@@ -132,13 +119,6 @@ class HotelModel extends Model
         return $result;
     }
 
-
-    /**
-     * getHotelInfo ��ȡ��¥��Ϣ
-     * @access public
-     * @param $hotelid
-     * @return array
-     */
     public function getHotelMacInfo($hotelid){
         $sql = "SELECT
         sh.id AS hotel_id,
@@ -266,11 +246,11 @@ class HotelModel extends Model
     }
 
     public function getRoomNumByHotelId($hotel_id){
-        $sql = "select id as room_id,hotel_id from savor_room where hotel_id='$hotel_id' and state=1 and flag=0";
+        $sql = "select count(*) as num from savor_room where hotel_id='$hotel_id' and state=1 and flag=0";
         $res = $this->query($sql);
         $room_num = 0;
-        foreach ($res as $k=>$v){
-            $room_num++;
+        if(!empty($res)){
+            $room_num = $res[0]['num'];
         }
         return $room_num;
     }

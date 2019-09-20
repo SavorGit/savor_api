@@ -7,6 +7,45 @@ function http_host(){
     return $http.$_SERVER['HTTP_HOST'];
 }
 
+function jd_union_api($params,$api,$method='get'){
+    $jd_config = C('JD_UNION_CONFIG');
+    $all_params = array();
+    $all_params['app_key'] = $jd_config['app_key'];
+    $all_params['method'] = $api;
+    $all_params['param_json'] = json_encode($params);
+    $all_params['sign_method'] = 'md5';
+    $all_params['timestamp'] = date('Y-m-d H:i:s');
+    $all_params['v'] = '1.0';
+    ksort($all_params);
+    $str = '';
+    $appScret = $jd_config['app_secret'];
+    foreach ($all_params as $k => $v) $str .= $k . $v;
+    $sign = strtoupper(md5($appScret . $str . $appScret));
+    $all_params['sign'] = $sign;
+
+    $curl = new \Common\Lib\Curl();
+    $api_url = 'https://router.jd.com/api';
+    $res_data = array();
+    if($method=='get'){
+        $url = $api_url.'?'.http_build_query($all_params);
+        $res = '';
+        $curl::get($url,$res);
+        if($res){
+            $res = json_decode($res,true);
+            foreach ($res as $v){
+                if($v['code']){
+                    $res_data = $v;
+                }else{
+                    $res_data = json_decode($v['result'],true);
+                }
+                break;
+
+            }
+        }
+    }
+    return $res_data;
+}
+
 function bonus_random($total,$num,$min,$max){
     $data = array();
     if ($min * $num > $total) {

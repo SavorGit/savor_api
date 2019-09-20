@@ -382,5 +382,10 @@ return array(
         'SIMPLE_BOX_QRCODE'=>'http://rd0.cn/e?j=',
         'SALE_BOX_QR'=>'http://rd0.cn/ag?g=',
         'SALE_INVITE_QR'=>'http://rd0.cn/sale?p=',
+    ),
+    'JD_UNION_CONFIG' => array(
+        'app_key'=>'cbd3a3b0693309c79f2209b9aa6709a5',
+        'app_secret'=>'6c455b9aa3fa4bac968a59160a032249',
+        'customerinfo'=>'20190905RDTP'
     )
 );

@@ -30,9 +30,17 @@ class GoodsController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'goods_id'=>1001);
                 break;
+            case 'getdetail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('uid'=>1002,'goods_id'=>1001);
+                break;
             case 'myGoodslist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'box_mac'=>1002);
+                break;
+            case 'addSalegoods':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'goods_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -185,18 +193,38 @@ class GoodsController extends CommonController{
     }
 
     public function getdetail(){
+        $uid = $this->params['uid'];
         $goods_id= intval($this->params['goods_id']);
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
-        $jd_url = $res_goods['jd_url'];
-        if(!empty($jd_url)){
-            $tmp_jd_url = rtrim($res_goods['jd_url'],'.html');
-            $jd_url = str_replace('https://item.jd.com/','pages/item/detail/detail?sku=',$tmp_jd_url);
+        $page_url = $res_goods['page_url'];
+        if($uid){
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $decode_info = $hashids->decode($uid);
+            if(empty($decode_info)){
+                $this->to_back(90101);
+            }
+            $sale_uid = $decode_info[0];
+            if($res_goods['appid']=='wx13e41a437b8a1d2e'){
+                $params = array(
+                    'promotionCodeReq'=>array(
+                        'materialId'=>$res_goods['jd_url'],
+                        'chainType'=>3,
+                        'subUnionId'=>"$sale_uid"
+                    )
+                );
+                $res = jd_union_api($params,'jd.union.open.promotion.bysubunionid.get');
+                $click_url = urlencode($res['data']['clickURL']);
+                $jd_config = C('JD_UNION_CONFIG');
+                $page_url = '/pages/proxy/union/union?spreadUrl='.$click_url.'&customerinfo='.$jd_config['customerinfo'];
+            }
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'jd_url'=>$jd_url,'type'=>$res_goods['type']);
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
+            'jd_url'=>$page_url,'type'=>$res_goods['type']);
 
         $media_id = $res_goods['media_id'];
         $imgmedia_id = $res_goods['imgmedia_id'];
@@ -213,6 +241,31 @@ class GoodsController extends CommonController{
             }
         }
         $this->to_back($data);
+    }
+
+    public function addSalegoods(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $goods_id = $this->params['goods_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
+        $res_hotelgoods = $m_hotelgoods->getInfo($data);
+        if(!empty($res_hotelgoods)){
+            $m_hotelgoods->delData(array('id'=>$res_hotelgoods['id']));
+        }else{
+            $m_hotelgoods->addData($data);
+        }
+        $this->to_back(array());
     }
 
     public function addActivityGoods(){

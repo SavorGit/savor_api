@@ -376,4 +376,11 @@ return array(
     'HASH_IDS_KEY'=>'Q1t80oXSKl',
     'HASH_IDS_KEY_ADMIN'=>'Q1xsCaoby2o',
     'SMALLAPP_JJ_UPLOAD_SIZE'=>'10485760',
+    'SHORT_URLS' => array(
+        'BOX_QR'=>'http://rd0.cn/p?s=',
+        'SIMPLE_BOX_QR'=>'http://rd0.cn/e?s=',
+        'SIMPLE_BOX_QRCODE'=>'http://rd0.cn/e?j=',
+        'SALE_BOX_QR'=>'http://rd0.cn/ag?g=',
+        'SALE_INVITE_QR'=>'http://rd0.cn/sale?p=',
+    )
 );

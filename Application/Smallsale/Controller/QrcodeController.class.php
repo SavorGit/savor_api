@@ -36,7 +36,8 @@ class QrcodeController extends CommonController{
             $this->to_back(70001);
         }
         $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
-        $content ="http://rd0.cn/ag?g=$scene";
+        $short_urls = C('SHORT_URLS');
+        $content = $short_urls['SALE_BOX_QR'].$scene;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
@@ -44,7 +45,8 @@ class QrcodeController extends CommonController{
 
     public function inviteQrcode(){
         $qrinfo = $this->params['qrinfo'];
-        $content ="http://rd0.cn/sale?p=$qrinfo";
+        $short_urls = C('SHORT_URLS');
+        $content = $short_urls['SALE_INVITE_QR'].$qrinfo;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

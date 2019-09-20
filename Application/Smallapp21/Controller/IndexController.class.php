@@ -138,7 +138,8 @@ class IndexController extends CommonController{
         $hash_ids_key = C('HASH_IDS_KEY');
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $s = $hashids->encode($encode_key);
-        $content ="http://rd0.cn/p?s=$s";
+        $short_urls = C('SHORT_URLS');
+        $content = $short_urls['BOX_QR'].$s;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         //生成二维码图片
@@ -239,7 +240,8 @@ class IndexController extends CommonController{
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $s = $hashids->encode($encode_key);
 
-            $content ="http://rd0.cn/p?s=$s";
+            $short_urls = C('SHORT_URLS');
+            $content = $short_urls['BOX_QR'].$s;
             $errorCorrectionLevel = 'L';//容错级别
             $matrixPointSize = 5;//生成图片大小
             //生成二维码图片

@@ -110,6 +110,7 @@ class GoodsController extends CommonController{
                     $v['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
                 }
             }
+            $v['img_url'] = str_replace('http://','https://',$v['img_url']);
             $v['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
             unset($v['media_id'],$v['imgmedia_id']);
             $datalist[] = $v;
@@ -225,12 +226,13 @@ class GoodsController extends CommonController{
             }
         }
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
-            'jd_url'=>$page_url,'type'=>$res_goods['type']);
+            'jd_url'=>$page_url,'type'=>$res_goods['type'],'video_url'=>'');
 
         $media_id = $res_goods['media_id'];
         $imgmedia_id = $res_goods['imgmedia_id'];
         $m_media = new \Common\Model\MediaModel();
         $media_info = $m_media->getMediaInfoById($media_id);
+
         if($media_info['type']==2){
             $data['img_url'] = $media_info['oss_addr'];
         }else{
@@ -240,7 +242,10 @@ class GoodsController extends CommonController{
             }else{
                 $data['img_url'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
             }
+            $data['video_url'] = $media_info['oss_addr'];
         }
+        $data['media_type'] = $media_info['type'];
+
         $this->to_back($data);
     }
 

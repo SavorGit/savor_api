@@ -10,7 +10,8 @@ class OrderController extends CommonController{
         switch(ACTION_NAME) {
             case 'addOrder':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'amount'=>1001,'buy_type'=>1001,'box_mac'=>1001,'openid'=>1001);
+                $this->valid_fields = array('goods_id'=>1001,'amount'=>1001,'openid'=>1001,'buy_type'=>1002,
+                    'box_mac'=>1002,'contact'=>1002,'phone'=>1002,'address'=>1002);
                 break;
         }
         parent::_init_();
@@ -23,6 +24,9 @@ class OrderController extends CommonController{
         $amount = intval($this->params['amount']);
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
+        $contact = $this->params['contact'];
+        $phone = $this->params['phone'];
+        $address = $this->params['address'];
         $buy_type = intval($this->params['buy_type']);
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -38,20 +42,21 @@ class OrderController extends CommonController{
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
-        $m_box = new \Common\Model\BoxModel();
-        $map = array();
-        $map['a.mac'] = $box_mac;
-        $map['a.state'] = 1;
-        $map['a.flag']  = 0;
-        $map['d.state'] = 1;
-        $map['d.flag']  = 0;
-        $fields = 'a.id as box_id,ext.activity_contact,ext.activity_phone,c.name as room_name';
-        $box_info = $m_box->getBoxInfo($fields, $map);
-        if(empty($box_info)){
-            $this->to_back(70001);
-        }
-        $box_info = $box_info[0];
         if($buy_type==1){
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $fields = 'a.id as box_id,ext.activity_contact,ext.activity_phone,c.name as room_name';
+            $box_info = $m_box->getBoxInfo($fields, $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            $box_info = $box_info[0];
+
             $sale_key = C('SAPP_SALE');
             $cache_key = $sale_key.'addorder:'.$openid;
             $order_space_key = $sale_key.'addorder:spacetime'.$openid;
@@ -80,6 +85,31 @@ class OrderController extends CommonController{
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'goods_id'=>$goods_id,
             'price'=>$res_goods['price'],'amount'=>$amount,'total_fee'=>$total_fee,
             'status'=>10,'otype'=>1,'buy_type'=>$buy_type);
+        if($res_goods['type']==31){
+            if(empty($contact) || empty($phone) || empty($address)){
+                $this->to_back(1001);
+            }
+            $is_check = check_mobile($phone);
+            if(!$is_check){
+                $this->to_back(93006);
+            }
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $res_userintegral = $m_userintegral->getInfo(array('openid'=>$openid));
+            $integral = 0;
+            if(!empty($res_userintegral)){
+                $integral = intval($res_userintegral['integral']);
+            }
+            $excharge_integral = $res_goods['rebate_integral']*$amount;
+            if($excharge_integral>$integral){
+                $this->to_back(93007);
+            }
+            $add_data['status'] = 20;
+            $add_data['otype'] = 2;
+            $add_data['contact'] = $contact;
+            $add_data['phone'] = $phone;
+            $add_data['address'] = $address;
+
+        }
         $order_id = $m_order->add($add_data);
 
         if($buy_type==1){
@@ -89,7 +119,7 @@ class OrderController extends CommonController{
             $redis->set($cache_key,json_encode($user_order),18000);
         }
 
-        if(!empty($box_info['activity_phone'])){
+        if(!empty($box_info['activity_phone']) && in_array($res_goods['type'],array(10,20))){
             $ucconfig = C('SMS_CONFIG');
             $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
             $ucpass= new \Common\Lib\Ucpaas($options);
@@ -108,8 +138,10 @@ class OrderController extends CommonController{
                 $m_account_sms_log->addData($data);
             }
         }
-
         $res_data = array('message'=>'购买成功');
+        if($res_goods['type']==31){
+            $res_data['message'] = '申请兑换成功';
+        }
         $this->to_back($res_data);
     }
 

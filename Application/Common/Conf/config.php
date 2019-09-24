@@ -387,5 +387,13 @@ return array(
         'app_key'=>'cbd3a3b0693309c79f2209b9aa6709a5',
         'app_secret'=>'6c455b9aa3fa4bac968a59160a032249',
         'customerinfo'=>'20190905RDTP'
-    )
+    ),
+    'INTEGRAL_TYPES'=>array(
+        1=>'开机',
+        2=>'互动',
+        3=>'销售',
+        4=>'兑换'
+    ),
+    'SALE_DATE'=>'2019-09',
+
 );

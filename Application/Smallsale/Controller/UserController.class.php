@@ -65,6 +65,9 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
                 break;
+            case 'integraltypes':
+                $this->is_verify = 0;
+                break;
 
         }
         parent::_init_();
@@ -394,6 +397,11 @@ class UserController extends CommonController{
             $integral = intval($res_userintegral['integral']);
         }
         $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral,'is_open_integral'=>0);
+        $month_integral = 0;
+        $next_month_integral = 0;
+
+        $data['month_integral'] = $month_integral;
+        $data['next_month_integral'] = $next_month_integral;
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $res_invite = $m_hotel_invite_code->getOne('hotel_id',array('openid'=>$openid));
@@ -430,21 +438,25 @@ class UserController extends CommonController{
         $where = array('openid'=>$openid);
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
+        $all_types = C('INTEGRAL_TYPES');
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
         foreach ($res_record as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
             $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time);
             switch ($v['type']){
                 case 1:
-                    $content = "开机{$v['content']}小时";
+                    $content = $all_types[1]."{$v['content']}小时";
                     break;
                 case 2:
-                    $content = "互动{$v['content']}人";
+                    $content = $all_types[2]."{$v['content']}人";
                     break;
                 case 3:
-                    $content = "销售商品";
+                    $goods_id = $v['goods_id'];
+                    $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+                    $content = $all_types[3]."{$res_goods['namne']} {$v['content']}件";
                     break;
                 case 4:
-                    $content = "兑换";
+                    $content = $all_types[4];
                     break;
                 default:
                     $content = "";
@@ -453,6 +465,37 @@ class UserController extends CommonController{
             $datalist[] = $info;
         }
         $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function integraltypes(){
+        $all_types = C('INTEGRAL_TYPES');
+        $type_list = array();
+        foreach ($all_types as $k=>$v){
+            $type_list[] = array('id'=>$k,'name'=>$v);
+        }
+        array_unshift($type_list,array('id'=>0,'name'=>'全部'));
+        $type__name_list = array_values($all_types);
+        array_unshift($type__name_list,'全部');
+
+        $sale_date = C('SALE_DATE');
+        $end_date = date('Y-m');
+        $start    = new \DateTime($sale_date);
+        $end      = new \DateTime($end_date);
+        $interval = \DateInterval::createFromDateString('1 month');
+        $period   = new \DatePeriod($start, $interval, $end);
+        $date_list = array();
+        $date_name_list = array();
+        foreach ($period as $dt) {
+            $name = $dt->format("Y年m月");
+            $date_list[] = array('id'=>$dt->format("Ym"),'name'=>$name);
+            $date_name_list[]=$name;
+        }
+        $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
+        $date_name_list[] = date('Y年m月',strtotime($end_date));
+        $date_key = count($date_name_list)-1;
+        $data = array('type_list'=>$type_list,'type__name_list'=>$type__name_list,'date_list'=>$date_list,'date_name_list'=>$date_name_list);
+        $data['date_key'] = $date_key;
         $this->to_back($data);
     }
 

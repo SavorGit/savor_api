@@ -86,7 +86,7 @@ class GoodsController extends CommonController{
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
         $m_media = new \Common\Model\MediaModel();
         $datalist = array();
-        $host_name = C('HOST_NAME');
+        $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         foreach ($res_goods as $v){
             if($type==20 && $nowtime>$v['end_time']){
                 $v['status'] = 5;
@@ -145,6 +145,7 @@ class GoodsController extends CommonController{
             $where['h.openid'] = $openid;
             $where['g.status'] = array('in',array(1,2,3));
         }else{
+            $where['h.openid'] = '';
             $where['g.status'] = 2;
             $where['g.end_time'] = array('egt',$nowtime);
             $where['g.start_time'] = array('elt',$nowtime);

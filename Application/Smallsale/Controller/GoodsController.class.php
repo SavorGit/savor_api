@@ -309,6 +309,7 @@ class GoodsController extends CommonController{
         $where = array('h.hotel_id'=>$hotel_id);
         $where['h.openid'] = $openid;
         $where['g.status'] = array('in',array(1,2,3));
+        $where['g.type']   = 20;
         $orderby = 'g.id desc';
         $limit = "0,1";
         $res_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);

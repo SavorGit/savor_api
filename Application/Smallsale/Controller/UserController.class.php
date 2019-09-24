@@ -442,7 +442,7 @@ class UserController extends CommonController{
         if($type){
             $where['type'] = $type;
         }
-        if(empty($idate))   $idate = date('%Y%m');
+        if(empty($idate))   $idate = date('Ym');
         if($idate){
             $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
         }

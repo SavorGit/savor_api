@@ -27,13 +27,13 @@
 	<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/DateUtil.js"></script>
 	<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jquery.ui.Toast-1.0.1.class.js"></script>
 	<script type="text/javascript" charset="UTF-8" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
-	<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/WeChatSale/pages/mine/exchange.js?v=201908021532"></script>
+	<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/WeChatSale/pages/mine/exchange.js?v=201909250900"></script>
 </head>
 <body>
 <div class="container theme-main">
 	<div class='scroll full_width full_height'>
 		<volist name="goods" id="ginfo">
-			<div class="row" goods-id="{$ginfo.goods_id}" open-id="{$openid}">
+			<div class="row" goods-id="{$ginfo.goods_id}" open-id="{$openid}" goods-type="{$ginfo.goods_type}">
 				<div class="left">
 					<img class="goods-pic" src="{$ginfo.oss_addr}"/>
 					<div class="goods-info theme-font4">

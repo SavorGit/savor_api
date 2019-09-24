@@ -19,7 +19,7 @@ class RoomController extends CommonController{
         $m_box = new \Common\Model\BoxModel();
         $hotel_id = $this->params['hotel_id'];
         $box_mac  = $this->params['box_mac'];
-        $fields = 'a.id,a.mac,c.name room_name ';
+        $fields = 'a.id,a.mac box_mac,a.name box_name ';
         $where  = [];
         $where['d.id']    = $hotel_id;
         $where['d.state'] = 1;
@@ -34,18 +34,18 @@ class RoomController extends CommonController{
                       ->where($where)
                       ->order($order)
                       ->select();
-        $room_list = $room_name_list = [];
-        $room_index = 0; 
+        $box_list = $box_name_list = [];
+        $box_index = 0; 
         foreach($list as $key=>$v){
-            $room_list[] = $v;
-            $room_name_list[] = $v['room_name'];
+            $box_list[] = $v;
+            $box_name_list[] = $v['box_name'];
             if($v['box_mac']==$box_mac){
-                $room_index = $key;
+                $box_index = $key;
             }        
         }
-        $data['room_list'] = $room_list;
-        $data['room_name_list'] = $room_name_list;
-        $data['room_index']= $room_index;
+        $data['box_list'] = $box_list;
+        $data['box_name_list'] = $box_name_list;
+        $data['box_index']= $box_index;
         $this->to_back($data);
     }
 }

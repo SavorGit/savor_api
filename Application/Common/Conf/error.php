@@ -305,6 +305,8 @@ return array(
         '93003'=>'smallappsale_qrcode_decode_error',
         '93004'=>'smallappsale_qrcode_has_expired',
         '93005'=>'smallappsale_invite_code_not_exists',
+        '93006'=>'smallappsale_addorder_phone_error',
+        '93007'=>'smallappsale_addorder_integral_not_enough',
 
 	),
 );

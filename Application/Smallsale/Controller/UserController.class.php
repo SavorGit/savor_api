@@ -51,7 +51,7 @@ class UserController extends CommonController{
                 break;
             case 'integralrecord':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('type'=>1002,'idate'=>1002,'openid'=>1001,'page'=>1001);
                 break;
             case 'employeelist':
                 $this->is_verify = 1;
@@ -400,6 +400,23 @@ class UserController extends CommonController{
         $month_integral = 0;
         $next_month_integral = 0;
 
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'sum(integral) as total_integral';
+        $where = array('openid'=>$openid,'type'=>3);
+        $month_date = date("Ym", strtotime("-1 month"));
+        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
+        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
+        if(!empty($res_month_integral)){
+            $month_integral = intval($res_month_integral[0]['total_integral']);
+        }
+
+        $month_date = date("Ym");
+        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
+        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
+        if(!empty($res_month_integral)){
+            $next_month_integral = intval($res_month_integral[0]['total_integral']);
+        }
+
         $data['month_integral'] = $month_integral;
         $data['next_month_integral'] = $next_month_integral;
 
@@ -409,7 +426,7 @@ class UserController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'g.id as goods_id';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
-        $where['g.type']= 40;
+        $where['g.type']= array('in',array(30,31));
         $orderby = 'g.id desc';
         $limit = "0,1";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
@@ -422,6 +439,9 @@ class UserController extends CommonController{
     public function integralrecord(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
+        $type = $this->params['type'];
+        $idate = $this->params['idate'];
+
         $pagesize = 15;
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
@@ -436,13 +456,20 @@ class UserController extends CommonController{
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $fields = 'room_name,integral,content,type,integral_time';
         $where = array('openid'=>$openid);
+        if($type){
+            $where['type'] = $type;
+        }
+        if(empty($idate))   $idate = date('Ym');
+        if($idate){
+            $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
+        }
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
         $all_types = C('INTEGRAL_TYPES');
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         foreach ($res_record as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
-            $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time);
+            $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time,'type'=>$v['type']);
             switch ($v['type']){
                 case 1:
                     $content = $all_types[1]."{$v['content']}小时";
@@ -475,8 +502,8 @@ class UserController extends CommonController{
             $type_list[] = array('id'=>$k,'name'=>$v);
         }
         array_unshift($type_list,array('id'=>0,'name'=>'全部'));
-        $type__name_list = array_values($all_types);
-        array_unshift($type__name_list,'全部');
+        $type_name_list = array_values($all_types);
+        array_unshift($type_name_list,'全部');
 
         $sale_date = C('SALE_DATE');
         $end_date = date('Y-m');
@@ -494,7 +521,7 @@ class UserController extends CommonController{
         $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
         $date_name_list[] = date('Y年m月',strtotime($end_date));
         $date_key = count($date_name_list)-1;
-        $data = array('type_list'=>$type_list,'type__name_list'=>$type__name_list,'date_list'=>$date_list,'date_name_list'=>$date_name_list);
+        $data = array('type_list'=>$type_list,'type_name_list'=>$type_name_list,'date_list'=>$date_list,'date_name_list'=>$date_name_list);
         $data['date_key'] = $date_key;
         $this->to_back($data);
     }

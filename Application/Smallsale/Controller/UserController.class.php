@@ -400,6 +400,23 @@ class UserController extends CommonController{
         $month_integral = 0;
         $next_month_integral = 0;
 
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'sum(integral) as total_integral';
+        $where = array('openid'=>$openid,'type'=>3);
+        $month_date = date("Ym", strtotime("-1 month"));
+        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
+        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
+        if(!empty($res_month_integral)){
+            $month_integral = intval($res_month_integral[0]['total_integral']);
+        }
+
+        $month_date = date("Ym");
+        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
+        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
+        if(!empty($res_month_integral)){
+            $next_month_integral = intval($res_month_integral[0]['total_integral']);
+        }
+
         $data['month_integral'] = $month_integral;
         $data['next_month_integral'] = $next_month_integral;
 
@@ -409,7 +426,7 @@ class UserController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'g.id as goods_id';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
-        $where['g.type']= 40;
+        $where['g.type']= array('in',array(30,31));
         $orderby = 'g.id desc';
         $limit = "0,1";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);

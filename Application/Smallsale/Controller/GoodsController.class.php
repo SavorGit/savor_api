@@ -36,7 +36,7 @@ class GoodsController extends CommonController{
                 break;
             case 'myGoodslist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'box_mac'=>1002);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'box_mac'=>1002,'is_edit'=>1002);
                 break;
             case 'addSalegoods':
                 $this->is_verify = 1;
@@ -51,6 +51,7 @@ class GoodsController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $hotel_id = intval($this->params['hotel_id']);
         $page = intval($this->params['page']);
+        $is_edit = $this->params['is_edit'];
         $pagesize = 15;
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -92,8 +93,14 @@ class GoodsController extends CommonController{
                 $v['status'] = 5;
             }
             if($type==20){
-                $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
-                $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
+                if($is_edit){
+                    $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
+                    $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
+                }else {
+                    $v['start_time'] = date('Y.m.d',strtotime($v['start_time']));
+                    $v['end_time'] = date('Y.m.d',strtotime($v['end_time']));
+                }
+                
             }
             $media_id = $v['media_id'];
             $imgmedia_id = $v['imgmedia_id'];

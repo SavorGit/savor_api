@@ -14,7 +14,7 @@ function wx_sec_check($url,$duration=0){
     $surfix = strtolower($name_info['extension']);
     $media_type = $typeinfo[$surfix];
     if($media_type==1){
-        $video_duration = $duration*100;
+        $video_duration = intval($duration);
         if($video_duration){
             $video_img_num = array();
             for($i=1;$i<=$video_duration;$i++){

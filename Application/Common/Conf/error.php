@@ -252,6 +252,7 @@ return array(
 	    '90105'=>'smallapp_forscreen_record_not_exist',
 	    '90106'=>'smallapp_forscreen_has_addhelpplay',
 	    '90107'=>'smallapp_forscreen_has_addhelp',
+	    '90108'=>'smallapp_resource_foul',
 
         //小程序游戏
 	    '90110'=>'small_app_launch_game_failed',

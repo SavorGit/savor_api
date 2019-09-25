@@ -36,21 +36,38 @@ class IndexController extends CommonController{
                 $map = array();
                 $map['box_mac'] = $box_mac;
                 $map['cmd']     = C('SAPP_CALL_NETY_CMD');
+                $is_foul = 0;  //是否鉴黄
                 if($is_js==1){
                     $map['msg']     = urldecode($this->params['msg']);
+                
                 }else {
                     $map['msg']     = $this->params['msg'];
+                    
+                    $msg = json_decode($map['msg'],true);
+                    if($msg['action']==4 || $msg['action']==2){
+                        $rt = wx_sec_check('http://'.C('OSS_HOST').'/'.$msg['url'],10);
+                        foreach($rt as $key=>$v){
+                            if($v['errcode']==87014){
+                                $is_foul=1;
+                                break;
+                            }
+                        }
+                    }
                 }
-                
-                $map['req_id']  = $req_id;
-                $post_data = http_build_query($map);
-                
-                $ret = $this->curlPost($netty_push_url,$post_data);
-                if($ret){
-                    $this->to_back(json_decode($ret));
+                if($is_foul){
+                    $this->to_back('90108');
                 }else {
-                    $this->to_back(90109);
+                    $map['req_id']  = $req_id;
+                    $post_data = http_build_query($map);
+                    
+                    $ret = $this->curlPost($netty_push_url,$post_data);
+                    if($ret){
+                        $this->to_back(json_decode($ret));
+                    }else {
+                        $this->to_back(90109);
+                    } 
                 }
+                
             }else {
                 $this->to_back(90109);
             }

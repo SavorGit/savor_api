@@ -243,6 +243,7 @@ return array(
     'smallapp_forscreen_record_not_exist'=>'投屏记录不存在',
     'smallapp_forscreen_has_addhelpplay'=>'请勿重复添加助力',
     'smallapp_forscreen_has_addhelp'=>'请勿重复助力',
+    'smallapp_resource_foul'=>'投屏资源涉嫌违规',
 
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',

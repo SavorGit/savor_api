@@ -75,8 +75,10 @@ class GoodsController extends CommonController{
         $nowtime = date('Y-m-d H:i:s');
         if($type==20){
             $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
+            $where['h.type']=1;
             $where['g.status'] = array('in',array(1,2,3));
         }else{
+            $where['h.type']=2;
             $where['g.status'] = 2;
             $where['g.end_time'] = array('egt',$nowtime);
             $where['g.start_time'] = array('elt',$nowtime);
@@ -150,10 +152,11 @@ class GoodsController extends CommonController{
         $nowtime = date('Y-m-d H:i:s');
         if($type==20){
             $fields .= ' ,g.start_time,g.end_time,g.scope,g.status';
+            $where['h.type'] = 1;
             $where['h.openid'] = $openid;
             $where['g.status'] = array('in',array(1,2,3));
         }else{
-            $where['h.openid'] = '';
+            $where['h.type'] = 1;
             $where['g.status'] = 2;
             $where['g.end_time'] = array('egt',$nowtime);
             $where['g.start_time'] = array('elt',$nowtime);
@@ -281,7 +284,7 @@ class GoodsController extends CommonController{
         }
 
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
+        $data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id,'type'=>2);
         $res_hotelgoods = $m_hotelgoods->getInfo($data);
         if(!empty($res_hotelgoods)){
             $m_hotelgoods->delData(array('id'=>$res_hotelgoods['id']));

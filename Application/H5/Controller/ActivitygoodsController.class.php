@@ -41,6 +41,9 @@ class ActivitygoodsController extends Controller {
         $fields = 'g.id as goods_id,g.name,g.media_id,g.price,g.rebate_integral,g.start_time,g.end_time,g.type as goods_type';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
         $where['g.type'] = array('in',array(30,31));
+        $nowtime = date('Y-m-d H:i:s');
+        $where['g.end_time'] = array('egt',$nowtime);
+        $where['g.start_time'] = array('elt',$nowtime);
         $res_data = $m_hotelgoods->getList($fields,$where,'g.id desc','');
         $m_media = new \Common\Model\MediaModel();
         $goods = array();

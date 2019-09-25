@@ -117,7 +117,7 @@ class ProgramController extends CommonController{
         }
         $nowtime = date('Y-m-d H:i:s');
         $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope';
-        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $where['g.type']= array('in',array(10,20));
         $where['g.end_time'] = array('egt',$nowtime);
         $where['g.start_time'] = array('elt',$nowtime);

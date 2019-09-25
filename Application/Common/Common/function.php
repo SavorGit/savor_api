@@ -26,7 +26,7 @@ function wx_sec_check($url,$duration=0){
             $img_urls[]=$url."?x-oss-process=video/snapshot,t_{$video_img_num[2]}000,f_jpg,w_450,m_fast";
         }
     }else{
-        $img_urls = array($url);
+        $img_urls = array($url."?x-oss-process=image/resize,p_50/quality,q_70");
     }
     $res = array();
     $config = C('SMALLAPP_CONFIG');

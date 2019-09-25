@@ -28,10 +28,9 @@ function wx_sec_check($url,$duration=0){
     }else{
         $img_urls = array($url);
     }
-
     $res = array();
     $config = C('SMALLAPP_CONFIG');
-    $filePath = SITE_TP_PATH.'/Public/content/'.'wx_imgtmp.png';
+    $filePath = SAVOR_M_TP_PATH.'/Public/content/'.'wx_imgtmp.png';
     foreach ($img_urls as $v){
         $img_url = $v;
         $img = file_get_contents($img_url);
@@ -66,6 +65,31 @@ function wx_sec_check($url,$duration=0){
     return $res;
 }
 
+function getWxAccessToken($app_config){
+    $key_token = $app_config['cache_key'];
+    $redis = SavorRedis::getInstance();
+    $redis->select(5);
+    $token = $redis->get($key_token);
+    if(empty($token)){
+        $url_access_token = 'https://api.weixin.qq.com/cgi-bin/token';
+        $appid = $app_config['appid'];
+        $appsecret = $app_config['appsecret'];
+        $url = $url_access_token."?grant_type=client_credential&appid=$appid&secret=$appsecret";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $re = curl_exec($ch);
+        curl_close($ch);
+        $result = json_decode($re,true);
+        if(isset($result['access_token'])){
+            $redis->set($key_token,$result['access_token'],360);
+            $token = $result['access_token'];
+        }
+    }
+    return $token;
+}
 
 function jd_union_api($params,$api,$method='get'){
     $jd_config = C('JD_UNION_CONFIG');

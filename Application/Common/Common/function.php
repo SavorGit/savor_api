@@ -7,6 +7,66 @@ function http_host(){
     return $http.$_SERVER['HTTP_HOST'];
 }
 
+function wx_sec_check($url,$duration=0){
+    $img_urls = array();
+    $typeinfo = C('RESOURCE_TYPEINFO');
+    $name_info = pathinfo($url);
+    $surfix = strtolower($name_info['extension']);
+    $media_type = $typeinfo[$surfix];
+    if($media_type==1){
+        $video_duration = $duration*100;
+        if($video_duration){
+            $video_img_num = array();
+            for($i=1;$i<=$video_duration;$i++){
+                $video_img_num[]=$i;
+            }
+            shuffle($video_img_num);
+            $img_urls[]=$url."?x-oss-process=video/snapshot,t_{$video_img_num[0]}000,f_jpg,w_450,m_fast";
+            $img_urls[]=$url."?x-oss-process=video/snapshot,t_{$video_img_num[1]}000,f_jpg,w_450,m_fast";
+            $img_urls[]=$url."?x-oss-process=video/snapshot,t_{$video_img_num[2]}000,f_jpg,w_450,m_fast";
+        }
+    }else{
+        $img_urls = array($url);
+    }
+
+    $res = array();
+    $config = C('SMALLAPP_CONFIG');
+    $filePath = SITE_TP_PATH.'/Public/content/'.'wx_imgtmp.png';
+    foreach ($img_urls as $v){
+        $img_url = $v;
+        $img = file_get_contents($img_url);
+        file_put_contents($filePath, $img);
+        $obj = new \CURLFile(realpath($filePath));
+        $obj->setMimeType("image/png");
+        $file['media'] = $obj;
+
+        $token = getWxAccessToken($config);
+        $url = "https://api.weixin.qq.com/wxa/img_sec_check?access_token=$token";
+
+        $data = $file;
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        if (!empty($data)) {
+            curl_setopt($curl, CURLOPT_POST, TRUE);
+            curl_setopt($curl, CURLOPT_POSTFIELDS,$data);
+        }
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
+        $res_data = curl_exec($curl);
+        curl_close($curl);
+        $data = array('url'=>$img_url,'errcode'=>'','errmsg'=>'');
+        if($res_data){
+            $res_data = json_decode($res_data,true);
+            $data['errcode'] = $res_data['errcode'];
+            $data['errmsg'] = $res_data['errmsg'];
+        }
+        $res[] = $data;
+    }
+    return $res;
+}
+
+
 function jd_union_api($params,$api,$method='get'){
     $jd_config = C('JD_UNION_CONFIG');
     $all_params = array();

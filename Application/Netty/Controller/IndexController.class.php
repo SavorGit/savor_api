@@ -36,7 +36,7 @@ class IndexController extends CommonController{
                 $map = array();
                 $map['box_mac'] = $box_mac;
                 $map['cmd']     = C('SAPP_CALL_NETY_CMD');
-                $is_foul = 0;  //是否鉴黄
+                $is_foul = 0;  //是否鉴黄 
                 if($is_js==1){
                     $map['msg']     = urldecode($this->params['msg']);
                 

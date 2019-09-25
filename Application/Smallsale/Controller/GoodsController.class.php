@@ -32,7 +32,7 @@ class GoodsController extends CommonController{
                 break;
             case 'getdetail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('uid'=>1002,'goods_id'=>1001);
+                $this->valid_fields = array('uid'=>1002,'goods_id'=>1001,'openid'=>1002);
                 break;
             case 'myGoodslist':
                 $this->is_verify = 1;
@@ -197,11 +197,21 @@ class GoodsController extends CommonController{
     public function getdetail(){
         $uid = $this->params['uid'];
         $goods_id= intval($this->params['goods_id']);
+        $openid = $this->params['openid'];
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
         if($res_goods['status']!=2){
             $this->to_back(92020);
         }
+
+        $ip = get_client_ip();
+        $data = array('data_id'=>$goods_id,'name'=>$res_goods['name'],'action_type'=>2,'type'=>2,'ip'=>$ip);
+        if($openid){
+            $data['openid']=$openid;
+        }
+        $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+        $m_datalog->add($data);
+
         $page_url = $res_goods['page_url'];
         if($uid){
             $hash_ids_key = C('HASH_IDS_KEY');

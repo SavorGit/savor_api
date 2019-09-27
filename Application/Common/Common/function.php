@@ -92,7 +92,18 @@ function getWxAccessToken($app_config){
 }
 
 function jd_union_api($params,$api,$method='get'){
-    $jd_config = C('JD_UNION_CONFIG');
+    $redis  =  \Common\Lib\SavorRedis::getInstance();
+    $redis->select(12);
+    $cache_key = 'system_config';
+    $res_config = $redis->get($cache_key);
+    $all_config = json_decode($res_config,true);
+    $jd_config = array();
+    foreach ($all_config as $v){
+        if($v['config_key']=='jd_union_smallapp'){
+            $jd_config = json_decode($v['config_value'],true);
+            break;
+        }
+    }
     $all_params = array();
     $all_params['app_key'] = $jd_config['app_key'];
     $all_params['method'] = $api;
@@ -123,7 +134,6 @@ function jd_union_api($params,$api,$method='get'){
                     $res_data = json_decode($v['result'],true);
                 }
                 break;
-
             }
         }
     }

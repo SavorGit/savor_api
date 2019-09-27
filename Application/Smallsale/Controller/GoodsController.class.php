@@ -241,7 +241,10 @@ class GoodsController extends CommonController{
                 );
                 $res = jd_union_api($params,'jd.union.open.promotion.bysubunionid.get');
                 $click_url = urlencode($res['data']['clickURL']);
-                $jd_config = C('JD_UNION_CONFIG');
+
+                $m_sysconfig = new \Common\Model\SysConfigModel();
+                $all_config = $m_sysconfig->getAllconfig();
+                $jd_config = json_decode($all_config['jd_union_smallapp'],true);
                 $page_url = '/pages/proxy/union/union?spreadUrl='.$click_url.'&customerinfo='.$jd_config['customerinfo'];
             }
         }

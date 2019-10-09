@@ -16,7 +16,7 @@ class OptimizeController extends CommonController{
                 break;
             case 'detail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001);
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'uid'=>1002);
                 break;
         }
         parent::_init_();
@@ -27,7 +27,7 @@ class OptimizeController extends CommonController{
         $page = intval($this->params['page']);
         $pagesize = 20;
         $all_nums = $page * $pagesize;
-        $type = 40;//10官方活动促销,20我的活动,30积分兑换现金,40优选
+        $type = 10;//10官方活动促销,20我的活动,30积分兑换现金,40优选
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $fields = 'id,name,media_id';
         $where = array('type'=>$type,'status'=>2);
@@ -60,6 +60,7 @@ class OptimizeController extends CommonController{
     }
 
     public function detail(){
+        $uid = $this->params['uid'];
         $openid = $this->params['openid'];
         $goods_id = intval($this->params['goods_id']);
 
@@ -74,8 +75,35 @@ class OptimizeController extends CommonController{
         $m_datalog = new \Common\Model\Smallapp\DatalogModel();
         $m_datalog->add($data);
 
-        $data = array('goods_id'=>$goods_id,'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],
-            'jd_url'=>$res_goods['page_url']);
+        $data = array('goods_id'=>$goods_id,'appid'=>$res_goods['appid'],'buybutton'=>$res_goods['buybutton'],'is_storebuy'=>$res_goods['is_storebuy']);
+        $page_url = $res_goods['page_url'];
+        if($uid){
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $decode_info = $hashids->decode($uid);
+            if(empty($decode_info)){
+                $this->to_back(90101);
+            }
+            $sale_uid = $decode_info[0];
+            if($res_goods['appid']=='wx13e41a437b8a1d2e'){
+                $params = array(
+                    'promotionCodeReq'=>array(
+                        'materialId'=>$res_goods['jd_url'],
+                        'chainType'=>3,
+                        'subUnionId'=>"$sale_uid"
+                    )
+                );
+                $res = jd_union_api($params,'jd.union.open.promotion.bysubunionid.get');
+                $click_url = urlencode($res['data']['clickURL']);
+
+                $m_sysconfig = new \Common\Model\SysConfigModel();
+                $all_config = $m_sysconfig->getAllconfig();
+                $jd_config = json_decode($all_config['jd_union_smallapp'],true);
+                $page_url = '/pages/proxy/union/union?spreadUrl='.$click_url.'&customerinfo='.$jd_config['customerinfo'];
+            }
+        }
+        $data['jd_url'] = $page_url;
+
         $media_id = $res_goods['media_id'];
         $m_media = new \Common\Model\MediaModel();
         $media_info = $m_media->getMediaInfoById($media_id);

@@ -199,7 +199,7 @@ class ProgramController extends CommonController{
             $period = $period_info['period'];
         }
 
-        $type = 40;//10官方活动促销,20我的活动,30积分兑换现金,40优选
+        $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $fields = 'id as goods_id,media_id,name,price,start_time,end_time';
         $where = array('type'=>$type,'status'=>2);
@@ -281,8 +281,10 @@ class ProgramController extends CommonController{
                         if(!empty($res_play)){
                             $create_time = $res_play['create_time'];
                         }else{
-                            $redis->rpush($push_key,$v['openid']);
                             $create_time = date('Y-m-d H:i:s');
+
+                            $push_data = array('openid'=>$v['openid'],'res_id'=>$v['id'],'type'=>4,'create_time'=>$create_time);
+                            $redis->rpush($push_key,json_encode($push_data));
                             $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
                             $m_play->add($add_data);
                             $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
@@ -339,8 +341,11 @@ class ProgramController extends CommonController{
                         if(!empty($res_play)){
                             $create_time = $res_play['create_time'];
                         }else{
-                            $redis->rpush($push_key,$v['openid']);
                             $create_time = date('Y-m-d H:i:s');
+
+                            $push_data = array('openid'=>$v['openid'],'res_id'=>$v['id'],'type'=>4,'create_time'=>$create_time);
+                            $redis->rpush($push_key,json_encode($push_data));
+
                             $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
                             $m_play->add($add_data);
                             $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));

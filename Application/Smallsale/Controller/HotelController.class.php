@@ -20,8 +20,15 @@ class HotelController extends CommonController{
         $where['hotel_box_type'] = array('in',array(2,3,6));
         $res_hotels = $m_hotel->getHotelList($where,'id asc','','id,name');
 
+        $m_hotel = new \Common\Model\HotelModel();
         $all_hotels = array();
         foreach ($res_hotels as $v){
+            $hotel_has_room = 0;
+            $res_room = $m_hotel->getRoomNumByHotelId($v['id']);
+            if($res_room){
+                $hotel_has_room = 1;
+            }
+            $v['hotel_has_room'] = $hotel_has_room;
             $letter = getFirstCharter($v['name']);
             $all_hotels[$letter][]=$v;
         }

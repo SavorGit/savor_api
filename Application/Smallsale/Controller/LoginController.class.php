@@ -29,7 +29,7 @@ class LoginController extends CommonController{
             $this->to_back(92001);
         }
 
-        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $cache_key = 'smallappdinner_vcode_'.$mobile;
         $cache_verify_code = $redis->get($cache_key);
@@ -39,14 +39,21 @@ class LoginController extends CommonController{
         }
 
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0,'type'=>2);
+        $res_code = $m_hotel_invite_code->getOne('hotel_id,code,type',array('code'=>$invite_code));
+        if($res_code['type']==3){
+            $type = 3;
+        }else{
+            $type = 2;
+        }
+
+        $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0,'type'=>$type);
         $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(!empty($invite_code_info) && $invite_code!=$invite_code_info['code']){
             $this->to_back(92008);
         }
 
         if(empty($invite_code_info)){
-            $where = array('a.code'=>$invite_code,'a.flag'=>0,'type'=>2);
+            $where = array('a.code'=>$invite_code,'a.flag'=>0,'type'=>$type);
             $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
             if(empty($invite_code_info)){//输入的邀请码不正确
                 $this->to_back(92002);
@@ -83,11 +90,19 @@ class LoginController extends CommonController{
         $userinfo['hotel_name'] = $invite_code_info['hotel_name'];
         $userinfo['role_type'] = $invite_code_info['type'];
         $userinfo['hotel_has_room'] = 0;
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
-        if($res_room){
+        if($invite_code_info['hotel_id']){
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
+            if($res_room){
+                $userinfo['hotel_has_room'] = 1;
+            }
+        }
+        if($type==3){
+            $userinfo['hotel_id'] = -1;
+            $userinfo['hotel_name'] = '';
             $userinfo['hotel_has_room'] = 1;
         }
+
         $this->to_back($userinfo);
     }
 

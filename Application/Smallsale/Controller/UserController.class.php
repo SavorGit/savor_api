@@ -92,12 +92,14 @@ class UserController extends CommonController{
             $userinfo['is_wx_auth'] = 0;
         }
         $hotel_id = 0;
+        $code_type = 0;
         if(!empty($userinfo['openid'])){
             $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
             $rts = $m_hotel_invite_code->field('hotel_id,type')->where(array('openid'=>$userinfo['openid'],'flag'=>0))->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
                 $userinfo['role_type'] = $rts['type'];
+                $code_type = $rts['type'];
             }
         }
         /*if($userinfo['is_wx_auth']!=3){
@@ -108,6 +110,10 @@ class UserController extends CommonController{
         $m_hotel = new \Common\Model\HotelModel();
         $res_room = $m_hotel->getRoomNumByHotelId($hotel_id);
         if($res_room){
+            $userinfo['hotel_has_room'] = 1;
+        }
+        if($code_type==3){
+            $userinfo['hotel_id'] = -1;
             $userinfo['hotel_has_room'] = 1;
         }
         $data['userinfo'] = $userinfo;

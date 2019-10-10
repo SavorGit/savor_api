@@ -33,32 +33,26 @@ class LoginController extends CommonController{
         $redis->select(14);
         $cache_key = 'smallappdinner_vcode_'.$mobile;
         $cache_verify_code = $redis->get($cache_key);
-
         if($verify_code != $cache_verify_code){
             $this->to_back(92006);
         }
-
         $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $res_code = $m_hotel_invite_code->getOne('hotel_id,code,type',array('code'=>$invite_code));
-        if($res_code['type']==3){
-            $type = 3;
-        }else{
-            $type = 2;
-        }
+        $type = $res_code['type'];
 
-        $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0,'type'=>$type);
+        $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0,'a.openid'=>$openid);
         $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(!empty($invite_code_info) && $invite_code!=$invite_code_info['code']){
             $this->to_back(92008);
         }
 
         if(empty($invite_code_info)){
-            $where = array('a.code'=>$invite_code,'a.flag'=>0,'type'=>$type);
+            $where = array('a.code'=>$invite_code,'a.flag'=>0);
             $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
             if(empty($invite_code_info)){//输入的邀请码不正确
                 $this->to_back(92002);
             }
-            if($invite_code_info['state'] ==1 && $invite_code_info['bind_mobile']!=$mobile){
+            if($invite_code_info['state'] ==1 && $invite_code_info['bind_mobile']!=$mobile && $invite_code_info['openid']!=$openid){
                 $this->to_back(92003);
             }
             $where = array('id'=>$invite_code_info['id']);

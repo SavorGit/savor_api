@@ -142,9 +142,9 @@ class GoodsController extends CommonController{
             $my_goods['img_url'] = str_replace('http://','https://',$my_goods['img_url']);
             $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=23&uid=$uid";
             unset($my_goods['media_id'],$my_goods['imgmedia_id']);
-        }
-        if($type==20){
-            array_unshift($datalist,$my_goods);
+            if($type==20){
+                array_unshift($datalist,$my_goods);
+            }
         }
         $data = array('datalist'=>$datalist,'is_my_activity'=>$is_my_activity);
         $this->to_back($data);

@@ -105,7 +105,12 @@ class GoodsController extends CommonController{
                 }
             }
             $v['img_url'] = str_replace('http://','https://',$v['img_url']);
-            $v['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
+            if($type==20){
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            }else{
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
+            }
+            $v['qrcode_url'] = $qrcode_url;
             unset($v['media_id'],$v['imgmedia_id']);
             $datalist[] = $v;
         }

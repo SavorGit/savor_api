@@ -38,15 +38,16 @@ class QrcodeController extends CommonController{
                 $this->to_back(70001);
             }
         }
+        $times = getMillisecond();
         switch ($type){
             case 22:
-                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$times;
                 break;
             case 23:
-                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid;
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid.'_'.$times;
                 break;
             default:
-                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id;
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$times;
         }
         $short_urls = C('SHORT_URLS');
         $content = $short_urls['SALE_BOX_QR'].$scene;

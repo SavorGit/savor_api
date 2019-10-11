@@ -322,11 +322,43 @@ class UserController extends CommonController{
         $where['forscreen_id'] = $forscreen_id;
         $ret = $m_public->updateInfo($where, array('status'=>0));
         if($ret){
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $res_forscreen = $m_forscreen->getWhere('id',$where,'id asc','0,1','');
+            $forscreen_record_id = $res_forscreen[0]['id'];
+
+            $m_help = new \Common\Model\Smallapp\ForscreenHelpModel();
+            $res_help = $m_help->getInfo(array('openid'=>$openid,'forscreen_record_id'=>$forscreen_record_id));
+            if(!empty($res_help)){
+                $help_id = $res_help['id'];
+                $m_help->updateData(array('id'=>$help_id),array('status'=>4));
+
+                $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
+                $m_playlog->updateInfo(array('res_id'=>$help_id,'type'=>4),array('nums'=>0,'update_time'=>date('Y-m-d H:i:s')));
+
+                $content_key = C('SAPP_SELECTCONTENT_CONTENT');
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $res_cache = $redis->get($content_key);
+                if(!empty($res_cache)) {
+                    $content_data = json_decode($res_cache, true);
+                    if(isset($content_data[$help_id])){
+                        unset($content_data[$help_id]);
+                        $redis->set($content_key,json_encode($content_data));
+
+                        $redis->select(5);
+                        $allkeys  = $redis->keys('smallapp:selectcontent:program:*');
+                        foreach ($allkeys as $program_key){
+                            $period = getMillisecond();
+                            $redis->set($program_key,$period);
+                        }
+                    }
+                }
+            }
+
             $this->to_back(10000);
         }else {
             $this->to_back(90107);
         }
-        
     }
     /**
      * @desc 删除我的收藏

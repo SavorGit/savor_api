@@ -59,7 +59,7 @@ class OrderController extends CommonController{
 
             $sale_key = C('SAPP_SALE');
             $cache_key = $sale_key.'addorder:'.$openid;
-            $order_space_key = $sale_key.'addorder:spacetime'.$openid;
+            $order_space_key = $sale_key.'addorder:spacetime'.$openid.$goods_id;
 
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);

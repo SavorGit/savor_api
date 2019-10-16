@@ -42,7 +42,8 @@ class FindController extends CommonController{
         $find_ids   = $this->params['find_ids'];
         $pagesize = 10;
         //内容选择 1点播10条 2精选20 3公开20
-        $content_num = array('num'=>50,'1'=>0.4,'2'=>0.4,'3'=>0.2);
+//        $content_num = array('num'=>50,'1'=>0.4,'2'=>0.4,'3'=>0.2);
+        $content_num = array('num'=>50,'1'=>0,'2'=>0.6,'3'=>0.4);
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 
@@ -101,49 +102,51 @@ class FindController extends CommonController{
             $res_top = $m_public->getList($fields, $where,'id desc','');
             $top_list = $this->handleFindlist($res_top,$openid,2);
         }
-
         $find_key = C('SAPP_FIND_CONTENT');
         $res_cache = $redis->get($find_key);
         if(!empty($res_cache)){
             $find_data = json_decode($res_cache,true);
         }else{
             //点播内容 获取最新一期设置为小程序的节目单
-            $demand_num = $content_num['num']*$content_num['1'];
-            $m_program_list =  new \Common\Model\ProgramMenuListModel();
-            $where  = array('is_small_app'=>1);
-            $order = " id desc";
-            $program_info = $m_program_list->getInfo('id', $where, $order);
-            $menu_id = $program_info['id'];
-            $fields = 'ads.id,ads.name title,ads.img_url,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
-            $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
-            $where['media.id']  = array('not in',array('17614','19533'));
-            $where['media.type'] = 1;
-            $order = 'a.sort_num asc';
-            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-            $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$demand_num");
+            $demand_num = 0;
             $demand_list = array();
-            foreach($res_demand as $v){
-                $create_time = viewTimes(strtotime($v['create_time']));
-                $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
-                    'hotel_name'=>'','avatarUrl'=>$default_avatar,'nickName'=>'小热点');
 
-                //获取是否收藏、分享个数、收藏个数、获取播放次数
-                $rets = $this->getFindnums($openid,$v['id'],3);
-                $dinfo['is_collect'] = $rets['is_collect'];
-                $dinfo['collect_num']= $rets['collect_num'];
-                $dinfo['share_num']  = $rets['share_num'];
-
-                $pdetail = array('res_url'=>$oss_host.$v['oss_addr'],'forscreen_url'=>$v['oss_addr'],'duration'=>intval($v['duration']),
-                    'resource_size'=>$v['resource_size']);
-                $oss_info = pathinfo($v['oss_addr']);
-                $pdetail['filename'] = $oss_info['basename'];
-                $pdetail['res_id'] = $v['media_id'];
-                $img_url = $v['img_url']? $v['img_url'] :'media/resource/EDBAEDArdh.png';
-                $pdetail['img_url'] = $oss_host.$img_url;
-                $dinfo['pubdetail'] = array($pdetail);
-                $dinfo['type'] = 1;
-                $demand_list[] = $dinfo;
-            }
+//            $demand_num = $content_num['num']*$content_num['1'];
+//            $m_program_list =  new \Common\Model\ProgramMenuListModel();
+//            $where  = array('is_small_app'=>1);
+//            $order = " id desc";
+//            $program_info = $m_program_list->getInfo('id', $where, $order);
+//            $menu_id = $program_info['id'];
+//            $fields = 'ads.id,ads.name title,ads.img_url,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
+//            $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
+//            $where['media.id']  = array('not in',array('17614','19533'));
+//            $where['media.type'] = 1;
+//            $order = 'a.sort_num asc';
+//            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+//            $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$demand_num");
+//            $demand_list = array();
+//            foreach($res_demand as $v){
+//                $create_time = viewTimes(strtotime($v['create_time']));
+//                $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
+//                    'hotel_name'=>'','avatarUrl'=>$default_avatar,'nickName'=>'小热点');
+//
+//                //获取是否收藏、分享个数、收藏个数、获取播放次数
+//                $rets = $this->getFindnums($openid,$v['id'],3);
+//                $dinfo['is_collect'] = $rets['is_collect'];
+//                $dinfo['collect_num']= $rets['collect_num'];
+//                $dinfo['share_num']  = $rets['share_num'];
+//
+//                $pdetail = array('res_url'=>$oss_host.$v['oss_addr'],'forscreen_url'=>$v['oss_addr'],'duration'=>intval($v['duration']),
+//                    'resource_size'=>$v['resource_size']);
+//                $oss_info = pathinfo($v['oss_addr']);
+//                $pdetail['filename'] = $oss_info['basename'];
+//                $pdetail['res_id'] = $v['media_id'];
+//                $img_url = $v['img_url']? $v['img_url'] :'media/resource/EDBAEDArdh.png';
+//                $pdetail['img_url'] = $oss_host.$img_url;
+//                $dinfo['pubdetail'] = array($pdetail);
+//                $dinfo['type'] = 1;
+//                $demand_list[] = $dinfo;
+//            }
 
             //精选内容
             $choice_num = $content_num['num']*$content_num['2'] + ($demand_num-count($demand_list));
@@ -252,7 +255,9 @@ class FindController extends CommonController{
             }
             $size = $pagesize-$find_total;
             $public_in_ids = array_slice($not_publicids,0,$size);
-            $where['a.id'] = array('in',$public_in_ids);
+            if(!empty($public_in_ids)){
+                $where['a.id'] = array('in',$public_in_ids);
+            }
             $where['box.flag']   = 0;
             $where['box.state']  = 1;
             $where['hotel.flag'] = 0;
@@ -286,6 +291,14 @@ class FindController extends CommonController{
         }
         $record_data[$type][$id]=$id;
         $redis->set($cache_key,json_encode($record_data));
+        if(in_array($type,array(1,2,3))){//类型 1官方 2精选 3公开
+            $data_type = $type+2;
+            if($openid){
+                $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+                $data = array('data_id'=>$id,'openid'=>$openid,'action_type'=>2,'type'=>$data_type,'ip'=>get_client_ip());
+                $m_datalog->addData($data);
+            }
+        }
         $this->to_back(array());
     }
 

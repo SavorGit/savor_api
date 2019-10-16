@@ -270,6 +270,18 @@ class UserController extends CommonController{
             $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
             $rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
             $data['hotel_id'] = $rts['hotel_id'];
+
+            $hotel_has_room = 0;
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_room = $m_hotel->getRoomNumByHotelId($rts['hotel_id']);
+            if($res_room){
+                $hotel_has_room = 1;
+            }
+            if($rts['type']==3){
+                $data['hotel_id'] = -1;
+                $hotel_has_room = 1;
+            }
+            $data['hotel_has_room'] = $hotel_has_room;
             $this->to_back($data);
         }
     }

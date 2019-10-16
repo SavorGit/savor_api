@@ -175,9 +175,9 @@ class GoodsController extends CommonController{
         $type = $this->params['type'];//10官方活动促销
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url,g.page_url';
-        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type);
+        $where = array('h.hotel_id'=>$hotel_id,'h.type'=>1,'h.openid'=>'');
         $nowtime = date('Y-m-d H:i:s');
-        $where['h.type'] = 1;
+        $where['g.type'] = $type;
         $where['g.status'] = 2;
         $where['g.end_time'] = array('egt',$nowtime);
         $where['g.start_time'] = array('elt',$nowtime);

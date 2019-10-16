@@ -123,7 +123,7 @@ class ProgramController extends CommonController{
         $where['g.start_time'] = array('elt',$nowtime);
         $orderby = 'g.id desc';
         $limit = "";
-        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');
         $host_name = C('HOST_NAME');
         $m_media = new \Common\Model\MediaModel();
 

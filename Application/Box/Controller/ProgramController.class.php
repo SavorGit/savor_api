@@ -120,7 +120,6 @@ class ProgramController extends CommonController{
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $where['g.type']= array('in',array(10,20));
         $where['g.end_time'] = array('egt',$nowtime);
-        $where['g.start_time'] = array('elt',$nowtime);
         $orderby = 'g.id desc';
         $limit = "";
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');

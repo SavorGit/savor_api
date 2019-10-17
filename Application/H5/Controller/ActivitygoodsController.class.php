@@ -43,7 +43,6 @@ class ActivitygoodsController extends Controller {
         $where['g.type'] = array('in',array(30,31));
         $nowtime = date('Y-m-d H:i:s');
         $where['g.end_time'] = array('egt',$nowtime);
-        $where['g.start_time'] = array('elt',$nowtime);
         $res_data = $m_hotelgoods->getList($fields,$where,'g.id desc','');
         $m_media = new \Common\Model\MediaModel();
         $goods = array();

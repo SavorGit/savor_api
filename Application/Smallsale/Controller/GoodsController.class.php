@@ -74,7 +74,6 @@ class GoodsController extends CommonController{
         $nowtime = date('Y-m-d H:i:s');
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type,'g.status'=>2);
         $where['g.end_time'] = array('egt',$nowtime);
-        $where['g.start_time'] = array('elt',$nowtime);
         if($type==20){
             $where['h.openid'] = array('neq',$openid);
             $where['h.type']=1;//todo 需要调整为3
@@ -145,7 +144,13 @@ class GoodsController extends CommonController{
             $my_goods['start_time'] = date('Y-m-d',strtotime($my_goods['start_time']));
             $my_goods['end_time'] = date('Y-m-d',strtotime($my_goods['end_time']));
             $my_goods['img_url'] = str_replace('http://','https://',$my_goods['img_url']);
-            $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=23&uid=$uid";
+
+            if($type==20){
+                $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=22";
+            }else{
+                $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=23&uid=$uid";
+            }
+
             unset($my_goods['media_id'],$my_goods['imgmedia_id']);
             if($type==20){
                 array_unshift($datalist,$my_goods);
@@ -180,7 +185,6 @@ class GoodsController extends CommonController{
         $where['g.type'] = $type;
         $where['g.status'] = 2;
         $where['g.end_time'] = array('egt',$nowtime);
-        $where['g.start_time'] = array('elt',$nowtime);
 
         $orderby = 'g.id desc';
         $limit = "0,$all_nums";

@@ -291,6 +291,7 @@ return array(
     'smallapp_have_collect'=>'您已经收藏过了',
     'smallappsale_addorder_phone_error'=>'请输入正确的手机号码',
     'smallappsale_addorder_integral_not_enough'=>'您的兑换积分不够',
+    'smallappsale_connect_box'=>'请先连接包间电视,再进行购买',
 
 
 );

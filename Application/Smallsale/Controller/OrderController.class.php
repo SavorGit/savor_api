@@ -53,7 +53,7 @@ class OrderController extends CommonController{
             $fields = 'a.id as box_id,ext.activity_contact,ext.activity_phone,c.name as room_name';
             $box_info = $m_box->getBoxInfo($fields, $map);
             if(empty($box_info)){
-                $this->to_back(70001);
+                $this->to_back(93008);
             }
             $box_info = $box_info[0];
 

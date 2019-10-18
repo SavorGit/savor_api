@@ -308,6 +308,7 @@ return array(
         '93005'=>'smallappsale_invite_code_not_exists',
         '93006'=>'smallappsale_addorder_phone_error',
         '93007'=>'smallappsale_addorder_integral_not_enough',
+        '93008'=>'smallappsale_connect_box',
 
 	),
 );

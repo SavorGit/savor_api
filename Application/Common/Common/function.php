@@ -140,6 +140,20 @@ function jd_union_api($params,$api,$method='get'){
     return $res_data;
 }
 
+function isMobile($mobile) {
+    return preg_match("/^1[34578]\d{9}$/", $mobile);
+}
+
+function isEmail($vStr){
+    $vLength = strlen($vStr);
+    if($vLength < 3 || $vLength > 50){
+        return false;
+    }else{
+        return preg_match('/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/', $vStr);
+    }
+}
+
+
 //获取首字母
 function getFirstCharter($str){
     if(empty($str)){return '';}

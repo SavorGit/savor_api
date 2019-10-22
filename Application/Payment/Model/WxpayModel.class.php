@@ -123,6 +123,9 @@ class WxpayModel extends Model{
 		$input->SetNotify_url($notify_url);
 		$input->SetTrade_type("JSAPI");
 		$input->SetOpenid($this->trade_info['wx_openid']);
+		if(isset($this->trade_info['attach'])){
+            $input->SetAttach($this->trade_info['attach']);
+        }
 		$order = \WxPayApi::unifiedOrder($input);
 		$jsapi = new \WxPayJsApiPay();
 		$jsapi->SetAppid($order['appid']);
@@ -170,7 +173,11 @@ class WxpayModel extends Model{
                     'paylog_type'=>$paylog_type,
                     'pay_type'=>$this->pay_type
                 );
-                $is_continue = $this->baseInc->handle_redpacket_notify($order_extend,false);
+                if($result_order['attach']==10){//10 销售订单支付
+                    $is_continue = $this->baseInc->handle_order_notify($order_extend,false);
+                }else{
+                    $is_continue = $this->baseInc->handle_redpacket_notify($order_extend,false);
+                }
                 if($is_continue){
                     $code = 'SUCCESS';
                     $msg = 'OK';

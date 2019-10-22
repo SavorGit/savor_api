@@ -20,6 +20,9 @@ class BaseIncModel extends Model{
             if(isset($trade_info['wx_openid'])){
             	$pay_trade_info['wx_openid'] = $trade_info['wx_openid'];
             }
+            if(isset($trade_info['attach'])){
+                $pay_trade_info['attach'] = $trade_info['attach'];
+            }
         }
         return $pay_trade_info;
     }
@@ -168,6 +171,55 @@ class BaseIncModel extends Model{
                     }
                     //end
                 }
+            }
+        }else{
+            $is_succ = true;
+        }
+        return $is_succ;
+    }
+
+    /**
+     * 更新订单支付数据
+     * @param array $order_extend 订单扩展信息
+     * array('trade_no'=>订单号,
+    'serial_no'=>流水号,
+    'pay_fee'=>支付金额,
+    'paylog_type'=>支付类型,
+    'pay_type'=>支付方式(10微信)
+     * @return boolean
+     */
+    public function handle_order_notify($order_extend){
+        $is_succ = false;
+        $trade_no = $order_extend['trade_no'];
+        $serial_no = $order_extend['serial_no'];
+        $pay_fee = $order_extend['pay_fee'];
+        $paylog_type = $order_extend['paylog_type'];
+        $pay_type = $order_extend['pay_type'];
+
+
+        $sql_order = "select * from savor_smallapp_order where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_order = $this->query($sql_order);
+        if(in_array($result_order[0]['status'],array(10,11))){//10已下单 11支付失败 12支付成功
+            // 判断订单支付金额是否正常
+            $tmp_no_pay_fee = $result_order[0]['total_fee']-$result_order[0]['pay_fee']-$pay_fee;
+            $no_pay_fee = sprintf("%01.2f",$tmp_no_pay_fee);
+
+            if($no_pay_fee<=0){
+                $status = 12;
+            }else{
+                $status = 11;
+            }
+            $pay_time = date('Y-m-d H:i:s');
+            $update_condition = "update savor_smallapp_order set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
+            $sql_uporder = "$update_condition where id='$trade_no'";
+            $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+            $row_num = $this->execute($sql_uporder);
+            if($row_num){
+                $is_succ = true;
+                $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
+                $this->execute($sql_serialno);
+                $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
             }
         }else{
             $is_succ = true;

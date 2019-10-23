@@ -206,6 +206,7 @@ return array(
 	    'option_repair_done_templateid'=>'322916',
 	    'activity_goods_addorder_templateid'=>'489211',
 	    'activity_goods_collection_templateid'=>'489216',
+	    'send_invoice_addr_templateid'=>'511294',
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

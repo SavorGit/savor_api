@@ -334,7 +334,7 @@ class SaleorderController extends Controller {
             $encode_oid = $hashids->encode($order_id);
 
             $param = "{$box_info['hotel_name']},{$res_goods['name']},$encode_oid";
-            $res_json = $ucpass->templateSMS($appId,$phone,$ucconfig['activity_goods_addorder_templateid'],$param);
+            $res_json = $ucpass->templateSMS($appId,$phone,$ucconfig['send_invoice_addr_templateid'],$param);
             $res_data = json_decode($res_json,true);
             if(isset($res_data['resp']['respCode'])) {
                 $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),

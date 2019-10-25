@@ -29,7 +29,7 @@ class SaleorderController extends Controller {
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$res_order['goods_id']));
 
-        $host_name = C('HOST_NAME');
+        $host_name = http_host();
         $url = $host_name.'/h5/saleorder/info/oid/'.$order_id;
         $qrcode_url = $host_name.'/h5/qrcode?url='.$url;
         $oinfo = array('name'=>$res_goods['name'],'amount'=>$res_order['amount'],'total_fee'=>$res_order['total_fee'],'qrcode'=>$qrcode_url);
@@ -77,7 +77,7 @@ class SaleorderController extends Controller {
                     }
                     $oinfo = array('name'=>$res_goods['name'],'img_url'=>$img_url,
                         'amount'=>$res_order['amount'],'total_fee'=>$res_order['total_fee']);
-                    $host_name = C('HOST_NAME');
+                    $host_name = http_host();
                     $params = array('oid'=>$order_id,'openid'=>$mpopenid);
                     $encode_params = encrypt_data(json_encode($params));
                     $pay_url = $host_name.'/h5/saleorder/pay?params='.$encode_params;
@@ -100,7 +100,7 @@ class SaleorderController extends Controller {
             $this->assign('oid',$order_id);
             $this->display($display_html);
         }else{
-            $host_name = C('HOST_NAME');
+            $host_name = http_host();
             $url = $host_name.'/h5/saleorder/info/oid/'.$order_id;
             $this->wx_oauth($url);
         }
@@ -145,7 +145,7 @@ class SaleorderController extends Controller {
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $encode_oid = $hashids->encode($order_id);
 
-        $host_name = C('HOST_NAME');
+        $host_name = http_host();
         $result_url = $host_name.'/h5/saleorder/invoice/oid/'.$encode_oid;
         $prepay_url = $host_name.'/h5/saleorder/info/oid/'.$order_id;
 
@@ -175,7 +175,7 @@ class SaleorderController extends Controller {
         $oinfo = array('oid'=>$order_id,'total_fee'=>$res_order['total_fee']);
 
 
-        $host_name = C('HOST_NAME');
+        $host_name = http_host();
         $url = $host_name.'/h5/saleorder/invoice/oid/'.$oid;
         $m_weixin_api = new \Common\Lib\Weixin_api();
         $res_config =$m_weixin_api->showShareConfig($url);

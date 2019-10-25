@@ -88,7 +88,7 @@ class ActivitygoodsController extends Controller {
             $this->ajaxReturn($res,'JSONP');
         }
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
-        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $add_data = array('openid'=>$openid,'goods_id'=>$goods_id,
             'price'=>$res_goods['price'],'amount'=>1,'total_fee'=>$total_fee,'status'=>20,'otype'=>2);
         $m_order->add($add_data);

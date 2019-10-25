@@ -105,7 +105,8 @@ class GoodsController extends CommonController{
             }
             $v['img_url'] = str_replace('http://','https://',$v['img_url']);
             if($type==20){
-                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+//                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
             }else{
                 $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
             }
@@ -146,11 +147,11 @@ class GoodsController extends CommonController{
             $my_goods['img_url'] = str_replace('http://','https://',$my_goods['img_url']);
 
             if($type==20){
-                $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=22";
+//                $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=22";
+                $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=22&uid=$uid";
             }else{
                 $my_goods['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$my_goods['goods_id']}&type=23&uid=$uid";
             }
-
             unset($my_goods['media_id'],$my_goods['imgmedia_id']);
             if($type==20){
                 array_unshift($datalist,$my_goods);

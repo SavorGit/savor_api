@@ -157,9 +157,7 @@ class OrderController extends CommonController{
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $encode_oid = $hashids->encode($order_id);
-                $host_name = http_host();
-                $sale_url = $host_name.'/h5/saleorder?oid='.$encode_oid;
-                $param = "{$box_info['room_name']},{$res_goods['name']},$sale_url";
+                $param = "{$box_info['room_name']},{$res_goods['name']},$encode_oid";
                 $res_json = $ucpass->templateSMS($appId,$activity_phone,$ucconfig['activity_goods_send_salemanager'],$param);
                 $res_data = json_decode($res_json,true);
                 if(isset($res_data['resp']['respCode'])) {

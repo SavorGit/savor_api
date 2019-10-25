@@ -313,6 +313,7 @@ return array(
 	    '93010'=>'smallappsale_bindmobile_fail',
 	    '93011'=>'smallappsale_verify_code_sendfail',
 	    '93012'=>'smallappsale_openid_empty',
+	    '93013'=>'smallappsale_mobile_have_exist',
 	    
 
 	),

@@ -27,7 +27,17 @@ class OrderController extends CommonController{
         $contact = $this->params['contact'];
         $phone = $this->params['phone'];
         $address = $this->params['address'];
+        $uid = $this->params['uid'];
         $buy_type = intval($this->params['buy_type']);
+
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($uid);
+        if(empty($decode_info)){
+            $this->to_back(90101);
+        }
+        $sale_uid = $decode_info[0];
+
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
@@ -85,6 +95,9 @@ class OrderController extends CommonController{
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'goods_id'=>$goods_id,
             'price'=>$res_goods['price'],'amount'=>$amount,'total_fee'=>$total_fee,
             'status'=>10,'otype'=>1,'buy_type'=>$buy_type);
+        if(!empty($sale_uid)){
+            $add_data['sale_uid'] = $sale_uid;
+        }
         if($res_goods['type']==31){
             if(empty($contact) || empty($phone) || empty($address)){
                 $this->to_back(1001);

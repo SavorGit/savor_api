@@ -292,6 +292,10 @@ return array(
     'smallappsale_addorder_phone_error'=>'请输入正确的手机号码',
     'smallappsale_addorder_integral_not_enough'=>'您的兑换积分不够',
     'smallappsale_connect_box'=>'请先连接包间电视,再进行购买',
+    'smallappsale_bindmobile_verify_err'=>'手机验证码错误或失效',
+    'smallappsale_bindmobile_fail'=>'绑定手机号失败',
+    'smallappsale_verify_code_sendfail'=>'验证码发送失败,请重试',
+    'smallappsale_openid_empty'=>'该用户唯一标识错误',
 
 
 );

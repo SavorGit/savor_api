@@ -68,6 +68,10 @@ class UserController extends CommonController{
             case 'integraltypes':
                 $this->is_verify = 0;
                 break;
+            case 'bindmobile':
+                $this->is_verify = 1;
+                $this->valid_fields = array('mobile'=>1001,'verify_code'=>1001,'openid'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -251,6 +255,7 @@ class UserController extends CommonController{
             $data['avatarUrl'] = $this->params['avatarUrl'];
             $data['nickName']  = $this->params['nickName'];
             $data['gender']    = $this->params['gender'];
+            $data['mobile']    = '';
             $data['unionId']   = $encryptedData['unionId'];
             $data['is_wx_auth']= 3;
             $data['small_app_id'] = 5;
@@ -621,6 +626,31 @@ class UserController extends CommonController{
         $qrcode_url = $host_name."/smallsale/qrcode/inviteQrcode?qrinfo=$qrinfo";
         $res = array('qrcode_url'=>$qrcode_url,'qrcode'=>$qrinfo);
         $this->to_back($res);
+    }
+    public function bindmobile(){
+        $mobile = $this->params['mobile'];
+        $verify_code = $this->params['verify_code'];
+        $openid = $this->params['openid'];
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = 'smallappsale_bindmobile_vcode_'.$mobile;
+        $v_code_info = $redis->get($cache_key);
+        if(empty($v_code_info)){//手机验证码错误或已失效
+            $this->to_back(93009);
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $nums = $m_user->countNum(array('openid'=>$openid));
+        if(empty($nums)){
+            $this->to_back(93012);
+        }
+        $data= [];
+        $data['mobile'] = $mobile;
+        $rt = $m_user->updateInfo(array('openid'=>$openid), $data);
+        if($rt){
+            $this->to_back(10000);
+        }else {
+            $this->to_back(93010);
+        }
     }
 
     private function checkSigninTime($signin_time){

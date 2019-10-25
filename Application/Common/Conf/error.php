@@ -309,6 +309,11 @@ return array(
         '93006'=>'smallappsale_addorder_phone_error',
         '93007'=>'smallappsale_addorder_integral_not_enough',
         '93008'=>'smallappsale_connect_box',
+	    '93009'=>'smallappsale_bindmobile_verify_err',
+	    '93010'=>'smallappsale_bindmobile_fail',
+	    '93011'=>'smallappsale_verify_code_sendfail',
+	    '93012'=>'smallappsale_openid_empty',
+	    
 
 	),
 );

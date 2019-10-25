@@ -639,9 +639,13 @@ class UserController extends CommonController{
             $this->to_back(93009);
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $nums = $m_user->countNum(array('openid'=>$openid));
+        $nums = $m_user->countNum(array('openid'=>$openid,'status'=>1,'small_app_id'=>5));
         if(empty($nums)){
             $this->to_back(93012);
+        }
+        $nums = $m_user->countNum(array('mobile'=>$mobile,'status'=>1,'small_app_id'=>5));
+        if(!empty($nums)){
+            $this->to_back(93013);
         }
         $data= [];
         $data['mobile'] = $mobile;

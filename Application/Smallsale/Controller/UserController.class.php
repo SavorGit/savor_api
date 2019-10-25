@@ -643,16 +643,25 @@ class UserController extends CommonController{
         if(empty($nums)){
             $this->to_back(93012);
         }
+        
+        
         $nums = $m_user->countNum(array('mobile'=>$mobile,'status'=>1,'small_app_id'=>5));
         if(!empty($nums)){
             $this->to_back(93013);
         }
+        $m_user->startTrans();
         $data= [];
         $data['mobile'] = $mobile;
-        $rt = $m_user->updateInfo(array('openid'=>$openid), $data);
-        if($rt){
+        $rt = $m_user->updateInfo(array('openid'=>$openid,'small_app_id'=>5), $data);
+        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        $data = [];
+        $data['bind_mobile'] = $mobile;
+        $rts = $m_hotel_invite_code->updateData(array('openid'=>$openid), $data);
+        if($rt && $rts){
+            $m_user->commit();
             $this->to_back(10000);
         }else {
+            $m_user->rollback();
             $this->to_back(93010);
         }
     }

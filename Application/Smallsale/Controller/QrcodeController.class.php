@@ -41,7 +41,7 @@ class QrcodeController extends CommonController{
         $times = getMillisecond();
         switch ($type){
             case 22:
-                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$times;
+                $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid.'_'.$times;
                 break;
             case 23:
                 $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid.'_'.$times;

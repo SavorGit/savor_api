@@ -121,7 +121,6 @@ class OrderController extends CommonController{
             $add_data['contact'] = $contact;
             $add_data['phone'] = $phone;
             $add_data['address'] = $address;
-
         }
         $order_id = $m_order->add($add_data);
 
@@ -132,24 +131,46 @@ class OrderController extends CommonController{
             $redis->set($cache_key,json_encode($user_order),18000);
         }
 
-        if(!empty($box_info['activity_phone']) && in_array($res_goods['type'],array(10,20))){
-            $ucconfig = C('SMS_CONFIG');
-            $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
-            $ucpass= new \Common\Lib\Ucpaas($options);
-            $appId = $ucconfig['appid'];
-            if(empty($res_goods['name'])){
-                $res_goods['name'] = '您发布的商品';
+        if(in_array($res_goods['type'],array(10,20))){
+            $activity_phone = $box_info['activity_phone'];
+            if($sale_uid){
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $where = array('id'=>$sale_uid);
+                $fields = 'id user_id,openid';
+                $res_user = $m_user->getOne($fields, $where);
+
+                $m_hotelinvite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+                $res_hotelinvite_code = $m_hotelinvite_code->getInfo(array('openid'=>$res_user['openid']));
+                if(!empty($res_hotelinvite_code['bind_mobile'])){
+                    $activity_phone = $res_hotelinvite_code['bind_mobile'];
+                }
             }
-            $param = "{$box_info['room_name']},{$res_goods['name']},$amount,$buy_time";
-            $res_json = $ucpass->templateSMS($appId,$box_info['activity_phone'],$ucconfig['activity_goods_addorder_templateid'],$param);
-            $res_data = json_decode($res_json,true);
-            if(isset($res_data['resp']['respCode'])) {
-                $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                    'url'=>$param,'tel'=>$box_info['activity_phone'],'resp_code'=>$res_data['resp']['respCode'],'msg_type'=>3
+            if(!empty($activity_phone)){
+                $ucconfig = C('SMS_CONFIG');
+                $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
+                $ucpass= new \Common\Lib\Ucpaas($options);
+                $appId = $ucconfig['appid'];
+                if(empty($res_goods['name'])){
+                    $res_goods['name'] = '您发布的商品';
+                }
+
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $encode_oid = $hashids->encode($order_id);
+                $host_name = http_host();
+                $sale_url = $host_name.'/h5/saleorder?oid='.$encode_oid;
+                $param = "{$box_info['room_name']},{$res_goods['name']},$sale_url";
+                $res_json = $ucpass->templateSMS($appId,$activity_phone,$ucconfig['activity_goods_send_salemanager'],$param);
+                $res_data = json_decode($res_json,true);
+                if(isset($res_data['resp']['respCode'])) {
+                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                        'url'=>$param,'tel'=>$activity_phone,'resp_code'=>$res_data['resp']['respCode'],'msg_type'=>3
                     );
-                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                $m_account_sms_log->addData($data);
+                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                    $m_account_sms_log->addData($data);
+                }
             }
+
         }
         $res_data = array('message'=>'购买成功');
         if($res_goods['type']==31){

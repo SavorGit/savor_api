@@ -207,6 +207,7 @@ return array(
 	    'activity_goods_addorder_templateid'=>'489211',
 	    'activity_goods_collection_templateid'=>'489216',
 	    'send_invoice_addr_templateid'=>'511294',
+        'activity_goods_send_salemanager'=>'510315',
 	),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

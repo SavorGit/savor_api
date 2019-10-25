@@ -121,6 +121,7 @@ class FindController extends CommonController{
 //            $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
 //            $where['media.id']  = array('not in',array('17614','19533'));
 //            $where['media.type'] = 1;
+//            $where['ads.is_sapp_show'] = 1;
 //            $order = 'a.sort_num asc';
 //            $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
 //            $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$demand_num");
@@ -850,7 +851,8 @@ class FindController extends CommonController{
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                    $pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/resize,p_50/quality,q_80";
+                    //$pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/resize,p_50/quality,q_80";
+                    $pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/quality,Q_50";
                 }
             }
             $all_public[$key]['pubdetail'] = $pubdetail_info;

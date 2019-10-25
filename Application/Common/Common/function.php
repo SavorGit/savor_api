@@ -357,7 +357,7 @@ function create_token($deviceid = '', $user)
 function check_mobile($mobile, $pattern = false) {
 
 	if (!$pattern) {
-		$pattern = '/(^1[345678]\d{9}$)/';
+		$pattern = '/(^1[3456789]\d{9}$)/';
 	}
 	$result = preg_match($pattern, $mobile, $match);
 

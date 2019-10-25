@@ -140,7 +140,7 @@ class OrderController extends CommonController{
                 $res_user = $m_user->getOne($fields, $where);
 
                 $m_hotelinvite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-                $res_hotelinvite_code = $m_hotelinvite_code->getInfo(array('openid'=>$res_user['openid']));
+                $res_hotelinvite_code = $m_hotelinvite_code->getInfo(array('openid'=>$res_user['openid'],'flag'=>0));
                 if(!empty($res_hotelinvite_code['bind_mobile'])){
                     $activity_phone = $res_hotelinvite_code['bind_mobile'];
                 }

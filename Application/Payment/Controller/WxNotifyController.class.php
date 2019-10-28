@@ -15,7 +15,8 @@ class WxNotifyController extends BaseController{
     public function index(){
         $os_type = 1;
         $m_wxpay = new \Payment\Model\WxpayModel($os_type);
-        $reslut = $m_wxpay->pay_notify();
+        $payconfig = $this->getPayConfig();
+        $reslut = $m_wxpay->pay_notify($payconfig);
     }
     
     /**
@@ -24,7 +25,8 @@ class WxNotifyController extends BaseController{
     public function pc(){
         $os_type = 1;
         $m_wxpay = new \Payment\Model\WxpayModel($os_type);
-        $reslut = $m_wxpay->pay_notify();
+        $payconfig = $this->getPayConfig();
+        $reslut = $m_wxpay->pay_notify($payconfig);
     }
     /**
      * 微信手机支付回调
@@ -32,7 +34,8 @@ class WxNotifyController extends BaseController{
     public function mobile(){
         $os_type = 2;
         $m_wxpay = new \Payment\Model\WxpayModel($os_type);
-        $reslut = $m_wxpay->pay_notify();
+        $payconfig = $this->getPayConfig();
+        $reslut = $m_wxpay->pay_notify($payconfig);
     }
     
    

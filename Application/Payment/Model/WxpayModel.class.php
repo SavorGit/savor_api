@@ -30,7 +30,8 @@ class WxpayModel extends Model{
     	}
     	$this->trade_info = $this->baseInc->init_pay_tradeinfo($trade_info);
     	$payinfo = $this->baseInc->init_pay_config($payconfig);
-    	$this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key']);
+    	$this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key'],
+            'SSLCERT_PATH'=>$payinfo['sslcert_path'],'SSLKEY_PATH'=>$payinfo['sslkey_path']);
     	$GLOBALS['wxpay_config'] = $this->payconfig;
     	switch ($this->os_type){
     		case 1:
@@ -49,12 +50,11 @@ class WxpayModel extends Model{
     	return $paydata;
     }
     
-    public function pay_notify(){
-        $fwh_config = C('WX_FWH_CONFIG');
-        $appid = $fwh_config['appid'];
-        $pay_config = C('PAY_WEIXIN_CONFIG');
-    	$this->payconfig = array('APPID'=>$appid,'MCHID'=>$pay_config['partner'],'KEY'=>$pay_config['key']);
-    	$GLOBALS['wxpay_config'] = $this->payconfig;
+    public function pay_notify($payconfig){
+        $payinfo = $this->baseInc->init_pay_config($payconfig);
+        $this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key'],
+            'SSLCERT_PATH'=>$payinfo['sslcert_path'],'SSLKEY_PATH'=>$payinfo['sslkey_path']);
+        $GLOBALS['wxpay_config'] = $this->payconfig;
     	if($this->os_type == 1){
     		$this->paylog_type = 1;
     	}elseif($this->os_type == 2){
@@ -68,7 +68,6 @@ class WxpayModel extends Model{
   
     
     private function get_payurl_pc(){
-
         require_once "wxpay_lib/WxPay.Api.php";
 		$notify_url = $this->host_name.'/payment/wxNotify/pc';
 		
@@ -208,8 +207,10 @@ class WxpayModel extends Model{
     		die(json_encode(array('error'=>'订单号或支付账号信息为空，请检查相关代码')));
     	}
     	$payinfo = $this->baseInc->init_pay_config($payconfig);
-    	$this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key']);
-    	$GLOBALS['wxpay_config'] = $this->payconfig;
+        $this->payconfig = array('APPID'=>$payinfo['appid'],'MCHID'=>$payinfo['partner'],'KEY'=>$payinfo['key'],
+            'SSLCERT_PATH'=>$payinfo['sslcert_path'],'SSLKEY_PATH'=>$payinfo['sslkey_path']);
+        $GLOBALS['wxpay_config'] = $this->payconfig;
+
     	//通过微信api进行退款流程
     	$input = new \WxPayRefund();
     	$input->SetOut_trade_no($trade_info['trade_no']);
@@ -262,7 +263,7 @@ class WxpayModel extends Model{
         $xmldata = $this->array_to_xml($params); //数组转XML
         $url='https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
         //发送post请求
-        $res = $this->curl_post_ssl($url, $xmldata); //curl请求
+        $res = $this->curl_post_ssl($url, $xmldata,10,array(),$payconfig); //curl请求
         if(!$res){
             return array('code'=>10001,'msg'=>"服务器连接失败");
         }
@@ -285,7 +286,7 @@ class WxpayModel extends Model{
 
 
 
-    public function curl_post_ssl($url, $xmldata,  $second=30,$aHeader=array()){
+    public function curl_post_ssl($url, $xmldata,  $second=30,$aHeader=array(),$payconfig=array()){
         $ch = curl_init();
         //超时时间
         curl_setopt($ch,CURLOPT_TIMEOUT,$second);
@@ -296,9 +297,18 @@ class WxpayModel extends Model{
 
         //默认格式为PEM，可以注释
         curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
-        curl_setopt($ch,CURLOPT_SSLCERT,APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_cert.pem');
         curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
-        curl_setopt($ch,CURLOPT_SSLKEY,APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_key.pem');
+
+        if(!empty($payconfig['sslcert_path']) && !empty($payconfig['sslkey_path'])){
+            $sslcert_path = $payconfig['sslcert_path'];
+            $sslkey_path = $payconfig['sslkey_path'];
+        }else{
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/apiclient_key.pem';
+        }
+
+        curl_setopt($ch,CURLOPT_SSLCERT,$sslcert_path);
+        curl_setopt($ch,CURLOPT_SSLKEY,$sslkey_path);
         if( count($aHeader) >= 1 ){
             curl_setopt($ch, CURLOPT_HTTPHEADER, $aHeader);
         }

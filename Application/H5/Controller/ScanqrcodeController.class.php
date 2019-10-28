@@ -247,21 +247,26 @@ class ScanqrcodeController extends Controller {
     public function grabpage(){
         $code = I('code', '');
         $ou = I('ou','');
-        $m_weixin_api = new \Common\Lib\Weixin_api();
-        $result = $m_weixin_api->getWxOpenid($code);
-        $open_id = $result['openid'];
-        if(empty($open_id)){
-            $url = http_host().'/h5/scanqrcode/grabBonus/ou/'.$ou;
-            $this->wx_oauth($url);
-        }
+        $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
         $ou_arr = explode('o',$ou);
         $order_id = $ou_arr[0];
         $user_id = $ou_arr[1];
 
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('id'=>$user_id);
-        $data = array('mpopenid'=>$open_id);
-        $m_user->updateInfo($where,$data);
+        if($pk_type==1){
+            $m_weixin_api = new \Common\Lib\Weixin_api();
+            $result = $m_weixin_api->getWxOpenid($code);
+            $open_id = $result['openid'];
+            if(empty($open_id)){
+                $url = http_host().'/h5/scanqrcode/grabBonus/ou/'.$ou;
+                $this->wx_oauth($url);
+            }
+
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = array('id'=>$user_id);
+            $data = array('mpopenid'=>$open_id);
+            $m_user->updateInfo($where,$data);
+        }
+
 
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));

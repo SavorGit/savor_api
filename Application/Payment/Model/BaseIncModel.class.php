@@ -38,7 +38,14 @@ class BaseIncModel extends Model{
             'partner'=>$payconfig['partner'],
             'key'=>$payconfig['key'],
             'seller_email'=>$payconfig['seller_email'],
+            'sslcert_path'=>'',
+            'sslkey_path'=>'',
         );
+        if(isset($payconfig['sslcert_path']) && isset($payconfig['sslkey_path'])){
+            $payinfo['sslcert_path'] = $payconfig['sslcert_path'];
+            $payinfo['sslkey_path'] = $payconfig['sslkey_path'];
+        }
+
         return $payinfo;
     }
     
@@ -196,7 +203,11 @@ class BaseIncModel extends Model{
         $paylog_type = $order_extend['paylog_type'];
         $pay_type = $order_extend['pay_type'];
 
+        $sql_order = "select * from savor_smallapp_ordermap where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_ordermap = $this->query($sql_order);
 
+        $trade_no = intval($result_ordermap[0]['order_id']);
         $sql_order = "select * from savor_smallapp_order where id='$trade_no'";
         $this->paynotify_log($paylog_type, $serial_no, $sql_order);
         $result_order = $this->query($sql_order);

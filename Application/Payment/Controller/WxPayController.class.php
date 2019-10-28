@@ -10,14 +10,8 @@ class WxPayController extends BaseController{
     }
 
     public function refundMoney(){
-        $fwh_config = C('WX_FWH_CONFIG');
-        $appid = $fwh_config['appid'];
-        $pay_config = C('PAY_WEIXIN_CONFIG');
-        $payconfig = array(
-            'appid'=>$appid,
-            'partner'=>$pay_config['partner'],
-            'key'=>$pay_config['key']
-        );
+        $payconfig = $this->getPayConfig();
+
         $operation_uid = 42996;
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $where = array('status'=>array('in','4,6'));
@@ -77,14 +71,8 @@ class WxPayController extends BaseController{
 
 
     public function mchpaychange(){
-        $fwh_config = C('WX_FWH_CONFIG');
-        $appid = $fwh_config['appid'];
-        $pay_config = C('PAY_WEIXIN_CONFIG');
-        $payconfig = array(
-            'appid'=>$appid,
-            'partner'=>$pay_config['partner'],
-            'key'=>$pay_config['key']
-        );
+        $payconfig = $this->getPayConfig();
+
         $red_packet_key = C('SAPP_REDPACKET');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -216,14 +204,7 @@ class WxPayController extends BaseController{
             $this->ajaxReturn($res);
         }
 
-        $fwh_config = C('WX_FWH_CONFIG');
-        $appid = $fwh_config['appid'];
-        $pay_config = C('PAY_WEIXIN_CONFIG');
-        $payconfig = array(
-            'appid'=>$appid,
-            'partner'=>$pay_config['partner'],
-            'key'=>$pay_config['key']
-        );
+        $payconfig = $this->getPayConfig();
 
         $money = $res_goods['price'];
         $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['mpopenid']);

@@ -248,7 +248,7 @@ return array(
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',
     'smallappdinner_invite_code_error'=>'邀请码输入错误',
-    'smallappdinner_invite_code_isuse'=>'此手机号已绑定其他邀请码，请使用你绑定过的邀请码',
+    'smallappdinner_invite_code_isuse'=>'邀请码已被使用',
     'smallappdinner_verify_code_hassend'=>'验证码已发送',
     'smallappdinner_verify_code_sendfail'=>'验证码发送失败,请重试',
     'smallappdinner_verify_code_checkfail'=>'验证码输入错误',

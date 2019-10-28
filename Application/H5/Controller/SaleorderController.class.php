@@ -7,7 +7,6 @@ use Think\Controller;
 
 class SaleorderController extends Controller {
 
-
     public function index(){
         $oid = I('oid','');
         if(empty($oid)){
@@ -51,10 +50,15 @@ class SaleorderController extends Controller {
             die('order error');
         }
 
+        $code = 1234;
+
         if($code){
-            $m_weixin_api = new \Common\Lib\Weixin_api();
-            $result = $m_weixin_api->getWxOpenid($code);
-            $mpopenid = $result['openid'];
+//            $m_weixin_api = new \Common\Lib\Weixin_api();
+//            $result = $m_weixin_api->getWxOpenid($code);
+//            $mpopenid = $result['openid'];
+
+            $mpopenid = 'opvf00gbz3qAOQRpC3Kyb2YdVZ8w';
+
             $order_status = $res_order['status'];//10已下单 11支付失败 12支付成功
             switch ($order_status){
                 case 10:
@@ -89,7 +93,13 @@ class SaleorderController extends Controller {
                     $m_orderinvoice = new \Common\Model\Smallapp\OrderinvoiceModel();
                     $res = $m_orderinvoice->getInfo(array('order_id'=>$order_id));
                     if(empty($res) || $res['status']==1){
-                        $display_html = 'invoice';
+                        $hash_ids_key = C('HASH_IDS_KEY');
+                        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                        $encode_oid = $hashids->encode($order_id);
+                        $host_name = http_host();
+                        $invoice_url = $host_name.'/h5/saleorder/invoice/oid/'.$encode_oid;
+                        header('Location: '.$invoice_url);
+                        exit;
                     }else{
                         $display_html = 'hasinvoice';
                     }
@@ -127,7 +137,10 @@ class SaleorderController extends Controller {
         }
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$res_order['goods_id']));
-        $trade_info = array('trade_no'=>$res_order['id'],'total_fee'=>$res_order['total_fee'],'trade_name'=>$res_goods['name'],
+        $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+        $trade_no = $m_ordermap->add(array('order_id'=>$res_order['id'],'pay_type'=>10));
+
+        $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$res_order['total_fee'],'trade_name'=>$res_goods['name'],
             'buy_time'=>$res_order['add_time'],'wx_openid'=>$openid,'redirect_url'=>'','attach'=>10);
 
         $fwh_config = C('WX_FWH_CONFIG');
@@ -174,7 +187,6 @@ class SaleorderController extends Controller {
         }
         $oinfo = array('oid'=>$order_id,'total_fee'=>$res_order['total_fee']);
 
-
         $host_name = http_host();
         $url = $host_name.'/h5/saleorder/invoice/oid/'.$oid;
         $m_weixin_api = new \Common\Lib\Weixin_api();
@@ -183,6 +195,8 @@ class SaleorderController extends Controller {
         $this->assign('timestamp',$res_config['timestamp']);
         $this->assign('noncestr',$res_config['noncestr']);
         $this->assign('signature',$res_config['signature']);
+
+        $this->assign('version',time());
 
         $this->assign('oinfo',$oinfo);
         $this->display();
@@ -239,7 +253,12 @@ class SaleorderController extends Controller {
         $m_orderinvoice = new \Common\Model\Smallapp\OrderinvoiceModel();
         $res = $m_orderinvoice->getInfo(array('order_id'=>$order_id));
         $data = array('order_id'=>$order_id,'company'=>$company,'credit_code'=>$credit_code,'contact'=>$contact,'phone'=>$phone,
-            'address'=>$address,'type'=>$invoice_type,'status'=>2);
+            'type'=>$invoice_type,'status'=>2);
+        if($invoice_type==1){
+            $data['address']=$address;
+        }else{
+            $data['email']=$address;
+        }
         if(!empty($res)){
             switch ($res['status']){//1暂不开票 2已提交开具发票申请 3发票已开
                 case 1:
@@ -266,7 +285,6 @@ class SaleorderController extends Controller {
     public function sendaddr(){
         $order_id = I('oid',0,'intval');
         $phone = I('phone','','trim');
-
         if(empty($phone)){
             $this->ajaxReturn(array('code'=>10001,'msg'=>'请输入手机号码'),'JSONP');
         }
@@ -277,7 +295,7 @@ class SaleorderController extends Controller {
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
         if(empty($res_order)){
-            $this->ajaxReturn(array('code'=>10001,'msg'=>'订单信息有误'),'JSONP');
+            $this->ajaxReturn(array('code'=>10001,'msg'=>$order_id),'JSONP');
         }
         $order_status = $res_order['status'];//10已下单 11支付失败 12支付成功
         if($order_status!=12){

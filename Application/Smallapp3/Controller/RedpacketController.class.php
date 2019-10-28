@@ -109,7 +109,6 @@ class RedpacketController extends CommonController{
         if(empty($box_info)){
             $this->to_back(15003);
         }
-
         $redpacket = array('user_id'=>$user_info['id'],'total_fee'=>$total_money,'amount'=>$amount,'surname'=>$surname,
             'sex'=>$sex,'bless_id'=>$bless_id,'scope'=>$scope,'mac'=>$box_mac);
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
@@ -122,6 +121,25 @@ class RedpacketController extends CommonController{
         $jump_url = http_host().'/h5/scanqrcode/scanpage?id='.$id_key;
 
         $result = array('order_id'=>$order_id,'jump_url'=>$jump_url);
+
+        $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
+        if($pk_type==2){
+            $trade_info = array('trade_no'=>$order_id,'total_fee'=>$total_money,'trade_name'=>'小热点红包',
+                'buy_time'=>date('Y-m-d H:i:s'),'wx_openid'=>$open_id,'redirect_url'=>'','attach'=>20);
+            $smallapp_config = C('SMALLAPP_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key']
+            );
+            $m_payment = new \Payment\Model\WxpayModel(3);
+            $wxpay = $m_payment->pay($trade_info,$payconfig);
+            $payinfo = json_decode($wxpay,true);
+            $result['payinfo'] = $payinfo;
+        }
+        $result['pk_type'] = $pk_type;
+
         $this->to_back($result);
     }
 

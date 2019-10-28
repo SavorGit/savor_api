@@ -240,7 +240,13 @@ class ScanqrcodeController extends Controller {
         }else{
             $ou = $order_id.'o'.$grap_userid;
             $url = http_host().'/h5/scanqrcode/grabpage/ou/'.$ou;
-            $this->wx_oauth($url);
+            $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
+            if($pk_type==1){
+                $this->wx_oauth($url);
+            }else{
+                header("Location:".$url);
+            }
+
         }
     }
 
@@ -251,7 +257,7 @@ class ScanqrcodeController extends Controller {
         $ou_arr = explode('o',$ou);
         $order_id = $ou_arr[0];
         $user_id = $ou_arr[1];
-
+        $m_user = new \Common\Model\Smallapp\UserModel();
         if($pk_type==1){
             $m_weixin_api = new \Common\Lib\Weixin_api();
             $result = $m_weixin_api->getWxOpenid($code);
@@ -260,13 +266,10 @@ class ScanqrcodeController extends Controller {
                 $url = http_host().'/h5/scanqrcode/grabBonus/ou/'.$ou;
                 $this->wx_oauth($url);
             }
-
-            $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('id'=>$user_id);
             $data = array('mpopenid'=>$open_id);
             $m_user->updateInfo($where,$data);
         }
-
 
         $m_order = new \Common\Model\Smallapp\RedpacketModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));

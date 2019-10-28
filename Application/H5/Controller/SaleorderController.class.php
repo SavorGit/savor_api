@@ -186,6 +186,12 @@ class SaleorderController extends Controller {
         if(empty($res_order)){
             die('order error');
         }
+        $m_orderinvoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+        $res = $m_orderinvoice->getInfo(array('order_id'=>$order_id));
+        if(!empty($res) && $res['status']!=1){
+            $this->display('hasinvoice');
+        }
+
         $oinfo = array('oid'=>$order_id,'total_fee'=>$res_order['total_fee']);
 
         $host_name = http_host();

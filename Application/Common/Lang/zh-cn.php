@@ -256,6 +256,7 @@ return array(
     'smallappdinner_invite_code_checkerror'=>'邀请码错误',
     'smallapp_user_notexist'=>'用户不存在',
     'smallapp_bonus_money_error'=>'单个红包额度过低',
+    'smallapp_bonus_money_max_error'=>'红包额度过大',
     'smallapp_surname_error'=>'请输入百家姓中的姓氏',
     'smallapp_bonus_range_error'=>'红包发送不在范围之内',
     'smallapp_sendtvbonus_error'=>'发送电视红包失败',

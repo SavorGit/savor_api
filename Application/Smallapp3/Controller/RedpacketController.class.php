@@ -88,6 +88,9 @@ class RedpacketController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
+        if($total_money>500){
+            $this->to_back(90123);
+        }
         if($total_money<$amount*0.3){
             $this->to_back(90117);
         }

@@ -140,8 +140,9 @@ class SaleorderController extends Controller {
         $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
         $trade_no = $m_ordermap->add(array('order_id'=>$res_order['id'],'pay_type'=>10));
 
+        $notify_url = C('HOST_NAME').'/payment/wxNotify/html5';;
         $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$res_order['total_fee'],'trade_name'=>$res_goods['name'],
-            'buy_time'=>$res_order['add_time'],'wx_openid'=>$openid,'redirect_url'=>'','attach'=>10);
+            'buy_time'=>$res_order['add_time'],'wx_openid'=>$openid,'redirect_url'=>'','attach'=>10,'notify_url'=>$notify_url);
 
         $fwh_config = C('WX_FWH_CONFIG');
         $appid = $fwh_config['appid'];

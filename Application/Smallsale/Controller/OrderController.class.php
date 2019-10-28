@@ -30,14 +30,16 @@ class OrderController extends CommonController{
         $uid = $this->params['uid'];
         $buy_type = intval($this->params['buy_type']);
 
-        $hash_ids_key = C('HASH_IDS_KEY');
-        $hashids = new \Common\Lib\Hashids($hash_ids_key);
-        $decode_info = $hashids->decode($uid);
-        if(empty($decode_info)){
-            $this->to_back(90101);
+        $sale_uid = '';
+        if(!empty($uid)){
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $decode_info = $hashids->decode($uid);
+            if(empty($decode_info)){
+                $this->to_back(90101);
+            }
+            $sale_uid = $decode_info[0];
         }
-        $sale_uid = $decode_info[0];
-
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();

@@ -37,6 +37,17 @@ class WxNotifyController extends BaseController{
         $payconfig = $this->getPayConfig();
         $reslut = $m_wxpay->pay_notify($payconfig);
     }
+    /**
+     * 微信手机html5支付回调
+     */
+    public function html5(){
+        $os_type = 2;
+        $m_wxpay = new \Payment\Model\WxpayModel($os_type);
+        $payconfig = $this->getPayConfig(1);
+        $reslut = $m_wxpay->pay_notify($payconfig);
+    }
+
+
     
    
 }

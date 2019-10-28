@@ -21,8 +21,10 @@ class BaseController extends Controller {
         $http = 'http://';
         return $http.$_SERVER['HTTP_HOST'];
     }
-    public function getPayConfig(){
-        $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
+    public function getPayConfig($pk_type=0){
+        if(!$pk_type){
+            $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
+        }
         if($pk_type==1){
             $fwh_config = C('WX_FWH_CONFIG');
             $appid = $fwh_config['appid'];

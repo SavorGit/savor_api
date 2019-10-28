@@ -111,7 +111,9 @@ class WxpayModel extends Model{
     private function get_pay_jsapi(){
         require_once "wxpay_lib/WxPay.Api.php";
 		$notify_url = $this->host_name.'/payment/wxNotify/pc';
-		
+		if(!empty($this->trade_info['notify_url'])){
+            $notify_url = $this->trade_info['notify_url'];
+        }
 		$input = new \WxPayUnifiedOrder();
 		$input->SetBody($this->trade_info['subject']);
 		$input->SetOut_trade_no($this->trade_info['out_trade_no']);

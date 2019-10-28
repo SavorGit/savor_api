@@ -86,11 +86,11 @@ class WxPayController extends BaseController{
                 $orders = json_decode($message,true);
             }
         }
-
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         $m_refund = new \Common\Model\Smallapp\RefundModel();
         $m_wxpay = new \Payment\Model\WxpayModel();
         if(!empty($orders)){
+            $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
             foreach ($orders as $v){
                 $message_oidinfo = explode('_',$v['order_id']);
                 $order_id = $message_oidinfo[0];
@@ -100,14 +100,13 @@ class WxPayController extends BaseController{
                 if(!empty($res_refund)){
                     die("redpacket_id:$order_id has refund");
                 }
-                $fields = 'a.id,a.redpacket_id,a.user_id,a.money,user.mpopenid as openid';
+                $fields = 'a.id,a.redpacket_id,a.user_id,a.money,user.openid as small_openid,user.mpopenid as openid';
                 $where = "a.id=$receive_id and a.status=0";
                 $order = 'id asc';
                 $res_receive = $m_redpacket_receive->getList($fields,$where,$order);
                 if(empty($res_receive)){
                     die("redpacket_id:$order_id send bonus finish");
                 }
-
                 foreach ($res_receive as $v){
 
                     $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
@@ -128,7 +127,12 @@ class WxPayController extends BaseController{
                     }else{
                         $res_moneyuser = array();
                     }
-                    if(empty($v['openid']) || array_key_exists($v['user_id'],$res_moneyuser)){
+                    if($pk_type==1){
+                        $open_id = $v['openid'];
+                    }else{
+                        $open_id = $v['small_openid'];
+                    }
+                    if(empty($open_id) || array_key_exists($v['user_id'],$res_moneyuser)){
                         continue;
                     }
 
@@ -145,7 +149,7 @@ class WxPayController extends BaseController{
                     $res_lockuser[$v['user_id']] = date('Y-m-d H:i:s');
                     $redis->set($key_lockuser,json_encode($res_lockuser),86400);
 
-                    $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$v['openid']);
+                    $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$open_id);
                     $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
 
                     unset($res_lockuser[$v['user_id']]);

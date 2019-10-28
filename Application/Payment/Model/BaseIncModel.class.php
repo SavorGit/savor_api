@@ -17,6 +17,9 @@ class BaseIncModel extends Model{
                 'subject'=>$trade_info['trade_name'],'body'=>$trade_info['trade_name'],'buy_time'=>$trade_info['buy_time'],
             	'redirect_url'=>$trade_info['redirect_url'],
             );
+            if(isset($trade_info['notify_url'])){
+                $pay_trade_info['notify_url'] = $trade_info['notify_url'];
+            }
             if(isset($trade_info['wx_openid'])){
             	$pay_trade_info['wx_openid'] = $trade_info['wx_openid'];
             }

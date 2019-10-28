@@ -90,9 +90,8 @@ class OrderController extends CommonController{
                 $user_order = array();
             }
         }
-
-        $buy_time = date('Y-m-d H:i:s');
         $m_order = new \Common\Model\Smallapp\OrderModel();
+        $amount = $amount>0?$amount:1;
         $total_fee = sprintf("%.2f",$amount*$res_goods['price']);
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'goods_id'=>$goods_id,
             'price'=>$res_goods['price'],'amount'=>$amount,'total_fee'=>$total_fee,
@@ -159,7 +158,7 @@ class OrderController extends CommonController{
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $encode_oid = $hashids->encode($order_id);
-                $param = "{$box_info['room_name']},{$res_goods['name']},$encode_oid";
+                $param = "{$box_info['room_name']},{$res_goods['name']},$amount,$encode_oid";
                 $res_json = $ucpass->templateSMS($appId,$activity_phone,$ucconfig['activity_goods_send_salemanager'],$param);
                 $res_data = json_decode($res_json,true);
                 if(isset($res_data['resp']['respCode'])) {

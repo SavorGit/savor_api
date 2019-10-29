@@ -141,7 +141,7 @@ function jd_union_api($params,$api,$method='get'){
 }
 
 function isMobile($mobile) {
-    return preg_match("/^1[34578]\d{9}$/", $mobile);
+    return preg_match("/^1[3456789]\d{9}$/", $mobile);
 }
 
 function isEmail($vStr){

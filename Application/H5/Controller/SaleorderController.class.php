@@ -49,15 +49,10 @@ class SaleorderController extends Controller {
         if(empty($res_order)){
             die('order error');
         }
-
-        $code = 1234;
-
         if($code){
-//            $m_weixin_api = new \Common\Lib\Weixin_api();
-//            $result = $m_weixin_api->getWxOpenid($code);
-//            $mpopenid = $result['openid'];
-
-            $mpopenid = 'opvf00gbz3qAOQRpC3Kyb2YdVZ8w';
+            $m_weixin_api = new \Common\Lib\Weixin_api();
+            $result = $m_weixin_api->getWxOpenid($code);
+            $mpopenid = $result['openid'];
 
             $order_status = $res_order['status'];//10已下单 11支付失败 12支付成功
             switch ($order_status){

@@ -230,6 +230,22 @@ class BaseIncModel extends Model{
             $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
             $row_num = $this->execute($sql_uporder);
             if($row_num){
+                $sale_uid = $result_order[0]['sale_uid'];
+                if($sale_uid){
+                    $m_box = new \Common\Model\BoxModel();
+                    $res_box = $m_box->getHotelInfoByBoxMacNew($result_order[0]['box_mac']);
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $res_user = $m_user->getOne('openid',array('id'=>$sale_uid),'id desc');
+                    $m_user_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+                    $record_data = array('openid'=>$res_user['openid'],'area_id'=>$res_box['area_id'],'area_name'=>$res_box['area_name'],
+                        'hotel_id'=>$res_box['hotel_id'],'hotel_name'=>$res_box['hotel_name'],'hotel_box_type'=>$res_box['hotel_box_type'],
+                        'room_id'=>$res_box['room_id'],'room_name'=>$res_box['room_name'],'box_id'=>$res_box['box_id'],'box_mac'=>$result_order[0]['box_mac'],
+                        'box_type'=>$res_box['box_type'],'integral'=>0,'goods_id'=>$result_order[0]['goods_id'],
+                        'jdorder_id'=>$result_order[0]['id'],'content'=>$result_order[0]['amount'],'type'=>3,
+                        'integral_time'=>date('Y-m-d H:i:s'),'status'=>1);
+                    $m_user_integralrecord->add($record_data);
+                }
+
                 $is_succ = true;
                 $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
                 $this->execute($sql_serialno);

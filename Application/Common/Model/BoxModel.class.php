@@ -46,8 +46,8 @@ class BoxModel extends Model
     }
     public function getHotelInfoByBoxMacNew($mac){
         if($mac){
-            $sql ="select b.id as box_id,b.name as box_name,b.room_id,r.name as room_name, h.id as hotel_id,
-                   h.name as hotel_name,a.id as area_id, a.region_name as area_name,b.is_open_simple
+            $sql ="select b.id as box_id,b.name as box_name,b.room_id,b.box_type,r.name as room_name, h.id as hotel_id,
+                   h.name as hotel_name,h.hotel_box_type,a.id as area_id, a.region_name as area_name,b.is_open_simple
                    from savor_box as b
                    left join savor_room as r on b.room_id=r.id
                    left join savor_hotel as h on r.hotel_id=h.id

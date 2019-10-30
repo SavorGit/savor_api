@@ -304,6 +304,23 @@ class SaleorderController extends Controller {
             $this->ajaxReturn(array('code'=>10001,'msg'=>'订单状态错误'),'JSONP');
         }
 
+        $send_num = 7;
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'addorder:'.'saleoid'.$order_id;
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $order_send = json_decode($res_cache,true);
+            if(count($order_send)>=$send_num){
+                $this->ajaxReturn(array('code'=>10001,'msg'=>'短信发送已达上限'),'JSONP');
+            }
+        }else{
+            $order_send = array();
+        }
+        $order_send[] = date('Y-m-d H:i:s');
+        $redis->set($cache_key,json_encode($order_send),7*86400);
+
         $m_orderinvoice = new \Common\Model\Smallapp\OrderinvoiceModel();
         $res = $m_orderinvoice->getInfo(array('order_id'=>$order_id));
         $data = array('order_id'=>$order_id,'phone'=>$phone,'status'=>1);

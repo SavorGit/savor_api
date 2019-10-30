@@ -283,7 +283,7 @@ return array(
     'smallappdinner_addorder_upperlimit'=>'下单次数已达上限',
     'smallappdinner_collection_upperlimit'=>'收藏次数已达上限',
     'smallappdinner_sendsms_repeatsend'=>'请勿重复发送短信',
-    'smallappdinner_addorder_repeat'=>'您已下单，餐厅经理即将为您服务，请勿重复下单，',
+    'smallappdinner_addorder_repeat'=>'您已下单，餐厅经理即将为您服务，请勿重复下单。',
     'smallappsale_role_error'=>'用户角色错误',
     'smallappsale_user_has_remove'=>'用户已经移除',
     'smallappsale_qrcode_decode_error'=>'二维码解码错误',

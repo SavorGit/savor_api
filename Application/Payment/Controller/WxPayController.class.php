@@ -169,7 +169,7 @@ class WxPayController extends BaseController{
     }
 
     public function integralwithdraw(){
-        $params = I('post.params');
+        $params = $_REQUEST['params'];
         $hash_ids_key = C('HASH_IDS_KEY_ADMIN');
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $decode_info = $hashids->decode($params);
@@ -177,8 +177,8 @@ class WxPayController extends BaseController{
             $error = array('code'=>99001,'msg'=>'decode error');
             $this->ajaxReturn($error);
         }
-        $order_id = $decode_info[0];
-        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $order_id = intval($decode_info[0]);
+        $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
         if(empty($res_order) || $res_order['status']!=20){
             $error = array('code'=>99002,'msg'=>'status error');
@@ -207,8 +207,7 @@ class WxPayController extends BaseController{
             $res = array('code'=>99005,'msg'=>'integral not enough');
             $this->ajaxReturn($res);
         }
-
-        $payconfig = $this->getPayConfig();
+        $payconfig = $this->getPayConfig(1);
 
         $money = $res_goods['price'];
         $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['mpopenid']);

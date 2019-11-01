@@ -205,6 +205,10 @@ return array(
 	    'send_invoice_addr_templateid'=>'511294',
         'activity_goods_send_salemanager'=>'510315',
 	),
+    'ALIYUN_SMS_CONFIG' => array(
+        'send_invoice_addr_templateid'=>'SMS_176935152',
+        'activity_goods_send_salemanager'=>'SMS_176527162',
+    ),
 
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
     'OPTION_USER_SKILL_ARR' => array(

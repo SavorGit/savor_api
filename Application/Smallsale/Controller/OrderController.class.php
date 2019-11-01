@@ -147,10 +147,6 @@ class OrderController extends CommonController{
                 }
             }
             if(!empty($activity_phone)){
-                $ucconfig = C('SMS_CONFIG');
-                $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
-                $ucpass= new \Common\Lib\Ucpaas($options);
-                $appId = $ucconfig['appid'];
                 if(empty($res_goods['name'])){
                     $res_goods['name'] = '您发布的商品';
                 }
@@ -158,6 +154,23 @@ class OrderController extends CommonController{
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $encode_oid = $hashids->encode($order_id);
+
+                $ucconfig = C('ALIYUN_SMS_CONFIG');
+                $alisms = new \Common\Lib\AliyunSms();
+                $params = array('room_name'=>$box_info['room_name'],'goods_name'=>$res_goods['name'],'amount'=>$amount,'enoid'=>$encode_oid);
+                $template_code = $ucconfig['activity_goods_send_salemanager'];
+                $res_data = $alisms::sendSms($activity_phone,$params,$template_code);
+                $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                    'url'=>join(',',$params),'tel'=>$activity_phone,'resp_code'=>$res_data->Code,'msg_type'=>3
+                );
+                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                $m_account_sms_log->addData($data);
+
+                /*
+                $ucconfig = C('SMS_CONFIG');
+                $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
+                $ucpass= new \Common\Lib\Ucpaas($options);
+                $appId = $ucconfig['appid'];
                 $param = "{$box_info['room_name']},{$res_goods['name']},$amount,$encode_oid";
                 $res_json = $ucpass->templateSMS($appId,$activity_phone,$ucconfig['activity_goods_send_salemanager'],$param);
                 $res_data = json_decode($res_json,true);
@@ -168,6 +181,7 @@ class OrderController extends CommonController{
                     $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
                     $m_account_sms_log->addData($data);
                 }
+                */
             }
 
         }

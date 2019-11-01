@@ -369,7 +369,7 @@ class SaleorderController extends Controller {
             $alisms = new \Common\Lib\AliyunSms();
             $params = array('hotel_name'=>$box_info['hotel_name'],'goods_name'=>$res_goods['name'],'enoid'=>$encode_oid);
             $template_code = $ucconfig['send_invoice_addr_templateid'];
-            $res_data = $alisms::sendSms($box_info['activity_phone'],$params,$template_code);
+            $res_data = $alisms::sendSms($phone,$params,$template_code);
             $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
                 'url'=>join(',',$params),'tel'=>$box_info['activity_phone'],'resp_code'=>$res_data->Code,'msg_type'=>3
             );

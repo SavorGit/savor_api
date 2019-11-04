@@ -499,7 +499,7 @@ class GoodsController extends CommonController{
             $orderby = 'g.id desc';
             $limit = "0,1";
             $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
-            $loopplay_data = array($my_goods['goods_id']=>$my_goods['goods_id']);
+            $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
             $redis->set($cache_key,json_encode($loopplay_data));
 
             $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";

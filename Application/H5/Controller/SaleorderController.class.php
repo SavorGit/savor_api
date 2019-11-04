@@ -304,6 +304,23 @@ class SaleorderController extends Controller {
             $this->ajaxReturn(array('code'=>10001,'msg'=>'订单状态错误'),'JSONP');
         }
 
+        $send_num = 7;
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'addorder:'.'saleoid'.$order_id;
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $order_send = json_decode($res_cache,true);
+            if(count($order_send)>=$send_num){
+                $this->ajaxReturn(array('code'=>10001,'msg'=>'短信发送已达上限'),'JSONP');
+            }
+        }else{
+            $order_send = array();
+        }
+        $order_send[] = date('Y-m-d H:i:s');
+        $redis->set($cache_key,json_encode($order_send),7*86400);
+
         $m_orderinvoice = new \Common\Model\Smallapp\OrderinvoiceModel();
         $res = $m_orderinvoice->getInfo(array('order_id'=>$order_id));
         $data = array('order_id'=>$order_id,'phone'=>$phone,'status'=>1);
@@ -330,11 +347,6 @@ class SaleorderController extends Controller {
             $msg = '短信已发送,请注意查收';
         }
         if($is_send && !empty($res_order['box_mac'])){
-            $ucconfig = C('SMS_CONFIG');
-            $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
-            $ucpass= new \Common\Lib\Ucpaas($options);
-            $appId = $ucconfig['appid'];
-
             $m_box = new \Common\Model\BoxModel();
             $map = array();
             $map['a.mac'] = $res_order['box_mac'];
@@ -353,7 +365,23 @@ class SaleorderController extends Controller {
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $encode_oid = $hashids->encode($order_id);
 
+            $ucconfig = C('ALIYUN_SMS_CONFIG');
+            $alisms = new \Common\Lib\AliyunSms();
+            $params = array('hotel_name'=>$box_info['hotel_name'],'goods_name'=>$res_goods['name'],'enoid'=>$encode_oid);
+            $template_code = $ucconfig['send_invoice_addr_templateid'];
+            $res_data = $alisms::sendSms($phone,$params,$template_code);
+            $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                'url'=>join(',',$params),'tel'=>$box_info['activity_phone'],'resp_code'=>$res_data->Code,'msg_type'=>3
+            );
+            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+            $m_account_sms_log->addData($data);
+
+            /*
+            $ucconfig = C('SMS_CONFIG');
             $param = "{$box_info['hotel_name']},{$res_goods['name']},$encode_oid";
+            $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
+            $ucpass= new \Common\Lib\Ucpaas($options);
+            $appId = $ucconfig['appid'];
             $res_json = $ucpass->templateSMS($appId,$phone,$ucconfig['send_invoice_addr_templateid'],$param);
             $res_data = json_decode($res_json,true);
             if(isset($res_data['resp']['respCode'])) {
@@ -363,6 +391,7 @@ class SaleorderController extends Controller {
                 $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
                 $m_account_sms_log->addData($data);
             }
+            */
         }
         $res = array('code'=>10000,'msg'=>$msg);
         $this->ajaxReturn($res,'JSONP');

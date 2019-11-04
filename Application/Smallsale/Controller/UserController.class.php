@@ -477,7 +477,7 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,content,type,integral_time';
+        $fields = 'room_name,integral,content,type,integral_time,goods_id';
         $where = array('openid'=>$openid);
         if($type){
             $where['type'] = $type;
@@ -503,7 +503,10 @@ class UserController extends CommonController{
                 case 3:
                     $goods_id = $v['goods_id'];
                     $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
-                    $content = $all_types[3]."{$res_goods['namne']} {$v['content']}件";
+                    $content = $all_types[3]."{$res_goods['name']} {$v['content']}件";
+                    if($info['integral']==0){
+                        $info['integral']='计算中...';
+                    }
                     break;
                 case 4:
                     $content = $all_types[4];
@@ -513,6 +516,7 @@ class UserController extends CommonController{
             }
             $info['content'] = $content;
             $datalist[] = $info;
+
         }
         $data = array('datalist'=>$datalist);
         $this->to_back($data);

@@ -15,12 +15,14 @@ class BoxLogController extends CommonController{
                 break;
         }
         parent::_init_();
+        //log_type 0：关闭  1：日志文件 2:文件下载情况 3：异常  4：遥控器按键日志 5：重启日志
         $this->box_log_arr = array(array('box_mac'=>'00226D655202','log_type'=>0),
                                    array('box_mac'=>'FCD5D900B44A','log_type'=>0),
                                    array('box_mac'=>'00226D584178','log_type'=>0),
                                    array('box_mac'=>'FCD5D900B3BD','log_type'=>0),
                                    array('box_mac'=>'00226D583D92','log_type'=>0),
                                    array('box_mac'=>'00226D583CF4','log_type'=>2),
+                                   array('box_mac'=>'00226D5841E7','log_type'=>2),
         ); 
     }
     public function isUploadLog(){

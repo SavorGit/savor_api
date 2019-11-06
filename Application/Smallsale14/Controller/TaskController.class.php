@@ -28,7 +28,7 @@ class CollectionController extends CommonController{
         $where['a.hotel_id'] = $hotel_id;
         $where['task.state'] = 1;
         $where['task.flag']  = 1;
-        
+        $pagesize = 20;
         $size = ($page - 1) * $pagesize;
         $order = 'task.id asc';
         $task_list = $m_task_hotel->alias('a')

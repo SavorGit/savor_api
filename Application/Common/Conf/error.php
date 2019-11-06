@@ -301,7 +301,7 @@ return array(
         '92023'=>'smallappdinner_sendsms_repeatsend',
         '92024'=>'smallappdinner_addorder_repeat',
 
-        //小程序销售单
+        //小程序销售端
         '93001'=>'smallappsale_role_error',
         '93002'=>'smallappsale_user_has_remove',
         '93003'=>'smallappsale_qrcode_decode_error',
@@ -315,7 +315,7 @@ return array(
 	    '93011'=>'smallappsale_verify_code_sendfail',
 	    '93012'=>'smallappsale_openid_empty',
 	    '93013'=>'smallappsale_mobile_have_exist',
-	    
+	    '93014'=>'smallappsale_staff_empty',
 
 	),
 );

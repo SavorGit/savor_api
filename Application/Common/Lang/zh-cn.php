@@ -297,7 +297,8 @@ return array(
     'smallappsale_bindmobile_fail'=>'绑定手机号失败',
     'smallappsale_verify_code_sendfail'=>'验证码发送失败,请重试',
     'smallappsale_openid_empty'=>'该用户唯一标识错误',
-    'smallappsale_mobile_have_exist'=>'该手机号已被绑定,请使用其他手机号'
+    'smallappsale_mobile_have_exist'=>'该手机号已被绑定,请使用其他手机号',
+    'smallappsale_staff_empty'=>'该酒楼不存在该用户'
 
 
 );

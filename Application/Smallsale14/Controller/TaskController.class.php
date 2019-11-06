@@ -28,8 +28,8 @@ class CollectionController extends CommonController{
         $where['a.hotel_id'] = $hotel_id;
         $where['task.state'] = 1;
         $where['task.flag']  = 1;
-        $pagesize = 20;
-        $start = ($page - 1) * $pagesize;
+        
+        $size = ($page - 1) * $pagesize;
         $order = 'task.id asc';
         $task_list = $m_task_hotel->alias('a')
                                   ->join('savor_integral_task task on a.task_id=task.id','left')
@@ -37,12 +37,21 @@ class CollectionController extends CommonController{
                                   ->field($fields)
                                   ->where($where)
                                   ->order($order)
-                                  ->limit($start,$pagesize)
+                                  ->limit(0,$size)
                                   ->select();
         $this->to_back($task_list);
     }
     
     private function checkUser($openid,$hotel_id){
         
+        $where = [];
+        $where['a.openid']    = $openid;
+        $where['im.hotel_id'] = $hotel_id;
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $nums = $m_staff->alias('a')
+                              ->join('savor_integral_merchant im on a.merchant_id= im.id','left')
+                              ->where($where)
+                              ->count();
+        if(empty($nums)) $this->to_back(93014);
     }
 }

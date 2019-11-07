@@ -76,9 +76,6 @@ class UserController extends CommonController{
         }
         parent::_init_();
     }
-    /**
-     * @desc 判断是否注册用户
-     */
     public function isRegister(){
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -97,18 +94,24 @@ class UserController extends CommonController{
         }
         $hotel_id = 0;
         $code_type = 0;
+        $service_model_id = 0;
         if(!empty($userinfo['openid'])){
-            $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-            $rts = $m_hotel_invite_code->field('hotel_id,type')->where(array('openid'=>$userinfo['openid'],'flag'=>0))->find();
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $fields = 'm.hotle_id,m.type,m.service_model_id';
+            $rts = $m_staff->alias('a')
+                           ->field($fields)
+                           ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
+                           ->where(array('a.openid'=>$openid,'a.status'=>'1','m.status'=>1))
+                           ->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
                 $userinfo['role_type'] = $rts['type'];
                 $code_type = $rts['type'];
+                $$service_model_id = $rts['service_model_id'];
+                
             }
+            
         }
-        /*if($userinfo['is_wx_auth']!=3){
-            $hotel_id = 0;
-        }*/
         $userinfo['hotel_id'] = $hotel_id;
         $userinfo['hotel_has_room'] = 0;
         $m_hotel = new \Common\Model\HotelModel();
@@ -120,43 +123,13 @@ class UserController extends CommonController{
             $userinfo['hotel_id'] = -1;
             $userinfo['hotel_has_room'] = 1;
         }
+        $userinfo = $this->getServiceModel($userinfo,$rts['service_model_id']);
+        
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }
-    /**
-     * @desc 注册用户
-     */
-    public function register(){
-        $openid = $this->params['openid'];
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array();
-        $where['openid'] = $openid;
-        $where['small_app_id'] = 5;
-        $userinfo = $m_user->getOne('openid,mobile', $where);
-        //$nums = $m_user->countNum($where);
-        if(empty($userinfo)){
-            $data['openid']    = $openid;
-            $data['avatarUrl'] = $this->params['avatarUrl'];
-            $data['nickName']  = $this->params['nickName'];
-            $data['gender']    = $this->params['gender'];
-            $data['is_wx_auth']= 2;
-            $data['small_app_id'] = 5;
-            $m_user->addInfo($data);
-            $this->to_back($data);
-        }else {
-            $data = array();
-            $data['avatarUrl'] = $this->params['avatarUrl'];
-            $data['nickName']  = $this->params['nickName'];
-            $data['gender']    = $this->params['gender'];
-            $data['is_wx_auth']= 2;
-            $data['small_app_id'] = 5;
-            $m_user->updateInfo($where, $data);
-            $data['openid'] = $openid;
-            $data['mobile'] = $userinfo['mobile'];
-            $this->to_back($data);
-        }
-        
-    }
+    
+    
     /**
      * @desc 拒绝授权
      */
@@ -186,62 +159,8 @@ class UserController extends CommonController{
         $data  = $m_small_app->getSmallappOpenid($code);
         $this->to_back($data);
     }
-    /**
-     * @desc 检查手机号是否分配邀请码
-     */
-    public function checkUser(){
-        $mobile = $this->params['mobile'];
-        $openid = $this->params['openid'];
-        $m_hotel_invite = new \Common\Model\HotelInviteCodeModel();
-        $fields = 'id';
-        $where = array();
-        if($openid){
-            $where['openid'] = $openid;
-        }
-        if($mobile){
-            $where['bind_mobile'] = $mobile;
-        }
-        if(empty($where)){
-            $this->to_back(92008);
-        }
-        $where['flag']  = 0;
-        $info = $m_hotel_invite->getOne($fields, $where);
-        if(empty($info)){
-            $this->to_back(92008);
-        }else {
-            $this->to_back(10000);
-        }
-    }
+    
     public function registerCom(){
-        /*$openid = $this->params['openid'];
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array();
-        $where['openid'] = $openid;
-        $nums = $m_user->countNum($where);
-        $encryptedData = $this->params['encryptedData'];
-        
-        if(empty($nums)){
-            $data['openid']    = $openid;
-            $data['avatarUrl'] = $this->params['avatarUrl'];
-            $data['nickName']  = $this->params['nickName'];
-            $data['gender']    = $this->params['gender'];
-            $data['unionId']   = $encryptedData['unionId'];
-            $data['is_wx_auth']= 3;
-            $data['small_app_id'] = 4;
-            $m_user->addInfo($data);
-            $this->to_back($data);
-        }else {
-            $data = array();
-            $data['avatarUrl'] = $this->params['avatarUrl'];
-            $data['nickName']  = $this->params['nickName'];
-            $data['gender']    = $this->params['gender'];
-            $data['unionId']   = $encryptedData['unionId'];
-            $data['is_wx_auth']= 3;
-            $data['small_app_id'] = 4;
-            $m_user->updateInfo($where, $data);
-            $data['openid'] = $openid;
-            $this->to_back($data);
-        }*/
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
@@ -272,8 +191,16 @@ class UserController extends CommonController{
             $m_user->updateInfo($where, $data);
             $data['openid'] = $openid;
             $data['mobile'] = $userinfo['mobile'];
-            $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-            $rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
+            //$m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+            //$rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            
+            $fields = 'm.hotle_id,m.type,m.service_model_id';
+            $rts = $m_staff->alias('a')
+                           ->field($fields)
+                           ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
+                           ->where(array('a.openid'=>$openid,'a.status'=>'1','m.status'=>1))
+                           ->find();
             $data['hotel_id'] = $rts['hotel_id'];
 
             $hotel_has_room = 0;
@@ -287,6 +214,8 @@ class UserController extends CommonController{
                 $hotel_has_room = 1;
             }
             $data['hotel_has_room'] = $hotel_has_room;
+            $data = $this->getServiceModel($data,$rts['service_model_id']);
+            
             $this->to_back($data);
         }
     }
@@ -560,24 +489,37 @@ class UserController extends CommonController{
         if(empty($pagesize)){
             $pagesize = 15;
         }
-        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        $res_invite_code = $m_hotel_invite_code->getInfo($where);
+        //$m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
+        //$where = array('openid'=>$openid,'state'=>1,'flag'=>0);
+        //$res_invite_code = $m_hotel_invite_code->getInfo($where);
+        $m_merchant = new \Common\Model\Integral\StaffModel();
+        $res_invite_code = $m_merchant->alias('a')
+                                      ->join('savor_integral_merchant m on m.id=a.merchant_id')
+                                      ->where(array('a.openid'=>$openid,'a.status'=>1,'m.status'=>1))
+                                      ->field('m.type,m.parent_id')
+                                      ->find();
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
         }
         $all_nums = $page * $pagesize;
-        $where = array('invite_id'=>$res_invite_code['id'],'state'=>1,'flag'=>0,'type'=>1);
-        $res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
-
+        //$where = array('invite_id'=>$res_invite_code['id'],'state'=>1,'flag'=>0,'type'=>1);
+        //$res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_invites = $m_staff->alias('a')
+                               ->join('savor_integral_staff staff_lev1 on a.id= staff_lev1.parent_id')
+                               ->fileds('openid')
+                               ->where(array('a.openid'=>$openid,'a.status'=>1))
+                               ->select();
+        $total = count($res_invites);
+        
         $datalist = array();
-        if($res_invites['total']){
+        if($total){
             $m_user = new \Common\Model\Smallapp\UserModel();
-            foreach ($res_invites['list'] as $v){
+            foreach ($res_invites as $v){
                 $where = array('openid'=>$v['openid']);
                 $fields = 'openid,avatarUrl,nickName';
                 $res_user = $m_user->getOne($fields, $where);
-                $res_user['invite_id'] = $res_invite_code['id'];
+                $res_user['invite_id'] = $res_invite_code['parent_id'];
                 $datalist[] = $res_user;
             }
         }
@@ -597,22 +539,27 @@ class UserController extends CommonController{
         if(empty($res_user)){
             $this->to_back(92010);
         }
-        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        $res_invite_code = $m_hotel_invite_code->getInfo($where);
-        if(empty($res_invite_code) || $res_invite_code['invite_id']!=$invite_id){
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1))->find();
+        if(empty($staff_info)){
             $this->to_back(93002);
         }
-        $m_hotel_invite_code->updateData(array('id'=>$res_invite_code['id']),array('flag'=>1));
+        $m_staff->updateData(array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1), array('status'=>2));
+        
         $this->to_back(array());
     }
 
     public function invite(){
         $openid = $this->params['openid'];
-        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
+        /* $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
         $fields = 'id,hotel_id,bind_mobile,openid,type';
         $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        $res_invite_code = $m_hotel_invite_code->getOne($fields,$where);
+        $res_invite_code = $m_hotel_invite_code->getOne($fields,$where); */
+        
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = array('openid'=>$openid,'state'=>1);
+        $res_invite_code = $m_merchant->field('id,hotel_id,openid,type')->where($where)->find();
+        
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
         }
@@ -669,7 +616,33 @@ class UserController extends CommonController{
             $this->to_back(93010);
         }
     }
-
+    private function getServiceModel($userinfo,$service_model_id){
+        $service_list = C('service_list');
+        $service_list = array_keys($service_list);
+    
+        if($userinfo['hotel_id']==-1 || empty($service_model_id)){
+    
+            $userinfo['service'] = $service_list;
+        }else {
+            $m_service_mx = new \Common\Model\Integral\ServiceMxModel();
+            $service_info = $m_service_mx->field('service_ids')->where(array('id'=>$service_model_id))->find();
+            $service_id_arr = json_decode($service_info['service_ids'],true);
+            $where = [];
+            $where['id']= array('in',$service_id_arr);
+            $where['status'] = 1;
+            $m_service = new \Common\Model\Integral\ServiceModel();
+            $service_ret = $m_service->field('m_name')->where($where)->select();
+            $service_temp = [];
+            foreach($service_ret as $key=>$v){
+                if(in_array($v['m_name'],$service_list)){
+                    $service_temp[] = $v['m_name'];
+                }
+            }
+            $userinfo['service'] = $service_temp;
+    
+        }
+        return $userinfo;
+    }
     private function checkSigninTime($signin_time){
         $is_signin = 0;
         $feast_time = C('FEAST_TIME');

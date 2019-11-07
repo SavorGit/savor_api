@@ -316,6 +316,7 @@ return array(
 	    '93012'=>'smallappsale_openid_empty',
 	    '93013'=>'smallappsale_mobile_have_exist',
 	    '93014'=>'smallappsale_staff_empty',
+	    '93015'=>'smallappsale_merchant_empty',
 
 	),
 );

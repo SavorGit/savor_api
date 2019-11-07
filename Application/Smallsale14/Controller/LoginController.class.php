@@ -115,6 +115,13 @@ class LoginController extends CommonController{
             $userinfo['hotel_has_room'] = 1;
         } 
         else{
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_room = $m_hotel->getRoomNumByHotelId($merchant_info['hotel_id']);
+            if($res_room){
+                $userinfo['hotel_has_room'] = 1;
+            }else {
+                $userinfo['hotel_has_room'] = 0;
+            }
             $userinfo['hotel_id']   = $merchant_info['hotel_id'];
             $userinfo['hotel_name'] = $merchant_info['hotel_name'];
             $userinfo['role_type']  = $merchant_info['type'];

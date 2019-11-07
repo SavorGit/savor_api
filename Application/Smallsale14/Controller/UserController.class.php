@@ -97,11 +97,11 @@ class UserController extends CommonController{
         $service_model_id = 0;
         if(!empty($userinfo['openid'])){
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $fields = 'm.hotle_id,m.type,m.service_model_id';
+            $fields = 'mt.hotel_id,mt.type,mt.service_model_id';
             $rts = $m_staff->alias('a')
                            ->field($fields)
-                           ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
-                           ->where(array('a.openid'=>$openid,'a.status'=>'1','m.status'=>1))
+                           ->join('savor_integral_merchant mt on mt.id=a.merchant_id','left')
+                           ->where(array('a.openid'=>$openid,'a.status'=>'1','mt.status'=>1))
                            ->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
@@ -123,8 +123,9 @@ class UserController extends CommonController{
             $userinfo['hotel_id'] = -1;
             $userinfo['hotel_has_room'] = 1;
         }
-        $userinfo = $this->getServiceModel($userinfo,$rts['service_model_id']);
-        
+        if($userinfo['hotel_id']!=0){
+            $userinfo = $this->getServiceModel($userinfo,$rts['service_model_id']);
+        }
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }

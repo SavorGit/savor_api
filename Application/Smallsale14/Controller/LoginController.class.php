@@ -18,17 +18,15 @@ class LoginController extends CommonController{
         }
         parent::_init_();
     }
-    
     public function login(){
-        $mobile = intval($this->params['mobile']);
+        $mobile = $this->params['mobile'];
+        
         $openid = $this->params['openid'];
         $verify_code = trim($this->params['verify_code']);
         $invite_code = trim($this->params['invite_code']);//邀请码
-        //验证手机格式
-        if(!check_mobile($mobile)){
+        if(!check_mobile($mobile)){//验证手机格式
             $this->to_back(92001);
         }
-
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $cache_key = 'smallappdinner_vcode_'.$mobile;
@@ -36,70 +34,95 @@ class LoginController extends CommonController{
         if($verify_code != $cache_verify_code){
             $this->to_back(92006);
         }
-        $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $res_code = $m_hotel_invite_code->getOne('hotel_id,code,type',array('code'=>$invite_code));
-        $type = $res_code['type'];
-
-        $where = array('a.bind_mobile'=>$mobile,'a.flag'=>0,'a.openid'=>$openid);
-        $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.is_import_customer,a.code,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
-        if(!empty($invite_code_info) && $invite_code!=$invite_code_info['code']){
-            $this->to_back(92008);
-        }
-
-        if(empty($invite_code_info)){
-            $where = array('a.code'=>$invite_code,'a.flag'=>0);
-            $invite_code_info = $m_hotel_invite_code->getInfo('a.id,a.bind_mobile,a.state,a.type,b.id hotel_id,b.name hotel_name,c.is_open_customer',$where);
-            if(empty($invite_code_info)){//输入的邀请码不正确
-                $this->to_back(92002);
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = [];
+        $where['a.code'] = $invite_code;
+        $where['a.mobile'] = $mobile;
+        $where['hotel.state'] = 1;
+        $where['hotel.flag']  = 0;
+        
+        $merchant_info = $m_merchant->alias('a')
+                                    ->join('savor_hotel hotel on hotel.id=a.hotel_id','left')
+                                    ->field('a.id,a.type,a.hotel_id,hotel.name hotel_name,a.service_model_id')
+                                    ->where($where)
+                                    ->find();
+        if(empty($merchant_info)) $this->to_back(92008);   //邀请码错误
+        
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = [];
+        $where['merchant_id'] = $merchant_info['id'];
+        $where['status']      = 1;
+        $staff_info = $m_staff->field('openid')->where($where)->find();
+        
+        if(!empty($staff_info) && $openid!=$staff_info['openid']){//已绑定其他用户
+            $this->error(93013);
+        }elseif(!empty($staff_info)&& $openid==$staff_info['openid']){
+            //检查user表是否注册了这个用户
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = [];
+            $where['openid'] = $openid;
+            $where['status'] = 1;
+            $where['small_app_id'] = 5;
+            $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
+            if(empty($userinfo)){//未注册插入user表一条数据
+                $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
+                $res = $m_user->addInfo($data);
+                if(!$res){
+                    $this->to_back(92007);
+                }
+                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
+            }else{
+                $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
+                $where = array('id'=>$userinfo['user_id']);
+                $m_user->updateInfo($where,$data);
+                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
+            } 
+        }else {//插入一条数据到staff表
+            $data = [];
+            $data['merchant_id'] = $merchant_info['id'];
+            $data['parent_id']   = 0 ;
+            $data['openid']      = $openid;
+            $data['beinvited_time'] = date('Y-m-d H:i:s');
+            $data['level']       = 0;
+            $data['status']      = 1;
+            $m_staff->addData($data);
+            //检查user表是否注册了这个用户
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = [];
+            $where['openid'] = $openid;
+            $where['status'] = 1;
+            $where['small_app_id'] = 5;
+            $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
+            if(empty($userinfo)){//未注册插入user表一条数据
+                $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
+                $res = $m_user->addInfo($data);
+                if(!$res){
+                    $this->to_back(92007);
+                }
+                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
+            }else{
+                $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
+                $where = array('id'=>$userinfo['user_id']);
+                $m_user->updateInfo($where,$data);
+                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
             }
-            if($invite_code_info['state'] ==1 && $invite_code_info['bind_mobile']!=$mobile && $invite_code_info['openid']!=$openid){
-                $this->to_back(92003);
-            }
-            $where = array('id'=>$invite_code_info['id']);
-            $data = array('state'=>1,'bind_mobile'=>$mobile,'openid'=>$openid);
-            $data['bind_time'] = date('Y-m-d H:i:s');
-            $m_hotel_invite_code->saveInfo($where,$data);
         }
-        if($verify_code){
-            $redis->remove($cache_key);
-        }
-
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$openid);
-        $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
-        if(empty($userinfo)){
-            $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
-            $res = $m_user->addInfo($data);
-            if(!$res){
-                $this->to_back(92007);
-            }
-            $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
-        }else{
-            $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
-            $where = array('id'=>$userinfo['user_id']);
-            $m_user->updateInfo($where,$data);
-            $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
-        }
-        $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
-        $userinfo['hotel_name'] = $invite_code_info['hotel_name'];
-        $userinfo['role_type'] = $invite_code_info['type'];
-        $userinfo['hotel_has_room'] = 0;
-        if($invite_code_info['hotel_id']){
-            $m_hotel = new \Common\Model\HotelModel();
-            $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
-            if($res_room){
-                $userinfo['hotel_has_room'] = 1;
-            }
-        }
-        if($type==3){
+        //清除手机邀请码缓存
+        $redis->remove($cache_key);
+        if($merchant_info['type']==3){
             $userinfo['hotel_id'] = -1;
             $userinfo['hotel_name'] = '';
             $userinfo['hotel_has_room'] = 1;
+        } 
+        else{
+            $userinfo['hotel_id']   = $merchant_info['hotel_id'];
+            $userinfo['hotel_name'] = $merchant_info['hotel_name'];
+            $userinfo['role_type']  = $merchant_info['type'];
         }
-
+        //商家服务
+        $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
         $this->to_back($userinfo);
     }
-
     public function scancodeLogin(){
         $openid = $this->params['openid'];
         $qrcode = $this->params['qrcode'];
@@ -108,71 +131,53 @@ class LoginController extends CommonController{
             $this->to_back(93003);
         }
         $decode_info = explode('&',$de_qrcode);
-        $hotel_invite_id = intval($decode_info[0]);
-
-        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        $where = array('openid'=>$openid,'flag'=>0);
-        $invite_code_info = $m_hotel_invite_code->getInfo($where);
-        if(!empty($invite_code_info) && $invite_code_info['invite_id']){
+        $merchant_id = intval($decode_info[0]); //商家id
+        
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = [];
+        $where['id'] = $merchant_id;
+        $where['status'] = 1;
+        $merchant_info = $m_merchant->field('hotel_id,service_model_id')->where($where)->find();
+        if(empty($merchant_info)){//商家不存在或已下线
+            $this->to_back(93015);
+        } 
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $staff_info = $m_staff->field('id,hotel_id')->where(array('openid'=>$openid,'status'=>1))->find();
+        if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
-            $userinfo['hotel_id'] = $invite_code_info['hotel_id'];
-
+            $userinfo['hotel_id'] = $staff_info['hotel_id'];
             $userinfo['hotel_has_room'] = 0;
             $m_hotel = new \Common\Model\HotelModel();
-            $res_room = $m_hotel->getRoomNumByHotelId($invite_code_info['hotel_id']);
+            $res_room = $m_hotel->getRoomNumByHotelId($staff_info['hotel_id']);
             if($res_room){
                 $userinfo['hotel_has_room'] = 1;
             }
-            $this->to_back($userinfo);
-        }
-
-        $cache_key = C('SAPP_SALE_INVITE_QRCODE');
-        $code_key = $cache_key.$hotel_invite_id.":$de_qrcode";
-
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(14);
-        $res_cache = $redis->get($code_key);
-        if(empty($res_cache)){
-            $this->to_back(93004);
-        }
-
-        if(empty($invite_code_info)){
-            $res_invite = $m_hotel_invite_code->getInfo(array('id'=>$hotel_invite_id));
-            $hotel_id = $res_invite['hotel_id'];
-            $where = array('hotel_id'=>$hotel_id,'type'=>1,'state'=>0,'flag'=>0);
-            $res = $m_hotel_invite_code->getDataList('id,code',$where,'id asc',0,1);
-            if($res['total']==0){
-                $this->to_back(93005);
+            
+        }else {//未注册过员工
+            $cache_key = C('SAPP_SALE_INVITE_QRCODE');
+            $code_key = $cache_key.$merchant_id.":$de_qrcode";
+            
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(14);
+            $res_cache = $redis->get($code_key);
+            if(empty($res_cache)){
+                $this->to_back(93004);
             }
-            $invite_code = $res['list'][0]['code'];
-            $id = $res['list'][0]['id'];
-
-            $where = array('id'=>$id);
-            $data = array('hotel_id'=>$hotel_id,'code'=>$invite_code,'openid'=>$openid,'invite_id'=>$hotel_invite_id,'state'=>1);
-            $data['bind_time'] = date('Y-m-d H:i:s');
-            $m_hotel_invite_code->updateData($where,$data);
-        }else{
-            $hotel_id = $invite_code_info['hotel_id'];
-            if($invite_code_info['type']==1 && empty($invite_code_info['invite_id'])){
-                $where = array('id'=>$invite_code_info['id']);
-                $data = array('invite_id'=>$hotel_invite_id);
-                $m_hotel_invite_code->updateData($where,$data);
+            $redis->remove($code_key);
+            $userinfo = $this->getUserinfo($openid);
+            $userinfo['hotel_id'] = $merchant_info['hotel_id'];
+            
+            $userinfo['hotel_has_room'] = 0;
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_room = $m_hotel->getRoomNumByHotelId($merchant_info['hotel_id']);
+            if($res_room){
+                $userinfo['hotel_has_room'] = 1;
             }
         }
-        $redis->select(14);
-        $redis->remove($code_key);
-        $userinfo = $this->getUserinfo($openid);
-        $userinfo['hotel_id'] = $hotel_id;
-
-        $userinfo['hotel_has_room'] = 0;
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_room = $m_hotel->getRoomNumByHotelId($hotel_id);
-        if($res_room){
-            $userinfo['hotel_has_room'] = 1;
-        }
+        $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
         $this->to_back($userinfo);
+        
     }
-
     private function getUserinfo($openid){
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
@@ -189,6 +194,33 @@ class LoginController extends CommonController{
             $where = array('id'=>$userinfo['user_id']);
             $m_user->updateInfo($where,$data);
             $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid);
+        }
+        return $userinfo;
+    }
+    private function getServiceModel($userinfo,$service_model_id){
+        $service_list = C('service_list');
+        $service_list = array_keys($service_list);
+        
+        if($userinfo['hotel_id']==-1 || empty($service_model_id)){
+            
+            $userinfo['service'] = $service_list;
+        }else {
+            $m_service_mx = new \Common\Model\Integral\ServiceMxModel();
+            $service_info = $m_service_mx->field('service_ids')->where(array('id'=>$service_model_id))->find();
+            $service_id_arr = json_decode($service_info['service_ids'],true);
+            $where = [];
+            $where['id']= array('in',$service_id_arr);
+            $where['status'] = 1;
+            $m_service = new \Common\Model\Integral\ServiceModel(); 
+            $service_ret = $m_service->field('m_name')->where($where)->select();
+            $service_temp = [];
+            foreach($service_ret as $key=>$v){
+                if(in_array($v['m_name'],$service_list)){
+                    $service_temp[] = $v['m_name'];
+                }
+            }
+            $userinfo['service'] = $service_temp;
+            
         }
         return $userinfo;
     }

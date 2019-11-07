@@ -138,17 +138,21 @@ class LoginController extends CommonController{
             $this->to_back(93003);
         }
         $decode_info = explode('&',$de_qrcode);
-        $merchant_id = intval($decode_info[0]); //商家id
+        $manage_id = intval($decode_info[0]); //商家管理员id
         
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $m_staff = new \Common\Model\Integral\StaffModel();
         $where = [];
-        $where['id'] = $merchant_id;
-        $where['status'] = 1;
-        $merchant_info = $m_merchant->field('hotel_id,service_model_id')->where($where)->find();
-        if(empty($merchant_info)){//商家不存在或已下线
+        $where['a.id'] = $manage_id;
+        $where['a.status'] = 1;
+        $where['mt.status'] = 1;
+        $manage_info = $m_staff->alias('a')
+                                 ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
+                                 ->field('mt.id,mt.hotel_id,mt.service_model_id,staff.id')
+                                 ->where($where)->find();
+        if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
         } 
-        $m_staff = new \Common\Model\Integral\StaffModel();
+        
         $staff_info = $m_staff->field('id,hotel_id')->where(array('openid'=>$openid,'status'=>1))->find();
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
@@ -162,7 +166,7 @@ class LoginController extends CommonController{
             
         }else {//未注册过员工
             $cache_key = C('SAPP_SALE_INVITE_QRCODE');
-            $code_key = $cache_key.$merchant_id.":$de_qrcode";
+            $code_key = $cache_key.$manage_id.":$de_qrcode";
             
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
@@ -171,17 +175,28 @@ class LoginController extends CommonController{
                 $this->to_back(93004);
             }
             $redis->remove($code_key);
+            //插入staff表
+            $data  = [];
+            $data['merchant_id'] = $manage_info['id'];
+            $data['parent_id']   = $manage_id;
+            $data['openid']      = $openid;
+            $data['beinvited_time'] = date('Y-m-d H:i:s');
+            $data['level']       = 2;
+            $data['status']      =1;
+            $m_staff->addData($data);
+            
+            
             $userinfo = $this->getUserinfo($openid);
-            $userinfo['hotel_id'] = $merchant_info['hotel_id'];
+            $userinfo['hotel_id'] = $manage_info['hotel_id'];
             
             $userinfo['hotel_has_room'] = 0;
             $m_hotel = new \Common\Model\HotelModel();
-            $res_room = $m_hotel->getRoomNumByHotelId($merchant_info['hotel_id']);
+            $res_room = $m_hotel->getRoomNumByHotelId($manage_info['hotel_id']);
             if($res_room){
                 $userinfo['hotel_has_room'] = 1;
             }
         }
-        $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
+        $userinfo = $this->getServiceModel($userinfo,$manage_info['service_model_id']);
         $this->to_back($userinfo);
         
     }

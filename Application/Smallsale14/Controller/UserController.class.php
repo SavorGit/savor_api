@@ -497,7 +497,7 @@ class UserController extends CommonController{
         $res_invite_code = $m_merchant->alias('a')
                                       ->join('savor_integral_merchant m on m.id=a.merchant_id')
                                       ->where(array('a.openid'=>$openid,'a.status'=>1,'m.status'=>1))
-                                      ->field('m.type,m.parent_id')
+                                      ->field('m.type,a.parent_id')
                                       ->find();
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
@@ -507,8 +507,8 @@ class UserController extends CommonController{
         //$res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_invites = $m_staff->alias('a')
-                               ->join('savor_integral_staff staff_lev1 on a.id= staff_lev1.parent_id')
-                               ->fileds('openid')
+                               ->join('savor_integral_merchant_staff staff_lev1 on a.id= staff_lev1.parent_id')
+                               ->field('staff_lev1.openid')
                                ->where(array('a.openid'=>$openid,'a.status'=>1))
                                ->select();
         $total = count($res_invites);
@@ -557,9 +557,12 @@ class UserController extends CommonController{
         $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
         $res_invite_code = $m_hotel_invite_code->getOne($fields,$where); */
         
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $where = array('openid'=>$openid,'state'=>1);
-        $res_invite_code = $m_merchant->field('id,hotel_id,openid,type')->where($where)->find();
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'mt.status'=>1);
+        $res_invite_code = $m_staff->alias('a')
+                                   ->field('a.id,mt.hotel_id,a.openid,mt.type')
+                                   ->join('savor_integral_merchant mt on mt.id=a.merchant_id','left')
+                                   ->where($where)->find();
         
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
@@ -596,24 +599,13 @@ class UserController extends CommonController{
             $this->to_back(93012);
         }
         
-        
-        $nums = $m_user->countNum(array('mobile'=>$mobile,'status'=>1,'small_app_id'=>5));
-        if(!empty($nums)){
-            $this->to_back(93013);
-        }
-        $m_user->startTrans();
         $data= [];
         $data['mobile'] = $mobile;
         $rt = $m_user->updateInfo(array('openid'=>$openid,'small_app_id'=>5), $data);
-        $m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        $data = [];
-        $data['bind_mobile'] = $mobile;
-        $rts = $m_hotel_invite_code->updateData(array('openid'=>$openid), $data);
-        if($rt && $rts){
-            $m_user->commit();
+        
+        if($rt ){
             $this->to_back(10000);
         }else {
-            $m_user->rollback();
             $this->to_back(93010);
         }
     }

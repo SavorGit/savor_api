@@ -281,7 +281,11 @@ class WxpayModel extends Model{
         }else{
             $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
             $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
-            $info = array('code'=>10002,'msg'=>"支付零钱失败");
+            if($content['err_code']=='NOTENOUGH'){
+                $info = array('code'=>10003,'msg'=>"支付零钱失败,失败原因零钱不足");
+            }else{
+                $info = array('code'=>10002,'msg'=>"支付零钱失败");
+            }
         }
         return $info;
     }

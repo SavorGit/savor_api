@@ -278,9 +278,9 @@ class WxPayController extends BaseController{
         $openid = $res_order['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
-        $user_info = $m_user->getOne('id,mpopenid',$where,'');
-        if(empty($user_info) || empty($user_info['mpopenid'])){
-            $res = array('code'=>99003,'msg'=>'mpopenid error');
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info) || empty($user_info['openid'])){
+            $res = array('code'=>99003,'msg'=>'openid error');
             $this->ajaxReturn($res);
         }
 
@@ -298,7 +298,7 @@ class WxPayController extends BaseController{
             $res = array('code'=>99005,'msg'=>'integral not enough');
             $this->ajaxReturn($res);
         }
-        $payconfig = $this->getPayConfig(1);
+        $payconfig = $this->getPayConfig(2);
 
         $money = $res_goods['price'];
         $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['mpopenid']);

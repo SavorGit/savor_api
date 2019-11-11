@@ -9,7 +9,7 @@ class WithdrawController extends CommonController{
         switch(ACTION_NAME) {
             case 'getMoneyList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001);
                 break;
             case 'wxchange':
                 $this->is_verify = 1;
@@ -20,7 +20,22 @@ class WithdrawController extends CommonController{
     }
 
     public function getMoneyList(){
+        $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        $res_userintegral = $m_userintegral->getInfo(array('openid'=>$openid));
+        $integral = 0;
+        if(!empty($res_userintegral)){
+            $integral = intval($res_userintegral['integral']);
+        }
+
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'g.id,g.name goods_name,g.rebate_integral as integral,g.is_audit';
 
@@ -30,7 +45,8 @@ class WithdrawController extends CommonController{
         $where['g.end_time'] = array('egt',$nowtime);
         $orderby = 'g.price asc';
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,'','');
-        $this->to_back($res_goods);
+        $data = array('integral'=>$integral,'datalist'=>$res_goods);
+        $this->to_back($data);
     }
 
     public function wxchange(){
@@ -59,7 +75,6 @@ class WithdrawController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
-
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$id));
         if($res_goods['status']!=2 || $res_goods['type']!=30){
@@ -131,7 +146,7 @@ class WithdrawController extends CommonController{
             $message = '您已成功提交申请！';
             $tips = '通过审核后系统会及时进行发放，请注意查收';
         }
-        $res = array('message'=>$message,'tips'=>$tips);
+        $res = array('message'=>$message,'tips'=>$tips,'integral'=>$userintegral);
         $this->to_back($res);
     }
 }

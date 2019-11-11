@@ -9,7 +9,7 @@ class StaffModel extends BaseModel{
             ->field($fileds)
             ->join('savor_integral_merchant merchant on a.merchant_id=merchant.id','left')
             ->where($where)
-            ->selct();
+            ->select();
         return $res;
     }
 }

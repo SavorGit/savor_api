@@ -2,7 +2,7 @@
 namespace Smallsale14\Controller;
 use \Common\Controller\CommonController as CommonController;
 
-class CollectionController extends CommonController{
+class TaskController extends CommonController{
     /**
      * 构造函数
      */
@@ -23,10 +23,10 @@ class CollectionController extends CommonController{
         
         $m_task_hotel = new \Common\Model\Integral\TaskHotelModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $fields = "task.name ,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc";
+        $fields = "task.id task_id,task.name task_name ,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc";
         $where = [];
         $where['a.hotel_id'] = $hotel_id;
-        $where['task.state'] = 1;
+        $where['task.status'] = 1;
         $where['task.flag']  = 1;
         $pagesize = 20;
         $size = ($page - 1) * $pagesize;
@@ -39,6 +39,18 @@ class CollectionController extends CommonController{
                                   ->order($order)
                                   ->limit(0,$size)
                                   ->select();
+        $m_task_user = new \Common\Model\Integral\TaskuserModel();
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time   = date('Y-m-d 23:59:59');
+        foreach($task_list as $key=>$v){
+            $map = [];
+            $map['openid'] = $openid;
+            $map['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
+            $rs = $m_task_user->field('integral')->where(array('openid'))->find();
+            $task_list[$key]['integral'] = intval($rs['integral']);
+            $task_list[$key]['progress']     = '今日获得积分';
+        }
+        
         $this->to_back($task_list);
     }
     

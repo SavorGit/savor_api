@@ -300,6 +300,9 @@ return array(
     'smallappsale_mobile_have_exist'=>'该手机号已被绑定,请使用其他手机号',
     'smallappsale_staff_empty'=>'该酒楼不存在该用户',
     'smallappsale_merchant_empty'=>'该商家不存在或已下线',
+    'smallappsale_exchange_money_error'=>'兑换金额有误',
+    'smallappsale_exchange_integral_not_enough'=>'积分不足，请尝试提现其他金额～',
+    'smallappsale_exchange_num_has_upper_limit'=>'用户提现机会已达上限',
 
 
 );

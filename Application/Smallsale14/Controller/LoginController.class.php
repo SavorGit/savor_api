@@ -11,7 +11,7 @@ class LoginController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('mobile'=>1001,'openid'=>1001,'invite_code'=>1001,'verify_code'=>1001);
                 break;
-            case 'qrcodeLogin':
+            case 'scancodeLogin':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'qrcode'=>1001);
 
@@ -83,7 +83,7 @@ class LoginController extends CommonController{
             $data['parent_id']   = 0 ;
             $data['openid']      = $openid;
             $data['beinvited_time'] = date('Y-m-d H:i:s');
-            $data['level']       = 0;
+            $data['level']       = 1;
             $data['status']      = 1;
             $m_staff->addData($data);
             //检查user表是否注册了这个用户
@@ -113,8 +113,8 @@ class LoginController extends CommonController{
             $userinfo['hotel_id'] = -1;
             $userinfo['hotel_name'] = '';
             $userinfo['hotel_has_room'] = 1;
-        } 
-        else{
+            $userinfo['role_type']  = 0;
+        }else{
             $m_hotel = new \Common\Model\HotelModel();
             $res_room = $m_hotel->getRoomNumByHotelId($merchant_info['hotel_id']);
             if($res_room){
@@ -124,7 +124,7 @@ class LoginController extends CommonController{
             }
             $userinfo['hotel_id']   = $merchant_info['hotel_id'];
             $userinfo['hotel_name'] = $merchant_info['hotel_name'];
-            $userinfo['role_type']  = $merchant_info['type'];
+            $userinfo['role_type']  = 1;
         }
         //商家服务
         $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
@@ -147,19 +147,21 @@ class LoginController extends CommonController{
         $where['mt.status'] = 1;
         $manage_info = $m_staff->alias('a')
                                  ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
-                                 ->field('mt.id,mt.hotel_id,mt.service_model_id,staff.id')
+                                 ->field('mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id')
                                  ->where($where)->find();
+        
         if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
         } 
         
-        $staff_info = $m_staff->field('id,hotel_id')->where(array('openid'=>$openid,'status'=>1))->find();
+        $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'status'=>1))->find();
+        
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
-            $userinfo['hotel_id'] = $staff_info['hotel_id'];
+            $userinfo['hotel_id'] = $manage_info['hotel_id'];
             $userinfo['hotel_has_room'] = 0;
             $m_hotel = new \Common\Model\HotelModel();
-            $res_room = $m_hotel->getRoomNumByHotelId($staff_info['hotel_id']);
+            $res_room = $m_hotel->getRoomNumByHotelId($manage_info['hotel_id']);
             if($res_room){
                 $userinfo['hotel_has_room'] = 1;
             }
@@ -177,7 +179,7 @@ class LoginController extends CommonController{
             $redis->remove($code_key);
             //插入staff表
             $data  = [];
-            $data['merchant_id'] = $manage_info['id'];
+            $data['merchant_id'] = $manage_info['mt_id'];
             $data['parent_id']   = $manage_id;
             $data['openid']      = $openid;
             $data['beinvited_time'] = date('Y-m-d H:i:s');

@@ -22,7 +22,7 @@ class WithdrawController extends CommonController{
     public function getMoneyList(){
         $hotel_id = $this->params['hotel_id'];
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'g.id,g.name goods_name,g.price,g.rebate_integral as integral,g.is_audit';
+        $fields = 'g.id,g.name goods_name,g.rebate_integral as integral,g.is_audit';
 
         $nowtime = date('Y-m-d H:i:s');
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>30,'g.status'=>2);

@@ -224,7 +224,6 @@ class UserController extends CommonController{
     public function signin(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
-
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -241,7 +240,7 @@ class UserController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
@@ -275,6 +274,9 @@ class UserController extends CommonController{
 
         $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
         $redis->set($cache_key,json_encode($cache_data),18000);
+
+        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
+        $m_taskuser->getTask($openid,$box_info['hotel_id']);
 
         $res_data = array('status'=>2);
         $where = array('openid'=>$openid,'small_app_id'=>5);

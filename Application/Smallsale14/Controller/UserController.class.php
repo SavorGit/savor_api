@@ -497,11 +497,11 @@ class UserController extends CommonController{
         //$m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
         //$where = array('openid'=>$openid,'state'=>1,'flag'=>0);
         //$res_invite_code = $m_hotel_invite_code->getInfo($where);
-        $m_merchant = new \Common\Model\Integral\StaffModel();
-        $res_invite_code = $m_merchant->alias('a')
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_invite_code = $m_staff->alias('a')
                                       ->join('savor_integral_merchant m on m.id=a.merchant_id')
                                       ->where(array('a.openid'=>$openid,'a.status'=>1,'m.status'=>1))
-                                      ->field('m.type,a.parent_id')
+                                      ->field('m.type,a.id,parent_id')
                                       ->find();
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
@@ -509,11 +509,12 @@ class UserController extends CommonController{
         $all_nums = $page * $pagesize;
         //$where = array('invite_id'=>$res_invite_code['id'],'state'=>1,'flag'=>0,'type'=>1);
         //$res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
-        $m_staff = new \Common\Model\Integral\StaffModel();
+        
         $res_invites = $m_staff->alias('a')
                                ->join('savor_integral_merchant_staff staff_lev1 on a.id= staff_lev1.parent_id')
-                               ->field('staff_lev1.openid')
-                               ->where(array('a.openid'=>$openid,'a.status'=>1))
+                               ->field('staff_lev1.openid,staff_lev1.parent_id')
+                               ->where(array('a.openid'=>$openid,'a.status'=>1,'staff_lev1.status'=>1))
+                               ->limit(0,$all_nums)
                                ->select();
         $total = count($res_invites);
         
@@ -524,7 +525,7 @@ class UserController extends CommonController{
                 $where = array('openid'=>$v['openid']);
                 $fields = 'openid,avatarUrl,nickName';
                 $res_user = $m_user->getOne($fields, $where);
-                $res_user['invite_id'] = $res_invite_code['parent_id'];
+                $res_user['invite_id'] = $v['parent_id'];
                 $datalist[] = $res_user;
             }
         }

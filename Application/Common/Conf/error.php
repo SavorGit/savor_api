@@ -317,6 +317,9 @@ return array(
 	    '93013'=>'smallappsale_mobile_have_exist',
 	    '93014'=>'smallappsale_staff_empty',
 	    '93015'=>'smallappsale_merchant_empty',
+	    '93016'=>'smallappsale_exchange_money_error',
+	    '93017'=>'smallappsale_exchange_integral_not_enough',
+	    '93018'=>'smallappsale_exchange_num_has_upper_limit',
 
 	),
 );

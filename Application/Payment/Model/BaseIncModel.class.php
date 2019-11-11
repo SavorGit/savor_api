@@ -84,8 +84,30 @@ class BaseIncModel extends Model{
             }else{
                 $status = 3;
             }
+
+            $redis  =  \Common\Lib\SavorRedis::getInstance();
+            $redis->select(12);
+            $cache_key = C('SYSTEM_CONFIG');
+            $redis_sys_config = $redis->get($cache_key);
+            $rate = 0;
+            foreach($redis_sys_config as $key=>$v){
+                if($v['config_key']=='red_packet_rate'){
+                    $rate = $v['config_value'];
+                    break;
+                }
+            }
+
+            if($rate){
+                $rate_fee = sprintf("%01.2f",$pay_fee*$rate);
+                $tmp_money = $result_order[0]['total_fee'] - $rate_fee;
+                $redpacket_money = sprintf("%01.2f",$tmp_money);
+            }else{
+                $redpacket_money = $result_order[0]['total_fee'];
+                $rate_fee = 0;
+            }
+
             $pay_time = date('Y-m-d H:i:s');
-            $update_condition = "update savor_smallapp_redpacket set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
+            $update_condition = "update savor_smallapp_redpacket set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type',rate_fee='$rate_fee',rate='$rate' ";
             $sql_uporder = "$update_condition where id='$trade_no'";
             $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
             $row_num = $this->execute($sql_uporder);
@@ -96,7 +118,7 @@ class BaseIncModel extends Model{
                 $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
                 if($status == 4){
                     //根据红包总金额和人数进行分配红包
-                    $money = $result_order[0]['total_fee'];
+                    $money = $redpacket_money;
                     $num = $result_order[0]['amount'];
                     $all_money = bonus_random($money,$num,0.3,$money);
 
@@ -106,7 +128,7 @@ class BaseIncModel extends Model{
                     $all_moneys = array('unused'=>$all_money,'used'=>array());
                     $redis->set($key,json_encode($all_moneys),86400);
 
-                    $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money).' 总金额:'.array_sum($all_money);
+                    $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money)." 费率:$rate 费率金额:$rate_fee".' 总金额:'.array_sum($all_money);
                     $this->paynotify_log($paylog_type, $serial_no, $log_content);
                     //end
 
@@ -135,6 +157,7 @@ class BaseIncModel extends Model{
                         $all_box = $m_netty->getPushBox(2,$box_mac);
                         if(!empty($all_box)){
                             foreach ($all_box as $v){
+                                $sys_time = getMillisecond();
                                 $qrinfo =  $trade_no.'_'.$v.'_'.$sys_time;;
                                 $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                                 $message = array('action'=>121,'nickName'=>$user_info['nickName'],

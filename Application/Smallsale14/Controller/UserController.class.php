@@ -97,7 +97,7 @@ class UserController extends CommonController{
         $service_model_id = 0;
         if(!empty($userinfo['openid'])){
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $fields = 'mt.hotel_id,mt.type,mt.service_model_id';
+            $fields = 'mt.hotel_id,mt.type,mt.service_model_id,a.level';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant mt on mt.id=a.merchant_id','left')
@@ -105,7 +105,7 @@ class UserController extends CommonController{
                            ->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
-                $userinfo['role_type'] = $rts['type'];
+                $userinfo['role_type'] = $rts['level'];
                 $code_type = $rts['type'];
                 $$service_model_id = $rts['service_model_id'];
                 
@@ -196,7 +196,7 @@ class UserController extends CommonController{
             //$rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
             $m_staff = new \Common\Model\Integral\StaffModel();
             
-            $fields = 'm.hotle_id,m.type,m.service_model_id';
+            $fields = 'm.hotle_id,m.type,m.service_model_id,a.level';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
@@ -213,6 +213,8 @@ class UserController extends CommonController{
             if($rts['type']==3){
                 $data['hotel_id'] = -1;
                 $hotel_has_room = 1;
+            }else {
+                $data['role_type'] = $rts['level'];
             }
             $data['hotel_has_room'] = $hotel_has_room;
             $data = $this->getServiceModel($data,$rts['service_model_id']);

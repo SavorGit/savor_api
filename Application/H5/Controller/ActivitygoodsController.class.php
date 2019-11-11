@@ -90,7 +90,7 @@ class ActivitygoodsController extends Controller {
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $add_data = array('openid'=>$openid,'goods_id'=>$goods_id,
-            'price'=>$res_goods['price'],'amount'=>1,'total_fee'=>$total_fee,'status'=>20,'otype'=>2);
+            'price'=>$res_goods['price'],'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
         $m_order->add($add_data);
 
         $res = array('code'=>10000,'msg'=>'兑换申请成功,请在1到2个工作日内,注意查收自己的微信零钱');

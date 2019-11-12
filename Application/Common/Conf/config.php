@@ -208,8 +208,9 @@ return array(
     'ALIYUN_SMS_CONFIG' => array(
         'send_invoice_addr_templateid'=>'SMS_176935152',
         'activity_goods_send_salemanager'=>'SMS_176527162',
+        'wx_money_not_enough_templateid'=>'SMS_177256437',
     ),
-
+    'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
     'OPTION_USER_SKILL_ARR' => array(
         '1'=>'信息检测',

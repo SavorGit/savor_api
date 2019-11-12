@@ -97,7 +97,7 @@ class WithdrawController extends CommonController{
 
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
-        $add_data = array('openid'=>$openid,'goods_id'=>$id,'price'=>$res_goods['price'],
+        $add_data = array('openid'=>$openid,'goods_id'=>$id,'price'=>$res_goods['price'],'hotel_id'=>$hotel_id,
             'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
         $order_id = $m_order->add($add_data);
 
@@ -126,17 +126,20 @@ class WithdrawController extends CommonController{
             }else{
                 if($res['code']==10003){
                     //发送短信
-                    $phone = '';
                     $ucconfig = C('ALIYUN_SMS_CONFIG');
                     $alisms = new \Common\Lib\AliyunSms();
                     $params = array('merchant_no'=>1554975591);
-                    $template_code = $ucconfig['send_invoice_addr_templateid'];
-                    $res_data = $alisms::sendSms($phone,$params,$template_code);
-                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                        'url'=>join(',',$params),'tel'=>$phone,'resp_code'=>$res_data->Code,'msg_type'=>3
-                    );
+                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                    $phones = C('WEIXIN_MONEY_NOTICE');
                     $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                    $m_account_sms_log->addData($data);
+                    foreach ($phones as $vp){
+                        $res_data = $alisms::sendSms($vp,$params,$template_code);
+                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_data->Code,'msg_type'=>3
+                        );
+                        $m_account_sms_log->addData($data);
+                    }
                 }
             }
 

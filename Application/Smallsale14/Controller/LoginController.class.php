@@ -55,7 +55,7 @@ class LoginController extends CommonController{
         $staff_info = $m_staff->field('openid')->where($where)->find();
         
         if(!empty($staff_info) && $openid!=$staff_info['openid']){//已绑定其他用户
-            $this->error(93013);
+            $this->to_back(93013);
         }elseif(!empty($staff_info)&& $openid==$staff_info['openid']){
             //检查user表是否注册了这个用户
             $m_user = new \Common\Model\Smallapp\UserModel();
@@ -63,19 +63,25 @@ class LoginController extends CommonController{
             $where['openid'] = $openid;
             $where['status'] = 1;
             $where['small_app_id'] = 5;
-            $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
+            $userinfo = $m_user->getOne('id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth', $where);
             if(empty($userinfo)){//未注册插入user表一条数据
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $res = $m_user->addInfo($data);
                 if(!$res){
                     $this->to_back(92007);
                 }
-                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
+                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile,
+                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                );
             }else{
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $where = array('id'=>$userinfo['user_id']);
                 $m_user->updateInfo($where,$data);
-                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
+                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile,
+                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                );
             } 
         }else {//插入一条数据到staff表
             $data = [];
@@ -92,19 +98,25 @@ class LoginController extends CommonController{
             $where['openid'] = $openid;
             $where['status'] = 1;
             $where['small_app_id'] = 5;
-            $userinfo = $m_user->getOne('id as user_id,openid,mobile', $where);
+            $userinfo = $m_user->getOne('id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth', $where);
             if(empty($userinfo)){//未注册插入user表一条数据
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $res = $m_user->addInfo($data);
                 if(!$res){
                     $this->to_back(92007);
                 }
-                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile);
+                $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile,
+                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                );
             }else{
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $where = array('id'=>$userinfo['user_id']);
                 $m_user->updateInfo($where,$data);
-                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile);
+                $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile,
+                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                );
             }
         }
         //清除手机邀请码缓存
@@ -127,7 +139,9 @@ class LoginController extends CommonController{
             $userinfo['role_type']  = 1;
         }
         //商家服务
+        
         $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
+        
         $this->to_back($userinfo);
     }
     public function scancodeLogin(){

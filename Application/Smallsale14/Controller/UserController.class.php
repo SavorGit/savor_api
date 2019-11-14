@@ -196,7 +196,7 @@ class UserController extends CommonController{
             //$rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
             $m_staff = new \Common\Model\Integral\StaffModel();
             
-            $fields = 'm.hotle_id,m.type,m.service_model_id,a.level';
+            $fields = 'm.hotel_id,m.type,m.service_model_id,a.level';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
@@ -613,6 +613,33 @@ class UserController extends CommonController{
         }else {
             $this->to_back(93010);
         }
+    }
+    /**
+     * @desc 检查手机号是否分配邀请码
+     */
+    public function checkUser(){
+        $this->to_back(10000);
+        /* $mobile = $this->params['mobile'];
+        $openid = $this->params['openid'];
+        $m_hotel_invite = new \Common\Model\HotelInviteCodeModel();
+        $fields = 'id';
+        $where = array();
+        if($openid){
+            $where['openid'] = $openid;
+        }
+        if($mobile){
+            $where['bind_mobile'] = $mobile;
+        }
+        if(empty($where)){
+            $this->to_back(92008);
+        }
+        $where['flag']  = 0;
+        $info = $m_hotel_invite->getOne($fields, $where);
+        if(empty($info)){
+            $this->to_back(92008);
+        }else {
+            $this->to_back(10000);
+        } */
     }
     private function getServiceModel($userinfo,$service_model_id){
         $service_list = C('service_list');

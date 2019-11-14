@@ -135,13 +135,24 @@ class ProgramController extends CommonController{
         $my_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');
         $res_goods = array_merge($optimize_goods,$my_hotelgoods);
 
+
+        $fields = 'g.id as goods_id';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
+        $where['g.type']= 10;
+        $orderby = 'g.id desc';
+        $all_hotel_goods = $m_hotelgoods->getList($fields,$where,$orderby,'','g.id');
+        $hotel_goods_ids = array();
+        foreach ($all_hotel_goods as $gv){
+            $hotel_goods_ids[]=$gv['goods_id'];
+        }
+
         $host_name = C('HOST_NAME');
         $m_media = new \Common\Model\MediaModel();
         $goods_ids = array();
         $program_list = array();
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
-                'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'is_storebuy'=>intval($v['is_storebuy']));
+                'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
             $media_info = $m_media->getMediaInfoById($v['media_id']);
             $info['oss_path'] = $media_info['oss_path'];
             $name_info = pathinfo($info['oss_path']);
@@ -149,7 +160,19 @@ class ProgramController extends CommonController{
             $info['media_type'] = $media_info['type'];
             $info['md5'] = $media_info['md5'];
             $info['duration'] = $media_info['duration'];
-            $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            $qrcode_url = '';
+            $is_storebuy = 0;
+            if($v['type']==20){
+                $is_storebuy = intval($v['is_storebuy']);
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            }else{
+                if(in_array($v['goods_id'],$hotel_goods_ids)){
+                    $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+                    $is_storebuy = intval($v['is_storebuy']);
+                }
+            }
+            $info['qrcode_url'] = $qrcode_url;
+            $info['is_storebuy'] = $is_storebuy;
             if(isset($loopplay_data[$v['goods_id']])){
                 if($v['type']==20 && $v['scope']){
                     if($v['scope']==1){

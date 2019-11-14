@@ -435,15 +435,17 @@ class UserController extends CommonController{
                     $content = $all_types[2]."{$v['content']}人";
                     break;
                 case 3:
-                    $goods_id = $v['goods_id'];
-                    $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+                    $res_goods = $m_goods->getInfo(array('id'=>$v['goods_id']));
                     $content = $all_types[3]."{$res_goods['name']} {$v['content']}件";
                     if($info['integral']==0){
                         $info['integral']='计算中...';
                     }
                     break;
                 case 4:
-                    $content = $all_types[4];
+                case 5:
+                    $res_goods = $m_goods->getInfo(array('id'=>$v['goods_id']));
+                    $info['room_name'] = $res_goods['name'];
+                    $content = $all_types[$type];
                     break;
                 default:
                     $content = "";

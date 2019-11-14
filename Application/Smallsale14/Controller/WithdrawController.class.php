@@ -87,19 +87,23 @@ class WithdrawController extends CommonController{
             $this->to_back(93017);
         }
 
-        $integralrecord_data = array('openid'=>$openid,'integral'=>-$res_goods['rebate_integral'],
-            'content'=>$id,'type'=>4,'integral_time'=>date('Y-m-d H:i:s'));
-        $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $m_userintegralrecord->add($integralrecord_data);
-
-        $userintegral = $res_integral['integral'] - $res_goods['rebate_integral'];
-        $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral));
-
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $add_data = array('openid'=>$openid,'goods_id'=>$id,'price'=>$res_goods['price'],'hotel_id'=>$hotel_id,
             'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
         $order_id = $m_order->add($add_data);
+
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+        $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+            'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'integral'=>-$res_goods['rebate_integral'],'goods_id'=>$id,'jdorder_id'=>$order_id,'content'=>1,'type'=>4,
+            'integral_time'=>date('Y-m-d H:i:s'));
+        $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $m_userintegralrecord->add($integralrecord_data);
+
+        $userintegral = $res_integral['integral'] - $res_goods['rebate_integral'];
+        $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral));
 
         $order_exchange[] = array($order_id=>date('Y-m-d H:i:s'));
         $redis->set($cache_key,json_encode($order_exchange),86400);

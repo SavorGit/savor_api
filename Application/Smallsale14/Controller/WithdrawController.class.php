@@ -105,7 +105,7 @@ class WithdrawController extends CommonController{
         $redis->set($cache_key,json_encode($order_exchange),86400);
 
         if($res_goods['is_audit']==0){
-            $smallapp_config = C('SMALLAPP_CONFIG');
+            $smallapp_config = C('SMALLAPP_SALE_CONFIG');
             $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
             $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
             $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';

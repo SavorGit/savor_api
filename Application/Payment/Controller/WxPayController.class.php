@@ -291,17 +291,17 @@ class WxPayController extends BaseController{
             $error = array('code'=>99004,'msg'=>'goods info error');
             $this->ajaxReturn($error);
         }
-
+        /*
         $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
         $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
         if(empty($res_integral) || $res_integral['integral']<$res_goods['rebate_integral']){
             $res = array('code'=>99005,'msg'=>'integral not enough');
             $this->ajaxReturn($res);
         }
-        $payconfig = $this->getPayConfig(2);
-
-        $money = $res_goods['price'];
-        $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['mpopenid']);
+        */
+        $payconfig = $this->getPayConfig(5);
+        $money = $res_order['total_fee'];
+        $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$user_info['openid']);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
         $this->ajaxReturn($res);

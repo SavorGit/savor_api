@@ -74,6 +74,148 @@ class ProgramController extends CommonController{
         }  
     }
 
+    public function getGoodsProgramList(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,c.type as room_type', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $hotel_id = $box_info[0]['hotel_id'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+        $res_period = $redis->get($program_key);
+        if(empty($res_period)){
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
+        }else{
+            $period_info = json_decode($res_period,true);
+            $period = $period_info['period'];
+        }
+
+        $cache_key = C('SAPP_SALE').'activitygoods:loopplay:'.$hotel_id;
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $loopplay_data = json_decode($res_cache,true);
+        }else{
+            $fields = 'h.hotel_id,h.goods_id';
+            $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
+            $orderby = 'g.id desc';
+            $limit = "0,1";
+            $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+            $loopplay_data = array($res_goods[0]['goods_id']=>$res_goods[0]['goods_id']);
+            $redis->set($cache_key,json_encode($loopplay_data));
+        }
+        $nowtime = date('Y-m-d H:i:s');
+        $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy';
+        $where = array('type'=>$type,'status'=>2);
+        $where['start_time'] = array('elt',$nowtime);
+        $where['end_time'] = array('egt',$nowtime);
+        $orderby = 'id desc';
+        $optimize_goods = $m_goods->getDataList($fields,$where,$orderby);
+
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
+        $where['g.type']= 20;
+        $where['g.start_time'] = array('elt',$nowtime);
+        $where['g.end_time'] = array('egt',$nowtime);
+        $orderby = 'g.id desc';
+        $limit = "";
+        $my_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');
+        $res_goods = array_merge($optimize_goods,$my_hotelgoods);
+
+
+        $fields = 'g.id as goods_id';
+        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
+        $where['g.type']= 10;
+        $orderby = 'g.id desc';
+        $all_hotel_goods = $m_hotelgoods->getList($fields,$where,$orderby,'','g.id');
+        $hotel_goods_ids = array();
+        foreach ($all_hotel_goods as $gv){
+            $hotel_goods_ids[]=$gv['goods_id'];
+        }
+
+        $host_name = C('HOST_NAME');
+        $m_media = new \Common\Model\MediaModel();
+        $goods_ids = array();
+        $program_list = array();
+        foreach ($res_goods as $v){
+            $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
+                'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
+            $media_info = $m_media->getMediaInfoById($v['media_id']);
+            $info['oss_path'] = $media_info['oss_path'];
+            $name_info = pathinfo($info['oss_path']);
+            $info['name'] = $name_info['basename'];
+            $info['media_type'] = $media_info['type'];
+            $info['md5'] = $media_info['md5'];
+            $info['duration'] = $media_info['duration'];
+            $qrcode_url = '';
+            $is_storebuy = 0;
+            if($v['type']==20){
+                $is_storebuy = intval($v['is_storebuy']);
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            }else{
+                if(in_array($v['goods_id'],$hotel_goods_ids)){
+                    $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+                    $is_storebuy = intval($v['is_storebuy']);
+                }
+            }
+            $info['qrcode_url'] = $qrcode_url;
+            $info['is_storebuy'] = $is_storebuy;
+            if(isset($loopplay_data[$v['goods_id']])){
+                if($v['type']==20 && $v['scope']){
+                    if($v['scope']==1){
+                        if($box_info[0]['room_type']==1){
+                            $info['play_type'] = 1;
+                        }else{
+                            $info['play_type'] = 2;
+                        }
+                    }else{
+                        if($box_info['room_type']!=1){
+                            $info['play_type'] = 1;
+                        }else{
+                            $info['play_type'] = 2;
+                        }
+                    }
+                }else{
+                    $info['play_type'] = 1;
+                }
+            }else{
+                $info['play_type'] = 2;
+            }
+            $program_list[] = $info;
+            $goods_ids[] = $v['goods_id'];
+        }
+        $is_newperiod = 0;
+        foreach ($loopplay_data as $k=>$v){
+            if(!in_array($v,$goods_ids)){
+                $is_newperiod = 1;
+                unset($loopplay_data[$k]);
+            }
+        }
+        if($is_newperiod){
+            $redis->set($cache_key,json_encode($loopplay_data));
+
+            $program_key = C('SAPP_SALE_ACTIVITYGOODS_PROGRAM').":$hotel_id";
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_key,json_encode($period_data));
+        }
+        $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
     public function getActivitygoodsProgramList(){
         $box_mac = $this->params['box_mac'];
         $m_box = new \Common\Model\BoxModel();
@@ -200,7 +342,7 @@ class ProgramController extends CommonController{
 
         $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id as goods_id,media_id,name,price,start_time,end_time';
+        $fields = 'id as goods_id,media_id,name,price,is_storebuy,start_time,end_time';
         $where = array('type'=>$type,'status'=>2);
         $orderby = 'id desc';
         $res_goods = $m_goods->getDataList($fields,$where,$orderby);

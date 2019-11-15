@@ -116,7 +116,7 @@ class BoxModel extends Model
              ->field($fields)
              ->join('savor_room c on a.room_id= c.id','left')
              ->join('savor_hotel d on c.hotel_id=d.id','left')
-             ->where('d.id='.$hotel_id.' and a.flag=0 and a.state =1 ')
+             ->where('d.id='.$hotel_id.' and a.flag=0 and a.state =1 and d.flag=0 and d.state =1 ')
              ->select();
         return $data;
     }

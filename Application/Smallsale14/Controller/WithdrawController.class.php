@@ -75,6 +75,13 @@ class WithdrawController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
+
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $res_hotelgoods = $m_hotelgoods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$id));
+        if(empty($res_hotelgoods)){
+            $this->to_back(93016);
+        }
+
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$id));
         if($res_goods['status']!=2 || $res_goods['type']!=30){

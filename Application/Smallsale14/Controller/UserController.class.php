@@ -66,7 +66,8 @@ class UserController extends CommonController{
                 $this->valid_fields = array('openid'=>1001);
                 break;
             case 'integraltypes':
-                $this->is_verify = 0;
+                $this->valid_fields = array('openid'=>1001);
+                $this->is_verify = 1;
                 break;
             case 'bindmobile':
                 $this->is_verify = 1;
@@ -278,7 +279,7 @@ class UserController extends CommonController{
         $redis->set($cache_key,json_encode($cache_data),18000);
 
         $m_taskuser = new \Common\Model\Integral\TaskuserModel();
-        $m_taskuser->getTask($openid,$box_info['hotel_id']);
+        $m_taskuser->getTask($openid,$box_info[0]['hotel_id']);
 
         $res_data = array('status'=>2);
         $where = array('openid'=>$openid,'small_app_id'=>5);
@@ -459,6 +460,7 @@ class UserController extends CommonController{
     }
 
     public function integraltypes(){
+        $openid = $this->params['openid'];
         $all_types = C('INTEGRAL_TYPES');
         $type_list = array();
         foreach ($all_types as $k=>$v){
@@ -476,14 +478,29 @@ class UserController extends CommonController{
         $period   = new \DatePeriod($start, $interval, $end);
         $date_list = array();
         $date_name_list = array();
-        foreach ($period as $dt) {
+
+        $has_integral_date = 0;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $res_record = $m_userintegral_record->getDataList('id,add_time',array(),'id desc',0,1);
+        if($res_record['total']){
+            $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
+        }
+
+        $date_key = 1200;
+        foreach ($period as $k=>$dt) {
             $name = $dt->format("Y年m月");
-            $date_list[] = array('id'=>$dt->format("Ym"),'name'=>$name);
+            $dt_date = $dt->format("Ym");
+            $date_list[] = array('id'=>$dt_date,'name'=>$name);
             $date_name_list[]=$name;
+            if($dt_date==$has_integral_date){
+                $date_key = $k;
+            }
         }
         $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
         $date_name_list[] = date('Y年m月',strtotime($end_date));
-        $date_key = count($date_name_list)-1;
+        if($date_key==1200){
+            $date_key = count($date_name_list)-1;
+        }
         $data = array('type_list'=>$type_list,'type_name_list'=>$type_name_list,'date_list'=>$date_list,'date_name_list'=>$date_name_list);
         $data['date_key'] = $date_key;
         $this->to_back($data);

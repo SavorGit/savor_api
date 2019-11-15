@@ -85,17 +85,21 @@ class BaseIncModel extends Model{
                 $status = 3;
             }
 
+            $rate = 0;
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(12);
             $cache_key = C('SYSTEM_CONFIG');
             $redis_sys_config = $redis->get($cache_key);
-            $rate = 0;
-            foreach($redis_sys_config as $key=>$v){
-                if($v['config_key']=='red_packet_rate'){
-                    $rate = $v['config_value'];
-                    break;
+            if(!empty($redis_sys_config)){
+                $redis_sys_config = json_decode($redis_sys_config,true);
+                foreach($redis_sys_config as $key=>$v){
+                    if($v['config_key']=='red_packet_rate'){
+                        $rate = $v['config_value'];
+                        break;
+                    }
                 }
             }
+
 
             if($rate){
                 $rate_fee = sprintf("%01.2f",$pay_fee*$rate);

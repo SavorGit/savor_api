@@ -259,6 +259,14 @@ class ApiController extends CommonController{
             $sys_vol_arr = $sysconfigModel->getInfo($where);
         }
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
+        $bootvideo[0]['label'] = '机顶盒开机视频地址';
+        $bootvideo[0]['configKey'] = 'boot_video_url_for_set_top_box';
+        $bootvideo[0]['configValue'] = 'http://oss.littlehotspot.com/media/resource/ntfrQRRH2M.mp4';
+        //$bootvideo[0]['configValue'] = 'af6066f8b89b3290276b4ff87a93d265';
+        $bootvideo[1]['label'] ='机顶盒开机视频地址MD5';
+        $bootvideo[1]['configKey'] = 'boot_video_md5_for_set_top_box';
+        $bootvideo[1]['configValue'] = 'af6066f8b89b3290276b4ff87a93d265';
+        $sys_vol_arr = array_merge($sys_vol_arr,$bootvideo);
         $data = array();
         $data= $ho_arr;
         //print_r($data);exit;

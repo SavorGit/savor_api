@@ -360,7 +360,7 @@ class UserController extends CommonController{
 
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $fields = 'sum(integral) as total_integral';
-        $where = array('openid'=>$openid,'type'=>3);
+        $where = array('openid'=>$openid,'type'=>3,'source'=>3);
         $month_date = date("Ym", strtotime("-1 month"));
         $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
         $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');

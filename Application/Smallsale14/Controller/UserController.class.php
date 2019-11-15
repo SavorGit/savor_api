@@ -445,7 +445,7 @@ class UserController extends CommonController{
                 case 5:
                     $res_goods = $m_goods->getInfo(array('id'=>$v['goods_id']));
                     $info['room_name'] = $res_goods['name'];
-                    $content = $all_types[$type];
+                    $content = $all_types[$v['type']];
                     break;
                 default:
                     $content = "";

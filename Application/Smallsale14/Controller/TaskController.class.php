@@ -59,11 +59,25 @@ class TaskController extends CommonController{
         $where = [];
         $where['a.openid']    = $openid;
         $where['im.hotel_id'] = $hotel_id;
+        
+        
+        
+        
         $m_staff = new \Common\Model\Integral\StaffModel();
+        
+        
         $nums = $m_staff->alias('a')
-                              ->join('savor_integral_merchant im on a.merchant_id= im.id','left')
-                              ->where($where)
-                              ->count();
-        if(empty($nums)) $this->to_back(93014);
+                ->join('savor_integral_merchant mt on a.merchant_id=mt.id','left')
+                ->field('a.id')->where(array('a.openid'=>$openid,'a.status'=>1,'mt.status'=>1,'mt.type'=>3))
+                ->count();
+        if(empty($nums)){
+            $nums = $m_staff->alias('a')
+            ->join('savor_integral_merchant im on a.merchant_id= im.id','left')
+            ->where($where)
+            ->count();
+            if(empty($nums)) $this->to_back(93014);
+        }
+        
+        
     }
 }

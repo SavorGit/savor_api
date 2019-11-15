@@ -180,6 +180,12 @@ class LoginController extends CommonController{
                 $userinfo['hotel_has_room'] = 1;
             }
             
+            $map['merchant_id'] = $manage_info['mt_id'];
+            $map['parent_id']   = $manage_id;
+            $map['beinvited_time'] = date('Y-m-d H:i:s');
+            $map['level']       = 2;
+            $m_staff->updateData(array('id'=>$staff_info['id']), $map);
+            
         }else {//未注册过员工
             $cache_key = C('SAPP_SALE_INVITE_QRCODE');
             $code_key = $cache_key.$manage_id.":$de_qrcode";

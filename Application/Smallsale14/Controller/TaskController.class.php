@@ -45,8 +45,9 @@ class TaskController extends CommonController{
         foreach($task_list as $key=>$v){
             $map = [];
             $map['openid'] = $openid;
+            $map['task_id'] = $v['task_id'];
             $map['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
-            $rs = $m_task_user->field('integral')->where(array('openid'))->find();
+            $rs = $m_task_user->field('integral')->where($map)->find();
             $task_list[$key]['integral'] = intval($rs['integral']);
             $task_list[$key]['progress']     = '今日获得积分';
         }

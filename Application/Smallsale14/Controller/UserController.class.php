@@ -481,7 +481,7 @@ class UserController extends CommonController{
 
         $has_integral_date = 0;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $res_record = $m_userintegral_record->getDataList('id,add_time',array(),'id desc',0,1);
+        $res_record = $m_userintegral_record->getDataList('id,add_time',array('openid'=>$openid),'id desc',0,1);
         if($res_record['total']){
             $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
         }

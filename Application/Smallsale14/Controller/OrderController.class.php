@@ -157,8 +157,14 @@ class OrderController extends CommonController{
 
                 $ucconfig = C('ALIYUN_SMS_CONFIG');
                 $alisms = new \Common\Lib\AliyunSms();
-                $params = array('room_name'=>$box_info['room_name'],'goods_name'=>$res_goods['name'],'amount'=>$amount,'enoid'=>$encode_oid);
-                $template_code = $ucconfig['activity_goods_send_salemanager'];
+                if($res_goods['type']==10){
+                    $params = array('room_name'=>$box_info['room_name'],'goods_name'=>$res_goods['name'],'amount'=>$amount,'enoid'=>$encode_oid);
+                    $template_code = $ucconfig['activity_goods_send_salemanager'];
+                }else{
+                    $params = array('room_name'=>$box_info['room_name'],'goods_name'=>$res_goods['name'],'amount'=>$amount);
+                    $template_code = $ucconfig['activity_goods_send_salemanager_nolink'];
+                }
+
                 $res_data = $alisms::sendSms($activity_phone,$params,$template_code);
                 $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
                     'url'=>join(',',$params),'tel'=>$activity_phone,'resp_code'=>$res_data->Code,'msg_type'=>3

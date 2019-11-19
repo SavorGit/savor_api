@@ -208,6 +208,7 @@ return array(
     'ALIYUN_SMS_CONFIG' => array(
         'send_invoice_addr_templateid'=>'SMS_176935152',
         'activity_goods_send_salemanager'=>'SMS_176527162',
+        'activity_goods_send_salemanager_nolink'=>'SMS_177547510',
         'wx_money_not_enough_templateid'=>'SMS_177256437',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),

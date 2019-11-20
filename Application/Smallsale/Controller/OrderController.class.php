@@ -62,7 +62,7 @@ class OrderController extends CommonController{
             $map['a.flag']  = 0;
             $map['d.state'] = 1;
             $map['d.flag']  = 0;
-            $fields = 'a.id as box_id,ext.activity_contact,ext.activity_phone,c.name as room_name';
+            $fields = 'a.id as box_id,d.id as hotel_id,ext.activity_contact,ext.activity_phone,c.name as room_name';
             $box_info = $m_box->getBoxInfo($fields, $map);
             if(empty($box_info)){
                 $this->to_back(93008);
@@ -132,18 +132,24 @@ class OrderController extends CommonController{
             $redis->set($cache_key,json_encode($user_order),18000);
         }
 
-        if(in_array($res_goods['type'],array(10,20))){
+        if($buy_type==1 && in_array($res_goods['type'],array(10,20))){
             $activity_phone = $box_info['activity_phone'];
             if($sale_uid){
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $where = array('id'=>$sale_uid);
-                $fields = 'id user_id,openid';
+                $fields = 'id user_id,openid,mobile';
                 $res_user = $m_user->getOne($fields, $where);
-
-                $m_hotelinvite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-                $res_hotelinvite_code = $m_hotelinvite_code->getInfo(array('openid'=>$res_user['openid'],'flag'=>0));
-                if(!empty($res_hotelinvite_code['bind_mobile'])){
-                    $activity_phone = $res_hotelinvite_code['bind_mobile'];
+                if(!empty($res_user)){
+                    $m_merchant = new \Common\Model\Integral\MerchantModel();
+                    $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$box_info['hotel_id'],'status'=>1));
+                    if(!empty($res_merchant)){
+                        $activity_phone = $res_merchant['mobile'];
+                        $m_staff = new \Common\Model\Integral\StaffModel();
+                        $res_staff = $m_staff->getInfo(array('merchant_id'=>$res_merchant['id'],'openid'=>$res_user['openid'],'status'=>1));
+                        if(!empty($res_staff) && !empty($res_user['mobile'])){
+                            $activity_phone = $res_user['mobile'];
+                        }
+                    }
                 }
             }
             if(!empty($activity_phone)){
@@ -154,6 +160,7 @@ class OrderController extends CommonController{
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $encode_oid = $hashids->encode($order_id);
+
                 $ucconfig = C('ALIYUN_SMS_CONFIG');
                 $alisms = new \Common\Lib\AliyunSms();
                 if($res_goods['type']==10){
@@ -163,29 +170,13 @@ class OrderController extends CommonController{
                     $params = array('room_name'=>$box_info['room_name'],'goods_name'=>$res_goods['name'],'amount'=>$amount);
                     $template_code = $ucconfig['activity_goods_send_salemanager_nolink'];
                 }
+
                 $res_data = $alisms::sendSms($activity_phone,$params,$template_code);
                 $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
                     'url'=>join(',',$params),'tel'=>$activity_phone,'resp_code'=>$res_data->Code,'msg_type'=>3
                 );
                 $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
                 $m_account_sms_log->addData($data);
-
-                /*
-                $ucconfig = C('SMS_CONFIG');
-                $options = array('accountsid'=>$ucconfig['accountsid'],'token'=>$ucconfig['token']);
-                $ucpass= new \Common\Lib\Ucpaas($options);
-                $appId = $ucconfig['appid'];
-                $param = "{$box_info['room_name']},{$res_goods['name']},$amount,$encode_oid";
-                $res_json = $ucpass->templateSMS($appId,$activity_phone,$ucconfig['activity_goods_send_salemanager'],$param);
-                $res_data = json_decode($res_json,true);
-                if(isset($res_data['resp']['respCode'])) {
-                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                        'url'=>$param,'tel'=>$activity_phone,'resp_code'=>$res_data['resp']['respCode'],'msg_type'=>3
-                    );
-                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                    $m_account_sms_log->addData($data);
-                }
-                */
             }
 
         }

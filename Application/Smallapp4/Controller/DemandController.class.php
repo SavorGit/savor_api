@@ -4,7 +4,7 @@
  * @author zhang.yingtao
  * @since  2019-01-03
  */
-namespace Smallapp3\Controller;
+namespace Smallapp4\Controller;
 use Think\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
@@ -230,11 +230,50 @@ class DemandController extends CommonController{
             $m_play_log->where($where)->setInc('nums',1);
             
         }
-        
         $data = $this->getPubShareInfo($openid, $res_id, $type);
         $data['res_type'] = $type;
         $this->to_back($data);
     }
+
+    public function recordPlaynum(){
+        $res_id = $this->params['res_id'];
+        $openid = $this->params['openid'];
+        $playtype   = 5;
+        //播放数据+1
+        $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+        $res_nums = $m_play_log->getOne('id,nums',array('res_id'=>$res_id,'type'=>$playtype),'id desc');
+        if(empty($res_nums)){
+            $nums = 1;
+            $data = array('res_id'=>$res_id,'type'=>$playtype,'nums'=>$nums);
+            $m_play_log->addInfo($data);
+        }else{
+            $nums = $res_nums['nums']+1;
+            $where = array('id'=>$res_nums['id']);
+            $m_play_log->where($where)->setInc('nums',1);
+        }
+
+        $type = 4;
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $m_share   = new \Common\Model\Smallapp\ShareModel();
+        $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
+        $is_collect = $m_collect->countNum($map);
+        if(empty($is_collect)){
+            $is_collect = 0;
+        }else {
+            $is_collect = 1;
+        }
+        $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
+        $collect_num = $m_collect->countNum($map);
+
+        //分享个数
+        $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
+        $share_num = $m_share->countNum($map);
+
+        $res_data = array('is_collect'=>$is_collect,'collect_num'=>$collect_num,'share_num'=>$share_num,'play_num'=>$nums);
+        $this->to_back($res_data);
+    }
+
+
     private function getPubShareInfo($openid,$ads_id,$type){
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();

@@ -1,5 +1,5 @@
 <?php
-namespace Smallapp3\Controller;
+namespace Smallapp4\Controller;
 use Common\Lib\AliyunImm;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\AliyunOss;

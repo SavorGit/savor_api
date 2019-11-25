@@ -1,5 +1,5 @@
 <?php
-namespace Smallapp3\Controller;
+namespace Smallapp4\Controller;
 use Think\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;

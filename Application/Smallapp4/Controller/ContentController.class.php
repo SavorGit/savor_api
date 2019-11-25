@@ -1,5 +1,5 @@
 <?php
-namespace Smallapp3\Controller;
+namespace Smallapp4\Controller;
 use \Common\Controller\CommonController as CommonController;
 class ContentController extends CommonController{
     /**

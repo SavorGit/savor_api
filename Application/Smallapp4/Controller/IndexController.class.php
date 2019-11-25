@@ -1,5 +1,5 @@
 <?php
-namespace Smallapp3\Controller;
+namespace Smallapp4\Controller;
 use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;

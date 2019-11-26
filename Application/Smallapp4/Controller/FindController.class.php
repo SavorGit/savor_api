@@ -72,7 +72,7 @@ class FindController extends CommonController{
             $where['hotel.flag'] = 0;
             $where['hotel.state'] = 1;
             $where['user.status'] = 1;
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $res_top = $m_public->getList($fields, $where,'id desc','');
             $top_list = $this->handleFindlist($res_top,$openid,2);
         }
@@ -131,7 +131,7 @@ class FindController extends CommonController{
             $where['hotel.flag'] = 0;
             $where['hotel.state'] = 1;
             $where['user.status'] = 1;
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $res_choice = $m_public->getList($fields, $where,'id desc',"0,$choice_num");
 
             $choice_list = array();
@@ -144,7 +144,7 @@ class FindController extends CommonController{
 
             //公开内容
             $public_num = $content_num['num']*$content_num['3'];
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2,'a.res_type'=>2);
             $not_ids = array_merge($choice_ids,$find_topids);
             if(!empty($not_ids)){
@@ -186,7 +186,7 @@ class FindController extends CommonController{
                     $not_ids[]=$v['id'];
                 }
             }
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2,'a.res_type'=>2);
             if(!empty($not_ids)){
                 $public_ids = array_unique($not_ids);
@@ -210,7 +210,7 @@ class FindController extends CommonController{
         $pagesize = 10;
         $offset = ($page-1)*$pagesize;
 
-        $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+        $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
         $where = array('a.status'=>2,'a.res_type'=>1);
         $where['box.flag']   = 0;
         $where['box.state']  = 1;

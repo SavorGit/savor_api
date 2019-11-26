@@ -1,7 +1,5 @@
 <?php
 namespace Smallapp4\Controller;
-use Think\Controller;
-use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
 class IndexController extends CommonController{
@@ -40,27 +38,29 @@ class IndexController extends CommonController{
             $key_arr = explode(':', $keys);
             $box_mac = $key_arr['2'];
             $m_box = new \Common\Model\BoxModel();
-            $map = array();
-            $map['a.mac'] = $box_mac;
-            $map['a.flag']=0;
-            $map['a.state'] =1;
-            $map['d.flag'] =0;
-            $map['d.state'] = 1;
-            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.is_open_simple', $map);
+            $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
             $hotel_info = $rets[0];
             $code_info = $redis->get($keys);
             $code_info = json_decode($code_info,true);
-            $this->to_back(array('is_have'=>$code_info['is_have'],
-                    'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
-                    'room_name'=>$hotel_info['room_name'],
-                    'is_open_simple'=>$hotel_info['is_open_simple']
-                )
-            );
-        }else {
-            $this->to_back(array('is_have'=>0));
-        }
 
+            $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],'room_name'=>$hotel_info['room_name']);
+            $data['wifi_name'] = $hotel_info['wifi_name'];
+            $data['wifi_password'] = $hotel_info['wifi_password'];
+            $redis->select(14);
+            $box_key = "box:forscreentype:$box_mac";
+            $forscreen_type = $redis->get($box_key);
+            if(empty($forscreen_type)){
+                $forscreen_type = $m_box->checkForscreenTypeByMac($box_mac);
+                $redis->select($box_key,$forscreen_type);
+            }
+            $data['forscreen_type'] = $forscreen_type;
+        }else{
+            $data = array('is_have'=>0);
+        }
+        $this->to_back($data);
     }
+
 
     public function recodeQrcodeLog(){
         $openid = $this->params['openid'];

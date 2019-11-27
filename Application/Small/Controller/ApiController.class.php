@@ -170,6 +170,7 @@ class ApiController extends CommonController{
                         room.hotel_id,box.mac as box_mac,box.state,box.flag,
                         box.switch_time,box.volum as volume ";
             $box_arr = $boxModel->getInfoByHotelid($hotelid, $field);
+            
             $redis->set($cache_key, json_encode($box_arr),7200);
         }
         $cache_key = C('SYSTEM_CONFIG');
@@ -670,7 +671,7 @@ class ApiController extends CommonController{
         foreach ($sys_arr as $vk=>$val) {
             if($val['config_key'] == 'system_ad_volume') {
                 if( $val['config_value'] === '' ) {
-                    $da['volume'] = $vol['system_ad_volume'];
+                    $da['volume'] = '';
                 } else {
                     $da['volume'] = intval($val['config_value']);
                 }
@@ -690,7 +691,7 @@ class ApiController extends CommonController{
         if($res){
             foreach ($res as $vk=>$val) {
                 $stime = $val['switch_time'];
-                $res[$vk]['volume'] =  $da['volume'];
+                $res[$vk]['volume'] = empty($da['volume'])? $val['volume']   : $da['volume'];
                 $res[$vk]['switch_time'] = $da['switch_time']<0?(($stime==='')?$vol['system_switch_time']:$stime):$da['switch_time'];
 
                 foreach($val as $rk=>$rv){
@@ -704,7 +705,6 @@ class ApiController extends CommonController{
                 }
             }
         }
-
 
 
         return $res;

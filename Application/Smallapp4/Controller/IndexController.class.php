@@ -1,7 +1,9 @@
 <?php
 namespace Smallapp4\Controller;
+use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
+use Common\Lib\Qrcode;
 class IndexController extends CommonController{
     /**
      * @desc 构造函数

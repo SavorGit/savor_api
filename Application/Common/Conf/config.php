@@ -287,6 +287,7 @@ return array(
     'SAPP_FIND_TOP'=>'smallapp:findtop',
     'SAPP_HAS_FIND'=>'smallapp:hasfind:',
     'SAPP_OPTIMIZE_PROGRAM'=>'smallapp:optimize:program',
+    'SAPP_FIND_PROGRAM'=>'smallapp:findprogram',
     'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
 
     'UMENBAI_API_CONFIG' => array(

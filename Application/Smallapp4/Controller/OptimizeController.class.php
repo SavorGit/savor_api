@@ -53,7 +53,8 @@ class OptimizeController extends CommonController{
             }
 
             $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'duration'=>$media_info['duration'],'tx_url'=>$media_info['oss_addr'],
-                'filename'=>$oss_path_info['basename'],'intro'=>$v['intro'],'label'=>array());
+                'filename'=>$oss_path_info['basename'],'forscreen_url'=>$oss_path,'resource_size'=>$media_info['oss_filesize'],
+                'intro'=>$v['intro'],'label'=>array());
             if(!empty($v['label'])){
                 $dlabel = json_decode($v['label'],true);
                 foreach ($dlabel as $dv){

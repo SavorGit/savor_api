@@ -50,12 +50,13 @@ class ContentController extends CommonController{
             $v['avatarUrl'] = $res_user['avatarUrl'];
             $imgs_info = json_decode($res_forscreen['imgs'],true);
             $forscreen_url = $imgs_info[0];
+            $res_url = $oss_host.$forscreen_url;
             if($v['res_type']==1){
-                $res_url = $oss_host.$forscreen_url;
+                $img_url = $res_url;
             }else{
-                $res_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
             }
-            $pubdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$res_forscreen['duration'],
+            $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$res_forscreen['duration'],
                 'resource_size'=>$res_forscreen['resource_size'],'res_id'=>$res_forscreen['resource_id']);
             $addr_info = pathinfo($forscreen_url);
             $pubdetail['filename'] = $addr_info['basename'];

@@ -379,6 +379,7 @@ class ProgramController extends CommonController{
             $period = getMillisecond();
             $data = array('period'=>$period,'datalist'=>array());
         }
+        $data['type'] =2;
         $this->to_back($data);
     }
 
@@ -521,7 +522,7 @@ class ProgramController extends CommonController{
             $period = getMillisecond();
             $redis->set($program_key,$period);
         }
-        $res = array('period'=>$period,'datalist'=>$program_list);
+        $res = array('period'=>$period,'type'=>1,'datalist'=>$program_list);
         $this->to_back($res);
     }
 }

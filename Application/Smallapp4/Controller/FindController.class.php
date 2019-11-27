@@ -104,7 +104,7 @@ class FindController extends CommonController{
             $order = " id desc";
             $program_info = $m_program_list->getInfo('id', $where, $order);
             $menu_id = $program_info['id'];
-            $fields = 'ads.id,ads.name title,ads.img_url,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
+            $fields = 'ads.id,ads.name title,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
             $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
             $where['media.id']  = array('not in',array('17614','19533'));
             $where['media.type'] = 1;
@@ -113,6 +113,7 @@ class FindController extends CommonController{
             $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
             $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$demand_num");
             $demand_list = array();
+            $m_media = new \Common\Model\MediaModel();
             foreach($res_demand as $v){
                 $create_time = viewTimes(strtotime($v['create_time']));
                 $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
@@ -124,11 +125,26 @@ class FindController extends CommonController{
                 $dinfo['collect_num']= $rets['collect_num'];
                 $dinfo['share_num']  = $rets['share_num'];
 
-                $pdetail = array('res_url'=>$oss_host.$v['oss_addr'],'forscreen_url'=>$v['oss_addr'],'duration'=>intval($v['duration']),
-                    'resource_size'=>$v['resource_size']);
-                $oss_info = pathinfo($v['oss_addr']);
+                $res_url = $oss_host.$v['oss_addr'];
+                $forscreen_url = $v['oss_addr'];
+                $duration = intval($v['duration']);
+                $resource_size = $v['resource_size'];
+                $res_id = $v['media_id'];
+
+                if($v['portraitmedia_id']){
+                    $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
+                    $res_url = $res_media['oss_addr'];
+                    $forscreen_url = $res_media['oss_path'];
+                    $duration = intval($res_media['duration']);
+                    $resource_size = $res_media['oss_filesize'];
+                    $res_id = $res_media['id'];
+                }
+
+                $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
+                    'resource_size'=>$resource_size,'res_id'=>$res_id);
+                $oss_info = pathinfo($forscreen_url);
                 $pdetail['filename'] = $oss_info['basename'];
-                $pdetail['res_id'] = $v['media_id'];
+
                 $img_url = $v['img_url']? $v['img_url'] :'media/resource/EDBAEDArdh.png';
                 $pdetail['img_url'] = $oss_host.$img_url;
                 $dinfo['pubdetail'] = array($pdetail);

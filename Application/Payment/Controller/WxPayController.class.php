@@ -17,7 +17,7 @@ class WxPayController extends BaseController{
         $where = array('status'=>array('in','4,6'));
         $where['user_id'] = array('neq',$operation_uid);
         $where['add_time'] = array('egt','2019-03-05 00:00:00');
-        $res_order = $m_order->getDataList('id,user_id,pay_fee,add_time',$where,'id asc');
+        $res_order = $m_order->getDataList('id,user_id,pay_fee,rate_fee,add_time',$where,'id asc');
         $nowdtime = date('Y-m-d H:i:s');
         if(empty($res_order)){
             echo $nowdtime.' refund over'."\r\n";
@@ -32,6 +32,7 @@ class WxPayController extends BaseController{
         foreach ($res_order as $v){
             $trade_no = $v['id'];
             $pay_fee = $v['pay_fee'];
+            $rate_fee = $v['rate_fee'];
             $order_time = strtotime($v['add_time']);
             if($now_time-$order_time<$diff_time){
                 continue;
@@ -43,7 +44,7 @@ class WxPayController extends BaseController{
                     $get_money+=$vm['money'];
                 }
             }
-            $refund_money = sprintf("%01.2f",$pay_fee-$get_money);
+            $refund_money = sprintf("%01.2f",$pay_fee-$rate_fee-$get_money);
             if($refund_money>0){
                 $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$trade_no));
                 if(!empty($res_orderserial) && !empty($res_orderserial['serial_order'])){

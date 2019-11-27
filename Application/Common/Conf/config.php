@@ -36,7 +36,7 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14'), //模块配置
+	                                 'Smallsale','Smallsale14','Smallapp4'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -208,6 +208,7 @@ return array(
     'ALIYUN_SMS_CONFIG' => array(
         'send_invoice_addr_templateid'=>'SMS_176935152',
         'activity_goods_send_salemanager'=>'SMS_176527162',
+        'activity_goods_send_salemanager_nolink'=>'SMS_177547510',
         'wx_money_not_enough_templateid'=>'SMS_177256437',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
@@ -286,6 +287,7 @@ return array(
     'SAPP_FIND_TOP'=>'smallapp:findtop',
     'SAPP_HAS_FIND'=>'smallapp:hasfind:',
     'SAPP_OPTIMIZE_PROGRAM'=>'smallapp:optimize:program',
+    'SAPP_FIND_PROGRAM'=>'smallapp:findprogram',
     'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
 
     'UMENBAI_API_CONFIG' => array(

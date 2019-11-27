@@ -367,6 +367,22 @@ class ProgramController extends CommonController{
         $this->to_back($res);
     }
 
+    public function getFindcontentProgramList(){
+        $find_program_key = C('SAPP_FIND_PROGRAM');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res_cache = $redis->get($find_program_key);
+        if(!empty($res_cache)){
+            $res_cache = json_decode($res_cache,true);
+            $data = array('period'=>$res_cache['period'],'datalist'=>$res_cache['datalist']);
+        }else{
+            $period = getMillisecond();
+            $data = array('period'=>$period,'datalist'=>array());
+        }
+        $data['type'] =2;
+        $this->to_back($data);
+    }
+
 
     public function getSelectcontentProgramList(){
         $box_mac = $this->params['box_mac'];
@@ -506,7 +522,7 @@ class ProgramController extends CommonController{
             $period = getMillisecond();
             $redis->set($program_key,$period);
         }
-        $res = array('period'=>$period,'datalist'=>$program_list);
+        $res = array('period'=>$period,'type'=>1,'datalist'=>$program_list);
         $this->to_back($res);
     }
 }

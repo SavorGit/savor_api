@@ -294,6 +294,9 @@ class IndexController extends CommonController{
             $cache_key = C('SAPP_SCRREN_SHARE').$box_mac.':'.$openid.":".$forscreen_id;
             $redis->rpush($cache_key, json_encode($map));
         }
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $m_userintegral->activityRewardIntegral($openid,$box_mac);
+
         $this->to_back(10000);
     }
     /**

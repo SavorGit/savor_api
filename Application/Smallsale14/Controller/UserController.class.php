@@ -448,6 +448,9 @@ class UserController extends CommonController{
                     $info['room_name'] = $res_goods['name'];
                     $content = $all_types[$v['type']];
                     break;
+                case 6:
+                    $content = $all_types[$v['type']];
+                    break;
                 default:
                     $content = "";
             }

@@ -248,7 +248,8 @@ class IndexController extends CommonController{
         $res_eup_time  = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
         $is_pub_hotelinfo = $this->params['is_pub_hotelinfo'] ?$this->params['is_pub_hotelinfo']:0;
         $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;
-        $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
+        $duration      = floatval($this->params['duration']);
+        $duration      = !empty($duration) ? $duration : 0.00;
         $data = array();
         $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;

@@ -313,5 +313,6 @@ class IndexController extends CommonController{
         $data['box_mac'] = $box_mac;
         $data['err_info'] = $err_info;
         $m_err_info->addInfo($data);
+        $this->to_back(10000);
     }
 }

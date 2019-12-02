@@ -72,7 +72,7 @@ class FindController extends CommonController{
             $where['hotel.state'] = 1;
             $where['user.status'] = 1;
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-            $res_top = $m_public->getList($fields, $where,'id desc','');
+            $res_top = $m_public->getList($fields, $where,'a.id desc','');
             if(!empty($res_top)){
                 $top_list = $this->handleFindlist($res_top,$openid,2);
             }
@@ -90,12 +90,13 @@ class FindController extends CommonController{
         }else{
             $is_update_findprogram = 1;
         }
-
         $find_key = C('SAPP_FIND_CONTENT');
         $res_cache = $redis->get($find_key);
         if(!empty($res_cache)){
+            $is_expire = 0;
             $find_data = json_decode($res_cache,true);
         }else{
+            $is_expire = 1;
             $is_update_findprogram = 1;
             //点播内容 获取最新一期设置为小程序的节目单
             $demand_num = $content_num['num']*$content_num['1'];
@@ -134,10 +135,10 @@ class FindController extends CommonController{
                 if($v['portraitmedia_id']){
                     $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
                     $res_url = $res_media['oss_addr'];
-                    $forscreen_url = $res_media['oss_path'];
-                    $duration = intval($res_media['duration']);
-                    $resource_size = $res_media['oss_filesize'];
-                    $res_id = $res_media['id'];
+//                    $forscreen_url = $res_media['oss_path'];
+//                    $duration = intval($res_media['duration']);
+//                    $resource_size = $res_media['oss_filesize'];
+//                    $res_id = $res_media['id'];
                 }
 
                 $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
@@ -210,6 +211,18 @@ class FindController extends CommonController{
         if($page<=$all_page){
             $offset = ($page-1)*$pagesize;
             $res_data = array_slice($res_data,$offset,$pagesize);
+            if($is_expire==0){
+                foreach ($res_data as $k=>$v){
+                    if($v['type']==1){
+                        $rets = $this->getFindnums($openid,$v['id'],3);
+                    }else{
+                        $rets = $this->getFindnums($openid,$v['forscreen_id'],2);
+                    }
+                    $res_data[$k]['is_collect'] = $rets['is_collect'];
+                    $res_data[$k]['collect_num'] = $rets['collect_num'];
+                    $res_data[$k]['share_num']  = $rets['share_num'];
+                }
+            }
         }else{
             $nowpage = $page-$all_page;
             $offset = ($nowpage-1)*$pagesize;

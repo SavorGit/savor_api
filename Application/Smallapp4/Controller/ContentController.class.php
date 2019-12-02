@@ -24,7 +24,7 @@ class ContentController extends CommonController{
 
     public function getHotplaylist(){
         $page = intval($this->params['page']);
-        $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):5;
+        $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):6;
         $all_nums = $page * $pagesize;
         $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
         $where = array('type'=>4);
@@ -40,28 +40,32 @@ class ContentController extends CommonController{
 
         foreach ($res_play as $v){
             $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['forscreen_id']));
-            $v['res_nums'] = $m_forscreen->getWhereCount(array('forscreen_id'=>$res_forscreen['forscreen_id']));
             $v['res_type'] = $res_forscreen['resource_type'];
-
             $where = array('openid'=>$res_forscreen['openid']);
             $fields = 'id user_id,avatarUrl,nickName';
             $res_user = $m_user->getOne($fields, $where);
             $v['nickName'] = $res_user['nickName'];
             $v['avatarUrl'] = $res_user['avatarUrl'];
-            $imgs_info = json_decode($res_forscreen['imgs'],true);
-            $forscreen_url = $imgs_info[0];
-            $res_url = $oss_host.$forscreen_url;
-            if($v['res_type']==1){
-                $img_url = $res_url;
-            }else{
-                $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+            $fields_forscreen = 'imgs,duration,resource_size,resource_id';
+            $all_forscreen = $m_forscreen->getWheredata($fields_forscreen,array('forscreen_id'=>$res_forscreen['forscreen_id']),'id asc');
+            $v['res_nums'] = count($all_forscreen);
+            $pubdetails = array();
+            foreach ($all_forscreen as $dv){
+                $imgs_info = json_decode($dv['imgs'],true);
+                $forscreen_url = $imgs_info[0];
+                $res_url = $oss_host.$forscreen_url;
+                if($v['res_type']==1){
+                    $img_url = $res_url;
+                }else{
+                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                }
+                $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
+                    'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
+                $addr_info = pathinfo($forscreen_url);
+                $pubdetail['filename'] = $addr_info['basename'];
+                $pubdetails[]=$pubdetail;
             }
-            $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$res_forscreen['duration'],
-                'resource_size'=>$res_forscreen['resource_size'],'res_id'=>$res_forscreen['resource_id']);
-            $addr_info = pathinfo($forscreen_url);
-            $pubdetail['filename'] = $addr_info['basename'];
-            $v['pubdetail'][] = $pubdetail;
-
+            $v['pubdetail'] = $pubdetails;
             $datalist[] = $v;
         }
         $data = array('datalist'=>$datalist);

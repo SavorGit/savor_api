@@ -279,6 +279,7 @@ return array(
     'SAPP_SALE'=>'smallappsale:',
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
     'SAPP_SALE_INVITE_QRCODE'=>'smallappsale:inviteqrcode:',
+    'SAPP_SALE_OPGOODS_INTEGRAL'=>'smallappsale:opgoodsintegral:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
@@ -394,6 +395,7 @@ return array(
         3=>'销售',
         4=>'兑换',
         5=>'退回',
+        6=>'活动促销',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式

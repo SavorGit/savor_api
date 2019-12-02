@@ -28,7 +28,7 @@ class GoodsController extends CommonController{
                 break;
             case 'programPlay':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'goods_id'=>1001);
+                $this->valid_fields = array('box_mac'=>1001,'goods_id'=>1001,'openid'=>1002);
                 break;
             case 'getdetail':
                 $this->is_verify = 1;
@@ -573,6 +573,7 @@ class GoodsController extends CommonController{
     }
 
     public function programPlay(){
+        $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $goods_id = intval($this->params['goods_id']);
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
@@ -588,7 +589,8 @@ class GoodsController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        $field = 'a.id as box_id,d.id as hotel_id';
+        $box_info = $m_box->getBoxInfo($field, $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
@@ -619,6 +621,10 @@ class GoodsController extends CommonController{
             $redis->set($program_key,json_encode($period_data));
         }
         $redis->set($cache_key,json_encode($data));
+
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $m_userintegral->activityRewardIntegral($openid,$box_mac,$goods_id,$hotel_id);
+
         $this->to_back(array());
     }
 

@@ -22,7 +22,7 @@ class WithdrawController extends CommonController{
     public function getMoneyList(){
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id);
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
         if(empty($res_staff)){
@@ -68,8 +68,7 @@ class WithdrawController extends CommonController{
         }else{
             $order_exchange = array();
         }
-
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id);
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
         if(empty($res_staff)){

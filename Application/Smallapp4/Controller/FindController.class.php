@@ -245,7 +245,7 @@ class FindController extends CommonController{
             $order = 'a.id desc';
             $limit = "$offset,$pagesize";
             $res_public = $m_public->getList($fields, $where, $order,$limit);
-            $res_data = $this->handleFindlist($res_public,$openid);
+            $res_data = $this->handleFindlist($res_public,$openid,3);
         }
         if($page==1 && !empty($top_list)){
             $res_data = array_merge($top_list,$res_data);
@@ -1112,6 +1112,8 @@ class FindController extends CommonController{
     private function getFindnums($openid,$res_id,$type){
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
+        $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+
         $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
         $is_collect = $m_collect->countNum($map);
         if(empty($is_collect)){
@@ -1121,7 +1123,8 @@ class FindController extends CommonController{
         }
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $collect_num = $m_collect->countNum($map);
-
+        $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
+        $collect_num = $collect_num+intval($ret['nums']);
         //分享个数
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $share_num = $m_share->countNum($map);

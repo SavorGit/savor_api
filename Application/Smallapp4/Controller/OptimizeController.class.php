@@ -25,7 +25,7 @@ class OptimizeController extends CommonController{
     public function getOptimizeList(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
-        $pagesize = 20;
+        $pagesize = 10;
         $all_nums = $page * $pagesize;
         $type = 10;//10官方活动促销,20我的活动,30积分兑换现金,40优选
         $m_goods = new \Common\Model\Smallapp\GoodsModel();

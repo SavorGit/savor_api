@@ -78,7 +78,7 @@ class BoxModel extends Model{
                 ->find();
             $forscreen_type = 1;//1外网(主干) 2直连(极简)
             if(!empty($res_box)){
-                $box_forscreen = "{$res_box['is_sapp_forscreen']}.'-'.{$res_box['is_open_simple']}";
+                $box_forscreen = "{$res_box['is_sapp_forscreen']}-{$res_box['is_open_simple']}";
                 switch ($box_forscreen){
                     case '1-0':
                         $forscreen_type = 1;
@@ -97,6 +97,7 @@ class BoxModel extends Model{
                         $forscreen_type = 1;
                 }
             }
+
             $redis->set($box_key,$forscreen_type);
         }
         return $forscreen_type;

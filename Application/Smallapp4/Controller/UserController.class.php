@@ -94,8 +94,6 @@ class UserController extends CommonController{
         $openid = $this->params['openid'];
         $page   = $this->params['page'] ? intval($this->params['page']) : 1;
         //获取用户信息
-        //$m_user = new \Common\Model\Smallapp\UserModel();
-        //$user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $page_size = 10;
         $limit = "limit 0,".$page*$page_size;
@@ -144,13 +142,12 @@ class UserController extends CommonController{
             }else if($v['type']==3){
                 $collect_info[$key]['res_type'] = 3;
                 $info = $m_ads->alias('a')
-                ->field("a.id,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url")
+                ->field("a.id,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
                 ->join('savor_media media on a.media_id=media.id')
                 ->where(array('a.id'=>$v['res_id']))
                 ->find();
                 $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
                 $collect_info[$key]['list'] = $info;
-    
             }
             $collect_info[$key]['create_time'] = date('n月j日',strtotime($v['create_time']));
     

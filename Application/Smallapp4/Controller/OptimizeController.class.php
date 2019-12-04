@@ -70,7 +70,7 @@ class OptimizeController extends CommonController{
                 foreach ($cover_imgmedia_ids as $cv){
                     if(!empty($cv)){
                         $media_info = $m_media->getMediaInfoById($cv);
-                        $cover_imgs[] = $media_info['oss_addr'];
+                        $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
                     }
                 }
             }

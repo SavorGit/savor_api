@@ -73,9 +73,9 @@ class ContentController extends CommonController{
                 $forscreen_url = $imgs_info[0];
                 $res_url = $oss_host.$forscreen_url;
                 if($v['res_type']==1){
-                    $img_url = $res_url;
+                    $img_url = $res_url."?x-oss-process=image/quality,Q_50";
                 }else{
-                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
                 }
                 $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
                     'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
@@ -232,10 +232,11 @@ class ContentController extends CommonController{
                 $oss_path = $media_info['oss_path'];
                 $oss_path_info = pathinfo($oss_path);
                 if($media_info['type']==2){
-                    $img_url = $media_info['oss_addr'];
+                    $img_url = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
                 }else{
-                    $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                    $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
                 }
+
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'duration'=>$media_info['duration'],'tx_url'=>$media_info['oss_addr'],
                     'filename'=>$oss_path_info['basename'],'forscreen_url'=>$oss_path,'resource_size'=>$media_info['oss_filesize'],
                     'intro'=>$v['intro'],'label'=>array());
@@ -254,7 +255,7 @@ class ContentController extends CommonController{
                     foreach ($cover_imgmedia_ids as $cv){
                         if(!empty($cv)){
                             $media_info = $m_media->getMediaInfoById($cv);
-                            $cover_imgs[] = $media_info['oss_addr'];
+                            $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
                         }
                     }
                 }

@@ -47,9 +47,9 @@ class OptimizeController extends CommonController{
             $oss_path_info = pathinfo($oss_path);
 
             if($media_info['type']==2){
-                $img_url = $media_info['oss_addr'];
+                $img_url = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
             }else{
-                $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
             }
 
             $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'duration'=>$media_info['duration'],'tx_url'=>$media_info['oss_addr'],

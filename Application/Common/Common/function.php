@@ -7,6 +7,15 @@ function http_host(){
     return $http.$_SERVER['HTTP_HOST'];
 }
 
+function check_phone_os(){
+    $otype = 1;//1Android 2ios
+    $ua = $_SERVER['HTTP_USER_AGENT'];
+    if(preg_match('/IOS/i', $ua) || preg_match('/iphone/i', $ua) || preg_match('/ipad/i', $ua) || preg_match('/ipod/i', $ua)){
+        $otype = 2;
+    }
+    return $otype;
+}
+
 function wx_sec_check($url,$duration=0){
     $img_urls = array();
     $typeinfo = C('RESOURCE_TYPEINFO');

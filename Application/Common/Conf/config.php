@@ -285,6 +285,7 @@ return array(
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
     'SAPP_FIND_CONTENT'=>'smallapp:findcontent',
+    'SAPP_FIND_CONTENTNEW'=>'smallapp:findcontentnew',
     'SAPP_FIND_PUBLICIDS'=>'smallapp:publicids',
     'SAPP_FIND_TOP'=>'smallapp:findtop',
     'SAPP_HAS_FIND'=>'smallapp:hasfind:',

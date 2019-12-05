@@ -47,7 +47,7 @@ class OptimizeController extends CommonController{
             $oss_path_info = pathinfo($oss_path);
 
             if($media_info['type']==2){
-                $img_url = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
+                $img_url = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
             }else{
                 $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
             }
@@ -70,7 +70,7 @@ class OptimizeController extends CommonController{
                 foreach ($cover_imgmedia_ids as $cv){
                     if(!empty($cv)){
                         $media_info = $m_media->getMediaInfoById($cv);
-                        $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/quality,Q_50";
+                        $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
             }
@@ -121,8 +121,8 @@ class OptimizeController extends CommonController{
             }
             $hotel_id = $box_info[0]['hotel_id'];
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-            $data = array('hotel_id'=>$hotel_id,'goods_id'=>$goods_id,'type'=>2);
-            $res_hotelgoods = $m_hotelgoods->getInfo($data);
+            $hdata = array('hotel_id'=>$hotel_id,'goods_id'=>$goods_id,'type'=>2);
+            $res_hotelgoods = $m_hotelgoods->getInfo($hdata);
             if(!empty($res_hotelgoods)){
                 $is_storebuy = 1;
             }

@@ -57,6 +57,10 @@ class ContentController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
 
         foreach ($res_play as $v){
+            if($v['play_nums']>100000){
+                $v['play_nums'] = floor($v['play_nums']/10000).'w';
+            }
+
             $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['forscreen_id']));
             $v['res_type'] = $res_forscreen['resource_type'];
             $where = array('openid'=>$res_forscreen['openid']);
@@ -75,7 +79,7 @@ class ContentController extends CommonController{
                 if($v['res_type']==1){
                     $img_url = $res_url."?x-oss-process=image/quality,Q_50";
                 }else{
-                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
+                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_5000,f_jpg,w_450,m_fast';
                 }
                 $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
                     'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
@@ -83,6 +87,7 @@ class ContentController extends CommonController{
                 $pubdetail['filename'] = $addr_info['basename'];
                 $pubdetails[]=$pubdetail;
             }
+            $v['is_show'] = 1;
             $v['pubdetail'] = $pubdetails;
             $datalist[] = $v;
         }
@@ -164,9 +169,6 @@ class ContentController extends CommonController{
             $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
             $hotel_box_type_arr = array_keys($hotel_box_type_arr);
             $m_hotel = new \Common\Model\HotelModel();
-//        $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,b.food_style_id,
-//                   b.avg_expense,concat('".$oss_host."',c.`oss_addr`) as img_url,
-//                   d.name food_name";
             $fields = "a.id hotel_id,a.name,a.addr,a.tel,
                    b.avg_expense,concat('".$oss_host."',c.`oss_addr`) as img_url,
                    d.name food_name";
@@ -213,7 +215,7 @@ class ContentController extends CommonController{
             $goods_list = json_decode($res_goods,true);
         }else{
             $page = 1;
-            $pagesize = 10;
+            $pagesize = 5;
             $all_nums = $page * $pagesize;
             $m_goods = new \Common\Model\Smallapp\GoodsModel();
             $fields = 'id,name,media_id,intro,label,cover_imgmedia_ids';
@@ -281,7 +283,7 @@ class ContentController extends CommonController{
             $user_data = json_decode($res_user,true);
         }else{
             //获取我的公开
-            $page_size = 6;
+            $page_size = 3;
             $limit = "limit 0,".$page_size;
             $fields = 'a.forscreen_id,a.res_type';
             $where = array();

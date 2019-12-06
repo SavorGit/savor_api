@@ -68,7 +68,7 @@ class HotelController extends CommonController{
         $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in',$hotel_box_type_arr);
-        $where['a.id'] = array('not in','7,482,504,791,508,844,845,597');
+        $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883');
         $order = " a.id asc";
         $limit = " 0 ,".$offset;
         

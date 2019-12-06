@@ -35,10 +35,10 @@ class FindController extends CommonController{
                 break;
             case 'videos':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1002,'page'=>1001);
             case 'images':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1002,'page'=>1001);
         }
         parent::_init_();
     }

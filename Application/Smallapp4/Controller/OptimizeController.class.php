@@ -12,7 +12,7 @@ class OptimizeController extends CommonController{
         switch(ACTION_NAME) {
             case 'getOptimizeList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('page'=>1001,'openid'=>1001);
+                $this->valid_fields = array('page'=>1001,'openid'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -73,6 +73,9 @@ class OptimizeController extends CommonController{
                         $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
+            }
+            if(empty($cover_imgs)){
+                $cover_imgs[] = $img_url;
             }
             $dinfo['cover_imgs'] = $cover_imgs;
 
@@ -199,13 +202,15 @@ class OptimizeController extends CommonController{
     private function getFindnums($openid,$res_id,$type){
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
-        $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
-        $is_collect = $m_collect->countNum($map);
-        if(empty($is_collect)){
-            $is_collect = 0;
-        }else {
-            $is_collect = 1;
+        $is_collect = 0;
+        if(!empty($openid)){
+            $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
+            $is_collect = $m_collect->countNum($map);
+            if(!empty($is_collect)){
+                $is_collect = 1;
+            }
         }
+
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $collect_num = $m_collect->countNum($map);
 

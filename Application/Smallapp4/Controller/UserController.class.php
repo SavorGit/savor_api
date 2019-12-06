@@ -135,7 +135,7 @@ class UserController extends CommonController{
                         $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
                         $collect_info[$key]['list'] = array($pubdetails[0]);
                     }else {
-                        $collect_info[$key]['list'] = array($pubdetails);
+                        $collect_info[$key]['list'] = $pubdetails;
                     }
                     $collect_info[$key]['res_num'] = count($pubdetails);
                 }

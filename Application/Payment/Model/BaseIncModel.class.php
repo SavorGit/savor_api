@@ -161,8 +161,7 @@ class BaseIncModel extends Model{
                         $all_box = $m_netty->getPushBox(2,$box_mac);
                         if(!empty($all_box)){
                             foreach ($all_box as $v){
-                                $sys_time = getMillisecond();
-                                $qrinfo =  $trade_no.'_'.$v.'_'.$sys_time;;
+                                $qrinfo =  $trade_no.'_'.$v;
                                 $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                                 $message = array('action'=>121,'nickName'=>$user_info['nickName'],
                                     'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);

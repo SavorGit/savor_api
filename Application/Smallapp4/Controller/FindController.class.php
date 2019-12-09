@@ -321,20 +321,25 @@ class FindController extends CommonController{
                 $findprogram_data = $m_public->getList($fields, $where,'a.id desc','');
             }
         }
-        $findprogram_num = 6;
+        $findprogram_num = 5;
         $last_num = $findprogram_num-count($findprogram_data);
+        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         if($last_num>0){
             foreach ($find_data as $fv){
                 if(in_array($fv['type'],array(2,3))){
                     if(count($findprogram_data)>$findprogram_num){
                         break;
                     }
-                    $findprogram_data[]=$fv;
+                    $where = array('forscreen_id'=>$fv['forscreen_id']);
+                    $res_findscreen = $m_forscreenrecord->getWheredata('resource_size,md5_file',$where,'id desc');
+                    if(!empty($res_findscreen) && !empty($res_findscreen[0]['resource_size']) && !empty($res_findscreen[0]['md5_file'])){
+                        $findprogram_data[]=$fv;
+                    }
+
                 }
             }
         }
         $datalist = array();
-        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         foreach ($findprogram_data as $fpv){
             $info = array('id'=>$fpv['id'],'media_type'=>1,'nickName'=>$fpv['nickName'],'avatarUrl'=>$fpv['avatarUrl']);
             $where = array('forscreen_id'=>$fpv['forscreen_id']);

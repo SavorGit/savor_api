@@ -319,7 +319,6 @@ class WelcomeController extends CommonController{
             $resource_info[$v['id']]=$v;
         }
         $message = array('action'=>$action,'id'=>$id,'content'=>$res_welcome['content'],
-            'rotate'=>intval($res_welcome['rotate']),
             'wordsize'=>$resource_info[$wordsize_id]['tv_wordsize'],'color'=>$resource_info[$color_id]['color'],
             'finish_time'=>$res_welcome['finish_time']);
         $m_media = new \Common\Model\MediaModel();
@@ -329,7 +328,11 @@ class WelcomeController extends CommonController{
             $message['img_oss_addr'] = $res_media['oss_addr'];
         }else{
             $message['img_id'] = 0;
-            $message['img_oss_addr'] = 'http://'.C('OSS_HOST')."/{$res_welcome['image']}";
+            $img_oss_addr = 'http://'.C('OSS_HOST')."/{$res_welcome['image']}";
+            if($res_welcome['rotate']){
+                $img_oss_addr.="?x-oss-process=image/rotate,{$res_welcome['rotate']}";
+            }
+            $message['img_oss_addr'] = $img_oss_addr;
         }
         if(isset($resource_info[$music_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['music_id']);

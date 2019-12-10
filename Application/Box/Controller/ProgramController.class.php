@@ -27,6 +27,10 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'getWelcomeResource':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
                  
         }
         parent::_init_();
@@ -523,6 +527,36 @@ class ProgramController extends CommonController{
             $redis->set($program_key,$period);
         }
         $res = array('period'=>$period,'type'=>1,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+    public function getWelcomeResource(){
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $program_key = C('SAPP_SALE_WELCOME_RESOURCE');
+        $period = $redis->get($program_key);
+        if(empty($period)){
+            $period = getMillisecond();
+            $redis->set($program_key,$period);
+        }
+        $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
+        $fields = 'id,name,media_id,type';
+        $where = array('status'=>1);
+        $where['type'] = array('in',array(3,4));
+        $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
+        $data_list = array();
+        if(!empty($res_resource)){
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_resource as $v){
+                $res_media = $m_media->getMediaInfoById($v['media_id']);
+                $oss_addr = $res_media['oss_addr'];
+                $media_type = $res_media['type'];
+                $data_list[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'md5'=>$res_media['md5'],
+                    'type'=>$v['type'],'media_type'=>$media_type);
+            }
+        }
+
+        $res = array('period'=>$period,'datalist'=>$data_list);
         $this->to_back($res);
     }
 }

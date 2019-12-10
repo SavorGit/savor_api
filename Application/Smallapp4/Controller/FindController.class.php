@@ -35,10 +35,10 @@ class FindController extends CommonController{
                 break;
             case 'videos':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1002,'page'=>1001);
             case 'images':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1002,'page'=>1001);
         }
         parent::_init_();
     }
@@ -90,7 +90,7 @@ class FindController extends CommonController{
         }else{
             $is_update_findprogram = 1;
         }
-        $find_key = C('SAPP_FIND_CONTENT');
+        $find_key = C('SAPP_FIND_CONTENTNEW');
         $res_cache = $redis->get($find_key);
         if(!empty($res_cache)){
             $is_expire = 0;
@@ -104,8 +104,9 @@ class FindController extends CommonController{
             $where  = array('is_small_app'=>1);
             $order = " id desc";
             $program_info = $m_program_list->getInfo('id', $where, $order);
+
             $menu_id = $program_info['id'];
-            $fields = 'ads.id,ads.name title,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
+            $fields = 'ads.id,ads.name title,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
             $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
             $where['media.id']  = array('not in',array('17614','19533'));
             $where['media.type'] = 1;
@@ -119,7 +120,11 @@ class FindController extends CommonController{
                 $create_time = viewTimes(strtotime($v['create_time']));
                 $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
                     'hotel_name'=>'','avatarUrl'=>$default_avatar,'nickName'=>'小热点');
-
+                if(!empty($v['content'])){
+                    $dinfo['content'] = $v['content'];
+                }else{
+                    $dinfo['content'] = '';
+                }
                 //获取是否收藏、分享个数、收藏个数、获取播放次数
                 $rets = $this->getFindnums($openid,$v['id'],3);
                 $dinfo['is_collect'] = $rets['is_collect'];
@@ -135,10 +140,6 @@ class FindController extends CommonController{
                 if($v['portraitmedia_id']){
                     $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
                     $res_url = $res_media['oss_addr'];
-//                    $forscreen_url = $res_media['oss_path'];
-//                    $duration = intval($res_media['duration']);
-//                    $resource_size = $res_media['oss_filesize'];
-//                    $res_id = $res_media['id'];
                 }
 
                 $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
@@ -236,7 +237,7 @@ class FindController extends CommonController{
             $where = array('a.status'=>2,'a.res_type'=>2);
             if(!empty($not_ids)){
                 $public_ids = array_unique($not_ids);
-                $where['a.id'] = array('in',$public_ids);
+                $where['a.id'] = array('not in',$public_ids);
             }
             $where['box.flag']   = 0;
             $where['box.state']  = 1;
@@ -245,7 +246,7 @@ class FindController extends CommonController{
             $order = 'a.id desc';
             $limit = "$offset,$pagesize";
             $res_public = $m_public->getList($fields, $where, $order,$limit);
-            $res_data = $this->handleFindlist($res_public,$openid);
+            $res_data = $this->handleFindlist($res_public,$openid,3);
         }
         if($page==1 && !empty($top_list)){
             $res_data = array_merge($top_list,$res_data);
@@ -256,8 +257,7 @@ class FindController extends CommonController{
     public function images(){
         $openid = $this->params['openid'];
         $page   = $this->params['page'];
-        $pagesize = 10;
-        $offset = ($page-1)*$pagesize;
+        $pagesize = 5;
 
         $key_findtop = C('SAPP_FIND_TOP');
         $redis = SavorRedis::getInstance();
@@ -292,7 +292,8 @@ class FindController extends CommonController{
         $where['hotel.flag'] = 0;
         $where['hotel.state']= 1;
         $order = 'a.id desc';
-        $limit = "$offset,$pagesize";
+        $all_nums = $page * $pagesize;
+        $limit = "0,$all_nums";
         $res_public = $m_public->getList($fields, $where, $order,$limit);
         $res_data = $this->handleFindlist($res_public,$openid);
 
@@ -320,20 +321,25 @@ class FindController extends CommonController{
                 $findprogram_data = $m_public->getList($fields, $where,'a.id desc','');
             }
         }
-        $findprogram_num = 6;
+        $findprogram_num = 5;
         $last_num = $findprogram_num-count($findprogram_data);
+        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         if($last_num>0){
             foreach ($find_data as $fv){
                 if(in_array($fv['type'],array(2,3))){
                     if(count($findprogram_data)>$findprogram_num){
                         break;
                     }
-                    $findprogram_data[]=$fv;
+                    $where = array('forscreen_id'=>$fv['forscreen_id']);
+                    $res_findscreen = $m_forscreenrecord->getWheredata('resource_size,md5_file',$where,'id desc');
+                    if(!empty($res_findscreen) && !empty($res_findscreen[0]['resource_size']) && !empty($res_findscreen[0]['md5_file'])){
+                        $findprogram_data[]=$fv;
+                    }
+
                 }
             }
         }
         $datalist = array();
-        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         foreach ($findprogram_data as $fpv){
             $info = array('id'=>$fpv['id'],'media_type'=>1,'nickName'=>$fpv['nickName'],'avatarUrl'=>$fpv['avatarUrl']);
             $where = array('forscreen_id'=>$fpv['forscreen_id']);
@@ -1112,6 +1118,8 @@ class FindController extends CommonController{
     private function getFindnums($openid,$res_id,$type){
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
+        $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+
         $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
         $is_collect = $m_collect->countNum($map);
         if(empty($is_collect)){
@@ -1121,7 +1129,8 @@ class FindController extends CommonController{
         }
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $collect_num = $m_collect->countNum($map);
-
+        $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
+        $collect_num = $collect_num+intval($ret['nums']);
         //分享个数
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $share_num = $m_share->countNum($map);
@@ -1131,9 +1140,14 @@ class FindController extends CommonController{
     }
 
     private function handleFindlist($all_public,$openid,$type=0){
+        $os = check_phone_os();
+        if($os==1){
+            $format_webp = '/format,webp';
+        }else{
+            $format_webp = '';
+        }
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
-
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
         foreach($all_public as $key=>$v){
             if($type){
@@ -1164,8 +1178,7 @@ class FindController extends CommonController{
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id'] = $tmp_arr[0];
-                    //$pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/resize,p_50/quality,q_80";
-                    $pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/quality,Q_50";
+                    $pubdetail_info[$kk]['img_url'] = $vv['res_url']."?x-oss-process=image/resize,m_mfit,h_300,w_300$format_webp";
                 }
             }
             $all_public[$key]['pubdetail'] = $pubdetail_info;

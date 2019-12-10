@@ -94,8 +94,6 @@ class UserController extends CommonController{
         $openid = $this->params['openid'];
         $page   = $this->params['page'] ? intval($this->params['page']) : 1;
         //获取用户信息
-        //$m_user = new \Common\Model\Smallapp\UserModel();
-        //$user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $page_size = 10;
         $limit = "limit 0,".$page*$page_size;
@@ -119,45 +117,37 @@ class UserController extends CommonController{
             if($v['type'] ==1){ //点播
                 $collect_info[$key]['res_type'] = 2;
                 $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
-    
                 ->where(array('id'=>$v['res_id']))
                 ->find();
                 $res_url = strstr($info['res_url'], '?',-1);
                 $collect_info[$key]['res_nums'] = 1;
                 $info['res_url'] = $res_url;
-                
                 $collect_info[$key]['list'] = $info;
-    
             }else if($v['type'] ==2){ //投屏
-                 
                 $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id'],'status'=>2));
                 $collect_info[$key]['res_type'] = $pub_info['res_type'];
                 $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
                 if(!empty($pub_info)){
-    
                     $fields = "resource_id res_id,concat('".$oss_host."',`res_url`) res_url,`res_url` forscreen_url,substring(`res_url`,20) filename,resource_size";
                     $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
                     
                     if($v['res_type']==2){
                         $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
-                        $collect_info[$key]['list'] = $pubdetails[0];
+                        $collect_info[$key]['list'] = array($pubdetails[0]);
                     }else {
                         $collect_info[$key]['list'] = $pubdetails;
                     }
                     $collect_info[$key]['res_num'] = count($pubdetails);
-                    
-    
                 }
             }else if($v['type']==3){
                 $collect_info[$key]['res_type'] = 3;
                 $info = $m_ads->alias('a')
-                ->field("a.id,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url")
+                ->field("a.id,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
                 ->join('savor_media media on a.media_id=media.id')
                 ->where(array('a.id'=>$v['res_id']))
                 ->find();
                 $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
                 $collect_info[$key]['list'] = $info;
-    
             }
             $collect_info[$key]['create_time'] = date('n月j日',strtotime($v['create_time']));
     
@@ -202,7 +192,7 @@ class UserController extends CommonController{
         $user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
         $data['user_info'] = $user_info;
         //获取我的公开
-    
+
         $page_size = 6;
         $limit = "limit 0,".$page_size;
         $fields = 'a.forscreen_id,a.res_type';
@@ -262,9 +252,7 @@ class UserController extends CommonController{
     
         //我的收藏
         $m_collect = new \Common\Model\Smallapp\CollectModel();
-         
         $limit = "limit 0,".$page_size;
-    
         $fields = "a.res_id,a.type,b.res_type";
         $where = array();
         $where['a.openid'] = $openid;
@@ -277,57 +265,81 @@ class UserController extends CommonController{
         $m_pubdetail= new \Common\Model\Smallapp\PubdetailModel();
         $m_public      = new \Common\Model\Smallapp\PublicModel();
         $m_ads = new \Common\Model\AdsModel();
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $m_media = new \Common\Model\MediaModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         foreach($collect_info as $key=>$v){
-            if($v['type'] ==1){ //点播
-                $collect_info[$key]['res_type'] = 2;
-                $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
-    
-                ->where(array('id'=>$v['res_id']))
-                ->find();
-                $res_url = strstr($info['res_url'], '?',-1);
-                $collect_info[$key]['res_nums'] = 1;
-                $info['res_url'] = $res_url;
-                $collect_info[$key]['res_url'] = $info['res_url'];
-                $collect_info[$key]['imgurl']  = $info['imgurl'];
-    
-            }else if($v['type'] ==2){ //投屏
-                 
-                $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id'],'status'=>2));
-                $collect_info[$key]['res_type'] = $pub_info['res_type'];
-                $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
-                if(!empty($pub_info)){
-    
-                    $fields = "resource_id,concat('".$oss_host."',`res_url`) res_url";
-                    $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
-                    if($v['res_type']==2){
-                        $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
-                        $collect_info[$key]['res_url'] = $pubdetails[0]['res_url'];
-                        $collect_info[$key]['imgurl']  = $pubdetails[0]['imgurl'];
-                    }else {
-    
-                        $collect_info[$key]['res_url'] = $pubdetails[0]['res_url'];
-                        $collect_info[$key]['imgurl']  = $pubdetails[0]['res_url'];
-                    }
-                }
-            }else if($v['type']==3){//节目单列表
-                $collect_info[$key]['res_type'] = 3;
-                $info = $m_ads->alias('a')
-                ->field("a.id,a.name title,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,`oss_addr` lz_url")
-                ->join('savor_media media on a.media_id=media.id')
-                ->where(array('a.id'=>$v['res_id']))
-                ->find();
-                $filename = explode('/', $info['lz_url']);
-                $collect_info[$key]['filename'] = $filename[2];
-                $collect_info[$key]['res_nums'] = 1;
-                $collect_info[$key]['title']  = $info['title'];
-                if(empty($info['imgurl'])){
-                    $collect_info[$key]['imgurl'] = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
-                }else {
+            switch ($v['type']){//1:点播2:投屏3:节目单资源4:商品
+                case 1:
+                    $collect_info[$key]['res_type'] = 2;
+                    $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
+                        ->where(array('id'=>$v['res_id']))
+                        ->find();
+                    $res_url = strstr($info['res_url'], '?',-1);
+                    $collect_info[$key]['res_nums'] = 1;
+                    $info['res_url'] = $res_url;
+                    $collect_info[$key]['res_url'] = $info['res_url'];
                     $collect_info[$key]['imgurl']  = $info['imgurl'];
-                }
-                $collect_info[$key]['res_url'] = $info['res_url'];
-    
+                    break;
+                case 2:
+                    $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id'],'status'=>2));
+                    $collect_info[$key]['res_type'] = $pub_info['res_type'];
+                    $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
+                    if(!empty($pub_info)){
+
+                        $fields = "resource_id,concat('".$oss_host."',`res_url`) res_url";
+                        $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
+                        if($v['res_type']==2){
+                            $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                            $collect_info[$key]['res_url'] = $pubdetails[0]['res_url'];
+                            $collect_info[$key]['imgurl']  = $pubdetails[0]['imgurl'];
+                        }else {
+                            $collect_info[$key]['res_url'] = $pubdetails[0]['res_url'];
+                            $collect_info[$key]['imgurl']  = $pubdetails[0]['res_url'];
+                        }
+                    }
+                    break;
+                case 3:
+                    $collect_info[$key]['res_type'] = 3;
+                    $info = $m_ads->alias('a')
+                        ->field("a.id,a.name title,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,`oss_addr` lz_url")
+                        ->join('savor_media media on a.media_id=media.id')
+                        ->where(array('a.id'=>$v['res_id']))
+                        ->find();
+                    $filename = explode('/', $info['lz_url']);
+                    $collect_info[$key]['filename'] = $filename[2];
+                    $collect_info[$key]['res_nums'] = 1;
+                    $collect_info[$key]['title']  = $info['title'];
+                    if(empty($info['imgurl'])){
+                        $collect_info[$key]['imgurl'] = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                    }else {
+                        $collect_info[$key]['imgurl']  = $info['imgurl'];
+                    }
+                    $collect_info[$key]['res_url'] = $info['res_url'];
+                    break;
+                case 4:
+                    $info = $m_goods->getInfo(array('id'=>$v['res_id']));
+                    $media_info = $m_media->getMediaInfoById($info['media_id']);
+                    $res_url = $media_info['oss_addr'];
+
+                    $imgurl = '';
+                    if(!empty($v['cover_imgmedia_ids'])){
+                        $cover_imgmedia_ids = json_decode($v['cover_imgmedia_ids'],true);
+                        foreach ($cover_imgmedia_ids as $cv){
+                            if(!empty($cv)){
+                                $media_info = $m_media->getMediaInfoById($cv);
+                                $imgurl = $media_info['oss_addr'];
+                                break;
+                            }
+                        }
+                    }else{
+                        $imgurl = $res_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                    }
+                    $collect_info[$key]['res_nums'] = 1;
+                    $info['res_url'] = $res_url;
+                    $collect_info[$key]['res_url'] = $res_url;
+                    $collect_info[$key]['imgurl'] = $imgurl;
+                    break;
             }
             //收藏个数
             $map = array();
@@ -338,7 +350,6 @@ class UserController extends CommonController{
             $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
             $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['res_id']))->find();
             $collect_info[$key]['collect_num'] = $collect_num +$ret['nums'];
-    
         }
         if(empty($collect_info)) $collect_info = '';
         $data['collect_list'] = $collect_info;

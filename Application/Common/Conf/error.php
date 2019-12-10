@@ -320,6 +320,11 @@ return array(
 	    '93016'=>'smallappsale_exchange_money_error',
 	    '93017'=>'smallappsale_exchange_integral_not_enough',
 	    '93018'=>'smallappsale_exchange_num_has_upper_limit',
+	    '93019'=>'smallappsale_welcome_has_begin_start',
+	    '93020'=>'smallappsale_welcome_user_not_match',
+	    '93021'=>'smallappsale_welcome_has_stop',
+	    '93022'=>'smallappsale_welcome_has_remove',
+	    '93023'=>'smallappsale_welcome_had_play',
 
 	),
 );

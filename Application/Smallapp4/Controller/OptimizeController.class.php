@@ -12,7 +12,7 @@ class OptimizeController extends CommonController{
         switch(ACTION_NAME) {
             case 'getOptimizeList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('page'=>1001,'openid'=>1001);
+                $this->valid_fields = array('page'=>1001,'openid'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -25,7 +25,7 @@ class OptimizeController extends CommonController{
     public function getOptimizeList(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
-        $pagesize = 20;
+        $pagesize = 10;
         $all_nums = $page * $pagesize;
         $type = 10;//10官方活动促销,20我的活动,30积分兑换现金,40优选
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
@@ -47,9 +47,9 @@ class OptimizeController extends CommonController{
             $oss_path_info = pathinfo($oss_path);
 
             if($media_info['type']==2){
-                $img_url = $media_info['oss_addr'];
+                $img_url = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
             }else{
-                $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450';
+                $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
             }
 
             $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'duration'=>$media_info['duration'],'tx_url'=>$media_info['oss_addr'],
@@ -70,9 +70,12 @@ class OptimizeController extends CommonController{
                 foreach ($cover_imgmedia_ids as $cv){
                     if(!empty($cv)){
                         $media_info = $m_media->getMediaInfoById($cv);
-                        $cover_imgs[] = $media_info['oss_addr'];
+                        $cover_imgs[] = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
+            }
+            if(empty($cover_imgs)){
+                $cover_imgs[] = $img_url;
             }
             $dinfo['cover_imgs'] = $cover_imgs;
 
@@ -121,8 +124,8 @@ class OptimizeController extends CommonController{
             }
             $hotel_id = $box_info[0]['hotel_id'];
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-            $data = array('hotel_id'=>$hotel_id,'goods_id'=>$goods_id,'type'=>2);
-            $res_hotelgoods = $m_hotelgoods->getInfo($data);
+            $hdata = array('hotel_id'=>$hotel_id,'goods_id'=>$goods_id,'type'=>2);
+            $res_hotelgoods = $m_hotelgoods->getInfo($hdata);
             if(!empty($res_hotelgoods)){
                 $is_storebuy = 1;
             }
@@ -199,13 +202,15 @@ class OptimizeController extends CommonController{
     private function getFindnums($openid,$res_id,$type){
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
-        $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
-        $is_collect = $m_collect->countNum($map);
-        if(empty($is_collect)){
-            $is_collect = 0;
-        }else {
-            $is_collect = 1;
+        $is_collect = 0;
+        if(!empty($openid)){
+            $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
+            $is_collect = $m_collect->countNum($map);
+            if(!empty($is_collect)){
+                $is_collect = 1;
+            }
         }
+
         $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
         $collect_num = $m_collect->countNum($map);
 

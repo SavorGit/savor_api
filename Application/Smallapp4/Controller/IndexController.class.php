@@ -43,18 +43,12 @@ class IndexController extends CommonController{
 
         if(in_array($type, $small_erwei_code_arr)){
             $m_box = new \Common\Model\BoxModel();
-            $map = array();
-            $map['a.mac'] = $box_mac;
-            $map['a.state'] = 1;
-            $map['a.flag']  = 0;
-            $map['d.state'] = 1;
-            $map['d.flag']  = 0;
-            $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
-            if(empty($box_info)){
+            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);//1外网(主干) 2直连(极简)
+            if(empty($forscreen_info['box_id'])){
                 $this->to_back(70001);
             }
             $now_time = date('zH');
-            $encode_key = "$type{$box_info[0]['box_id']}$now_time";
+            $encode_key = "$type{$forscreen_info['box_id']}$now_time";
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(5);
             $times = getMillisecond();
@@ -62,8 +56,7 @@ class IndexController extends CommonController{
             switch ($type){
                 case 3:
                 case 8:
-                    $forscreen_type = $m_box->checkForscreenTypeByMac($box_mac);//1外网(主干) 2直连(极简)
-                    $scene.='_'.$forscreen_type;
+                    $scene.='_'.$forscreen_info['forscreen_type'];
                     break;
                 case 16:
                     $forscreen_type = 2;//1外网(主干) 2直连(极简)
@@ -156,17 +149,9 @@ class IndexController extends CommonController{
             $keys = $keys[0];
             $key_arr = explode(':', $keys);
             $box_mac = $key_arr['2'];
-            $m_box = new \Common\Model\BoxModel();
-            $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-            $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
-            $hotel_info = $rets[0];
             $code_info = $redis->get($keys);
             $code_info = json_decode($code_info,true);
 
-            $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],'room_name'=>$hotel_info['room_name']);
-            $data['wifi_name'] = $hotel_info['wifi_name'];
-            $data['wifi_password'] = $hotel_info['wifi_password'];
-            $data['forscreen_type'] = $m_box->checkForscreenTypeByMac($box_mac);
             $redis->select(13);
             $cache_key = 'heartbeat:2:'.$box_mac;
             $res_cache = $redis->get($cache_key);
@@ -175,7 +160,34 @@ class IndexController extends CommonController{
                 $res_cache = json_decode($res_cache,true);
                 $intranet_ip = $res_cache['intranet_ip'];
             }
-            $data['intranet_ip'] = $intranet_ip;
+
+            $m_box = new \Common\Model\BoxModel();
+            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+            $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,
+                'forscreen_type'=>$forscreen_info['forscreen_type'],'intranet_ip'=>$intranet_ip);
+            if(isset($forscreen_info['box_id'])){
+                $redis->select(15);
+                $cache_key = 'savor_box_'.$forscreen_info['box_id'];
+                $redis_box_info = $redis->get($cache_key);
+                $box_info = json_decode($redis_box_info,true);
+                $cache_key = 'savor_room_' . $box_info['room_id'];
+                $redis_room_info = $redis->get($cache_key);
+                $room_info = json_decode($redis_room_info, true);
+                $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+                $redis_hotel_info = $redis->get($cache_key);
+                $res_hotel = json_decode($redis_hotel_info, true);
+
+                $hotel_info = array('room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
+                    'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac']);
+            }else{
+                $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $hotel_info = $rets[0];
+            }
+            $data['hotel_name'] = $hotel_info['hotel_name'];
+            $data['room_name'] = $hotel_info['room_name'];
+            $data['wifi_name'] = $hotel_info['wifi_name'];
+            $data['wifi_password'] = $hotel_info['wifi_password'];
         }else{
             $data = array('is_have'=>0);
         }

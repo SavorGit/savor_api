@@ -549,9 +549,11 @@ class ProgramController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_resource as $v){
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
-                $oss_addr = $res_media['oss_addr'];
+                $oss_path = $res_media['oss_path'];
+                $sname_info = pathinfo($oss_path);
+                $file_name = $sname_info['basename'];
                 $media_type = $res_media['type'];
-                $data_list[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'md5'=>$res_media['md5'],
+                $data_list[]=array('id'=>$v['id'],'chinese_name'=>$v['name'],'name'=>$file_name,'oss_path'=>$oss_path,'md5'=>$res_media['md5'],
                     'type'=>$v['type'],'media_type'=>$media_type);
             }
         }

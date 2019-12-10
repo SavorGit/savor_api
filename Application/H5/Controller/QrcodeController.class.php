@@ -2,6 +2,7 @@
 namespace H5\Controller;
 use Think\Controller;
 use Common\Lib\Qrcode;
+use Common\Lib\AliyunOss;
 
 class QrcodeController extends Controller {
 
@@ -30,6 +31,37 @@ class QrcodeController extends Controller {
         $data['is_hyaline'] = true;
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
+    }
+
+    public function testmd5(){
+        $accessKeyId = C('OSS_ACCESS_ID');
+        $accessKeySecret = C('OSS_ACCESS_KEY');
+        $endpoint = 'oss-cn-beijing.aliyuncs.com';
+        $bucket = C('OSS_BUCKET');
+        $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
+        $aliyunoss->setBucket($bucket);
+
+        $oss_addr = 'forscreen/resource/1575698056011.mp4';
+        $resource_size = 2728665;
+
+        $range = '0-199';
+        $bengin_info = $aliyunoss->getObject($oss_addr,$range);
+        $last_size = $resource_size-1;
+        $last_range = $last_size - 199;
+        $last_range = $last_range.'-'.$last_size;
+        $end_info = $aliyunoss->getObject($oss_addr,$last_range);
+        $file_str = md5($bengin_info).md5($end_info);
+        $fileinfo = strtoupper($file_str);
+
+        if(!empty($fileinfo)){
+            echo md5($fileinfo);
+            echo '===';
+            $fileinfo = $aliyunoss->getObject($oss_addr,'');
+            echo md5($fileinfo);
+        }else{
+            echo 'fail';
+        }
+
     }
 
 }

@@ -303,6 +303,11 @@ return array(
     'smallappsale_exchange_money_error'=>'兑换金额有误',
     'smallappsale_exchange_integral_not_enough'=>'积分不足，请尝试提现其他金额～',
     'smallappsale_exchange_num_has_upper_limit'=>'用户提现机会已达上限',
+    'smallappsale_welcome_has_begin_start'=>'欢迎词已开始播放',
+    'smallappsale_welcome_user_not_match'=>'欢迎词用户不匹配',
+    'smallappsale_welcome_has_stop'=>'欢迎词已停止播放',
+    'smallappsale_welcome_has_remove'=>'欢迎词已删除',
+    'smallappsale_welcome_had_play'=>'欢迎词正在播放,不能删除',
 
 
 );

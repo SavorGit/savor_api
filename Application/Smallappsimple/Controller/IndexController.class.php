@@ -318,9 +318,16 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $err_info = str_replace('\\', '', $this->params['err_info']);
         $m_err_info = new \Common\Model\Smallapp\WifiErrModel();
-        $data['box_mac'] = $box_mac;
+        $data['box_mac'] = $box_mac !='undefined' ? $box_mac :'';
         $data['err_info'] = $err_info;
-        $m_err_info->addInfo($data);
-        $this->to_back(10000);
+        if($data['box_mac']){
+            $m_err_info->addInfo($data);
+            $this->to_back(10000);
+        }else {
+            $this->to_back(30052);
+            
+        }
+        
+        
     }
 }

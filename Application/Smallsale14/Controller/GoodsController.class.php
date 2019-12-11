@@ -623,7 +623,8 @@ class GoodsController extends CommonController{
         $redis->set($cache_key,json_encode($data));
 
         $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $m_userintegral->activityRewardIntegral($openid,$box_mac,$goods_id,$hotel_id);
+        $m_userintegral->activityPromote($openid,$box_mac,$goods_id,1);
+
 
         $this->to_back(array());
     }

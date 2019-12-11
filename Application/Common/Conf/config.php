@@ -281,6 +281,7 @@ return array(
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
     'SAPP_SALE_INVITE_QRCODE'=>'smallappsale:inviteqrcode:',
     'SAPP_SALE_OPGOODS_INTEGRAL'=>'smallappsale:opgoodsintegral:',
+    'SAPP_SALE_ACTIVITY_PROMOTE'=>'smallappsale:activitypromote:',
     'SAPP_SALE_WELCOME_RESOURCE'=>'smallappsale:welcomeresource',
 
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',

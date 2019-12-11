@@ -17,6 +17,22 @@ class UserIntegralrecordModel extends BaseModel{
         return $total_integral;
     }
 
+    public function activityPromote($openid,$box_mac,$goods_id,$type){
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $key_integral = C('SAPP_SALE_ACTIVITY_PROMOTE');
+        $key_opintegral = $key_integral.date('Ymd').':'.$openid;
+        $res_opintegral = $redis->get($key_opintegral);
+        $data = array('date'=>date('Y-m-d H:i:s'),'goods_id'=>$goods_id,'box_mac'=>$box_mac);
+        if(!empty($res_opintegral)){
+            $res_opintegral[$type][]=$data;
+        }else{
+            $res_opintegral=array();
+            $res_opintegral[$type][]=$data;
+        }
+        $redis->set($key_opintegral,json_encode($res_opintegral),86400*7);
+    }
+
     public function activityRewardIntegral($openid,$box_mac,$goods_id=0,$hotel_id=0){
         $feast_time = C('FEAST_TIME');
         $now_date = date('Y-m-d');
@@ -47,6 +63,8 @@ class UserIntegralrecordModel extends BaseModel{
                 $res_opintegral = array();
                 $fj_data = array('date'=>date('Y-m-d H:i:s'),'goods_id'=>$goods_id);
             }
+
+
             if(!empty($fj_data)){
                 $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
                 if($hotel_id){

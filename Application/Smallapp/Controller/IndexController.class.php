@@ -28,7 +28,7 @@ class IndexController extends CommonController{
                                             'mobile_model'=>1000,'action'=>1000,
                                             'resource_type'=>1000,'resource_id'=>1000,
                                             'is_pub_hotelinfo'=>1000,'is_share'=>1000,
-                                            'forscreen_id'=>1000
+                                            'forscreen_id'=>1000,'goods_id'=>1002
                 );
             break;
             case 'getHotelInfo':
@@ -296,8 +296,9 @@ class IndexController extends CommonController{
             $redis->rpush($cache_key, json_encode($map));
         }
         if($action==40){
+            $goods_id = intval($this->params['goods_id']);
             $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $m_userintegral->activityRewardIntegral($openid,$box_mac);
+            $m_userintegral->activityPromote($openid,$box_mac,$goods_id,2);
         }
         $this->to_back(10000);
     }

@@ -240,7 +240,10 @@ class IndexController extends CommonController{
         $encode_key = "$type{$box_info[0]['box_id']}";
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
-        $scene = $box_mac.'_'.$type;
+//        $scene = $box_mac.'_'.$type;
+        $times = getMillisecond();
+        $forscreen_type = 2;//1外网(主干) 2直连(极简)
+        $scene = $box_mac.'_'.$type.'_'.$times.'_'.$forscreen_type;
         $cache_key = C('SAPP_QRCODE').$encode_key;
         $redis->set($cache_key,$scene);
 
@@ -248,8 +251,11 @@ class IndexController extends CommonController{
         $hashids = new \Common\Lib\Hashids($hash_ids_key);
         $s = $hashids->encode($encode_key);
 
+//        $short_urls = C('SHORT_URLS');
+//        $content = $short_urls['SIMPLE_BOX_QRCODE'].$s;
         $short_urls = C('SHORT_URLS');
-        $content = $short_urls['SIMPLE_BOX_QRCODE'].$s;
+        $content = $short_urls['BOX_QR'].$s;
+
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         //生成二维码图片

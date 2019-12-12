@@ -15,6 +15,10 @@ class WithdrawController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('id'=>1001,'openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'exchangerecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -161,5 +165,44 @@ class WithdrawController extends CommonController{
         }
         $res = array('message'=>$message,'tips'=>$tips,'integral'=>$userintegral);
         $this->to_back($res);
+    }
+
+
+    public function exchangerecord(){
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'exchangerecord';
+        $res_cache = $redis->get($cache_key);
+        $cache_record = array();
+        if(!empty($res_cache)){
+            $res_cache = json_decode($res_cache,true);
+            shuffle($res_cache);
+            $cache_record = array_slice($res_cache,0,10);
+        }
+        $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $where = array('hotel_id'=>$hotel_id,'type'=>4);
+        $where["DATE_FORMAT(add_time,'%Y-%m-%d')"]=date('Y-m-d');
+        $res_integral = $m_integralrecord->field('openid,area_id,area_name,goods_id')->where($where)->select();
+        $hotel_record = array();
+        if(!empty($res_integral)){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_goods = new \Common\Model\Smallapp\GoodsModel();
+            foreach ($res_integral as $v){
+                $res_user = $m_user->getOne('nickName',array('openid'=>$v['openid']),'id desc');
+                $res_goods = $m_goods->getInfo(array('id'=>$v['goods_id']));
+                $money = intval($res_goods['price']);
+                $info = array('area_id'=>$v['area_id'],'area_name'=>$v['area_name'],'name'=>$res_user['nickName'],'money'=>$money);
+                $hotel_record[]=$info;
+            }
+        }
+        $res_record = array_merge($hotel_record,$cache_record);
+        $datalist = array();
+        foreach ($res_record as $v){
+            $message = $v['area_name'].'的'.$v['name'].'成功兑换了'.$v['money'].'元现金';
+            $datalist[]=$message;
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 }

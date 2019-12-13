@@ -137,15 +137,11 @@ class WelcomeController extends CommonController{
         }
         $hotel_id = $box_info[0]['hotel_id'];
 
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff)){
-            $this->to_back(93014);
-        }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $res_user = $m_user->getOne('id', $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
         }
         $user_id = $res_user['id'];
         $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,
@@ -170,9 +166,6 @@ class WelcomeController extends CommonController{
         $data['finish_time'] = date('Y-m-d H:i:s',$stime+$play_hour);
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
         $res_welcome = $m_welcome->addData($data);
-
-        $this->to_back(array());
-
         if($res_welcome && $play_type==1){
             $this->push_welcome($res_welcome,130);
         }
@@ -186,19 +179,16 @@ class WelcomeController extends CommonController{
         $pagesize = 10;
         $all_nums = $page * $pagesize;
 
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff)){
-            $this->to_back(93014);
-        }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $res_user = $m_user->getOne('id', $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
         $user_id = $res_user['id'];
 
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
-        $fields = 'id,content,status,box_mac';
+        $fields = 'id,content,status,box_mac,play_type,play_date,timing,add_time';
         $where = array('user_id'=>$user_id,'hotel_id'=>$hotel_id);
         $where['status'] = array('in',array(1,2));
         $where['finish_time'] = array('egt',date('Y-m-d H:i:s'));
@@ -212,7 +202,13 @@ class WelcomeController extends CommonController{
                 if(empty($res_box)){
                     continue;
                 }
-                $datalist[]=array('id'=>$v['id'],'room_name'=>$res_box[0]['name'],'content'=>$v['content'],'status'=>$v['status']);
+                if($v['play_type']==1){
+                    $start_time = date('Y-m-d H:i',strtotime($v['add_time']));
+                }else{
+                    $start_time = date('Y-m-d H:i',strtotime($v['play_date'].' '.$v['timing']));
+                }
+                $datalist[]=array('id'=>$v['id'],'room_name'=>$res_box[0]['name'],'content'=>$v['content'],
+                    'start_time'=>$start_time,'status'=>$v['status']);
             }
         }
         $res_data = array('datalist'=>$datalist);
@@ -319,40 +315,37 @@ class WelcomeController extends CommonController{
         foreach ($res_resource as $v){
             $resource_info[$v['id']]=$v;
         }
-        $message = array('action'=>$action,'id'=>$id,'content'=>$res_welcome['content'],
+        $message = array('action'=>$action,'id'=>$id,'forscreen_char'=>$res_welcome['content'],'rotation'=>intval($res_welcome['rotate']),
             'wordsize'=>$resource_info[$wordsize_id]['tv_wordsize'],'color'=>$resource_info[$color_id]['color'],
             'finish_time'=>$res_welcome['finish_time']);
         $m_media = new \Common\Model\MediaModel();
         if(isset($resource_info[$backgroundimg_id])){
-            $res_media = $m_media->getMediaInfoById($resource_info[$backgroundimg_id]['backgroundimg_id']);
+            $res_media = $m_media->getMediaInfoById($resource_info[$backgroundimg_id]['media_id']);
             $message['img_id'] = intval($backgroundimg_id);
             $message['img_oss_addr'] = $res_media['oss_addr'];
         }else{
             $message['img_id'] = 0;
-            $img_oss_addr = 'http://'.C('OSS_HOST')."/{$res_welcome['image']}";
-            if($res_welcome['rotate']){
-                $img_oss_addr.="?x-oss-process=image/rotate,{$res_welcome['rotate']}";
-            }
+            $img_oss_addr = $res_welcome['image'];
             $message['img_oss_addr'] = $img_oss_addr;
         }
         if(isset($resource_info[$music_id])){
-            $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['music_id']);
+            $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['media_id']);
             $message['music_id'] = intval($music_id);
             $message['music_oss_addr'] = $res_media['oss_addr'];
         }else{
             $message['music_id'] = 0;
             $message['music_oss_addr'] = '';
         }
+        $m_sys_config = new \Common\Model\SysConfigModel();
+        $sys_info = $m_sys_config->getAllconfig();
+        $playtime = $sys_info['welcome_playtime'];
+        $playtime = intval($playtime*60);
+        $message['play_times'] = $playtime;
         $m_netty = new \Common\Model\NettyModel();
         $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
         if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
             $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
         }
+        return $message;
     }
-
-
-
-
-
-
 }

@@ -409,5 +409,6 @@ return array(
         'integral_shop'=>'积分兑换','goods_manage'=>'活动商品管理','staff_manage'=>'员工管理',
         'task_manage'=>'任务管理'
     ),
+    'exchange_tips'=>'%s的“%s”成功兑换了%d元现金',
 
 );

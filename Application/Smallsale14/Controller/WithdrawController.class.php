@@ -199,8 +199,9 @@ class WithdrawController extends CommonController{
         }
         $res_record = array_merge($hotel_record,$cache_record);
         $datalist = array();
+        $tips = C('exchange_tips');
         foreach ($res_record as $v){
-            $message = $v['area_name'].'的'.$v['name'].'成功兑换了'.$v['money'].'元现金';
+            $message = sprintf($tips,$v['area_name'],$v['name'],$v['money']);
             $datalist[]=$message;
         }
         $this->to_back(array('datalist'=>$datalist));

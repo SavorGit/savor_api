@@ -146,6 +146,7 @@ class WelcomeController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $res_user = $m_user->getOne('id', $where);
+        }
         $user_id = $res_user['id'];
         $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,
             'color_id'=>$color_id,'music_id'=>$music_id,'play_type'=>$play_type,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);

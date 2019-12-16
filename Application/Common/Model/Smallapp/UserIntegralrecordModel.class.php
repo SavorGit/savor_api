@@ -25,6 +25,7 @@ class UserIntegralrecordModel extends BaseModel{
         $res_opintegral = $redis->get($key_opintegral);
         $data = array('date'=>date('Y-m-d H:i:s'),'goods_id'=>$goods_id,'box_mac'=>$box_mac);
         if(!empty($res_opintegral)){
+            $res_opintegral = json_decode($res_opintegral,true);
             $res_opintegral[$type][]=$data;
         }else{
             $res_opintegral=array();

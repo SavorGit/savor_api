@@ -325,6 +325,7 @@ return array(
 	    '93021'=>'smallappsale_welcome_has_stop',
 	    '93022'=>'smallappsale_welcome_has_remove',
 	    '93023'=>'smallappsale_welcome_had_play',
+	    '93024'=>'smallappsale_welcome_choose_data_error',
 
 	),
 );

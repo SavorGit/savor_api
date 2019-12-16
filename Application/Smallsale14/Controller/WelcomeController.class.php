@@ -160,12 +160,25 @@ class WelcomeController extends CommonController{
             $data['status'] = 2;
             $play_time = "$play_date $timing";
             $stime = strtotime($play_time);
+            if($stime<time()){
+                $this->to_back(93024);
+            }
         }else{
             $data['status'] = 1;
             $stime = time();
         }
         $data['finish_time'] = date('Y-m-d H:i:s',$stime+$play_hour);
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
+        $tmp_welcome = $m_welcome->getDataList('id',array('box_mac'=>$box_mac,'status'=>1),'id desc');
+        if(!empty($tmp_welcome)){
+            $ids = array();
+            foreach ($tmp_welcome as $v){
+                $ids[]=$v['id'];
+            }
+            $up_where = array('id'=>array('in',$ids));
+            $m_welcome->updateData($up_where,array('status'=>3));
+        }
+
         $res_welcome = $m_welcome->addData($data);
         if($res_welcome && $play_type==1){
             $this->push_welcome($res_welcome,130);
@@ -199,7 +212,7 @@ class WelcomeController extends CommonController{
             $m_box = new \Common\Model\BoxModel();
             foreach ($res_welcome['list'] as $k=>$v){
                 $box_mac = $v['box_mac'];
-                $res_box = $m_box->getInfoByHotelid($hotel_id,'room.name'," and box.mac='$box_mac' and box.state=1 and box.flag=0");
+                $res_box = $m_box->getInfoByHotelid($hotel_id,'box.name'," and box.mac='$box_mac' and box.state=1 and box.flag=0");
                 if(empty($res_box)){
                     continue;
                 }
@@ -329,6 +342,9 @@ class WelcomeController extends CommonController{
             $img_oss_addr = $res_welcome['image'];
             $message['img_oss_addr'] = $img_oss_addr;
         }
+        $name_info = pathinfo($message['img_oss_addr']);
+        $message['filename'] = $name_info['basename'];
+
         if(isset($resource_info[$music_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['media_id']);
             $message['music_id'] = intval($music_id);

@@ -61,7 +61,8 @@ class WelcomeController extends CommonController{
             foreach ($res_imgs as $v){
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
                 $oss_addr = $res_media['oss_addr'];
-                $datalist[] = array('id'=>$v['id'],'oss_addr'=>$oss_addr);
+                $forscreen_url = $res_media['oss_path'];
+                $datalist[] = array('id'=>$v['id'],'oss_addr'=>$oss_addr,'forscreen_url'=>$forscreen_url);
             }
         }
         $this->to_back($datalist);

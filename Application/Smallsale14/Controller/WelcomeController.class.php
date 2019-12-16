@@ -168,9 +168,14 @@ class WelcomeController extends CommonController{
         }
         $data['finish_time'] = date('Y-m-d H:i:s',$stime+$play_hour);
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
-        $tmp_welcome = $m_welcome->getInfo(array('user_id'=>$user_id,'box_mac'=>$box_mac,'status'=>1));
+        $tmp_welcome = $m_welcome->getDataList('id',array('box_mac'=>$box_mac,'status'=>1),'id desc');
         if(!empty($tmp_welcome)){
-            $m_welcome->updateData(array('id'=>$tmp_welcome['id']),array('status'=>3));
+            $ids = array();
+            foreach ($tmp_welcome as $v){
+                $ids[]=$v['id'];
+            }
+            $up_where = array('id'=>array('in',$ids));
+            $m_welcome->updateData($up_where,array('status'=>3));
         }
 
         $res_welcome = $m_welcome->addData($data);

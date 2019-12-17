@@ -1,0 +1,8 @@
+/vendor/
+*.DS_Store
+index.php
+composer.json
+Application/Runtime/
+*.pem
+MP_verify_UfNpuzqhpyqDcf9S.txt
+Application/Common/Conf/config_test1012bak.php

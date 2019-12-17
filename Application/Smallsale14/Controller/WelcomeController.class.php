@@ -41,7 +41,7 @@ class WelcomeController extends CommonController{
         $openid = $this->params['openid'];
         $m_category = new \Common\Model\Smallapp\CategoryModel();
         $where = array('type'=>6,'status'=>1,'level'=>1);
-        $res_category = $m_category->getDataList('id,name',$where,'id desc');
+        $res_category = $m_category->getDataList('id,name',$where,'id asc');
         $category_name_list = array();
         foreach ($res_category as $v){
             $category_name_list[]=$v['name'];
@@ -60,7 +60,7 @@ class WelcomeController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_imgs as $v){
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
-                $oss_addr = $res_media['oss_addr'];
+                $oss_addr = $res_media['oss_addr'].'?x-oss-process=image/quality,Q_50';
                 $forscreen_url = $res_media['oss_path'];
                 $datalist[] = array('id'=>$v['id'],'oss_addr'=>$oss_addr,'forscreen_url'=>$forscreen_url);
             }

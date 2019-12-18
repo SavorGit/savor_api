@@ -43,16 +43,16 @@ class IndexController extends CommonController{
                 }else {
                     $map['msg']     = $this->params['msg'];
                     
-                    $msg = json_decode($map['msg'],true);
-                    if($msg['action']==4 || $msg['action']==2){
-                        $rt = wx_sec_check('http://'.C('OSS_HOST').'/'.$msg['url'],10);
-                        foreach($rt as $key=>$v){
-                            if($v['errcode']==87014){
-                                $is_foul=1;
-                                break;
-                            }
-                        }
-                    }
+//                    $msg = json_decode($map['msg'],true);
+//                    if($msg['action']==4 || $msg['action']==2){
+//                        $rt = wx_sec_check('http://'.C('OSS_HOST').'/'.$msg['url'],10);
+//                        foreach($rt as $key=>$v){
+//                            if($v['errcode']==87014){
+//                                $is_foul=1;
+//                                break;
+//                            }
+//                        }
+//                    }
                 }
                 if($is_foul){
                     $this->to_back('90108');

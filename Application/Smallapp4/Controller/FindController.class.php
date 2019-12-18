@@ -203,7 +203,13 @@ class FindController extends CommonController{
         }
 
         if($is_update_findprogram){
-            $this->handleFindProgram($find_program_key,$find_topids,$top_list,$find_data,$page);
+            $nowdate = date('Ymd');
+            $key_hasfindprogram = $find_program_key.":$nowdate";
+            $res_hasfindprogram = $redis->get($key_hasfindprogram);
+            if(empty($res_hasfindprogram)){
+                $redis->set($key_hasfindprogram,$nowdate,86400);
+                $this->handleFindProgram($find_program_key,$find_topids,$top_list,$find_data,$page);
+            }
         }
 
         $res_data = $find_data;
@@ -356,6 +362,7 @@ class FindController extends CommonController{
         }
         $data_findprogram = array('period'=>$period,'topids'=>$find_topids,'datalist'=>$datalist);
         $redis = SavorRedis::getInstance();
+        $redis->select(5);
         $redis->set($find_program_key,json_encode($data_findprogram));
     }
 

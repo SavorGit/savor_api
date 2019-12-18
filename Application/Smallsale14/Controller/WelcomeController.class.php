@@ -22,7 +22,7 @@ class WelcomeController extends CommonController{
             case 'addwelcome':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'image'=>1002,'rotate'=>1002,
-                    'backgroundimg_id'=>1002,'content'=>1001,'wordsize_id'=>1001,'color_id'=>1001,
+                    'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,
                     'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002);
                 break;
             case 'getwelcomelist':
@@ -145,6 +145,7 @@ class WelcomeController extends CommonController{
             $this->to_back(92010);
         }
         $user_id = $res_user['id'];
+        $content = trim($content);
         $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,
             'color_id'=>$color_id,'music_id'=>$music_id,'play_type'=>$play_type,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);
         if($image){

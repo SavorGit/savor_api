@@ -1,6 +1,7 @@
 <?php
 use Common\Lib\Crypt3Des;
 use Common\Lib\AliyunMsn;
+use Common\Lib\SavorRedis;
 
 function http_host(){
     $http = 'https://';

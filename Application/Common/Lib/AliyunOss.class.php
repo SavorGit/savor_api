@@ -179,6 +179,18 @@ class AliyunOss{
 //        }
         return $file_list;
     }
+
+    /**
+     * 获取一个文件（Object）的元数据信息
+     * @param string $oss_addr 文件地址
+     * @return string
+     */
+    public function getObjectMeta($oss_addr){
+        $ossClient = $this->ossClient;
+        $bucket = $this->bucket;
+        $content = $ossClient->getObjectMeta($bucket, $oss_addr);
+        return $content;
+    }
 	
 }
 ?>

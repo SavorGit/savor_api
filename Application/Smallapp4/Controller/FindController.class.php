@@ -207,7 +207,7 @@ class FindController extends CommonController{
             $key_hasfindprogram = $find_program_key.":$nowdate";
             $res_hasfindprogram = $redis->get($key_hasfindprogram);
             if(empty($res_hasfindprogram)){
-                $redis->set($key_hasfindprogram,$nowdate,86400);
+                $redis->set($key_hasfindprogram,date('Y-m-d H:i:s'),86400);
                 $this->handleFindProgram($find_program_key,$find_topids,$top_list,$find_data,$page);
             }
         }

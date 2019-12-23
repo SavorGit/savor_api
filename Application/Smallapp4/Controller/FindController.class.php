@@ -78,18 +78,6 @@ class FindController extends CommonController{
             }
         }
 
-        $is_update_findprogram = 0;
-        $find_program_key = C('SAPP_FIND_PROGRAM');
-        $res_find_program = $redis->get($find_program_key);
-        if(!empty($res_find_program)){
-            $data_findprogram = json_decode($res_find_program,true);
-            $tmp_topids = $data_findprogram['topids'];
-            if(array_diff($find_topids,$tmp_topids) || array_diff($tmp_topids,$find_topids)){
-                $is_update_findprogram = 1;
-            }
-        }else{
-            $is_update_findprogram = 1;
-        }
         $find_key = C('SAPP_FIND_CONTENTNEW');
         $res_cache = $redis->get($find_key);
         if(!empty($res_cache)){
@@ -97,7 +85,6 @@ class FindController extends CommonController{
             $find_data = json_decode($res_cache,true);
         }else{
             $is_expire = 1;
-            $is_update_findprogram = 1;
             //点播内容 获取最新一期设置为小程序的节目单
             $demand_num = $content_num['num']*$content_num['1'];
             $m_program_list =  new \Common\Model\ProgramMenuListModel();
@@ -164,7 +151,6 @@ class FindController extends CommonController{
             $where['box.state'] = 1;
             $where['hotel.flag'] = 0;
             $where['hotel.state'] = 1;
-            $where['user.status'] = 1;
             $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
             $res_choice = $m_public->getList($fields, $where,'id desc',"0,$choice_num");
 
@@ -200,16 +186,6 @@ class FindController extends CommonController{
             $find_data = array_merge($demand_list,$all_public);
             shuffle($find_data);
             $redis->set($find_key,json_encode($find_data),7200);
-        }
-
-        if($is_update_findprogram){
-            $nowdate = date('Ymd');
-            $key_hasfindprogram = $find_program_key.":$nowdate";
-            $res_hasfindprogram = $redis->get($key_hasfindprogram);
-            if(empty($res_hasfindprogram)){
-                $redis->set($key_hasfindprogram,date('Y-m-d H:i:s'),86400);
-                $this->handleFindProgram($find_program_key,$find_topids,$top_list,$find_data,$page);
-            }
         }
 
         $res_data = $find_data;
@@ -307,63 +283,6 @@ class FindController extends CommonController{
             $res_data = array_merge($top_list,$res_data);
         }
         $this->to_back($res_data);
-    }
-
-    private function handleFindProgram($find_program_key,$find_topids,$top_list,$find_data,$page){
-        $period = getMillisecond();
-        $findprogram_data = array();
-        if(!empty($find_topids)){
-            if($page==1){
-                $findprogram_data = $top_list;
-            }else{
-                $where = array('a.id'=>array('in',$find_topids),'a.res_type'=>2);
-                $where['box.flag'] = 0;
-                $where['box.state'] = 1;
-                $where['hotel.flag'] = 0;
-                $where['hotel.state'] = 1;
-                $where['user.status'] = 1;
-                $fields= 'a.id,a.forscreen_id,a.res_type,user.avatarUrl,user.nickName';
-                $m_public = new \Common\Model\Smallapp\PublicModel();
-                $findprogram_data = $m_public->getList($fields, $where,'a.id desc','');
-            }
-        }
-        $findprogram_num = 5;
-        $last_num = $findprogram_num-count($findprogram_data);
-        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
-        if($last_num>0){
-            foreach ($find_data as $fv){
-                if(in_array($fv['type'],array(2,3))){
-                    if(count($findprogram_data)>$findprogram_num){
-                        break;
-                    }
-                    $where = array('forscreen_id'=>$fv['forscreen_id']);
-                    $res_findscreen = $m_forscreenrecord->getWheredata('resource_size,md5_file',$where,'id desc');
-                    if(!empty($res_findscreen) && !empty($res_findscreen[0]['resource_size']) && !empty($res_findscreen[0]['md5_file'])){
-                        $findprogram_data[]=$fv;
-                    }
-
-                }
-            }
-        }
-        $datalist = array();
-        foreach ($findprogram_data as $fpv){
-            $info = array('id'=>$fpv['id'],'media_type'=>1,'nickName'=>$fpv['nickName'],'avatarUrl'=>$fpv['avatarUrl']);
-            $where = array('forscreen_id'=>$fpv['forscreen_id']);
-            $res_forscreen = $m_forscreenrecord->getWheredata('resource_id,imgs,md5_file,duration',$where,'id desc');
-            $info['duration'] = floor($res_forscreen[0]['duration']);
-            $imgs_info = json_decode($res_forscreen[0]['imgs'],true);
-            $oss_path = $imgs_info[0];
-            $name_info = pathinfo($oss_path);
-            $subdata = array(
-                array('vid'=>$res_forscreen[0]['resource_id'],'md5'=>$res_forscreen[0]['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename'])
-            );
-            $info['subdata'] = $subdata;
-            $datalist[] = $info;
-        }
-        $data_findprogram = array('period'=>$period,'topids'=>$find_topids,'datalist'=>$datalist);
-        $redis = SavorRedis::getInstance();
-        $redis->select(5);
-        $redis->set($find_program_key,json_encode($data_findprogram));
     }
 
     public function findlist(){

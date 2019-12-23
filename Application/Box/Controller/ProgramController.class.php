@@ -379,9 +379,47 @@ class ProgramController extends CommonController{
         if(!empty($res_cache)){
             $res_cache = json_decode($res_cache,true);
             $data = array('period'=>$res_cache['period'],'datalist'=>$res_cache['datalist']);
-        }else{
+        }else {
             $period = getMillisecond();
-            $data = array('period'=>$period,'datalist'=>array());
+            $where = array('a.status'=>2,'a.res_type'=>2);
+            $where['box.flag'] = 0;
+            $where['box.state'] = 1;
+            $where['hotel.flag'] = 0;
+            $where['hotel.state'] = 1;
+            $where['user.status'] = 1;
+            $fields = 'a.id,a.forscreen_id,a.res_type,user.avatarUrl,user.nickName';
+            $m_public = new \Common\Model\Smallapp\PublicModel();
+            $findprogram_data = $m_public->getList($fields, $where,'a.id desc',200);
+
+            $findprogram_num = 5;
+            $resource_size = 1024*1024*20;
+            $datalist = array();
+            $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+            foreach ($findprogram_data as $fpv) {
+                if(count($datalist)>$findprogram_num){
+                    break;
+                }
+                $info = array('id' => $fpv['id'],'media_type'=>1,'nickName'=>$fpv['nickName'],'avatarUrl'=>$fpv['avatarUrl']);
+
+                $where = array('forscreen_id'=>$fpv['forscreen_id']);
+                $res_forscreen = $m_forscreenrecord->getWheredata('resource_id,imgs,resource_size,md5_file,duration',$where, 'id desc');
+
+                if(!empty($res_forscreen) && !empty($res_forscreen[0]['resource_size']) && !empty($res_forscreen[0]['md5_file']) && $res_forscreen[0]['resource_size']<=$resource_size){
+                    $info['duration'] = floor($res_forscreen[0]['duration']);
+                    $imgs_info = json_decode($res_forscreen[0]['imgs'], true);
+                    $oss_path = $imgs_info[0];
+                    $name_info = pathinfo($oss_path);
+                    $subdata = array(
+                        array('vid'=>$res_forscreen[0]['resource_id'],'md5'=>$res_forscreen[0]['md5_file'],
+                            'oss_path'=>$oss_path,'name'=>$name_info['basename'])
+                    );
+                    $info['subdata'] = $subdata;
+                    $datalist[] = $info;
+                }
+            }
+            $data_findprogram = array('period'=>$period, 'datalist'=>$datalist);
+            $redis->set($find_program_key, json_encode($data_findprogram),86400*7);
+            $data = array('period'=>$period,'datalist'=>$datalist);
         }
         $data['type'] =2;
         $this->to_back($data);

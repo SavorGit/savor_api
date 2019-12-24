@@ -41,7 +41,7 @@ class WelcomeController extends CommonController{
         $openid = $this->params['openid'];
         $m_category = new \Common\Model\Smallapp\CategoryModel();
         $where = array('type'=>6,'status'=>1,'level'=>1);
-        $res_category = $m_category->getDataList('id,name',$where,'id asc');
+        $res_category = $m_category->getDataList('id,name',$where,'sort asc');
         $category_name_list = array();
         foreach ($res_category as $v){
             $category_name_list[]=$v['name'];

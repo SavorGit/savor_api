@@ -21,7 +21,7 @@ class WelcomeController extends CommonController{
                 break;
             case 'addwelcome':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'image'=>1002,'rotate'=>1002,
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'hotel_id'=>1002,'image'=>1002,'rotate'=>1002,
                     'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,
                     'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002);
                 break;
@@ -41,7 +41,7 @@ class WelcomeController extends CommonController{
         $openid = $this->params['openid'];
         $m_category = new \Common\Model\Smallapp\CategoryModel();
         $where = array('type'=>6,'status'=>1,'level'=>1);
-        $res_category = $m_category->getDataList('id,name',$where,'sort asc');
+        $res_category = $m_category->getDataList('id,name',$where,'sort desc');
         $category_name_list = array();
         foreach ($res_category as $v){
             $category_name_list[]=$v['name'];
@@ -124,19 +124,29 @@ class WelcomeController extends CommonController{
             }
         }
 
-        $m_box = new \Common\Model\BoxModel();
-        $map = array();
-        $map['a.mac'] = $box_mac;
-        $map['a.state'] = 1;
-        $map['a.flag']  = 0;
-        $map['d.state'] = 1;
-        $map['d.flag']  = 0;
-        $field = 'a.id as box_id,d.id as hotel_id';
-        $box_info = $m_box->getBoxInfo($field, $map);
-        if(empty($box_info)){
-            $this->to_back(70001);
+        if($box_mac==2){
+            $hotel_id = intval($this->params['hotel_id']);
+            if(empty($hotel_id)){
+                $this->to_back(1001);
+            }
+            $box_mac = 0;
+            $type = 2;
+        }else{
+            $type = 1;
+            $m_box = new \Common\Model\BoxModel();
+            $map = array();
+            $map['a.mac'] = $box_mac;
+            $map['a.state'] = 1;
+            $map['a.flag']  = 0;
+            $map['d.state'] = 1;
+            $map['d.flag']  = 0;
+            $field = 'a.id as box_id,d.id as hotel_id';
+            $box_info = $m_box->getBoxInfo($field, $map);
+            if(empty($box_info)){
+                $this->to_back(70001);
+            }
+            $hotel_id = $box_info[0]['hotel_id'];
         }
-        $hotel_id = $box_info[0]['hotel_id'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
@@ -147,7 +157,7 @@ class WelcomeController extends CommonController{
         $user_id = $res_user['id'];
         $content = trim($content);
         $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,
-            'color_id'=>$color_id,'music_id'=>$music_id,'play_type'=>$play_type,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);
+            'color_id'=>$color_id,'music_id'=>$music_id,'play_type'=>$play_type,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'type'=>$type);
         if($image){
             $data['image'] = $image;
         }
@@ -170,7 +180,13 @@ class WelcomeController extends CommonController{
         }
         $data['finish_time'] = date('Y-m-d H:i:s',$stime+$play_hour);
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
-        $tmp_welcome = $m_welcome->getDataList('id',array('box_mac'=>$box_mac,'status'=>1),'id desc');
+
+        if($type==1){
+            $play_where = array('box_mac'=>$box_mac,'status'=>1);
+        }else{
+            $play_where = array('hotel_id'=>$hotel_id,'status'=>1);
+        }
+        $tmp_welcome = $m_welcome->getDataList('id',$play_where,'id desc');
         if(!empty($tmp_welcome)){
             $ids = array();
             foreach ($tmp_welcome as $v){
@@ -214,15 +230,18 @@ class WelcomeController extends CommonController{
             foreach ($res_welcome['list'] as $k=>$v){
                 $box_mac = $v['box_mac'];
                 $res_box = $m_box->getInfoByHotelid($hotel_id,'box.name'," and box.mac='$box_mac' and box.state=1 and box.flag=0");
+
                 if(empty($res_box)){
-                    continue;
+                    $room_name = '全部包间';
+                }else{
+                    $room_name = $res_box[0]['name'];
                 }
                 if($v['play_type']==1){
                     $start_time = date('Y-m-d H:i',strtotime($v['add_time']));
                 }else{
                     $start_time = date('Y-m-d H:i',strtotime($v['play_date'].' '.$v['timing']));
                 }
-                $datalist[]=array('id'=>$v['id'],'room_name'=>$res_box[0]['name'],'content'=>$v['content'],
+                $datalist[]=array('id'=>$v['id'],'room_name'=>$room_name,'content'=>$v['content'],
                     'start_time'=>$start_time,'status'=>$v['status']);
             }
         }
@@ -359,10 +378,24 @@ class WelcomeController extends CommonController{
         $playtime = $sys_info['welcome_playtime'];
         $playtime = intval($playtime*60);
         $message['play_times'] = $playtime;
+
         $m_netty = new \Common\Model\NettyModel();
-        $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
-        if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
-            $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
+        if($res_welcome['type']==1){
+            $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
+            if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+                $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
+            }
+        }else{
+            $fields = 'a.id as box_id,a.mac as box_mac';
+            $m_box = new \Common\Model\BoxModel();
+            $res_box = $m_box->getBoxListByHotelid($fields,$res_welcome['hotel_id']);
+            foreach ($res_box as $v){
+                $box_mac = $v['box_mac'];
+                $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
+                if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+                    $m_netty->pushBox($box_mac,json_encode($message));
+                }
+            }
         }
         return $message;
     }

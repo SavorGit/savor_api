@@ -53,8 +53,8 @@ class WelcomeController extends CommonController{
     public function imglist(){
         $category_id = $this->params['category_id'];
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
-        $where = array('category_id'=>$category_id,'type'=>4);
-        $res_imgs = $m_welcomeresource->getDataList('id,media_id',$where,'id desc');
+        $where = array('category_id'=>$category_id,'type'=>4,'status'=>1);
+        $res_imgs = $m_welcomeresource->getDataList('id,media_id',$where,'id asc');
         $datalist = array();
         if(!empty($res_imgs)){
             $m_media = new \Common\Model\MediaModel();

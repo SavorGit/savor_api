@@ -22,7 +22,7 @@ class WelcomeController extends CommonController{
             case 'addwelcome':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'hotel_id'=>1002,'image'=>1002,'rotate'=>1002,
-                    'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,
+                    'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,
                     'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002);
                 break;
             case 'getwelcomelist':
@@ -73,7 +73,7 @@ class WelcomeController extends CommonController{
         $fields = 'id,name,media_id,color,small_wordsize,type';
         $where = array('status'=>1);
         $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
-        $wordsize = $color = $music = array();
+        $wordsize = $color = $music = $font = array();
         if(!empty($res_resource)){
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_resource as $v){
@@ -89,14 +89,25 @@ class WelcomeController extends CommonController{
                         $oss_addr = $res_media['oss_addr'];
                         $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr);
                         break;
+                    case 5:
+                        $res_media = $m_media->getMediaInfoById($v['media_id'],'https');
+                        $oss_addr = $res_media['oss_addr'];
+                        $font[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr);
+                        break;
                 }
             }
         }
         array_unshift($music,array('id'=>0,'name'=>'无音乐'));
+        array_unshift($font,array('id'=>0,'name'=>'默认字体'));
+        $font_namelist = array();
+        foreach ($font as $v){
+            $font_namelist[]=$v['name'];
+        }
         $m_sys_config = new \Common\Model\SysConfigModel();
         $sys_info = $m_sys_config->getAllconfig();
         $playtime = $sys_info['welcome_playtime'];
-        $res_data = array('playtime'=>$playtime,'wordsize'=>$wordsize,'color'=>$color,'music'=>$music);
+        $res_data = array('playtime'=>$playtime,'wordsize'=>$wordsize,'color'=>$color,'music'=>$music,
+            'font'=>$font,'font_namelist'=>$font_namelist);
         $this->to_back($res_data);
     }
 
@@ -110,6 +121,7 @@ class WelcomeController extends CommonController{
         $wordsize_id = $this->params['wordsize_id'];
         $color_id = $this->params['color_id'];
         $music_id = intval($this->params['music_id']);
+        $font_id = intval($this->params['font_id']);
         $play_type = $this->params['play_type'];
         $play_date = $this->params['play_date'];
         $timing = $this->params['timing'];
@@ -156,7 +168,7 @@ class WelcomeController extends CommonController{
         }
         $user_id = $res_user['id'];
         $content = trim($content);
-        $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,
+        $data = array('user_id'=>$user_id,'rotate'=>$rotate,'content'=>$content,'wordsize_id'=>$wordsize_id,'font_id'=>$font_id,
             'color_id'=>$color_id,'music_id'=>$music_id,'play_type'=>$play_type,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'type'=>$type);
         if($image){
             $data['image'] = $image;
@@ -335,10 +347,14 @@ class WelcomeController extends CommonController{
         $color_id = $res_welcome['color_id'];
         $backgroundimg_id = $res_welcome['backgroundimg_id'];
         $music_id = $res_welcome['music_id'];
+        $font_id = $res_welcome['font_id'];
 
         $ids = array($wordsize_id,$color_id);
         if($music_id){
             $ids[]=$music_id;
+        }
+        if($font_id){
+            $ids[]=$font_id;
         }
         if($backgroundimg_id){
             $ids[]=$backgroundimg_id;
@@ -373,6 +389,15 @@ class WelcomeController extends CommonController{
             $message['music_id'] = 0;
             $message['music_oss_addr'] = '';
         }
+        if(isset($resource_info[$font_id])){
+            $res_media = $m_media->getMediaInfoById($resource_info[$font_id]['media_id']);
+            $message['font_id'] = intval($font_id);
+            $message['font_oss_addr'] = $res_media['oss_addr'];
+        }else{
+            $message['font_id'] = 0;
+            $message['font_oss_addr'] = '';
+        }
+
         $m_sys_config = new \Common\Model\SysConfigModel();
         $sys_info = $m_sys_config->getAllconfig();
         $playtime = $sys_info['welcome_playtime'];

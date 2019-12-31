@@ -580,7 +580,14 @@ class ProgramController extends CommonController{
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
         $fields = 'id,name,media_id,type';
         $where = array('status'=>1);
-        $where['type'] = array('in',array(3,4));
+
+        $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
+        if($version>=2019123101){
+            $where['type'] = array('in',array(3,4,5));
+        }else{
+            $where['type'] = array('in',array(3,4));
+        }
+
         $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
         $data_list = array();
         if(!empty($res_resource)){

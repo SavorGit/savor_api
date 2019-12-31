@@ -35,8 +35,8 @@ class MediaModel extends Model{
 	}
 
 
-	public function getMediaInfoById($media_id){
-	    $oss_host = 'http://'.C('OSS_HOST').'/';
+	public function getMediaInfoById($media_id,$http='http'){
+	    $oss_host = "$http://".C('OSS_HOST').'/';
 	    $vinfo = $this->find($media_id);
 	    if($vinfo){
 	        $vinfo['oss_path'] = $vinfo['oss_addr'];

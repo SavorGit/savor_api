@@ -28,7 +28,9 @@ class IndexController extends CommonController{
         $res_sup_time = $this->params['res_sup_time'];
         $res_eup_time = $this->params['res_eup_time'];
 
-        $message = json_decode($msg,true);
+        $jsonStr= stripslashes(html_entity_decode($msg));
+        $message = json_decode($jsonStr,true);
+
         if(!is_array($message) || empty($message)){
             $this->to_back(90109);
         }
@@ -70,11 +72,10 @@ class IndexController extends CommonController{
             $result = json_decode($result,true);
             if($result['code']==10000){
                 $cmd_command = C('SAPP_CALL_NETY_CMD');
-                $tmp_msg = json_decode($msg,true);
-                $tmp_msg['req_id'] = $req_id;
-                unset($tmp_msg['res_sup_time'],$tmp_msg['res_eup_time']);
+                $message['req_id'] = $req_id;
+                unset($message['res_sup_time'],$message['res_eup_time']);
 
-                $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($tmp_msg),'req_id'=>$req_id);
+                $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id);
                 $post_data = http_build_query($push_data);
 
                 $request_time = getMillisecond();

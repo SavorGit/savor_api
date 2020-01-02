@@ -61,12 +61,12 @@ class ForscreenRecordModel extends Model{
            'netty_pushbox_time'=>'netty推送盒子时间',
 
            'box_receivetime'=>'盒子接收netty时间',
-           'box_downstime'=>'盒子下载时间时间',
+           'box_downstime'=>'盒子下载开始时间',
            'box_downetime'=>'盒子下载完成时间',
         );
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);
-        $cache_key = C('SAPP_FORSCREENPROCESS').$serial;
+        $cache_key = C('SAPP_FORSCREENTRACK').$serial;
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $data = json_decode($res_cache,true);

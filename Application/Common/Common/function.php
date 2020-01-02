@@ -150,6 +150,16 @@ function jd_union_api($params,$api,$method='get'){
     return $res_data;
 }
 
+function forscreen_serial($openid,$forscreen_id,$oss_addr=''){
+    $md5_str = $openid.$forscreen_id;
+    if($oss_addr){
+        $addr_info = parse_url($oss_addr);
+        $md5_str = $addr_info['path'];
+    }
+    $serial = md5($md5_str);
+    return $serial;
+}
+
 function isMobile($mobile) {
     return preg_match("/^1[3456789]\d{9}$/", $mobile);
 }

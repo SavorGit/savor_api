@@ -275,6 +275,7 @@ return array(
     'SAPP_FORMID'=>'smallapp:formid:',
     'SAPP_GUIDE_PROMPT'=>'smallapp:guideprompt:',
     'SAPP_INITDATA'=>'smallapp:initdata:',
+    'SAPP_FORSCREENTRACK'=>'smallapp:forscreentrack:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',

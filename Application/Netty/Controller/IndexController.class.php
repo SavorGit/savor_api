@@ -42,6 +42,7 @@ class IndexController extends CommonController{
             case 7://投文件图片
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
                 break;
+            case 9://呼码
             case 10://投照片图集
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id']);
                 break;
@@ -61,8 +62,8 @@ class IndexController extends CommonController{
         $params = array(
             'oss_stime'=>$res_sup_time,
             'oss_etime'=>$res_eup_time,
-            'php_position_nettystime'=>$netty_position_stime,
-            'php_position_nettyetime'=>$netty_position_etime,
+            'position_nettystime'=>$netty_position_stime,
+            'position_nettyetime'=>$netty_position_etime,
             'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,
             'netty_position_result'=>json_decode($result,true)
         );
@@ -83,7 +84,7 @@ class IndexController extends CommonController{
                 $ret = $this->curlPost($netty_push_url,$post_data);
 
                 $params = array(
-                    'php_request_nettytime'=>$request_time,
+                    'request_nettytime'=>$request_time,
                     'netty_url'=>$netty_push_url.'?'.$post_data,
                     'netty_result'=>json_decode($ret,true),
                 );

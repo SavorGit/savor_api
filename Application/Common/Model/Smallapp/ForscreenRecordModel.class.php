@@ -49,12 +49,12 @@ class ForscreenRecordModel extends Model{
            'oss_stime'=>'oss上传开始时间',
            'oss_etime'=>'oss上传结束时间',
 
-           'php_position_nettystime'=>'php请求定位netty接口开始时间',
-           'php_position_nettyetime'=>'php请求定位netty接口结束时间',
+           'position_nettystime'=>'php请求定位netty接口开始时间',
+           'position_nettyetime'=>'php请求定位netty接口结束时间',
            'netty_position_url'=>'netty定位接口',
            'netty_position_result'=>'netty定位接口返回数据',
 
-           'php_request_nettytime'=>'PHP请求netty时间',
+           'request_nettytime'=>'PHP请求netty时间',
            'netty_url'=>'php请求netty接口',
            'netty_result'=>'netty返回数据',
            'netty_receive_phptime'=>'netty接收php请求时间',

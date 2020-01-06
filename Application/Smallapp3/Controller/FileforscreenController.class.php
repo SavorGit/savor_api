@@ -77,16 +77,21 @@ class FileforscreenController extends CommonController{
         $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         $forscreen_id = $m_forscreenrecord->add($data);
 
+        $box_downstime = 0;
+        $box_downetime = 0;
+
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
         $cache_key = $key.':'.$md5_file;
         $res_cache = $redis->get($cache_key);
         if(empty($res_cache)){
+            $box_downstime = getMillisecond();
             $aliyun = new AliyunImm();
             $res = $aliyun->createOfficeConversion($oss_addr);
             $result = $this->getCreateOfficeConversionResult($res);
             if($result['status']==2){
+                $box_downetime = getMillisecond();
                 $redis->set($cache_key,json_encode($result['imgs']));
             }
             if($result['task_id'] && $md5_file){
@@ -103,6 +108,16 @@ class FileforscreenController extends CommonController{
                 'oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
                 'imgs'=>$imgs,'img_num'=>$img_num);
         }
+
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $params = array(
+            'oss_stime'=>$res_sup_time,
+            'oss_etime'=>$res_eup_time,
+            'box_downstime'=>$box_downstime,
+            'box_downetime'=>$box_downetime,
+        );
+        $m_forscreen->recordTrackLog($forscreen_id,$params);
+
         $result['forscreen_id'] = $forscreen_id;
         $this->to_back($result);
     }
@@ -131,12 +146,23 @@ class FileforscreenController extends CommonController{
             $aliyun = new AliyunImm();
             $res = $aliyun->getImgResponse($task_id);
             $result = $this->getCreateOfficeConversionResult($res);
+
             if($result['status']==2 && $md5_file){
                 if($forscreen_id){
                     $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
                     $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));
                 }
                 $redis->set($cache_key,json_encode($result['imgs']));
+
+                if($forscreen_id){
+                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $box_downetime = getMillisecond();
+                    $params = array(
+                        'box_downetime'=>$box_downetime,
+                    );
+                    $m_forscreen->recordTrackLog($forscreen_id,$params);
+                }
+
             }
         }
         $this->to_back($result);

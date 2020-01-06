@@ -15,8 +15,7 @@ class IndexController extends CommonController{
                 break;
             case 'pushnetty':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'msg'=>1001,
-                    'res_sup_time'=>1002,'res_eup_time'=>1002);
+                $this->valid_fields = array('box_mac'=>1001,'msg'=>1001);
                 break;
         }
         parent::_init_();
@@ -25,12 +24,9 @@ class IndexController extends CommonController{
     public function pushnetty(){
         $box_mac = $this->params['box_mac'];
         $msg = $this->params['msg'];
-        $res_sup_time = $this->params['res_sup_time'];
-        $res_eup_time = $this->params['res_eup_time'];
 
         $jsonStr= stripslashes(html_entity_decode($msg));
         $message = json_decode($jsonStr,true);
-
         if(!is_array($message) || empty($message)){
             $this->to_back(90109);
         }
@@ -39,6 +35,7 @@ class IndexController extends CommonController{
             case 2://发现投视频
             case 4://多图投屏
             case 5://点播官方视频
+            case 6://生日歌点播
             case 7://投文件图片
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
                 break;
@@ -60,8 +57,8 @@ class IndexController extends CommonController{
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $params = array(
-            'oss_stime'=>intval($res_sup_time),
-            'oss_etime'=>intval($res_eup_time),
+            'oss_stime'=>$message['res_sup_time'],
+            'oss_etime'=>$message['res_eup_time'],
             'position_nettystime'=>$netty_position_stime,
             'position_nettyetime'=>$netty_position_etime,
             'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,

@@ -154,7 +154,12 @@ function forscreen_serial($openid,$forscreen_id,$oss_addr=''){
     $md5_str = $openid.$forscreen_id;
     if(!empty($oss_addr)){
         $addr_info = parse_url($oss_addr);
-        $md5_str = $addr_info['path'];
+        if(strpos($addr_info['path'],'/')===0){
+            $path = substr($addr_info['path'],1);
+        }else{
+            $path = $addr_info['path'];
+        }
+        $md5_str.=$path;
     }
     $serial = md5($md5_str);
     return $serial;

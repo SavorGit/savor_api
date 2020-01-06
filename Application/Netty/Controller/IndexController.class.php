@@ -60,8 +60,8 @@ class IndexController extends CommonController{
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $params = array(
-            'oss_stime'=>$res_sup_time,
-            'oss_etime'=>$res_eup_time,
+            'oss_stime'=>intval($res_sup_time),
+            'oss_etime'=>intval($res_eup_time),
             'position_nettystime'=>$netty_position_stime,
             'position_nettyetime'=>$netty_position_etime,
             'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,

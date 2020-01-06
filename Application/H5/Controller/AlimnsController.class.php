@@ -26,7 +26,7 @@ class AlimnsController extends Controller{
                 $all_types = array('nettyapiin','nettyapiout');
                 if(in_array($type,$all_types)){
                     if($type=='nettyapiin'){
-                        $params = array('netty_receive_phptime'=>$res_message['timestamp']);
+                        $params = array('netty_receive_time'=>$res_message['timestamp']);
                     }else{
                         $params = array('netty_pushbox_time'=>$res_message['timestamp']);
                     }

@@ -57,7 +57,7 @@ class ForscreenRecordModel extends Model{
            'request_nettytime'=>'PHP请求netty时间',
            'netty_url'=>'php请求netty接口',
            'netty_result'=>'netty返回数据',
-           'netty_receive_phptime'=>'netty接收php请求时间',
+           'netty_receive_time'=>'netty接收php请求时间',
            'netty_pushbox_time'=>'netty推送盒子时间',
 
            'box_receivetime'=>'盒子接收netty时间',

@@ -23,6 +23,14 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'getGoodsProgramList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+            case 'getGoodsCountdown':
+                $this->is_verify = 1;
+                $this->valid_fields = array('goods_id'=>1001);
+                break;
             case 'getSelectcontentProgramList':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
@@ -120,16 +128,17 @@ class ProgramController extends CommonController{
             $redis->set($cache_key,json_encode($loopplay_data));
         }
         $nowtime = date('Y-m-d H:i:s');
-        $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金
+        $types = array(10,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy';
-        $where = array('type'=>$type,'status'=>2);
+        $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy,jd_url';
+        $where = array('status'=>2);
+        $where['type'] = array('in',$types);
         $where['start_time'] = array('elt',$nowtime);
         $where['end_time'] = array('egt',$nowtime);
         $orderby = 'id desc';
         $optimize_goods = $m_goods->getDataList($fields,$where,$orderby);
 
-        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy';
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $where['g.type']= 20;
         $where['g.start_time'] = array('elt',$nowtime);
@@ -156,7 +165,7 @@ class ProgramController extends CommonController{
         $program_list = array();
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
-                'start_date'=>$v['start_time'],'end_date'=>$v['end_time']);
+                'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>intval($v['type']));
             $media_info = $m_media->getMediaInfoById($v['media_id']);
             $info['oss_path'] = $media_info['oss_path'];
             $name_info = pathinfo($info['oss_path']);
@@ -169,6 +178,10 @@ class ProgramController extends CommonController{
             if($v['type']==20){
                 $is_storebuy = intval($v['is_storebuy']);
                 $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            }elseif($v['type']==40){
+                $is_storebuy = intval($v['is_storebuy']);
+                $content = urlencode($v['jd_url'].'?mac='.$box_mac);
+                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&content=$content&type=24";
             }else{
                 if(in_array($v['goods_id'],$hotel_goods_ids)){
                     $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
@@ -217,6 +230,24 @@ class ProgramController extends CommonController{
             $redis->set($program_key,json_encode($period_data));
         }
         $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+    public function getGoodsCountdown(){
+        $goods_id = intval($this->params['goods_id']);
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $fields = 'id,media_id,name,start_time,end_time,type,status';
+        $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+        $remain_time = 0;
+        if($res_goods['type']==40 && $res_goods['status']==2){
+            $end_time = strtotime($res_goods['end_time']);
+            $now_time = time();
+            $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+            if($remain_time==0){
+                $m_goods->updateData(array('id'=>$goods_id),array('status'=>4));
+            }
+        }
+        $res = array('remain_time'=>intval($remain_time));
         $this->to_back($res);
     }
 

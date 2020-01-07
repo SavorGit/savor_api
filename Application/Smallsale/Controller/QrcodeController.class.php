@@ -10,7 +10,7 @@ class QrcodeController extends CommonController{
         switch(ACTION_NAME) {
             case 'getBoxQrcode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1002,'uid'=>1002,'type'=>1001,'goods_id'=>1001);
+                $this->valid_fields = array('box_mac'=>1002,'uid'=>1002,'type'=>1001,'goods_id'=>1002,'content'=>1002);
                 break;
             case 'inviteQrcode':
                 $this->is_verify = 1;
@@ -24,7 +24,9 @@ class QrcodeController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $goods_id = $this->params['goods_id'];
         $uid = $this->params['uid'];
-        $type = $this->params['type'];//22购物二维码 23销售二维码
+        $content = $this->params['content'];
+        $type = $this->params['type'];//22购物二维码 23销售二维码 24秒杀二维码
+        /*
         if(!empty($box_mac)){
             $m_box = new \Common\Model\BoxModel();
             $map = array();
@@ -38,22 +40,28 @@ class QrcodeController extends CommonController{
                 $this->to_back(70001);
             }
         }
+        */
+        $short_urls = C('SHORT_URLS');
         $times = getMillisecond();
         switch ($type){
             case 22:
                 $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid.'_'.$times;
+                $qrcontent = $short_urls['SALE_BOX_QR'].$scene;
                 break;
             case 23:
                 $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$uid.'_'.$times;
+                $qrcontent = $short_urls['SALE_BOX_QR'].$scene;
+                break;
+            case 24:
+                $qrcontent = urldecode($content);
                 break;
             default:
                 $scene = 'ag_'.$box_mac.'_'.$type.'_'.$goods_id.'_'.$times;
+                $qrcontent = $short_urls['SALE_BOX_QR'].$scene;
         }
-        $short_urls = C('SHORT_URLS');
-        $content = $short_urls['SALE_BOX_QR'].$scene;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
-        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+        Qrcode::png($qrcontent,false,$errorCorrectionLevel, $matrixPointSize, 0);
     }
 
     public function inviteQrcode(){

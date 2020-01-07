@@ -209,7 +209,11 @@ class ProgramController extends CommonController{
                     $info['play_type'] = 1;
                 }
             }else{
-                $info['play_type'] = 2;
+                if($v['type']==40){
+                    $info['play_type'] = 1;
+                }else{
+                    $info['play_type'] = 2;
+                }
             }
             $program_list[] = $info;
             $goods_ids[] = $v['goods_id'];

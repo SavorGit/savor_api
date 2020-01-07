@@ -128,11 +128,11 @@ class ProgramController extends CommonController{
             $redis->set($cache_key,json_encode($loopplay_data));
         }
         $nowtime = date('Y-m-d H:i:s');
-        $types = array(10,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
+        $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy,jd_url';
         $where = array('status'=>2);
-        $where['type'] = array('in',$types);
+        $where['type'] = $type;
         $where['start_time'] = array('elt',$nowtime);
         $where['end_time'] = array('egt',$nowtime);
         $orderby = 'id desc';
@@ -140,14 +140,14 @@ class ProgramController extends CommonController{
 
         $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
-        $where['g.type']= 20;
+        $types = array(20,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
+        $where['g.type'] = array('in',$types);
         $where['g.start_time'] = array('elt',$nowtime);
         $where['g.end_time'] = array('egt',$nowtime);
         $orderby = 'g.id desc';
         $limit = "";
         $my_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');
         $res_goods = array_merge($optimize_goods,$my_hotelgoods);
-
 
         $fields = 'g.id as goods_id';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
@@ -236,7 +236,6 @@ class ProgramController extends CommonController{
     public function getGoodsCountdown(){
         $goods_id = intval($this->params['goods_id']);
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id,media_id,name,start_time,end_time,type,status';
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
         $remain_time = 0;
         if($res_goods['type']==40 && $res_goods['status']==2){
@@ -244,7 +243,7 @@ class ProgramController extends CommonController{
             $now_time = time();
             $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
             if($remain_time==0){
-                $m_goods->updateData(array('id'=>$goods_id),array('status'=>4));
+                $m_goods->updateData(array('id'=>$goods_id),array('status'=>5));
             }
         }
         $res = array('remain_time'=>intval($remain_time));

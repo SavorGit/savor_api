@@ -172,7 +172,7 @@ class ProgramController extends CommonController{
             $info['name'] = $name_info['basename'];
             $info['media_type'] = $media_info['type'];
             $info['md5'] = $media_info['md5'];
-            $info['duration'] = $media_info['duration'];
+            $info['duration'] = intval($media_info['duration']);
             $qrcode_url = '';
             $is_storebuy = 0;
             if($v['type']==20){
@@ -182,6 +182,9 @@ class ProgramController extends CommonController{
                 $is_storebuy = intval($v['is_storebuy']);
                 $content = urlencode($v['jd_url'].'?mac='.$box_mac);
                 $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&content=$content&type=24";
+                if(empty($info['duration'])){
+                    $info['duration'] = 15;
+                }
             }else{
                 if(in_array($v['goods_id'],$hotel_goods_ids)){
                     $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";

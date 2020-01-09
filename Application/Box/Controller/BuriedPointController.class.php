@@ -11,9 +11,28 @@ class BuriedPointController extends CommonController{
                 $this->valid_fields = array('req_id'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,'box_mac'=>1001,
                     'openid'=>1001,'used_time'=>1001,'is_exist'=>1001,'is_break'=>1002,'receive_nettytime'=>1001);
                 break;
+            case 'boxReceiveNetty':
+                $this->is_verify = 1;
+                $this->valid_fields = array('req_id'=>1001);
+                break;
         }
         parent::_init_();
     }
+
+    public function boxReceiveNetty(){
+        $req_id = $this->params['req_id'];
+
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $receive_nettytime = getMillisecond();
+        $params = array(
+            'box_receivetime'=>$receive_nettytime,
+        );
+        $m_forscreen->recordTrackLog($req_id,$params);
+        $time = getMillisecond();
+        $res = array('nowtime'=>$time);
+        $this->to_back($res);
+    }
+
 
     /**
      * @desc 机顶盒上报资源下载情况
@@ -37,13 +56,11 @@ class BuriedPointController extends CommonController{
                 break;
             case 0:
                 $data['used_time'] = $used_time;
-                $now_time = getMillisecond();
-                $data['box_res_sdown_time'] = $now_time - $used_time;
-                $data['box_res_edown_time'] = $now_time;
+                $data['box_res_sdown_time'] = $receive_nettytime;
+                $data['box_res_edown_time'] = $receive_nettytime + $used_time;
                 break;
-            case 2:
-                $now_time = getMillisecond();
-                $data['box_res_sdown_time'] = $now_time - $used_time;
+            case 2://下载失败
+                $data['box_res_sdown_time'] = $receive_nettytime;
                 $data['box_res_edown_time'] = 0 ;
                 break;
         }

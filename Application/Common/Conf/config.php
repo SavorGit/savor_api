@@ -36,7 +36,7 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14','Smallapp4'), //模块配置
+	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置

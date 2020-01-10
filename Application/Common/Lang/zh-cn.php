@@ -309,6 +309,7 @@ return array(
     'smallappsale_welcome_has_remove'=>'欢迎词已删除',
     'smallappsale_welcome_had_play'=>'欢迎词正在播放,不能删除',
     'smallappsale_welcome_choose_data_error'=>'请你选择正确的时间',
+    'smallappsale_addgoods_had_over_max'=>'添加餐厅活动已达上限',
 
 
 );

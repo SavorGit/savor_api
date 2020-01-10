@@ -13,7 +13,7 @@ class FileforscreenController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'oss_addr'=>1001,
                     'resource_name'=>1001,'mobile_brand'=>1002,'mobile_model'=>1002,'action'=>1002,
                     'resource_type'=>1002,'resource_size'=>1002,'res_sup_time'=>1002,'res_eup_time'=>1002,
-                    'save_type'=>1002
+                    'save_type'=>1002,'small_app_id'=>1002,
                 );
                 break;
             case 'getresult':
@@ -42,6 +42,7 @@ class FileforscreenController extends CommonController{
         $res_sup_time = $this->params['res_sup_time'] ? $this->params['res_sup_time'] : 0;
         $res_eup_time = $this->params['res_eup_time'] ? $this->params['res_eup_time'] : 0;
         $save_type = intval($this->params['save_type']);
+        $small_app_id = $this->params['small_app_id']?intval($this->params['small_app_id']):1;
 
         $imgs = json_encode(array($oss_addr));
 
@@ -60,6 +61,9 @@ class FileforscreenController extends CommonController{
         $data['create_time'] = date('Y-m-d H:i:s');
         if($save_type){
             $data['save_type'] = $save_type;
+        }
+        if($small_app_id){
+            $data['small_app_id'] = $small_app_id;
         }
 
         $accessKeyId = C('OSS_ACCESS_ID');

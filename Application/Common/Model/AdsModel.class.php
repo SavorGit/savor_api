@@ -1,15 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baiyutao
- * Date: 2017/5/16
- * Time: 13:54
- */
 namespace Common\Model;
 use Think\Model;
 
-class AdsModel extends Model
-{
+class AdsModel extends Model{
 	protected $tableName='ads';
 
 	public function getWhere($where, $field){
@@ -17,13 +10,6 @@ class AdsModel extends Model
 		return $list;
 	}
 
-	/**
-	 * getadvInfo ȡ����¥���Ӧ��Ŀ����������Ƭ
-	 * @access public
-	 * @param $hotelid ��¥id
-	 * @param $menuid  ��¥��Ӧ�˵�id
-	 * @return mixed
-	 */
 	public function getadvInfo($hotelid, $menuid){
 		$field = "media.id AS id,
 				media.oss_addr AS name,
@@ -56,13 +42,6 @@ class AdsModel extends Model
 
 	}
 
-	/**
-	 * getadsInfo ȡ����¥���Ӧ��Ŀ��������ads
-	 * @access public
-	 * @param $hotelid ��¥id
-	 * @param $menuid  ��¥��Ӧ�˵�id
-	 * @return mixed
-	 */
 	public function getadsInfo($menuid){
 		$field = "media.id AS id,
 				media.oss_addr AS name,
@@ -92,14 +71,6 @@ class AdsModel extends Model
 
 	}
 
-
-	/**
-	 * getproInfo ȡ����¥���Ӧ��Ŀ�������н�Ŀ
-	 * @access public
-	 * @param $hotelid ��¥id
-	 * @param $menuid  ��¥��Ӧ�˵�id
-	 * @return mixed
-	 */
 	public function getproInfo($menuid){
 		$field = "media.id AS id,
 				media.oss_addr AS name,
@@ -127,16 +98,19 @@ class AdsModel extends Model
 
 		$result = $this->query($sql);
 		return $result;
-
 	}
-	public function getAdsList($field,$where,$order,$limit){
+
+	public function getAdsList($field,$where,$order,$limit,$group=''){
 	    $data = $this->alias('a')
 	         ->join('savor_media b on a.media_id =b.id','left')
 	         ->field($field)
 	         ->where($where)
 	         ->order($order)
+             ->group($group)
 	         ->limit($limit)
 	         ->select();
 	    return $data;
 	}
+
+
 }

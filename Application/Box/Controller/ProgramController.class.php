@@ -130,7 +130,7 @@ class ProgramController extends CommonController{
         $nowtime = date('Y-m-d H:i:s');
         $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
-        $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy,jd_url';
+        $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy,jd_url,duration';
         $where = array('status'=>2);
         $where['type'] = $type;
         $where['start_time'] = array('elt',$nowtime);
@@ -138,7 +138,7 @@ class ProgramController extends CommonController{
         $orderby = 'id desc';
         $optimize_goods = $m_goods->getDataList($fields,$where,$orderby);
 
-        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url';
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url,g.duration';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $types = array(20,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $where['g.type'] = array('in',$types);
@@ -178,6 +178,9 @@ class ProgramController extends CommonController{
             if($v['type']==20){
                 $is_storebuy = intval($v['is_storebuy']);
                 $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+                if($media_info['type']==2 && $v['duration']){
+                    $info['duration'] = intval($v['duration']);
+                }
             }elseif($v['type']==40){
                 $is_storebuy = intval($v['is_storebuy']);
                 $content = urlencode($v['jd_url'].'?mac='.$box_mac);
@@ -299,7 +302,7 @@ class ProgramController extends CommonController{
             $redis->set($cache_key,json_encode($loopplay_data));
         }
         $nowtime = date('Y-m-d H:i:s');
-        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope';
+        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.duration';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $where['g.type']= array('in',array(10,20));
         $where['g.end_time'] = array('egt',$nowtime);
@@ -322,6 +325,9 @@ class ProgramController extends CommonController{
             $info['md5'] = $media_info['md5'];
             $info['duration'] = $media_info['duration'];
             $info['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
+            if($v['type']==20 && $media_info['type']==2 && $v['duration']){
+                $info['duration'] = $v['duration'];
+            }
             if(isset($loopplay_data[$v['goods_id']])){
                 if($v['type']==20 && $v['scope']){
                     if($v['scope']==1){

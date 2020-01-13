@@ -48,7 +48,7 @@ class BuriedPointController extends CommonController{
         $is_break     = $this->params['is_break'];
         $receive_nettytime = $this->params['receive_nettytime'];
 
-        $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,'openid'=>$openid,
+        $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
             'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
 
         switch ($is_exist){

@@ -327,6 +327,9 @@ return array(
 	    '93023'=>'smallappsale_welcome_had_play',
 	    '93024'=>'smallappsale_welcome_choose_data_error',
 	    '93025'=>'smallappsale_addgoods_had_over_max',
+	    '93026'=>'smallappsale_update_taskshareprofit_had_over_max',
+	    '93027'=>'smallappsale_taskshareprofit_update_no_permission',
+	    '93028'=>'smallappsale_set_taskshareprofit_error',
 
 	),
 );

@@ -105,6 +105,7 @@ class GoodsController extends CommonController{
                     $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
                     $v['img_url'] = str_replace('http://','https://',$v['img_url']);
                     $v['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
+                    $v['is_my_activity'] = 1;
                     unset($v['media_id'],$v['imgmedia_id']);
                     $datalist[]=$v;
                 }

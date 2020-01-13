@@ -310,6 +310,9 @@ return array(
     'smallappsale_welcome_had_play'=>'欢迎词正在播放,不能删除',
     'smallappsale_welcome_choose_data_error'=>'请你选择正确的时间',
     'smallappsale_addgoods_had_over_max'=>'添加餐厅活动已达上限',
+    'smallappsale_update_taskshareprofit_had_over_max'=>'本月修改分润设置已达上限',
+    'smallappsale_taskshareprofit_update_no_permission'=>'你无此权限进行修改',
+    'smallappsale_set_taskshareprofit_error'=>'分润比例设置有误',
 
 
 );

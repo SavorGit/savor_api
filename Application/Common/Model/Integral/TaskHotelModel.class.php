@@ -13,4 +13,16 @@ class TaskHotelModel extends BaseModel{
             ->select();
         return $data;
     }
+
+    public function getHotelTaskList($fields,$where,$order,$start,$size){
+        $task_list = $this->alias('a')
+            ->join('savor_integral_task task on a.task_id=task.id','left')
+            ->join('savor_media media on task.media_id=media.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($start,$size)
+            ->select();
+        return $task_list;
+    }
 }

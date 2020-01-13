@@ -36,8 +36,14 @@ class IndexController extends CommonController{
             case 4://多图投屏
             case 5://点播官方视频
             case 6://生日歌点播
-            case 7://投文件图片
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
+                break;
+            case 7://投文件图片
+                if(isset($message['resource_id'])){
+                    $req_id = forscreen_serial($message['openid'],$message['resource_id'],$message['url']);
+                }else{
+                    $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
+                }
                 break;
             case 9://呼码
             case 10://投照片图集

@@ -72,6 +72,7 @@ class GoodsController extends CommonController{
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $nowtime = date('Y-m-d H:i:s');
         $is_my_activity = 0;
+        $is_add_myactivity = 0;
         $datalist = array();
 
         if($type==20){
@@ -122,6 +123,7 @@ class GoodsController extends CommonController{
             $where['h.type']=1;//todo 需要调整为3
 
             if(10-count($datalist)>0){
+                $is_add_myactivity = 1;
                 $remain_nums = 10-count($datalist);
             }else{
                 $remain_nums = 0;
@@ -166,7 +168,7 @@ class GoodsController extends CommonController{
             }
         }
 
-        $data = array('datalist'=>$datalist,'is_my_activity'=>$is_my_activity);
+        $data = array('datalist'=>$datalist,'is_my_activity'=>$is_my_activity,'is_add_myactivity'=>$is_add_myactivity);
         $this->to_back($data);
     }
 

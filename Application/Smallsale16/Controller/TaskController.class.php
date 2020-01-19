@@ -75,24 +75,24 @@ class TaskController extends CommonController{
         $field_staff = 'a.openid,a.level,merchant.type';
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
-//        if(empty($res_staff)){
-//            $this->to_back(93014);
-//        }
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
         $res_staff = $res_staff[0];
-        $res_staff['level']  = 1;
 
-        $level1 = $level2 = $num = 0;
+        $level1 = $level2 = $last_num = 0;
         if($res_staff['level']==1){
             $where = array('task_id'=>$task_id);
             $where['hotel_id'] = array('in',array(0,$hotel_id));
             $m_task_shareprofit = new \Common\Model\Integral\TaskShareprofitModel();
             $res_shareprofit = $m_task_shareprofit->getTaskShareprofit('level1,level2',$where,'id desc',0,1);
+
             $level1 = intval($res_shareprofit[0]['level1']);
             $level2 = intval($res_shareprofit[0]['level2']);
 
             $where = array('task_id'=>$task_id,'hotel_id'=>$hotel_id,'openid'=>$openid);
-            $start_time = date('Y-m-d 00:00:00');
-            $end_time   = date('Y-m-d 23:59:59');
+            $start_time = date('Y-m-01 00:00:00');
+            $end_time   = date('Y-m-31 23:59:59');
             $where['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
             $res_num = $m_task_shareprofit->getTaskShareprofit('count(id) as num',$where,'id desc',0,1);
             $num = intval($res_num[0]['num']);
@@ -126,8 +126,8 @@ class TaskController extends CommonController{
         }
 
         $where = array('task_id'=>$task_id,'hotel_id'=>$hotel_id,'openid'=>$openid);
-        $start_time = date('Y-m-d 00:00:00');
-        $end_time   = date('Y-m-d 23:59:59');
+        $start_time = date('Y-m-01 00:00:00');
+        $end_time   = date('Y-m-31 23:59:59');
         $where['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
         $m_task_shareprofit = new \Common\Model\Integral\TaskShareprofitModel();
         $res_num = $m_task_shareprofit->getTaskShareprofit('count(id) as num',$where,'id desc',0,1);

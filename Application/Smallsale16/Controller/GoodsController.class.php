@@ -78,7 +78,6 @@ class GoodsController extends CommonController{
         if($type==20){
             $fields = 'g.id as goods_id,g.name goods_name,g.media_id,g.imgmedia_id,g.price,g.rebate_integral,g.jd_url,g.page_url,g.start_time,g.end_time,g.scope,g.status';
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type,'h.type'=>1,'h.openid'=>$openid);
-            $where['g.status'] = array('in',array(1,2,3,5));
             $limit = "0,10";
             $res_goods = $m_hotelgoods->getList($fields,$where,'g.id desc',$limit);
             if(!empty($res_goods)){
@@ -86,6 +85,9 @@ class GoodsController extends CommonController{
                 foreach ($res_goods as $v){
                     if($nowtime > $v['end_time']){
                         $v['status'] = 5;
+                    }
+                    if($v['status']==4){
+                        $v['status'] = 3;
                     }
                     $media_id = $v['media_id'];
                     $imgmedia_id = $v['imgmedia_id'];
@@ -107,6 +109,7 @@ class GoodsController extends CommonController{
                     $v['img_url'] = str_replace('http://','https://',$v['img_url']);
                     $v['qrcode_url'] = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
                     $v['is_my_activity'] = 1;
+                    $v['price'] = intval($v['price']);
                     unset($v['media_id'],$v['imgmedia_id']);
                     $datalist[]=$v;
                 }
@@ -118,6 +121,7 @@ class GoodsController extends CommonController{
         $orderby = 'g.id desc';
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>$type,'g.status'=>2);
         $where['g.end_time'] = array('egt',$nowtime);
+        $is_goods = 1;
         if($type==20){
             $where['h.openid'] = array('neq',$openid);
             $where['h.type']=1;//todo 需要调整为3
@@ -129,6 +133,9 @@ class GoodsController extends CommonController{
                 $remain_nums = 0;
             }
             if($page==1){
+                if($remain_nums==0){
+                    $is_goods = 0;
+                }
                 $limit = "0,$remain_nums";
             }else{
                 $limit = "0,$all_nums";
@@ -138,7 +145,12 @@ class GoodsController extends CommonController{
             $where['h.type']=2;
             $limit = "0,$all_nums";
         }
-        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        if($is_goods){
+            $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+        }else{
+            $res_goods = array();
+        }
+
         if(!empty($res_goods)){
             foreach ($res_goods as $v){
                 $media_id = $v['media_id'];
@@ -163,6 +175,7 @@ class GoodsController extends CommonController{
                     $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
                 }
                 $v['qrcode_url'] = $qrcode_url;
+                $v['price'] = intval($v['price']);
                 unset($v['media_id'],$v['imgmedia_id']);
                 $datalist[] = $v;
             }
@@ -357,22 +370,23 @@ class GoodsController extends CommonController{
         }
 
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'count(h.id) as goods_num';
-        $where = array('h.hotel_id'=>$hotel_id);
-        $where['h.openid'] = $openid;
-        $where['g.type'] = 20;
-        $orderby = 'g.id desc';
-        $limit = "0,1";
-        $res_num = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
-        if(!empty($res_num) && $res_num[0]['goods_num']>=10){
-            $this->to_back(93025);
-        }
-
         if($goods_id){
             $hwhere = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
             $res_hotelgoods = $m_hotelgoods->getInfo($hwhere);
             if(empty($res_hotelgoods)){
                 $this->to_back(92013);
+            }
+        }else{
+            $fields = 'count(h.id) as goods_num';
+            $where = array('h.hotel_id'=>$hotel_id);
+            $where['h.openid'] = $openid;
+            $where['h.type'] = 1;
+            $where['g.type'] = 20;
+            $orderby = 'g.id desc';
+            $limit = "0,1";
+            $res_num = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
+            if(!empty($res_num) && $res_num[0]['goods_num']>=10){
+                $this->to_back(93025);
             }
         }
 
@@ -443,39 +457,28 @@ class GoodsController extends CommonController{
                 $media_id = $res_goods['media_id'];
             }
             $status = $res_goods['status'];
-            $now_time = date('Y-m-d H:i:s');
-            if($now_time>$res_goods['end_time']){
-                $status = 5;
-                $m_goods->updateData(array('id'=>$goods_id),array('status'=>5));
 
-                if(empty($data['media_id'])){
-                    $this->to_back(92017);
-                }
-                $goods_id = $m_goods->addData($data);
-                $hotelgoods_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'goods_id'=>$goods_id);
-                $m_hotelgoods->addData($hotelgoods_data);
-            }else{
-                $old_data = array('price'=>intval($res_goods['price']),'type'=>intval($res_goods['type']),'scope'=>intval($res_goods['scope']),
-                    'start_time'=>$res_goods['start_time'],'end_time'=>$res_goods['end_time'],'media_id'=>$res_goods['media_id']
-                );
-                if($res_goods['name']){
-                    $old_data['name'] = $res_goods['name'];
-                }
-                $old_data_md5 = md5(json_encode($old_data));
-
-                $new_data = array('price'=>intval($price),'type'=>20,'scope'=>$scope,
-                    'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
-                    'media_id'=>$media_id
-                );
-                if($goods_name){
-                    $new_data['name'] = $goods_name;
-                }
-                $new_data_md5 = md5(json_encode($new_data));
-                if($old_data_md5!=$new_data_md5){
-                    $status = 1;
-                    $m_goods->updateData(array('id'=>$goods_id),$data);
-                }
+            $old_data = array('price'=>intval($res_goods['price']),'type'=>intval($res_goods['type']),'scope'=>intval($res_goods['scope']),
+                'start_time'=>$res_goods['start_time'],'end_time'=>$res_goods['end_time'],'media_id'=>$res_goods['media_id']
+            );
+            if($res_goods['name']){
+                $old_data['name'] = $res_goods['name'];
             }
+            $old_data_md5 = md5(json_encode($old_data));
+
+            $new_data = array('price'=>intval($price),'type'=>20,'scope'=>$scope,
+                'start_time'=>date('Y-m-d 00:00:00',$tmp_start_time),'end_time'=>date('Y-m-d 23:59:59',$tmp_end_time),
+                'media_id'=>$media_id
+            );
+            if($goods_name){
+                $new_data['name'] = $goods_name;
+            }
+            $new_data_md5 = md5(json_encode($new_data));
+            if($old_data_md5!=$new_data_md5){
+                $status = 1;
+                $m_goods->updateData(array('id'=>$goods_id),$data);
+            }
+
         }else{
             $status = 1;
             $data['status'] = $status;

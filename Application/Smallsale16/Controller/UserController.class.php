@@ -445,7 +445,7 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,content,type,integral_time,goods_id';
+        $fields = 'room_name,integral,content,type,integral_time,goods_id,source';
         $where = array('openid'=>$openid);
         if($type){
             $where['type'] = $type;
@@ -454,6 +454,7 @@ class UserController extends CommonController{
         if($idate){
             $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
         }
+        $where['integral'] = array('gt',0);
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
         $all_types = C('INTEGRAL_TYPES');
@@ -487,6 +488,9 @@ class UserController extends CommonController{
                 default:
                     $content = "";
             }
+            if($v['source']==4 && $content){
+                $content = $all_types[$v['type']].'(分润)';
+            }
             $info['content'] = $content;
             $datalist[] = $info;
 
@@ -517,7 +521,9 @@ class UserController extends CommonController{
 
         $has_integral_date = 0;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $res_record = $m_userintegral_record->getDataList('id,add_time',array('openid'=>$openid),'id desc',0,1);
+        $where = array('openid'=>$openid);
+        $where['integral'] = array('gt',0);
+        $res_record = $m_userintegral_record->getDataList('id,add_time',$where,'id desc',0,1);
         if($res_record['total']){
             $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
         }

@@ -10,15 +10,15 @@ class ForscreenLogController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            
-            case 'recordForScreen':
+            case 'recordForScreenPics':
                $this->is_verify = 1;
                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
                    'imgs'=>1000,'mobile_brand'=>1000,
                    'mobile_model'=>1000,'action'=>1001,
                    'resource_type'=>1000,'resource_id'=>1000,
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
-                   'forscreen_id'=>1000,'small_app_id'=>1001
+                   'forscreen_id'=>1000,'small_app_id'=>1001,
+                   'goods_id'=>1002,
                );
                break;
         }
@@ -70,6 +70,12 @@ class ForscreenLogController extends CommonController{
         $cache_key = C('SAPP_SCRREN').":".$box_mac;
     
         $redis->rpush($cache_key, json_encode($data));
+
+        if($action==40){
+            $goods_id = intval($this->params['goods_id']);
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $m_userintegral->activityPromote($openid,$box_mac,$goods_id,2);
+        }
         
         $this->to_back(10000);
     }

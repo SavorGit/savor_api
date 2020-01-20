@@ -60,7 +60,7 @@ class IndexController extends CommonController{
         $netty_position_stime = getMillisecond();
         $result = $this->curlPost($nettyBalanceURL, $post_data);
         $netty_position_etime = getMillisecond();
-
+        $position_result = json_decode($result,true);
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $params = array(
             'oss_stime'=>$message['res_sup_time'],
@@ -68,13 +68,27 @@ class IndexController extends CommonController{
             'position_nettystime'=>$netty_position_stime,
             'position_nettyetime'=>$netty_position_etime,
             'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,
-            'netty_position_result'=>json_decode($result,true)
+            'netty_position_result'=>$position_result
         );
         $m_forscreen->recordTrackLog($req_id,$params);
+        if($position_result && $position_result['code']!=10000){
+            $netty_position_stime = getMillisecond();
+            $result = $this->curlPost($nettyBalanceURL, $post_data);
+            $netty_position_etime = getMillisecond();
+            $position_result = json_decode($result,true);
+            $params = array(
+                'oss_stime'=>$message['res_sup_time'],
+                'oss_etime'=>$message['res_eup_time'],
+                'position_nettystime'=>$netty_position_stime,
+                'position_nettyetime'=>$netty_position_etime,
+                'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,
+                'netty_position_result'=>$position_result
+            );
+            $m_forscreen->recordTrackLog($req_id,$params);
+        }
 
-        if($result){
-            $result = json_decode($result,true);
-            if($result['code']==10000){
+        if($position_result){
+            if($position_result['code']==10000){
                 $cmd_command = C('SAPP_CALL_NETY_CMD');
                 $message['req_id'] = $req_id;
                 unset($message['res_sup_time'],$message['res_eup_time']);
@@ -83,7 +97,7 @@ class IndexController extends CommonController{
                 $post_data = http_build_query($push_data);
 
                 $request_time = getMillisecond();
-                $netty_push_url = 'http://'.$result['result'].'/push/box';
+                $netty_push_url = 'http://'.$position_result['result'].'/push/box';
                 $ret = $this->curlPost($netty_push_url,$post_data);
 
                 $params = array(

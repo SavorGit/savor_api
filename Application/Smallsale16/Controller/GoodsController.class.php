@@ -181,7 +181,10 @@ class GoodsController extends CommonController{
             }
         }
 
-        $data = array('datalist'=>$datalist,'is_my_activity'=>$is_my_activity,'is_add_myactivity'=>$is_add_myactivity);
+        $data = array('datalist'=>$datalist,'is_my_activity'=>$is_my_activity);
+        if($type==20){
+            $data['is_add_myactivity'] = $is_add_myactivity;
+        }
         $this->to_back($data);
     }
 

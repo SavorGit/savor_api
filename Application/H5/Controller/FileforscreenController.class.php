@@ -9,6 +9,7 @@ class FileforscreenController extends Controller {
 
     public function index(){
         $openid = I('get.openid','');
+        $source = I('get.source','');
         if(empty($openid)){
             die('Parameter error');
         }
@@ -45,11 +46,16 @@ class FileforscreenController extends Controller {
                 $frequent_screen[] = $info;
             }
         }
+        if($source=='sale'){
+            $display_html = 'sale';
+        }else{
+            $display_html = 'index';
+        }
         $file_ext = C('SAPP_FILE_FORSCREEN_TYPES');
         $this->assign('file_ext',join(',',array_keys($file_ext)));
         $this->assign('latest_screen',$latest_screen);
         $this->assign('frequent_screen',$frequent_screen);
-        $this->display();
+        $this->display($display_html);
     }
 
     public function addlog(){

@@ -330,6 +330,11 @@ return array(
 	    '93026'=>'smallappsale_update_taskshareprofit_had_over_max',
 	    '93027'=>'smallappsale_taskshareprofit_update_no_permission',
 	    '93028'=>'smallappsale_set_taskshareprofit_error',
+	    '93029'=>'smallappsale_choose_room_error',
+	    '93030'=>'smallappsale_staff_not_exist_inhotel',
+	    '93031'=>'smallappsale_not_have_permission',
+	    '93032'=>'smallappsale_staff_not_support_set_permission',
+	    '93033'=>'smallappsale_staff_has_set_permission',
 
 	),
 );

@@ -73,7 +73,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('mobile'=>1001,'verify_code'=>1001,'openid'=>1001);
                 break;
-
+            case 'edit':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -427,6 +430,35 @@ class UserController extends CommonController{
         $this->to_back($data);
     }
 
+    public function edit(){
+        $openid = $this->params['openid'];
+        $name = $this->params['name'];
+        $avatar_url = $this->params['avatar_url'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id,openid,avatarUrl,nickName,gender,status';
+        $res_user = $m_user->getOne($fields, $where);
+        if (empty($res_user)) {
+            $this->to_back(92010);
+        }
+        if($name || $avatar_url){
+            if($name){
+                $data = array('nickName'=>$name);
+            }else{
+                $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
+                $data = array('avatarUrl'=>$avatar_url);
+            }
+            $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+            $data = array('message'=>'修改成功');
+            $this->to_back($data);
+        }else{
+            $data = array('message'=>'修改失败');
+            $this->to_back($data);
+        }
+    }
+
     public function integralrecord(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
@@ -555,32 +587,16 @@ class UserController extends CommonController{
         if(empty($pagesize)){
             $pagesize = 15;
         }
-        //$m_hotel_invite_code = new \Common\Model\Smallapp\HotelInviteCodeModel();
-        //$where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        //$res_invite_code = $m_hotel_invite_code->getInfo($where);
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_invite_code = $m_staff->alias('a')
-                                      ->join('savor_integral_merchant m on m.id=a.merchant_id')
-                                      ->where(array('a.openid'=>$openid,'a.status'=>1,'m.status'=>1))
-                                      ->field('m.type,a.id,parent_id')
-                                      ->find();
-        if($res_invite_code['type']!=2){
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
+        if(empty($res_staff) || $res_staff['type']!=2){
             $this->to_back(93001);
         }
         $all_nums = $page * $pagesize;
-        //$where = array('invite_id'=>$res_invite_code['id'],'state'=>1,'flag'=>0,'type'=>1);
-        //$res_invites = $m_hotel_invite_code->getDataList('openid',$where,'id desc',0,$all_nums);
-        
-        $res_invites = $m_staff->alias('a')
-                               ->join('savor_integral_merchant_staff staff_lev1 on a.id= staff_lev1.parent_id')
-                               ->field('staff_lev1.openid,staff_lev1.parent_id')
-                               ->where(array('a.openid'=>$openid,'a.status'=>1,'staff_lev1.status'=>1))
-                               ->limit(0,$all_nums)
-                               ->select();
-        $total = count($res_invites);
-        
+        $res_invites = $m_staff->getStaffsByOpenid($openid,0,$all_nums);
         $datalist = array();
-        if($total){
+        if(!empty($res_invites)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             foreach ($res_invites as $v){
                 $where = array('openid'=>$v['openid']);
@@ -598,21 +614,19 @@ class UserController extends CommonController{
         $openid = $this->params['openid'];
         $invite_id = $this->params['invite_id'];
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array();
-        $where['openid'] = $openid;
-        $where['small_app_id'] = 5;
+        $where = array('openid'=>$openid,'small_app_id'=>5);
         $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1))->find();
+        $staff_info = $m_staff->getInfo(array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1));
         if(empty($staff_info)){
             $this->to_back(93002);
         }
-        $m_staff->updateData(array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1), array('status'=>2));
-        
+        $where = array('openid'=>$openid,'parent_id'=>$invite_id,'status'=>1);
+        $m_staff->updateData($where, array('status'=>2));
         $this->to_back(array());
     }
 
@@ -665,11 +679,9 @@ class UserController extends CommonController{
             $this->to_back(93012);
         }
         
-        $data= [];
-        $data['mobile'] = $mobile;
+        $data= array('mobile'=>$mobile);
         $rt = $m_user->updateInfo(array('openid'=>$openid,'small_app_id'=>5), $data);
-        
-        if($rt ){
+        if($rt){
             $this->to_back(10000);
         }else {
             $this->to_back(93010);

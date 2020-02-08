@@ -405,16 +405,60 @@ class WelcomeController extends CommonController{
         $message['play_times'] = $playtime;
 
         $m_netty = new \Common\Model\NettyModel();
+        $m_box = new \Common\Model\BoxModel();
         if($res_welcome['type']==1){
+            $map = array('a.mac'=>$res_welcome['box_mac'],'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $rets = $m_box->getBoxInfo('a.id box_id,c.id room_id,d.id hotel_id',$map);
+            $hotel_info = $rets[0];
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id']));
+            $message['type'] = 1;
+            $message['waiterName'] = '';
+            $message['waiterIconUrl'] = '';
+
+            if(!empty($res_staff)){
+                $message['type'] = 2;
+                $where = array('openid'=>$res_staff['openid']);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
+                $message['waiterName'] = $res_user['nickName'];
+                $message['waiterIconUrl'] = $res_user['avatarUrl'];
+            }
+
             $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
             if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
                 $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
             }
         }else{
             $fields = 'a.id as box_id,a.mac as box_mac';
-            $m_box = new \Common\Model\BoxModel();
             $res_box = $m_box->getBoxListByHotelid($fields,$res_welcome['hotel_id']);
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $m_user = new \Common\Model\Smallapp\UserModel();
             foreach ($res_box as $v){
+
+                $cache_key = 'savor_box_'.$v['box_id'];
+                $redis_box_info = $redis->get($cache_key);
+                $box_info = json_decode($redis_box_info,true);
+                $cache_key = 'savor_room_' . $box_info['room_id'];
+                $redis_room_info = $redis->get($cache_key);
+                $room_info = json_decode($redis_room_info, true);
+
+                $hotel_id = $room_info['hotel_id'];
+                $room_id = $box_info['room_id'];
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+                $message['type'] = 1;
+                $message['waiterName'] = '';
+                $message['waiterIconUrl'] = '';
+                if(!empty($res_staff)){
+                    $message['type'] = 2;
+                    $where = array('openid'=>$res_staff['openid']);
+                    $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
+                    $message['waiterName'] = $res_user['nickName'];
+                    $message['waiterIconUrl'] = $res_user['avatarUrl'];
+                }
+
                 $box_mac = $v['box_mac'];
                 $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
                 if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){

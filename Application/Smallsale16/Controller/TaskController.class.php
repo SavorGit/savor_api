@@ -19,7 +19,7 @@ class TaskController extends CommonController{
             case 'setShareprofit':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'task_id'=>1001,
-                    'level1'=>1001,'level2'=>1001);
+                    'level1'=>1001,'level2'=>1001,'level3'=>1002);
                 break;
 
 
@@ -80,15 +80,16 @@ class TaskController extends CommonController{
         }
         $res_staff = $res_staff[0];
 
-        $level1 = $level2 = $last_num = 0;
+        $level1 = $level2 = $level3 = $last_num = 0;
         if($res_staff['level']==1){
             $where = array('task_id'=>$task_id);
             $where['hotel_id'] = array('in',array(0,$hotel_id));
             $m_task_shareprofit = new \Common\Model\Integral\TaskShareprofitModel();
-            $res_shareprofit = $m_task_shareprofit->getTaskShareprofit('level1,level2',$where,'id desc',0,1);
+            $res_shareprofit = $m_task_shareprofit->getTaskShareprofit('level1,level2,level3',$where,'id desc',0,1);
 
             $level1 = intval($res_shareprofit[0]['level1']);
             $level2 = intval($res_shareprofit[0]['level2']);
+            $level3 = intval($res_shareprofit[0]['level3']);
 
             $where = array('task_id'=>$task_id,'hotel_id'=>$hotel_id,'openid'=>$openid);
             $start_time = date('Y-m-01 00:00:00');
@@ -99,7 +100,7 @@ class TaskController extends CommonController{
             $all_num = 3;
             $last_num = $all_num-$num>0?$all_num-$num:0;
         }
-        $res = array('level1'=>$level1,'level2'=>$level2,'num'=>$last_num);
+        $res = array('level1'=>$level1,'level2'=>$level2,'level3'=>$level3,'num'=>$last_num);
         $this->to_back($res);
     }
 
@@ -109,6 +110,7 @@ class TaskController extends CommonController{
         $task_id = intval($this->params['task_id']);
         $level1 = intval($this->params['level1']);
         $level2 = intval($this->params['level2']);
+        $level3 = !empty($this->params['level3'])?intval($this->params['level3']):0;
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,a.level,merchant.type';
@@ -121,7 +123,7 @@ class TaskController extends CommonController{
         if($res_staff[0]['level']!=1){
            $this->to_back(93027);
         }
-        if($level1+$level2!=100){
+        if($level1+$level2+$level3!=100){
             $this->to_back(93028);
         }
 
@@ -135,12 +137,13 @@ class TaskController extends CommonController{
         if($num>=3){
             $this->to_back(93026);
         }
-        $add_data = array('level1'=>$level1,'level2'=>$level2,'task_id'=>$task_id,'hotel_id'=>$hotel_id,'openid'=>$openid);
+        $add_data = array('level1'=>$level1,'level2'=>$level2,'level3'=>$level3,
+            'task_id'=>$task_id,'hotel_id'=>$hotel_id,'openid'=>$openid);
         $m_task_shareprofit->add($add_data);
 
         $all_num = 3;
         $last_num = $all_num - $num -1>0?$all_num - $num -1:0;
-        $res = array('level1'=>$level1,'level2'=>$level2,'num'=>$last_num);
+        $res = array('level1'=>$level1,'level2'=>$level2,'level3'=>$level3,'num'=>$last_num);
         $this->to_back($res);
     }
 

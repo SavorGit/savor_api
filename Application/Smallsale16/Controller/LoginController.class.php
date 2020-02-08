@@ -161,15 +161,21 @@ class LoginController extends CommonController{
         $where['mt.status'] = 1;
         $manage_info = $m_staff->alias('a')
                                  ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
-                                 ->field('mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id')
+                                 ->field('mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level')
                                  ->where($where)->find();
         
         if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
-        } 
-        
+        }
+
+        if($manage_info['level']==1){
+            $level = 2;
+        }elseif($manage_info['level']==2){
+            $level = 3;
+        }else{
+            $level = 3;
+        }
         $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'status'=>1))->find();
-        
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $manage_info['hotel_id'];
@@ -183,9 +189,8 @@ class LoginController extends CommonController{
             $map['merchant_id'] = $manage_info['mt_id'];
             $map['parent_id']   = $manage_id;
             $map['beinvited_time'] = date('Y-m-d H:i:s');
-            $map['level']       = 2;
+            $map['level']       = $level;
             $m_staff->updateData(array('id'=>$staff_info['id']), $map);
-            
         }else {//未注册过员工
             $cache_key = C('SAPP_SALE_INVITE_QRCODE');
             $code_key = $cache_key.$manage_id.":$de_qrcode";
@@ -203,11 +208,10 @@ class LoginController extends CommonController{
             $data['parent_id']   = $manage_id;
             $data['openid']      = $openid;
             $data['beinvited_time'] = date('Y-m-d H:i:s');
-            $data['level']       = 2;
+            $data['level']       = $level;
             $data['status']      =1;
             $m_staff->addData($data);
-            
-            
+
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $manage_info['hotel_id'];
             
@@ -220,8 +224,8 @@ class LoginController extends CommonController{
         }
         $userinfo = $this->getServiceModel($userinfo,$manage_info['service_model_id']);
         $this->to_back($userinfo);
-        
     }
+
     private function getUserinfo($openid){
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
@@ -241,12 +245,12 @@ class LoginController extends CommonController{
         }
         return $userinfo;
     }
+
     private function getServiceModel($userinfo,$service_model_id){
         $service_list = C('service_list');
         $service_list = array_keys($service_list);
         
         if($userinfo['hotel_id']==-1 || empty($service_model_id)){
-            
             $userinfo['service'] = $service_list;
         }else {
             $m_service_mx = new \Common\Model\Integral\ServiceMxModel();

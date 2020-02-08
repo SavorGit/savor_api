@@ -12,4 +12,15 @@ class StaffModel extends BaseModel{
             ->select();
         return $res;
     }
+
+    public function getStaffsByOpenid($openid,$start,$size){
+        $fields = 'staff_lev1.id,staff_lev1.openid,staff_lev1.parent_id';
+        $res = $this->alias('a')
+                    ->join('savor_integral_merchant_staff staff_lev1 on a.id= staff_lev1.parent_id')
+                    ->field($fields)
+                    ->where(array('a.openid'=>$openid,'a.status'=>1,'staff_lev1.status'=>1))
+                    ->limit($start,$size)
+                    ->select();
+        return $res;
+    }
 }

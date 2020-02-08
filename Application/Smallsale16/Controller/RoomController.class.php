@@ -24,12 +24,8 @@ class RoomController extends CommonController{
         $hotel_id = $this->params['hotel_id'];
         $box_mac  = $this->params['box_mac'];
         $fields = 'a.id,a.mac box_mac,a.name box_name ';
-        $where  = [];
-        $where['d.id']    = $hotel_id;
-        $where['d.state'] = 1;
-        $where['d.flag']  = 0;
-        $where['a.state'] = 1;
-        $where['a.flag']  = 0;
+        $where  = array('d.id'=>$hotel_id,'d.state'=>1,'d.flag'=>0,
+            'a.state'=>1,'a.flag'=>0);
         $order = 'a.id asc';
         $list = $m_box->alias('a')
                       ->join('savor_room c on a.room_id= c.id','left')
@@ -38,7 +34,7 @@ class RoomController extends CommonController{
                       ->where($where)
                       ->order($order)
                       ->select();
-        $box_list = $box_name_list = [];
+        $box_list = $box_name_list = array();
         $box_index = 0; 
         foreach($list as $key=>$v){
             $box_list[] = $v;

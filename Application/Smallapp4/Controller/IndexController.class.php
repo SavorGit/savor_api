@@ -18,7 +18,8 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
             case 'getConfig':
-                $this->is_verify = 0;
+                $this->valid_fields = array('box_id'=>1002);
+                $this->is_verify = 1;
                 break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 0;
@@ -177,13 +178,14 @@ class IndexController extends CommonController{
                 $redis_hotel_info = $redis->get($cache_key);
                 $res_hotel = json_decode($redis_hotel_info, true);
 
-                $hotel_info = array('room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
+                $hotel_info = array('box_id'=>$box_info['id'],'room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
                     'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac']);
             }else{
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('a.id box_id,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
+            $data['box_id'] = $hotel_info['box_id'];
             $data['hotel_name'] = $hotel_info['hotel_name'];
             $data['room_name'] = $hotel_info['room_name'];
             $data['wifi_name'] = $hotel_info['wifi_name'];
@@ -248,19 +250,39 @@ class IndexController extends CommonController{
         $this->to_back($info);
     }
     public function getConfig(){
+        $box_id = intval($this->params['box_id']);
+
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         $file_exts = C('SAPP_FILE_FORSCREEN_TYPES');
         $exp_time   = 7200000;//扫码失效时间
         $redpacket_exp_time = 1800000;
-        $data['sys_time'] = $sys_time;
-        $data['exp_time'] = $exp_time;
-        $data['redpacket_exp_time'] = $redpacket_exp_time;
-        $data['file_exts'] = $file_exts;
-        $data['file_exts'] = array_keys($file_exts);
+        $data = array('sys_time'=>$sys_time,'exp_time'=>$exp_time,'redpacket_exp_time'=>$redpacket_exp_time,
+            'file_exts'=>array_keys($file_exts));
         $data['file_max_size'] = 41943040;
-                                 
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
+        $is_comment = 0;
+//        if($box_id){
+//            $redis = new \Common\Lib\SavorRedis();
+//            $redis->select(15);
+//            $cache_key = 'savor_box_'.$box_id;
+//            $redis_box_info = $redis->get($cache_key);
+//            if(!empty($redis_box_info)){
+//                $box_info = json_decode($redis_box_info,true);
+//                $cache_key = 'savor_room_' . $box_info['room_id'];
+//                $redis_room_info = $redis->get($cache_key);
+//                $room_info = json_decode($redis_room_info, true);
+//
+//                $hotel_id = $room_info['hotel_id'];
+//                $room_id = $box_info['room_id'];
+//                $m_staff = new \Common\Model\Integral\StaffModel();
+//                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+//                if(!empty($res_staff)){
+//                    $is_comment = 1;
+//                }
+//            }
+//        }
+        $data['is_comment'] = $is_comment;
         $this->to_back($data);
     }
 }

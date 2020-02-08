@@ -313,6 +313,11 @@ return array(
     'smallappsale_update_taskshareprofit_had_over_max'=>'本月修改分润设置已达上限',
     'smallappsale_taskshareprofit_update_no_permission'=>'你无此权限进行修改',
     'smallappsale_set_taskshareprofit_error'=>'分润比例设置有误',
+    'smallappsale_choose_room_error'=>'当前选择包间有误',
+    'smallappsale_staff_not_exist_inhotel'=>'当前服务员不属于此酒楼',
+    'smallappsale_not_have_permission'=>'无此权限进行操作',
+    'smallappsale_staff_not_support_set_permission'=>'当前员工不支持设置权限',
+    'smallappsale_staff_has_set_permission'=>'当前员工已设置过此权限',
 
 
 );

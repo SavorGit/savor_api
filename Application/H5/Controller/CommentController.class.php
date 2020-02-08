@@ -61,6 +61,10 @@ class CommentController extends Controller {
                 }
             }
             $is_subscribe = intval($user_info['is_subscribe']);
+            if(!$is_subscribe){
+                $this->display('subscribe');
+                exit;
+            }
 
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -81,21 +85,23 @@ class CommentController extends Controller {
             $staff_openid = $res_staff['openid'];
             $where = array('openid'=>$staff_openid);
             $staffuser_info = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
-            $staffuser_info['staff_id'] = $res_staff['id'];
-            $staffuser_info['user_id'] = $user_info['id'];
+
             $params = array('staff_id'=>$staffuser_info['staff_id'],'user_id'=>$staffuser_info['user_id'],'box_id'=>$staffuser_info['box_id']);
             $encode_params = encrypt_data(json_encode($params));
             $staffuser_info['ep'] = $encode_params;
 
             $m_commenttags = new \Common\Model\Smallapp\CommenttagsModel();
-            $fields = 'id as tag_id,name';
+            $fields = 'id,name';
             $where = array('status'=>1);
             $where['hotel_id'] = array('in',array($hotel_id,0));
             $res_tags = $m_commenttags->getDataList($fields,$where,'type desc,id desc');
+            $tags = array();
+            foreach ($res_tags as $v){
+                $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
+            }
 
-            $this->assing('tags',$res_tags);
+            $this->assing('tags',json_encode($tags));
             $this->assing('uinfo',$staffuser_info);
-            $this->assign('is_subscribe',$is_subscribe);
             $this->display();
         }else{
             $host_name = http_host();

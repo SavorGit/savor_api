@@ -262,26 +262,26 @@ class IndexController extends CommonController{
         $data['file_max_size'] = 41943040;
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
         $is_comment = 0;
-//        if($box_id){
-//            $redis = new \Common\Lib\SavorRedis();
-//            $redis->select(15);
-//            $cache_key = 'savor_box_'.$box_id;
-//            $redis_box_info = $redis->get($cache_key);
-//            if(!empty($redis_box_info)){
-//                $box_info = json_decode($redis_box_info,true);
-//                $cache_key = 'savor_room_' . $box_info['room_id'];
-//                $redis_room_info = $redis->get($cache_key);
-//                $room_info = json_decode($redis_room_info, true);
-//
-//                $hotel_id = $room_info['hotel_id'];
-//                $room_id = $box_info['room_id'];
-//                $m_staff = new \Common\Model\Integral\StaffModel();
-//                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
-//                if(!empty($res_staff)){
-//                    $is_comment = 1;
-//                }
-//            }
-//        }
+        if($box_id){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $redis_box_info = $redis->get($cache_key);
+            if(!empty($redis_box_info)){
+                $box_info = json_decode($redis_box_info,true);
+                $cache_key = 'savor_room_' . $box_info['room_id'];
+                $redis_room_info = $redis->get($cache_key);
+                $room_info = json_decode($redis_room_info, true);
+
+                $hotel_id = $room_info['hotel_id'];
+                $room_id = $box_info['room_id'];
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+                if(!empty($res_staff)){
+                    $is_comment = 1;
+                }
+            }
+        }
         $data['is_comment'] = $is_comment;
         $this->to_back($data);
     }

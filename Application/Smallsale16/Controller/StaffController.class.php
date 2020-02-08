@@ -51,9 +51,11 @@ class StaffController extends CommonController{
         }
 
         $datalist = array();
+        $oss_host = C('OSS_HOST');
         if(!empty($res_staffs)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_comment = new \Common\Model\Smallapp\CommentModel();
+
             foreach ($res_staffs as $v){
                 $where = array('openid'=>$v['openid']);
                 $fields = 'openid,avatarUrl,nickName';
@@ -65,6 +67,9 @@ class StaffController extends CommonController{
                     $res_user['score'] = sprintf("%01.1f",$res_score[0]['score']);
                 }else{
                     $res_user['score'] = 0;
+                }
+                if(strpos($res_user['avatarUrl'],$oss_host)){
+                    $res_user['avatarUrl'] = $res_user['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
                 }
                 $res_user['staff_id'] = $v['id'];
                 $datalist[] = $res_user;
@@ -84,6 +89,9 @@ class StaffController extends CommonController{
                 }
             }
             $user['is_scangoods'] = $is_scangoods;
+            if(strpos($user['avatarUrl'],$oss_host)){
+                $user['avatarUrl'] = $user['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
+            }
         }
         $data = array('datalist'=>$datalist,'user'=>$user);
         $this->to_back($data);

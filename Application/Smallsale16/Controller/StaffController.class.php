@@ -76,6 +76,14 @@ class StaffController extends CommonController{
             $where = array('openid'=>$res_staff['openid']);
             $user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
             $user['staff_id'] = $res_staff['id'];
+            $is_scangoods = 0;
+            if(!empty($res_staff['permission'])){
+                $permission = json_decode($res_staff['permission'],true);
+                if(isset($permission['is_scangoods'])){
+                    $is_scangoods = intval($permission['is_scangoods']);
+                }
+            }
+            $user['is_scangoods'] = $is_scangoods;
         }
         $data = array('datalist'=>$datalist,'user'=>$user);
         $this->to_back($data);
@@ -190,6 +198,25 @@ class StaffController extends CommonController{
         $permission['is_scangoods'] = $is_scangoods;
         $m_staff->updateData(array('id'=>$staff_id),array('permission'=>json_encode($permission)));
         $this->to_back(array());
+    }
+
+    public function getPermission(){
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+        if(empty($res_staff) || $res_staff['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff['level']!=2){
+            $this->to_back(93031);
+        }
+        $permission = array();
+        if(!empty($res_data['permission'])){
+            $permission = json_decode($res_data['permission'],true);
+        }
+        $data = array('permission'=>$permission);
+        $this->to_back($data);
     }
 
 

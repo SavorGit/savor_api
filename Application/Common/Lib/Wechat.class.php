@@ -19,7 +19,6 @@ class Wechat{
             $wx_config = $config;
         }else{
             $wx_config = C('WX_MP_CONFIG');
-            $wx_config = array('cache_key'=>'wxmp','appid'=>'wxcb1e088545260931','appsecret'=>'9f1ebb78d1dc7afe73dcb22a135cfcf9');
         }
         $this->cacheprefix = $wx_config['cache_key'];
         $this->appid = $wx_config['appid'];

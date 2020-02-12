@@ -138,8 +138,6 @@ class CommentController extends Controller {
         if($content){
             $data['content'] = $content;
         }
-        print_r($data);
-        exit;
         $m_comment = new \Common\Model\Smallapp\CommentModel();
         $comment_id = $m_comment->add($data);
         if($comment_id && !empty($tag_ids)){

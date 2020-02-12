@@ -45,13 +45,15 @@ class SubscribeController extends Controller {
                         $user_info['id'] = $user_id;
                         break;
                     case 2:
-                        $data = array('wx_mpopenid'=>$wx_mpopenid,'is_subscribe'=>$res['subscribe']);
+                        $data = array('wx_mpopenid'=>$wx_mpopenid,'is_subscribe'=>$res['subscribe'],'avatarUrl'=>$res['headimgurl'],
+                            'nickName'=>$res['nickname'],'gender'=>$res['sex']);
                         $m_user->updateInfo(array('id'=>$user_info['id']),$data);
                         $user_info['wx_mpopenid'] = $data['wx_mpopenid'];
                         $user_info['is_subscribe'] = $data['is_subscribe'];
                         break;
                     case 3:
-                        $data = array('is_subscribe'=>$res['subscribe']);
+                        $data = array('is_subscribe'=>$res['subscribe'],'avatarUrl'=>$res['headimgurl'],
+                            'nickName'=>$res['nickname'],'gender'=>$res['sex']);
                         $m_user->updateInfo(array('id'=>$user_info['id']),$data);
                         $user_info['is_subscribe'] = $data['is_subscribe'];
                         break;

@@ -11,15 +11,17 @@ class CommentController extends Controller {
     public function info(){
         $params = I('p','');
         $code = I('code', '');
+        $code = 123;
         $wechat = new \Common\Lib\Wechat();
         if($code){
-            $params_info = explode('-'.$params);
+            $params_info = explode('@',$params);
             $openid = $params_info[0];
             $box_id = $params_info[1];
 
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
             $user_info = $m_user->getOne('id,avatarUrl,nickName,wx_mpopenid,is_subscribe',$where,'id desc');
+            /*
             $op_type = 0;
             if(empty($user_info)){
                 $op_type = 1;
@@ -34,7 +36,7 @@ class CommentController extends Controller {
                 $op_type = 3;
             }
             $access_token = $wechat->getWxAccessToken();
-            $res = $wechat->getWxUserInfo($access_token ,$wx_mpopenid);
+            $res = $wechat->getWxUserDetail($access_token ,$wx_mpopenid);
             if(!isset($res['openid'])){
                 $access_token = $wechat->getWxAccessToken();
                 $res = $wechat->getWxUserDetail($access_token ,$wx_mpopenid);
@@ -48,18 +50,21 @@ class CommentController extends Controller {
                         $user_info['id'] = $user_id;
                         break;
                     case 2:
-                        $data = array('wx_mpopenid'=>$wx_mpopenid,'is_subscribe'=>$res['subscribe']);
+                        $data = array('wx_mpopenid'=>$wx_mpopenid,'is_subscribe'=>$res['subscribe'],'avatarUrl'=>$res['headimgurl'],
+                            'nickName'=>$res['nickname'],'gender'=>$res['sex']);
                         $m_user->updateInfo(array('id'=>$user_info['id']),$data);
                         $user_info['wx_mpopenid'] = $data['wx_mpopenid'];
                         $user_info['is_subscribe'] = $data['is_subscribe'];
                         break;
                     case 3:
-                        $data = array('is_subscribe'=>$res['subscribe']);
+                        $data = array('is_subscribe'=>$res['subscribe'],'avatarUrl'=>$res['headimgurl'],
+                            'nickName'=>$res['nickname'],'gender'=>$res['sex']);
                         $m_user->updateInfo(array('id'=>$user_info['id']),$data);
                         $user_info['is_subscribe'] = $data['is_subscribe'];
                         break;
                 }
             }
+            */
             $is_subscribe = intval($user_info['is_subscribe']);
             if(!$is_subscribe){
                 $this->display('subscribe');
@@ -70,6 +75,9 @@ class CommentController extends Controller {
             $redis->select(15);
             $cache_key = 'savor_box_'.$box_id;
             $redis_box_info = $redis->get($cache_key);
+            if(empty($redis_box_info)){
+                $this->ajaxReturn(array('code'=>10001,'msg'=>'包间ID错误'),'JSONP');
+            }
             $box_info = json_decode($redis_box_info,true);
             $cache_key = 'savor_room_' . $box_info['room_id'];
             $redis_room_info = $redis->get($cache_key);
@@ -84,24 +92,24 @@ class CommentController extends Controller {
             $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
             $staff_openid = $res_staff['openid'];
             $where = array('openid'=>$staff_openid);
-            $staffuser_info = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
+            $staffuser_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
 
-            $params = array('staff_id'=>$staffuser_info['staff_id'],'user_id'=>$staffuser_info['user_id'],'box_id'=>$staffuser_info['box_id']);
+            $params = array('staff_id'=>$res_staff['id'],'user_id'=>$user_info['id'],'box_id'=>$box_id);
             $encode_params = encrypt_data(json_encode($params));
             $staffuser_info['ep'] = $encode_params;
 
-            $m_commenttags = new \Common\Model\Smallapp\CommenttagsModel();
+            $m_commenttag = new \Common\Model\Smallapp\CommenttagModel();
             $fields = 'id,name';
             $where = array('status'=>1);
             $where['hotel_id'] = array('in',array($hotel_id,0));
-            $res_tags = $m_commenttags->getDataList($fields,$where,'type desc,id desc');
+            $res_tags = $m_commenttag->getDataList($fields,$where,'type desc,id desc');
             $tags = array();
             foreach ($res_tags as $v){
                 $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
             }
 
-            $this->assing('tags',json_encode($tags));
-            $this->assing('uinfo',$staffuser_info);
+            $this->assign('tags',json_encode($tags));
+            $this->assign('uinfo',$staffuser_info);
             $this->display();
         }else{
             $host_name = http_host();
@@ -117,8 +125,7 @@ class CommentController extends Controller {
         $content = I('post.content','','trim');
         $tag_ids = I('post.tags','');
 
-        $ep_info = decrypt_data($ep);
-        $params_info = json_decode($ep_info,true);
+        $params_info = decrypt_data($ep);
         if(empty($params_info) || !is_array($params_info)){
             $this->ajaxReturn(array('code'=>10001,'msg'=>'参数信息异常'),'JSONP');
         }
@@ -131,6 +138,8 @@ class CommentController extends Controller {
         if($content){
             $data['content'] = $content;
         }
+        print_r($data);
+        exit;
         $m_comment = new \Common\Model\Smallapp\CommentModel();
         $comment_id = $m_comment->add($data);
         if($comment_id && !empty($tag_ids)){
@@ -147,7 +156,24 @@ class CommentController extends Controller {
             $cache_key = 'savor_box_'.$params_info['box_id'];
             $redis_box_info = $redis->get($cache_key);
             $box_info = json_decode($redis_box_info,true);
-            $message = array('action'=>140);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+
+            $hotel_id = $room_info['hotel_id'];
+            $room_id = $box_info['room_id'];
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+            $message = array('action'=>140,'forscreen_char'=>'感谢您的评价，您的建议是我们前进的动力～',
+                'waiterName'=>'','waiterIconUrl'=>'');
+            if(!empty($res_staff)){
+                $where = array('openid'=>$res_staff['openid']);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
+                $message['waiterName'] = $res_user['nickName'];
+                $message['waiterIconUrl'] = $res_user['avatarUrl'];
+            }
+
             $m_netty = new \Common\Model\NettyModel();
             $res_netty = $m_netty->pushBox($box_info['mac'],json_encode($message));
             if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){

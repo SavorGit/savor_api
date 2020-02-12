@@ -38,8 +38,8 @@ class StaffController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,merchant.type',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
         $all_nums = 10000;
@@ -55,7 +55,6 @@ class StaffController extends CommonController{
         if(!empty($res_staffs)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_comment = new \Common\Model\Smallapp\CommentModel();
-
             foreach ($res_staffs as $v){
                 $where = array('openid'=>$v['openid']);
                 $fields = 'openid,avatarUrl,nickName';
@@ -76,14 +75,14 @@ class StaffController extends CommonController{
             }
         }
         $user = array();
-        if($res_staff['level']==2){
+        if($res_staff[0]['level']==2){
             $m_user = new \Common\Model\Smallapp\UserModel();
-            $where = array('openid'=>$res_staff['openid']);
+            $where = array('openid'=>$res_staff[0]['openid']);
             $user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
-            $user['staff_id'] = $res_staff['id'];
+            $user['staff_id'] = $res_staff[0]['id'];
             $is_scangoods = 0;
-            if(!empty($res_staff['permission'])){
-                $permission = json_decode($res_staff['permission'],true);
+            if(!empty($res_staff[0]['permission'])){
+                $permission = json_decode($res_staff[0]['permission'],true);
                 if(isset($permission['is_scangoods'])){
                     $is_scangoods = intval($permission['is_scangoods']);
                 }
@@ -101,22 +100,28 @@ class StaffController extends CommonController{
         $openid = $this->params['openid'];
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
-        $condition = array('staff_id'=>$res_staff['id'],'status'=>1);
-        $m_comment = new \Common\Model\Smallapp\CommentModel();
-        $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
-        if(!empty($res_score)){
-            $score = sprintf("%01.1f",$res_score[0]['score']);
-        }else{
+        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_id'])){
             $score = 0;
+        }else{
+            $condition = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
+            $m_comment = new \Common\Model\Smallapp\CommentModel();
+            $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
+            if(!empty($res_score) && $res_score[0]['score']>=1){
+                $score = sprintf("%01.1f",$res_score[0]['score']);
+            }else{
+                $score = 0;
+            }
         }
+
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$res_staff['openid']);
+        $where = array('openid'=>$res_staff[0]['openid']);
         $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
-        $data = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$res_user['avatarUrl'],
+        $data = array('staff_id'=>$res_staff[0]['id'],'avatarUrl'=>$res_user['avatarUrl'],
             'nickName'=>$res_user['nickName'],'score'=>$score);
         $this->to_back($data);
     }
@@ -138,10 +143,10 @@ class StaffController extends CommonController{
                     'a.status'=>1,'merchant.status'=>1);
                 $res_staff = $m_staff->getMerchantStaff('a.id,a.openid',$where);
                 if(!empty($res_staff)){
-                    $where = array('openid'=>$res_staff['openid']);
+                    $where = array('openid'=>$res_staff[0]['openid']);
                     $fields = 'openid,avatarUrl,nickName';
                     $res_user = $m_user->getOne($fields,$where);
-                    $info['staff_id'] = intval($res_staff['id']);
+                    $info['staff_id'] = intval($res_staff[0]['id']);
                     $info['staff_name'] = $res_user['nickName'];
                 }
                 $room_list[] = $info;
@@ -156,11 +161,11 @@ class StaffController extends CommonController{
         $staff_id = $this->params['staff_id'];
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type,merchant.hotel_id',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
-        $hotel_id = $res_staff['hotel_id'];
+        $hotel_id = $res_staff[0]['hotel_id'];
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(15);
         $cache_key = 'savor_room_'.$room_id;
@@ -169,13 +174,19 @@ class StaffController extends CommonController{
         if($room_info['hotel_id']!=$hotel_id){
             $this->to_back(93029);
         }
-        $where = array('a.id'=>$staff_id);
-        $res = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
-        if(empty($res) || $res['hotel_id']!=$hotel_id){
-            $this->to_back(93030);
+        if($staff_id){
+            $where = array('a.id'=>$staff_id);
+            $res = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+            if(empty($res) || $res[0]['hotel_id']!=$hotel_id){
+                $this->to_back(93030);
+            }
+            $data = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
+            $m_staff->updateData(array('id'=>$staff_id),$data);
+        }else{
+            $where = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
+            $data = array('hotel_id'=>0,'room_id'=>0);
+            $m_staff->updateData($where,$data);
         }
-        $data = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
-        $m_staff->updateData(array('id'=>$staff_id),$data);
         $this->to_back(array());
     }
 
@@ -185,11 +196,11 @@ class StaffController extends CommonController{
         $staff_id = $this->params['staff_id'];
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
-        if($res_staff['level']!=1){
+        if($res_staff[0]['level']!=1){
             $this->to_back(93031);
         }
         $res_data = $m_staff->getInfo(array('id'=>$staff_id));
@@ -212,11 +223,11 @@ class StaffController extends CommonController{
         $openid = $this->params['openid'];
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
-        if($res_staff['level']!=2){
+        if($res_staff[0]['level']!=2){
             $this->to_back(93031);
         }
         $permission = array();

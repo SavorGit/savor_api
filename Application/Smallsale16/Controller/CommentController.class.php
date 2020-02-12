@@ -10,8 +10,8 @@ class CommentController extends CommonController{
         switch(ACTION_NAME) {
             case 'commentlist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'start_date'=>1001,
-                    'end_date'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('openid'=>1001,'start_date'=>1002,
+                    'end_date'=>1002,'page'=>1001,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -24,20 +24,41 @@ class CommentController extends CommonController{
         if(empty($pagesize)){
             $pagesize = 10;
         }
+        $start_date = $this->params['start_date'];
+        $end_date = $this->params['end_date'];
+
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
-        $all_nums = $page * $pagesize;
+        if(empty($start_date) || empty($end_date)){
+            $start_date = date('Y-m-d', strtotime("-30 day"));
+            $end_date = date('Y-m-d');
+        }else{
+            $start_date = date('Y-m-d',strtotime($start_date));
+            $end_date = date('Y-m-d',strtotime($end_date));
+        }
+
+        $res_data = array('datalist'=>array(),'total'=>0,'avg_score'=>0,
+            'start_date'=>$start_date,'end_date'=>$end_date);
+        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_id'])){
+            $this->to_back($res_data);
+        }
+
         $m_comment = new \Common\Model\Smallapp\CommentModel();
-        $where = array('staff_id'=>$res_staff['id'],'status'=>1);
-        $res_comment = $m_comment->getDataList('*',$where,0,$all_nums);
-        $res_data = array('datalist'=>array(),'total'=>1,'avg_score'=>4);
+        $where = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
+        $start_time = "$start_date 00:00:00";
+        $end_time = "$end_date 23:59:59";
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+
+        $all_nums = $page * $pagesize;
+        $res_comment = $m_comment->getDataList('*',$where,'id desc',0,$all_nums);
         if(!empty($res_comment['total'])){
             $res_data['total'] = $res_comment['total'];
-            $condition = array('staff_id'=>$res_staff['id'],'status'=>1);
+            $condition = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
             $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
             $res_data['avg_score'] = sprintf("%01.1f",$res_score[0]['score']);
 

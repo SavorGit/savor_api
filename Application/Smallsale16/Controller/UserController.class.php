@@ -589,8 +589,8 @@ class UserController extends CommonController{
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
-        if(empty($res_staff) || $res_staff['type']!=2){
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
         $all_nums = $page * $pagesize;

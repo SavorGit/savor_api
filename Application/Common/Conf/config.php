@@ -36,7 +36,7 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4'), //模块配置
+	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallsale18'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -210,6 +210,8 @@ return array(
         'activity_goods_send_salemanager'=>'SMS_176527162',
         'activity_goods_send_salemanager_nolink'=>'SMS_177547510',
         'wx_money_not_enough_templateid'=>'SMS_177256437',
+        'dish_send_salemanager'=>'SMS_183267690',
+        'dish_send_buyer'=>'SMS_183247837',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
@@ -394,6 +396,7 @@ return array(
         'SIMPLE_BOX_QRCODE'=>'http://rd0.cn/e?j=',
         'SALE_BOX_QR'=>'http://rd0.cn/ag?g=',
         'SALE_INVITE_QR'=>'http://rd0.cn/sale?p=',
+        'SALE_DISH_QR'=>'http://rd0.cn/dish?p=',
     ),
     'INTEGRAL_TYPES'=>array(
         1=>'开机',

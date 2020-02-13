@@ -335,6 +335,9 @@ return array(
 	    '93031'=>'smallappsale_not_have_permission',
 	    '93032'=>'smallappsale_staff_not_support_set_permission',
 	    '93033'=>'smallappsale_staff_has_set_permission',
+	    '93034'=>'smallappsale_dishgoods_not_exist',
+	    '93035'=>'smallappsale_merchant_not_exist',
+	    '93036'=>'smallappsale_order_not_exist',
 
 	),
 );

@@ -44,6 +44,17 @@ class HotelModel extends Model
             return false;
         }
     }
+
+    public function getHotelById($field,$where){
+        $res = $this->alias('hotel')
+            ->field($field)
+            ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+            ->join('savor_area_info area on area.id=hotel.area_id','left')
+            ->where($where)
+            ->find();
+        return $res;
+    }
+
     public function getHotelInfoByMac($mac){
         $sql ="select he.mac_addr,h.name as hotel_name,a.id as area_id,a.region_name as area_name
                from savor_hotel as h

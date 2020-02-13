@@ -318,6 +318,9 @@ return array(
     'smallappsale_not_have_permission'=>'无此权限进行操作',
     'smallappsale_staff_not_support_set_permission'=>'当前员工不支持设置权限',
     'smallappsale_staff_has_set_permission'=>'当前员工已设置过此权限',
+    'smallappsale_dishgoods_not_exist'=>'菜品不存在',
+    'smallappsale_merchant_not_exist'=>'当前商家不存在',
+    'smallappsale_order_not_exist'=>'订单不存在',
 
 
 );

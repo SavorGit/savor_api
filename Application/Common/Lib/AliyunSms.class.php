@@ -29,15 +29,10 @@ class AliyunSms{
     public static function getAcsClient() {
         $product = "Dysmsapi";
         $domain = "dysmsapi.aliyuncs.com";
-//        $accessKeyId = C('IMM_ACCESS_ID');
-//        $accessKeySecret = C('IMM_ACCESS_KEY');
-//        $region = C('IMM_REGION_ID');
-//        $endPointName = C('IMM_REGION_ID');
-
-        $accessKeyId = 'tnDh4AQqRYbV9mq8';
-        $accessKeySecret = 'sv8aZCKEJhQ0nwKHj8uEnw3ADwcM24';
-        $region = 'cn-beijing';
-        $endPointName = 'cn-beijing';
+        $accessKeyId = C('IMM_ACCESS_ID');
+        $accessKeySecret = C('IMM_ACCESS_KEY');
+        $region = C('IMM_REGION_ID');
+        $endPointName = C('IMM_REGION_ID');
 
         if(static::$acsClient == null) {
             $profile = DefaultProfile::getProfile($region, $accessKeyId, $accessKeySecret);

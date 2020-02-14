@@ -106,7 +106,7 @@ class OrderController extends CommonController{
             $this->to_back(92020);
         }
 
-        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $m_order = new \Common\Model\Smallapp\DishorderModel();
         $amount = $amount>0?$amount:1;
         $total_fee = sprintf("%.2f",$amount*$res_goods['price']);
         $add_data = array('openid'=>$openid,'merchant_id'=>$res_goods['merchant_id'],'staff_id'=>$res_goods['staff_id'],

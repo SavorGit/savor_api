@@ -19,7 +19,7 @@ class DishController extends CommonController{
             case 'addDish':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'price'=>1001,
-                    'imgs'=>1001,'intro'=>1002,'intro_type'=>1001);
+                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002);
                 break;
             case 'top':
                 $this->is_verify = 1;
@@ -74,10 +74,9 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],
-            'intro_type'=>$res_goods['intro_type']);
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price']);
         $oss_host = "https://".C('OSS_HOST').'/';
-        $cover_imgs = array();
+        $cover_imgs = $detail_imgs = array();
         if(!empty($res_goods['cover_imgs'])){
             $cover_imgs_info = explode(',',$res_goods['cover_imgs']);
             if(!empty($cover_imgs_info)){
@@ -89,11 +88,20 @@ class DishController extends CommonController{
                 }
             }
         }
-        $data['cover_imgs'] = $cover_imgs;
-        $data['intro'] = $res_goods['intro'];
-        if($res_goods['intro_type']==2){
-            $data['intro'] = $oss_host.$data['intro'];
+        if(!empty($res_goods['detail_imgs'])){
+            $detail_imgs_info = explode(',',$res_goods['detail_imgs']);
+            if(!empty($detail_imgs_info)){
+                foreach ($detail_imgs_info as $v){
+                    if(!empty($v)){
+                        $img_url = $oss_host.$v."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $detail_imgs[] = $img_url;
+                    }
+                }
+            }
         }
+        $data['cover_imgs'] = $cover_imgs;
+        $data['detail_imgs'] = $detail_imgs;
+        $data['intro'] = $res_goods['intro'];
 
         $merchant = array();
         $merchant['merchant_id'] = $res_goods['merchant_id'];
@@ -125,7 +133,7 @@ class DishController extends CommonController{
         $price = $this->params['price'];
         $imgs = $this->params['imgs'];
         $intro = $this->params['intro'];
-        $intro_type = $this->params['intro_type'];
+        $detail_imgs = $this->params['detail_imgs'];
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -139,7 +147,9 @@ class DishController extends CommonController{
             'staff_id'=>$staff_id,'status'=>1);
         if(!empty($intro)){
             $data['intro'] = trim($intro);
-            $data['intro_type'] = intval($intro_type);
+        }
+        if(!empty($detail_imgs)){
+            $data['detail_imgs'] = $detail_imgs;
         }
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $m_goods->add($data);
@@ -148,7 +158,13 @@ class DishController extends CommonController{
 
     public function top(){
         $goods_id = intval($this->params['goods_id']);
-
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
         if(empty($res_goods)){

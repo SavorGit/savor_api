@@ -429,13 +429,13 @@ class UserController extends CommonController{
         $where = array('merchant_id'=>$data['merchant_id']);
         $order_all_num = $m_dishorder->countNum($where);
         $data['dishorder_all_num'] = intval($order_all_num);
-        if($data['order_all_num']){
+        if($data['dishorder_all_num']){
             $where = array('merchant_id'=>$data['merchant_id'],'status'=>1);
             $order_process_num = $m_dishorder->countNum($where);
         }else{
             $order_process_num = 0;
         }
-        $data['dishorder_process_num'] = $order_process_num;
+        $data['dishorder_process_num'] = intval($order_process_num);
 
         $hotel_id = $res_staff[0]['hotel_id'];
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();

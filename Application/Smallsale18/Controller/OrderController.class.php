@@ -43,13 +43,17 @@ class OrderController extends CommonController{
         $all_nums = $page * $pagesize;
         $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
         $fields = 'o.id as order_id,o.price,o.amount,o.total_fee,o.status,o.contact,o.phone,o.address,o.delivery_time,
-        o.remark,o.add_time,goods.name as goods_name';
+        o.remark,o.add_time,goods.name as goods_name,goods.cover_imgs';
         $res_order = $m_dishorder->getList($fields,$where,'o.id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
             $datalist = $res_order['list'];
+            $oss_host = "http://".C('OSS_HOST').'/';
             foreach($datalist as $k=>$v){
                 $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
+                $cover_imgs_info = explode(',',$v['cover_imgs']);
+                $datalist[$k]['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                unset($datalist[$k]['cover_imgs']);
             }
         }
         $res_data = array('datalist'=>$datalist);

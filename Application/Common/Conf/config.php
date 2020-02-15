@@ -396,7 +396,8 @@ return array(
         'SIMPLE_BOX_QRCODE'=>'http://rd0.cn/e?j=',
         'SALE_BOX_QR'=>'http://rd0.cn/ag?g=',
         'SALE_INVITE_QR'=>'http://rd0.cn/sale?p=',
-        'SALE_DISH_QR'=>'http://rd0.cn/dish?p=',
+        'SALE_DISH_QR'=>'http://rd0.cn/d?p=',
+        'SALE_DISHMERCHANT_QR'=>'http://rd0.cn/dm?p=',
     ),
     'INTEGRAL_TYPES'=>array(
         1=>'开机',

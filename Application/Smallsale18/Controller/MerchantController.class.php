@@ -36,7 +36,7 @@ class MerchantController extends CommonController{
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');
-            $merchant['img'] = $res_media['oss_addr'];
+            $merchant['img'] = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50/quality,q_80';
         }
         $m_foodstyle = new \Common\Model\FoodStyleModel();
         $res_foodstyle = $m_foodstyle->getOne('name',array('id'=>$res_hotel['food_style_id']),'');

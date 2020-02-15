@@ -43,7 +43,7 @@ class OrderController extends CommonController{
         $all_nums = $page * $pagesize;
         $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
         $fields = 'o.id as order_id,o.price,o.amount,o.total_fee,o.status,o.contact,o.phone,o.address,o.delivery_time,
-        o.remark,o.add_time,goods.name as goods_name,goods.cover_imgs';
+        o.remark,o.add_time,goods.id as goods_id,goods.name as goods_name,goods.cover_imgs';
         $res_order = $m_dishorder->getList($fields,$where,'o.id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -169,8 +169,9 @@ class OrderController extends CommonController{
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getOneById('name',$res_merchant['hotel_id']);
         $hotel_name = $res_hotel['name'];
-        $message = "您的订单消息已经通知“{$hotel_name}“餐厅。请等待餐厅人员的电话确认。";
-        $res_data = array('message'=>$message);
+        $message1 = "您的订单消息已经通知“{$hotel_name}“餐厅。";
+        $message2 = "请等待餐厅人员的电话确认。";
+        $res_data = array('message1'=>$message1,'message2'=>$message2);
         $this->to_back($res_data);
     }
 

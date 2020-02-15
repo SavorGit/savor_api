@@ -321,6 +321,7 @@ return array(
     'smallappsale_dishgoods_not_exist'=>'菜品不存在',
     'smallappsale_merchant_not_exist'=>'当前商家不存在',
     'smallappsale_order_not_exist'=>'订单不存在',
+    'smallappsale_dishgoods_has_down'=>'菜品已下架,不能进行此操作.',
 
 
 );

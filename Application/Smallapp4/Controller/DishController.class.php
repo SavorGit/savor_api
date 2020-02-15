@@ -33,7 +33,7 @@ class DishController extends CommonController{
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$merchant_id,'status'=>1);
-        $orderby = 'is_top desc,id desc';
+        $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 
         $datalist = array();
@@ -65,8 +65,10 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],
-            'intro_type'=>$res_goods['intro_type']);
+        if($res_goods['status']!=1){
+            $this->to_back(93037);
+        }
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price']);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs =array();
         if(!empty($res_goods['cover_imgs'])){

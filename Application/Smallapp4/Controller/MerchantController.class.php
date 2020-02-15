@@ -33,8 +33,7 @@ class MerchantController extends CommonController{
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $fields = "m.id as merchant_id,hotel.id hotel_id,hotel.name,hotel.addr,hotel.tel,ext.food_style_id,
                    ext.avg_expense,ext.hotel_cover_media_id,food.name as food_name";
-//        $where = array('m.status'=>1,'m.is_takeout'=>1);
-        $where = array('m.status'=>1);
+        $where = array('m.status'=>1,'m.is_takeout'=>1);
         if($area_id){
             $where['hotel.area_id'] = $area_id;
         }

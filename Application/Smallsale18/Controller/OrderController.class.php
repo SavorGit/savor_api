@@ -43,7 +43,7 @@ class OrderController extends CommonController{
         $all_nums = $page * $pagesize;
         $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
         $fields = 'o.id as order_id,o.price,o.amount,o.total_fee,o.status,o.contact,o.phone,o.address,o.delivery_time,
-        o.remark,o.add_time,goods.name as goods_name,goods.cover_imgs';
+        o.remark,o.add_time,goods.id as goods_id,goods.name as goods_name,goods.cover_imgs';
         $res_order = $m_dishorder->getList($fields,$where,'o.id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){

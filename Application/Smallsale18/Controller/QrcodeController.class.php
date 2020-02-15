@@ -72,10 +72,19 @@ class QrcodeController extends CommonController{
     public function dishQrcode(){
         $data_id = $this->params['data_id'];
         $type = $this->params['type'];//24菜品商家 25单个菜品
-        $scene = 'dish_'.$data_id.'_'.$type;
 
         $short_urls = C('SHORT_URLS');
-        $content = $short_urls['SALE_DISH_QR'].$scene;
+        switch ($type){
+            case 24:
+                $code_url = $short_urls['SALE_DISHMERCHANT_QR'];
+                break;
+            case 25:
+                $code_url = $short_urls['SALE_DISH_QR'];
+                break;
+            default:
+                $code_url = $short_urls['SALE_DISH_QR'];
+        }
+        $content = $code_url.'dish_'.$data_id.'_'.$type;
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

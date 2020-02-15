@@ -23,7 +23,11 @@ class DishController extends CommonController{
                 break;
             case 'top':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001);
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001);
+                break;
+            case 'putaway':
+                $this->is_verify = 1;
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'status'=>1001);
                 break;
         }
         parent::_init_();
@@ -42,7 +46,7 @@ class DishController extends CommonController{
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$merchant_id);
-        $orderby = 'is_top desc,id desc';
+        $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 
         $datalist = array();
@@ -54,7 +58,7 @@ class DishController extends CommonController{
                     $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
-                        $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $img_url = $oss_host.$cover_imgs_info[0].'?x-oss-process=image/resize,p_50/quality,q_80';
                     }
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'img_url'=>$img_url,
@@ -137,7 +141,7 @@ class DishController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout',$where);
         if(empty($res_staff)){
             $this->to_back(93001);
         }
@@ -152,7 +156,11 @@ class DishController extends CommonController{
             $data['detail_imgs'] = $detail_imgs;
         }
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $m_goods->add($data);
+        $res = $m_goods->add($data);
+        if($res && $res_staff[0]['is_takeout']==0){
+            $m_merchant = new \Common\Model\Integral\MerchantModel();
+            $m_merchant->updateData(array('id'=>$merchant_id),array('is_takeout'=>1));
+        }
         $this->to_back(array());
     }
 
@@ -170,12 +178,40 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
+        if($res_goods['status']!=1){
+            $this->to_back(93037);
+        }
         $where = array('merchant_id'=>$res_goods['merchant_id'],'is_top'=>1);
         $res = $m_goods->getInfo($where);
         if(!empty($res)){
             $m_goods->updateData(array('id'=>$res['id']),array('is_top'=>0));
         }
         $m_goods->updateData(array('id'=>$goods_id),array('is_top'=>1));
+        $this->to_back(array());
+    }
+
+    public function putaway(){
+        $goods_id = intval($this->params['goods_id']);
+        $status = intval($this->params['status']);
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+        if(empty($res_goods)){
+            $this->to_back(93034);
+        }
+        if(in_array($status,array(1,2))){
+            $data = array('status'=>$status);
+            if($status==2){
+                $data['is_top'] = 0;
+            }
+            $m_goods->updateData(array('id'=>$goods_id),$data);
+        }
         $this->to_back(array());
     }
 

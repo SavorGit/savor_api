@@ -53,7 +53,9 @@ class AliyunSms{
         $request->setPhoneNumbers("$phone");
         $request->setSignName("小热点");
         $request->setTemplateCode("$template_code");
-        $request->setTemplateParam(json_encode($params, JSON_UNESCAPED_UNICODE));
+        if(!empty($params)){
+            $request->setTemplateParam(json_encode($params, JSON_UNESCAPED_UNICODE));
+        }
         //$request->setOutId("yourOutId");// 可选，设置流水号
         $acsResponse = static::getAcsClient()->getAcsResponse($request);
         return $acsResponse;

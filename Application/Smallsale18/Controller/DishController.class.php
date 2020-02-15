@@ -86,7 +86,7 @@ class DishController extends CommonController{
             if(!empty($cover_imgs_info)){
                 foreach ($cover_imgs_info as $v){
                     if(!empty($v)){
-                        $img_url = $oss_host.$v."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
                         $cover_imgs[] = $img_url;
                     }
                 }
@@ -97,7 +97,7 @@ class DishController extends CommonController{
             if(!empty($detail_imgs_info)){
                 foreach ($detail_imgs_info as $v){
                     if(!empty($v)){
-                        $img_url = $oss_host.$v."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
                         $detail_imgs[] = $img_url;
                     }
                 }

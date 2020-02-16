@@ -339,6 +339,7 @@ return array(
 	    '93035'=>'smallappsale_merchant_not_exist',
 	    '93036'=>'smallappsale_order_not_exist',
 	    '93037'=>'smallappsale_dishgoods_has_down',
+	    '93038'=>'smallappsale_adddishorder_time_error',
 
 	),
 );

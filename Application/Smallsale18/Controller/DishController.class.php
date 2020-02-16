@@ -86,7 +86,7 @@ class DishController extends CommonController{
             if(!empty($cover_imgs_info)){
                 foreach ($cover_imgs_info as $v){
                     if(!empty($v)){
-                        $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
+                        $img_url = $oss_host.$v."?x-oss-process=image/resize,m_mfit,h_400,w_750";
                         $cover_imgs[] = $img_url;
                     }
                 }

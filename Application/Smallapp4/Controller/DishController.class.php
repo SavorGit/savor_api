@@ -76,7 +76,7 @@ class DishController extends CommonController{
             if(!empty($cover_imgs_info)){
                 foreach ($cover_imgs_info as $v){
                     if(!empty($v)){
-                        $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
+                        $img_url = $oss_host.$v."?x-oss-process=image/resize,m_mfit,h_400,w_750";
                         $cover_imgs[] = $img_url;
                     }
                 }
@@ -114,7 +114,7 @@ class DishController extends CommonController{
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');
             $merchant['img'] = $res_media['oss_addr'];
         }
-        $where = array('merchant_id'=>$merchant['merchant_id']);
+        $where = array('merchant_id'=>$merchant['merchant_id'],'status'=>1);
         $merchant['num'] = $m_goods->countNum($where);
         $data['merchant'] = $merchant;
 

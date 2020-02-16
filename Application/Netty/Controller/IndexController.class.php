@@ -30,6 +30,9 @@ class IndexController extends CommonController{
         if(!is_array($message) || empty($message)){
             $this->to_back(90109);
         }
+        if(isset($message['forscreen_char'])){
+            $message['forscreen_char'] = str_replace(array("/r/n", "/r", "/n","↵"), "", $message['forscreen_char']);
+        }
         $action = $message['action'];
         switch ($action){
             case 2://发现投视频

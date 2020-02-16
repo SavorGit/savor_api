@@ -72,6 +72,12 @@ class OrderController extends CommonController{
         $delivery_time = $this->params['delivery_time'];
         $remark = $this->params['remark'];
 
+        if(!empty($delivery_time)){
+            $tmp_dtime = strtotime($delivery_time);
+            if($tmp_dtime<time()){
+                $this->to_back(93038);
+            }
+        }
         $is_check = check_mobile($phone);
         if(!$is_check){
             $this->to_back(93006);

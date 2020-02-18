@@ -212,6 +212,7 @@ return array(
         'wx_money_not_enough_templateid'=>'SMS_177256437',
         'dish_send_salemanager'=>'SMS_183267690',
         'dish_send_buyer'=>'SMS_183765909',
+        'send_register_merchant'=>'SMS_183762008',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

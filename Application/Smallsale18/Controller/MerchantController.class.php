@@ -12,6 +12,14 @@ class MerchantController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('merchant_id'=>1001);
                 break;
+            case 'register':
+                $this->is_verify = 1;
+                $this->valid_fields = array('name'=>1001,'food_style_id'=>1001,'avg_exp'=>1001,
+                    'tel'=>1001,'area_id'=>1001,'county_id'=>1002,'addr'=>1001,'logoimg'=>1001,
+                    'faceimg'=>1001,'envimg'=>1001,'legal_name'=>1001,'legal_idcard'=>1001,
+                    'legal_charter'=>1001,'contractor'=>1001,'mobile'=>1001,'verify_code'=>1001
+                );
+                break;
         }
         parent::_init_();
     }
@@ -44,6 +52,53 @@ class MerchantController extends CommonController{
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $merchant['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id=$merchant_id&type=24";
         $this->to_back($merchant);
+    }
+
+    public function register(){
+        $name = $this->params['name'];
+        $food_style_id = intval($this->params['food_style_id']);
+        $avg_exp = intval($this->params['avg_exp']);
+        $tel = $this->params['tel'];
+        $area_id = intval($this->params['area_id']);
+        $county_id = intval($this->params['county_id']);
+        $addr = $this->params['addr'];
+
+        $logoimg = $this->params['logoimg'];
+        $faceimg = $this->params['faceimg'];
+        $envimg = $this->params['envimg'];
+        $legal_name = $this->params['legal_name'];
+        $legal_idcard = $this->params['legal_idcard'];
+        $legal_charter = $this->params['legal_charter'];
+        $contractor = $this->params['contractor'];
+        $mobile = $this->params['mobile'];
+        $verify_code = $this->params['verify_code'];
+        $is_check = check_mobile($mobile);
+        if(!$is_check){
+            $this->to_back(93006);
+        }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $sale_key = C('SAPP_SALE');
+        $register_key = $sale_key.'register:'.$mobile;
+        $register_code = $redis->get($register_key);
+        if($register_code!=$verify_code){
+            $this->to_back(93040);
+        }
+
+        $add_hoteldata = array('name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
+            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'tel'=>$tel,'flag'=>2,'type'=>2);
+        $m_hotel = new \Common\Model\HotelModel();
+        $hotel_id = $m_hotel->add($add_hoteldata);
+        if($hotel_id){
+            $add_hotelext = array('hotel_id'=>$hotel_id,'food_style_id'=>$food_style_id,'avg_expense'=>$avg_exp,
+                'hotel_logoimg'=>$logoimg,'hotel_faceimg'=>$faceimg,'hotel_envimg'=>$envimg,
+                'legal_name'=>$legal_name,'legal_idcard'=>$legal_idcard,'legal_charter'=>$legal_charter);
+            $m_hotelext = new \Common\Model\HotelExtModel();
+            $m_hotelext->add($add_hotelext);
+        }
+        $message = '您的申请已经成功提交，稍后会有工作人员与您核实信息。请保持通话畅通。';
+        $res_data = array('message'=>$message);
+        $this->to_back($res_data);
     }
 
 

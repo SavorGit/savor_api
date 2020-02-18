@@ -168,7 +168,7 @@ class LoginController extends CommonController{
             $this->to_back(93015);
         }
 
-        if($manage_info['level']==1){
+        if($manage_info['level']==0 || $manage_info['level']==1){
             $level = 2;
         }elseif($manage_info['level']==2){
             $level = 3;

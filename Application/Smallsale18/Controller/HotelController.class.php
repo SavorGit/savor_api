@@ -40,4 +40,16 @@ class HotelController extends CommonController{
         }
         $this->to_back($data);
     }
+
+    public function getExplist(){
+        $avg_exp_arr = array(
+            'agv_name'=>array('请选择','100以下','100-200','200以上'),
+            'agv_lisg'=>array(
+                array('id'=>0,'name'=>'请选择'),
+                array('id'=>1,'name'=>'100以下'),
+                array('id'=>2,'name'=>'100-200'),
+                array('id'=>3,'name'=>'200以上')
+            ));
+        $this->to_back($avg_exp_arr);
+    }
 }

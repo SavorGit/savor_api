@@ -111,10 +111,9 @@ class UserController extends CommonController{
                 $hotel_id = $rts['hotel_id'];
                 $userinfo['role_type'] = $rts['level'];
                 $code_type = $rts['type'];
-                $$service_model_id = $rts['service_model_id'];
+                $service_model_id = $rts['service_model_id'];
                 
             }
-            
         }
         $userinfo['hotel_id'] = $hotel_id;
         $userinfo['hotel_has_room'] = 0;
@@ -130,6 +129,12 @@ class UserController extends CommonController{
         if($userinfo['hotel_id']!=0){
             $userinfo = $this->getServiceModel($userinfo,$rts['service_model_id']);
         }
+        $hotel_type = 0;
+        if($hotel_id){
+            $res_hotel = $m_hotel->getOneById('id,type',$hotel_id);
+            $hotel_type = $res_hotel['type'];
+        }
+        $userinfo['hotel_type'] = $hotel_type;
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }

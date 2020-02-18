@@ -82,7 +82,7 @@ class SmsController extends CommonController{
         }
     }
 
-    function sendRegisterCode(){
+    public function sendRegisterCode(){
         $mobile = $this->params['mobile'];
         if(!check_mobile($mobile)){
             $this->to_back(92001);

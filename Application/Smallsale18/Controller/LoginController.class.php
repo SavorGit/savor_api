@@ -139,8 +139,17 @@ class LoginController extends CommonController{
             $userinfo['role_type']  = 1;
         }
         //商家服务
-        
         $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);
+        $hotel_type = 0;
+        if($userinfo['hotel_id']>0){
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('id,flag,type',$userinfo['hotel_id']);
+            $hotel_type = $res_hotel['type'];
+            if($hotel_type==2 && $res_hotel['flag']!=0){
+                $this->to_back(93041);
+            }
+        }
+        $userinfo['hotel_type'] = $hotel_type;
         
         $this->to_back($userinfo);
     }

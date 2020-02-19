@@ -97,7 +97,7 @@ class MerchantController extends CommonController{
         }
 
         $add_hoteldata = array('name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
-            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'tel'=>$tel,'flag'=>2,'type'=>2,'openid'=>$openid);
+            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'tel'=>$tel,'state'=>2,'flag'=>2,'type'=>2,'openid'=>$openid);
         if(!empty($logoimg)){
             $typeinfo = C('RESOURCE_TYPEINFO');
             $temp_info = pathinfo($logoimg);

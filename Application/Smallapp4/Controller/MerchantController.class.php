@@ -34,7 +34,7 @@ class MerchantController extends CommonController{
         $fields = "m.id as merchant_id,hotel.id hotel_id,hotel.name,hotel.addr,hotel.tel,ext.food_style_id,
                    ext.avg_expense,ext.hotel_cover_media_id,food.name as food_name";
         $where = array('m.status'=>1,'m.is_takeout'=>1);
-        $where['m.id'] = array('not in','3,89');
+        $where['m.id'] = array('not in','89');
         if($area_id){
             $where['hotel.area_id'] = $area_id;
         }

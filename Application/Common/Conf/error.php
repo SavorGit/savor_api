@@ -342,6 +342,7 @@ return array(
 	    '93038'=>'smallappsale_adddishorder_time_error',
 	    '93039'=>'smallappsale_register_sendtime_error',
 	    '93040'=>'smallappsale_register_verify_code_error',
+	    '93041'=>'smallappsale_register_user_not_ok',
 
 	),
 );

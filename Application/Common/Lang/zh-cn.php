@@ -325,6 +325,7 @@ return array(
     'smallappsale_adddishorder_time_error'=>'请核对你的送达时间',
     'smallappsale_register_sendtime_error'=>'60秒内请勿重复发送',
     'smallappsale_register_verify_code_error'=>'注册验证码错误',
+    'smallappsale_register_user_not_ok'=>'当前商家未通过审核',
 
 
 );

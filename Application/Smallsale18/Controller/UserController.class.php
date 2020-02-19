@@ -131,8 +131,11 @@ class UserController extends CommonController{
         }
         $hotel_type = 0;
         if($hotel_id){
-            $res_hotel = $m_hotel->getOneById('id,type',$hotel_id);
+            $res_hotel = $m_hotel->getOneById('id,flag,type',$hotel_id);
             $hotel_type = $res_hotel['type'];
+            if($hotel_type==2 && $res_hotel['flag']!=0){
+                $this->to_back(93041);
+            }
         }
         $userinfo['hotel_type'] = $hotel_type;
         $data['userinfo'] = $userinfo;

@@ -14,9 +14,9 @@ class MerchantController extends CommonController{
                 break;
             case 'register':
                 $this->is_verify = 1;
-                $this->valid_fields = array('name'=>1001,'food_style_id'=>1001,'avg_exp'=>1001,
-                    'tel'=>1001,'area_id'=>1001,'county_id'=>1002,'addr'=>1001,'logoimg'=>1001,
-                    'faceimg'=>1001,'envimg'=>1001,'legal_name'=>1001,'legal_idcard'=>1001,
+                $this->valid_fields = array('openid'=>1001,'name'=>1001,'food_style_id'=>1001,'avg_exp'=>1001,
+                    'tel'=>1001,'area_id'=>1001,'county_id'=>1002,'addr'=>1001,'logoimg'=>1002,
+                    'faceimg'=>1001,'envimg'=>1002,'legal_name'=>1001,'legal_idcard'=>1001,
                     'legal_charter'=>1001,'contractor'=>1001,'mobile'=>1001,'verify_code'=>1001
                 );
                 break;
@@ -62,7 +62,7 @@ class MerchantController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $county_id = intval($this->params['county_id']);
         $addr = $this->params['addr'];
-
+        $openid = $this->params['openid'];
         $logoimg = $this->params['logoimg'];
         $faceimg = $this->params['faceimg'];
         $envimg = $this->params['envimg'];
@@ -72,6 +72,17 @@ class MerchantController extends CommonController{
         $contractor = $this->params['contractor'];
         $mobile = $this->params['mobile'];
         $verify_code = $this->params['verify_code'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
         $is_check = check_mobile($mobile);
         if(!$is_check){
             $this->to_back(93006);
@@ -86,12 +97,44 @@ class MerchantController extends CommonController{
         }
 
         $add_hoteldata = array('name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
-            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'tel'=>$tel,'flag'=>2,'type'=>2);
+            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'tel'=>$tel,'flag'=>2,'type'=>2,'openid'=>$openid);
+        if(!empty($logoimg)){
+            $typeinfo = C('RESOURCE_TYPEINFO');
+            $temp_info = pathinfo($logoimg);
+            $surfix = $temp_info['extension'];
+            if($surfix){
+                $surfix = strtolower($surfix);
+            }
+            if(isset($typeinfo[$surfix])){
+                $media_type = $typeinfo[$surfix];
+            }else{
+                $media_type = 3;
+            }
+            $m_media = new \Common\Model\MediaModel();
+            $media_data = array('oss_addr'=>$logoimg,'type'=>$media_type,'state'=>1);
+            $media_id = $m_media->add($media_data);
+            $add_hoteldata['media_id'] = $media_id;
+        }
+
         $m_hotel = new \Common\Model\HotelModel();
         $hotel_id = $m_hotel->add($add_hoteldata);
         if($hotel_id){
+            $temp_info = pathinfo($faceimg);
+            $surfix = $temp_info['extension'];
+            if($surfix){
+                $surfix = strtolower($surfix);
+            }
+            if(isset($typeinfo[$surfix])){
+                $media_type = $typeinfo[$surfix];
+            }else{
+                $media_type = 3;
+            }
+            $m_media = new \Common\Model\MediaModel();
+            $media_data = array('oss_addr'=>$faceimg,'type'=>$media_type,'state'=>1);
+            $media_id = $m_media->add($media_data);
+
             $add_hotelext = array('hotel_id'=>$hotel_id,'food_style_id'=>$food_style_id,'avg_expense'=>$avg_exp,
-                'hotel_logoimg'=>$logoimg,'hotel_faceimg'=>$faceimg,'hotel_envimg'=>$envimg,
+                'hotel_cover_media_id'=>$media_id,'hotel_envimg'=>$envimg,
                 'legal_name'=>$legal_name,'legal_idcard'=>$legal_idcard,'legal_charter'=>$legal_charter);
             $m_hotelext = new \Common\Model\HotelExtModel();
             $m_hotelext->add($add_hotelext);

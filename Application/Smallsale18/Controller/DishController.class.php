@@ -29,6 +29,14 @@ class DishController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'status'=>1001);
                 break;
+            case 'getPlatform':
+                $this->is_verify = 1;
+                $this->valid_fields = array('merchant_id'=>1001);
+                break;
+            case 'setPlatform':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'img1'=>1002,'img2'=>1002,'img3'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -214,5 +222,60 @@ class DishController extends CommonController{
         }
         $this->to_back(array());
     }
+
+    public function getPlatform(){
+        $merchant_id = intval($this->params['merchant_id']);
+
+        $m_dishplatform = new \Common\Model\Smallapp\DishplatformModel();
+        $res_platform = $m_dishplatform->getInfo(array('merchant_id'=>$merchant_id));
+        $platform_img = array('img1'=>'','img1_path'=>'','img2'=>'','img2_path'=>'',
+            'img3'=>'','img3_path'=>'');
+        if(!empty($res_platform)){
+            $oss_host = get_oss_host();
+            if(!empty($res_platform['img1'])){
+                $platform_img['img1'] = $res_platform['img1'];
+                $platform_img['img1_path'] = $oss_host.'/'.$res_platform['img1'];
+            }
+            if(!empty($res_platform['img2'])){
+                $platform_img['img2'] = $res_platform['img2'];
+                $platform_img['img2_path'] = $oss_host.'/'.$res_platform['img2'];
+            }
+            if(!empty($res_platform['img3'])){
+                $platform_img['img3'] = $res_platform['img3'];
+                $platform_img['img3_path'] = $oss_host.'/'.$res_platform['img3'];
+            }
+        }
+        $this->to_back($platform_img);
+    }
+
+    public function setPlatform(){
+        $openid = $this->params['openid'];
+        $img1 = !empty($this->params['img1'])?$this->params['img1']:'';
+        $img2 = !empty($this->params['img2'])?$this->params['img2']:'';
+        $img3 = !empty($this->params['img3'])?$this->params['img3']:'';
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+        $data = array('img1'=>$img1,'img2'=>$img2,'img3'=>$img3);
+        $m_dishplatform = new \Common\Model\Smallapp\DishplatformModel();
+        $res_platform = $m_dishplatform->getInfo(array('merchant_id'=>$merchant_id));
+        if(!empty($res_platform)){
+            $m_dishplatform->updateData(array('id'=>$res_platform['id']),$data);
+        }else{
+            if(empty($img1) && empty($img2) && empty($img3)){
+                $this->to_back(1001);
+            }
+            $data['merchant_id'] = $merchant_id;
+            $m_dishplatform->add($data);
+        }
+        $this->to_back(array());
+    }
+
+
 
 }

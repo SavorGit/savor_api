@@ -97,16 +97,19 @@ class MerchantController extends CommonController{
         $merchant['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id=$merchant_id&type=24";
 
         $m_dishplatform = new \Common\Model\Smallapp\DishplatformModel();
-        $res_platform = $m_dishplatform->getDataList('img1,img2,img3',array('merchant_id'=>$merchant_id),'id desc');
-        $platform_img = array();
+        $where = array('merchant_id'=>$merchant_id);
+        $res_platform = $m_dishplatform->getDataList('*',$where,'id desc');
+        $datalist = array();
         if(!empty($res_platform)){
-            $oss_host = get_oss_host();
-            $img1 = $oss_host.'/'.$res_platform[0]['img1'];
-            $img2 = $oss_host.'/'.$res_platform[0]['img2'];
-            $img3 = $oss_host.'/'.$res_platform[0]['img3'];
-            $platform_img = array('img1'=>$img1,'img2'=>$img2,'img3'=>$img3);
+            $oss_host = "http://".C('OSS_HOST').'/';
+            foreach ($res_platform as $v){
+                $img_url = $oss_host.'/'.$v['img_path'];
+                $info = array('id'=>$v['id'],'name'=>$v['name'],
+                    'img_path'=>$v['img_path'],'img_url'=>$img_url);
+                $datalist[]=$info;
+            }
         }
-        $merchant['platform_img'] = $platform_img;
+        $merchant['platform_img'] = $datalist;
         $this->to_back($merchant);
     }
 

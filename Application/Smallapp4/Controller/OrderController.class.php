@@ -8,6 +8,10 @@ class OrderController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+            case 'getPreOrder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'cart_ids'=>1002,'goods_id'=>1002);
+                break;
             case 'addDishorder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'cart_ids'=>1002,'goods_id'=>1002,'amount'=>1002,
@@ -21,6 +25,79 @@ class OrderController extends CommonController{
         parent::_init_();
     }
 
+    public function getPreOrder(){
+        $openid = $this->params['openid'];
+        $goods_id= intval($this->params['goods_id']);
+        $cart_ids = $this->params['cart_ids'];
+
+        if(empty($goods_id) && empty($cart_ids)){
+            $this->to_back(1001);
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $goods = array();
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        if($goods_id){
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if(empty($res_goods) || $res_goods['status']==2){
+                $this->to_back(92020);
+            }
+            $amount = 1;
+            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                'cover_imgs'=>$res_goods['cover_imgs'],'amount'=>$amount);
+            $goods[$res_goods['merchant_id']][] = $ginfo;
+        }else{
+            $tmp_cardids = explode(',',$cart_ids);
+            $m_cart = new \Common\Model\Smallapp\CartModel();
+            foreach ($tmp_cardids as $v){
+                if(!empty($v)){
+                    $res_cart = $m_cart->getInfo(array('id'=>intval($v)));
+                    if(empty($res_cart) || $res_cart['openid']!=$openid){
+                        $this->to_back(90133);
+                    }
+                    $res_goods = $m_goods->getInfo(array('id'=>$res_cart['goods_id']));
+                    if(!empty($res_goods) && $res_goods['status']==1){
+                        $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                            'cover_imgs'=>$res_goods['cover_imgs'],'amount'=>$res_cart['amount']);
+                        $goods[$res_cart['merchant_id']][] = $ginfo;
+                    }
+                }
+            }
+        }
+        if(empty($goods)){
+            $this->to_back(1001);
+        }
+        $all_goods = array();
+        $merchant_id = 0;
+        $amount = 0;
+        $total_fee = 0;
+        $oss_host = "http://".C('OSS_HOST').'/';
+        foreach ($goods as $k=>$v){
+            $merchant_id = $k;
+            foreach ($v as $gv){
+                $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+                $total_fee = $total_fee+$price;
+                $amount = $amount+$gv['amount'];
+                $ginfo = array('goods_id'=>$gv['goods_id'],'goods_name'=>$gv['name'],'price'=>$gv['price'],'amount'=>$gv['amount']);
+                $cover_imgs_info = explode(',',$gv['cover_imgs']);
+                $ginfo['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                $all_goods[]=$ginfo;
+            }
+        }
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = array('m.id'=>$merchant_id);
+        $fields = 'm.id as merchant_id,hotel.id as hotel_id,hotel.name as hotel_name';
+        $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+        $data = array('merchant_id'=>$merchant_id,'hotel_name'=>$res_merchant[0]['hotel_name'],'amount'=>$amount,'total_fee'=>$total_fee);
+        $data['goods'] = $all_goods;
+        $this->to_back($data);
+    }
 
     public function dishOrderlist(){
         $openid = $this->params['openid'];
@@ -73,6 +150,43 @@ class OrderController extends CommonController{
         }
         $res_data = array('datalist'=>$datalist);
         $this->to_back($res_data);
+    }
+
+    public function dishOrderdetail(){
+        $openid = $this->params['openid'];
+        $order_id = intval($this->params['order_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $res_order = $m_dishorder->getInfo(array('id'=>$order_id));
+        if(empty($res_order) || $res_order['openid']!=$openid){
+            $this->to_back(90134);
+        }
+        $res_order['order_id'] = $order_id;
+        unset($res_order['id'],$res_order['openid'],$res_order['staff_id'],$res_order['dishgoods_id'],$res_order['price'],$res_order['pay_type']);
+
+        $oss_host = "http://".C('OSS_HOST').'/';
+        $res_order['add_time'] = date('Y-m-d H:i',strtotime($res_order['add_time']));
+        if($res_order['finish_time']=='0000-00-00 00:00:00'){
+            $res_order['finish_time'] = '';
+        }
+        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.cover_imgs,goods.merchant_id';
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+        $goods = array();
+        foreach ($res_goods as $gv){
+            $ginfo = array('goods_id'=>$gv['goods_id'],'goods_name'=>$gv['goods_name']);
+            $cover_imgs_info = explode(',',$gv['cover_imgs']);
+            $ginfo['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+            $goods[]=$ginfo;
+        }
+        $res_order['goods'] = $goods;
+        $this->to_back($res_order);
     }
 
     public function addDishorder(){

@@ -274,6 +274,7 @@ return array(
 	    '90131'=>'smallapp_have_collect',
 	    '90132'=>'smallapp_address_not_you',
 	    '90133'=>'smallapp_cart_not_you',
+	    '90134'=>'smallapp_order_not_you',
 
 
 

@@ -30,4 +30,11 @@ class CartModel extends BaseModel{
         }
         return $data;
     }
+
+    public function getCartAmount($merchant_id){
+        $fields = 'sum(amount) as total_amount';
+        $where = array('merchant_id'=>$merchant_id);
+        $data = $this->field($fields)->where($where)->find();
+        return $data;
+    }
 }

@@ -246,6 +246,7 @@ return array(
     'smallapp_resource_foul'=>'投屏资源涉嫌违规',
     'smallapp_address_not_you'=>'该收货地址不属于你',
     'smallapp_cart_not_you'=>'此购物车不属于你',
+    'smallapp_order_not_you'=>'此订单不属于你',
 
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',

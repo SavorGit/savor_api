@@ -16,6 +16,10 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
                 break;
+            case 'dishOrderdetail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -93,6 +97,44 @@ class OrderController extends CommonController{
         }
         $m_dishorder->updateData(array('id'=>$order_id),array('status'=>2,'finish_time'=>date('Y-m-d H:i:s')));
         $this->to_back(array());
+    }
+
+    public function dishOrderdetail(){
+        $openid = $this->params['openid'];
+        $order_id = intval($this->params['order_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $res_order = $m_dishorder->getInfo(array('id'=>$order_id));
+        if(empty($res_order) || $res_order['merchant_id']!=$merchant_id){
+            $this->to_back(93036);
+        }
+        $res_order['order_id'] = $order_id;
+        unset($res_order['id'],$res_order['openid'],$res_order['staff_id'],$res_order['dishgoods_id'],$res_order['price'],$res_order['pay_type']);
+
+        $oss_host = "http://".C('OSS_HOST').'/';
+        $res_order['add_time'] = date('Y-m-d H:i',strtotime($res_order['add_time']));
+        if($res_order['finish_time']=='0000-00-00 00:00:00'){
+            $res_order['finish_time'] = '';
+        }
+        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.cover_imgs,goods.merchant_id';
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+        $goods = array();
+        foreach ($res_goods as $gv){
+            $ginfo = array('goods_id'=>$gv['goods_id'],'goods_name'=>$gv['goods_name']);
+            $cover_imgs_info = explode(',',$gv['cover_imgs']);
+            $ginfo['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+            $goods[]=$ginfo;
+        }
+        $res_order['goods'] = $goods;
+        $this->to_back($res_order);
     }
 
 }

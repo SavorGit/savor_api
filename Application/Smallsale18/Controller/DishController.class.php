@@ -227,32 +227,25 @@ class DishController extends CommonController{
         $merchant_id = intval($this->params['merchant_id']);
 
         $m_dishplatform = new \Common\Model\Smallapp\DishplatformModel();
-        $res_platform = $m_dishplatform->getInfo(array('merchant_id'=>$merchant_id));
-        $platform_img = array('img1'=>'','img1_path'=>'','img2'=>'','img2_path'=>'',
-            'img3'=>'','img3_path'=>'');
+        $where = array('merchant_id'=>$merchant_id);
+        $res_platform = $m_dishplatform->getDataList('*',$where,'id desc');
+        $datalist = array();
         if(!empty($res_platform)){
-            $oss_host = get_oss_host();
-            if(!empty($res_platform['img1'])){
-                $platform_img['img1'] = $res_platform['img1'];
-                $platform_img['img1_path'] = $oss_host.'/'.$res_platform['img1'];
-            }
-            if(!empty($res_platform['img2'])){
-                $platform_img['img2'] = $res_platform['img2'];
-                $platform_img['img2_path'] = $oss_host.'/'.$res_platform['img2'];
-            }
-            if(!empty($res_platform['img3'])){
-                $platform_img['img3'] = $res_platform['img3'];
-                $platform_img['img3_path'] = $oss_host.'/'.$res_platform['img3'];
+            $oss_host = "http://".C('OSS_HOST').'/';
+            foreach ($res_platform as $v){
+                $img_url = $oss_host.'/'.$v['img_path'];
+                $info = array('id'=>$v['id'],'name'=>$v['name'],
+                    'img_path'=>$v['img_path'],'img_url'=>$img_url);
+                $datalist[]=$info;
             }
         }
-        $this->to_back($platform_img);
+        $this->to_back($datalist);
     }
 
     public function setPlatform(){
         $openid = $this->params['openid'];
-        $img1 = !empty($this->params['img1'])?$this->params['img1']:'';
-        $img2 = !empty($this->params['img2'])?$this->params['img2']:'';
-        $img3 = !empty($this->params['img3'])?$this->params['img3']:'';
+        $name = $this->params['name'];
+        $img_path = $this->params['img_path'];
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -261,18 +254,9 @@ class DishController extends CommonController{
             $this->to_back(93001);
         }
         $merchant_id = $res_staff[0]['merchant_id'];
-        $data = array('img1'=>$img1,'img2'=>$img2,'img3'=>$img3);
+        $data = array('name'=>$name,'img_path'=>$img_path,'merchant_id'=>$merchant_id);
         $m_dishplatform = new \Common\Model\Smallapp\DishplatformModel();
-        $res_platform = $m_dishplatform->getInfo(array('merchant_id'=>$merchant_id));
-        if(!empty($res_platform)){
-            $m_dishplatform->updateData(array('id'=>$res_platform['id']),$data);
-        }else{
-            if(empty($img1) && empty($img2) && empty($img3)){
-                $this->to_back(1001);
-            }
-            $data['merchant_id'] = $merchant_id;
-            $m_dishplatform->add($data);
-        }
+        $m_dishplatform->add($data);
         $this->to_back(array());
     }
 

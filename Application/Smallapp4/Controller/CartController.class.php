@@ -44,14 +44,24 @@ class CartController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_cart = new \Common\Model\Smallapp\CartModel();
-        $fields = 'cart.id as cart_id,goods.id as goods_id,goods.name as goods_name,cart.amount';
+        $fields = 'cart.id as cart_id,goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,cart.amount';
         $where = array('cart.openid'=>$openid,'cart.merchant_id'=>$merchant_id,'goods.status'=>1);
         $res_address = $m_cart->getList($fields,$where,'cart.id desc',0,$all_nums);
         $datalist = array();
+        $amount = 0;
         if($res_address['total']){
+            $res_amount = $m_cart->getCartAmount($merchant_id);
+            $amount = intval($res_amount['total_amount']);
+            $oss_host = "http://".C('OSS_HOST').'/';
             $datalist = $res_address['list'];
+            foreach ($datalist as $k=>$v){
+                $cover_imgs_info = explode(',',$v['cover_imgs']);
+                $datalist[$k]['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                unset($datalist[$k]['cover_imgs']);
+            }
         }
-        $this->to_back($datalist);
+        $res = array('datalist'=>$datalist,'amount'=>$amount);
+        $this->to_back($res);
     }
 
     public function addCart(){
@@ -82,7 +92,7 @@ class CartController extends CommonController{
             $owhere = array('og.order_id'=>$order_id,'goods.status'=>1);
             $all_goods = $m_ordergoods->getOrdergoodsList($gfields,$owhere,'og.id asc');
         }
-
+        $amount = 0;
         if(!empty($all_goods)){
             $m_cart = new \Common\Model\Smallapp\CartModel();
             foreach ($all_goods as $v){
@@ -97,8 +107,11 @@ class CartController extends CommonController{
                     $m_cart->add($data);
                 }
             }
+            $res_amount = $m_cart->getCartAmount($all_goods[0]['merchant_id']);
+            $amount = intval($res_amount['total_amount']);
         }
-        $this->to_back(array());
+        $res = array('amount'=>$amount);
+        $this->to_back($res);
     }
 
     public function editCart(){
@@ -122,7 +135,9 @@ class CartController extends CommonController{
         }else{
             $m_cart->delData(array('id'=>$cart_id));
         }
-        $this->to_back(array());
+        $res_amount = $m_cart->getCartAmount($res_cart['merchant_id']);
+        $amount = intval($res_amount['total_amount']);
+        $this->to_back(array('amount'=>$amount));
     }
 
     public function delCart(){
@@ -140,7 +155,7 @@ class CartController extends CommonController{
         if(!empty($res_cart)){
             $m_cart->delData(array('merchant_id'=>$merchant_id));
         }
-        $this->to_back(array());
+        $this->to_back(array('amount'=>0));
     }
 
 

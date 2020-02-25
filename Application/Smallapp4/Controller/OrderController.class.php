@@ -14,8 +14,9 @@ class OrderController extends CommonController{
                 break;
             case 'addDishorder':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'cart_ids'=>1002,'goods_id'=>1002,'amount'=>1002,
-                    'contact'=>1001,'phone'=>1001,'address'=>1001,'delivery_time'=>1002,'remark'=>1002);
+                $this->valid_fields = array('openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
+                    'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
+                    'address_id'=>1002);
                 break;
             case 'dishOrderlist':
                 $this->is_verify = 1;
@@ -119,11 +120,13 @@ class OrderController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
-        $fields = 'id as order_id,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,merchant_id,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
         $res_order = $m_dishorder->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+            $m_merchant = new \Common\Model\Integral\MerchantModel();
+            $m_media = new \Common\Model\MediaModel();
             $datalist = $res_order['list'];
             $oss_host = "http://".C('OSS_HOST').'/';
             foreach($datalist as $k=>$v){
@@ -132,20 +135,33 @@ class OrderController extends CommonController{
                     $datalist[$k]['finish_time'] = '';
                 }
                 $order_id = $v['order_id'];
-                $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.cover_imgs,goods.merchant_id';
+                $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
                 $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
                 $goods = array();
                 foreach ($res_goods as $gv){
-                    $ginfo = array('goods_id'=>$gv['goods_id'],'goods_name'=>$gv['goods_name']);
+                    $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>$gv['amount'],
+                        'status'=>$gv['status']);
                     $cover_imgs_info = explode(',',$gv['cover_imgs']);
-                    $ginfo['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     $goods[]=$ginfo;
                 }
+
+                $where = array('m.id'=>$v['merchant_id']);
+                $fields = 'm.id,hotel.name,ext.hotel_cover_media_id';
+                $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+                $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$v['merchant_id']);
+                $merchant['img'] = '';
+                if(!empty($res_merchant[0]['hotel_cover_media_id'])){
+                    $res_media = $m_media->getMediaInfoById($res_merchant[0]['hotel_cover_media_id']);
+                    $merchant['img'] = $res_media['oss_addr'];
+                }
+
+                $datalist[$k]['merchant'] = $merchant;
                 $datalist[$k]['goods'] = $goods;
-                $datalist[$k]['merchant_id']=$res_goods[0]['merchant_id'];
-                $datalist[$k]['goods_id']=$goods[0]['goods_id'];
-                $datalist[$k]['goods_name']=$goods[0]['goods_name'];
-                $datalist[$k]['goods_img'] = $goods[0]['goods_img'];
+                $datalist[$k]['goods_id']=$goods[0]['id'];
+                $datalist[$k]['goods_name']=$goods[0]['name'];
+                $datalist[$k]['goods_img'] = $goods[0]['img'];
+                $datalist[$k]['price'] = $v['total_fee'];
             }
         }
         $res_data = array('datalist'=>$datalist);
@@ -175,17 +191,31 @@ class OrderController extends CommonController{
         if($res_order['finish_time']=='0000-00-00 00:00:00'){
             $res_order['finish_time'] = '';
         }
-        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.cover_imgs,goods.merchant_id';
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
         $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
         $goods = array();
         foreach ($res_goods as $gv){
-            $ginfo = array('goods_id'=>$gv['goods_id'],'goods_name'=>$gv['goods_name']);
+            $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>$gv['amount'],
+                'status'=>$gv['status']);
             $cover_imgs_info = explode(',',$gv['cover_imgs']);
-            $ginfo['goods_img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+            $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
             $goods[]=$ginfo;
         }
         $res_order['goods'] = $goods;
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $m_media = new \Common\Model\MediaModel();
+        $where = array('m.id'=>$res_order['merchant_id']);
+        $fields = 'm.id,hotel.name,ext.hotel_cover_media_id';
+        $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+        $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$res_order['merchant_id']);
+        $merchant['img'] = '';
+        if(!empty($res_merchant[0]['hotel_cover_media_id'])){
+            $res_media = $m_media->getMediaInfoById($res_merchant[0]['hotel_cover_media_id']);
+            $merchant['img'] = $res_media['oss_addr'];
+        }
+        $res_order['merchant'] = $merchant;
         $this->to_back($res_order);
     }
 
@@ -195,14 +225,15 @@ class OrderController extends CommonController{
         $openid = $this->params['openid'];
         $goods_id= intval($this->params['goods_id']);
         $amount = intval($this->params['amount']);
-        $cart_ids = $this->params['cart_ids'];
+        $carts = $this->params['carts'];
         $contact = $this->params['contact'];
         $phone = $this->params['phone'];
         $address = $this->params['address'];
         $delivery_time = $this->params['delivery_time'];
         $remark = $this->params['remark'];
+        $address_id = intval($this->params['address_id']);
 
-        if(empty($goods_id) && empty($cart_ids)){
+        if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
         if(!empty($delivery_time)){
@@ -211,29 +242,26 @@ class OrderController extends CommonController{
                 $this->to_back(93038);
             }
         }
-        $is_check = check_mobile($phone);
-        if(!$is_check){
-            $this->to_back(93006);
-        }
+
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
 
-//        $redis = \Common\Lib\SavorRedis::getInstance();
-//        $redis->select(14);
-//        $res_ordercache = $redis->get($order_space_key);
-//        if(!empty($res_ordercache)){
-//            $this->to_back(92024);
-//        }
-//        $res_cache = $redis->get($cache_key);
-//        if(!empty($res_cache)){
-//            $user_order = json_decode($res_cache,true);
-//            if(count($user_order)>=$addorder_num){
-//                $this->to_back(92021);
-//            }
-//        }else{
-//            $user_order = array();
-//        }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_ordercache = $redis->get($order_space_key);
+        if(!empty($res_ordercache)){
+            $this->to_back(92024);
+        }
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $user_order = json_decode($res_cache,true);
+            if(count($user_order)>=$addorder_num){
+                $this->to_back(92021);
+            }
+        }else{
+            $user_order = array();
+        }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
@@ -242,6 +270,24 @@ class OrderController extends CommonController{
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
+        }
+        if($address_id){
+            $m_area = new \Common\Model\AreaModel();
+            $m_address = new \Common\Model\Smallapp\AddressModel();
+            $res_address = $m_address->getInfo(array('id'=>$address_id));
+            $res_area = $m_area->find($res_address['area_id']);
+            $res_county = $m_area->find($res_address['county_id']);
+
+            $contact = $res_address['consignee'];
+            $phone = $res_address['phone'];
+            $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        }
+        if(empty($contact) || empty($phone) || empty($address)){
+           $this->to_back(1001);
+        }
+        $is_check = check_mobile($phone);
+        if(!$is_check){
+            $this->to_back(93006);
         }
         $goods = array();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
@@ -255,19 +301,17 @@ class OrderController extends CommonController{
                 'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
             $goods[$res_goods['merchant_id']][] = $ginfo;
         }else{
-            $tmp_cardids = explode(',',$cart_ids);
-            $m_cart = new \Common\Model\Smallapp\CartModel();
-            foreach ($tmp_cardids as $v){
-                if(!empty($v)){
-                    $res_cart = $m_cart->getInfo(array('id'=>intval($v)));
-                    if(empty($res_cart) || $res_cart['openid']!=$openid){
-                        $this->to_back(90133);
-                    }
-                    $res_goods = $m_goods->getInfo(array('id'=>$res_cart['goods_id']));
-                    if(!empty($res_goods) && $res_goods['status']==1){
-                        $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
-                            'staff_id'=>$res_goods['staff_id'],'amount'=>$res_cart['amount']);
-                        $goods[$res_cart['merchant_id']][] = $ginfo;
+            $json_str= stripslashes(html_entity_decode($carts));
+            $cart_info = json_decode($json_str,true);
+            if(!empty($cart_info)){
+                foreach ($cart_info as $v){
+                    if(!empty($v)){
+                        $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
+                        if(!empty($res_goods) && $res_goods['status']==1){
+                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
+                            $goods[$res_goods['merchant_id']][] = $ginfo;
+                        }
                     }
                 }
             }
@@ -305,7 +349,7 @@ class OrderController extends CommonController{
 
 //            $redis->set($order_space_key,$order_id,60);
             $user_order[] = $order_id;
-//            $redis->set($cache_key,json_encode($user_order),86400);
+            $redis->set($cache_key,json_encode($user_order),86400);
 
             $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
             $activity_phone = $res_merchant['mobile'];

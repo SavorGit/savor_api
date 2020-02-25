@@ -35,6 +35,7 @@ class MerchantModel extends BaseModel{
         $data = $this->alias('m')
             ->field($fields)
             ->join('savor_hotel hotel on m.hotel_id=hotel.id','left')
+            ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
             ->where($where)
             ->select();
         return $data;

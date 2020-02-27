@@ -155,6 +155,13 @@ class DishController extends CommonController{
         }
         $staff_id = $res_staff[0]['id'];
         $merchant_id = $res_staff[0]['merchant_id'];
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('merchant_id'=>$merchant_id,'name'=>$name);
+        $res_name = $m_goods->getInfo($where);
+        if(!empty($res_name)){
+            $this->to_back(93042);
+        }
+
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,
             'staff_id'=>$staff_id,'status'=>1);
         if(!empty($intro)){
@@ -163,7 +170,6 @@ class DishController extends CommonController{
         if(!empty($detail_imgs)){
             $data['detail_imgs'] = $detail_imgs;
         }
-        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $res = $m_goods->add($data);
         if($res && $res_staff[0]['is_takeout']==0){
             $m_merchant = new \Common\Model\Integral\MerchantModel();

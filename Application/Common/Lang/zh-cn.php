@@ -329,6 +329,7 @@ return array(
     'smallappsale_register_sendtime_error'=>'60秒内请勿重复发送',
     'smallappsale_register_verify_code_error'=>'注册验证码错误',
     'smallappsale_register_user_not_ok'=>'当前商家未通过审核',
+    'smallappsale_dishgoods_name_error'=>'菜品名称不能重复',
 
 
 );

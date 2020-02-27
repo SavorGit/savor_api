@@ -196,7 +196,7 @@ class OrderController extends CommonController{
         $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
         $goods = array();
         foreach ($res_goods as $gv){
-            $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>$gv['amount'],
+            $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>intval($gv['amount']),
                 'status'=>$gv['status']);
             $cover_imgs_info = explode(',',$gv['cover_imgs']);
             $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
@@ -385,9 +385,14 @@ class OrderController extends CommonController{
             }
             $m_ordergoods->addAll($order_goods);
         }
+        if($goods_id){
+            $params = array('goods_name'=>$goods_name[0]);
+            $template_code = $ucconfig['dish_send_buyer'];
+        }else{
+            $params = array('hotel_name'=>$hotel_name[0]);
+            $template_code = $ucconfig['dish_send_cartsbuyer'];
+        }
 
-        $params = array('goods_name'=>$goods_name[0]);
-        $template_code = $ucconfig['dish_send_buyer'];
         $res_data = $alisms::sendSms($phone,$params,$template_code);
         $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
             'url'=>join(',',$params),'tel'=>$phone,'resp_code'=>$res_data->Code,'msg_type'=>3

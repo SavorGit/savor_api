@@ -346,6 +346,7 @@ return array(
 	    '93039'=>'smallappsale_register_sendtime_error',
 	    '93040'=>'smallappsale_register_verify_code_error',
 	    '93041'=>'smallappsale_register_user_not_ok',
+	    '93042'=>'smallappsale_dishgoods_name_error',
 
 	),
 );

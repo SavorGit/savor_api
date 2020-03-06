@@ -17,8 +17,87 @@ class MerchantController extends CommonController{
                 $this->valid_fields = array('page'=>1001,'area_id'=>1001,
                     'county_id'=>1002,'food_style_id'=>1002,'avg_exp_id'=>1002);
                 break;
+            case 'hotelList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('page'=>1001,'area_id'=>1001,
+                    'county_id'=>1002,'food_style_id'=>1002,'avg_exp_id'=>1002);
+                break;
         }
         parent::_init_();
+    }
+
+    public function hotelList(){
+        $page = $this->params['page'] ? $this->params['page'] :1;
+        $area_id  = $this->params['area_id'] ? $this->params['area_id'] :1;
+        $county_id = $this->params['county_id'];
+        $food_style_id = $this->params['food_style_id'];
+        $avg_id = $this->params['avg_exp_id'];
+        $pagesize = 10;
+        $size = $page * $pagesize;
+
+        $where = array('m.status'=>1);
+        $where['m.id'] = array('not in','89');
+        if($area_id){
+            $where['hotel.area_id'] = $area_id;
+        }
+        if($county_id){
+            $where['hotel.county_id'] = $county_id;
+        }
+        if($food_style_id){
+            $where['ext.food_style_id'] = $food_style_id;
+        }
+        if($avg_id){
+            $where['ext.avg_expense'] = $this->getAvgWhere($avg_id);
+        }
+        $fields = "hotel.id hotel_id,hotel.name,hotel.addr,hotel.tel,ext.food_style_id,
+                   ext.avg_expense,ext.hotel_cover_media_id,food.name as food_name,m.id as merchant_id,m.is_takeout";
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_merchant = $m_hotel->getMerchantHotelList($fields,$where,'m.is_takeout desc,hotel.pinyin asc',0,$size);
+        $datalist = array();
+        if($res_merchant['total']){
+            $datalist = $res_merchant['list'];
+            $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($datalist as $k=>$v){
+                if(empty($v['food_name'])){
+                    $datalist[$k]['food_name'] = '';
+                }
+                $img_url = '';
+                if(!empty($v['hotel_cover_media_id'])){
+                    $res_media = $m_media->getMediaInfoById($v['hotel_cover_media_id']);
+                    $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                }
+                $merchant_id = 0;
+                if(!empty($v['merchant_id'])){
+                    $merchant_id = intval($v['merchant_id']);
+                }
+                $is_takeout = 0;
+                if(!empty($v['is_takeout'])){
+                    $is_takeout = intval($v['is_takeout']);
+                }
+                $goods = array();
+                if($is_takeout && $merchant_id){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $dgfields = 'id,name,price,cover_imgs';
+                    $dgwhere = array('merchant_id'=>$merchant_id,'status'=>1);
+                    $dgorderby = 'is_top desc,id desc';
+                    $res_goods = $m_dishgoods->getDataList($dgfields,$dgwhere,$dgorderby,0,4);
+                    if($res_goods['total']){
+                        foreach ($res_goods['list'] as $gv){
+                            $ginfo = array('id'=>$gv['id'],'name'=>$gv['name'],'price'=>$gv['price']);
+                            $cover_imgs_info = explode(',',$gv['cover_imgs']);
+                            $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                            $goods[]=$ginfo;
+                        }
+                    }
+                }
+                $datalist[$k]['goods'] = $goods;
+                $datalist[$k]['merchant_id'] = $merchant_id;
+                $datalist[$k]['is_takeout'] = $is_takeout;
+                $datalist[$k]['img_url'] = $img_url;
+            }
+        }
+        $this->to_back($datalist);
     }
 
     public function merchantList(){

@@ -21,6 +21,11 @@ class DishController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'price'=>1001,
                     'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002);
                 break;
+            case 'editDish':
+                $this->is_verify = 1;
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'price'=>1001,
+                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002);
+                break;
             case 'top':
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'openid'=>1001);
@@ -89,6 +94,8 @@ class DishController extends CommonController{
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price']);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs = array();
+        $cover_imgs_path = $detail_imgs_path = array();
+
         if(!empty($res_goods['cover_imgs'])){
             $cover_imgs_info = explode(',',$res_goods['cover_imgs']);
             if(!empty($cover_imgs_info)){
@@ -96,6 +103,7 @@ class DishController extends CommonController{
                     if(!empty($v)){
                         $img_url = $oss_host.$v."?x-oss-process=image/resize,m_mfit,h_400,w_750";
                         $cover_imgs[] = $img_url;
+                        $cover_imgs_path[] = $v;
                     }
                 }
             }
@@ -107,12 +115,15 @@ class DishController extends CommonController{
                     if(!empty($v)){
                         $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
                         $detail_imgs[] = $img_url;
+                        $detail_imgs_path[] = $v;
                     }
                 }
             }
         }
         $data['cover_imgs'] = $cover_imgs;
         $data['detail_imgs'] = $detail_imgs;
+        $data['cover_imgs_path'] = $cover_imgs_path;
+        $data['detail_imgs_path'] = $detail_imgs_path;
         $data['intro'] = $res_goods['intro'];
 
         $merchant = array();
@@ -177,6 +188,49 @@ class DishController extends CommonController{
         }
         $this->to_back(array());
     }
+
+    public function editDish(){
+        $goods_id = $this->params['goods_id'];
+        $openid = $this->params['openid'];
+        $name = $this->params['name'];
+        $price = $this->params['price'];
+        $imgs = $this->params['imgs'];
+        $intro = $this->params['intro'];
+        $detail_imgs = $this->params['detail_imgs'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+        if(empty($res_goods)){
+            $this->to_back(93034);
+        }
+
+        $staff_id = $res_staff[0]['id'];
+        $merchant_id = $res_staff[0]['merchant_id'];
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('merchant_id'=>$merchant_id,'name'=>$name);
+        $res_name = $m_goods->getInfo($where);
+        if(!empty($res_name) && $res_name['id']!=$goods_id){
+            $this->to_back(93042);
+        }
+
+        $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,
+            'staff_id'=>$staff_id,'status'=>1);
+        $data['intro'] = trim($intro);
+        $data['detail_imgs'] = $detail_imgs;
+        $res = $m_goods->updateData(array('id'=>$goods_id),$data);
+        if($res && $res_staff[0]['is_takeout']==0){
+            $m_merchant = new \Common\Model\Integral\MerchantModel();
+            $m_merchant->updateData(array('id'=>$merchant_id),array('is_takeout'=>1));
+        }
+        $this->to_back(array());
+    }
+
 
     public function top(){
         $goods_id = intval($this->params['goods_id']);

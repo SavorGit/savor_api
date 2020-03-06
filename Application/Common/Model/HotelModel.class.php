@@ -1,17 +1,37 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: baiyutao
- * Date: 2017/5/16
- * Time: 13:54
- */
 namespace Common\Model;
 use Think\Model;
 
-class HotelModel extends Model
-{
+class HotelModel extends Model{
     protected $tableName='hotel';
 
+
+    public function getMerchantHotelList($fields,$where,$orderby,$start=0,$size=0){
+        if($start >= 0 && $size){
+            $list = $this->alias('hotel')
+                ->field($fields)
+                ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+                ->join('savor_area_info area on area.id=hotel.area_id','left')
+                ->join('savor_hotel_food_style food on ext.food_style_id=food.id','left')
+                ->join('savor_integral_merchant m on m.hotel_id=hotel.id','left')
+                ->where($where)
+                ->order($orderby)
+                ->limit($start,$size)
+                ->select();
+            $count = $this->alias('hotel')
+                ->field($fields)
+                ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+                ->join('savor_area_info area on area.id=hotel.area_id','left')
+                ->join('savor_hotel_food_style food on ext.food_style_id=food.id','left')
+                ->join('savor_integral_merchant m on m.hotel_id=hotel.id','left')
+                ->where($where)
+                ->count();
+            $data = array('list'=>$list,'total'=>$count);
+        }else{
+            $data = $this->field($fields)->where($where)->order($orderby)->select();
+        }
+        return $data;
+    }
 
     public function saveData($data, $where) {
         $bool = $this->where($where)->save($data);

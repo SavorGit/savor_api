@@ -15,7 +15,7 @@ class SmsController extends CommonController{
                 break;
             case 'sendRegisterCode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('mobile'=>1001);
+                $this->valid_fields = array('mobile'=>1001,'type'=>1002);
                 break;
             case 'sendverifyCode':
                 $this->is_verify = 1;
@@ -84,6 +84,7 @@ class SmsController extends CommonController{
 
     public function sendRegisterCode(){
         $mobile = $this->params['mobile'];
+        $type = isset($this->params['type'])?$this->params['type']:1;
         if(!check_mobile($mobile)){
             $this->to_back(92001);
         }
@@ -95,7 +96,12 @@ class SmsController extends CommonController{
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $sale_key = C('SAPP_SALE');
-        $register_key = $sale_key.'register:'.$mobile;
+        if($type==1){
+            $register_key = $sale_key.'register:'.$mobile;
+        }else{
+            $register_key = $sale_key.'purchaseregister:'.$mobile;
+        }
+
         $repeat_key = $sale_key.'repeatsend:'.$mobile;
         $res_repeat = $redis->get($repeat_key);
         if(!empty($res_repeat)){

@@ -10,7 +10,7 @@ class DishController extends CommonController{
         switch(ACTION_NAME) {
             case 'goodslist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('merchant_id'=>1001,'page'=>1001);
+                $this->valid_fields = array('merchant_id'=>1001,'page'=>1001,'type'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -22,17 +22,23 @@ class DishController extends CommonController{
 
     public function goodslist(){
         $merchant_id = intval($this->params['merchant_id']);
+        $page = intval($this->params['page']);
+        $type = isset($this->params['type'])?intval($this->params['type']):1;//1全部 2支持全国售卖
+
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
         if(empty($res_merchant) || $res_merchant['status']!=1){
             $this->to_back(93035);
         }
-        $page = intval($this->params['page']);
+
         $pagesize = 10;
         $all_nums = $page * $pagesize;
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$merchant_id,'status'=>1);
+        if($type==2){
+            $where['is_sale'] = 1;
+        }
         $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 

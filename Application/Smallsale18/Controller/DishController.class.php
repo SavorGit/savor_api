@@ -19,12 +19,12 @@ class DishController extends CommonController{
             case 'addDish':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'price'=>1001,
-                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002);
+                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'is_sale'=>1002);
                 break;
             case 'editDish':
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'price'=>1001,
-                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002);
+                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'is_sale'=>1002);
                 break;
             case 'top':
                 $this->is_verify = 1;
@@ -157,10 +157,11 @@ class DishController extends CommonController{
         $imgs = $this->params['imgs'];
         $intro = $this->params['intro'];
         $detail_imgs = $this->params['detail_imgs'];
+        $is_sale = isset($this->params['is_sale'])?intval($this->params['is_sale']):0;
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout,merchant.is_sale',$where);
         if(empty($res_staff)){
             $this->to_back(93001);
         }
@@ -182,9 +183,18 @@ class DishController extends CommonController{
             $data['detail_imgs'] = $detail_imgs;
         }
         $res = $m_goods->add($data);
-        if($res && $res_staff[0]['is_takeout']==0){
-            $m_merchant = new \Common\Model\Integral\MerchantModel();
-            $m_merchant->updateData(array('id'=>$merchant_id),array('is_takeout'=>1));
+        if($res){
+            $merchant_data = array();
+            if($is_sale && $res_staff[0]['is_sale']==0){
+                $merchant_data['is_sale'] = 1;
+            }
+            if($res_staff[0]['is_takeout']==0){
+                $merchant_data['is_takeout'] = 1;
+            }
+            if(!empty($merchant_data)){
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $m_merchant->updateData(array('id'=>$merchant_id),$merchant_data);
+            }
         }
         $this->to_back(array());
     }
@@ -197,10 +207,11 @@ class DishController extends CommonController{
         $imgs = $this->params['imgs'];
         $intro = $this->params['intro'];
         $detail_imgs = $this->params['detail_imgs'];
+        $is_sale = isset($this->params['is_sale'])?intval($this->params['is_sale']):0;
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id,merchant.is_takeout,merchant.is_sale',$where);
         if(empty($res_staff)){
             $this->to_back(93001);
         }
@@ -224,9 +235,18 @@ class DishController extends CommonController{
         $data['intro'] = trim($intro);
         $data['detail_imgs'] = $detail_imgs;
         $res = $m_goods->updateData(array('id'=>$goods_id),$data);
-        if($res && $res_staff[0]['is_takeout']==0){
-            $m_merchant = new \Common\Model\Integral\MerchantModel();
-            $m_merchant->updateData(array('id'=>$merchant_id),array('is_takeout'=>1));
+        if($res){
+            $merchant_data = array();
+            if($is_sale && $res_staff[0]['is_sale']==0){
+                $merchant_data['is_sale'] = 1;
+            }
+            if($res_staff[0]['is_takeout']==0){
+                $merchant_data['is_takeout'] = 1;
+            }
+            if(!empty($merchant_data)){
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $m_merchant->updateData(array('id'=>$merchant_id),$merchant_data);
+            }
         }
         $this->to_back(array());
     }

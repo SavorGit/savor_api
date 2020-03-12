@@ -20,8 +20,84 @@ class MerchantController extends CommonController{
                     'legal_charter'=>1001,'contractor'=>1001,'mobile'=>1001,'verify_code'=>1001
                 );
                 break;
+            case 'purchaseMerchantList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('page'=>1001,'area_id'=>1001,
+                    'county_id'=>1002,'food_style_id'=>1002,'avg_exp_id'=>1002);
+                break;
+            case 'setChangeprice':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'is_changeprice'=>1001);
+                break;
         }
         parent::_init_();
+    }
+
+    public function purchaseMerchantList(){
+        $page = $this->params['page'] ? $this->params['page'] :1;
+        $area_id  = $this->params['area_id'] ? $this->params['area_id'] :1;
+        $county_id = $this->params['county_id'];
+        $food_style_id = $this->params['food_style_id'];
+        $avg_id = $this->params['avg_exp_id'];
+        $pagesize = 10;
+        $size = $page * $pagesize;
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $fields = "hotel.id hotel_id,hotel.name,hotel.addr,hotel.tel,ext.food_style_id,
+                   ext.avg_expense,ext.hotel_cover_media_id,food.name as food_name,m.id as merchant_id,m.is_changeprice,m.is_sale";
+        $where = array('m.status'=>1,'m.is_takeout'=>1,'m.is_sale'=>1);
+        $where['m.id'] = array('not in','89');
+        if($area_id){
+            $where['hotel.area_id'] = $area_id;
+        }
+        if($county_id){
+            $where['hotel.county_id'] = $county_id;
+        }
+        if($food_style_id){
+            $where['ext.food_style_id'] = $food_style_id;
+        }
+        if($avg_id){
+            $where['ext.avg_expense'] = $this->getAvgWhere($avg_id);
+        }
+        $res_merchant = $m_merchant->getMerchantList($fields,$where,'hotel.pinyin asc',0,$size);
+        $datalist = array();
+        if($res_merchant['total']){
+            $oss_host = "https://".C('OSS_HOST').'/';
+            $datalist = $res_merchant['list'];
+            $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($datalist as $k=>$v){
+                if(empty($v['food_name'])){
+                    $datalist[$k]['food_name'] = '';
+                }
+                $img_url = '';
+                if(!empty($v['hotel_cover_media_id'])){
+                    $res_media = $m_media->getMediaInfoById($v['hotel_cover_media_id']);
+                    $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                }
+                $merchant_id = 0;
+                if(!empty($v['merchant_id'])){
+                    $merchant_id = intval($v['merchant_id']);
+                }
+
+                $goods = array();
+                $dgfields = 'id,name,price,cover_imgs';
+                $dgwhere = array('merchant_id'=>$merchant_id,'status'=>1,'is_sale'=>1);
+                $dgorderby = 'is_top desc,id desc';
+                $res_goods = $m_dishgoods->getDataList($dgfields,$dgwhere,$dgorderby,0,4);
+                if($res_goods['total']){
+                    foreach ($res_goods['list'] as $gv){
+                        $ginfo = array('id'=>$gv['id'],'name'=>$gv['name'],'price'=>$gv['price']);
+                        $cover_imgs_info = explode(',',$gv['cover_imgs']);
+                        $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $goods[]=$ginfo;
+                    }
+                }
+                $datalist[$k]['goods'] = $goods;
+                $datalist[$k]['img_url'] = $img_url;
+            }
+        }
+        $this->to_back($datalist);
     }
 
     public function info(){
@@ -39,7 +115,9 @@ class MerchantController extends CommonController{
 
         $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],
             'tel'=>$res_hotel['tel'],'addr'=>$res_hotel['addr'],
-            'avg_expense'=>$res_hotel['avg_expense'],'tips'=>'不出门抗击疫情，线上享超值菜品');
+            'avg_expense'=>$res_hotel['avg_expense'],
+            'is_changeprice'=>$res_merchant['is_changeprice'],'is_sale'=>$res_merchant['is_sale'],
+            'tips'=>'不出门抗击疫情，线上享超值菜品');
         $merchant['img'] = '';
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $m_media = new \Common\Model\MediaModel();
@@ -144,5 +222,37 @@ class MerchantController extends CommonController{
         $this->to_back($res_data);
     }
 
+    public function setChangeprice(){
+        $openid = $this->params['openid'];
+        $is_changeprice = intval($this->params['is_changeprice']);
 
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $data = array('is_changeprice'=>$is_changeprice);
+        $m_merchant->updateData(array('id'=>$merchant_id),$data);
+        $this->to_back(array());
+    }
+
+    private function getAvgWhere($avg_id){
+        switch ($avg_id){
+            case 1:
+                $where = array('LT',100);
+                break;
+            case 2:
+                $where = array(array('EGT',100),array('ELT',200));
+                break;
+            case 3:
+                $where = array('GT',200);
+                break;
+        }
+        return $where;
+
+    }
 }

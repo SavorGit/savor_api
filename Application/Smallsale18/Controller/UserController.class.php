@@ -86,7 +86,7 @@ class UserController extends CommonController{
         $where = array();
         $where['openid'] = $openid;
         $where['small_app_id'] = 5;
-        $userinfo = $m_user->getOne('id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,mobile,avatarUrl,nickName,gender,status,role_id,is_wx_auth', $where);
         $data = array();
         if(empty($userinfo)){
             $data['openid'] = $openid;
@@ -114,6 +114,10 @@ class UserController extends CommonController{
                 $service_model_id = $rts['service_model_id'];
                 
             }
+        }
+        if(isset($userinfo['role_id']) && $userinfo['role_id']==3){
+            $userinfo['role_type'] = 4;//4是代购人员
+            unset($userinfo['role_id']);
         }
         $userinfo['hotel_id'] = $hotel_id;
         $userinfo['hotel_has_room'] = 0;

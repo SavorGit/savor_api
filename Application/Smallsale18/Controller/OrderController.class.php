@@ -30,23 +30,32 @@ class OrderController extends CommonController{
         $status = intval($this->params['status']);
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
+        $type = isset($this->params['type'])?intval($this->params['type']):0;//类型0 全部 1普通订单 2分销订单 3代理人订单
         if(empty($pagesize)){
             $pagesize =10;
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
-        if(empty($res_staff)){
-            $this->to_back(93001);
+        if($type && $type==3){
+            $where = array('openid'=>$openid,'type'=>2);
+        }else{
+            $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+            $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
+            if(empty($res_staff)){
+                $this->to_back(93001);
+            }
+            $merchant_id = $res_staff[0]['merchant_id'];
+            $where = array('merchant_id'=>$merchant_id);
+            if($type){
+                $where['type'] = $type;
+            }
         }
-        $merchant_id = $res_staff[0]['merchant_id'];
-        $where = array('merchant_id'=>$merchant_id);
+
         if($status){
             $where['status'] = $status;
         }
         $all_nums = $page * $pagesize;
         $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
-        $fields = 'id as order_id,merchant_id,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,merchant_id,openid,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
         $res_order = $m_dishorder->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -92,26 +101,6 @@ class OrderController extends CommonController{
         }
         $res_data = array('datalist'=>$datalist);
         $this->to_back($res_data);
-    }
-
-    public function dishorderProcess(){
-        $openid = $this->params['openid'];
-        $order_id = intval($this->params['order_id']);
-
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
-        if(empty($res_staff)){
-            $this->to_back(93001);
-        }
-        $merchant_id = $res_staff[0]['merchant_id'];
-        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
-        $res_order = $m_dishorder->getInfo(array('id'=>$order_id));
-        if(empty($res_order) || $res_order['merchant_id']!=$merchant_id){
-            $this->to_back(93036);
-        }
-        $m_dishorder->updateData(array('id'=>$order_id),array('status'=>2,'finish_time'=>date('Y-m-d H:i:s')));
-        $this->to_back(array());
     }
 
     public function dishOrderdetail(){
@@ -165,6 +154,26 @@ class OrderController extends CommonController{
         $res_order['merchant'] = $merchant;
         $this->to_back($res_order);
         $this->to_back($res_order);
+    }
+
+    public function dishorderProcess(){
+        $openid = $this->params['openid'];
+        $order_id = intval($this->params['order_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $res_order = $m_dishorder->getInfo(array('id'=>$order_id));
+        if(empty($res_order) || $res_order['merchant_id']!=$merchant_id){
+            $this->to_back(93036);
+        }
+        $m_dishorder->updateData(array('id'=>$order_id),array('status'=>2,'finish_time'=>date('Y-m-d H:i:s')));
+        $this->to_back(array());
     }
 
 }

@@ -22,8 +22,49 @@ class PurchaseController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'userList':
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
+    }
+
+    public function userList(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id as staff_id,a.merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $where = array('merchant_id'=>$merchant_id,'type'=>2);
+        $fields = 'openid,count(id) as num,status';
+        $orderby = 'status asc';
+        $groupby = 'openid';
+        $all_nums = $page * $pagesize;
+        $res_order = $m_dishorder->getUserOrderNumList($fields,$where,$orderby,$groupby,0,$all_nums);
+        $datalist = array();
+        if(!empty($res_order)){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            foreach ($res_order as $v){
+                $owhere = array('openid'=>$v['openid'],'type'=>2,'status'=>1);
+                $order_num = $m_dishorder->countNum($owhere);
+
+                $where = array('openid'=>$v['openid']);
+                $fields = 'id user_id,openid,mobile,avatarUrl,nickName,name';
+                $res_user = $m_user->getOne($fields, $where);
+                $uinfo = array('openid'=>$v['openid'],'order_num'=>$order_num,'avatarUrl'=>$res_user['avatarUrl'],
+                    'name'=>$res_user['name'],'mobile'=>$res_user['mobile']);
+                $datalist[]=$uinfo;
+            }
+        }
+        $res = array('datalist'=>$datalist);
+        $this->to_back($res);
     }
 
     public function register(){
@@ -71,46 +112,50 @@ class PurchaseController extends CommonController{
         $poster = $this->params['poster'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array();
-        $where['openid'] = $openid;
+        $where = array('openid'=>$openid);
         $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
         }
-
         $json_str = stripslashes(html_entity_decode($poster));
         $poster_info = json_decode($json_str,true);
         if(!empty($poster_info)){
-            $goods_id = $poster_info[0]['id'];
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fileds = 'a.id,a.price,merchant.is_sale,merchant.is_changeprice';
-            $where = array('a.id'=>$goods_id);
-            $res_goods = $m_goods->getGoods($fileds,$where);
-            $merchant_id = $res_goods[0]['merchant_id'];
-            $is_changeprice = $res_goods[0]['is_changeprice'];
-            $m_purchaseposter = new \Common\Model\Smallapp\PurchaseposterModel();
-            $data = array('openid'=>$openid,'merchant_id'=>$merchant_id);
-            $purchaseposter_id = $m_purchaseposter->add($data);
-
             $poster_goods = array();
             foreach ($poster_info as $v){
                 if(!empty($v)){
+                    $fileds = 'a.id,a.merchant_id,a.price,merchant.is_changeprice';
+                    $where = array('a.id'=>$v['id']);
+                    $goods_info = $m_goods->getGoods($fileds,$where);
+                    $goods_price = $goods_info[0]['price'];
+                    $is_changeprice = $goods_info[0]['is_changeprice'];
+                    $merchant_id = $goods_info[0]['merchant_id'];
+
                     if($is_changeprice && $v['price']>0){
                         $price = $v['price'];
                     }else{
-                        $goods_info = $m_goods->getInfo(array('id'=>$v['id']));
-                        $price = $goods_info['price'];
+                        $price = $goods_price;
                     }
                     if($price){
-                        $ginfo = array('purchaseposter_id'=>$purchaseposter_id,'goods_id'=>$res_goods['id'],'price'=>$price);
-                        $poster_goods[] = $ginfo;
+                        $ginfo = array('goods_id'=>$v['id'],'price'=>$price);
+                        $poster_goods[$merchant_id][] = $ginfo;
                     }
                 }
             }
             if($poster_goods){
-                $m_purchasegoods = new \Common\Model\Smallapp\PurchaseposterGoodsModel();
-                $m_purchasegoods->addAll($poster_goods);
+                $m_purchaseposter = new \Common\Model\Smallapp\PurchaseposterModel();
+                foreach ($poster_goods as $k=>$v){
+                    $merchant_id = $k;
+                    $data = array('openid'=>$openid,'merchant_id'=>$merchant_id);
+                    $purchaseposter_id = $m_purchaseposter->add($data);
+                    $pgoods = array();
+                    foreach ($v as $pv){
+                        $pgoods[]= array('purchaseposter_id'=>$purchaseposter_id,'goods_id'=>$pv['goods_id'],'price'=>$pv['price']);
+                    }
+                    $m_purchasegoods = new \Common\Model\Smallapp\PurchaseposterGoodsModel();
+                    $m_purchasegoods->addAll($pgoods);
+                }
             }
         }
         $this->to_back(array());
@@ -134,7 +179,7 @@ class PurchaseController extends CommonController{
         $m_purchaseposter = new \Common\Model\Smallapp\PurchaseposterModel();
         $fileds = 'a.id,a.openid,a.merchant_id,a.add_time,hotel.name';
         $where = array('a.openid'=>$openid);
-        $res_poster = $m_purchaseposter->getPosterList($fileds,$where,0,$all_nums);
+        $res_poster = $m_purchaseposter->getPosterList($fileds,$where,'a.id desc',0,$all_nums);
         $datalist = array();
         if(!empty($res_poster)){
             $m_purchasegoods = new \Common\Model\Smallapp\PurchaseposterGoodsModel();
@@ -149,7 +194,7 @@ class PurchaseController extends CommonController{
                 if(!empty($res_goods)){
                     $oss_host = "http://".C('OSS_HOST').'/';
                     foreach ($res_goods as $gv){
-                        $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['name'],'price'=>$gv['price'],'status'=>$gv['status']);
+                        $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['name'],'price'=>$gv['sale_price'],'status'=>$gv['status']);
                         $cover_imgs_info = explode(',',$gv['cover_imgs']);
                         $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                         $goods[]=$ginfo;

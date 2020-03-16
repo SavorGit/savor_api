@@ -30,4 +30,22 @@ class DishorderModel extends BaseModel{
         }
         return $data;
     }
+
+    public function getUserOrderNumList($fields,$where,$orderby,$groupby,$start=0,$size=0){
+        if($start >= 0 && $size){
+            $data = $this->field($fields)
+                ->where($where)
+                ->order($orderby)
+                ->group($groupby)
+                ->limit($start,$size)
+                ->select();
+        }else{
+            $data = $this->field($fields)
+                ->where($where)
+                ->order($orderby)
+                ->group($groupby)
+                ->select();
+        }
+        return $data;
+    }
 }

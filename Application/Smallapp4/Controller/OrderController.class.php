@@ -16,7 +16,7 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
-                    'address_id'=>1002);
+                    'address_id'=>1002,'type'=>1002);
                 break;
             case 'dishOrderlist':
                 $this->is_verify = 1;
@@ -232,6 +232,7 @@ class OrderController extends CommonController{
         $delivery_time = $this->params['delivery_time'];
         $remark = $this->params['remark'];
         $address_id = intval($this->params['address_id']);
+        $type = isset($this->params['type'])?intval($this->params['type']):1;//类型1普通订单 2代理订单
 
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
@@ -339,6 +340,9 @@ class OrderController extends CommonController{
             }
             $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,
                 'status'=>1,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'pay_type'=>1);
+            if($type){
+                $add_data['type']=$type;
+            }
             if(!empty($delivery_time)){
                 $add_data['delivery_time'] = $delivery_time;
             }

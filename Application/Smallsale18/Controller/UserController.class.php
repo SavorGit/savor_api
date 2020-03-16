@@ -109,6 +109,9 @@ class UserController extends CommonController{
                            ->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
+                if($rts['level']==3){
+                    $rts['level']=2;
+                }
                 $userinfo['role_type'] = $rts['level'];
                 $code_type = $rts['type'];
                 $service_model_id = $rts['service_model_id'];
@@ -183,7 +186,7 @@ class UserController extends CommonController{
         $where = array();
         $where['openid'] = $openid;
         $where['small_app_id'] = 5;
-        $userinfo = $m_user->getOne('openid,mobile', $where);
+        $userinfo = $m_user->getOne('openid,mobile,role_id', $where);
         $encryptedData = $this->params['encryptedData'];
         //$nums = $m_user->countNum($where);
         if(empty($userinfo)){
@@ -234,6 +237,10 @@ class UserController extends CommonController{
             }
             $data['hotel_has_room'] = $hotel_has_room;
             $data = $this->getServiceModel($data,$rts['service_model_id']);
+            if($userinfo['role_id']==3){
+                $data['hotel_id']=0;
+                $data['role_type']=4;
+            }
             
             $this->to_back($data);
         }
@@ -428,9 +435,10 @@ class UserController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id';
+        $fields = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         $data['merchant_id'] = $res_staff[0]['merchant_id'];
+        $data['is_purchase'] = intval($res_staff[0]['is_purchase']);
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$data['merchant_id'],'status'=>1);
@@ -448,6 +456,20 @@ class UserController extends CommonController{
             $order_process_num = 0;
         }
         $data['dishorder_process_num'] = intval($order_process_num);
+
+        $dishorder_common_num = $dishorder_purchase_num = 0;
+        if($data['is_purchase']){
+            $where = array('merchant_id'=>$data['merchant_id'],'type'=>1);
+            $dishorder_common_num = $m_dishorder->countNum($where);
+            if($order_all_num){
+                $dishorder_common_num = intval($dishorder_common_num);
+                $dishorder_purchase_num = $order_all_num - $dishorder_common_num;
+            }else{
+                $dishorder_purchase_num = 0;
+            }
+        }
+        $data['dishorder_common_num'] = intval($dishorder_common_num);
+        $data['dishorder_purchase_num'] = intval($dishorder_purchase_num);
 
         $hotel_id = $res_staff[0]['hotel_id'];
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();

@@ -54,7 +54,13 @@ class DishController extends CommonController{
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'img_url'=>$img_url,
+                $price = $v['price'];
+                if($type==2){
+                    if(floor($price)==$price){
+                        $price = floor($price);
+                    }
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,
                     'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;

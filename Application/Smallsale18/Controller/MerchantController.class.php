@@ -46,7 +46,7 @@ class MerchantController extends CommonController{
         $fields = "hotel.id hotel_id,hotel.name,hotel.addr,hotel.tel,ext.food_style_id,
                    ext.avg_expense,ext.hotel_cover_media_id,food.name as food_name,m.id as merchant_id,m.is_changeprice,m.is_sale";
         $where = array('m.status'=>1,'m.is_takeout'=>1,'m.is_sale'=>1);
-        $where['m.id'] = array('not in','89');
+//        $where['m.id'] = array('not in','89');
         if($area_id){
             $where['hotel.area_id'] = $area_id;
         }
@@ -109,12 +109,12 @@ class MerchantController extends CommonController{
         }
 
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id';
+        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,area.region_name as area_name,ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);
         $res_hotel = $m_hotel->getHotelById($field,$where);
 
         $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],
-            'tel'=>$res_hotel['tel'],'addr'=>$res_hotel['addr'],
+            'tel'=>$res_hotel['tel'],'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],
             'avg_expense'=>$res_hotel['avg_expense'],
             'is_changeprice'=>$res_merchant['is_changeprice'],'is_sale'=>$res_merchant['is_sale'],
             'tips'=>'不出门抗击疫情，线上享超值菜品');

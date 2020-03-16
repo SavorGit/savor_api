@@ -74,7 +74,8 @@ class DishController extends CommonController{
                         $img_url = $oss_host.$cover_imgs_info[0].'?x-oss-process=image/resize,p_50/quality,q_80';
                     }
                 }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'img_url'=>$img_url,
+                $price = $v['price'];
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,
                     'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
@@ -175,7 +176,7 @@ class DishController extends CommonController{
         }
 
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,
-            'staff_id'=>$staff_id,'status'=>1);
+            'is_sale'=>$is_sale,'staff_id'=>$staff_id,'status'=>1);
         if(!empty($intro)){
             $data['intro'] = trim($intro);
         }
@@ -231,7 +232,7 @@ class DishController extends CommonController{
         }
 
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,
-            'staff_id'=>$staff_id,'status'=>1);
+            'is_sale'=>$is_sale,'staff_id'=>$staff_id,'status'=>1);
         $data['intro'] = trim($intro);
         $data['detail_imgs'] = $detail_imgs;
         $res = $m_goods->updateData(array('id'=>$goods_id),$data);

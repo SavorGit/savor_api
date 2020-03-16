@@ -176,14 +176,21 @@ class LoginController extends CommonController{
         if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
         }
-
-        if($manage_info['level']==0 || $manage_info['level']==1){
-            $level = 2;
-        }elseif($manage_info['level']==2){
-            $level = 3;
+        if(isset($manage_info['level'])){
+            $tmp_level = intval($manage_info['level']);
+            if($tmp_level==0){
+                $level=1;
+            }elseif($tmp_level==1){
+                $level=2;
+            }elseif($tmp_level==2){
+                $level = 3;
+            }else{
+                $level = 3;
+            }
         }else{
-            $level = 3;
+            $level = 1;
         }
+
         $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'status'=>1))->find();
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);

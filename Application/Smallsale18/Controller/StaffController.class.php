@@ -38,13 +38,16 @@ class StaffController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,merchant.type',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
         $all_nums = 10000;
         if($hotel_id){
-            $staff_where = array('status'=>1,'level'=>3);
+            if($hotel_id!=$res_staff[0]['hotel_id']){
+                $this->to_back(93001);
+            }
+            $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
             $res_staffs = $m_staff->getDataList('id,openid,parent_id',$staff_where,'id desc');
         }else{
             $res_staffs = $m_staff->getStaffsByOpenid($openid,0,$all_nums);

@@ -9,7 +9,7 @@
     wx.miniProgram.getEnv(function(res) {
         if(res.miniprogram) {
             wx.miniProgram.reLaunch({
-                url: '/pages/index/index'
+                url: "/pages/hotel/waiter_evaluate?openid={$openid}&box_id={$box_id}"
             });
         }
     });

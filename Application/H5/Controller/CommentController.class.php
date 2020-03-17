@@ -11,7 +11,6 @@ class CommentController extends Controller {
     public function info(){
         $params = I('p','');
         $code = I('code', '');
-        $code = 123;
         $wechat = new \Common\Lib\Wechat();
         if($code){
             $params_info = explode('@',$params);
@@ -21,7 +20,7 @@ class CommentController extends Controller {
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
             $user_info = $m_user->getOne('id,avatarUrl,nickName,wx_mpopenid,is_subscribe',$where,'id desc');
-            /*
+
             $op_type = 0;
             if(empty($user_info)){
                 $op_type = 1;
@@ -64,9 +63,11 @@ class CommentController extends Controller {
                         break;
                 }
             }
-            */
+
             $is_subscribe = intval($user_info['is_subscribe']);
             if(!$is_subscribe){
+                $this->assign('openid',$openid);
+                $this->assign('box_id',$box_id);
                 $this->display('subscribe');
                 exit;
             }
@@ -112,7 +113,8 @@ class CommentController extends Controller {
             $this->assign('uinfo',$staffuser_info);
             $this->display();
         }else{
-            $host_name = http_host();
+            $http = 'https://';
+            $host_name = $http.$_SERVER['HTTP_HOST'];
             $url = $host_name.'/h5/comment/info/p/'.$params;
             $wechat->wx_oauth($url);
         }

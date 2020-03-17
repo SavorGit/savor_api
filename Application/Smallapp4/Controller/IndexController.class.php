@@ -178,7 +178,7 @@ class IndexController extends CommonController{
                 $redis_hotel_info = $redis->get($cache_key);
                 $res_hotel = json_decode($redis_hotel_info, true);
 
-                $hotel_info = array('box_id'=>$box_info['id'],'room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
+                $hotel_info = array('box_id'=>$forscreen_info['box_id'],'room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
                     'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac']);
             }else{
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);

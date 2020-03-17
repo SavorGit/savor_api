@@ -109,9 +109,6 @@ class UserController extends CommonController{
                            ->find();
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
-                if($rts['level']==3){
-                    $rts['level']=2;
-                }
                 $userinfo['role_type'] = $rts['level'];
                 $code_type = $rts['type'];
                 $service_model_id = $rts['service_model_id'];

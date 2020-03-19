@@ -120,12 +120,11 @@ class StaffController extends CommonController{
                 $score = 0;
             }
         }
-
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$res_staff[0]['openid']);
-        $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
+        $res_user = $m_user->getOne('id as user_id,openid,avatarUrl,nickName',$where,'id desc');
         $data = array('staff_id'=>$res_staff[0]['id'],'avatarUrl'=>$res_user['avatarUrl'],
-            'nickName'=>$res_user['nickName'],'score'=>$score);
+            'nickName'=>$res_user['nickName'],'openid'=>$res_user['openid'],'score'=>$score);
         $this->to_back($data);
     }
 

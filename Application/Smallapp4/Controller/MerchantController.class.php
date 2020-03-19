@@ -159,7 +159,9 @@ class MerchantController extends CommonController{
         $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,area.region_name as area_name,ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);
         $res_hotel = $m_hotel->getHotelById($field,$where);
-
+        if($res_hotel['avg_expense']==0){
+            $res_hotel['avg_expense'] = '*';
+        }
         $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],
             'tel'=>$res_hotel['tel'],'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],
             'avg_expense'=>$res_hotel['avg_expense']);

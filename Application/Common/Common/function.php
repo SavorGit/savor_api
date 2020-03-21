@@ -534,6 +534,31 @@ function getgeoByloa($lat,$lon){
         return $re['result'];
     }
 }
+
+function getGDgeocodeByAddress($address){
+    $key = C('GAODE_KEY');
+    $url = "https://restapi.amap.com/v3/geocode/geo?address=$address&output=json&key=$key";
+    $curl = curl_init();
+    curl_setopt_array($curl, array(
+        CURLOPT_URL=>$url,
+        CURLOPT_TIMEOUT=>2,
+        CURLOPT_HEADER=>0,
+        CURLOPT_RETURNTRANSFER=>1,
+    ));
+    $response = curl_exec($curl);
+    curl_close($curl);
+    $res = json_decode($response,true);
+    $data = array();
+    if(is_array($res) && $res['status']==1 && $res['infocode']==10000){
+        if(!empty($res['geocodes'][0]['location'])){
+            $location_arr = explode(',',$res['geocodes'][0]['location']);
+            $data['lng'] = $location_arr[0];//经度
+            $data['lat'] = $location_arr[1];//维度
+        }
+    }
+    return $data;
+}
+
 function getRandNums($min=0,$max=100,$num=10){
     $numbers = range ($min,$max);
     //shuffle 将数组顺序随即打乱

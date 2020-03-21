@@ -36,7 +36,7 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallsale18'), //模块配置
+	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -417,5 +417,13 @@ return array(
         'task_manage'=>'任务管理'
     ),
     'exchange_tips'=>'%s的“%s”成功兑换了%d元现金',
+    'PAY_TYPES'=>array(
+        '10'=>array('id'=>10,'name'=>'微信支付','icon'=>''),
+        '20'=>array('id'=>20,'name'=>'线下支付','icon'=>''),
+    ),
+    'DELIVERY_TYPES'=>array(
+        '1'=>array('id'=>1,'name'=>'外卖配送'),
+        '2'=>array('id'=>2,'name'=>'到店自取'),
+    ),
 
 );

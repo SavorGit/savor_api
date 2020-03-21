@@ -22,8 +22,9 @@ class MerchantController extends CommonController{
                     'tel'=>1001,'area_id'=>1001,'county_id'=>1002,'addr'=>1001,'logoimg'=>1002,
                     'faceimg'=>1001,'envimg'=>1002,'legal_name'=>1001,'legal_idcard'=>1001,
                     'legal_charter'=>1001,'contractor'=>1001,'mobile'=>1001,'verify_code'=>1001,
-                    'business_lunchhours'=>1002,'business_dinnerhours'=>1002,'meal_time'=>1002,
-                    'food_license'=>1002,
+                    'business_lunchshours'=>1002,'business_lunchehours'=>1002,
+                    'business_dinnershours'=>1002,'business_dinnerehours'=>1002,
+                    'meal_time'=>1002,
                 );
                 break;
             case 'purchaseMerchantList':
@@ -41,14 +42,19 @@ class MerchantController extends CommonController{
                 break;
             case 'setHotelinfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'logoimg'=>1001,'tel'=>1001,
-                    'business_lunchhours'=>1001,'business_dinnerhours'=>1001,'meal_time'=>1001,
-                    'notice'=>1002,'charter'=>1002,'food_license'=>1002,
+                $this->valid_fields = array('openid'=>1001,'img'=>1001,'tel'=>1001,
+                    'business_lunchshours'=>1001,'business_lunchehours'=>1001,
+                    'business_dinnershours'=>1001,'business_dinnerehours'=>1001,
+                    'meal_time'=>1001,'notice'=>1002,'legal_charter'=>1002,
                 );
                 break;
-            case 'setDelivery':
+            case 'setDeliveryPlatform':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'delivery_type'=>1001);
+                $this->valid_fields = array('openid'=>1001,'delivery_platform'=>1001);
+                break;
+            case 'setShopself':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'is_shopself'=>1001);
                 break;
         }
         parent::_init_();
@@ -132,20 +138,22 @@ class MerchantController extends CommonController{
         $m_hotel = new \Common\Model\HotelModel();
         $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,hotel.media_id,
         area.region_name as area_name,ext.business_hours,ext.meal_time,
-        ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id,ext.legal_charter,ext.food_license';
+        ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id,ext.legal_charter';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);
         $res_hotel = $m_hotel->getHotelById($field,$where);
 
         $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],'tel'=>$res_hotel['tel'],
             'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],'avg_expense'=>$res_hotel['avg_expense'],
             'is_changeprice'=>$res_merchant['is_changeprice'],'is_sale'=>$res_merchant['is_sale'],'tips'=>'不出门抗击疫情，线上享超值菜品',
-            'delivery_type'=>$res_merchant['delivery_type']
+            'is_shopself'=>$res_merchant['is_shopself'],'delivery_platform'=>$res_merchant['delivery_platform'],
+            'img'=>'','img_path'=>'','meal_time'=>intval($res_hotel['meal_time']),'notice'=>$res_merchant['notice'],
+            'business_lunchshours'=>'','business_lunchehours'=>'','business_dinnershours'=>'','business_dinnerehours'=>''
             );
-        $merchant['img'] = '';
         $m_media = new \Common\Model\MediaModel();
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');
             $merchant['img'] = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50/quality,q_80';
+            $merchant['img_path'] = $res_media['oss_path'];
         }
 
         $m_foodstyle = new \Common\Model\FoodStyleModel();
@@ -154,39 +162,32 @@ class MerchantController extends CommonController{
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $merchant['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id=$merchant_id&type=24";
 
-        $oss_host = "https://".C('OSS_HOST').'/';
-        $logoimg = $logoimg_path = '';
-        if(!empty($res_hotel['media_id'])){
-            $res_media = $m_media->getMediaInfoById($res_hotel['media_id'],'https');
-            $logoimg = $res_media['oss_addr'];
-            $logoimg_path = $res_media['oss_path'];
-        }
-        $merchant['logoimg'] = $logoimg;
-        $merchant['logoimg_path'] = $logoimg_path;
-        $business_lunchhours = $business_dinnerhours = '';
         if(!empty($res_hotel['business_hours'])){
             $business_hours_arr = explode(',',$res_hotel['business_hours']);
-            $business_lunchhours = $business_hours_arr[0];
-            $business_dinnerhours = $business_hours_arr[1];
+            $business_lunchhours_arr = explode('-',$business_hours_arr[0]);
+            $business_dinnerhours_arr = explode('-',$business_hours_arr[1]);
+            $merchant['business_lunchshours'] = $business_lunchhours_arr[0];
+            $merchant['business_lunchehours'] = $business_lunchhours_arr[1];
+            $merchant['business_dinnershours'] = $business_dinnerhours_arr[0];
+            $merchant['business_dinnerehours'] = $business_dinnerhours_arr[1];
         }
-        $merchant['business_lunchhours'] = $business_lunchhours;
-        $merchant['business_dinnerhours'] = $business_dinnerhours;
-        $merchant['meal_time'] = intval($business_dinnerhours);
-        $merchant['notice'] = $res_merchant['notice'];
+        $oss_host = "https://".C('OSS_HOST').'/';
+        $charter = array();
+        $charter_path = array();
         if(!empty($res_hotel['legal_charter'])){
-            $merchant['charter'] = $oss_host.$res_hotel['legal_charter'];
-            $merchant['charter_path'] = $res_hotel['legal_charter'];
-        }else{
-            $merchant['charter'] = '';
-            $merchant['charter_path'] = '';
+            $legal_charter_imgs = explode(',',$res_hotel['legal_charter']);
+            foreach ($legal_charter_imgs as $v){
+                if(!empty($v)){
+                    $img_url = $oss_host.$v;
+                    $charter[] = $img_url;
+                    $charter_path[] = $v;
+                }
+            }
+            $merchant['charter'] = $charter;
+            $merchant['charter_path'] = $charter_path;
         }
-        if(!empty($res_hotel['food_license'])){
-            $merchant['food_license'] = $oss_host.$res_hotel['food_license'];
-            $merchant['food_license_path'] = $res_hotel['food_license'];
-        }else{
-            $merchant['food_license'] = '';
-            $merchant['food_license_path'] = '';
-        }
+        $merchant['charter'] = $charter;
+        $merchant['charter_path'] = $charter_path;
         $this->to_back($merchant);
     }
 
@@ -231,10 +232,11 @@ class MerchantController extends CommonController{
         $contractor = $this->params['contractor'];
         $mobile = $this->params['mobile'];
         $verify_code = $this->params['verify_code'];
-        $business_lunchhours = $this->params['business_lunchhours'];
-        $business_dinnerhours = $this->params['business_dinnerhours'];
+        $business_lunchshours = $this->params['business_lunchshours'];
+        $business_lunchehours = $this->params['business_lunchehours'];
+        $business_dinnershours = $this->params['business_dinnershours'];
+        $business_dinnerehours = $this->params['business_dinnerehours'];
         $meal_time = intval($this->params['meal_time']);
-        $food_license = $this->params['food_license'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
@@ -300,12 +302,11 @@ class MerchantController extends CommonController{
                 'hotel_cover_media_id'=>$media_id,'hotel_envimg'=>$envimg,
                 'legal_name'=>$legal_name,'legal_idcard'=>$legal_idcard,'legal_charter'=>$legal_charter
             );
-            if(!empty($business_lunchhours) && !empty($business_dinnerhours)){
+            if(!empty($business_lunchshours) && !empty($business_lunchehours) && !empty($business_dinnershours) && !empty($business_dinnerehours)){
+                $business_lunchhours = $business_dinnershours.'-'.$business_lunchehours;
+                $business_dinnerhours = $business_dinnershours.'-'.$business_dinnerehours;
                 $business_hours = $business_lunchhours.','.$business_dinnerhours;
                 $add_hotelext['business_hours'] = $business_hours;
-            }
-            if(!empty($food_license)){
-                $add_hotelext['food_license'] = $food_license;
             }
             if(!empty($meal_time)){
                 $add_hotelext['meal_time'] = $meal_time;
@@ -337,9 +338,9 @@ class MerchantController extends CommonController{
         $this->to_back(array());
     }
 
-    public function setDelivery(){
+    public function setDeliveryPlatform(){
         $openid = $this->params['openid'];
-        $delivery_type = intval($this->params['delivery_type']);
+        $delivery_platform = intval($this->params['delivery_platform']);
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -350,21 +351,40 @@ class MerchantController extends CommonController{
         $merchant_id = $res_staff[0]['merchant_id'];
 
         $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $data = array('delivery_type'=>$delivery_type);
+        $data = array('delivery_platform'=>$delivery_platform);
+        $m_merchant->updateData(array('id'=>$merchant_id),$data);
+        $this->to_back(array());
+    }
+
+    public function setShopself(){
+        $openid = $this->params['openid'];
+        $is_shopself = intval($this->params['is_shopself']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.id as merchant_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $merchant_id = $res_staff[0]['merchant_id'];
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $data = array('is_shopself'=>$is_shopself);
         $m_merchant->updateData(array('id'=>$merchant_id),$data);
         $this->to_back(array());
     }
 
     public function setHotelinfo(){
         $openid = $this->params['openid'];
-        $logoimg = $this->params['logoimg'];
+        $img = $this->params['img'];
         $tel = $this->params['tel'];
-        $business_lunchhours = $this->params['business_lunchhours'];
-        $business_dinnerhours = $this->params['business_dinnerhours'];
+        $business_lunchshours = $this->params['business_lunchshours'];
+        $business_lunchehours = $this->params['business_lunchehours'];
+        $business_dinnershours = $this->params['business_dinnershours'];
+        $business_dinnerehours = $this->params['business_dinnerehours'];
         $meal_time = $this->params['meal_time'];
         $notice = $this->params['notice'];
-        $charter = $this->params['charter'];
-        $food_license = $this->params['food_license'];
+        $legal_charter = $this->params['legal_charter'];
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -376,16 +396,17 @@ class MerchantController extends CommonController{
         $hotel_id = $res_staff[0]['hotel_id'];
 
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.tel,hotel.media_id';
+        $field = 'hotel.name,hotel.tel,hotel.media_id,ext.hotel_cover_media_id';
         $where = array('hotel.id'=>$hotel_id);
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $hotel_data = array();
-        if(!empty($res_hotel['media_id'])){
-            $m_media = new \Common\Model\MediaModel();
-            $res_media = $m_media->getMediaInfoById($res_hotel['media_id']);
-            if($logoimg!=$res_media['oss_path']){
+
+        $m_media = new \Common\Model\MediaModel();
+        if(!empty($res_hotel['hotel_cover_media_id'])){
+            $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id']);
+            if($img!=$res_media['oss_path']){
                 $typeinfo = C('RESOURCE_TYPEINFO');
-                $temp_info = pathinfo($logoimg);
+                $temp_info = pathinfo($img);
                 $surfix = $temp_info['extension'];
                 if($surfix){
                     $surfix = strtolower($surfix);
@@ -395,7 +416,7 @@ class MerchantController extends CommonController{
                 }else{
                     $media_type = 3;
                 }
-                $media_data = array('oss_addr'=>$logoimg,'type'=>$media_type,'state'=>1);
+                $media_data = array('oss_addr'=>$img,'type'=>$media_type,'state'=>1);
                 $media_id = $m_media->add($media_data);
                 $hotel_data['media_id'] = $media_id;
             }
@@ -403,8 +424,13 @@ class MerchantController extends CommonController{
         $hotel_data['tel'] = $tel;
         $m_hotel->saveData($hotel_data, array('id'=>$hotel_id));
 
-        $hotel_ext = array('meal_time'=>$meal_time,'charter'=>$charter,'food_license'=>$food_license);
-        $hotel_ext['business_hours'] = $business_lunchhours.','.$business_dinnerhours;
+        $hotel_ext = array('meal_time'=>$meal_time,'legal_charter'=>$legal_charter);
+        if(!empty($business_lunchshours) && !empty($business_lunchehours) && !empty($business_dinnershours) && !empty($business_dinnerehours)){
+            $business_lunchhours = $business_dinnershours.'-'.$business_lunchehours;
+            $business_dinnerhours = $business_dinnershours.'-'.$business_dinnerehours;
+            $business_hours = $business_lunchhours.','.$business_dinnerhours;
+            $hotel_ext['business_hours'] = $business_hours;
+        }
         $m_hotelext = new \Common\Model\HotelExtModel();
         $m_hotelext->saveData($hotel_ext, array('hotel_id'=>$hotel_id));
 
@@ -441,10 +467,10 @@ class MerchantController extends CommonController{
         switch ($is_set){
             case 1:
                 $m_payee->updateData(array('merchant_id'=>$merchant_id),array('status'=>4));
-                $m_payee->add(array('merchant_id'=>$merchant_id,'status'=>1));
+                $m_payee->add(array('merchant_id'=>$merchant_id,'openid'=>$openid,'status'=>1));
                 break;
             case 2:
-                $m_payee->add(array('merchant_id'=>$merchant_id,'status'=>1));
+                $m_payee->add(array('merchant_id'=>$merchant_id,'openid'=>$openid,'status'=>1));
                 break;
         }
         $this->to_back(array());

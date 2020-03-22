@@ -27,6 +27,12 @@ class OrderModel{
 
     public $callback;
 
+    public $cancel_reason_id;
+
+    public $cancel_reason;
+
+    public $order_id;
+
 
     public function setShopNo($shopNo)
     {
@@ -136,6 +142,36 @@ class OrderModel{
     public function getCallback()
     {
         return $this->callback;
+    }
+
+    public function setCancelReasonId($cancel_reason_id)
+    {
+        !empty($cancel_reason_id) ? $this->cancel_reason_id = $cancel_reason_id : trigger_error('cancel_reason_id不能为空', E_USER_ERROR);
+    }
+
+    public function getCancelReasonId()
+    {
+        return $this->cancel_reason_id;
+    }
+
+    public function setCancelReason($cancel_reason)
+    {
+        !empty($cancel_reason) ? $this->cancel_reason = $cancel_reason : trigger_error('cancel_reason不能为空', E_USER_ERROR);
+    }
+
+    public function getCancelReason()
+    {
+        return $this->cancel_reason;
+    }
+
+    public function setOrderId($order_id)
+    {
+        !empty($order_id) ? $this->order_id = $order_id : trigger_error('order_id不能为空', E_USER_ERROR);
+    }
+
+    public function getOrderId()
+    {
+        return $this->order_id;
     }
 
 }

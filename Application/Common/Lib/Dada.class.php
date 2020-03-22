@@ -46,23 +46,88 @@ class Dada{
         return $resp;
     }
 
-    public function addOrder(){
+    public function queryDeliverFee($hotel_id,$order_no,$area_no,$money,$name,$address,$phone,$lat,$lng,$callback){
+        require_once BASE_DIR . 'api/queryDeliverFeeApi.php';
+
         $orderModel = new \OrderModel();
-        $orderModel->setShopNo('xxxxxxxxxxxxorigin_shop_no');	// 第三方门店编号
-        $orderModel->setOriginId('xxxxxxxxxxxxxxxxxx');			// 第三方订单号
-        $orderModel->setCityCode('xxxxx');						// 城市code(可以参照城市code接口)
-        $orderModel->setCargoPrice(10);
+        $orderModel->setShopNo($hotel_id);
+        $orderModel->setOriginId($order_no);
+        $orderModel->setCityCode($area_no);
+        $orderModel->setCargoPrice($money);
         $orderModel->setIsPrepay(0);
-        $orderModel->setReceiverName('xxxxxxxxxxxxxxxxxx');
-        $orderModel->setReceiverAddress('xxxxxxxxxxxxxxx');
-        $orderModel->setReceiverLat(0);
-        $orderModel->setReceiverLng(0);
-        $orderModel->setReceiverPhone('xxxxxxxxxxxxxxxxxx');
-        $orderModel->setCallback('');							// 回调url, 每次订单状态变更会通知该url(参照回调接口)
+        $orderModel->setReceiverName($name);
+        $orderModel->setReceiverAddress($address);
+        $orderModel->setReceiverPhone($phone);
+        $orderModel->setReceiverLat($lat);
+        $orderModel->setReceiverLng($lng);
+        $orderModel->setCallback($callback);
+        $queryDeliverFeeApi = new \queryDeliverFeeApi(json_encode($orderModel));
+        $resp = $this->makeRequest($queryDeliverFeeApi);
+        return $resp;
+    }
+
+    public function formalCancel($order_id,$cancel_reason_id){
+        require_once BASE_DIR . 'api/formalCancelApi.php';
+        $orderModel = new \OrderModel();
+        $orderModel->setOriginId($order_id);
+        $orderModel->setCancelReasonId($cancel_reason_id);
+        $formalCancelApi = new \formalCancelApi(json_encode($orderModel));
+        $resp = $this->makeRequest($formalCancelApi);
+        return $resp;
+    }
+
+    public function cancelReasons(){
+        require_once BASE_DIR . 'api/cancelReasonsApi.php';
+        $cancelReasonsApi = new \cancelReasonsApi('');
+        $resp = $this->makeRequest($cancelReasonsApi);
+        return $resp;
+    }
+
+
+    public function addOrder($shop_no,$order_id,$area_no,$money,$name,$address,$phone,$lat,$lng,$callback){
+        $orderModel = new \OrderModel();
+        $orderModel->setShopNo($shop_no);
+        $orderModel->setOriginId($order_id);
+        $orderModel->setCityCode($area_no);
+        $orderModel->setCargoPrice($money);
+        $orderModel->setIsPrepay(0);
+        $orderModel->setReceiverName($name);
+        $orderModel->setReceiverAddress($address);
+        $orderModel->setReceiverLat($lat);
+        $orderModel->setReceiverLng($lng);
+        $orderModel->setReceiverPhone($phone);
+        $orderModel->setCallback($callback);
 
         $addOrderApi = new \AddOrderApi(json_encode($orderModel));
-        $dada_client = new \DadaRequestClient($this->config, $addOrderApi);
-        $resp = $dada_client->makeRequest();
+        $resp = $this->makeRequest($addOrderApi);
+        return $resp;
+    }
+
+    public function reAddOrder($shop_no,$order_id,$area_no,$money,$name,$address,$phone,$lat,$lng,$callback){
+        $orderModel = new \OrderModel();
+        $orderModel->setShopNo($shop_no);
+        $orderModel->setOriginId($order_id);
+        $orderModel->setCityCode($area_no);
+        $orderModel->setCargoPrice($money);
+        $orderModel->setIsPrepay(0);
+        $orderModel->setReceiverName($name);
+        $orderModel->setReceiverAddress($address);
+        $orderModel->setReceiverLat($lat);
+        $orderModel->setReceiverLng($lng);
+        $orderModel->setReceiverPhone($phone);
+        $orderModel->setCallback($callback);
+
+        $readdOrderApi = new \reAddOrderApi(json_encode($orderModel));
+        $resp = $this->makeRequest($readdOrderApi);
+        return $resp;
+    }
+
+    public function queryOrder($order_id){
+        $orderModel = new \OrderModel();
+        $orderModel->setOrderId($order_id);
+
+        $queryOrderApi = new \queryOrderApi(json_encode($orderModel));
+        $resp = $this->makeRequest($queryOrderApi);
         return $resp;
     }
 

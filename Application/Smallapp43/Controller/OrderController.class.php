@@ -16,11 +16,24 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('merchant_id'=>1001);
                 break;
-            case 'addDishorder':
+            case 'getDeliveryfee':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'address_id'=>1001,'merchant_id'=>1001,'money'=>1001);
+                break;
+            case 'addOrder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
-                    'address_id'=>1002,'type'=>1002);
+                    'address_id'=>1002,'delivery_type'=>1001,'pay_type'=>1001,'tableware'=>1002,
+                    'company'=>1002,'credit_code'=>1002);
+                break;
+            case 'detail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
+                break;
+            case 'getStatusChange':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
                 break;
             case 'dishOrderlist':
                 $this->is_verify = 1;
@@ -31,10 +44,6 @@ class OrderController extends CommonController{
     }
 
     public function getPrepareData(){
-        $address = '北京市朝阳区大望路永峰写字楼601';
-        $res = getGDgeocodeByAddress($address);
-        echo $res;
-        exit;
         $merchant_id = intval($this->params['merchant_id']);
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $where = array('m.id'=>$merchant_id);
@@ -54,10 +63,26 @@ class OrderController extends CommonController{
         }else{
             unset($pay_types['10']);
         }
-        $data = array();
+        $data = array('delivery_platform'=>intval($res_merchant[0]['delivery_platform']));
         $data['delivery_types'] = array_values($delivery_types);
         $data['pay_types'] = array_values($pay_types);
-
+        $m_remark = new \Common\Model\Smallapp\OrderRemarktagsModel();
+        $res_remark = $m_remark->getDataList('*',array('status'=>1),'id desc');
+        $remark = array();
+        foreach ($res_remark as $v){
+            $remark[]=array('id'=>$v['id'],'name'=>$v['name']);
+        }
+        $data['remark'] = $remark;
+        $tableware = array();
+        for($i=0;$i<11;$i++){
+            if($i==0){
+                $info = array('id'=>0,'name'=>'未选择');
+            }else{
+                $info = array('id'=>$i,'name'=>$i.'份');
+            }
+            $tableware[]=$info;
+        }
+        $data['tableware'] = $tableware;
         $this->to_back($data);
     }
 
@@ -85,10 +110,348 @@ class OrderController extends CommonController{
         $this->to_back($data);
     }
 
-
-    public function dishOrderlist(){
+    public function getDeliveryfee(){
         $openid = $this->params['openid'];
-        $status = intval($this->params['status']);
+        $address_id = $this->params['address_id'];
+        $merchant_id = $this->params['merchant_id'];
+        $money = $this->params['money'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_address = new \Common\Model\Smallapp\AddressModel();
+        $res_address = $m_address->getInfo(array('id'=>$address_id));
+        $m_area = new \Common\Model\AreaModel();
+        $res_area = $m_area->find($res_address['area_id']);
+        $res_county = $m_area->find($res_address['county_id']);
+        $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+
+        if(empty($res_address) || $res_address['openid']!=$openid){
+            $this->to_back(90132);
+        }
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = array('m.id'=>$merchant_id,'m.status'=>1);
+        $fields = 'm.id,hotel.id as hotel_id';
+        $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+        if(empty($res_merchant)){
+            $this->to_back(93035);
+        }
+
+        $order_no = getmicrotime();
+        $config = C('DADA');
+        $hotel_id = $res_merchant[0]['hotel_id'];
+        $hotel_id = $config['shop_no'];//上线后去除
+
+        $dada = new \Common\Lib\Dada($config);
+        $callback = http_host();
+        $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$money,
+            $res_address['consignee'],$address,$res_address['phone'],$res_address['lat'],$res_address['lng'],$callback);
+        $data = array('fee'=>0,'distance'=>0);
+        if($res['code']==0 && !empty($res['result'])){
+            $data['fee'] = $res['result']['fee'];
+            $data['distance'] = $res['result']['distance'].'米';
+            if($res['result']['distance']>1000){
+                $distance = $res['result']['distance']/1000;
+                $distance = sprintf("%.2f",$distance);
+                $data['distance'] = $distance.'公里';
+            }
+        }
+        $this->to_back($data);
+    }
+
+    public function addOrder(){
+        $addorder_num = 30;
+
+        $openid = $this->params['openid'];
+        $goods_id= intval($this->params['goods_id']);
+        $amount = intval($this->params['amount']);
+        $carts = $this->params['carts'];
+        $contact = $this->params['contact'];
+        $phone = $this->params['phone'];
+        $address = $this->params['address'];
+        $delivery_time = $this->params['delivery_time'];
+        $remark = $this->params['remark'];
+        $address_id = intval($this->params['address_id']);
+        $type = 1;//类型1普通订单 2代理订单
+        $delivery_type = intval($this->params['delivery_type']);//配送类型1外卖配送 2到店自取
+        $pay_type = intval($this->params['pay_type']);//10微信支付 20线下付款
+        $tableware = intval($this->params['tableware']);
+        $company = $this->params['company'];
+        $credit_code = $this->params['credit_code'];
+        $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
+        $map_tyeps = array('1'=>3,'2'=>4);
+
+        if(empty($goods_id) && empty($carts)){
+            $this->to_back(1001);
+        }
+        if(!empty($delivery_time)){
+            $tmp_dtime = strtotime($delivery_time);
+            if($tmp_dtime<time()){
+                $this->to_back(93038);
+            }
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
+        $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_ordercache = $redis->get($order_space_key);
+        if(!empty($res_ordercache)){
+            $this->to_back(92024);
+        }
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $user_order = json_decode($res_cache,true);
+            if(count($user_order)>=$addorder_num){
+                $this->to_back(92021);
+            }
+        }else{
+            $user_order = array();
+        }
+
+        if($address_id){
+            $m_area = new \Common\Model\AreaModel();
+            $m_address = new \Common\Model\Smallapp\AddressModel();
+            $res_address = $m_address->getInfo(array('id'=>$address_id));
+            $res_area = $m_area->find($res_address['area_id']);
+            $res_county = $m_area->find($res_address['county_id']);
+
+            $contact = $res_address['consignee'];
+            $phone = $res_address['phone'];
+            $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        }
+        if(empty($contact) || empty($phone) || empty($address)){
+           $this->to_back(1001);
+        }
+        $is_check = check_mobile($phone);
+        if(!$is_check){
+            $this->to_back(93006);
+        }
+        $goods = array();
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        if($goods_id){
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if(empty($res_goods) || $res_goods['status']==2){
+                $this->to_back(92020);
+            }
+            $amount = $amount>0?$amount:1;
+            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
+            $goods[] = $ginfo;
+            $merchant_id = $res_goods['merchant_id'];
+        }else{
+            $json_str = stripslashes(html_entity_decode($carts));
+            $cart_info = json_decode($json_str,true);
+            if(!empty($cart_info)){
+                foreach ($cart_info as $v){
+                    if(!empty($v)){
+                        $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
+                        if(!empty($res_goods) && $res_goods['status']==1){
+                            $merchant_id = $res_goods['merchant_id'];
+                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
+                            $goods[] = $ginfo;
+                        }
+                    }
+                }
+            }
+        }
+        if(empty($goods)){
+            $this->to_back(1001);
+        }
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $where = array('m.id'=>$merchant_id);
+        $fields = 'm.id as merchant_id,m.is_shopself,m.delivery_platform,m.status,hotel.id as hotel_id,hotel.name as hotel_name';
+        $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+
+        if($res_merchant[0]['delivery_platform']==1 && $pay_type!=10){
+            $this->to_back(90135);
+        }
+
+        $amount = 0;
+        $total_fee = 0;
+        foreach ($goods as $gv){
+            $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+            $total_fee = $total_fee+$price;
+            $amount = $amount+$gv['amount'];
+        }
+        $delivery_fee = 0;
+        if($res_merchant[0]['delivery_platform']==1 && $address_id){
+            $config = C('DADA');
+            $hotel_id = $res_merchant[0]['hotel_id'];
+            $hotel_id = $config['shop_no'];//上线需去除
+            $order_no= getmicrotime();
+            $dada = new \Common\Lib\Dada($config);
+            $callback = http_host();
+            $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$total_fee,
+                $contact,$address,$phone,$res_address['lat'],$res_address['lng'],$callback);
+            if($res['code']==0 && !empty($res['result'])){
+                $delivery_fee = $res['result']['fee'];
+            }
+        }
+        $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
+            'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
+        if($address_id){
+            $add_data['area_id'] = $res_address['area_id'];
+            $add_data['lnglat'] = "{$res_address['lng']},{$res_address['lat']}";
+        }
+        if($tableware){
+            $add_data['tableware'] = $tableware;
+        }
+        if(isset($map_tyeps[$type])){
+            $add_data['type'] = $map_tyeps[$type];
+        }
+        if(!empty($delivery_time)){
+            $add_data['delivery_time'] = $delivery_time;
+        }
+        if(!empty($remark)){
+            $add_data['remark'] = $remark;
+        }
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $order_id = $m_order->add($add_data);
+
+//        $redis->set($order_space_key,$order_id,60);
+        $user_order[] = $order_id;
+        $redis->set($cache_key,json_encode($user_order),86400);
+
+        $order_goods = array();
+        foreach ($goods as $ov){
+            $order_goods[]=array('order_id'=>$order_id,'goods_id'=>$ov['goods_id'],'price'=>$ov['price'],'amount'=>$ov['amount']);
+        }
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $m_ordergoods->addAll($order_goods);
+
+        $invoice_data = array();
+        switch ($title_type){
+            case 1:
+                $invoice_data['company'] = $company;
+                $invoice_data['credit_code'] = $credit_code;
+                $invoice_data['title_type'] = $title_type;
+                break;
+            case 2:
+                $invoice_data['company'] = $company;
+                $invoice_data['title_type'] = $title_type;
+                break;
+        }
+        if(!empty($invoice_data)){
+            $invoice_data['order_id'] = $order_id;
+            $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+            $m_invoice->add($invoice_data);
+        }
+
+        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$order_id);
+        if($pay_type==10){
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            $trade_no = $m_ordermap->add(array('order_id'=>$order_id,'pay_type'=>10));
+
+            $trade_name = $goods[0]['name'];
+            $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
+                'wx_openid'=>$openid,'redirect_url'=>'','attach'=>30);
+            $smallapp_config = C('SMALLAPP_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key']
+            );
+            $m_payment = new \Payment\Model\WxpayModel(3);
+            $wxpay = $m_payment->pay($trade_info,$payconfig);
+            $payinfo = json_decode($wxpay,true);
+            $resp_data['payinfo'] = $payinfo;
+        }else{
+            $hotel_name = $res_merchant[0]['hotel_name'];
+
+            $message1 = "您的订单消息已经通知“{$hotel_name}“餐厅。";
+            $message2 = "请等待餐厅人员的电话确认。";
+            $resp_data['message1'] = $message1;
+            $resp_data['message2'] = $message2;
+
+            $is_notify_merchant = $m_order->sendMessage($order_id);
+            if($is_notify_merchant){
+                $m_order->updateData(array('id'=>$order_id),array('status'=>13));
+            }
+        }
+        $this->to_back($resp_data);
+    }
+
+    public function getStatusChange(){
+        $order_id = intval($this->params['order_id']);
+
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $fields = 'o.id,o.status,o.address_id,m.hotel_id,m.delivery_platform,hotel.name as hotel_name';
+        $where = array('o.id'=>$order_id);
+        $res_order = $m_order->getOrderInfo($fields,$where);
+        $data = array();
+        if(!empty($res_order)){
+            $status = $res_order[0]['status'];
+            $all_status = C('ORDER_STATUS');
+            $data = array('status'=>$status,'status_str'=>$all_status[$status],
+                'hotel_location'=>array(),'transporter_location'=>array(),'user_location'=>array());
+
+            if(in_array($status,array(14,15,16,17))){
+                $config = C('DADA');
+                $hotel_id = $res_order[0]['hotel_id'];
+                $hotel_id = $config['shop_no'];//上线后去除
+
+                $dada = new \Common\Lib\Dada($config);
+                $res = $dada->queryOrder($order_id);
+                if($res['code']==0 && !empty($res['result'])){
+                    $dd_res = $res['result'];
+                    $ddstatus_code = $dd_res['statusCode'];
+                    $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);////待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
+                    $status_code = 0;
+                    if(isset($status_map[$ddstatus_code])){
+                        $status_code = $status_map[$ddstatus_code];
+                        if(in_array($ddstatus_code,array(2,3))){
+                            if($dd_res['distance']>1000){
+                                $distance = $dd_res['distance']/1000;
+                                $distance = sprintf("%.2f",$distance);
+                                $distance = $distance.'km';
+                            }else{
+                                $distance = sprintf("%.2f",$dd_res['distance']);
+                                $distance = $distance.'m';
+                            }
+                            $data['transporter_location'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone'],
+                                'lng'=>$dd_res['transporterLng'],'lat'=>$dd_res['transporterLat'],'distance'=>$distance);
+                        }
+                        if($status!=$status_code){
+                            $data['status'] = $status_code;
+                            $data['status_str'] = $all_status[$status_code];
+                            $m_order->updateData(array('status'=>$status_code),array('id'=>$order_id));
+                        }
+
+                        $res_shop = $dada->shopDetail($hotel_id);
+                        if($res_shop['code']==0 && !empty($res_shop['result'])){
+                            $data['hotel_location'] = array('name'=>$res_order[0]['hotel_name'],'lng'=>$res_shop['result']['lng'],
+                                'lat'=>$res_shop['result']['lat']);
+                        }
+                        $m_address = new \Common\Model\Smallapp\AddressModel();
+                        $res_address = $m_address->getInfo(array('id'=>$res_order[0]['address_id']));
+                        $data['user_location'] = array('lng'=>$res_address['lng'],'lat'=>$res_address['lat']);
+                    }
+                }
+            }
+        }
+        $this->to_back($data);
+    }
+
+
+    public function orderlist(){
+        $openid = $this->params['openid'];
+        $status = intval($this->params['status']);//1待处理 2已完成
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
         if(empty($pagesize)){
@@ -101,13 +464,18 @@ class OrderController extends CommonController{
             $this->to_back(90116);
         }
         $where = array('openid'=>$openid);
-        if($status){
-            $where['status'] = $status;
+        switch ($status){
+            case 1:
+                $where['status'] = array('lt',17);
+                break;
+            case 2:
+                $where['status'] = array('in',array(17,18,19));
+                break;
         }
         $all_nums = $page * $pagesize;
-        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $m_order = new \Common\Model\Smallapp\OrderModel();
         $fields = 'id as order_id,merchant_id,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
-        $res_order = $m_dishorder->getDataList($fields,$where,'id desc',0,$all_nums);
+        $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
@@ -115,7 +483,9 @@ class OrderController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             $datalist = $res_order['list'];
             $oss_host = "http://".C('OSS_HOST').'/';
+            $all_status = C('ORDER_STATUS');
             foreach($datalist as $k=>$v){
+                $datalist[$k]['status_str'] = $all_status[$v['status']];
                 $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
                 if($v['finish_time']=='0000-00-00 00:00:00'){
                     $datalist[$k]['finish_time'] = '';
@@ -154,7 +524,7 @@ class OrderController extends CommonController{
         $this->to_back($res_data);
     }
 
-    public function dishOrderdetail(){
+    public function detail(){
         $openid = $this->params['openid'];
         $order_id = intval($this->params['order_id']);
 
@@ -164,18 +534,27 @@ class OrderController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
-        $res_order = $m_dishorder->getInfo(array('id'=>$order_id));
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
         if(empty($res_order) || $res_order['openid']!=$openid){
             $this->to_back(90134);
         }
-        $res_order['order_id'] = $order_id;
-        unset($res_order['id'],$res_order['openid'],$res_order['staff_id'],$res_order['dishgoods_id'],$res_order['price'],$res_order['pay_type']);
+
+        $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],
+            'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
+            'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],
+            'remark'=>$res_order['remark'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
+            'type'=>$res_order['type']
+        );
+        $order_status_str = C('ORDER_STATUS');
+        if(isset($order_status_str[$res_order['status']])){
+            $order_data['status_str'] = $order_status_str[$res_order['status']];
+        }
 
         $oss_host = "http://".C('OSS_HOST').'/';
-        $res_order['add_time'] = date('Y-m-d H:i',strtotime($res_order['add_time']));
+        $order_data['add_time'] = date('Y-m-d H:i',strtotime($res_order['add_time']));
         if($res_order['finish_time']=='0000-00-00 00:00:00'){
-            $res_order['finish_time'] = '';
+            $order_data['finish_time'] = '';
         }
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
@@ -188,7 +567,7 @@ class OrderController extends CommonController{
             $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
             $goods[]=$ginfo;
         }
-        $res_order['goods'] = $goods;
+        $order_data['goods'] = $goods;
 
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $m_media = new \Common\Model\MediaModel();
@@ -201,199 +580,42 @@ class OrderController extends CommonController{
             $res_media = $m_media->getMediaInfoById($res_merchant[0]['hotel_cover_media_id']);
             $merchant['img'] = $res_media['oss_addr'];
         }
-        $res_order['merchant'] = $merchant;
-        $this->to_back($res_order);
+        $order_data['merchant'] = $merchant;
+        $invoice = array();
+        $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+        $res_invoice = $m_invoice->getInfo(array('order_id'=>$order_id));
+        if(!empty($res_invoice)){
+            $invoice['company'] = $res_invoice['company'];
+            $invoice['credit_code'] = $res_invoice['credit_code'];
+            $invoice['title_type'] = intval($res_invoice['title_type']);
+        }
+        $order_data['invoice'] = $invoice;
+        $this->to_back($order_data);
     }
 
-    public function addDishorder(){
-        $addorder_num = 30;
-
+    public function cancel(){
         $openid = $this->params['openid'];
-        $goods_id= intval($this->params['goods_id']);
-        $amount = intval($this->params['amount']);
-        $carts = $this->params['carts'];
-        $contact = $this->params['contact'];
-        $phone = $this->params['phone'];
-        $address = $this->params['address'];
-        $delivery_time = $this->params['delivery_time'];
-        $remark = $this->params['remark'];
-        $address_id = intval($this->params['address_id']);
-        $type = isset($this->params['type'])?intval($this->params['type']):1;//类型1普通订单 2代理订单
-
-        if(empty($goods_id) && empty($carts)){
-            $this->to_back(1001);
-        }
-        if(!empty($delivery_time)){
-            $tmp_dtime = strtotime($delivery_time);
-            if($tmp_dtime<time()){
-                $this->to_back(93038);
-            }
-        }
-
-        $sale_key = C('SAPP_SALE');
-        $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
-        $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
-
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(14);
-        $res_ordercache = $redis->get($order_space_key);
-        if(!empty($res_ordercache)){
-            $this->to_back(92024);
-        }
-        $res_cache = $redis->get($cache_key);
-        if(!empty($res_cache)){
-            $user_order = json_decode($res_cache,true);
-            if(count($user_order)>=$addorder_num){
-                $this->to_back(92021);
-            }
-        }else{
-            $user_order = array();
-        }
+        $order_id = intval($this->params['order_id']);
 
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array();
-        $where['openid'] = $openid;
-        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
-        $res_user = $m_user->getOne($fields, $where);
-        if(empty($res_user)){
-            $this->to_back(92010);
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
         }
-        if($address_id){
-            $m_area = new \Common\Model\AreaModel();
-            $m_address = new \Common\Model\Smallapp\AddressModel();
-            $res_address = $m_address->getInfo(array('id'=>$address_id));
-            $res_area = $m_area->find($res_address['area_id']);
-            $res_county = $m_area->find($res_address['county_id']);
-
-            $contact = $res_address['consignee'];
-            $phone = $res_address['phone'];
-            $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if(empty($res_order) || $res_order['openid']!=$openid){
+            $this->to_back(90134);
         }
-        if(empty($contact) || empty($phone) || empty($address)){
-           $this->to_back(1001);
+        if($res_order['status']==19){
+            $this->to_back(90136);
         }
-        $is_check = check_mobile($phone);
-        if(!$is_check){
-            $this->to_back(93006);
+        if($res_order['status']!=13){
+            $this->to_back(90137);
         }
-        $goods = array();
-        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        if($goods_id){
-            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
-            if(empty($res_goods) || $res_goods['status']==2){
-                $this->to_back(92020);
-            }
-            $amount = $amount>0?$amount:1;
-            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
-                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
-            $goods[$res_goods['merchant_id']][] = $ginfo;
-        }else{
-            $json_str= stripslashes(html_entity_decode($carts));
-            $cart_info = json_decode($json_str,true);
-            if(!empty($cart_info)){
-                foreach ($cart_info as $v){
-                    if(!empty($v)){
-                        $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
-                        if(!empty($res_goods) && $res_goods['status']==1){
-                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
-                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
-                            $goods[$res_goods['merchant_id']][] = $ginfo;
-                        }
-                    }
-                }
-            }
-        }
-        if(empty($goods)){
-            $this->to_back(1001);
-        }
-        $m_order = new \Common\Model\Smallapp\DishorderModel();
-        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-        $m_hotel = new \Common\Model\HotelModel();
-        $ucconfig = C('ALIYUN_SMS_CONFIG');
-        $alisms = new \Common\Lib\AliyunSms();
-        $hotel_name = $goods_name = array();
-        foreach ($goods as $k=>$v){
-            $amount = 0;
-            $total_fee = 0;
-            $merchant_id = $k;
-            foreach ($v as $gv){
-                $price = sprintf("%.2f",$gv['amount']*$gv['price']);
-                $total_fee = $total_fee+$price;
-                $amount = $amount+$gv['amount'];
-            }
-            $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,
-                'status'=>1,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'pay_type'=>1);
-            if($type){
-                $add_data['type']=$type;
-            }
-            if(!empty($delivery_time)){
-                $add_data['delivery_time'] = $delivery_time;
-            }
-            if(!empty($remark)){
-                $add_data['remark'] = $remark;
-            }
-            $order_id = $m_order->add($add_data);
-
-//            $redis->set($order_space_key,$order_id,60);
-            $user_order[] = $order_id;
-            $redis->set($cache_key,json_encode($user_order),86400);
-
-            $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
-            $activity_phone = $res_merchant['mobile'];
-            $res_hotel = $m_hotel->getOneById('name',$res_merchant['hotel_id']);
-            $hotel_name[] = $res_hotel['name'];
-
-            $order_goods = array();
-            $send_staff = array();
-            foreach ($v as $ov){
-                $order_goods[]=array('order_id'=>$order_id,'goods_id'=>$ov['goods_id'],'price'=>$ov['price'],'amount'=>$ov['amount']);
-
-                if(!in_array($ov['staff_id'],$send_staff)){
-                    $res_staff = $m_staff->getInfo(array('id'=>$ov['staff_id']));
-                    if(!empty($res_staff['openid'])){
-                        $where = array('openid'=>$res_staff['openid']);
-                        $fields = 'id user_id,openid,mobile';
-                        $res_user = $m_user->getOne($fields, $where);
-                        if(!empty($res_user) && !empty($res_user['mobile'])){
-                            $activity_phone = $res_user['mobile'];
-                        }
-                    }
-                    $params = array();
-                    $template_code = $ucconfig['dish_send_salemanager'];
-                    $res_data = $alisms::sendSms($activity_phone,$params,$template_code);
-                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                        'url'=>'','tel'=>$activity_phone,'resp_code'=>$res_data->Code,'msg_type'=>3
-                    );
-                    $m_account_sms_log->addData($data);
-                }else{
-                    $send_staff[]=$ov['staff_id'];
-                }
-                $goods_name[]=$ov['name'];
-            }
-            $m_ordergoods->addAll($order_goods);
-        }
-        if($goods_id){
-            $params = array('goods_name'=>$goods_name[0]);
-            $template_code = $ucconfig['dish_send_buyer'];
-        }else{
-            $params = array('hotel_name'=>$hotel_name[0]);
-            $template_code = $ucconfig['dish_send_cartsbuyer'];
-        }
-
-        $res_data = $alisms::sendSms($phone,$params,$template_code);
-        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-            'url'=>join(',',$params),'tel'=>$phone,'resp_code'=>$res_data->Code,'msg_type'=>3
-        );
-        $m_account_sms_log->addData($data);
-
-        $hotel_name = join(',',$hotel_name);
-        $message1 = "您的订单消息已经通知“{$hotel_name}“餐厅。";
-        $message2 = "请等待餐厅人员的电话确认。";
-        $res_data = array('message1'=>$message1,'message2'=>$message2);
-        $this->to_back($res_data);
+        $m_order->updateData(array('id'=>$order_id),array('status'=>19));
+        $this->to_back(array());
     }
 
 

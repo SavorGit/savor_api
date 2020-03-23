@@ -215,10 +215,10 @@ class OrderController extends CommonController{
         }
         switch ($status){
             case 1:
-                $where['status'] = array('neq',17);
+                $where['status'] = array('lt',17);
                 break;
             case 2:
-                $where['status'] = 17;
+                $where['status'] = array('in',array(17,18,19));
                 break;
         }
         $all_nums = $page * $pagesize;
@@ -232,7 +232,9 @@ class OrderController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             $datalist = $res_order['list'];
             $oss_host = "http://".C('OSS_HOST').'/';
+            $all_status = C('ORDER_STATUS');
             foreach($datalist as $k=>$v){
+                $datalist[$k]['status_str'] = $all_status[$v['status']];
                 $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
                 if($v['finish_time']=='0000-00-00 00:00:00'){
                     $datalist[$k]['finish_time'] = '';
@@ -344,16 +346,33 @@ class OrderController extends CommonController{
         }
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $res_order = $m_order->getInfo(array('id'=>$order_id));
-        if(empty($res_order) || $res_order['merchant_id']!=$merchant_id){
+        $fields = 'o.id,o.total_fee,o.delivery_fee,o.contact,o.phone,o.address,o.lnglat,o.area_id,
+        m.id as merchant_id,hotel.id as hotel_id';
+        $where = array('o.id'=>$order_id);
+        $res_order = $m_order->getOrderInfo($fields,$where);
+        if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
             $this->to_back(93036);
         }
         switch ($action){
             case 1:
                 $m_order->updateData(array('id'=>$order_id),array('status'=>14));
-                /*
-                 * todo  调用达达接口
-                 */
+                $config = C('DADA');
+                $hotel_id = $res_order[0]['hotel_id'];
+                $hotel_id = $config['shop_no'];//上线后去除
+
+                $m_area = new \Common\Model\AreaModel();
+                $res_area = $m_area->find($res_order[0]['area_id']);
+                $area_no = $res_area['area_no'];
+                $money = $res_order[0]['total_fee'] - $res_order[0]['delivery_fee'];
+                $name = $res_order[0]['contact'];
+                $address = $res_order[0]['address'];
+                $phone = $res_order[0]['phone'];
+                $lnglat = explode(',',$res_order[0]['lnglat']);
+
+                $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+                $callback = $host_name."/h5/dada/orderNotify";
+                $dada = new \Common\Lib\Dada($config);
+                $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[0],$lnglat[1],$callback);
                 break;
             case 2:
                 $m_order->updateData(array('id'=>$order_id),array('status'=>18));

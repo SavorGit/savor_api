@@ -426,7 +426,7 @@ class MerchantController extends CommonController{
 
         $hotel_ext = array('meal_time'=>$meal_time,'legal_charter'=>$legal_charter);
         if(!empty($business_lunchshours) && !empty($business_lunchehours) && !empty($business_dinnershours) && !empty($business_dinnerehours)){
-            $business_lunchhours = $business_dinnershours.'-'.$business_lunchehours;
+            $business_lunchhours = $business_lunchshours.'-'.$business_lunchehours;
             $business_dinnerhours = $business_dinnershours.'-'.$business_dinnerehours;
             $business_hours = $business_lunchhours.','.$business_dinnerhours;
             $hotel_ext['business_hours'] = $business_hours;

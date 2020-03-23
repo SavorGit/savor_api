@@ -84,7 +84,7 @@ class Dada{
     }
 
 
-    public function addOrder($shop_no,$order_id,$area_no,$money,$name,$address,$phone,$lat,$lng,$callback){
+    public function addOrder($shop_no,$order_id,$area_no,$money,$name,$address,$phone,$lat,$lng,$callback,$delay_publish_time=''){
         $orderModel = new \OrderModel();
         $orderModel->setShopNo($shop_no);
         $orderModel->setOriginId($order_id);
@@ -96,6 +96,9 @@ class Dada{
         $orderModel->setReceiverLat($lat);
         $orderModel->setReceiverLng($lng);
         $orderModel->setReceiverPhone($phone);
+        if(!empty($delay_publish_time)){
+            $orderModel->setDelayPublishTime($delay_publish_time);
+        }
         $orderModel->setCallback($callback);
 
         $addOrderApi = new \AddOrderApi(json_encode($orderModel));

@@ -33,6 +33,8 @@ class OrderModel{
 
     public $order_id;
 
+    public $delay_publish_time;
+
 
     public function setShopNo($shopNo)
     {
@@ -173,5 +175,19 @@ class OrderModel{
     {
         return $this->order_id;
     }
+
+    public function setDelayPublishTime($delay_publish_time)
+    {
+        !empty($delay_publish_time) ? $this->delay_publish_time = $delay_publish_time : trigger_error('delay_publish_time不能为空', E_USER_ERROR);
+    }
+
+    public function getDelayPublishTime()
+    {
+        return $this->delay_publish_time;
+    }
+
+
+
+
 
 }

@@ -10,4 +10,5 @@ class UrlConfig{
     const ORDER_CANCEL_REASONS_URL = '/api/order/cancel/reasons';
     const ORDER_READDORDER_URL = '/api/order/reAddOrder';
     const ORDER_QUERY_URL = '/api/order/status/query';
+    const SHOP_DETAIL_URL = '/api/shop/detail';
 }

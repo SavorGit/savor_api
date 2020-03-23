@@ -131,6 +131,18 @@ class Dada{
         return $resp;
     }
 
+    public function shopDetail($shop_id){
+        require_once BASE_DIR . 'model/shopModel.php';
+        require_once BASE_DIR . 'api/shopDetailApi.php';
+        $shopModel = new \shopModel();
+        $shopModel->setOriginShopId($shop_id);
+
+        $shopDetailApi = new \shopDetailApi(json_encode($shopModel));
+        $resp = $this->makeRequest($shopDetailApi);
+        return $resp;
+
+    }
+
     private function makeRequest($params){
         $dada_client = new \DadaRequestClient($this->config,$params);
         $resp = $dada_client->makeRequest();

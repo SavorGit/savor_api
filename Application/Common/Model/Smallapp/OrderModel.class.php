@@ -8,7 +8,7 @@ class OrderModel extends BaseModel{
     public function getOrderInfo($fields,$where){
         $data = $this->alias('o')
             ->field($fields)
-            ->join('integral_merchant m on o.merchant_id=m.id','left')
+            ->join('savor_integral_merchant m on o.merchant_id=m.id','left')
             ->join('savor_hotel hotel on m.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
             ->where($where)

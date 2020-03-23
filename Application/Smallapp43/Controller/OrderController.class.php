@@ -12,6 +12,9 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('merchant_id'=>1001);
                 break;
+            case 'getRemarks':
+                $this->is_verify = 0;
+                break;
             case 'getDeliveryTime':
                 $this->is_verify = 1;
                 $this->valid_fields = array('merchant_id'=>1001);
@@ -35,7 +38,12 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
                 break;
-            case 'dishOrderlist':
+            case 'cancel':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
+                break;
+                break;
+            case 'orderlist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'pagesize'=>1002);
                 break;
@@ -66,13 +74,6 @@ class OrderController extends CommonController{
         $data = array('delivery_platform'=>intval($res_merchant[0]['delivery_platform']));
         $data['delivery_types'] = array_values($delivery_types);
         $data['pay_types'] = array_values($pay_types);
-        $m_remark = new \Common\Model\Smallapp\OrderRemarktagsModel();
-        $res_remark = $m_remark->getDataList('*',array('status'=>1),'id desc');
-        $remark = array();
-        foreach ($res_remark as $v){
-            $remark[]=array('id'=>$v['id'],'name'=>$v['name']);
-        }
-        $data['remark'] = $remark;
         $tableware = array();
         for($i=0;$i<11;$i++){
             if($i==0){
@@ -86,6 +87,16 @@ class OrderController extends CommonController{
         $this->to_back($data);
     }
 
+    public function getRemarks(){
+        $m_remark = new \Common\Model\Smallapp\OrderRemarktagsModel();
+        $res_remark = $m_remark->getDataList('*',array('status'=>1),'id desc');
+        $remark = array();
+        foreach ($res_remark as $v){
+            $remark[]=array('id'=>$v['id'],'name'=>$v['name']);
+        }
+        $this->to_back($remark);
+    }
+
     public function getDeliveryTime(){
         $merchant_id = intval($this->params['merchant_id']);
         $m_merchant = new \Common\Model\Integral\MerchantModel();
@@ -96,16 +107,50 @@ class OrderController extends CommonController{
             $this->to_back(93035);
         }
         $meal_time = intval($res_merchant[0]['meal_time']);
+        $data = array(
+            array('name'=>'立即配送','value'=>0)
+        );
         if($meal_time){
             $meal_minutes = $meal_time*60;
+            $nowtime = time() + $meal_minutes;
+            $data[]=array('name'=>date("Y-m-d H:i:00",$nowtime),'value'=>date("Y-m-d H:i:00",$nowtime));
         }else{
-            $meal_minutes = 1200;
+            $nowtime = time();
         }
-        $nowtime = time();
-        $data = array();
-        for ($i=1;$i<10;$i++){
-            $tmp_time = $nowtime+($meal_minutes*$i);
-            $data[] = date('Y-m-d H:i:00',$tmp_time);
+
+        $hour = date('G',$nowtime);
+        $minutes = date('i',$nowtime);
+        $minutes = intval($minutes);
+        $now_date = date('Y-m-d');
+        for ($i=$hour;$i<24;$i++){
+            $tmp_hour = str_pad($i, 2, '0', STR_PAD_LEFT);
+            if($i==$hour){
+                if($minutes<20){
+                    $time1 = strtotime("$now_date $tmp_hour:20:00");
+                    $info1 = array('name'=>date("Y-m-d H:i:00",$time1),'value'=>date("Y-m-d H:i:00",$time1));
+                    $data[]=$info1;
+
+                    $time2 = strtotime("$now_date $tmp_hour:40:00");
+                    $info2 = array('name'=>date("Y-m-d H:i:00",$time2),'value'=>date("Y-m-d H:i:00",$time2));
+                    $data[]=$info2;
+                }elseif($minutes>20 && $minutes<40){
+                    $time = strtotime("$now_date $tmp_hour:40:00");
+                    $info = array('name'=>date("Y-m-d H:i:00",$time),'value'=>date("Y-m-d H:i:00",$time));
+                    $data[]=$info;
+                }
+            }else{
+                $time = strtotime("$now_date $tmp_hour:00:00");
+                $info = array('name'=>date("Y-m-d H:i:00",$time),'value'=>date("Y-m-d H:i:00",$time));
+                $data[]=$info;
+
+                $time1 = strtotime("$now_date $tmp_hour:20:00");
+                $info1 = array('name'=>date("Y-m-d H:i:00",$time1),'value'=>date("Y-m-d H:i:00",$time1));
+                $data[]=$info1;
+
+                $time2 = strtotime("$now_date $tmp_hour:40:00");
+                $info2 = array('name'=>date("Y-m-d H:i:00",$time2),'value'=>date("Y-m-d H:i:00",$time2));
+                $data[]=$info2;
+            }
         }
         $this->to_back($data);
     }
@@ -152,11 +197,11 @@ class OrderController extends CommonController{
         $data = array('fee'=>0,'distance'=>0);
         if($res['code']==0 && !empty($res['result'])){
             $data['fee'] = $res['result']['fee'];
-            $data['distance'] = $res['result']['distance'].'米';
+            $data['distance'] = $res['result']['distance'].'m';
             if($res['result']['distance']>1000){
                 $distance = $res['result']['distance']/1000;
                 $distance = sprintf("%.2f",$distance);
-                $data['distance'] = $distance.'公里';
+                $data['distance'] = $distance.'km';
             }
         }
         $this->to_back($data);
@@ -175,19 +220,16 @@ class OrderController extends CommonController{
         $delivery_time = $this->params['delivery_time'];
         $remark = $this->params['remark'];
         $address_id = intval($this->params['address_id']);
-        $type = 1;//类型1普通订单 2代理订单
         $delivery_type = intval($this->params['delivery_type']);//配送类型1外卖配送 2到店自取
         $pay_type = intval($this->params['pay_type']);//10微信支付 20线下付款
         $tableware = intval($this->params['tableware']);
         $company = $this->params['company'];
         $credit_code = $this->params['credit_code'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
-        $map_tyeps = array('1'=>3,'2'=>4);
-
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
-        if(!empty($delivery_time)){
+        if($delivery_time>0){
             $tmp_dtime = strtotime($delivery_time);
             if($tmp_dtime<time()){
                 $this->to_back(93038);
@@ -303,7 +345,7 @@ class OrderController extends CommonController{
             }
         }
         $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
-            'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
+            'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'type'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
         if($address_id){
             $add_data['area_id'] = $res_address['area_id'];
             $add_data['lnglat'] = "{$res_address['lng']},{$res_address['lat']}";
@@ -311,8 +353,9 @@ class OrderController extends CommonController{
         if($tableware){
             $add_data['tableware'] = $tableware;
         }
-        if(isset($map_tyeps[$type])){
-            $add_data['type'] = $map_tyeps[$type];
+        if($delivery_time==0){
+            $add_data['is_atonce'] = 1;
+            $delivery_time = date('Y-m-d H:i:s');
         }
         if(!empty($delivery_time)){
             $add_data['delivery_time'] = $delivery_time;
@@ -391,7 +434,7 @@ class OrderController extends CommonController{
         $order_id = intval($this->params['order_id']);
 
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'o.id,o.status,o.address_id,m.hotel_id,m.delivery_platform,hotel.name as hotel_name';
+        $fields = 'o.id,o.status,o.lnglat,m.hotel_id,m.delivery_platform,hotel.name as hotel_name';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         $data = array();
@@ -435,8 +478,9 @@ class OrderController extends CommonController{
 
                         $res_shop = $dada->shopDetail($hotel_id);
                         if($res_shop['code']==0 && !empty($res_shop['result'])){
-                            $data['hotel_location'] = array('name'=>$res_order[0]['hotel_name'],'lng'=>$res_shop['result']['lng'],
-                                'lat'=>$res_shop['result']['lat']);
+                            $lnglat = explode(',',$res_order[0]['lnglat']);
+                            $data['hotel_location'] = array('name'=>$res_order[0]['hotel_name'],'lng'=>$lnglat[0],
+                                'lat'=>$lnglat[1]);
                         }
                         $m_address = new \Common\Model\Smallapp\AddressModel();
                         $res_address = $m_address->getInfo(array('id'=>$res_order[0]['address_id']));
@@ -463,7 +507,7 @@ class OrderController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-        $where = array('openid'=>$openid);
+        $where = array('openid'=>$openid,'otype'=>3);
         switch ($status){
             case 1:
                 $where['status'] = array('lt',17);
@@ -608,12 +652,15 @@ class OrderController extends CommonController{
         if(empty($res_order) || $res_order['openid']!=$openid){
             $this->to_back(90134);
         }
-        if($res_order['status']==19){
+        if(in_array($res_order['status'],array(18,19))){
             $this->to_back(90136);
         }
         if($res_order['status']!=13){
             $this->to_back(90137);
         }
+        /*
+         * todo 订单支付完退款
+         */
         $m_order->updateData(array('id'=>$order_id),array('status'=>19));
         $this->to_back(array());
     }

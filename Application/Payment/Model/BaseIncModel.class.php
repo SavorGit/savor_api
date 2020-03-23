@@ -283,6 +283,57 @@ class BaseIncModel extends Model{
         return $is_succ;
     }
 
+    public function handle_takeoutorder_notify($order_extend){
+        $is_succ = false;
+        $trade_no = $order_extend['trade_no'];
+        $serial_no = $order_extend['serial_no'];
+        $pay_fee = $order_extend['pay_fee'];
+        $paylog_type = $order_extend['paylog_type'];
+        $pay_type = $order_extend['pay_type'];
+
+        $sql_order = "select * from savor_smallapp_ordermap where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_ordermap = $this->query($sql_order);
+
+        $trade_no = intval($result_ordermap[0]['order_id']);
+        $sql_order = "select * from savor_smallapp_order where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_order = $this->query($sql_order);
+        if(in_array($result_order[0]['status'],array(10,11))){//10已下单 11支付失败 12支付成功
+            // 判断订单支付金额是否正常
+            $tmp_no_pay_fee = $result_order[0]['total_fee']-$result_order[0]['pay_fee']-$pay_fee;
+            $no_pay_fee = sprintf("%01.2f",$tmp_no_pay_fee);
+
+            if($no_pay_fee<=0){
+                $status = 12;
+            }else{
+                $status = 11;
+            }
+            $pay_time = date('Y-m-d H:i:s');
+            $update_condition = "update savor_smallapp_order set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
+            $sql_uporder = "$update_condition where id='$trade_no'";
+            $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+            $row_num = $this->execute($sql_uporder);
+            if($row_num){
+                $is_succ = true;
+                $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
+                $this->execute($sql_serialno);
+                $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
+
+                $m_order = new \Common\Model\Smallapp\OrderModel();
+                $is_notify_merchant = $m_order->sendMessage($trade_no);
+                $log_notify = "order_id:$trade_no sms notify merchant status:".$is_notify_merchant;
+                $this->paynotify_log($paylog_type, $serial_no, $log_notify);
+                if($is_notify_merchant){
+                    $m_order->updateData(array('id'=>$trade_no),array('status'=>13));
+                }
+            }
+        }else{
+            $is_succ = true;
+        }
+        return $is_succ;
+    }
+
     /**
      * 记录支付日志
      * @param string $paylog_type

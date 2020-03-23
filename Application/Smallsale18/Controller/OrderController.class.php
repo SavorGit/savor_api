@@ -346,8 +346,8 @@ class OrderController extends CommonController{
         }
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'o.id,o.total_fee,o.delivery_fee,o.contact,o.phone,o.address,o.lnglat,o.area_id,
-        m.id as merchant_id,hotel.id as hotel_id';
+        $fields = 'o.id,o.total_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,
+        o.add_time,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
@@ -368,17 +368,31 @@ class OrderController extends CommonController{
                 $address = $res_order[0]['address'];
                 $phone = $res_order[0]['phone'];
                 $lnglat = explode(',',$res_order[0]['lnglat']);
-
+                if($res_order[0]['is_atonce']){
+                    $delay_publish_time = '';
+                }elseif($res_order[0]['meal_time']){
+                    $add_time = strtotime($res_order[0]['add_time']);
+                    $delay_publish_time = $add_time+$res_order[0]['meal_time']*60-600;
+                }else{
+                    $delay_publish_time = '';
+                }
                 $host_name = 'https://'.$_SERVER['HTTP_HOST'];
                 $callback = $host_name."/h5/dada/orderNotify";
                 $dada = new \Common\Lib\Dada($config);
-                $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[0],$lnglat[1],$callback);
+                $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[0],$lnglat[1],$callback,$delay_publish_time);
+                if($res['code']==0 && !empty($res['result'])){
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>14));
+                }
+                $resp_data = $res;
                 break;
             case 2:
                 $m_order->updateData(array('id'=>$order_id),array('status'=>18));
+                $resp_data = array();
                 break;
+            default:
+                $resp_data = array();
         }
-        $this->to_back(array());
+        $this->to_back($resp_data);
     }
 
 

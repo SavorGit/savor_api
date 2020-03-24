@@ -105,6 +105,7 @@ return array(
 
 
     'PAYLOGS_PATH'  =>  str_replace('Application/', 'paylogs/', APP_PATH),//支付回调日志目录
+    'DADALOGS_PATH'  =>  str_replace('Application/', 'dadalogs/', APP_PATH),//达达快递回调日志目录
     'RESOURCE_TYPEINFO'=>array(
         'mp4'=>1,
         'mov'=>1,

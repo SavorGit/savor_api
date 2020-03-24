@@ -126,6 +126,7 @@ class Dada{
     }
 
     public function queryOrder($order_id){
+        require_once BASE_DIR . 'api/queryOrderApi.php';
         $orderModel = new \OrderModel();
         $orderModel->setOrderId($order_id);
 

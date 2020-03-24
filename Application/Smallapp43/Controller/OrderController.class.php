@@ -28,7 +28,7 @@ class OrderController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
                     'address_id'=>1002,'delivery_type'=>1001,'pay_type'=>1001,'tableware'=>1002,
-                    'company'=>1002,'credit_code'=>1002);
+                    'company'=>1002,'credit_code'=>1002,'selfpick_time'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -88,7 +88,7 @@ class OrderController extends CommonController{
     }
 
     public function getRemarks(){
-        $m_remark = new \Common\Model\Smallapp\OrderRemarktagsModel();
+        $m_remark = new \Common\Model\Smallapp\TagsModel();
         $res_remark = $m_remark->getDataList('*',array('status'=>1),'id desc');
         $remark = array();
         foreach ($res_remark as $v){
@@ -197,6 +197,7 @@ class OrderController extends CommonController{
         $data = array('fee'=>0,'distance'=>0);
         if($res['code']==0 && !empty($res['result'])){
             $data['fee'] = $res['result']['fee'];
+            $data['fee'] = 0;
             $data['distance'] = $res['result']['distance'].'m';
             if($res['result']['distance']>1000){
                 $distance = $res['result']['distance']/1000;
@@ -226,8 +227,15 @@ class OrderController extends CommonController{
         $company = $this->params['company'];
         $credit_code = $this->params['credit_code'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
+        $selfpick_time = $this->params['selfpick_time'];
+
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
+        }
+        if($delivery_type==2){
+            if(empty($selfpick_time)){
+                $this->to_back(1001);
+            }
         }
         if($delivery_time>0){
             $tmp_dtime = strtotime($delivery_time);
@@ -272,9 +280,12 @@ class OrderController extends CommonController{
             $res_county = $m_area->find($res_address['county_id']);
 
             $contact = $res_address['consignee'];
-            $phone = $res_address['phone'];
             $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
         }
+        if(empty($phone) && !empty($res_address['phone'])){
+            $phone = $res_address['phone'];
+        }
+
         if(empty($contact) || empty($phone) || empty($address)){
            $this->to_back(1001);
         }
@@ -331,21 +342,22 @@ class OrderController extends CommonController{
             $amount = $amount+$gv['amount'];
         }
         $delivery_fee = 0;
-        if($res_merchant[0]['delivery_platform']==1 && $address_id){
-            $config = C('DADA');
-            $hotel_id = $res_merchant[0]['hotel_id'];
-            $hotel_id = $config['shop_no'];//上线需去除
-            $order_no= getmicrotime();
-            $dada = new \Common\Lib\Dada($config);
-            $callback = http_host();
-            $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$total_fee,
-                $contact,$address,$phone,$res_address['lat'],$res_address['lng'],$callback);
-            if($res['code']==0 && !empty($res['result'])){
-                $delivery_fee = $res['result']['fee'];
-            }
-        }
+//        if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
+//            $config = C('DADA');
+//            $hotel_id = $res_merchant[0]['hotel_id'];
+//            $hotel_id = $config['shop_no'];//上线需去除
+//            $order_no= getmicrotime();
+//            $dada = new \Common\Lib\Dada($config);
+//            $callback = http_host();
+//            $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$total_fee,
+//                $contact,$address,$phone,$res_address['lat'],$res_address['lng'],$callback);
+//            if($res['code']==0 && !empty($res['result'])){
+//                $delivery_fee = $res['result']['fee'];
+//            }
+//        }
+        $total_fee = $total_fee+$delivery_fee;
         $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
-            'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'type'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
+            'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
         if($address_id){
             $add_data['area_id'] = $res_address['area_id'];
             $add_data['lnglat'] = "{$res_address['lng']},{$res_address['lat']}";
@@ -362,6 +374,9 @@ class OrderController extends CommonController{
         }
         if(!empty($remark)){
             $add_data['remark'] = $remark;
+        }
+        if($delivery_type==2){
+            $add_data['selfpick_time'] = $selfpick_time;
         }
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $order_id = $m_order->add($add_data);
@@ -588,7 +603,7 @@ class OrderController extends CommonController{
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],
             'remark'=>$res_order['remark'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'type'=>$res_order['type']
+            'type'=>$res_order['otype']
         );
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
@@ -616,10 +631,10 @@ class OrderController extends CommonController{
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $m_media = new \Common\Model\MediaModel();
         $where = array('m.id'=>$res_order['merchant_id']);
-        $fields = 'm.id,hotel.name,ext.hotel_cover_media_id';
+        $fields = 'm.id,hotel.id as hotel_id,hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id';
         $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
-        $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$res_order['merchant_id']);
-        $merchant['img'] = '';
+        $merchant = array('name'=>$res_merchant[0]['name'],'mobile'=>$res_merchant[0]['mobile'],'tel'=>$res_merchant[0]['mobile'],
+            'merchant_id'=>$res_order['merchant_id'],'img'=>'');
         if(!empty($res_merchant[0]['hotel_cover_media_id'])){
             $res_media = $m_media->getMediaInfoById($res_merchant[0]['hotel_cover_media_id']);
             $merchant['img'] = $res_media['oss_addr'];
@@ -634,6 +649,71 @@ class OrderController extends CommonController{
             $invoice['title_type'] = intval($res_invoice['title_type']);
         }
         $order_data['invoice'] = $invoice;
+        $order_data['hotel_location'] = array();
+        $order_data['transporter_location'] = array();
+        $order_data['user_location'] = array();
+        $order_data['markers'] = array();
+        $order_data['distance'] = '';
+
+        if(in_array($res_order['status'],array(14,15,16,17))){
+            $config = C('DADA');
+            $hotel_id = $res_merchant[0]['hotel_id'];
+            $hotel_id = $config['shop_no'];//上线后去除
+
+            $dada = new \Common\Lib\Dada($config);
+            $res = $dada->queryOrder($order_id);
+            if($res['code']==0 && !empty($res['result'])){
+                $dd_res = $res['result'];
+                $ddstatus_code = $dd_res['statusCode'];
+                $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);//待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
+                if(isset($status_map[$ddstatus_code])){
+                    if(in_array($ddstatus_code,array(2,3))){
+                        if($dd_res['distance']>1000){
+                            $distance = $dd_res['distance']/1000;
+                            $distance = sprintf("%.2f",$distance);
+                            $distance = $distance.'km';
+                        }else{
+                            $distance = sprintf("%.2f",$dd_res['distance']);
+                            $distance = $distance.'m';
+                        }
+                        $order_data['transporter_location'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone'],
+                            'lng'=>$dd_res['transporterLng'],'lat'=>$dd_res['transporterLat']);
+                        $order_data['distance']=$distance;
+                        $order_data['markers'] = array(
+                            array(
+                                'iconPath'=>'/images/imgs/default-user.png',
+                                'id'=>0,
+                                'latitude'=>$dd_res['transporterLat'],
+                                'longitude'=>$dd_res['transporterLng'],
+                                'width'=>50,
+                                'height'=>50,
+                            )
+                        );
+                    }
+                    $order_data['transporter_location'] = array('name'=>'热达达','phone'=>'13112345678',
+                        'lng'=>'116.475783','lat'=>'39.908287');
+                    $order_data['markers'] = array(
+                        array(
+                            'iconPath'=>'/images/imgs/default-user.png',
+                            'id'=>0,
+                            'latitude'=>'39.908287',
+                            'longitude'=>'116.475783',
+                            'width'=>50,
+                            'height'=>50,
+                        )
+                    );
+                    $order_data['distance']='1.5km';
+                }
+            }
+
+            $res_shop = $dada->shopDetail($hotel_id);
+            if($res_shop['code']==0 && !empty($res_shop['result'])){
+                $order_data['hotel_location'] = array('name'=>$res_merchant[0]['name'],'lng'=>$res_shop['result']['lng'],
+                    'lat'=>$res_shop['result']['lat']);
+            }
+            $lnglat_arr = explode(',',$res_order['lnglat']);
+            $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
+        }
         $this->to_back($order_data);
     }
 
@@ -665,8 +745,11 @@ class OrderController extends CommonController{
             if(!empty($res_orderserial)){
                 $m_baseinc = new \Payment\Model\BaseIncModel();
                 $payconfig = $m_baseinc->getPayConfig(2);
+                $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+                $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+                $trade_no = $res_ordermap['list'][0]['id'];
 
-                $trade_info = array('trade_no'=>$order_id,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);
+                $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);
                 $m_wxpay = new \Payment\Model\WxpayModel();
                 $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                 if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){

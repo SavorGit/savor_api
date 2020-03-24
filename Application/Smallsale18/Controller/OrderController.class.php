@@ -347,7 +347,7 @@ class OrderController extends CommonController{
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $fields = 'o.id,o.total_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,
-        o.add_time,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
+        o.add_time,o.pay_type,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
@@ -355,7 +355,6 @@ class OrderController extends CommonController{
         }
         switch ($action){
             case 1:
-                $m_order->updateData(array('id'=>$order_id),array('status'=>14));
                 $config = C('DADA');
                 $hotel_id = $res_order[0]['hotel_id'];
                 $hotel_id = $config['shop_no'];//上线后去除
@@ -386,8 +385,30 @@ class OrderController extends CommonController{
                 $resp_data = $res;
                 break;
             case 2:
-                $m_order->updateData(array('id'=>$order_id),array('status'=>18));
-                $resp_data = array();
+                $message = '取消订单成功';
+                if($res_order[0]['pay_type']==10){
+                    $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+                    $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+                    if(!empty($res_orderserial)){
+                        $m_baseinc = new \Payment\Model\BaseIncModel();
+                        $payconfig = $m_baseinc->getPayConfig(2);
+
+                        $trade_info = array('trade_no'=>$order_id,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);
+                        $m_wxpay = new \Payment\Model\WxpayModel();
+                        $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                            $m_order->updateData(array('id'=>$order_id),array('status'=>18));
+                            $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到用户的支付账户';
+                        }else{
+                            $message = '取消订单失败';
+                        }
+                    }else{
+                        $message = '取消订单失败';
+                    }
+                }else{
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>18));
+                }
+                $resp_data = array('message'=>$message);
                 break;
             default:
                 $resp_data = array();

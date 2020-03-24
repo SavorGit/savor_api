@@ -454,7 +454,7 @@ class OrderController extends CommonController{
                 if($res['code']==0 && !empty($res['result'])){
                     $dd_res = $res['result'];
                     $ddstatus_code = $dd_res['statusCode'];
-                    $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);////待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
+                    $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);//待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
                     $status_code = 0;
                     if(isset($status_map[$ddstatus_code])){
                         $status_code = $status_map[$ddstatus_code];
@@ -658,11 +658,29 @@ class OrderController extends CommonController{
         if($res_order['status']!=13){
             $this->to_back(90137);
         }
-        /*
-         * todo 订单支付完退款
-         */
-        $m_order->updateData(array('id'=>$order_id),array('status'=>19));
-        $this->to_back(array());
+        $message = '取消订单成功';
+        if($res_order['pay_type']==10){
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+            if(!empty($res_orderserial)){
+                $m_baseinc = new \Payment\Model\BaseIncModel();
+                $payconfig = $m_baseinc->getPayConfig(2);
+
+                $trade_info = array('trade_no'=>$order_id,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);
+                $m_wxpay = new \Payment\Model\WxpayModel();
+                $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>19));
+                    $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到你的支付账户';
+                }else{
+                    $message = '取消订单失败';
+                }
+            }
+        }else{
+            $m_order->updateData(array('id'=>$order_id),array('status'=>19));
+        }
+        $res_data = array('message'=>$message);
+        $this->to_back($res_data);
     }
 
 

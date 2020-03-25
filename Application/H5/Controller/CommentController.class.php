@@ -150,11 +150,11 @@ class CommentController extends Controller {
         $encode_params = encrypt_data(json_encode($params));
         $staffuser_info['ep'] = $encode_params;
 
-        $m_commenttag = new \Common\Model\Smallapp\CommenttagModel();
+        $m_tags = new \Common\Model\Smallapp\TagsModel();
         $fields = 'id,name';
-        $where = array('status'=>1);
+        $where = array('status'=>1,'category'=>1);
         $where['hotel_id'] = array('in',array($hotel_id,0));
-        $res_tags = $m_commenttag->getDataList($fields,$where,'type desc,id desc');
+        $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
         $tags = array();
         foreach ($res_tags as $v){
             $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);

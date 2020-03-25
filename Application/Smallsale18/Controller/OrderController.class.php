@@ -326,11 +326,14 @@ class OrderController extends CommonController{
         }else{
             $o_type = 0;
         }
+        if($res_order['selfpick_time']=='0000-00-00 00:00:00'){
+            $res_order['selfpick_time'] = '';
+        }
         $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
-            'remark'=>$res_order['remark'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'type'=>$o_type
+            'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
+            'selfpick_time'=>$res_order['selfpick_time'],'type'=>$o_type
         );
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
@@ -382,7 +385,7 @@ class OrderController extends CommonController{
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
 
-        if(in_array($res_order['status'],array(14,15,16,17))){
+        if($res_order['delivery_type']==1 && in_array($res_order['status'],array(14,15,16,17))){
             $config = C('DADA');
             $dada = new \Common\Lib\Dada($config);
             $res = $dada->queryOrder($order_id);
@@ -469,39 +472,44 @@ class OrderController extends CommonController{
         }
         switch ($action){
             case 1://接单
-                $config = C('DADA');
-                $hotel_id = $res_order[0]['hotel_id'];
-                $hotel_id = $config['shop_no'];//上线后去除
+                if($res_order[0]['delivery_type']==1){
+                    $config = C('DADA');
+                    $hotel_id = $res_order[0]['hotel_id'];
+                    $hotel_id = $config['shop_no'];//上线后去除
 
-                $m_area = new \Common\Model\AreaModel();
-                $res_area = $m_area->find($res_order[0]['area_id']);
-                $area_no = $res_area['area_no'];
-                $money = $res_order[0]['total_fee'] - $res_order[0]['delivery_fee'];
-                $name = $res_order[0]['contact'];
-                $address = $res_order[0]['address'];
-                $phone = $res_order[0]['phone'];
-                $lnglat = explode(',',$res_order[0]['lnglat']);
-                if($res_order[0]['is_atonce']){
-                    $delay_publish_time = '';
-                }elseif($res_order[0]['meal_time']){
-                    $add_time = date('Y-m-d H:i:00',strtotime($res_order[0]['add_time']));
-                    $delay_publish_time = strtotime($add_time)+$res_order[0]['meal_time']*60-600;
-                    $now_time = time();
-                    if($delay_publish_time<$now_time){
+                    $m_area = new \Common\Model\AreaModel();
+                    $res_area = $m_area->find($res_order[0]['area_id']);
+                    $area_no = $res_area['area_no'];
+                    $money = $res_order[0]['total_fee'] - $res_order[0]['delivery_fee'];
+                    $name = $res_order[0]['contact'];
+                    $address = $res_order[0]['address'];
+                    $phone = $res_order[0]['phone'];
+                    $lnglat = explode(',',$res_order[0]['lnglat']);
+                    if($res_order[0]['is_atonce']){
+                        $delay_publish_time = '';
+                    }elseif($res_order[0]['meal_time']){
+                        $add_time = date('Y-m-d H:i:00',strtotime($res_order[0]['add_time']));
+                        $delay_publish_time = strtotime($add_time)+$res_order[0]['meal_time']*60-600;
+                        $now_time = time();
+                        if($delay_publish_time<$now_time){
+                            $delay_publish_time = '';
+                        }
+                    }else{
                         $delay_publish_time = '';
                     }
-                }else{
-                    $delay_publish_time = '';
-                }
-                $host_name = 'https://'.$_SERVER['HTTP_HOST'];
-                $callback = $host_name."/h5/dada/orderNotify";
-                $dada = new \Common\Lib\Dada($config);
-                $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[1],$lnglat[0],$callback,$delay_publish_time);
+                    $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+                    $callback = $host_name."/h5/dada/orderNotify";
+                    $dada = new \Common\Lib\Dada($config);
+                    $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[1],$lnglat[0],$callback,$delay_publish_time);
 
-                if($res['code']==0 && !empty($res['result'])){
-                    $m_order->updateData(array('id'=>$order_id),array('status'=>14));
+                    if($res['code']==0 && !empty($res['result'])){
+                        $m_order->updateData(array('id'=>$order_id),array('status'=>14));
+                    }else{
+                        $this->to_back(90139);
+                    }
                 }else{
-                    $this->to_back(90139);
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>17,'finish_time'=>date('Y-m-d H:i:s')));
+                    $res = array();
                 }
                 $resp_data = $res;
                 break;

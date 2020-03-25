@@ -599,11 +599,14 @@ class OrderController extends CommonController{
             $this->to_back(90134);
         }
 
+        if($res_order['selfpick_time']=='0000-00-00 00:00:00'){
+            $res_order['selfpick_time'] = '';
+        }
         $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
-            'remark'=>$res_order['remark'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'type'=>$res_order['otype']
+            'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
+            'selfpick_time'=>$res_order['selfpick_time'],'type'=>$res_order['otype']
         );
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
@@ -655,7 +658,7 @@ class OrderController extends CommonController{
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
 
-        if(in_array($res_order['status'],array(14,15,16,17))){
+        if($res_order['delivery_type']==1 && in_array($res_order['status'],array(14,15,16,17))){
             $config = C('DADA');
             $dada = new \Common\Lib\Dada($config);
             $res = $dada->queryOrder($order_id);

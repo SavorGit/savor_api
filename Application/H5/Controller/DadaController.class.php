@@ -39,8 +39,13 @@ class DadaController extends Controller{
                     $this->addLog($order_id,"dada_status:$dada_status");
                     if(isset($status_map[$dada_status])){
                         $status = $status_map[$dada_status];
-                        $sql_status = "UPDATE savor_smallapp_order SET status={$status} WHERE id={$order_id}";
-                        $this->addLog($order_id, $sql_order);
+                        if($status==17){
+                            $nowtime = date('Y-m-d H:i:s');
+                            $sql_status = "UPDATE savor_smallapp_order SET status='{$status}',finish_time='{$nowtime}' WHERE id={$order_id}";
+                        }else{
+                            $sql_status = "UPDATE savor_smallapp_order SET status='{$status}' WHERE id={$order_id}";
+                        }
+                        $this->addLog($order_id, $sql_status);
                         $model->execute($sql_status);
                     }
                 }

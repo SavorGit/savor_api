@@ -278,6 +278,8 @@ return array(
 	    '90135'=>'smallapp_order_choose_paytype_error',
 	    '90136'=>'smallapp_order_has_cancel',
 	    '90137'=>'smallapp_order_not_support_cancel',
+	    '90138'=>'smallapp_order_has_receive_error',
+	    '90139'=>'smallapp_order_receive_delivery_error',
 
 
 

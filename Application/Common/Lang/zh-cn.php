@@ -250,6 +250,8 @@ return array(
     'smallapp_order_choose_paytype_error'=>'请选择正确的支付方式',
     'smallapp_order_has_cancel'=>'订单已取消,请勿重复取消',
     'smallapp_order_not_support_cancel'=>'此订单不支持取消',
+    'smallapp_order_has_receive_error'=>'订单接收失败',
+    'smallapp_order_receive_delivery_error'=>'订单配送失败',
 
     'send_sms_error'=>'短信发送失败',
     'smallappdinner_mobile_error'=>'手机号码格式错误',

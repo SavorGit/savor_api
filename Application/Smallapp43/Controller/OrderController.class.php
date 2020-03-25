@@ -89,7 +89,7 @@ class OrderController extends CommonController{
 
     public function getRemarks(){
         $m_remark = new \Common\Model\Smallapp\TagsModel();
-        $res_remark = $m_remark->getDataList('*',array('status'=>1),'id desc');
+        $res_remark = $m_remark->getDataList('*',array('status'=>1,'category'=>2),'id desc');
         $remark = array();
         foreach ($res_remark as $v){
             $remark[]=array('id'=>$v['id'],'name'=>$v['name']);
@@ -601,7 +601,7 @@ class OrderController extends CommonController{
 
         $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
-            'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],
+            'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
             'remark'=>$res_order['remark'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
             'type'=>$res_order['otype']
         );
@@ -649,17 +649,14 @@ class OrderController extends CommonController{
             $invoice['title_type'] = intval($res_invoice['title_type']);
         }
         $order_data['invoice'] = $invoice;
-        $order_data['hotel_location'] = array();
-        $order_data['transporter_location'] = array();
+        $order_data['transporter'] = array();
         $order_data['user_location'] = array();
         $order_data['markers'] = array();
+        $order_data['polyline'] = array();
         $order_data['distance'] = '';
 
         if(in_array($res_order['status'],array(14,15,16,17))){
             $config = C('DADA');
-            $hotel_id = $res_merchant[0]['hotel_id'];
-            $hotel_id = $config['shop_no'];//上线后去除
-
             $dada = new \Common\Lib\Dada($config);
             $res = $dada->queryOrder($order_id);
             if($res['code']==0 && !empty($res['result'])){
@@ -676,8 +673,7 @@ class OrderController extends CommonController{
                             $distance = sprintf("%.2f",$dd_res['distance']);
                             $distance = $distance.'m';
                         }
-                        $order_data['transporter_location'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone'],
-                            'lng'=>$dd_res['transporterLng'],'lat'=>$dd_res['transporterLat']);
+                        $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
                         $order_data['distance']=$distance;
                         $order_data['markers'] = array(
                             array(
@@ -690,8 +686,7 @@ class OrderController extends CommonController{
                             )
                         );
                     }
-                    $order_data['transporter_location'] = array('name'=>'热达达','phone'=>'13112345678',
-                        'lng'=>'116.475783','lat'=>'39.908287');
+                    $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
                     $order_data['markers'] = array(
                         array(
                             'iconPath'=>'/images/imgs/default-user.png',
@@ -705,14 +700,19 @@ class OrderController extends CommonController{
                     $order_data['distance']='1.5km';
                 }
             }
-
-            $res_shop = $dada->shopDetail($hotel_id);
-            if($res_shop['code']==0 && !empty($res_shop['result'])){
-                $order_data['hotel_location'] = array('name'=>$res_merchant[0]['name'],'lng'=>$res_shop['result']['lng'],
-                    'lat'=>$res_shop['result']['lat']);
-            }
             $lnglat_arr = explode(',',$res_order['lnglat']);
             $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
+            $order_data['polyline'] = array(
+                array(
+                    'points'=>array(
+                        array('longitude'=>$order_data['markers'][0]['longitude'],'latitude'=>$order_data['markers'][0]['latitude']),
+                        array('longitude'=>$lnglat_arr[0],'latitude'=>$lnglat_arr[1]),
+                    ),
+                    'color'=>'#FF0000DD',
+                    'width'=>2,
+                    'dottedLine'=>true
+                )
+            );
         }
         $this->to_back($order_data);
     }

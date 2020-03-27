@@ -335,6 +335,9 @@ return array(
     'smallappsale_register_verify_code_error'=>'注册验证码错误',
     'smallappsale_register_user_not_ok'=>'当前商家未通过审核',
     'smallappsale_dishgoods_name_error'=>'菜品名称不能重复',
+    'smallappsale_payee_openid_has_check'=>'当前重置的收款人正在审核中,请勿重复重置',
+    'smallappsale_self_time_error'=>'请选择正确的自提时间',
+    'smallappsale_set_payee_repeat'=>'当前重置的收款人已通过审核,请勿重复重置',
 
 
 );

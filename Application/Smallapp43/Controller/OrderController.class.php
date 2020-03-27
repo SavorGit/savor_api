@@ -197,7 +197,6 @@ class OrderController extends CommonController{
         $data = array('fee'=>0,'distance'=>0);
         if($res['code']==0 && !empty($res['result'])){
             $data['fee'] = $res['result']['fee'];
-            $data['fee'] = 0;
             $data['distance'] = $res['result']['distance'].'m';
             if($res['result']['distance']>1000){
                 $distance = $res['result']['distance']/1000;
@@ -236,6 +235,12 @@ class OrderController extends CommonController{
             if(empty($selfpick_time)){
                 $this->to_back(1001);
             }
+            $selfpick_time = date('Y-m-d')." $selfpick_time";
+            $tmp_self_time = strtotime($selfpick_time);
+            if($tmp_self_time<time()){
+                $this->to_back(93044);
+            }
+
         }
         if($delivery_time>0){
             $tmp_dtime = strtotime($delivery_time);
@@ -243,6 +248,7 @@ class OrderController extends CommonController{
                 $this->to_back(93038);
             }
         }
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -342,19 +348,19 @@ class OrderController extends CommonController{
             $amount = $amount+$gv['amount'];
         }
         $delivery_fee = 0;
-//        if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
-//            $config = C('DADA');
-//            $hotel_id = $res_merchant[0]['hotel_id'];
-//            $hotel_id = $config['shop_no'];//上线需去除
-//            $order_no= getmicrotime();
-//            $dada = new \Common\Lib\Dada($config);
-//            $callback = http_host();
-//            $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$total_fee,
-//                $contact,$address,$phone,$res_address['lat'],$res_address['lng'],$callback);
-//            if($res['code']==0 && !empty($res['result'])){
-//                $delivery_fee = $res['result']['fee'];
-//            }
-//        }
+        if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
+            $config = C('DADA');
+            $hotel_id = $res_merchant[0]['hotel_id'];
+            $hotel_id = $config['shop_no'];//上线需去除
+            $order_no= getmicrotime();
+            $dada = new \Common\Lib\Dada($config);
+            $callback = http_host();
+            $res = $dada->queryDeliverFee($hotel_id,$order_no,$res_area['area_no'],$total_fee,
+                $contact,$address,$phone,$res_address['lat'],$res_address['lng'],$callback);
+            if($res['code']==0 && !empty($res['result'])){
+                $delivery_fee = $res['result']['fee'];
+            }
+        }
         $total_fee = $total_fee+$delivery_fee;
         $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
             'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
@@ -394,14 +400,14 @@ class OrderController extends CommonController{
 
         $invoice_data = array();
         switch ($title_type){
-            case 1:
+            case 0:
                 $invoice_data['company'] = $company;
                 $invoice_data['credit_code'] = $credit_code;
-                $invoice_data['title_type'] = $title_type;
+                $invoice_data['title_type'] = 1;
                 break;
-            case 2:
+            case 1:
                 $invoice_data['company'] = $company;
-                $invoice_data['title_type'] = $title_type;
+                $invoice_data['title_type'] = 2;
                 break;
         }
         if(!empty($invoice_data)){
@@ -525,10 +531,10 @@ class OrderController extends CommonController{
         $where = array('openid'=>$openid,'otype'=>3);
         switch ($status){
             case 1:
-                $where['status'] = array('lt',17);
+                $where['status'] = array('in',array(1,13,14,15,16));
                 break;
             case 2:
-                $where['status'] = array('in',array(17,18,19));
+                $where['status'] = array('in',array(2,17,18,19));
                 break;
         }
         $all_nums = $page * $pagesize;
@@ -756,14 +762,14 @@ class OrderController extends CommonController{
                 $m_wxpay = new \Payment\Model\WxpayModel();
                 $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                 if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
-                    $m_order->updateData(array('id'=>$order_id),array('status'=>19));
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
                     $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到你的支付账户';
                 }else{
                     $message = '取消订单失败';
                 }
             }
         }else{
-            $m_order->updateData(array('id'=>$order_id),array('status'=>19));
+            $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
         }
         $res_data = array('message'=>$message);
         $this->to_back($res_data);

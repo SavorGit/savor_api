@@ -402,6 +402,7 @@ class MerchantController extends CommonController{
         $hotel_data = array();
 
         $m_media = new \Common\Model\MediaModel();
+        $hotel_ext = array('meal_time'=>$meal_time,'legal_charter'=>$legal_charter);
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id']);
             if($img!=$res_media['oss_path']){
@@ -418,13 +419,12 @@ class MerchantController extends CommonController{
                 }
                 $media_data = array('oss_addr'=>$img,'type'=>$media_type,'state'=>1);
                 $media_id = $m_media->add($media_data);
-                $hotel_data['media_id'] = $media_id;
+                $hotel_ext['hotel_cover_media_id'] = $media_id;
             }
         }
         $hotel_data['tel'] = $tel;
         $m_hotel->saveData($hotel_data, array('id'=>$hotel_id));
 
-        $hotel_ext = array('meal_time'=>$meal_time,'legal_charter'=>$legal_charter);
         if(!empty($business_lunchshours) && !empty($business_lunchehours) && !empty($business_dinnershours) && !empty($business_dinnerehours)){
             $business_lunchhours = $business_lunchshours.'-'.$business_lunchehours;
             $business_dinnerhours = $business_dinnershours.'-'.$business_dinnerehours;
@@ -457,6 +457,7 @@ class MerchantController extends CommonController{
 
         if(!empty($res_payee)){
             if($payee_openid==$res_payee['openid']){
+                $this->to_back(93045);
                 $is_set = 0;
             }else{
                 $is_set = 1;
@@ -470,6 +471,10 @@ class MerchantController extends CommonController{
                 $m_payee->add(array('merchant_id'=>$merchant_id,'openid'=>$openid,'status'=>1));
                 break;
             case 2:
+                $res_payee = $m_payee->getInfo(array('merchant_id'=>$merchant_id,'openid'=>$openid,'status'=>1));
+                if(!empty($res_payee)){
+                    $this->to_back(93043);
+                }
                 $m_payee->add(array('merchant_id'=>$merchant_id,'openid'=>$openid,'status'=>1));
                 break;
         }

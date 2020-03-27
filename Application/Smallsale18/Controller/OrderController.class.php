@@ -239,7 +239,7 @@ class OrderController extends CommonController{
         }
         switch ($status){
             case 1:
-                $where['status'] = array('in',array(1,10,11,12,13,14,15,16));
+                $where['status'] = array('in',array(1,13,14,15,16));
                 break;
             case 2:
                 $where['status'] = array('in',array(2,17,18,19));
@@ -247,7 +247,7 @@ class OrderController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'id as order_id,merchant_id,openid,price,amount,total_fee,status,otype,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,merchant_id,openid,price,amount,total_fee,status,otype,contact,phone,address,delivery_type,delivery_time,remark,add_time,finish_time';
         $res_order = $m_order->getDataList($fields,$where,'add_time desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -529,7 +529,7 @@ class OrderController extends CommonController{
                         $m_wxpay = new \Payment\Model\WxpayModel();
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
-                            $m_order->updateData(array('id'=>$order_id),array('status'=>18));
+                            $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
                             $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到用户的支付账户';
                         }else{
                             $message = '取消订单失败';
@@ -538,7 +538,7 @@ class OrderController extends CommonController{
                         $message = '取消订单失败';
                     }
                 }else{
-                    $m_order->updateData(array('id'=>$order_id),array('status'=>18));
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
                 }
                 $resp_data = array('message'=>$message);
                 break;

@@ -352,6 +352,9 @@ return array(
 	    '93040'=>'smallappsale_register_verify_code_error',
 	    '93041'=>'smallappsale_register_user_not_ok',
 	    '93042'=>'smallappsale_dishgoods_name_error',
+	    '93043'=>'smallappsale_payee_openid_has_check',
+	    '93044'=>'smallappsale_self_time_error',
+	    '93045'=>'smallappsale_set_payee_repeat',
 
 	),
 );

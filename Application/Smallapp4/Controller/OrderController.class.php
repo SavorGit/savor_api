@@ -18,6 +18,12 @@ class OrderController extends CommonController{
                     'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
                     'address_id'=>1002,'type'=>1002);
                 break;
+            case 'addOrder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
+                    'contact'=>1002,'phone'=>1002,'address'=>1002,'delivery_time'=>1002,'remark'=>1002,
+                    'address_id'=>1002,'type'=>1002);
+                break;
             case 'dishOrderlist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'pagesize'=>1002);
@@ -342,6 +348,198 @@ class OrderController extends CommonController{
                 'status'=>1,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'pay_type'=>1);
             if($type){
                 $add_data['type']=$type;
+            }
+            if(!empty($delivery_time)){
+                $add_data['delivery_time'] = $delivery_time;
+            }
+            if(!empty($remark)){
+                $add_data['remark'] = $remark;
+            }
+            $order_id = $m_order->add($add_data);
+
+//            $redis->set($order_space_key,$order_id,60);
+            $user_order[] = $order_id;
+            $redis->set($cache_key,json_encode($user_order),86400);
+
+            $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
+            $activity_phone = $res_merchant['mobile'];
+            $res_hotel = $m_hotel->getOneById('name',$res_merchant['hotel_id']);
+            $hotel_name[] = $res_hotel['name'];
+
+            $order_goods = array();
+            $send_staff = array();
+            foreach ($v as $ov){
+                $order_goods[]=array('order_id'=>$order_id,'goods_id'=>$ov['goods_id'],'price'=>$ov['price'],'amount'=>$ov['amount']);
+
+                if(!in_array($ov['staff_id'],$send_staff)){
+                    $res_staff = $m_staff->getInfo(array('id'=>$ov['staff_id']));
+                    if(!empty($res_staff['openid'])){
+                        $where = array('openid'=>$res_staff['openid']);
+                        $fields = 'id user_id,openid,mobile';
+                        $res_user = $m_user->getOne($fields, $where);
+                        if(!empty($res_user) && !empty($res_user['mobile'])){
+                            $activity_phone = $res_user['mobile'];
+                        }
+                    }
+                    $params = array();
+                    $template_code = $ucconfig['dish_send_salemanager'];
+                    $res_data = $alisms::sendSms($activity_phone,$params,$template_code);
+                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                        'url'=>'','tel'=>$activity_phone,'resp_code'=>$res_data->Code,'msg_type'=>3
+                    );
+                    $m_account_sms_log->addData($data);
+                }else{
+                    $send_staff[]=$ov['staff_id'];
+                }
+                $goods_name[]=$ov['name'];
+            }
+            $m_ordergoods->addAll($order_goods);
+        }
+        if($goods_id){
+            $params = array('goods_name'=>$goods_name[0]);
+            $template_code = $ucconfig['dish_send_buyer'];
+        }else{
+            $params = array('hotel_name'=>$hotel_name[0]);
+            $template_code = $ucconfig['dish_send_cartsbuyer'];
+        }
+
+        $res_data = $alisms::sendSms($phone,$params,$template_code);
+        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>join(',',$params),'tel'=>$phone,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log->addData($data);
+
+        $hotel_name = join(',',$hotel_name);
+        $message1 = "您的订单消息已经通知“{$hotel_name}“餐厅。";
+        $message2 = "请等待餐厅人员的电话确认。";
+        $res_data = array('message1'=>$message1,'message2'=>$message2);
+        $this->to_back($res_data);
+    }
+
+    public function addOrder(){
+        $addorder_num = 30;
+
+        $openid = $this->params['openid'];
+        $goods_id= intval($this->params['goods_id']);
+        $amount = intval($this->params['amount']);
+        $carts = $this->params['carts'];
+        $contact = $this->params['contact'];
+        $phone = $this->params['phone'];
+        $address = $this->params['address'];
+        $delivery_time = $this->params['delivery_time'];
+        $remark = $this->params['remark'];
+        $address_id = intval($this->params['address_id']);
+        $type = isset($this->params['type'])?intval($this->params['type']):1;//类型1普通订单 2代理订单
+
+        if(empty($goods_id) && empty($carts)){
+            $this->to_back(1001);
+        }
+        if(!empty($delivery_time)){
+            $tmp_dtime = strtotime($delivery_time);
+            if($tmp_dtime<time()){
+                $this->to_back(93038);
+            }
+        }
+
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
+        $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_ordercache = $redis->get($order_space_key);
+        if(!empty($res_ordercache)){
+            $this->to_back(92024);
+        }
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $user_order = json_decode($res_cache,true);
+            if(count($user_order)>=$addorder_num){
+                $this->to_back(92021);
+            }
+        }else{
+            $user_order = array();
+        }
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        if($address_id){
+            $m_area = new \Common\Model\AreaModel();
+            $m_address = new \Common\Model\Smallapp\AddressModel();
+            $res_address = $m_address->getInfo(array('id'=>$address_id));
+            $res_area = $m_area->find($res_address['area_id']);
+            $res_county = $m_area->find($res_address['county_id']);
+
+            $contact = $res_address['consignee'];
+            $phone = $res_address['phone'];
+            $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        }
+        if(empty($contact) || empty($phone) || empty($address)){
+            $this->to_back(1001);
+        }
+        $is_check = check_mobile($phone);
+        if(!$is_check){
+            $this->to_back(93006);
+        }
+        $goods = array();
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        if($goods_id){
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if(empty($res_goods) || $res_goods['status']==2){
+                $this->to_back(92020);
+            }
+            $amount = $amount>0?$amount:1;
+            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
+            $goods[$res_goods['merchant_id']][] = $ginfo;
+        }else{
+            $json_str= stripslashes(html_entity_decode($carts));
+            $cart_info = json_decode($json_str,true);
+            if(!empty($cart_info)){
+                foreach ($cart_info as $v){
+                    if(!empty($v)){
+                        $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
+                        if(!empty($res_goods) && $res_goods['status']==1){
+                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
+                            $goods[$res_goods['merchant_id']][] = $ginfo;
+                        }
+                    }
+                }
+            }
+        }
+        if(empty($goods)){
+            $this->to_back(1001);
+        }
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_hotel = new \Common\Model\HotelModel();
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $hotel_name = $goods_name = array();
+        foreach ($goods as $k=>$v){
+            $amount = 0;
+            $total_fee = 0;
+            $merchant_id = $k;
+            foreach ($v as $gv){
+                $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+                $total_fee = $total_fee+$price;
+                $amount = $amount+$gv['amount'];
+            }
+            $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,
+                'status'=>1,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'pay_type'=>20);
+            if($type){
+                $map_types = C('MAP_ORDER_STATUS');//3普通订单 4分销订单
+                $add_data['type']=$map_types[$type];
             }
             if(!empty($delivery_time)){
                 $add_data['delivery_time'] = $delivery_time;

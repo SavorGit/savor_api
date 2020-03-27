@@ -93,6 +93,7 @@ class PurchaseController extends CommonController{
         $redis->select(14);
         $sale_key = C('SAPP_SALE');
         $register_key = $sale_key.'purchaseregister:'.$mobile;
+        $register_key = $sale_key.'register:'.$mobile;
         $register_code = $redis->get($register_key);
         if($register_code!=$verify_code){
             $this->to_back(93040);

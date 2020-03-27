@@ -101,6 +101,7 @@ class SmsController extends CommonController{
         }else{
             $register_key = $sale_key.'purchaseregister:'.$mobile;
         }
+        $register_key = $sale_key.'register:'.$mobile;
 
         $repeat_key = $sale_key.'repeatsend:'.$mobile;
         $res_repeat = $redis->get($repeat_key);

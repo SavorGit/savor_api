@@ -333,7 +333,7 @@ class OrderController extends CommonController{
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
             'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'selfpick_time'=>$res_order['selfpick_time'],'type'=>$o_type
+            'selfpick_time'=>$res_order['selfpick_time'],'finish_time'=>$res_order['finish_time'],'type'=>$o_type
         );
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
@@ -385,7 +385,7 @@ class OrderController extends CommonController{
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
 
-        if($res_order['delivery_type']==1 && in_array($res_order['status'],array(14,15,16,17))){
+        if($res_order['delivery_type']==1 && in_array($res_order['status'],array(15,16))){
             $config = C('DADA');
             $dada = new \Common\Lib\Dada($config);
             $res = $dada->queryOrder($order_id);
@@ -405,6 +405,17 @@ class OrderController extends CommonController{
                         }
                         $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
                         $order_data['distance']=$distance;
+                        if($ddstatus_code==2){
+                            $shop_no = $res_merchant[0]['hotel_id'];
+                            $shop_no = $config['shop_no'];//上线需删除
+                            $res_shop = $dada->shopDetail($shop_no);
+                            if($res_shop['code']==0 && !empty($res_shop['result'])){
+                                $order_data['user_location'] = array('lng'=>$res_shop['result']['lng'],'lat'=>$res_shop['result']['lat']);
+                            }
+                        }else{
+                            $lnglat_arr = explode(',',$res_order['lnglat']);
+                            $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
+                        }
                         $order_data['markers'] = array(
                             array(
                                 'iconPath'=>'/images/imgs/default-user.png',
@@ -413,36 +424,55 @@ class OrderController extends CommonController{
                                 'longitude'=>$dd_res['transporterLng'],
                                 'width'=>50,
                                 'height'=>50,
+                            ),
+                            array(
+                                'iconPath'=>'/images/imgs/default-user.png',
+                                'id'=>1,
+                                'latitude'=>$order_data['user_location']['lat'],
+                                'longitude'=>$order_data['user_location']['lng'],
+                                'width'=>50,
+                                'height'=>50,
+                            ),
+                        );
+
+                        //上线需删除
+                        $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
+                        $order_data['markers'] = array(
+                            array(
+                                'iconPath'=>'/images/imgs/default-user.png',
+                                'id'=>0,
+                                'latitude'=>'39.908287',
+                                'longitude'=>'116.475783',
+                                'width'=>50,
+                                'height'=>50,
+                            ),
+                            array(
+                                'iconPath'=>'/images/imgs/default-user.png',
+                                'id'=>1,
+                                'latitude'=>$order_data['user_location']['lat'],
+                                'longitude'=>$order_data['user_location']['lng'],
+                                'width'=>50,
+                                'height'=>50,
+                            ),
+                        );
+                        $order_data['distance']='1.5km';
+                        //end
+
+                        $order_data['polyline'] = array(
+                            array(
+                                'points'=>array(
+                                    array('longitude'=>$order_data['markers'][0]['longitude'],'latitude'=>$order_data['markers'][0]['latitude']),
+                                    array('longitude'=>$order_data['user_location']['lng'],'latitude'=>$order_data['user_location']['lat']),
+                                ),
+                                'color'=>'#FF0000DD',
+                                'width'=>2,
+                                'dottedLine'=>true
                             )
                         );
                     }
-                    $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
-                    $order_data['markers'] = array(
-                        array(
-                            'iconPath'=>'/images/imgs/default-user.png',
-                            'id'=>0,
-                            'latitude'=>'39.908287',
-                            'longitude'=>'116.475783',
-                            'width'=>50,
-                            'height'=>50,
-                        )
-                    );
-                    $order_data['distance']='1.5km';
                 }
             }
-            $lnglat_arr = explode(',',$res_order['lnglat']);
-            $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
-            $order_data['polyline'] = array(
-                array(
-                    'points'=>array(
-                        array('longitude'=>$order_data['markers'][0]['longitude'],'latitude'=>$order_data['markers'][0]['latitude']),
-                        array('longitude'=>$lnglat_arr[0],'latitude'=>$lnglat_arr[1]),
-                    ),
-                    'color'=>'#FF0000DD',
-                    'width'=>2,
-                    'dottedLine'=>true
-                )
-            );
+
         }
         $this->to_back($order_data);
     }
@@ -461,7 +491,7 @@ class OrderController extends CommonController{
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $fields = 'o.id,o.total_fee,o.pay_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,
-        o.add_time,o.pay_type,o.status,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
+        o.add_time,o.pay_type,o.status,o.delivery_type,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){

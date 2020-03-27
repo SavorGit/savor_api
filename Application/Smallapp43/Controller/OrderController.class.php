@@ -66,10 +66,15 @@ class OrderController extends CommonController{
             unset($delivery_types['2']);
         }
         $pay_types = C('PAY_TYPES');
-        if($res_merchant[0]['delivery_platform']==1){
-            unset($pay_types['20']);
-        }else{
-            unset($pay_types['10']);
+        switch ($res_merchant[0]['delivery_platform']){
+            case 1:
+                unset($pay_types['20']);
+                break;
+            case 2:
+                break;
+            default:
+                unset($pay_types['10']);
+                break;
         }
         $data = array('delivery_platform'=>intval($res_merchant[0]['delivery_platform']));
         $data['delivery_types'] = array_values($delivery_types);
@@ -399,21 +404,23 @@ class OrderController extends CommonController{
         $m_ordergoods->addAll($order_goods);
 
         $invoice_data = array();
-        switch ($title_type){
-            case 0:
-                $invoice_data['company'] = $company;
-                $invoice_data['credit_code'] = $credit_code;
-                $invoice_data['title_type'] = 1;
-                break;
-            case 1:
-                $invoice_data['company'] = $company;
-                $invoice_data['title_type'] = 2;
-                break;
-        }
-        if(!empty($invoice_data)){
-            $invoice_data['order_id'] = $order_id;
-            $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
-            $m_invoice->add($invoice_data);
+        if(!empty($company)){
+            switch ($title_type){
+                case 0:
+                    $invoice_data['company'] = $company;
+                    $invoice_data['credit_code'] = $credit_code;
+                    $invoice_data['title_type'] = 1;
+                    break;
+                case 1:
+                    $invoice_data['company'] = $company;
+                    $invoice_data['title_type'] = 2;
+                    break;
+            }
+            if(!empty($invoice_data)){
+                $invoice_data['order_id'] = $order_id;
+                $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+                $m_invoice->add($invoice_data);
+            }
         }
 
         $resp_data = array('pay_type'=>$pay_type,'order_id'=>$order_id);
@@ -612,7 +619,7 @@ class OrderController extends CommonController{
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
             'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'selfpick_time'=>$res_order['selfpick_time'],'type'=>$res_order['otype']
+            'selfpick_time'=>$res_order['selfpick_time'],'finish_time'=>$res_order['finish_time'],'type'=>$res_order['otype']
         );
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
@@ -664,7 +671,10 @@ class OrderController extends CommonController{
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
 
-        if($res_order['delivery_type']==1 && in_array($res_order['status'],array(14,15,16,17))){
+        if($res_order['delivery_type']==1 && $res_order['status']==16){
+            $lnglat_arr = explode(',',$res_order['lnglat']);
+            $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
+
             $config = C('DADA');
             $dada = new \Common\Lib\Dada($config);
             $res = $dada->queryOrder($order_id);
@@ -672,29 +682,36 @@ class OrderController extends CommonController{
                 $dd_res = $res['result'];
                 $ddstatus_code = $dd_res['statusCode'];
                 $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);//待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
-                if(isset($status_map[$ddstatus_code])){
-                    if(in_array($ddstatus_code,array(2,3))){
-                        if($dd_res['distance']>1000){
-                            $distance = $dd_res['distance']/1000;
-                            $distance = sprintf("%.2f",$distance);
-                            $distance = $distance.'km';
-                        }else{
-                            $distance = sprintf("%.2f",$dd_res['distance']);
-                            $distance = $distance.'m';
-                        }
-                        $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
-                        $order_data['distance']=$distance;
-                        $order_data['markers'] = array(
-                            array(
-                                'iconPath'=>'/images/imgs/default-user.png',
-                                'id'=>0,
-                                'latitude'=>$dd_res['transporterLat'],
-                                'longitude'=>$dd_res['transporterLng'],
-                                'width'=>50,
-                                'height'=>50,
-                            )
-                        );
+                if(isset($status_map[$ddstatus_code]) && $ddstatus_code==3){
+                    if($dd_res['distance']>1000){
+                        $distance = $dd_res['distance']/1000;
+                        $distance = sprintf("%.2f",$distance);
+                        $distance = $distance.'km';
+                    }else{
+                        $distance = sprintf("%.2f",$dd_res['distance']);
+                        $distance = $distance.'m';
                     }
+                    $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
+                    $order_data['distance']=$distance;
+                    $order_data['markers'] = array(
+                        array(
+                            'iconPath'=>'/images/imgs/default-user.png',
+                            'id'=>0,
+                            'latitude'=>$dd_res['transporterLat'],
+                            'longitude'=>$dd_res['transporterLng'],
+                            'width'=>50,
+                            'height'=>50,
+                        ),
+                        array(
+                            'iconPath'=>'/images/imgs/default-user.png',
+                            'id'=>1,
+                            'latitude'=>$order_data['user_location']['lat'],
+                            'longitude'=>$order_data['user_location']['lng'],
+                            'width'=>50,
+                            'height'=>50,
+                        ),
+                    );
+                    //上线需删除
                     $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
                     $order_data['markers'] = array(
                         array(
@@ -704,24 +721,33 @@ class OrderController extends CommonController{
                             'longitude'=>'116.475783',
                             'width'=>50,
                             'height'=>50,
-                        )
+                        ),
+                        array(
+                            'iconPath'=>'/images/imgs/default-user.png',
+                            'id'=>1,
+                            'latitude'=>$order_data['user_location']['lat'],
+                            'longitude'=>$order_data['user_location']['lng'],
+                            'width'=>50,
+                            'height'=>50,
+                        ),
                     );
                     $order_data['distance']='1.5km';
+                    //end
+
+
+                    $order_data['polyline'] = array(
+                        array(
+                            'points'=>array(
+                                array('longitude'=>$order_data['markers'][0]['longitude'],'latitude'=>$order_data['markers'][0]['latitude']),
+                                array('longitude'=>$order_data['user_location']['lng'],'latitude'=>$order_data['user_location']['lat']),
+                            ),
+                            'color'=>'#FF0000DD',
+                            'width'=>2,
+                            'dottedLine'=>true
+                        )
+                    );
                 }
             }
-            $lnglat_arr = explode(',',$res_order['lnglat']);
-            $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
-            $order_data['polyline'] = array(
-                array(
-                    'points'=>array(
-                        array('longitude'=>$order_data['markers'][0]['longitude'],'latitude'=>$order_data['markers'][0]['latitude']),
-                        array('longitude'=>$lnglat_arr[0],'latitude'=>$lnglat_arr[1]),
-                    ),
-                    'color'=>'#FF0000DD',
-                    'width'=>2,
-                    'dottedLine'=>true
-                )
-            );
         }
         $this->to_back($order_data);
     }

@@ -13,14 +13,14 @@ class DadaController extends Controller{
         $content = file_get_contents('php://input');
         $log_content = "nofity_data:$content";
         $this->addLog('',$log_content);
-
         if(!empty($content)) {
             $res = json_decode($content, true);
             if(!empty($res) && isset($res['order_id'])){
                 $order_id=$res['order_id'];
-                $sign_data = array($res['client_id'],$res['order_id'],$res['update_time']);
-                sort($sign_data);
-                $sign = md5($sign_data[0].$sign_data[1].$sign_data[2]);
+                $data = array('client_id'=>$res['client_id'],'order_id'=>$res['order_id'],'update_time'=>$res['update_time']);
+                asort($data, SORT_STRING);// 按键值升序排序
+                $sign_data = array_values($data);
+                $sign = md5(join('',$sign_data));
                 if($sign!=$res['signature']){
                     $this->addLog($order_id,'验签失败');
                     die('fail');

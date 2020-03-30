@@ -114,12 +114,13 @@ class DishController extends CommonController{
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('id'=>$res_goods['merchant_id']));
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id';
+        $field = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $merchant['name'] = $res_hotel['name'];
         $merchant['mobile'] = $res_hotel['mobile'];
         $merchant['tel'] = $res_hotel['tel'];
+        $merchant['area_id'] = $res_hotel['area_id'];
         $merchant['img'] = '';
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $m_media = new \Common\Model\MediaModel();

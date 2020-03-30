@@ -193,7 +193,7 @@ class OrderController extends CommonController{
         $order_no = getmicrotime();
         $config = C('DADA');
         $hotel_id = $res_merchant[0]['hotel_id'];
-        $hotel_id = $config['shop_no'];//上线后去除
+//        $hotel_id = $config['shop_no'];//上线后去除
 
         $dada = new \Common\Lib\Dada($config);
         $callback = http_host();
@@ -245,7 +245,6 @@ class OrderController extends CommonController{
             if($tmp_self_time<time()){
                 $this->to_back(93044);
             }
-
         }
         if($delivery_time>0){
             $tmp_dtime = strtotime($delivery_time);
@@ -283,10 +282,12 @@ class OrderController extends CommonController{
             $user_order = array();
         }
 
+        $address_area_id = 0;
         if($address_id){
             $m_area = new \Common\Model\AreaModel();
             $m_address = new \Common\Model\Smallapp\AddressModel();
             $res_address = $m_address->getInfo(array('id'=>$address_id));
+            $address_area_id = $res_address['area_id'];
             $res_area = $m_area->find($res_address['area_id']);
             $res_county = $m_area->find($res_address['county_id']);
 
@@ -338,11 +339,14 @@ class OrderController extends CommonController{
         }
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $where = array('m.id'=>$merchant_id);
-        $fields = 'm.id as merchant_id,m.is_shopself,m.delivery_platform,m.status,hotel.id as hotel_id,hotel.name as hotel_name';
+        $fields = 'm.id as merchant_id,m.is_shopself,m.delivery_platform,m.status,hotel.id as hotel_id,hotel.name as hotel_name,hotel.area_id';
         $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
 
         if($res_merchant[0]['delivery_platform']==1 && $pay_type!=10){
             $this->to_back(90135);
+        }
+        if($address_area_id && $address_area_id!=$res_merchant[0]['area_id']){
+            $this->to_back(90140);
         }
 
         $amount = 0;
@@ -356,7 +360,7 @@ class OrderController extends CommonController{
         if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
             $config = C('DADA');
             $hotel_id = $res_merchant[0]['hotel_id'];
-            $hotel_id = $config['shop_no'];//上线需去除
+//            $hotel_id = $config['shop_no'];//上线需去除
             $order_no= getmicrotime();
             $dada = new \Common\Lib\Dada($config);
             $callback = http_host();
@@ -475,7 +479,7 @@ class OrderController extends CommonController{
             if(in_array($status,array(14,15,16,17))){
                 $config = C('DADA');
                 $hotel_id = $res_order[0]['hotel_id'];
-                $hotel_id = $config['shop_no'];//上线后去除
+//                $hotel_id = $config['shop_no'];//上线后去除
 
                 $dada = new \Common\Lib\Dada($config);
                 $res = $dada->queryOrder($order_id);
@@ -575,9 +579,9 @@ class OrderController extends CommonController{
                 }
 
                 $where = array('m.id'=>$v['merchant_id']);
-                $fields = 'm.id,hotel.name,ext.hotel_cover_media_id';
+                $fields = 'm.id,hotel.name,ext.hotel_cover_media_id,hotel.area_id';
                 $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
-                $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$v['merchant_id']);
+                $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$v['merchant_id'],'area_id'=>$res_merchant[0]['area_id']);
                 $merchant['img'] = '';
                 if(!empty($res_merchant[0]['hotel_cover_media_id'])){
                     $res_media = $m_media->getMediaInfoById($res_merchant[0]['hotel_cover_media_id']);
@@ -712,6 +716,7 @@ class OrderController extends CommonController{
                         ),
                     );
                     //上线需删除
+                    /*
                     $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
                     $order_data['markers'] = array(
                         array(
@@ -732,6 +737,7 @@ class OrderController extends CommonController{
                         ),
                     );
                     $order_data['distance']='1.5km';
+                    */
                     //end
 
 

@@ -156,7 +156,7 @@ class MerchantController extends CommonController{
         }
 
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,hotel.media_id,
+        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,hotel.media_id,area.id as area_id,
         area.region_name as area_name,ext.business_hours,ext.meal_time,
         ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id,ext.legal_charter';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);

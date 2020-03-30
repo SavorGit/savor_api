@@ -338,6 +338,7 @@ return array(
     'smallappsale_payee_openid_has_check'=>'当前重置的收款人正在审核中,请勿重复重置',
     'smallappsale_self_time_error'=>'请选择正确的自提时间',
     'smallappsale_set_payee_repeat'=>'当前重置的收款人已通过审核,请勿重复重置',
+    'smallapp_order_address_error'=>'该地址不在商家的配送范围，请选择同城市的收货地址。'
 
 
 );

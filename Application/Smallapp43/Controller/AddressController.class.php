@@ -10,7 +10,7 @@ class AddressController extends CommonController{
         switch(ACTION_NAME) {
             case 'addresslist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1002,'page'=>1001,'pagesize'=>1002);
                 break;
             case 'addAddress':
                 $this->is_verify = 1;
@@ -44,6 +44,7 @@ class AddressController extends CommonController{
 
     public function addresslist(){
         $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
         if(empty($pagesize)){
@@ -58,6 +59,9 @@ class AddressController extends CommonController{
         }
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $where = array('openid'=>$openid,'status'=>1);
+        if($area_id){
+            $where['area_id'] = $area_id;
+        }
         $all_nums = $page * $pagesize;
         $res_address = $m_address->getDataList('*',$where,'id desc',0,$all_nums);
         $datalist = array();

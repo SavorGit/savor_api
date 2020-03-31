@@ -34,12 +34,12 @@ class DadaController extends Controller{
                 $this->addLog($order_id, $sql_order);
                 $result_order = $model->query($sql_order);
                 if(!empty($result_order)){
-                    $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);
+                    $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17,'5'=>18);
                     $dada_status = $res['order_status'];//待接单＝1,待取货＝2,配送中＝3,已完成＝4,已取消＝5, 已过期＝7,指派单=8,妥投异常之物品返回中=9, 妥投异常之物品返回完成=10,骑士到店=100,创建达达运单失败=1000
                     $this->addLog($order_id,"dada_status:$dada_status");
                     if(isset($status_map[$dada_status])){
                         $status = $status_map[$dada_status];
-                        if($status==17){
+                        if($status==17 || $status==18){
                             $nowtime = date('Y-m-d H:i:s');
                             $sql_status = "UPDATE savor_smallapp_order SET status='{$status}',finish_time='{$nowtime}' WHERE id={$order_id}";
                         }else{

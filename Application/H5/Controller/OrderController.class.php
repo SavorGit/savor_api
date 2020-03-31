@@ -14,7 +14,7 @@ class OrderController extends Controller {
             die($now_time.' error');
         }
         $hour = date('G');
-        if($hour!=15){
+        if($hour!=12){
             die($now_time.' hour error');
         }
         $nowdtime = date('Y-m-d H:i:s');
@@ -23,12 +23,14 @@ class OrderController extends Controller {
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $where = array('otype'=>3,'pay_type'=>10,'status'=>17,'is_settlement'=>0);
         $where['finish_time'] = array('elt',$end_time);
+//        $where['finish_time'] = array(array('egt','2020-03-30 09:00:00'),array('elt','2020-03-31 14:00:00'), 'and');
+
         $res_order = $m_order->getDataList('*',$where,'id asc');
         if(!empty($res_order)){
             $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
             $m_payee = new \Common\Model\Smallapp\MerchantPayeeModel();
             $m_baseinc = new \Payment\Model\BaseIncModel();
-            $payconfig = $m_baseinc->getPayConfig();
+            $payconfig = $m_baseinc->getPayConfig(5);
             $m_wxpay = new \Payment\Model\WxpayModel();
             $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
             foreach ($res_order as $v){

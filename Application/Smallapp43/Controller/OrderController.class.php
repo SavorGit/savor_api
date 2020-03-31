@@ -115,9 +115,24 @@ class OrderController extends CommonController{
         $data = array(
             array('name'=>'立即配送','value'=>0)
         );
+        $now_date = date('Y-m-d');
         if($meal_time){
             $meal_minutes = $meal_time*60;
             $nowtime = time() + $meal_minutes;
+            $tmp_hour = date('G',$nowtime);
+            $tmp_minutes = date('i',$nowtime);
+            if($tmp_minutes<20){
+                $nowtime = strtotime("$now_date $tmp_hour:20:00");
+            }elseif($tmp_minutes>=20 && $tmp_minutes<40){
+                    $nowtime = strtotime("$now_date $tmp_hour:40:00");
+            }else{
+                if($tmp_hour+1<24){
+                    $tmp_hour = $tmp_hour+1;
+                    $nowtime = strtotime("$now_date $tmp_hour:00:00");
+                }else{
+                    $nowtime = strtotime("$now_date $tmp_hour:40:00");
+                }
+            }
             $data[]=array('name'=>date("Y-m-d H:i:00",$nowtime),'value'=>date("Y-m-d H:i:00",$nowtime));
         }else{
             $nowtime = time();
@@ -126,7 +141,7 @@ class OrderController extends CommonController{
         $hour = date('G',$nowtime);
         $minutes = date('i',$nowtime);
         $minutes = intval($minutes);
-        $now_date = date('Y-m-d');
+
         for ($i=$hour;$i<24;$i++){
             $tmp_hour = str_pad($i, 2, '0', STR_PAD_LEFT);
             if($i==$hour){
@@ -138,7 +153,7 @@ class OrderController extends CommonController{
                     $time2 = strtotime("$now_date $tmp_hour:40:00");
                     $info2 = array('name'=>date("Y-m-d H:i:00",$time2),'value'=>date("Y-m-d H:i:00",$time2));
                     $data[]=$info2;
-                }elseif($minutes>20 && $minutes<40){
+                }elseif($minutes>=20 && $minutes<40){
                     $time = strtotime("$now_date $tmp_hour:40:00");
                     $info = array('name'=>date("Y-m-d H:i:00",$time),'value'=>date("Y-m-d H:i:00",$time));
                     $data[]=$info;
@@ -547,6 +562,8 @@ class OrderController extends CommonController{
             case 2:
                 $where['status'] = array('in',array(2,17,18,19));
                 break;
+            default:
+                $where['status'] = array('not in',array(10,11,12));
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
@@ -687,34 +704,35 @@ class OrderController extends CommonController{
                 $ddstatus_code = $dd_res['statusCode'];
                 $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);//待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
                 if(isset($status_map[$ddstatus_code]) && $ddstatus_code==3){
-                    if($dd_res['distance']>1000){
-                        $distance = $dd_res['distance']/1000;
-                        $distance = sprintf("%.2f",$distance);
-                        $distance = $distance.'km';
-                    }else{
-                        $distance = sprintf("%.2f",$dd_res['distance']);
-                        $distance = $distance.'m';
-                    }
                     $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
-                    $order_data['distance']=$distance;
                     $order_data['markers'] = array(
                         array(
-                            'iconPath'=>'/images/imgs/default-user.png',
+                            'iconPath'=>'/images/icon/takeaway_rider.png',
                             'id'=>0,
                             'latitude'=>$dd_res['transporterLat'],
                             'longitude'=>$dd_res['transporterLng'],
-                            'width'=>50,
-                            'height'=>50,
+                            'width'=>24,
+                            'height'=>24,
                         ),
                         array(
-                            'iconPath'=>'/images/imgs/default-user.png',
+                            'iconPath'=>'/images/icon/takeaway_user.png',
                             'id'=>1,
                             'latitude'=>$order_data['user_location']['lat'],
                             'longitude'=>$order_data['user_location']['lng'],
-                            'width'=>50,
-                            'height'=>50,
+                            'width'=>24,
+                            'height'=>24,
                         ),
                     );
+                    $res_distance = geo_distance($dd_res['transporterLat'], $dd_res['transporterLng'], $order_data['user_location']['lat'], $order_data['user_location']['lng']);
+                    if($res_distance>1000){
+                        $distance = $res_distance/1000;
+                        $distance = sprintf("%.2f",$distance);
+                        $distance = $distance.'km';
+                    }else{
+                        $distance = sprintf("%.2f",$res_distance);
+                        $distance = $distance.'m';
+                    }
+                    $order_data['distance']=$distance;
                     //上线需删除
                     /*
                     $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');

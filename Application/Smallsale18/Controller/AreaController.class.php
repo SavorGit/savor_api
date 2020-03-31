@@ -70,10 +70,13 @@ class AreaController extends CommonController{
      * @desc 获取城市列表
      */
     public function getAreaList(){
+        $area_id = isset($this->params['area_id'])?intval($this->params['area_id']):0;
         $m_area = new \Common\Model\AreaModel();
         $fields = "id,region_name";
-        $where['is_in_hotel'] = 1;
-        $where['is_valid']    = 1;
+        $where = array('is_in_hotel'=>1,'is_valid'=>1);
+        if($area_id){
+            $where['id'] = $area_id;
+        }
         $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
         $tmp = array('id'=>0,'region_name'=>'请选择');
         array_unshift($city_list, $tmp);

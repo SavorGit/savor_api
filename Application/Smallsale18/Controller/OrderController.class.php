@@ -244,6 +244,8 @@ class OrderController extends CommonController{
             case 2:
                 $where['status'] = array('in',array(2,17,18,19));
                 break;
+            default:
+                $where['status'] = array('not in',array(10,11,12));
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
@@ -283,7 +285,7 @@ class OrderController extends CommonController{
                 }
 
                 $where = array('m.id'=>$v['merchant_id']);
-                $fields = 'm.id,hotel.name,ext.hotel_cover_media_id';
+                $fields = 'm.id,hotel.name,ext.hotel_cover_media_id,m.delivery_platform';
                 $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
                 $merchant = array('name'=>$res_merchant[0]['name'],'merchant_id'=>$v['merchant_id']);
                 $merchant['img'] = '';
@@ -292,6 +294,7 @@ class OrderController extends CommonController{
                     $merchant['img'] = $res_media['oss_addr'];
                 }
 
+                $datalist[$k]['delivery_platform'] = $res_merchant[0]['delivery_platform'];
                 $datalist[$k]['merchant'] = $merchant;
                 $datalist[$k]['goods'] = $goods;
                 $datalist[$k]['goods_id']=$goods[0]['id'];
@@ -395,47 +398,56 @@ class OrderController extends CommonController{
                 $status_map = array('1'=>14,'2'=>15,'3'=>16,'4'=>17);//待接单＝1 待取货＝2 配送中＝3 已完成＝4 已取消＝5 已过期＝7 指派单=8 妥投异常之物品返回中=9 妥投异常之物品返回完成=10 系统故障订单发布失败=1000
                 if(isset($status_map[$ddstatus_code])){
                     if(in_array($ddstatus_code,array(2,3))){
-                        if($dd_res['distance']>1000){
-                            $distance = $dd_res['distance']/1000;
-                            $distance = sprintf("%.2f",$distance);
-                            $distance = $distance.'km';
-                        }else{
-                            $distance = sprintf("%.2f",$dd_res['distance']);
-                            $distance = $distance.'m';
-                        }
                         $order_data['transporter'] = array('name'=>$dd_res['transporterName'],'phone'=>$dd_res['transporterPhone']);
-                        $order_data['distance']=$distance;
+                        $takeaway_rider_img = '/images/icon/takeaway_rider.png';
+                        $takeaway_user_img = '/images/icon/takeaway_user.png';
+                        $takeaway_hotel_img = '/images/icon/takeaway_hotel.png';
                         if($ddstatus_code==2){
                             $shop_no = $res_merchant[0]['hotel_id'];
-                            $shop_no = $config['shop_no'];//上线需删除
+//                            $shop_no = $config['shop_no'];//上线需删除
                             $res_shop = $dada->shopDetail($shop_no);
                             if($res_shop['code']==0 && !empty($res_shop['result'])){
                                 $order_data['user_location'] = array('lng'=>$res_shop['result']['lng'],'lat'=>$res_shop['result']['lat']);
+                                $user_img = $takeaway_hotel_img;
+                            }else{
+                                $user_img = '';
                             }
                         }else{
                             $lnglat_arr = explode(',',$res_order['lnglat']);
                             $order_data['user_location'] = array('lng'=>$lnglat_arr[0],'lat'=>$lnglat_arr[1]);
+                            $user_img = $takeaway_user_img;
                         }
                         $order_data['markers'] = array(
                             array(
-                                'iconPath'=>'/images/imgs/default-user.png',
+                                'iconPath'=>$takeaway_rider_img,
                                 'id'=>0,
                                 'latitude'=>$dd_res['transporterLat'],
                                 'longitude'=>$dd_res['transporterLng'],
-                                'width'=>50,
-                                'height'=>50,
+                                'width'=>24,
+                                'height'=>24,
                             ),
                             array(
-                                'iconPath'=>'/images/imgs/default-user.png',
+                                'iconPath'=>$user_img,
                                 'id'=>1,
                                 'latitude'=>$order_data['user_location']['lat'],
                                 'longitude'=>$order_data['user_location']['lng'],
-                                'width'=>50,
-                                'height'=>50,
+                                'width'=>24,
+                                'height'=>24,
                             ),
                         );
+                        $res_distance = geo_distance($dd_res['transporterLat'], $dd_res['transporterLng'], $order_data['user_location']['lat'], $order_data['user_location']['lng']);
+                        if($res_distance>1000){
+                            $distance = $res_distance/1000;
+                            $distance = sprintf("%.2f",$distance);
+                            $distance = $distance.'km';
+                        }else{
+                            $distance = sprintf("%.2f",$res_distance);
+                            $distance = $distance.'m';
+                        }
+                        $order_data['distance']=$distance;
 
                         //上线需删除
+                        /*
                         $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
                         $order_data['markers'] = array(
                             array(
@@ -456,6 +468,7 @@ class OrderController extends CommonController{
                             ),
                         );
                         $order_data['distance']='1.5km';
+                        */
                         //end
 
                         $order_data['polyline'] = array(
@@ -491,7 +504,7 @@ class OrderController extends CommonController{
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $fields = 'o.id,o.total_fee,o.pay_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,
-        o.add_time,o.pay_type,o.status,o.delivery_type,m.id as merchant_id,hotel.id as hotel_id,ext.meal_time';
+        o.add_time,o.pay_type,o.status,o.delivery_type,m.id as merchant_id,m.delivery_platform,hotel.id as hotel_id,ext.meal_time';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
@@ -502,10 +515,10 @@ class OrderController extends CommonController{
         }
         switch ($action){
             case 1://接单
-                if($res_order[0]['delivery_type']==1){
+                if($res_order[0]['delivery_type']==1 && $res_order[0]['delivery_platform']==1){
                     $config = C('DADA');
                     $hotel_id = $res_order[0]['hotel_id'];
-                    $hotel_id = $config['shop_no'];//上线后去除
+//                    $hotel_id = $config['shop_no'];//上线后去除
 
                     $m_area = new \Common\Model\AreaModel();
                     $res_area = $m_area->find($res_order[0]['area_id']);

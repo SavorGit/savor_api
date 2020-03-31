@@ -17,6 +17,37 @@ function check_phone_os(){
     return $otype;
 }
 
+function rad($d){
+    return $d * 0.017453292519943; //$d * 3.1415926535898 / 180.0;
+}
+
+function mile($dist){
+    return $dist * 0.0006214;
+}
+
+/**
+ * @param 起点维度 $lat1
+ * @param 起点经度 $lng1
+ * @param 终点维度 $lat2
+ * @param 终点经度 $lng2
+ * @param 1米 2英里 $type
+ * @return number
+ */
+function geo_distance($lat1, $lng1, $lat2, $lng2, $type = 1){
+    $r = 6378137; // m 为单位
+    $radLat1 = rad($lat1);
+    $radLat2 = rad($lat2);
+    $a = $radLat1 - $radLat2;
+    $b = rad($lng1) - rad($lng2);
+    $s = 2 * asin(sqrt(pow(sin($a / 2), 2) + cos($radLat1) * cos($radLat2) * pow(sin($b / 2), 2)));
+    $s = $s * $r;
+    $distance = round($s * 10000) / 10000;
+    if ($type == 2) {
+        $distance = mile($distance);
+    }
+    return $distance;
+}
+
 function wx_sec_check($url,$duration=0){
     $img_urls = array();
     $typeinfo = C('RESOURCE_TYPEINFO');

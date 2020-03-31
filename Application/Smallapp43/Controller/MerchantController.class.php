@@ -156,13 +156,13 @@ class MerchantController extends CommonController{
         }
 
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,hotel.media_id,area.id as area_id,
+        $field = 'hotel.name,hotel.mobile,hotel.tel,hotel.addr,hotel.media_id,hotel.area_id,
         area.region_name as area_name,ext.business_hours,ext.meal_time,
         ext.hotel_cover_media_id,ext.avg_expense,ext.food_style_id,ext.legal_charter';
         $where = array('hotel.id'=>$res_merchant['hotel_id']);
         $res_hotel = $m_hotel->getHotelById($field,$where);
 
-        $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],'tel'=>$res_hotel['tel'],
+        $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],'tel'=>$res_hotel['tel'],'area_id'=>$res_hotel['area_id'],
             'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],'avg_expense'=>$res_hotel['avg_expense'],
         );
         $merchant['img'] = '';

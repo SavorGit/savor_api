@@ -17,7 +17,7 @@ class ReportController extends CommonController{
             case 'index':
                 $this->is_verify = 0;
                 break;
-            case 'syncData':
+            case 'syncdata':
                 $this->is_verify = 0;
                 break;
             case 'countHeartLog':
@@ -212,7 +212,7 @@ class ReportController extends CommonController{
   
         echo "数据入库成功"."\n";exit;
     } */
-    public function syncData(){
+    public function syncdata(){
         $m_heart_log = new \Common\Model\HeartLogModel();
         //$m_heart_log->truncateTable();
         $redis = SavorRedis::getInstance();

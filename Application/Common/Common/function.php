@@ -590,6 +590,38 @@ function getGDgeocodeByAddress($address){
     return $data;
 }
 
+function getExpress($comcode,$num){
+    $config = C('KUAIDI_100');
+    $param = array (
+        'com'=>$comcode,'num'=>$num,'phone'=>'',
+        'from'=>'','to'=>'','resultv2' => '1'
+    );
+    //请求参数
+    $post_data = array();
+    $post_data["customer"] = $config['customer'];
+    $post_data["param"] = json_encode($param);
+    $sign = md5($post_data["param"].$config['key'].$post_data["customer"]);
+    $post_data["sign"] = strtoupper($sign);
+
+    $url = 'http://poll.kuaidi100.com/poll/query.do';
+    $params = "";
+    foreach ($post_data as $k=>$v) {
+        $params .= "$k=".urlencode($v)."&";
+    }
+    $post_data = substr($params, 0, -1);
+    //发送post请求
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec($ch);
+    $data = str_replace("\"", '"', $result);
+    $data = json_decode($data);
+    return $data;
+}
+
 function getRandNums($min=0,$max=100,$num=10){
     $numbers = range ($min,$max);
     //shuffle 将数组顺序随即打乱

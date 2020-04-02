@@ -36,7 +36,7 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18'), //模块配置
+	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18','Smallsale19'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -438,7 +438,11 @@ return array(
         '16'=>'配送中',
         '17'=>'已完成',
         '18'=>'商家取消',
-        '19'=>'用户取消'
+        '19'=>'用户取消',
+        '51'=>'待处理',
+        '52'=>'待发货',
+        '53'=>'已派送',
+        '54'=>'已取消',
     ),
     'MAP_ORDER_STATUS'=>array(
         '1'=>3,//3普通订单 4分销订单

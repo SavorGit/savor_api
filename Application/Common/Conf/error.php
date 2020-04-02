@@ -356,6 +356,8 @@ return array(
 	    '93043'=>'smallappsale_payee_openid_has_check',
 	    '93044'=>'smallappsale_self_time_error',
 	    '93045'=>'smallappsale_set_payee_repeat',
+	    '93046'=>'smallappsale_add_dishgoods_amount_error',
+	    '93047'=>'smallappsale_add_orderexpress_error',
 
 	),
 );

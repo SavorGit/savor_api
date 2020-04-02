@@ -41,19 +41,19 @@ class PurchaseController extends CommonController{
             $this->to_back(93001);
         }
         $merchant_id = $res_staff[0]['merchant_id'];
-        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
-        $where = array('merchant_id'=>$merchant_id,'type'=>2);
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('merchant_id'=>$merchant_id,'otype'=>4);
         $fields = 'openid,count(id) as num,status';
         $orderby = 'status asc';
         $groupby = 'openid';
         $all_nums = $page * $pagesize;
-        $res_order = $m_dishorder->getUserOrderNumList($fields,$where,$orderby,$groupby,0,$all_nums);
+        $res_order = $m_order->getUserOrderNumList($fields,$where,$orderby,$groupby,0,$all_nums);
         $datalist = array();
         if(!empty($res_order)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             foreach ($res_order as $v){
-                $owhere = array('openid'=>$v['openid'],'type'=>2,'status'=>1);
-                $order_num = $m_dishorder->countNum($owhere);
+                $owhere = array('openid'=>$v['openid'],'otype'=>4,'status'=>1);
+                $order_num = $m_order->countNum($owhere);
 
                 $where = array('openid'=>$v['openid']);
                 $fields = 'id user_id,openid,mobile,avatarUrl,nickName,name';

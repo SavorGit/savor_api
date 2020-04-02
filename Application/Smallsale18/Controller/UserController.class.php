@@ -442,13 +442,14 @@ class UserController extends CommonController{
         $dish_num = $m_goods->countNum($where);
         $data['dish_num'] = intval($dish_num);
 
-        $m_dishorder = new \Common\Model\Smallapp\DishorderModel();
+        $m_order = new \Common\Model\Smallapp\OrderModel();
         $where = array('merchant_id'=>$data['merchant_id']);
-        $order_all_num = $m_dishorder->countNum($where);
+        $order_all_num = $m_order->countNum($where);
         $data['dishorder_all_num'] = intval($order_all_num);
         if($data['dishorder_all_num']){
-            $where = array('merchant_id'=>$data['merchant_id'],'status'=>1);
-            $order_process_num = $m_dishorder->countNum($where);
+            $where = array('merchant_id'=>$data['merchant_id']);
+            $where['status'] = array('in',array(1,13,14,15,16));
+            $order_process_num = $m_order->countNum($where);
         }else{
             $order_process_num = 0;
         }
@@ -456,8 +457,8 @@ class UserController extends CommonController{
 
         $dishorder_common_num = $dishorder_purchase_num = 0;
         if($data['is_purchase']){
-            $where = array('merchant_id'=>$data['merchant_id'],'type'=>1);
-            $dishorder_common_num = $m_dishorder->countNum($where);
+            $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);
+            $dishorder_common_num = $m_order->countNum($where);
             if($order_all_num){
                 $dishorder_common_num = intval($dishorder_common_num);
                 $dishorder_purchase_num = $order_all_num - $dishorder_common_num;

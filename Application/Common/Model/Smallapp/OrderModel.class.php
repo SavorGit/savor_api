@@ -5,6 +5,24 @@ use Common\Model\BaseModel;
 class OrderModel extends BaseModel{
 	protected $tableName='smallapp_order';
 
+    public function getUserOrderNumList($fields,$where,$orderby,$groupby,$start=0,$size=0){
+        if($start >= 0 && $size){
+            $data = $this->field($fields)
+                ->where($where)
+                ->order($orderby)
+                ->group($groupby)
+                ->limit($start,$size)
+                ->select();
+        }else{
+            $data = $this->field($fields)
+                ->where($where)
+                ->order($orderby)
+                ->group($groupby)
+                ->select();
+        }
+        return $data;
+    }
+
     public function getOrderInfo($fields,$where){
         $data = $this->alias('o')
             ->field($fields)

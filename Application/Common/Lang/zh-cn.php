@@ -341,6 +341,7 @@ return array(
     'smallapp_order_address_error'=>'该地址不在商家的配送范围，请选择同城市的收货地址。',
     'smallappsale_add_dishgoods_amount_error'=>'库存输入有误',
     'smallappsale_add_orderexpress_error'=>'请勿重复录入快递单号',
+    'smallappsale_order_status_not_express'=>'当前订单状态不能进行发货',
 
 
 );

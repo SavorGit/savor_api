@@ -63,6 +63,9 @@ class ExpressController extends CommonController{
         if(empty($res_order)){
             $this->to_back(93036);
         }
+        if($res_order['status']!=52){
+            $this->to_back(93048);
+        }
         $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
         $res_express = $m_orderexpress->getInfo(array('order_id'=>$order_id));
         if(!empty($res_express)){

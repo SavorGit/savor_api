@@ -15,12 +15,12 @@ class DishController extends CommonController{
                 break;
             case 'editDish':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'price'=>1001,
-                    'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'is_sale'=>1002);
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'category_id'=>1002,'price'=>1001,'supply_price'=>1002,
+                    'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'type'=>1001);
                 break;
             case 'goodslist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('merchant_id'=>1001,'page'=>1001);
+                $this->valid_fields = array('merchant_id'=>1001,'page'=>1001,'type'=>1001);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -212,6 +212,8 @@ class DishController extends CommonController{
 
     public function goodslist(){
         $merchant_id = intval($this->params['merchant_id']);
+        $type = intval($this->params['type']);//21商家外卖商品 22商家售全国商品
+
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
         if(empty($res_merchant) || $res_merchant['status']!=1){
@@ -222,7 +224,7 @@ class DishController extends CommonController{
         $all_nums = $page * $pagesize;
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $where = array('merchant_id'=>$merchant_id);
+        $where = array('merchant_id'=>$merchant_id,'type'=>$type);
         $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 
@@ -240,7 +242,7 @@ class DishController extends CommonController{
                 }
                 $price = $v['price'];
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,
-                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
+                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),'type'=>$v['type'],'flag'=>$v['flag']);
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
             }
@@ -256,7 +258,8 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'is_sale'=>$res_goods['is_sale']);
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'amount'=>$res_goods['amount'],
+            'supply_price'=>$res_goods['supply_price'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id']);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs = array();
         $cover_imgs_path = $detail_imgs_path = array();
@@ -285,6 +288,16 @@ class DishController extends CommonController{
                 }
             }
         }
+        $video_url = $video_path = '';
+        $m_media = new \Common\Model\MediaModel();
+        if(!empty($res_goods['video_intromedia_id'])){
+            $res_media = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
+            $video_url = $res_media['oss_addr'];
+            $video_path = $res_media['oss_path'];
+
+        }
+        $data['video_url'] = $video_url;
+        $data['video_path'] = $video_path;
         $data['cover_imgs'] = $cover_imgs;
         $data['detail_imgs'] = $detail_imgs;
         $data['cover_imgs_path'] = $cover_imgs_path;
@@ -304,7 +317,6 @@ class DishController extends CommonController{
         $merchant['tel'] = $res_hotel['tel'];
         $merchant['img'] = '';
         if(!empty($res_hotel['hotel_cover_media_id'])){
-            $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');
             $merchant['img'] = $res_media['oss_addr'];
         }

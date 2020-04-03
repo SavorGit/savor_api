@@ -395,7 +395,7 @@ class UserController extends CommonController{
         $where = array();
         $where['openid'] = $openid;
         $where['small_app_id'] = 5;
-        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth,role_id';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
@@ -480,6 +480,27 @@ class UserController extends CommonController{
         if(!empty($res_goods)){
             $data['is_open_integral'] = 1;
         }
+        $income_fee = $withdraw_fee = 0;
+        if($res_user['role_id']==3){
+            $m_income = new \Common\Model\Smallapp\UserincomeModel();
+            $fields = 'sum(income_fee) as total_income_fee';
+            $where = array('user_id'=>$res_user['user_id']);
+            $res_income = $m_income->getDataList($fields,$where,'id desc');
+            if(!empty($res_income)){
+                $income_fee =  $res_income[0]['total_income_fee'];
+            }
+            $fields = 'sum(income_fee) as total_income_fee';
+            $where = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
+            $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
+            $where['add_time'] = array('elt'=>$day_time);
+            $res_income = $m_income->getDataList($fields,$where,'id desc');
+            if(!empty($res_income)){
+                $withdraw_fee =  $res_income[0]['total_income_fee'];
+            }
+        }
+        $data['income_fee'] = $income_fee;
+        $data['withdraw_fee'] = $withdraw_fee;
+
         $this->to_back($data);
     }
 

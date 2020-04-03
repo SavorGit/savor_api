@@ -618,7 +618,7 @@ function getExpress($comcode,$num){
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     $result = curl_exec($ch);
     $data = str_replace("\"", '"', $result);
-    $data = json_decode($data);
+    $data = json_decode($data,true);
     return $data;
 }
 

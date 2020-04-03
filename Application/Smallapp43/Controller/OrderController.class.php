@@ -313,7 +313,7 @@ class OrderController extends CommonController{
             $phone = $res_address['phone'];
         }
 
-        if(empty($contact) || empty($phone) || empty($address)){
+        if($delivery_type==1 && (empty($contact) || empty($phone) || empty($address))){
            $this->to_back(1001);
         }
         $is_check = check_mobile($phone);

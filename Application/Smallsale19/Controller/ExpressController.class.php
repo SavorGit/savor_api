@@ -40,7 +40,7 @@ class ExpressController extends CommonController{
             $express = new \Common\Lib\Express();
             $all_company = $express->getCompany();
             foreach ($res as $v){
-                $data[]=array('comcode'=>$v['comCode'],'name'=>$all_company[$v['comCode']]);
+                $data[]=array('comcode'=>$v['comCode'],'name'=>$all_company[$v['comCode']]['name']);
             }
         }
         $this->to_back($data);
@@ -75,6 +75,18 @@ class ExpressController extends CommonController{
         $m_orderexpress->add($data);
 
         $this->to_back(array());
+    }
+
+    public function getExpress(){
+        $order_id = intval($this->params['order_id']);
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if(empty($res_order)){
+            $this->to_back(93036);
+        }
+        $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
+        $res_express = $m_orderexpress->getExpress($order_id);
+        $this->to_back($res_express);
     }
 
 }

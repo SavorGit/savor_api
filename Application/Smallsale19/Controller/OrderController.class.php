@@ -94,14 +94,8 @@ class OrderController extends CommonController{
             $datalist = $res_order['list'];
             $oss_host = "http://".C('OSS_HOST').'/';
             $all_status = C('ORDER_STATUS');
-            $order_types = array('3'=>1,'4'=>2);
             foreach($datalist as $k=>$v){
-                if(isset($order_types[$v['otype']])){
-                    $otype = $order_types[$v['otype']];
-                }else{
-                    $otype = 0;
-                }
-                $datalist[$k]['type']=$otype;
+                $datalist[$k]['type']=$v['otype'];
                 $datalist[$k]['status_str'] = $all_status[$v['status']];
                 $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
                 if($v['finish_time']=='0000-00-00 00:00:00'){

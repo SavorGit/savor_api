@@ -26,6 +26,14 @@ class PurchaseController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'goods':
+                $this->valid_fields = array('openid'=>1001,'category_id'=>1002,'keywords'=>1002,'page'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'incomerecord':
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -208,6 +216,106 @@ class PurchaseController extends CommonController{
         $res = array('datalist'=>$datalist);
         $this->to_back($res);
     }
+
+    public function goods(){
+        $openid = $this->params['openid'];
+        $keywords = !empty($this->params['keywords'])?trim($this->params['keywords']):'';
+        $category_id = intval($this->params['category_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+        $all_nums = $page * $pagesize;
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('type'=>22,'status'=>1,'flag'=>2);
+        if($category_id){
+            $where['category_id'] = $category_id;
+        }
+        if(!empty($keywords)){
+            $where['name'] = array('like',"%$keywords%");
+        }
+        $orderby = 'id desc';
+        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
+
+        $datalist = array('total'=>0,'datalist'=>array());
+        if($res_goods['total']){
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $sale_uid = $hashids->encode($res_user['user_id']);
+
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            foreach ($res_goods['list'] as $v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0].'?x-oss-process=image/resize,p_50/quality,q_80';
+                    }
+                }
+                $price = $v['price'];
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url);
+                $dinfo['qrcode_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}_$sale_uid&type=26";
+                $datalist[] = $dinfo;
+            }
+            $datalist['total'] = $res_goods['total'];
+            $datalist['datalist'] = $datalist;
+        }
+        $this->to_back($datalist);
+    }
+
+    public function incomerecord(){
+        $page = intval($this->params['page']);
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $pagesize = 10;
+        $all_nums = $page * $pagesize;
+        $m_income = new \Common\Model\Smallapp\UserincomeModel();
+        $fields = 'i.id,i.openid,i.order_id,i.goods_id,i.price,i.amount,i.income_fee,i.add_time.u.nickName,u.avatarUrl';
+        $res_income = $m_income->getList($fields,$where,'i.id desc',0,$all_nums);
+        $income_data = array();
+        if(!empty($res_income['total'])){
+            $day = date("Y-m-d");
+            $day_1 = date("Y-m-d",strtotime("-1 day"));
+            $day_2 = date("Y-m-d",strtotime("-2 day"));
+
+            $alldate_str = array($day=>'今天',$day_1=>'昨天',$day_2=>'前天');
+            $tmp_datas = array();
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            foreach ($res_income['list'] as $v){
+                $res_goods = $m_goods->find($v['goods_id']);
+                $pdate = date('Y-m-d',strtotime($v['add_time']));
+                $tmp_datas[$pdate][]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
+                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee']);
+            }
+            foreach ($tmp_datas as $k=>$v){
+                if(isset($alldate_str[$k])){
+                    $date_str = $alldate_str[$k];
+                }else{
+                    $date_str = $k;
+                }
+                $income_data[] = array('date'=>$k,'date_str'=>$date_str,'datas'=>$v);
+            }
+        }
+        $res_data = array('datalist'=>$income_data);
+        $this->to_back($res_data);
+    }
+
 
 
 }

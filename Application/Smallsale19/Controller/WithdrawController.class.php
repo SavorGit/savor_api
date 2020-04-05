@@ -19,6 +19,10 @@ class WithdrawController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'income':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'money'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -205,5 +209,105 @@ class WithdrawController extends CommonController{
             $datalist[]=$message;
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function income(){
+        $openid = $this->params['openid'];
+        $money = $this->params['money'];
+        $exchange_num = 1;
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'income:'.'openid'.$openid.date('Ymd');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $order_exchange = json_decode($res_cache,true);
+            if(count($order_exchange)>=$exchange_num){
+                $this->to_back(93018);
+            }
+        }else{
+            $order_exchange = array();
+        }
+        if($money>5000){
+            $this->to_back(93049);
+        }
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,user.id as user_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+
+        $fields = 'sum(income_fee) as total_income_fee';
+        $where = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
+        $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
+        $where['add_time'] = array('elt'=>$day_time);
+        $m_income = new \Common\Model\Smallapp\UserincomeModel();
+        $res_income = $m_income->getDataList($fields,$where,'id desc');
+        $withdraw_fee = 0;
+        if(!empty($res_income)){
+            $withdraw_fee =  $res_income[0]['total_income_fee'];
+        }
+        if($money>$withdraw_fee){
+            $this->to_back(93050);
+        }
+
+        $total_fee = $money;
+        $m_order = new \Common\Model\Smallapp\ExchangeModel();
+        $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>2,
+            'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+        $order_id = $m_order->add($add_data);
+
+        $order_exchange[] = array($order_id=>date('Y-m-d H:i:s'));
+        $redis->set($cache_key,json_encode($order_exchange),86400);
+
+        $is_audit = 1;//是否需要审核
+        if($is_audit==0){
+            $smallapp_config = C('SMALLAPP_SALE_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key'],
+                'sslcert_path'=>$sslcert_path,
+                'sslkey_path'=>$sslkey_path,
+            );
+            $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            if($res['code']==10000){
+                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+            }else{
+                if($res['code']==10003){
+                    //发送短信
+                    $ucconfig = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $params = array('merchant_no'=>1554975591);
+                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                    $phones = C('WEIXIN_MONEY_NOTICE');
+                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                    foreach ($phones as $vp){
+                        $res_data = $alisms::sendSms($vp,$params,$template_code);
+                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_data->Code,'msg_type'=>3
+                        );
+                        $m_account_sms_log->addData($data);
+                    }
+                }
+            }
+            $message = '您已提现成功，请注意查收。';
+            $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
+        }else{
+            $message = '您已成功提交申请！';
+            $tips = '通过审核后系统会及时进行发放，请注意查收';
+        }
+        $message = '您已成功提交申请！';
+        $tips = '通过审核后系统会及时进行发放，请注意查收';
+        $res = array('message'=>$message,'tips'=>$tips);
+        $this->to_back($res);
     }
 }

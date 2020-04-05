@@ -359,6 +359,8 @@ return array(
 	    '93046'=>'smallappsale_add_dishgoods_amount_error',
 	    '93047'=>'smallappsale_add_orderexpress_error',
 	    '93048'=>'smallappsale_order_status_not_express',
+	    '93049'=>'smallappsale_exchange_day_money_upper_limit',
+	    '93050'=>'smallappsale_exchange_money_error',
 
 	),
 );

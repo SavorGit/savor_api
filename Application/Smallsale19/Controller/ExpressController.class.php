@@ -37,10 +37,14 @@ class ExpressController extends CommonController{
         $res = json_decode($response,true);
         $data = array();
         if(!empty($res)){
-            $express = new \Common\Lib\Express();
-            $all_company = $express->getCompany();
-            foreach ($res as $v){
-                $data[]=array('comcode'=>$v['comCode'],'name'=>$all_company[$v['comCode']]['name']);
+            if(!isset($res['returnCode'])){
+                $express = new \Common\Lib\Express();
+                $all_company = $express->getCompany();
+                foreach ($res as $v){
+                    if(!empty($v['comCode'])){
+                        $data[]=array('comcode'=>$v['comCode'],'name'=>$all_company[$v['comCode']]['name']);
+                    }
+                }
             }
         }
         $this->to_back($data);

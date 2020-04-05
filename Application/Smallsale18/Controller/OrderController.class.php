@@ -364,8 +364,17 @@ class OrderController extends CommonController{
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $m_media = new \Common\Model\MediaModel();
         $where = array('m.id'=>$res_order['merchant_id']);
-        $fields = 'm.id,hotel.id as hotel_id,hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id';
+        $fields = 'm.id,hotel.id as hotel_id,hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id,hotel.county_id,hotel.addr';
         $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+
+        if($order_data['delivery_type']==2){
+            $m_area = new \Common\Model\AreaModel();
+            $res_area = $m_area->find($res_merchant[0]['area_id']);
+            $res_county = $m_area->find($res_merchant[0]['county_id']);
+            $order_data['address'] = $res_area['region_name'].$res_county['region_name'].$res_merchant[0]['addr'];
+        }
+
+
         $merchant = array('name'=>$res_merchant[0]['name'],'mobile'=>$res_merchant[0]['mobile'],'tel'=>$res_merchant[0]['mobile'],
             'merchant_id'=>$res_order['merchant_id'],'img'=>'');
         if(!empty($res_merchant[0]['hotel_cover_media_id'])){

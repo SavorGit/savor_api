@@ -251,6 +251,7 @@ class PurchaseController extends CommonController{
             $sale_uid = $hashids->encode($res_user['user_id']);
 
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $goods_list = array();
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
@@ -261,12 +262,12 @@ class PurchaseController extends CommonController{
                     }
                 }
                 $price = $v['price'];
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url);
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,'type'=>$v['type']);
                 $dinfo['qrcode_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}_$sale_uid&type=26";
-                $datalist[] = $dinfo;
+                $goods_list[] = $dinfo;
             }
             $datalist['total'] = $res_goods['total'];
-            $datalist['datalist'] = $datalist;
+            $datalist['datalist'] = $goods_list;
         }
         $this->to_back($datalist);
     }
@@ -301,7 +302,7 @@ class PurchaseController extends CommonController{
                 $res_goods = $m_goods->find($v['goods_id']);
                 $pdate = date('Y-m-d',strtotime($v['add_time']));
                 $tmp_datas[$pdate][]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
-                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee']);
+                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee'],'type'=>$v['type']);
             }
             foreach ($tmp_datas as $k=>$v){
                 if(isset($alldate_str[$k])){

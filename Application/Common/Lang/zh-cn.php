@@ -342,6 +342,8 @@ return array(
     'smallappsale_add_dishgoods_amount_error'=>'库存输入有误',
     'smallappsale_add_orderexpress_error'=>'请勿重复录入快递单号',
     'smallappsale_order_status_not_express'=>'当前订单状态不能进行发货',
+    'smallappsale_exchange_day_money_upper_limit'=>'单日提现金额已达上限',
+    'smallappsale_exchange_money_error'=>'提现金额有误',
 
 
 );

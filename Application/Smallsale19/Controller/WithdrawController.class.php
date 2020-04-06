@@ -240,11 +240,11 @@ class WithdrawController extends CommonController{
         }
 
         $fields = 'sum(income_fee) as total_income_fee';
-        $where = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
+        $where_income = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
         $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
-        $where['add_time'] = array('elt'=>$day_time);
+        $where_income['add_time'] = array('elt'=>$day_time);
         $m_income = new \Common\Model\Smallapp\UserincomeModel();
-        $res_income = $m_income->getDataList($fields,$where,'id desc');
+        $res_income = $m_income->getDataList($fields,$where_income,'id desc');
         $withdraw_fee = 0;
         if(!empty($res_income)){
             $withdraw_fee =  $res_income[0]['total_income_fee'];
@@ -262,52 +262,56 @@ class WithdrawController extends CommonController{
         $order_exchange[] = array($order_id=>date('Y-m-d H:i:s'));
         $redis->set($cache_key,json_encode($order_exchange),86400);
 
-        $is_audit = 1;//是否需要审核
-        if($is_audit==0){
-            $smallapp_config = C('SMALLAPP_SALE_CONFIG');
-            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
-            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
-            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
-            $payconfig = array(
-                'appid'=>$smallapp_config['appid'],
-                'partner'=>$pay_wx_config['partner'],
-                'key'=>$pay_wx_config['key'],
-                'sslcert_path'=>$sslcert_path,
-                'sslkey_path'=>$sslkey_path,
-            );
-            $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
-            $m_wxpay = new \Payment\Model\WxpayModel();
-            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-            if($res['code']==10000){
-                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
-            }else{
-                if($res['code']==10003){
-                    //发送短信
-                    $ucconfig = C('ALIYUN_SMS_CONFIG');
-                    $alisms = new \Common\Lib\AliyunSms();
-                    $params = array('merchant_no'=>1554975591);
-                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+        $smallapp_config = C('SMALLAPP_SALE_CONFIG');
+        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+        $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
+        $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+        $payconfig = array(
+            'appid'=>$smallapp_config['appid'],
+            'partner'=>$pay_wx_config['partner'],
+            'key'=>$pay_wx_config['key'],
+            'sslcert_path'=>$sslcert_path,
+            'sslkey_path'=>$sslkey_path,
+        );
+        $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
 
-                    $phones = C('WEIXIN_MONEY_NOTICE');
-                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                    foreach ($phones as $vp){
-                        $res_data = $alisms::sendSms($vp,$params,$template_code);
-                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_data->Code,'msg_type'=>3
-                        );
-                        $m_account_sms_log->addData($data);
-                    }
+        $m_income->updateData($where_income,array('is_withdraw'=>1));
+
+        if($res['code']==10000){
+            $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+        }else{
+            if($res['code']==10003){
+                //发送短信
+                $ucconfig = C('ALIYUN_SMS_CONFIG');
+                $alisms = new \Common\Lib\AliyunSms();
+                $params = array('merchant_no'=>1554975591);
+                $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                $phones = C('WEIXIN_MONEY_NOTICE');
+                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                foreach ($phones as $vp){
+                    $res_data = $alisms::sendSms($vp,$params,$template_code);
+                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                        'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_data->Code,'msg_type'=>3
+                    );
+                    $m_account_sms_log->addData($data);
                 }
             }
-            $message = '您已提现成功，请注意查收。';
-            $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
-        }else{
-            $message = '您已成功提交申请！';
-            $tips = '通过审核后系统会及时进行发放，请注意查收';
         }
-        $message = '您已成功提交申请！';
-        $tips = '通过审核后系统会及时进行发放，请注意查收';
-        $res = array('message'=>$message,'tips'=>$tips);
+        $message = '您已提现成功，请注意查收。';
+        $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
+
+        $fields = 'sum(income_fee) as total_income_fee';
+        $where_income = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
+        $m_income = new \Common\Model\Smallapp\UserincomeModel();
+        $res_income = $m_income->getDataList($fields,$where_income,'id desc');
+        $income_fee = 0;
+        if(!empty($res_income)){
+            $income_fee =  $res_income[0]['total_income_fee'];
+        }
+        $res = array('message'=>$message,'tips'=>$tips,'withdraw_fee'=>0,'income_fee'=>$income_fee);
         $this->to_back($res);
     }
 }

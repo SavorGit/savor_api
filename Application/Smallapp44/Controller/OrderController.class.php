@@ -10,7 +10,7 @@ class OrderController extends CommonController{
         switch(ACTION_NAME) {
             case 'getPrepareData':
                 $this->is_verify = 1;
-                $this->valid_fields = array('merchant_id'=>1001);
+                $this->valid_fields = array('merchant_id'=>1002,'type'=>1002);
                 break;
             case 'getRemarks':
                 $this->is_verify = 0;
@@ -30,6 +30,15 @@ class OrderController extends CommonController{
                     'address_id'=>1002,'delivery_type'=>1001,'pay_type'=>1001,'tableware'=>1002,
                     'company'=>1002,'credit_code'=>1002,'selfpick_time'=>1002);
                 break;
+            case 'getpreorder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('goods_ids'=>1001);
+                break;
+            case 'addShoporder':
+                $this->is_verify = 1;
+                $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,'address_id'=>1001,
+                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002);
+                break;
             case 'detail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
@@ -42,7 +51,6 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
                 break;
-                break;
             case 'orderlist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'pagesize'=>1002);
@@ -52,43 +60,51 @@ class OrderController extends CommonController{
     }
 
     public function getPrepareData(){
+        $type = isset($this->params['type'])?intval($this->params['type']):1;//1外卖 2商城
         $merchant_id = intval($this->params['merchant_id']);
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $where = array('m.id'=>$merchant_id);
-        $fields = 'm.id as merchant_id,m.is_shopself,m.delivery_platform,m.status,hotel.id as hotel_id';
-        $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
-        if(empty($res_merchant) || $res_merchant[0]['status']!=1){
-            $this->to_back(93035);
-        }
 
-        $delivery_types = C('DELIVERY_TYPES');
-        if($res_merchant[0]['is_shopself']==0){
-            unset($delivery_types['2']);
-        }
         $pay_types = C('PAY_TYPES');
-        switch ($res_merchant[0]['delivery_platform']){
-            case 1:
-                unset($pay_types['20']);
-                break;
-            case 2:
-                break;
-            default:
-                unset($pay_types['10']);
-                break;
-        }
-        $data = array('delivery_platform'=>intval($res_merchant[0]['delivery_platform']));
-        $data['delivery_types'] = array_values($delivery_types);
-        $data['pay_types'] = array_values($pay_types);
-        $tableware = array();
-        for($i=0;$i<11;$i++){
-            if($i==0){
-                $info = array('id'=>0,'name'=>'未选择');
-            }else{
-                $info = array('id'=>$i,'name'=>$i.'份');
+        if($type==1){
+            $m_merchant = new \Common\Model\Integral\MerchantModel();
+            $where = array('m.id'=>$merchant_id);
+            $fields = 'm.id as merchant_id,m.is_shopself,m.delivery_platform,m.status,hotel.id as hotel_id';
+            $res_merchant = $m_merchant->getMerchantInfo($fields,$where);
+            if(empty($res_merchant) || $res_merchant[0]['status']!=1){
+                $this->to_back(93035);
             }
-            $tableware[]=$info;
+
+            $delivery_types = C('DELIVERY_TYPES');
+            if($res_merchant[0]['is_shopself']==0){
+                unset($delivery_types['2']);
+            }
+            switch ($res_merchant[0]['delivery_platform']){
+                case 1:
+                    unset($pay_types['20']);
+                    break;
+                case 2:
+                    break;
+                default:
+                    unset($pay_types['10']);
+                    break;
+            }
+            $data = array('delivery_platform'=>intval($res_merchant[0]['delivery_platform']));
+            $data['delivery_types'] = array_values($delivery_types);
+            $data['pay_types'] = array_values($pay_types);
+            $tableware = array();
+            for($i=0;$i<11;$i++){
+                if($i==0){
+                    $info = array('id'=>0,'name'=>'未选择');
+                }else{
+                    $info = array('id'=>$i,'name'=>$i.'份');
+                }
+                $tableware[]=$info;
+            }
+            $data['tableware'] = $tableware;
+        }else{
+            unset($pay_types['20']);
+            $data = array();
+            $data['pay_types'] = array_values($pay_types);
         }
-        $data['tableware'] = $tableware;
         $this->to_back($data);
     }
 
@@ -225,6 +241,264 @@ class OrderController extends CommonController{
             }
         }
         $this->to_back($data);
+    }
+
+    public function getpreorder(){
+        $goods_ids = $this->params['goods_ids'];
+        $json_str = stripslashes(html_entity_decode($goods_ids));
+        $goods_ids_arr = json_decode($json_str,true);
+        $ids = array();
+        $id_amount = array();
+        if(!empty($goods_ids_arr)){
+            foreach ($goods_ids_arr as $v){
+                if(!empty($v['id'])){
+                    $ids[]=intval($v['id']);
+                }
+                $id_amount[$v['id']]=$v['amount'];
+            }
+        }
+        $datas = array();
+        if(!empty($ids)){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $fields = "id,name,price,amount,cover_imgs,type,status,merchant_id";
+            $where = array('id'=>array('in',$ids));
+            $res_goods = $m_goods->getDataList($fields,$where,'id desc');
+            $res_online = array();
+            $total_fee = 0;
+            $total_amount = 0;
+            foreach ($res_goods as $v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    }
+                }
+                $num = $id_amount[$v['id']];
+                if($num>$v['amount']){
+                    $num = $v['amount'];
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
+                    'img_url'=>$img_url,'status'=>intval($v['status']));
+                if($v['status']==1){
+                    $total_amount = $total_amount+$dinfo['amount'];
+                    $tmp_money = sprintf("%.2f",$dinfo['amount']*$dinfo['price']);
+                    $dinfo['money'] = $tmp_money;
+                    $total_fee = $total_fee+$tmp_money;
+                    $res_online[$v['merchant_id']][]=$dinfo;
+                }
+            }
+            $datas['total_fee'] = $total_fee;
+            $datas['amount'] = $total_amount;
+
+            foreach ($res_online as $k=>$v){
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $res_merchant = $m_merchant->getMerchantInfo('m.id,hotel.name as hotel_name',array('m.id'=>$k));
+                $merchant_fee = 0;
+                $merchant_amount = 0;
+                foreach ($v as $kg=>$vg){
+                    $merchant_fee+=$vg['money'];
+                    $merchant_amount+=$vg['amount'];
+                    unset($v[$kg]['money']);
+                }
+                $info = array('merchant_id'=>$k,'name'=>$res_merchant[0]['hotel_name'],'money'=>$merchant_fee,'amount'=>$merchant_amount,
+                    'goods'=>$v);
+                $datas['goods'][]=$info;
+            }
+        }
+        $this->to_back($datas);
+    }
+
+    public function addShoporder(){
+        $addorder_num = 30;
+        $uid = $this->params['uid'];
+        $openid = $this->params['openid'];
+        $goods_id= intval($this->params['goods_id']);
+        $amount = intval($this->params['amount']);
+        $carts = $this->params['carts'];
+        $remark = $this->params['remark'];
+        $address_id = intval($this->params['address_id']);
+        $pay_type = intval($this->params['pay_type']);//10微信支付 20线下付款
+        $company = $this->params['company'];
+        $credit_code = $this->params['credit_code'];
+        $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
+
+        if(empty($goods_id) && empty($carts)){
+            $this->to_back(1001);
+        }
+        $sale_uid = 0;
+        if($uid) {
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $decode_info = $hashids->decode($uid);
+            if (empty($decode_info)) {
+                $this->to_back(90101);
+            }
+            $sale_uid = $decode_info[0];
+        }
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $sale_key = C('SAPP_SALE');
+        $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
+        $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_ordercache = $redis->get($order_space_key);
+        if(!empty($res_ordercache)){
+            $this->to_back(92024);
+        }
+        $res_cache = $redis->get($cache_key);
+        if(!empty($res_cache)){
+            $user_order = json_decode($res_cache,true);
+            if(count($user_order)>=$addorder_num){
+                $this->to_back(92021);
+            }
+        }else{
+            $user_order = array();
+        }
+
+        $m_area = new \Common\Model\AreaModel();
+        $m_address = new \Common\Model\Smallapp\AddressModel();
+        $res_address = $m_address->getInfo(array('id'=>$address_id));
+        $res_area = $m_area->find($res_address['area_id']);
+        $res_county = $m_area->find($res_address['county_id']);
+        $contact = $res_address['consignee'];
+        $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        $phone = $res_address['phone'];
+
+        $goods = array();
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        if($goods_id){
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if(empty($res_goods) || $res_goods['status']==2){
+                $this->to_back(92020);
+            }
+            $amount = $amount>0?$amount:1;
+            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
+            $goods[$res_goods['merchant_id']][] = $ginfo;
+        }else{
+            $json_str = stripslashes(html_entity_decode($carts));
+            $cart_info = json_decode($json_str,true);
+            if(!empty($cart_info)){
+                foreach ($cart_info as $v){
+                    if(!empty($v)){
+                        $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
+                        if(!empty($res_goods) && $res_goods['status']==1){
+                            $merchant_id = $res_goods['merchant_id'];
+                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
+                            $goods[$merchant_id][] = $ginfo;
+                        }
+                    }
+                }
+            }
+        }
+        if(empty($goods)){
+            $this->to_back(1001);
+        }
+        $invoice_data = array();
+        if(!empty($company)){
+            switch ($title_type){
+                case 0:
+                    $invoice_data['company'] = $company;
+                    $invoice_data['credit_code'] = $credit_code;
+                    $invoice_data['title_type'] = 1;
+                    break;
+                case 1:
+                    $invoice_data['company'] = $company;
+                    $invoice_data['title_type'] = 2;
+                    break;
+            }
+        }
+
+        $amount = 0;
+        $total_fee = 0;
+        foreach ($goods as $gv){
+            $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+            $total_fee = $total_fee+$price;
+            $amount = $amount+$gv['amount'];
+        }
+
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $parent_oid = 0;
+        if(count($goods)>1){
+            $add_data = array('openid'=>$openid,'amount'=>$amount,'total_fee'=>$total_fee,'contact'=>$contact,'phone'=>$phone,'address'=>$address,
+                'otype'=>127,'pay_type'=>$pay_type);
+            $parent_oid = $m_order->add($add_data);
+        }
+        foreach ($goods as $k=>$v){
+            $amount = 0;
+            $total_fee = 0;
+            $merchant_id = $k;
+            foreach ($v as $gv){
+                $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+                $total_fee = $total_fee+$price;
+                $amount = $amount+$gv['amount'];
+            }
+            $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,
+                'status'=>51,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>5,'pay_type'=>$pay_type);
+            if(!empty($remark)){
+                $add_data['remark'] = $remark;
+            }
+            if($parent_oid){
+                $add_data['parent_oid'] = $parent_oid;
+            }
+            if($sale_uid){
+                $add_data['sale_uid'] = $sale_uid;
+            }
+            $order_id = $m_order->add($add_data);
+
+//            $redis->set($order_space_key,$order_id,60);
+            $user_order[] = $order_id;
+            $redis->set($cache_key,json_encode($user_order),86400);
+            $order_goods = array();
+            foreach ($v as $ov){
+                $order_goods[]=array('order_id'=>$order_id,'goods_id'=>$ov['goods_id'],'price'=>$ov['price'],'amount'=>$ov['amount']);
+            }
+            $m_ordergoods->addAll($order_goods);
+
+            if(!empty($invoice_data)){
+                $invoice_adddata = $invoice_data;
+                $invoice_adddata['order_id'] = $order_id;
+                $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+                $m_invoice->add($invoice_adddata);
+            }
+        }
+        if($parent_oid){
+            $oid = $parent_oid;
+        }else{
+            $oid = $order_id;
+        }
+        $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+        $trade_no = $m_ordermap->add(array('order_id'=>$oid,'pay_type'=>10));
+
+        $trade_name = $goods[0]['name'];
+        $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
+            'wx_openid'=>$openid,'redirect_url'=>'','attach'=>40);
+        $smallapp_config = C('SMALLAPP_CONFIG');
+        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+        $payconfig = array(
+            'appid'=>$smallapp_config['appid'],
+            'partner'=>$pay_wx_config['partner'],
+            'key'=>$pay_wx_config['key']
+        );
+        $m_payment = new \Payment\Model\WxpayModel(3);
+        $wxpay = $m_payment->pay($trade_info,$payconfig);
+        $payinfo = json_decode($wxpay,true);
+
+        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo);
+        $this->to_back($resp_data);
     }
 
     public function addOrder(){

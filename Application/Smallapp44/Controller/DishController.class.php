@@ -57,8 +57,8 @@ class DishController extends CommonController{
                         $price = floor($price);
                     }
                 }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,
-                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'type'=>$v['type'],
+                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
             }
@@ -77,7 +77,8 @@ class DishController extends CommonController{
         if($res_goods['status']!=1){
             $this->to_back(93037);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'is_sale'=>$res_goods['is_sale']);
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],
+            'stock_num'=>$res_goods['amount'],'type'=>$res_goods['type']);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs =array();
         if(!empty($res_goods['cover_imgs'])){
@@ -105,6 +106,14 @@ class DishController extends CommonController{
         $data['cover_imgs'] = $cover_imgs;
         $data['detail_imgs'] = $detail_imgs;
         $data['intro'] = $res_goods['intro'];
+        $data['video_img'] = '';
+        $data['video_url'] = '';
+        if($res_goods['type']==22 && !empty($res_goods['video_intromedia_id'])){
+            $m_media = new \Common\Model\MediaModel();
+            $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
+            $data['video_img'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
+            $data['video_url'] = $media_info['oss_addr'];
+        }
 
         $merchant = array();
         $merchant['merchant_id'] = $res_goods['merchant_id'];

@@ -15,21 +15,29 @@ class ShopController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('category_id'=>1002,'keywords'=>1002,'page'=>1001);
                 break;
+            case 'recommend':
+                $this->is_verify = 1;
+                $this->valid_fields = array('merchant_id'=>1002,'goods_id'=>1002,'page'=>1001,'pagesize'=>1002);
+                break;
+            case 'getcartgoods':
+                $this->is_verify = 1;
+                $this->valid_fields = array('goods_ids'=>1001);
+                break;
         }
         parent::_init_();
     }
 
     public function goods(){
         $category_id = isset($this->params['category_id'])?intval($this->params['category_id']):0;
-        $keywords = isset($this->params['keywords'])?trim($this->params['category_id']):'';
+        $keywords = isset($this->params['keywords'])?trim($this->params['keywords']):'';
         $page = intval($this->params['page']);
         $pagesize = 10;
         $all_nums = $page * $pagesize;
         if($category_id){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,type,add_time";
+            $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,add_time";
             $orderby = 'id desc';
-            $where = array('type'=>22,'status'=>1);
+            $where = array('type'=>22,'status'=>1,'category_id'=>$category_id);
             $res_goods = $m_goods->getDataList($fields,$where,$orderby,0,$all_nums);
         }else{
             $m_goods = new \Common\Model\Smallapp\GoodsModel();
@@ -42,7 +50,8 @@ class ShopController extends CommonController{
             $oss_host = "http://".C('OSS_HOST').'/';
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'line_price'=>$v['line_price'],'type'=>$v['type'],'is_tv'=>0);
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'line_price'=>$v['line_price'],'stock_num'=>$v['amount'],
+                    'type'=>$v['type'],'is_tv'=>0);
                 if($v['type']==10){
                     $media_id = $v['media_id'];
                     $media_info = $m_media->getMediaInfoById($media_id);
@@ -74,6 +83,98 @@ class ShopController extends CommonController{
             }
         }
         $this->to_back($res_data);
+    }
+
+    public function recommend(){
+        $merchant_id = intval($this->params['merchant_id']);
+        $page = intval($this->params['page']);
+        $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
+        $goods_id = isset($this->params['goods_id'])?intval($this->params['goods_id']):10;
+
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('status'=>1,'type'=>22,'is_recommend'=>1);
+        if($merchant_id){
+            $where['merchant_id'] = $merchant_id;
+        }
+        if($goods_id){
+            $where['id'] = array('neq',$goods_id);
+        }
+        $orderby = 'id desc';
+        $all_nums = $page * $pagesize;
+        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
+
+        $datalist = array();
+        if($res_goods['total']){
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            foreach ($res_goods['list'] as $v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    }
+                }
+                $price = $v['price'];
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'type'=>$v['type'],
+                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'status'=>intval($v['status']));
+                $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
+                $datalist[] = $dinfo;
+            }
+        }
+        $this->to_back($datalist);
+    }
+
+    public function getcartgoods(){
+        $goods_ids = $this->params['goods_ids'];
+        $json_str = stripslashes(html_entity_decode($goods_ids));
+        $goods_ids_arr = json_decode($json_str,true);
+        $ids = array();
+        $id_amount = array();
+        if(!empty($goods_ids_arr)){
+            foreach ($goods_ids_arr as $v){
+                if(!empty($v['id'])){
+                    $ids[]=intval($v['id']);
+                }
+                $id_amount[$v['id']]=$v['amount'];
+            }
+        }
+        $datas = array('online'=>array(),'offline'=>array());
+        if(!empty($ids)){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $fields = "id,name,price,amount,cover_imgs,type,status,merchant_id";
+            $where = array('id'=>array('in',$ids));
+            $res_goods = $m_goods->getDataList($fields,$where,'id desc');
+            $res_online = array();
+            foreach ($res_goods as $v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    }
+                }
+                $num = $id_amount[$v['id']];
+                if($num>$v['amount']){
+                    $num = $v['amount'];
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
+                    'img_url'=>$img_url,'status'=>intval($v['status']));
+                if($v['status']==1){
+                    $res_online[$v['merchant_id']][]=$dinfo;
+                }else{
+                    $datas['offline'][]=$dinfo;
+                }
+            }
+            foreach ($res_online as $k=>$v){
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $res_merchant = $m_merchant->getMerchantInfo('m.id,hotel.name as hotel_name',array('m.id'=>$k));
+                $info = array('merchant_id'=>$k,'name'=>$res_merchant[0]['hotel_name'],'goods'=>$v);
+                $datas['online'][]=$info;
+            }
+        }
+        $this->to_back($datas);
     }
 
 

@@ -174,7 +174,7 @@ class WxpayModel extends Model{
                     'paylog_type'=>$paylog_type,
                     'pay_type'=>$this->pay_type
                 );
-                switch ($result_order['attach']){//10 销售订单支付 20红包订单 30外卖订单
+                switch ($result_order['attach']){//10 销售订单支付 20红包订单 30外卖订单 40商城订单
                     case 10:
                         $is_continue = $this->baseInc->handle_order_notify($order_extend,false);
                         break;
@@ -183,6 +183,9 @@ class WxpayModel extends Model{
                         break;
                     case 30:
                         $is_continue = $this->baseInc->handle_takeoutorder_notify($order_extend,false);
+                        break;
+                    case 40:
+                        $is_continue = $this->baseInc->handle_shoporder_notify($order_extend,false);
                         break;
                     default:
                         $is_continue = $this->baseInc->handle_redpacket_notify($order_extend,false);

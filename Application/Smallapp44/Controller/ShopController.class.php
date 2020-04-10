@@ -160,7 +160,7 @@ class ShopController extends CommonController{
                     $num = $v['amount'];
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
-                    'img_url'=>$img_url,'status'=>intval($v['status']));
+                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>false);
                 if($v['status']==1){
                     $res_online[$v['merchant_id']][]=$dinfo;
                 }else{
@@ -170,7 +170,7 @@ class ShopController extends CommonController{
             foreach ($res_online as $k=>$v){
                 $m_merchant = new \Common\Model\Integral\MerchantModel();
                 $res_merchant = $m_merchant->getMerchantInfo('m.id,hotel.name as hotel_name',array('m.id'=>$k));
-                $info = array('merchant_id'=>$k,'name'=>$res_merchant[0]['hotel_name'],'goods'=>$v);
+                $info = array('merchant_id'=>$k,'name'=>$res_merchant[0]['hotel_name'],'ischecked'=>false,'goods'=>$v);
                 $datas['online'][]=$info;
             }
         }

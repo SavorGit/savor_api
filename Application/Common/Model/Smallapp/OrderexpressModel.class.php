@@ -8,7 +8,6 @@ class OrderexpressModel extends BaseModel{
 	public function getExpress($order_id){
 	    $res_express = $this->getInfo(array('order_id'=>$order_id));
 	    $res_data = array();
-
         if(!empty($res_express)){
             $express = getExpress($res_express['comcode'],$res_express['enum']);
             if(!empty($express) && isset($express['returnCode'])){
@@ -26,7 +25,12 @@ class OrderexpressModel extends BaseModel{
                 if(!empty($express['data'])){
                     $data = array();
                     foreach ($express['data'] as $v){
-                        $data[]=array('context'=>$v['context'],'time'=>$v['time'],'status'=>'');
+                        $time = strtotime($v['time']);
+                        $express_date = date('m-d',$time);
+                        $express_time = date('H:i:s',$time);
+                        $info = array('context'=>$v['context'],'time'=>$v['time'],'express_date'=>$express_date,
+                            'express_time'=>$express_time,'state_str'=>'');
+                        $data[]=$info;
                     }
                     $data[0]['status'] = $res_data['state_str'];
                     $res_data['data']=$data;

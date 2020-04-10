@@ -70,13 +70,13 @@ class OrderController extends CommonController{
             $where['otype'] = $type;
         }
         switch ($status){
+            case 1:
+                $where['status'] = array('in',array(1,13,14,15,16,51));
+                break;
+            case 2:
+                $where['status'] = array('in',array(2,17,18,19,53));
+                break;
             case 3:
-                $where['status'] = array('in',array(1,13,14,15,16,51,));
-                break;
-            case 4:
-                $where['status'] = array('in',array(2,17,18,19,53,54));
-                break;
-            case 5:
                 $where['status'] = 52;
                 break;
             default:
@@ -246,8 +246,8 @@ class OrderController extends CommonController{
         }
         $merchant_id = $res_staff[0]['merchant_id'];
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'o.id,o.total_fee,o.pay_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,
-        o.add_time,o.pay_type,o.status,o.delivery_type,m.id as merchant_id,m.delivery_platform,hotel.id as hotel_id,ext.meal_time';
+        $fields = 'o.id,o.total_fee,o.pay_fee,o.delivery_fee,o.is_atonce,o.contact,o.phone,o.address,o.lnglat,o.area_id,o.otype,
+        o.parent_oid,o.add_time,o.pay_type,o.status,o.delivery_type,m.id as merchant_id,m.delivery_platform,hotel.id as hotel_id,ext.meal_time';
         $where = array('o.id'=>$order_id);
         $res_order = $m_order->getOrderInfo($fields,$where);
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
@@ -258,57 +258,66 @@ class OrderController extends CommonController{
         }
         switch ($action){
             case 1://接单
-                if($res_order[0]['delivery_type']==1 && $res_order[0]['delivery_platform']==1){
-                    $config = C('DADA');
-                    $hotel_id = $res_order[0]['hotel_id'];
-//                    $hotel_id = $config['shop_no'];//上线后去除
-
-                    $m_area = new \Common\Model\AreaModel();
-                    $res_area = $m_area->find($res_order[0]['area_id']);
-                    $area_no = $res_area['area_no'];
-                    $money = $res_order[0]['total_fee'] - $res_order[0]['delivery_fee'];
-                    $name = $res_order[0]['contact'];
-                    $address = $res_order[0]['address'];
-                    $phone = $res_order[0]['phone'];
-                    $lnglat = explode(',',$res_order[0]['lnglat']);
-                    if($res_order[0]['is_atonce']){
-                        $delay_publish_time = '';
-                    }elseif($res_order[0]['meal_time']){
-                        $add_time = date('Y-m-d H:i:00',strtotime($res_order[0]['add_time']));
-                        $delay_publish_time = strtotime($add_time)+$res_order[0]['meal_time']*60-600;
-                        $now_time = time();
-                        if($delay_publish_time<$now_time){
+                if($res_order[0]['otype']==5){
+                    $m_order->updateData(array('id'=>$order_id),array('status'=>52,'finish_time'=>date('Y-m-d H:i:s')));
+                    $res = array();
+                }else{
+                    if($res_order[0]['delivery_type']==1 && $res_order[0]['delivery_platform']==1){
+                        $config = C('DADA');
+                        $hotel_id = $res_order[0]['hotel_id'];
+                        $m_area = new \Common\Model\AreaModel();
+                        $res_area = $m_area->find($res_order[0]['area_id']);
+                        $area_no = $res_area['area_no'];
+                        $money = $res_order[0]['total_fee'] - $res_order[0]['delivery_fee'];
+                        $name = $res_order[0]['contact'];
+                        $address = $res_order[0]['address'];
+                        $phone = $res_order[0]['phone'];
+                        $lnglat = explode(',',$res_order[0]['lnglat']);
+                        if($res_order[0]['is_atonce']){
+                            $delay_publish_time = '';
+                        }elseif($res_order[0]['meal_time']){
+                            $add_time = date('Y-m-d H:i:00',strtotime($res_order[0]['add_time']));
+                            $delay_publish_time = strtotime($add_time)+$res_order[0]['meal_time']*60-600;
+                            $now_time = time();
+                            if($delay_publish_time<$now_time){
+                                $delay_publish_time = '';
+                            }
+                        }else{
                             $delay_publish_time = '';
                         }
-                    }else{
-                        $delay_publish_time = '';
-                    }
-                    $host_name = 'https://'.$_SERVER['HTTP_HOST'];
-                    $callback = $host_name."/h5/dada/orderNotify";
-                    $dada = new \Common\Lib\Dada($config);
-                    $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[1],$lnglat[0],$callback,$delay_publish_time);
+                        $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+                        $callback = $host_name."/h5/dada/orderNotify";
+                        $dada = new \Common\Lib\Dada($config);
+                        $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[1],$lnglat[0],$callback,$delay_publish_time);
 
-                    if($res['code']==0 && !empty($res['result'])){
-                        $m_order->updateData(array('id'=>$order_id),array('status'=>14));
+                        if($res['code']==0 && !empty($res['result'])){
+                            $m_order->updateData(array('id'=>$order_id),array('status'=>14));
+                        }else{
+                            $this->to_back(90139);
+                        }
                     }else{
-                        $this->to_back(90139);
+                        $m_order->updateData(array('id'=>$order_id),array('status'=>17,'finish_time'=>date('Y-m-d H:i:s')));
+                        $res = array();
                     }
-                }else{
-                    $m_order->updateData(array('id'=>$order_id),array('status'=>17,'finish_time'=>date('Y-m-d H:i:s')));
-                    $res = array();
                 }
                 $resp_data = $res;
                 break;
             case 2://不接单
                 $message = '取消订单成功';
                 if($res_order[0]['pay_type']==10){
+                    if(!empty($res_order[0]['parent_oid'])){
+                        $refund_oid = $res_order['parent_oid'];
+                    }else{
+                        $refund_oid = $order_id;
+                    }
+
                     $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
-                    $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+                    $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$refund_oid));
                     if(!empty($res_orderserial)){
                         $m_baseinc = new \Payment\Model\BaseIncModel();
                         $payconfig = $m_baseinc->getPayConfig(2);
                         $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
-                        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+                        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$refund_oid),'id desc',0,1);
                         $trade_no = $res_ordermap['list'][0]['id'];
 
                         $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order[0]['pay_fee'],'refund_money'=>$res_order[0]['pay_fee']);

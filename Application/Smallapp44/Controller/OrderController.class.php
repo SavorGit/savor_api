@@ -423,31 +423,36 @@ class OrderController extends CommonController{
 
         $amount = 0;
         $total_fee = 0;
-        foreach ($goods as $gv){
-            $price = sprintf("%.2f",$gv['amount']*$gv['price']);
-            $total_fee = $total_fee+$price;
-            $amount = $amount+$gv['amount'];
-        }
-
-        $m_order = new \Common\Model\Smallapp\OrderModel();
-        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-        $parent_oid = 0;
-        if(count($goods)>1){
-            $add_data = array('openid'=>$openid,'amount'=>$amount,'total_fee'=>$total_fee,'contact'=>$contact,'phone'=>$phone,'address'=>$address,
-                'otype'=>127,'pay_type'=>$pay_type);
-            $parent_oid = $m_order->add($add_data);
-        }
-        foreach ($goods as $k=>$v){
-            $amount = 0;
-            $total_fee = 0;
-            $merchant_id = $k;
+        foreach ($goods as $v){
             foreach ($v as $gv){
                 $price = sprintf("%.2f",$gv['amount']*$gv['price']);
                 $total_fee = $total_fee+$price;
                 $amount = $amount+$gv['amount'];
             }
-            $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,
-                'status'=>51,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>5,'pay_type'=>$pay_type);
+        }
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $parent_oid = 0;
+        if(count($goods)>1){
+            $add_data = array('openid'=>$openid,'amount'=>$amount,'total_fee'=>$total_fee,'contact'=>$contact,'phone'=>$phone,'address'=>$address,
+                'status'=>10,'otype'=>127,'pay_type'=>$pay_type);
+            $parent_oid = $m_order->add($add_data);
+        }
+        $trade_name = '';
+        foreach ($goods as $k=>$v){
+            $amount = 0;
+            $total_money = 0;
+            $merchant_id = $k;
+            foreach ($v as $gv){
+                if(empty($trade_name)){
+                    $trade_name = $gv['name'];
+                }
+                $price = sprintf("%.2f",$gv['amount']*$gv['price']);
+                $total_money = $total_money+$price;
+                $amount = $amount+$gv['amount'];
+            }
+            $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_money,
+                'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>5,'pay_type'=>$pay_type);
             if(!empty($remark)){
                 $add_data['remark'] = $remark;
             }
@@ -482,8 +487,6 @@ class OrderController extends CommonController{
         }
         $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
         $trade_no = $m_ordermap->add(array('order_id'=>$oid,'pay_type'=>10));
-
-        $trade_name = $goods[0]['name'];
         $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
             'wx_openid'=>$openid,'redirect_url'=>'','attach'=>40);
         $smallapp_config = C('SMALLAPP_CONFIG');
@@ -830,10 +833,13 @@ class OrderController extends CommonController{
         $where = array('openid'=>$openid,'otype'=>3);
         switch ($status){
             case 1:
-                $where['status'] = array('in',array(1,13,14,15,16));
+                $where['status'] = array('in',array(1,13,14,15,16,51));
                 break;
             case 2:
-                $where['status'] = array('in',array(2,17,18,19));
+                $where['status'] = array('in',array(2,17,18,19,53));
+                break;
+            case 3:
+                $where['status'] = 52;
                 break;
             default:
                 $where['status'] = array('not in',array(10,11,12));
@@ -972,6 +978,8 @@ class OrderController extends CommonController{
         $order_data['markers'] = array();
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
+        $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
+        $order_data['express'] = $m_orderexpress->getExpress($res_order['id']);
 
         if($res_order['delivery_type']==1 && $res_order['status']==16){
             $lnglat_arr = explode(',',$res_order['lnglat']);
@@ -1014,32 +1022,6 @@ class OrderController extends CommonController{
                         $distance = $distance.'m';
                     }
                     $order_data['distance']=$distance;
-                    //上线需删除
-                    /*
-                    $order_data['transporter'] = array('name'=>'热达达','phone'=>'13112345678');
-                    $order_data['markers'] = array(
-                        array(
-                            'iconPath'=>'/images/imgs/default-user.png',
-                            'id'=>0,
-                            'latitude'=>'39.908287',
-                            'longitude'=>'116.475783',
-                            'width'=>50,
-                            'height'=>50,
-                        ),
-                        array(
-                            'iconPath'=>'/images/imgs/default-user.png',
-                            'id'=>1,
-                            'latitude'=>$order_data['user_location']['lat'],
-                            'longitude'=>$order_data['user_location']['lng'],
-                            'width'=>50,
-                            'height'=>50,
-                        ),
-                    );
-                    $order_data['distance']='1.5km';
-                    */
-                    //end
-
-
                     $order_data['polyline'] = array(
                         array(
                             'points'=>array(
@@ -1072,21 +1054,26 @@ class OrderController extends CommonController{
         if(empty($res_order) || $res_order['openid']!=$openid){
             $this->to_back(90134);
         }
-        if(in_array($res_order['status'],array(18,19))){
+        if(in_array($res_order['status'],array(18,19,53))){
             $this->to_back(90136);
         }
-        if($res_order['status']!=13){
+        if(!in_array($res_order['status'],array(13,51,52))){
             $this->to_back(90137);
         }
         $message = '取消订单成功';
         if($res_order['pay_type']==10){
+            if(!empty($res_order['parent_oid'])){
+                $refund_oid = $res_order['parent_oid'];
+            }else{
+                $refund_oid = $order_id;
+            }
             $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
-            $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+            $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$refund_oid));
             if(!empty($res_orderserial)){
                 $m_baseinc = new \Payment\Model\BaseIncModel();
                 $payconfig = $m_baseinc->getPayConfig(2);
                 $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
-                $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+                $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$refund_oid),'id desc',0,1);
                 $trade_no = $res_ordermap['list'][0]['id'];
 
                 $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);

@@ -368,12 +368,13 @@ class BaseIncModel extends Model{
             if($row_num){
                 $is_succ = true;
                 $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
-                $this->execute($sql_serialno);
                 $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
+                $this->execute($sql_serialno);
 
                 $otype = $result_order[0]['otype'];
                 $this->paynotify_log($paylog_type, $serial_no,"order_id:$trade_no otype:$otype");
                 $m_order = new \Common\Model\Smallapp\OrderModel();
+                $order_ids = array();
                 if($otype==127){
                     $son_order = $m_order->getDataList('*',array('parent_oid'=>$trade_no),'id asc');
                     $sql_sonorder = $m_order->getLastSql();
@@ -384,6 +385,23 @@ class BaseIncModel extends Model{
                         $update_condition = "update savor_smallapp_order set status='51',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
                         $sql_uporder = "$update_condition where id='$oid'";
                         $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+                        $this->execute($sql_uporder);
+                        $order_ids[] = $oid;
+                    }
+                }else{
+                    $order_ids[] = $trade_no;
+                }
+                $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+                foreach ($order_ids as $v){
+                    $fields = 'og.goods_id,og.amount,goods.amount as gamount';
+                    $where = array('og.order_id'=>$v);
+                    $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
+                    foreach ($res_goods as $gv){
+                        $goods_id = $gv['goods_id'];
+                        $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
+                        $sql_goods = "update savor_smallapp_dishgoods set amount=$amount where id=$goods_id ";
+                        $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
+                        $this->execute($sql_goods);
                     }
                 }
 

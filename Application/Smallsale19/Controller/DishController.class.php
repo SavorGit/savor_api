@@ -11,12 +11,12 @@ class DishController extends CommonController{
             case 'addDish':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'category_id'=>1002,'price'=>1001,'supply_price'=>1002,
-                    'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'type'=>1001);
+                    'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'is_localsale'=>1002,'type'=>1001);
                 break;
             case 'editDish':
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'category_id'=>1002,'price'=>1001,'supply_price'=>1002,
-                    'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'type'=>1001);
+                    'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'is_localsale'=>1002,'type'=>1001);
                 break;
             case 'goodslist':
                 $this->is_verify = 1;
@@ -24,7 +24,7 @@ class DishController extends CommonController{
                 break;
             case 'detail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001);
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1002);
                 break;
             case 'top':
                 $this->is_verify = 1;
@@ -58,6 +58,7 @@ class DishController extends CommonController{
         $supply_price = $this->params['supply_price'];
         $amount = intval($this->params['amount']);
         $video_path = $this->params['video_path'];
+        $is_localsale = isset($this->params['is_localsale'])?intval($this->params['is_localsale']):0;
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -87,6 +88,7 @@ class DishController extends CommonController{
             $data['category_id'] = $category_id;
             $data['supply_price'] = $supply_price;
             $data['amount'] = $amount;
+            $data['is_localsale'] = $is_localsale;
 
             $typeinfo = C('RESOURCE_TYPEINFO');
             if(!empty($video_path)){
@@ -139,6 +141,7 @@ class DishController extends CommonController{
         $supply_price = $this->params['supply_price'];
         $amount = intval($this->params['amount']);
         $video_path = $this->params['video_path'];
+        $is_localsale = isset($this->params['is_localsale'])?intval($this->params['is_localsale']):0;
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -174,6 +177,7 @@ class DishController extends CommonController{
             $data['category_id'] = $category_id;
             $data['supply_price'] = $supply_price;
             $data['amount'] = $amount;
+            $data['is_localsale'] = $is_localsale;
             $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
             if($res_media['oss_path']!=$video_path){
@@ -244,9 +248,13 @@ class DishController extends CommonController{
                     }
                 }
                 $price = $v['price'];
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,'is_localsale'=>$v['is_localsale'],
                     'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),'type'=>$v['type'],'flag'=>$v['flag']);
-                $dinfo['qrcode_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&type=25";
+                $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&type=25";
+                if($v['type']==22){
+                    $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&type=26";
+                }
+                $dinfo['qrcode_url'] = $qrcode;
                 $datalist[] = $dinfo;
             }
         }
@@ -254,6 +262,7 @@ class DishController extends CommonController{
     }
 
     public function detail(){
+        $openid = $this->params['openid'];
         $goods_id = intval($this->params['goods_id']);
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
@@ -262,7 +271,29 @@ class DishController extends CommonController{
             $this->to_back(93034);
         }
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'amount'=>$res_goods['amount'],
-            'supply_price'=>$res_goods['supply_price'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id']);
+            'supply_price'=>$res_goods['supply_price'],'is_localsale'=>$res_goods['is_localsale'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id']);
+
+        $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+        $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&type=25";
+        if($res_goods['type']==22){
+            if($openid){
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $where = array('openid'=>$openid);
+                $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+                $res_user = $m_user->getOne($fields, $where);
+                if(empty($res_user)){
+                    $this->to_back(92010);
+                }
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $sale_uid = $hashids->encode($res_user['user_id']);
+                $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
+            }else{
+                $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&type=26";
+            }
+        }
+        $data['qrcode_url'] = $qrcode;
+
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs = array();
         $cover_imgs_path = $detail_imgs_path = array();

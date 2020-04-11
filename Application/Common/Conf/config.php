@@ -401,6 +401,8 @@ return array(
         'SALE_INVITE_QR'=>'http://rd0.cn/sale?p=',
         'SALE_DISH_QR'=>'http://rd0.cn/d?p=',
         'SALE_DISHMERCHANT_QR'=>'http://rd0.cn/dm?p=',
+        'SALE_SHOP_GOODS_QR'=>'http://rd0.cn/sg?p=',
+        'SALE_SHOP_MERCHANT_QR'=>'http://rd0.cn/sm?p=',
     ),
     'INTEGRAL_TYPES'=>array(
         1=>'开机',

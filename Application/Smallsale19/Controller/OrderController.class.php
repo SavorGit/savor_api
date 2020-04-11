@@ -253,8 +253,8 @@ class OrderController extends CommonController{
         if(empty($res_order) || $res_order[0]['merchant_id']!=$merchant_id){
             $this->to_back(93036);
         }
-        if($res_order[0]['status']!=13){
-            $this->to_back(90138);
+        if(!in_array($res_order[0]['status'],array(13,51))){
+            $this->to_back(90137);
         }
         switch ($action){
             case 1://接单

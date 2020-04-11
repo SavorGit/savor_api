@@ -53,7 +53,7 @@ class OrderController extends CommonController{
                 break;
             case 'orderlist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'type'=>1002,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -818,9 +818,10 @@ class OrderController extends CommonController{
 
     public function orderlist(){
         $openid = $this->params['openid'];
-        $status = intval($this->params['status']);//1待处理 2已完成
+        $status = intval($this->params['status']);//1待处理 2已完成 3待发货
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
+        $type = isset($this->params['type'])?intval($this->params['type']):3;//类型0全部 3普通外卖订单 5全国售订单
         if(empty($pagesize)){
             $pagesize =10;
         }
@@ -830,7 +831,10 @@ class OrderController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-        $where = array('openid'=>$openid,'otype'=>3);
+        $where = array('openid'=>$openid);
+        if($type){
+            $where['otype'] = $type;
+        }
         switch ($status){
             case 1:
                 $where['status'] = array('in',array(1,13,14,15,16,51));
@@ -846,7 +850,7 @@ class OrderController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'id as order_id,merchant_id,price,amount,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
         $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -857,6 +861,7 @@ class OrderController extends CommonController{
             $oss_host = "http://".C('OSS_HOST').'/';
             $all_status = C('ORDER_STATUS');
             foreach($datalist as $k=>$v){
+                $datalist[$k]['type'] = $v['otype'];
                 $datalist[$k]['status_str'] = $all_status[$v['status']];
                 $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
                 if($v['finish_time']=='0000-00-00 00:00:00'){

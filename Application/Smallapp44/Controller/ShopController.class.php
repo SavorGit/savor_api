@@ -130,13 +130,13 @@ class ShopController extends CommonController{
         $json_str = stripslashes(html_entity_decode($goods_ids));
         $goods_ids_arr = json_decode($json_str,true);
         $ids = array();
-        $id_amount = array();
+        $id_mapinfo = array();
         if(!empty($goods_ids_arr)){
             foreach ($goods_ids_arr as $v){
                 if(!empty($v['id'])){
                     $ids[]=intval($v['id']);
                 }
-                $id_amount[$v['id']]=$v['amount'];
+                $id_mapinfo[$v['id']]=array('amount'=>$v['amount'],'ischecked'=>$v['ischecked']);
             }
         }
         $datas = array('online'=>array(),'offline'=>array());
@@ -155,12 +155,16 @@ class ShopController extends CommonController{
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
-                $num = $id_amount[$v['id']];
+                $num = $id_mapinfo[$v['id']]['amount'];
                 if($num>$v['amount']){
                     $num = $v['amount'];
                 }
+                $ischecked = false;
+                if(isset($id_mapinfo[$v['id']]['ischecked'])){
+                    $ischecked = $id_mapinfo[$v['id']]['ischecked'];
+                }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
-                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>false);
+                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>$ischecked);
                 if($v['status']==1){
                     $res_online[$v['merchant_id']][]=$dinfo;
                 }else{

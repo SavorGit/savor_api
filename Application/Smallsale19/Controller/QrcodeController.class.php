@@ -71,7 +71,7 @@ class QrcodeController extends CommonController{
 
     public function dishQrcode(){
         $data_id = $this->params['data_id'];
-        $sale_uid = $this->params['suid'];
+        $suid = $this->params['suid'];
         $type = $this->params['type'];//24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家
 
         $short_urls = C('SHORT_URLS');
@@ -86,11 +86,17 @@ class QrcodeController extends CommonController{
                 break;
             case 26:
                 $code_url = $short_urls['SALE_SHOP_GOODS_QR'];
-                $content = $code_url.'shop_'.$data_id.'_'.$type.'_'.$sale_uid;
+                $content = $code_url.'shop_'.$data_id.'_'.$type;
+                if(!empty($suid)){
+                    $content.='_'.$suid;
+                }
                 break;
             case 27:
                 $code_url = $short_urls['SALE_SHOP_MERCHANT_QR'];
                 $content = $code_url.'shop_'.$data_id.'_'.$type;
+                if(!empty($suid)){
+                    $content.='_'.$suid;
+                }
                 break;
             default:
                 $code_url = $short_urls['SALE_DISH_QR'];

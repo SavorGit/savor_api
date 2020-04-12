@@ -160,7 +160,8 @@ class MerchantController extends CommonController{
         $res_foodstyle = $m_foodstyle->getOne('name',array('id'=>$res_hotel['food_style_id']),'');
         $merchant['food_style'] = $res_foodstyle['name'];
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
-        $merchant['qrcode_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id=$merchant_id&type=27";
+        $merchant['qrfoods_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id=$merchant_id&type=27&suid=foods";
+        $merchant['qrgoods_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id=$merchant_id&type=27&suid=goods";
 
         if(!empty($res_hotel['business_hours'])){
             $business_hours_arr = explode(',',$res_hotel['business_hours']);

@@ -58,7 +58,7 @@ class DishController extends CommonController{
                     }
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'type'=>$v['type'],
-                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'is_top'=>intval($v['is_top']),'status'=>intval($v['status']));
+                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'is_localsale'=>intval($v['is_localsale']),'status'=>intval($v['status']));
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
             }
@@ -78,7 +78,7 @@ class DishController extends CommonController{
             $this->to_back(93037);
         }
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],
-            'stock_num'=>$res_goods['amount'],'type'=>$res_goods['type']);
+            'is_localsale'=>$res_goods['is_localsale'],'stock_num'=>$res_goods['amount'],'type'=>$res_goods['type']);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs =array();
         if(!empty($res_goods['cover_imgs'])){
@@ -108,29 +108,35 @@ class DishController extends CommonController{
         $data['intro'] = $res_goods['intro'];
         $data['video_img'] = '';
         $data['video_url'] = '';
-        if($res_goods['type']==22 && !empty($res_goods['video_intromedia_id'])){
-            $m_media = new \Common\Model\MediaModel();
-            $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
-            $data['video_img'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
-            $data['video_url'] = $media_info['oss_addr'];
-        }
+        $data['localsale_str'] = '';
 
         $merchant = array();
         $merchant['merchant_id'] = $res_goods['merchant_id'];
         $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $res_merchant = $m_merchant->getInfo(array('id'=>$res_goods['merchant_id']));
-        $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id';
-        $where = array('hotel.id'=>$res_merchant['hotel_id']);
-        $res_hotel = $m_hotel->getHotelById($field,$where);
-        $merchant['name'] = $res_hotel['name'];
-        $merchant['mobile'] = $res_hotel['mobile'];
-        $merchant['tel'] = $res_hotel['tel'];
-        $merchant['area_id'] = $res_hotel['area_id'];
+        $fields = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id,area.region_name';
+        $res_merchantinfo = $m_merchant->getMerchantInfo($fields,array('m.id'=>$res_goods['merchant_id']));
+        if($res_goods['type']==22){
+            if($res_goods['is_localsale']){
+                $data['localsale_str'] = '仅售'.$res_merchantinfo[0]['region_name'];
+            }
+            if(!empty($res_goods['video_intromedia_id'])){
+                $m_media = new \Common\Model\MediaModel();
+                $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
+                $data['video_img'] = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
+                $data['video_url'] = $media_info['oss_addr'];
+            }
+        }
+
+
+
+        $merchant['name'] = $res_merchantinfo[0]['name'];
+        $merchant['mobile'] = $res_merchantinfo[0]['mobile'];
+        $merchant['tel'] = $res_merchantinfo[0]['tel'];
+        $merchant['area_id'] = $res_merchantinfo[0]['area_id'];
         $merchant['img'] = '';
-        if(!empty($res_hotel['hotel_cover_media_id'])){
+        if(!empty($res_merchantinfo[0]['hotel_cover_media_id'])){
             $m_media = new \Common\Model\MediaModel();
-            $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');
+            $res_media = $m_media->getMediaInfoById($res_merchantinfo[0]['hotel_cover_media_id'],'https');
             $merchant['img'] = $res_media['oss_addr'];
         }
         $where = array('merchant_id'=>$merchant['merchant_id'],'status'=>1);

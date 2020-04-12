@@ -81,6 +81,9 @@ class ShopController extends CommonController{
                 }
                 $res_data['datalist'][]=$dinfo;
             }
+            $datalist = $res_data['datalist'];
+            shuffle($datalist);
+            $res_data['datalist'] = $datalist;
         }
         $this->to_back($res_data);
     }
@@ -142,7 +145,7 @@ class ShopController extends CommonController{
         $datas = array('online'=>array(),'offline'=>array());
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fields = "id,name,price,amount,cover_imgs,type,status,merchant_id";
+            $fields = "id,name,price,amount,cover_imgs,type,is_localsale,status,merchant_id";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -164,7 +167,14 @@ class ShopController extends CommonController{
                     $ischecked = $id_mapinfo[$v['id']]['ischecked'];
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
-                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>$ischecked);
+                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>$ischecked,'is_localsale'=>$v['is_localsale'],'localsale_str'=>'');
+                if($v['is_localsale'] && $v['type']==22){
+                    $m_merchant = new \Common\Model\Integral\MerchantModel();
+                    $fields = 'hotel.area_id,area.region_name';
+                    $res_merchantinfo = $m_merchant->getMerchantInfo($fields,array('m.id'=>$v['merchant_id']));
+                    $dinfo['localsale_str'] = '仅售'.$res_merchantinfo[0]['region_name'];
+                }
+
                 if($v['status']==1){
                     $res_online[$v['merchant_id']][]=$dinfo;
                 }else{

@@ -37,7 +37,7 @@ class OrderController extends CommonController{
             case 'addShoporder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,'address_id'=>1001,
-                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002);
+                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -322,6 +322,7 @@ class OrderController extends CommonController{
         $pay_type = intval($this->params['pay_type']);//10微信支付 20线下付款
         $company = $this->params['company'];
         $credit_code = $this->params['credit_code'];
+        $email = $this->params['email'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
 
         if(empty($goods_id) && empty($carts)){
@@ -384,6 +385,7 @@ class OrderController extends CommonController{
             }
             $amount = $amount>0?$amount:1;
             $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                 'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
             $goods[$res_goods['merchant_id']][] = $ginfo;
         }else{
@@ -396,6 +398,7 @@ class OrderController extends CommonController{
                         if(!empty($res_goods) && $res_goods['status']==1){
                             $merchant_id = $res_goods['merchant_id'];
                             $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                                'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                                 'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
                             $goods[$merchant_id][] = $ginfo;
                         }
@@ -413,18 +416,32 @@ class OrderController extends CommonController{
                     $invoice_data['company'] = $company;
                     $invoice_data['credit_code'] = $credit_code;
                     $invoice_data['title_type'] = 1;
+                    if(!empty($email)){
+                        $invoice_data['email'] = $email;
+                    }
                     break;
                 case 1:
                     $invoice_data['company'] = $company;
                     $invoice_data['title_type'] = 2;
+                    if(!empty($email)){
+                        $invoice_data['email'] = $email;
+                    }
                     break;
             }
         }
 
         $amount = 0;
         $total_fee = 0;
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
         foreach ($goods as $v){
             foreach ($v as $gv){
+                if($gv['type']==22 && $gv['is_localsale']){
+                    $fields = 'hotel.area_id';
+                    $res_merchantinfo = $m_merchant->getMerchantInfo($fields,array('m.id'=>$gv['merchant_id']));
+                    if($res_address['area_id']!=$res_merchantinfo[0]['area_id']){
+                        $this->to_back(90141);
+                    }
+                }
                 $price = sprintf("%.2f",$gv['amount']*$gv['price']);
                 $total_fee = $total_fee+$price;
                 $amount = $amount+$gv['amount'];
@@ -984,7 +1001,11 @@ class OrderController extends CommonController{
         $order_data['polyline'] = array();
         $order_data['distance'] = '';
         $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
-        $order_data['express'] = $m_orderexpress->getExpress($res_order['id']);
+        $express = $m_orderexpress->getExpress($res_order['id']);
+        if(empty($express)){
+            $express = new \stdClass();
+        }
+        $order_data['express'] = $express;
 
         if($res_order['delivery_type']==1 && $res_order['status']==16){
             $lnglat_arr = explode(',',$res_order['lnglat']);

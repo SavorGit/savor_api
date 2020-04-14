@@ -9,6 +9,69 @@ class OrderController extends Controller {
 
     public  $order_start_time = '2020-04-02 21:30:00';
 
+
+    public function redpacketRefundmoney(){
+        $m_baseinc = new \Payment\Model\BaseIncModel();
+        $payconfig = $m_baseinc->getPayConfig();
+
+        $operation_uid = 42996;
+        $m_order = new \Common\Model\Smallapp\RedpacketModel();
+        $where = array('status'=>array('in','4,6'));
+        $where['user_id'] = array('neq',$operation_uid);
+        $where['add_time'] = array('egt','2019-03-05 00:00:00');
+        $res_order = $m_order->getDataList('id,user_id,pay_fee,rate_fee,add_time',$where,'id asc');
+        $nowdtime = date('Y-m-d H:i:s');
+        if(empty($res_order)){
+            echo $nowdtime.' refund over'."\r\n";
+            exit;
+        }
+        $diff_time = 86400/2;
+        $now_time = time();
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+        $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+        $m_refund = new \Common\Model\Smallapp\RefundModel();
+        foreach ($res_order as $v){
+            $trade_no = $v['id'];
+            $pay_fee = $v['pay_fee'];
+            $rate_fee = $v['rate_fee'];
+            $order_time = strtotime($v['add_time']);
+            if($now_time-$order_time<$diff_time){
+                continue;
+            }
+            $res_receive = $m_redpacketreceive->getDataList('money',array('redpacket_id'=>$trade_no,'status'=>1));
+            $get_money = 0;
+            if(!empty($res_receive)){
+                foreach ($res_receive as $vm){
+                    $get_money+=$vm['money'];
+                }
+            }
+            $refund_money = sprintf("%01.2f",$pay_fee-$rate_fee-$get_money);
+            if($refund_money>0){
+                $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$trade_no));
+                if(!empty($res_orderserial) && !empty($res_orderserial['serial_order'])){
+                    $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+                    $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                    if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                        if($pay_fee==$refund_money){
+                            $type = 0;
+                        }else{
+                            $type = 1;
+                        }
+                        $refund_data = array('trade_no'=>$trade_no,'user_id'=>$v['user_id'],'refund_money'=>$refund_money,'batch_no'=>$trade_info['batch_no'],
+                            'type'=>$type,'status'=>2,'refund_time'=>date('Y-m-d H:i:s'),'succ_time'=>date('Y-m-d H:i:s'));
+                        $m_refund->addData($refund_data);
+                        $m_order->updateData(array('id'=>$trade_no),array('status'=>7));
+                        $nowdtime = date('Y-m-d H:i:s');
+                        echo $nowdtime.' trade_no:'.$trade_no.' refund success'."\r\n";
+                    }else{
+                        echo $nowdtime.' trade_no:'.$trade_no.' refund fail'."\r\n";
+                    }
+                }
+            }
+        }
+    }
+
     public function settlement(){
         $now_time = date('Y-m-d H:i:s');
         $ts = I('get.ts','');

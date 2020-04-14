@@ -455,7 +455,7 @@ class BaseIncModel extends Model{
 
     public function getPayConfig($pk_type=0){
         if(!$pk_type){
-            $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式 5销售端
+            $pk_type = C('PK_TYPE');//1主干版h5服务号 2主干版本 5销售端
         }
         switch ($pk_type){
             case 1:
@@ -466,6 +466,19 @@ class BaseIncModel extends Model{
                     'appid'=>$appid,
                     'partner'=>$pay_config['partner'],
                     'key'=>$pay_config['key']
+                );
+                break;
+            case 2:
+                $smallapp_config = C('SMALLAPP_CONFIG');
+                $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+                $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
+                $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+                $payconfig = array(
+                    'appid'=>$smallapp_config['appid'],
+                    'partner'=>$pay_wx_config['partner'],
+                    'key'=>$pay_wx_config['key'],
+                    'sslcert_path'=>$sslcert_path,
+                    'sslkey_path'=>$sslkey_path,
                 );
                 break;
             case 5:

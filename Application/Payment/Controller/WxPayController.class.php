@@ -10,64 +10,49 @@ class WxPayController extends BaseController{
     }
 
     public function refundMoney(){
-        $payconfig = $this->getPayConfig();
+        $params = I('params','');
+        $oinfo = decrypt_data($params);
+        if(!empty($oinfo['order_id'])){
+            $error_info = array('code'=>10001,'msg'=>'params error');
+            die(json_encode($error_info));
+        }
+        $order_id = $oinfo['order_id'];
+        $pk_type = $oinfo['pk_type'];
+        $pay_fee = $oinfo['pay_fee'];
+        $refund_money = $oinfo['refund_money'];
 
-        $operation_uid = 42996;
-        $m_order = new \Common\Model\Smallapp\RedpacketModel();
-        $where = array('status'=>array('in','4,6'));
-        $where['user_id'] = array('neq',$operation_uid);
-        $where['add_time'] = array('egt','2019-03-05 00:00:00');
-        $res_order = $m_order->getDataList('id,user_id,pay_fee,rate_fee,add_time',$where,'id asc');
-        $nowdtime = date('Y-m-d H:i:s');
-        if(empty($res_order)){
-            echo $nowdtime.' refund over'."\r\n";
-            exit;
-        }
-        $diff_time = 86400/2;
-        $now_time = time();
-        $m_wxpay = new \Payment\Model\WxpayModel();
-        $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
-        $m_refund = new \Common\Model\Smallapp\RefundModel();
-        foreach ($res_order as $v){
-            $trade_no = $v['id'];
-            $pay_fee = $v['pay_fee'];
-            $rate_fee = $v['rate_fee'];
-            $order_time = strtotime($v['add_time']);
-            if($now_time-$order_time<$diff_time){
-                continue;
-            }
-            $res_receive = $m_redpacketreceive->getDataList('money',array('redpacket_id'=>$trade_no,'status'=>1));
-            $get_money = 0;
-            if(!empty($res_receive)){
-                foreach ($res_receive as $vm){
-                    $get_money+=$vm['money'];
-                }
-            }
-            $refund_money = sprintf("%01.2f",$pay_fee-$rate_fee-$get_money);
-            if($refund_money>0){
-                $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$trade_no));
-                if(!empty($res_orderserial) && !empty($res_orderserial['serial_order'])){
-                    $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
-                    $res = $m_wxpay->wxrefund($trade_info,$payconfig);
-                    if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
-                        if($pay_fee==$refund_money){
-                            $type = 0;
-                        }else{
-                            $type = 1;
-                        }
-                        $refund_data = array('trade_no'=>$trade_no,'user_id'=>$v['user_id'],'refund_money'=>$refund_money,'batch_no'=>$trade_info['batch_no'],
-                            'type'=>$type,'status'=>2,'refund_time'=>date('Y-m-d H:i:s'),'succ_time'=>date('Y-m-d H:i:s'));
-                        $m_refund->addData($refund_data);
-                        $m_order->updateData(array('id'=>$trade_no),array('status'=>7));
-                        $nowdtime = date('Y-m-d H:i:s');
-                        echo $nowdtime.' trade_no:'.$trade_no.' refund success'."\r\n";
-                    }else{
-                        echo $nowdtime.' trade_no:'.$trade_no.' refund fail'."\r\n";
-                    }
-                }
-            }
+        $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+        $batch_no = $res_orderserial['serial_order'];
+        $m_ordermap = new \Admin\Model\Smallapp\OrdermapModel();
+        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+        $refund_trade_no = $res_ordermap['list'][0]['id'];
+        if(empty($batch_no) || empty($trade_no)){
+            $error_info = array('code'=>10002,'msg'=>'batch_no or ordermapid not exist');
+            die(json_encode($error_info));
         }
+
+        $m_baseinc = new \Payment\Model\BaseIncModel();
+        $payconfig = $m_baseinc->getPayConfig($pk_type);
+
+        $trade_info = array('trade_no'=>$refund_trade_no,'batch_no'=>$batch_no,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+        $is_refund = 0;
+        if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+            $is_refund = 1;
+            $type = 0;
+            if($trade_info['pay_fee']-$trade_info['refund_money']>0){
+                $type = 1;
+            }
+            $m_refund = new \Common\Model\Smallapp\RefundModel();
+            $refund_data = array('trade_no'=>$order_id,'refund_money'=>$refund_money,'batch_no'=>$batch_no,
+                'type'=>$type,'status'=>2,'refund_time'=>date('Y-m-d H:i:s'),'succ_time'=>date('Y-m-d H:i:s'));
+            $m_refund->addData($refund_data);
+        }
+        $res['code'] = 10000;
+        $res['is_refund'] = $is_refund;
+        die(json_encode($res));
     }
 
 

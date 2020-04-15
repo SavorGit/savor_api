@@ -282,6 +282,7 @@ return array(
 	    '90139'=>'smallapp_order_receive_delivery_error',
 	    '90140'=>'smallapp_order_address_error',
 	    '90141'=>'smallapp_order_addshop_order_area_error',
+	    '90142'=>'smallapp_order_addshop_order_totalmoney_error',
 
 
 

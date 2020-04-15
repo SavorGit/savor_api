@@ -345,6 +345,7 @@ return array(
     'smallappsale_exchange_day_money_upper_limit'=>'单日提现金额已达上限',
     'smallappsale_exchange_money_error'=>'提现金额有误',
     'smallapp_order_addshop_order_area_error'=>'订单中包含限售区域的商品',
+    'smallapp_order_addshop_order_totalmoney_error'=>'订单金额有误',
 
 
 );

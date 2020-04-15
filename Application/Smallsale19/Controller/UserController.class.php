@@ -439,7 +439,7 @@ class UserController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase';
+        $fields = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase,merchant.mtype';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         $data['merchant_id'] = $res_staff[0]['merchant_id'];
         $data['is_purchase'] = intval($res_staff[0]['is_purchase']);
@@ -475,6 +475,14 @@ class UserController extends CommonController{
         }
         $data['dishorder_common_num'] = intval($dishorder_common_num);
         $data['dishorder_purchase_num'] = intval($dishorder_purchase_num);
+        if($res_staff[0]['mtype']==2){
+            $shopwhere = array('merchant_id'=>$data['merchant_id'],'otype'=>5);
+            $shopwhere['status'] = array('in',array('51','52'));
+            $shoporder_process_num = $m_order->countNum($where);
+            $data['shoporder_process_num'] = intval($shoporder_process_num);
+        }else{
+            $data['shoporder_process_num'] = 0;
+        }
 
         $hotel_id = $res_staff[0]['hotel_id'];
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
@@ -494,7 +502,7 @@ class UserController extends CommonController{
             $where = array('user_id'=>$res_user['user_id']);
             $res_income = $m_income->getDataList($fields,$where,'id desc');
             if(!empty($res_income)){
-                $income_fee =  $res_income[0]['total_income_fee'];
+                $income_fee = intval($res_income[0]['total_income_fee']);
             }
             $fields = 'sum(income_fee) as total_income_fee';
             $where = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
@@ -502,7 +510,7 @@ class UserController extends CommonController{
             $where['add_time'] = array('elt'=>$day_time);
             $res_income = $m_income->getDataList($fields,$where,'id desc');
             if(!empty($res_income)){
-                $withdraw_fee =  $res_income[0]['total_income_fee'];
+                $withdraw_fee = intval($res_income[0]['total_income_fee']);
             }
         }
         $data['income_fee'] = $income_fee;

@@ -399,7 +399,11 @@ class BaseIncModel extends Model{
                     foreach ($res_goods as $gv){
                         $goods_id = $gv['goods_id'];
                         $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
-                        $sql_goods = "update savor_smallapp_dishgoods set amount=$amount where id=$goods_id ";
+                        $upsql = "update savor_smallapp_dishgoods set amount=$amount";
+                        if($amount==0){
+                            $upsql.=",status=2";
+                        }
+                        $sql_goods = "$upsql where id=$goods_id ";
                         $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
                         $this->execute($sql_goods);
                     }

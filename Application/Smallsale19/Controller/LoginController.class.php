@@ -43,7 +43,7 @@ class LoginController extends CommonController{
         
         $merchant_info = $m_merchant->alias('a')
                                     ->join('savor_hotel hotel on hotel.id=a.hotel_id','left')
-                                    ->field('a.id,a.type,a.hotel_id,hotel.name hotel_name,a.service_model_id')
+                                    ->field('a.id,a.type,a.mtype,a.hotel_id,hotel.name hotel_name,a.service_model_id')
                                     ->where($where)
                                     ->find();
         if(empty($merchant_info)) $this->to_back(92008);   //邀请码错误
@@ -137,6 +137,9 @@ class LoginController extends CommonController{
             $userinfo['hotel_id']   = $merchant_info['hotel_id'];
             $userinfo['hotel_name'] = $merchant_info['hotel_name'];
             $userinfo['role_type']  = 1;
+        }
+        if($merchant_info['mtype']==2){
+            $userinfo['role_type'] = 5;
         }
         //商家服务
         $userinfo = $this->getServiceModel($userinfo,$merchant_info['service_model_id']);

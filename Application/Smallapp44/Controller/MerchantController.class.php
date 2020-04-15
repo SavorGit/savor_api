@@ -163,7 +163,7 @@ class MerchantController extends CommonController{
         $res_hotel = $m_hotel->getHotelById($field,$where);
 
         $merchant = array('name'=>$res_hotel['name'],'mobile'=>$res_hotel['mobile'],'tel'=>$res_hotel['tel'],'area_id'=>$res_hotel['area_id'],
-            'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],'avg_expense'=>$res_hotel['avg_expense'],
+            'addr'=>$res_hotel['addr'],'area_name'=>$res_hotel['area_name'],'avg_expense'=>$res_hotel['avg_expense'],'mtype'=>$res_merchant['mtype'],
         );
         $merchant['img'] = '';
         $m_media = new \Common\Model\MediaModel();

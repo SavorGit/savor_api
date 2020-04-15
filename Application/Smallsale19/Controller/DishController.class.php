@@ -351,6 +351,7 @@ class DishController extends CommonController{
         $merchant['name'] = $res_hotel['name'];
         $merchant['mobile'] = $res_hotel['mobile'];
         $merchant['tel'] = $res_hotel['tel'];
+        $merchant['mtype'] = $res_merchant['mtype'];
         $merchant['img'] = '';
         if(!empty($res_hotel['hotel_cover_media_id'])){
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id'],'https');

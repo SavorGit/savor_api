@@ -99,9 +99,10 @@ class UserController extends CommonController{
         $hotel_id = 0;
         $code_type = 0;
         $service_model_id = 0;
+        $mtype = 0;
         if(!empty($userinfo['openid'])){
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $fields = 'mt.hotel_id,mt.type,mt.service_model_id,a.level';
+            $fields = 'mt.hotel_id,mt.type,mt.mtype,mt.service_model_id,a.level';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant mt on mt.id=a.merchant_id','left')
@@ -112,12 +113,15 @@ class UserController extends CommonController{
                 $userinfo['role_type'] = $rts['level'];
                 $code_type = $rts['type'];
                 $service_model_id = $rts['service_model_id'];
-                
+                $mtype = $rts['mtype'];
             }
         }
         if(isset($userinfo['role_id']) && $userinfo['role_id']==3){
-            $userinfo['role_type'] = 4;//4是代购人员
+            $userinfo['role_type'] = 4;
             unset($userinfo['role_id']);
+        }
+        if($mtype==2){
+            $userinfo['role_type'] = 5;//4是代购人员 5非合作商家
         }
         $userinfo['hotel_id'] = $hotel_id;
         $userinfo['hotel_has_room'] = 0;
@@ -212,7 +216,7 @@ class UserController extends CommonController{
             //$rts = $m_hotel_invite_code->field('hotel_id')->where(array('bind_mobile'=>$userinfo['mobile'],'flag'=>0))->find();
             $m_staff = new \Common\Model\Integral\StaffModel();
             
-            $fields = 'm.hotel_id,m.type,m.service_model_id,a.level';
+            $fields = 'm.hotel_id,m.type,m.mtype,m.service_model_id,a.level';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant m on m.id=a.merchant_id','left')
@@ -237,6 +241,9 @@ class UserController extends CommonController{
             if($userinfo['role_id']==3){
                 $data['hotel_id']=0;
                 $data['role_type']=4;
+            }
+            if($rts['mtype']==2){
+                $userinfo['role_type'] = 5;//4是代购人员 5非合作商家
             }
             
             $this->to_back($data);

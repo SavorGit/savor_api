@@ -113,7 +113,7 @@ class DishController extends CommonController{
         $merchant = array();
         $merchant['merchant_id'] = $res_goods['merchant_id'];
         $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $fields = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id,area.region_name';
+        $fields = 'hotel.name,hotel.mobile,hotel.tel,ext.hotel_cover_media_id,hotel.area_id,area.region_name,m.mtype';
         $res_merchantinfo = $m_merchant->getMerchantInfo($fields,array('m.id'=>$res_goods['merchant_id']));
         if($res_goods['type']==22){
             if($res_goods['is_localsale']){
@@ -127,12 +127,11 @@ class DishController extends CommonController{
             }
         }
 
-
-
         $merchant['name'] = $res_merchantinfo[0]['name'];
         $merchant['mobile'] = $res_merchantinfo[0]['mobile'];
         $merchant['tel'] = $res_merchantinfo[0]['tel'];
         $merchant['area_id'] = $res_merchantinfo[0]['area_id'];
+        $merchant['mtype'] = $res_merchantinfo[0]['mtype'];
         $merchant['img'] = '';
         if(!empty($res_merchantinfo[0]['hotel_cover_media_id'])){
             $m_media = new \Common\Model\MediaModel();

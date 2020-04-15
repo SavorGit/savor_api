@@ -3,6 +3,12 @@ namespace Common\Lib;
 class Express {
 
     public $company = array (
+        'zhongtong' =>
+            array (
+                'comcode' => 'zhongtong',
+                'name' => '中通快递',
+                'type' => 1,
+            ),
         'yunda' =>
             array (
                 'comcode' => 'yunda',
@@ -15,17 +21,17 @@ class Express {
                 'name' => '圆通速递',
                 'type' => 1,
             ),
-        'huitongkuaidi' =>
-            array (
-                'comcode' => 'huitongkuaidi',
-                'name' => '百世快递',
-                'type' => 1,
-            ),
         'youzhengguonei' =>
             array (
                 'comcode' => 'youzhengguonei',
                 'name' => '邮政快递包裹',
                 'type' => 2,
+            ),
+        'huitongkuaidi' =>
+            array (
+                'comcode' => 'huitongkuaidi',
+                'name' => '百世快递',
+                'type' => 1,
             ),
         'shentong' =>
             array (
@@ -45,17 +51,17 @@ class Express {
                 'name' => '京东物流',
                 'type' => 1,
             ),
-        'ems' =>
-            array (
-                'comcode' => 'ems',
-                'name' => 'EMS',
-                'type' => 2,
-            ),
         'tiantian' =>
             array (
                 'comcode' => 'tiantian',
                 'name' => '天天快递',
                 'type' => 1,
+            ),
+        'ems' =>
+            array (
+                'comcode' => 'ems',
+                'name' => 'EMS',
+                'type' => 2,
             ),
         'youzhengbk' =>
             array (
@@ -63,16 +69,16 @@ class Express {
                 'name' => '邮政标准快递',
                 'type' => 2,
             ),
-        'debangwuliu' =>
-            array (
-                'comcode' => 'debangwuliu',
-                'name' => '德邦',
-                'type' => 1,
-            ),
         'zhaijisong' =>
             array (
                 'comcode' => 'zhaijisong',
                 'name' => '宅急送',
+                'type' => 1,
+            ),
+        'debangwuliu' =>
+            array (
+                'comcode' => 'debangwuliu',
+                'name' => '德邦',
                 'type' => 1,
             ),
         'debangkuaidi' =>
@@ -81,16 +87,22 @@ class Express {
                 'name' => '德邦快递',
                 'type' => 1,
             ),
+        'zhongtongkuaiyun' =>
+            array (
+                'comcode' => 'zhongtongkuaiyun',
+                'name' => '中通快运',
+                'type' => 1,
+            ),
         'youshuwuliu' =>
             array (
                 'comcode' => 'youshuwuliu',
                 'name' => '优速快递',
                 'type' => 1,
             ),
-        'zhongtongkuaiyun' =>
+        'yundakuaiyun' =>
             array (
-                'comcode' => 'zhongtongkuaiyun',
-                'name' => '中通快运',
+                'comcode' => 'yundakuaiyun',
+                'name' => '韵达快运',
                 'type' => 1,
             ),
         'baishiwuliu' =>
@@ -99,52 +111,16 @@ class Express {
                 'name' => '百世快运',
                 'type' => 1,
             ),
-        'ewe' =>
+        'wanxiangwuliu' =>
             array (
-                'comcode' => 'ewe',
-                'name' => 'EWE全球快递',
-                'type' => 3,
-            ),
-        'yundakuaiyun' =>
-            array (
-                'comcode' => 'yundakuaiyun',
-                'name' => '韵达快运',
+                'comcode' => 'wanxiangwuliu',
+                'name' => '万象物流',
                 'type' => 1,
-            ),
-        'auexpress' =>
-            array (
-                'comcode' => 'auexpress',
-                'name' => '澳邮中国快运',
-                'type' => 3,
-            ),
-        'rlgaus' =>
-            array (
-                'comcode' => 'rlgaus',
-                'name' => '澳洲飞跃物流',
-                'type' => 3,
-            ),
-        'emsguoji' =>
-            array (
-                'comcode' => 'emsguoji',
-                'name' => 'EMS-国际件',
-                'type' => 2,
             ),
         'annengwuliu' =>
             array (
                 'comcode' => 'annengwuliu',
                 'name' => '安能快运',
-                'type' => 1,
-            ),
-        'suning' =>
-            array (
-                'comcode' => 'suning',
-                'name' => '苏宁物流',
-                'type' => 1,
-            ),
-        'chinaicip' =>
-            array (
-                'comcode' => 'chinaicip',
-                'name' => '卓志速运',
                 'type' => 1,
             ),
         'yuantongkuaiyun' =>
@@ -153,11 +129,11 @@ class Express {
                 'name' => '圆通快运',
                 'type' => 1,
             ),
-        'youzhengguoji' =>
+        'suning' =>
             array (
-                'comcode' => 'youzhengguoji',
-                'name' => '国际包裹',
-                'type' => 3,
+                'comcode' => 'suning',
+                'name' => '苏宁物流',
+                'type' => 1,
             ),
         'dhl' =>
             array (
@@ -165,59 +141,23 @@ class Express {
                 'name' => 'DHL-中国件',
                 'type' => 3,
             ),
-        'zhonghuan' =>
+        'emsguoji' =>
             array (
-                'comcode' => 'zhonghuan',
-                'name' => '中环快递',
-                'type' => 1,
-            ),
-        'flyway' =>
-            array (
-                'comcode' => 'flyway',
-                'name' => '程光快递',
-                'type' => 1,
-            ),
-        'zhuanyunsifang' =>
-            array (
-                'comcode' => 'zhuanyunsifang',
-                'name' => '转运四方',
-                'type' => 3,
-            ),
-        'zhongyouwuliu' =>
-            array (
-                'comcode' => 'zhongyouwuliu',
-                'name' => '中邮物流',
-                'type' => 1,
-            ),
-        'meiquick' =>
-            array (
-                'comcode' => 'meiquick',
-                'name' => '美快国际物流',
-                'type' => 3,
-            ),
-        'chszhonghuanguoji' =>
-            array (
-                'comcode' => 'chszhonghuanguoji',
-                'name' => 'CHS中环国际快递',
-                'type' => 3,
-            ),
-        'auspost' =>
-            array (
-                'comcode' => 'auspost',
-                'name' => '澳大利亚(Australia Post)',
+                'comcode' => 'emsguoji',
+                'name' => 'EMS-国际件',
                 'type' => 2,
             ),
-        'usps' =>
+        'ewe' =>
             array (
-                'comcode' => 'usps',
-                'name' => 'USPS',
-                'type' => 2,
+                'comcode' => 'ewe',
+                'name' => 'EWE全球快递',
+                'type' => 3,
             ),
-        'xdexpress' =>
+        'canpost' =>
             array (
-                'comcode' => 'xdexpress',
-                'name' => '迅达速递',
-                'type' => 1,
+                'comcode' => 'canpost',
+                'name' => '加拿大(Canada Post)',
+                'type' => 2,
             ),
         'danniao' =>
             array (
@@ -225,28 +165,40 @@ class Express {
                 'name' => '丹鸟',
                 'type' => 1,
             ),
-        'yw56' =>
+        'jtexpress' =>
             array (
-                'comcode' => 'yw56',
-                'name' => '燕文物流',
+                'comcode' => 'jtexpress',
+                'name' => '极兔速递',
                 'type' => 1,
             ),
-        'yuantongguoji' =>
+        'yuntrack' =>
             array (
-                'comcode' => 'yuantongguoji',
-                'name' => '圆通国际',
+                'comcode' => 'yuntrack',
+                'name' => 'YUN TRACK',
                 'type' => 3,
             ),
-        'sdto' =>
+        'youzhengguoji' =>
             array (
-                'comcode' => 'sdto',
-                'name' => '速达通',
+                'comcode' => 'youzhengguoji',
+                'name' => '国际包裹',
+                'type' => 3,
+            ),
+        'auexpress' =>
+            array (
+                'comcode' => 'auexpress',
+                'name' => '澳邮中国快运',
+                'type' => 3,
+            ),
+        'chinaicip' =>
+            array (
+                'comcode' => 'chinaicip',
+                'name' => '卓志速运',
                 'type' => 1,
             ),
-        'zhongtongguoji' =>
+        'fedex' =>
             array (
-                'comcode' => 'zhongtongguoji',
-                'name' => '中通国际',
+                'comcode' => 'fedex',
+                'name' => 'FedEx-国际件',
                 'type' => 3,
             ),
         'upsen' =>
@@ -255,28 +207,28 @@ class Express {
                 'name' => 'UPS-全球件',
                 'type' => 3,
             ),
+        'suer' =>
+            array (
+                'comcode' => 'suer',
+                'name' => '速尔快递',
+                'type' => 1,
+            ),
+        'shpost' =>
+            array (
+                'comcode' => 'shpost',
+                'name' => '同城快寄',
+                'type' => 1,
+            ),
         'tnt' =>
             array (
                 'comcode' => 'tnt',
                 'name' => 'TNT',
                 'type' => 3,
             ),
-        'changjiang' =>
+        'zhongyouwuliu' =>
             array (
-                'comcode' => 'changjiang',
-                'name' => '长江国际速递',
-                'type' => 3,
-            ),
-        'fedex' =>
-            array (
-                'comcode' => 'fedex',
-                'name' => 'FedEx-国际件',
-                'type' => 3,
-            ),
-        'suer' =>
-            array (
-                'comcode' => 'suer',
-                'name' => '速尔快递',
+                'comcode' => 'zhongyouwuliu',
+                'name' => '中邮物流',
                 'type' => 1,
             ),
         'dhlen' =>
@@ -291,35 +243,17 @@ class Express {
                 'name' => '日日顺物流',
                 'type' => 1,
             ),
-        'kuaijiesudi' =>
+        'longbanwuliu' =>
             array (
-                'comcode' => 'kuaijiesudi',
-                'name' => '快捷速递',
+                'comcode' => 'longbanwuliu',
+                'name' => '龙邦速递',
                 'type' => 1,
             ),
-        'bpost' =>
+        'yuantongguoji' =>
             array (
-                'comcode' => 'bpost',
-                'name' => '比利时（Bpost）',
-                'type' => 2,
-            ),
-        'shpost' =>
-            array (
-                'comcode' => 'shpost',
-                'name' => '同城快寄',
-                'type' => 1,
-            ),
-        'annto' =>
-            array (
-                'comcode' => 'annto',
-                'name' => '安得物流',
-                'type' => 1,
-            ),
-        'jtexpress' =>
-            array (
-                'comcode' => 'jtexpress',
-                'name' => '极兔速递',
-                'type' => 1,
+                'comcode' => 'yuantongguoji',
+                'name' => '圆通国际',
+                'type' => 3,
             ),
         'kuayue' =>
             array (
@@ -327,17 +261,149 @@ class Express {
                 'name' => '跨越速运',
                 'type' => 1,
             ),
+        'usps' =>
+            array (
+                'comcode' => 'usps',
+                'name' => 'USPS',
+                'type' => 2,
+            ),
+        'yw56' =>
+            array (
+                'comcode' => 'yw56',
+                'name' => '燕文物流',
+                'type' => 1,
+            ),
+        'rlgaus' =>
+            array (
+                'comcode' => 'rlgaus',
+                'name' => '澳洲飞跃物流',
+                'type' => 3,
+            ),
+        'flyway' =>
+            array (
+                'comcode' => 'flyway',
+                'name' => '程光快递',
+                'type' => 1,
+            ),
+        'zhuanyunsifang' =>
+            array (
+                'comcode' => 'zhuanyunsifang',
+                'name' => '转运四方',
+                'type' => 3,
+            ),
         'yimidida' =>
             array (
                 'comcode' => 'yimidida',
                 'name' => '壹米滴答',
                 'type' => 1,
             ),
-        'tntau' =>
+        'qianli' =>
             array (
-                'comcode' => 'tntau',
-                'name' => 'TNT Australia',
+                'comcode' => 'qianli',
+                'name' => '千里速递',
+                'type' => 1,
+            ),
+        'btexpress' =>
+            array (
+                'comcode' => 'btexpress',
+                'name' => '邦泰快运',
+                'type' => 1,
+            ),
+        'zhongtongguoji' =>
+            array (
+                'comcode' => 'zhongtongguoji',
+                'name' => '中通国际',
                 'type' => 3,
+            ),
+        'annto' =>
+            array (
+                'comcode' => 'annto',
+                'name' => '安得物流',
+                'type' => 1,
+            ),
+        'jinguangsudikuaijian' =>
+            array (
+                'comcode' => 'jinguangsudikuaijian',
+                'name' => '京广速递',
+                'type' => 1,
+            ),
+        'nsf' =>
+            array (
+                'comcode' => 'nsf',
+                'name' => '新顺丰（NSF）',
+                'type' => 3,
+            ),
+        'jiuyescm' =>
+            array (
+                'comcode' => 'jiuyescm',
+                'name' => '九曳供应链',
+                'type' => 1,
+            ),
+        'kuaijiesudi' =>
+            array (
+                'comcode' => 'kuaijiesudi',
+                'name' => '快捷速递',
+                'type' => 1,
+            ),
+        'gslhkd' =>
+            array (
+                'comcode' => 'gslhkd',
+                'name' => '联合快递',
+                'type' => 1,
+            ),
+        'meiquick' =>
+            array (
+                'comcode' => 'meiquick',
+                'name' => '美快国际物流',
+                'type' => 3,
+            ),
+        'lianbangkuaidi' =>
+            array (
+                'comcode' => 'lianbangkuaidi',
+                'name' => '联邦快递',
+                'type' => 1,
+            ),
+        'lntjs' =>
+            array (
+                'comcode' => 'lntjs',
+                'name' => '特急送',
+                'type' => 1,
+            ),
+        'lianhaowuliu' =>
+            array (
+                'comcode' => 'lianhaowuliu',
+                'name' => '联昊通',
+                'type' => 1,
+            ),
+        'subida' =>
+            array (
+                'comcode' => 'subida',
+                'name' => '速必达',
+                'type' => 1,
+            ),
+        'disifang' =>
+            array (
+                'comcode' => 'disifang',
+                'name' => '递四方',
+                'type' => 1,
+            ),
+        'emsbg' =>
+            array (
+                'comcode' => 'emsbg',
+                'name' => 'EMS包裹',
+                'type' => 2,
+            ),
+        'quanfengkuaidi' =>
+            array (
+                'comcode' => 'quanfengkuaidi',
+                'name' => '全峰快递',
+                'type' => 1,
+            ),
+        'yuxinwuliu' =>
+            array (
+                'comcode' => 'yuxinwuliu',
+                'name' => '宇鑫物流',
+                'type' => 1,
             ),
         'banma' =>
             array (
@@ -351,16 +417,16 @@ class Express {
                 'name' => '芝麻开门',
                 'type' => 1,
             ),
-        'btexpress' =>
+        'auspost' =>
             array (
-                'comcode' => 'btexpress',
-                'name' => '邦泰快运',
-                'type' => 1,
+                'comcode' => 'auspost',
+                'name' => '澳大利亚(Australia Post)',
+                'type' => 2,
             ),
-        'ubonex' =>
+        'guotongkuaidi' =>
             array (
-                'comcode' => 'ubonex',
-                'name' => '优邦速运',
+                'comcode' => 'guotongkuaidi',
+                'name' => '国通快递',
                 'type' => 1,
             ),
         'ups' =>
@@ -369,34 +435,16 @@ class Express {
                 'name' => 'UPS',
                 'type' => 3,
             ),
-        'oneexpress' =>
+        'changjiang' =>
             array (
-                'comcode' => 'oneexpress',
-                'name' => '一速递',
-                'type' => 1,
-            ),
-        'nsf' =>
-            array (
-                'comcode' => 'nsf',
-                'name' => '新顺丰（NSF）',
+                'comcode' => 'changjiang',
+                'name' => '长江国际速递',
                 'type' => 3,
             ),
-        'unitedex' =>
+        'dsukuaidi' =>
             array (
-                'comcode' => 'unitedex',
-                'name' => '联合速运',
-                'type' => 1,
-            ),
-        'longbanwuliu' =>
-            array (
-                'comcode' => 'longbanwuliu',
-                'name' => '龙邦速递',
-                'type' => 1,
-            ),
-        'yuntrack' =>
-            array (
-                'comcode' => 'yuntrack',
-                'name' => 'YUN TRACK',
+                'comcode' => 'dsukuaidi',
+                'name' => 'D速快递',
                 'type' => 3,
             ),
         'ftd' =>
@@ -405,40 +453,10 @@ class Express {
                 'name' => '富腾达国际货运',
                 'type' => 3,
             ),
-        'lianbangkuaidi' =>
+        'zhonghuan' =>
             array (
-                'comcode' => 'lianbangkuaidi',
-                'name' => '联邦快递',
-                'type' => 1,
-            ),
-        'jinguangsudikuaijian' =>
-            array (
-                'comcode' => 'jinguangsudikuaijian',
-                'name' => '京广速递',
-                'type' => 1,
-            ),
-        'lntjs' =>
-            array (
-                'comcode' => 'lntjs',
-                'name' => '特急送',
-                'type' => 1,
-            ),
-        'guotongkuaidi' =>
-            array (
-                'comcode' => 'guotongkuaidi',
-                'name' => '国通快递',
-                'type' => 1,
-            ),
-        'qexpress' =>
-            array (
-                'comcode' => 'qexpress',
-                'name' => '易达通快递',
-                'type' => 1,
-            ),
-        'qianli' =>
-            array (
-                'comcode' => 'qianli',
-                'name' => '千里速递',
+                'comcode' => 'zhonghuan',
+                'name' => '中环快递',
                 'type' => 1,
             ),
         'yunexpress' =>
@@ -447,88 +465,10 @@ class Express {
                 'name' => '德国云快递',
                 'type' => 3,
             ),
-        'polarexpress' =>
+        'ubonex' =>
             array (
-                'comcode' => 'polarexpress',
-                'name' => '极地快递',
-                'type' => 1,
-            ),
-        'emsbg' =>
-            array (
-                'comcode' => 'emsbg',
-                'name' => 'EMS包裹',
-                'type' => 2,
-            ),
-        'subida' =>
-            array (
-                'comcode' => 'subida',
-                'name' => '速必达',
-                'type' => 1,
-            ),
-        'dpexen' =>
-            array (
-                'comcode' => 'dpexen',
-                'name' => 'Toll',
-                'type' => 3,
-            ),
-        'dhlde' =>
-            array (
-                'comcode' => 'dhlde',
-                'name' => 'DHL-德国件（DHL Deutschland）',
-                'type' => 3,
-            ),
-        'chnexp' =>
-            array (
-                'comcode' => 'chnexp',
-                'name' => '中翼国际物流',
-                'type' => 3,
-            ),
-        'gslhkd' =>
-            array (
-                'comcode' => 'gslhkd',
-                'name' => '联合快递',
-                'type' => 1,
-            ),
-        'jiuyescm' =>
-            array (
-                'comcode' => 'jiuyescm',
-                'name' => '九曳供应链',
-                'type' => 1,
-            ),
-        'yuxinwuliu' =>
-            array (
-                'comcode' => 'yuxinwuliu',
-                'name' => '宇鑫物流',
-                'type' => 1,
-            ),
-        'xlobo' =>
-            array (
-                'comcode' => 'xlobo',
-                'name' => 'Xlobo贝海国际',
-                'type' => 3,
-            ),
-        'lianhaowuliu' =>
-            array (
-                'comcode' => 'lianhaowuliu',
-                'name' => '联昊通',
-                'type' => 1,
-            ),
-        'zhongtiewuliu' =>
-            array (
-                'comcode' => 'zhongtiewuliu',
-                'name' => '中铁物流',
-                'type' => 1,
-            ),
-        'gxwl' =>
-            array (
-                'comcode' => 'gxwl',
-                'name' => '光线速递',
-                'type' => 1,
-            ),
-        'xinfengwuliu' =>
-            array (
-                'comcode' => 'xinfengwuliu',
-                'name' => '信丰物流',
+                'comcode' => 'ubonex',
+                'name' => '优邦速运',
                 'type' => 1,
             ),
         'japanposten' =>
@@ -537,100 +477,22 @@ class Express {
                 'name' => '日本（Japan Post）',
                 'type' => 2,
             ),
-        'hd' =>
-            array (
-                'comcode' => 'hd',
-                'name' => '宏递快运',
-                'type' => 1,
-            ),
-        'wanxiangwuliu' =>
-            array (
-                'comcode' => 'wanxiangwuliu',
-                'name' => '万象物流',
-                'type' => 1,
-            ),
-        'tiandihuayu' =>
-            array (
-                'comcode' => 'tiandihuayu',
-                'name' => '天地华宇',
-                'type' => 1,
-            ),
-        'ueq' =>
-            array (
-                'comcode' => 'ueq',
-                'name' => 'UEQ快递',
-                'type' => 3,
-            ),
-        'la911' =>
-            array (
-                'comcode' => 'la911',
-                'name' => '鼎润物流',
-                'type' => 1,
-            ),
-        'tmwexpress' =>
-            array (
-                'comcode' => 'tmwexpress',
-                'name' => '明达国际速递',
-                'type' => 3,
-            ),
-        'shangqiao56' =>
-            array (
-                'comcode' => 'shangqiao56',
-                'name' => '商桥物流',
-                'type' => 1,
-            ),
-        'wanjiawuliu' =>
-            array (
-                'comcode' => 'wanjiawuliu',
-                'name' => '万家物流',
-                'type' => 1,
-            ),
-        'disifang' =>
-            array (
-                'comcode' => 'disifang',
-                'name' => '递四方',
-                'type' => 1,
-            ),
         'guangdongyouzhengwuliu' =>
             array (
                 'comcode' => 'guangdongyouzhengwuliu',
                 'name' => '广东邮政',
                 'type' => 2,
             ),
-        'fedexcn' =>
+        'sdto' =>
             array (
-                'comcode' => 'fedexcn',
-                'name' => 'Fedex-国际件-中文',
-                'type' => 3,
-            ),
-        'exfresh' =>
-            array (
-                'comcode' => 'exfresh',
-                'name' => '安鲜达',
+                'comcode' => 'sdto',
+                'name' => '速达通',
                 'type' => 1,
             ),
-        'arkexpress' =>
+        'transrush' =>
             array (
-                'comcode' => 'arkexpress',
-                'name' => '方舟速递',
-                'type' => 3,
-            ),
-        'aae' =>
-            array (
-                'comcode' => 'aae',
-                'name' => 'AAE-中国件',
-                'type' => 3,
-            ),
-        'ontrac' =>
-            array (
-                'comcode' => 'ontrac',
-                'name' => 'OnTrac',
-                'type' => 3,
-            ),
-        'dpex' =>
-            array (
-                'comcode' => 'dpex',
-                'name' => 'DPEX',
+                'comcode' => 'transrush',
+                'name' => 'TransRush',
                 'type' => 3,
             ),
         'weitepai' =>
@@ -639,94 +501,52 @@ class Express {
                 'name' => '微特派',
                 'type' => 1,
             ),
-        'dsukuaidi' =>
+        'arkexpress' =>
             array (
-                'comcode' => 'dsukuaidi',
-                'name' => 'D速快递',
+                'comcode' => 'arkexpress',
+                'name' => '方舟速递',
                 'type' => 3,
             ),
-        'ztky' =>
+        'zhongtiewuliu' =>
             array (
-                'comcode' => 'ztky',
-                'name' => '中铁快运',
+                'comcode' => 'zhongtiewuliu',
+                'name' => '中铁物流',
                 'type' => 1,
             ),
-        'euasia' =>
+        'chszhonghuanguoji' =>
             array (
-                'comcode' => 'euasia',
-                'name' => '欧亚专线',
+                'comcode' => 'chszhonghuanguoji',
+                'name' => 'CHS中环国际快递',
                 'type' => 3,
             ),
-        'transrush' =>
+        'xdexpress' =>
             array (
-                'comcode' => 'transrush',
-                'name' => 'TransRush',
+                'comcode' => 'xdexpress',
+                'name' => '迅达速递',
+                'type' => 1,
+            ),
+        'tiandihuayu' =>
+            array (
+                'comcode' => 'tiandihuayu',
+                'name' => '天地华宇',
+                'type' => 1,
+            ),
+        'ontrac' =>
+            array (
+                'comcode' => 'ontrac',
+                'name' => 'OnTrac',
                 'type' => 3,
             ),
-        'aramex' =>
+        'dpd' =>
             array (
-                'comcode' => 'aramex',
-                'name' => 'Aramex',
+                'comcode' => 'dpd',
+                'name' => 'DPD',
                 'type' => 3,
             ),
-        'ucs' =>
+        'xlobo' =>
             array (
-                'comcode' => 'ucs',
-                'name' => '合众速递(UCS）',
-                'type' => 3,
-            ),
-        'sxjdfreight' =>
-            array (
-                'comcode' => 'sxjdfreight',
-                'name' => '顺心捷达',
-                'type' => 1,
-            ),
-        'sunjex' =>
-            array (
-                'comcode' => 'sunjex',
-                'name' => '新杰物流',
-                'type' => 1,
-            ),
-        'feiyuanvipshop' =>
-            array (
-                'comcode' => 'feiyuanvipshop',
-                'name' => '飞远配送',
-                'type' => 1,
-            ),
-        'quanfengkuaidi' =>
-            array (
-                'comcode' => 'quanfengkuaidi',
-                'name' => '全峰快递',
-                'type' => 1,
-            ),
-        'topspeedex' =>
-            array (
-                'comcode' => 'topspeedex',
-                'name' => '中运全速',
-                'type' => 1,
-            ),
-        'canpost' =>
-            array (
-                'comcode' => 'canpost',
-                'name' => '加拿大(Canada Post)',
-                'type' => 2,
-            ),
-        'etong' =>
-            array (
-                'comcode' => 'etong',
-                'name' => 'E通速递',
-                'type' => 3,
-            ),
-        'jiayunmeiwuliu' =>
-            array (
-                'comcode' => 'jiayunmeiwuliu',
-                'name' => '加运美',
-                'type' => 1,
-            ),
-        'tnten' =>
-            array (
-                'comcode' => 'tnten',
-                'name' => 'TNT-全球件',
+                'comcode' => 'xlobo',
+                'name' => 'Xlobo贝海国际',
                 'type' => 3,
             ),
         'superb' =>
@@ -735,137 +555,17 @@ class Express {
                 'name' => 'Superb Grace',
                 'type' => 3,
             ),
-        'zhongchuan' =>
+        'bpost' =>
             array (
-                'comcode' => 'zhongchuan',
-                'name' => '众川国际',
-                'type' => 3,
-            ),
-        'lianbangkuaidien' =>
-            array (
-                'comcode' => 'lianbangkuaidien',
-                'name' => '联邦快递-英文',
-                'type' => 1,
-            ),
-        'quanyikuaidi' =>
-            array (
-                'comcode' => 'quanyikuaidi',
-                'name' => '全一快递',
-                'type' => 1,
-            ),
-        'crazyexpress' =>
-            array (
-                'comcode' => 'crazyexpress',
-                'name' => '疯狂快递',
-                'type' => 1,
-            ),
-        'dpd' =>
-            array (
-                'comcode' => 'dpd',
-                'name' => 'DPD',
-                'type' => 3,
-            ),
-        'shenghuiwuliu' =>
-            array (
-                'comcode' => 'shenghuiwuliu',
-                'name' => '盛辉物流',
-                'type' => 1,
-            ),
-        'savor' =>
-            array (
-                'comcode' => 'savor',
-                'name' => '海信物流',
-                'type' => 1,
-            ),
-        'bsht' =>
-            array (
-                'comcode' => 'bsht',
-                'name' => '百事亨通',
-                'type' => 1,
-            ),
-        'yangbaoguo' =>
-            array (
-                'comcode' => 'yangbaoguo',
-                'name' => '洋包裹',
-                'type' => 3,
-            ),
-        'haidaibao' =>
-            array (
-                'comcode' => 'haidaibao',
-                'name' => '海带宝',
-                'type' => 3,
-            ),
-        'xynyc' =>
-            array (
-                'comcode' => 'xynyc',
-                'name' => '新元国际',
-                'type' => 3,
-            ),
-        'chinasqk' =>
-            array (
-                'comcode' => 'chinasqk',
-                'name' => 'SQK国际速递',
-                'type' => 3,
-            ),
-        'guexp' =>
-            array (
-                'comcode' => 'guexp',
-                'name' => '全联速运',
-                'type' => 1,
-            ),
-        'mosuda' =>
-            array (
-                'comcode' => 'mosuda',
-                'name' => '魔速达',
-                'type' => 1,
-            ),
-        'huangmajia' =>
-            array (
-                'comcode' => 'huangmajia',
-                'name' => '黄马甲',
-                'type' => 1,
-            ),
-        'wondersyd' =>
-            array (
-                'comcode' => 'wondersyd',
-                'name' => '中邮速递',
-                'type' => 1,
-            ),
-        'hac56' =>
-            array (
-                'comcode' => 'hac56',
-                'name' => '瀚朝物流',
-                'type' => 1,
-            ),
-        'yaofeikuaidi' =>
-            array (
-                'comcode' => 'yaofeikuaidi',
-                'name' => '耀飞同城快递',
-                'type' => 1,
-            ),
-        'qinyuan' =>
-            array (
-                'comcode' => 'qinyuan',
-                'name' => '秦远物流',
-                'type' => 1,
-            ),
-        'uszcn' =>
-            array (
-                'comcode' => 'uszcn',
-                'name' => '转运中国',
-                'type' => 3,
-            ),
-        'baifudongfang' =>
-            array (
-                'comcode' => 'baifudongfang',
-                'name' => '百福东方',
-                'type' => 3,
-            ),
-        'emsinten' =>
-            array (
-                'comcode' => 'emsinten',
-                'name' => 'EMS-国际件-英文',
+                'comcode' => 'bpost',
+                'name' => '比利时（Bpost）',
                 'type' => 2,
+            ),
+        'sxjdfreight' =>
+            array (
+                'comcode' => 'sxjdfreight',
+                'name' => '顺心捷达',
+                'type' => 1,
             ),
         'wjkwl' =>
             array (
@@ -873,106 +573,52 @@ class Express {
                 'name' => '万家康物流',
                 'type' => 1,
             ),
-        'doortodoor' =>
+        'xinfengwuliu' =>
             array (
-                'comcode' => 'doortodoor',
-                'name' => 'CJ物流',
+                'comcode' => 'xinfengwuliu',
+                'name' => '信丰物流',
+                'type' => 1,
+            ),
+        'dhlde' =>
+            array (
+                'comcode' => 'dhlde',
+                'name' => 'DHL-德国件（DHL Deutschland）',
                 'type' => 3,
             ),
-        'sagawa' =>
+        'tntau' =>
             array (
-                'comcode' => 'sagawa',
-                'name' => '佐川急便',
+                'comcode' => 'tntau',
+                'name' => 'TNT Australia',
                 'type' => 3,
             ),
-        'gooday365' =>
+        'wanjiawuliu' =>
             array (
-                'comcode' => 'gooday365',
-                'name' => '日日顺智慧物联',
+                'comcode' => 'wanjiawuliu',
+                'name' => '万家物流',
                 'type' => 1,
             ),
-        'ytkd' =>
+        'ztky' =>
             array (
-                'comcode' => 'ytkd',
-                'name' => '运通中港快递',
+                'comcode' => 'ztky',
+                'name' => '中铁快运',
                 'type' => 1,
             ),
-        'jiajikuaidi' =>
+        'unitedex' =>
             array (
-                'comcode' => 'jiajikuaidi',
-                'name' => '佳吉快递',
+                'comcode' => 'unitedex',
+                'name' => '联合速运',
                 'type' => 1,
             ),
-        'emsen' =>
+        'sunjex' =>
             array (
-                'comcode' => 'emsen',
-                'name' => 'EMS-英文',
-                'type' => 2,
-            ),
-        'hkpost' =>
-            array (
-                'comcode' => 'hkpost',
-                'name' => '中国香港(HongKong Post)',
-                'type' => 2,
-            ),
-        'wherexpess' =>
-            array (
-                'comcode' => 'wherexpess',
-                'name' => '威盛快递',
+                'comcode' => 'sunjex',
+                'name' => '新杰物流',
                 'type' => 1,
             ),
-        'dekuncn' =>
+        'oneexpress' =>
             array (
-                'comcode' => 'dekuncn',
-                'name' => '德坤物流',
-                'type' => 1,
-            ),
-        'newzealand' =>
-            array (
-                'comcode' => 'newzealand',
-                'name' => '新西兰（New Zealand Post）',
-                'type' => 2,
-            ),
-        'globaltracktrace' =>
-            array (
-                'comcode' => 'globaltracktrace',
-                'name' => 'globaltracktrace',
-                'type' => 3,
-            ),
-        'stoexpress' =>
-            array (
-                'comcode' => 'stoexpress',
-                'name' => '美国申通',
-                'type' => 3,
-            ),
-        'yafengsudi' =>
-            array (
-                'comcode' => 'yafengsudi',
-                'name' => '亚风速递',
-                'type' => 1,
-            ),
-        'blueskyexpress' =>
-            array (
-                'comcode' => 'blueskyexpress',
-                'name' => '蓝天快递',
-                'type' => 1,
-            ),
-        'epanex' =>
-            array (
-                'comcode' => 'epanex',
-                'name' => '泛捷国际速递',
-                'type' => 3,
-            ),
-        'ukrpostcn' =>
-            array (
-                'comcode' => 'ukrpostcn',
-                'name' => '乌克兰邮政包裹',
-                'type' => 2,
-            ),
-        'ane66' =>
-            array (
-                'comcode' => 'ane66',
-                'name' => '安能快递',
+                'comcode' => 'oneexpress',
+                'name' => '一速递',
                 'type' => 1,
             ),
         'adapost' =>
@@ -981,47 +627,59 @@ class Express {
                 'name' => '安达速递',
                 'type' => 1,
             ),
-        'auod' =>
+        'polarexpress' =>
             array (
-                'comcode' => 'auod',
-                'name' => '澳德物流',
+                'comcode' => 'polarexpress',
+                'name' => '极地快递',
+                'type' => 1,
+            ),
+        'coe' =>
+            array (
+                'comcode' => 'coe',
+                'name' => 'COE',
                 'type' => 3,
             ),
-        'sendtochina' =>
+        'shangqiao56' =>
             array (
-                'comcode' => 'sendtochina',
-                'name' => '速递中国',
-                'type' => 3,
-            ),
-        'wlwex' =>
-            array (
-                'comcode' => 'wlwex',
-                'name' => '星空国际',
-                'type' => 3,
-            ),
-        'bazirim' =>
-            array (
-                'comcode' => 'bazirim',
-                'name' => '皮牙子快递',
+                'comcode' => 'shangqiao56',
+                'name' => '商桥物流',
                 'type' => 1,
             ),
-        'zhongsukuaidi' =>
+        'qexpress' =>
             array (
-                'comcode' => 'zhongsukuaidi',
-                'name' => '中速快递',
+                'comcode' => 'qexpress',
+                'name' => '易达通快递',
                 'type' => 1,
             ),
-        'jiazhoumao' =>
+        'topspeedex' =>
             array (
-                'comcode' => 'jiazhoumao',
-                'name' => '加州猫速递',
+                'comcode' => 'topspeedex',
+                'name' => '中运全速',
                 'type' => 1,
             ),
-        'pjbest' =>
+        'crazyexpress' =>
             array (
-                'comcode' => 'pjbest',
-                'name' => '品骏快递',
+                'comcode' => 'crazyexpress',
+                'name' => '疯狂快递',
                 'type' => 1,
+            ),
+        'jiayunmeiwuliu' =>
+            array (
+                'comcode' => 'jiayunmeiwuliu',
+                'name' => '加运美',
+                'type' => 1,
+            ),
+        'quanyikuaidi' =>
+            array (
+                'comcode' => 'quanyikuaidi',
+                'name' => '全一快递',
+                'type' => 1,
+            ),
+        'hkpost' =>
+            array (
+                'comcode' => 'hkpost',
+                'name' => '中国香港(HongKong Post)',
+                'type' => 2,
             ),
         'valueway' =>
             array (
@@ -1035,118 +693,112 @@ class Express {
                 'name' => '苏通快运',
                 'type' => 1,
             ),
-        'datianwuliu' =>
+        'lijisong' =>
             array (
-                'comcode' => 'datianwuliu',
-                'name' => '大田物流',
+                'comcode' => 'lijisong',
+                'name' => '成都立即送',
                 'type' => 1,
             ),
-        'huanqiu' =>
+        'ucs' =>
             array (
-                'comcode' => 'huanqiu',
-                'name' => '环球速运',
+                'comcode' => 'ucs',
+                'name' => '合众速递(UCS）',
                 'type' => 3,
             ),
-        'jiajiwuliu' =>
+        'savor' =>
             array (
-                'comcode' => 'jiajiwuliu',
-                'name' => '佳吉快运',
+                'comcode' => 'savor',
+                'name' => '海信物流',
                 'type' => 1,
             ),
-        'ocs' =>
+        'zhongsukuaidi' =>
             array (
-                'comcode' => 'ocs',
-                'name' => 'OCS',
+                'comcode' => 'zhongsukuaidi',
+                'name' => '中速快递',
+                'type' => 1,
+            ),
+        'ane66' =>
+            array (
+                'comcode' => 'ane66',
+                'name' => '安能快递',
+                'type' => 1,
+            ),
+        'chnexp' =>
+            array (
+                'comcode' => 'chnexp',
+                'name' => '中翼国际物流',
                 'type' => 3,
             ),
-        'jxfex' =>
+        'kyue' =>
             array (
-                'comcode' => 'jxfex',
-                'name' => '集先锋快递',
-                'type' => 1,
-            ),
-        'shangda' =>
-            array (
-                'comcode' => 'shangda',
-                'name' => '上大物流',
-                'type' => 1,
-            ),
-        'singpost' =>
-            array (
-                'comcode' => 'singpost',
-                'name' => '新加坡小包(Singapore Post)',
-                'type' => 2,
-            ),
-        'zhongtongphone' =>
-            array (
-                'comcode' => 'zhongtongphone',
-                'name' => '中通（带电话）',
-                'type' => 1,
-            ),
-        'efs' =>
-            array (
-                'comcode' => 'efs',
-                'name' => 'EFS Post（平安快递）',
-                'type' => 2,
-            ),
-        'hexinexpress' =>
-            array (
-                'comcode' => 'hexinexpress',
-                'name' => '合心速递',
-                'type' => 1,
-            ),
-        'aotsd' =>
-            array (
-                'comcode' => 'aotsd',
-                'name' => '澳天速运',
+                'comcode' => 'kyue',
+                'name' => '跨跃国际',
                 'type' => 3,
             ),
-        'ecmscn' =>
+        'wondersyd' =>
             array (
-                'comcode' => 'ecmscn',
-                'name' => '易客满',
-                'type' => 3,
-            ),
-        'fastgo' =>
-            array (
-                'comcode' => 'fastgo',
-                'name' => '速派快递(FastGo)',
-                'type' => 3,
-            ),
-        'dayangwuliu' =>
-            array (
-                'comcode' => 'dayangwuliu',
-                'name' => '大洋物流',
+                'comcode' => 'wondersyd',
+                'name' => '中邮速递',
                 'type' => 1,
             ),
-        'stosolution' =>
+        'aramex' =>
             array (
-                'comcode' => 'stosolution',
-                'name' => '申通国际',
+                'comcode' => 'aramex',
+                'name' => 'Aramex',
                 'type' => 3,
             ),
-        'synship' =>
+        'tnten' =>
             array (
-                'comcode' => 'synship',
-                'name' => 'SYNSHIP快递',
+                'comcode' => 'tnten',
+                'name' => 'TNT-全球件',
                 'type' => 3,
             ),
-        'suteng' =>
+        'gxwl' =>
             array (
-                'comcode' => 'suteng',
-                'name' => '广东速腾物流',
+                'comcode' => 'gxwl',
+                'name' => '光线速递',
                 'type' => 1,
             ),
-        'xunsuexpress' =>
+        'epanex' =>
             array (
-                'comcode' => 'xunsuexpress',
-                'name' => '迅速快递',
+                'comcode' => 'epanex',
+                'name' => '泛捷国际速递',
+                'type' => 3,
+            ),
+        'tianma' =>
+            array (
+                'comcode' => 'tianma',
+                'name' => '天马迅达',
                 'type' => 1,
             ),
-        'rufengda' =>
+        'shenghuiwuliu' =>
             array (
-                'comcode' => 'rufengda',
-                'name' => '如风达',
+                'comcode' => 'shenghuiwuliu',
+                'name' => '盛辉物流',
+                'type' => 1,
+            ),
+        'aae' =>
+            array (
+                'comcode' => 'aae',
+                'name' => 'AAE-中国件',
+                'type' => 3,
+            ),
+        'spring56' =>
+            array (
+                'comcode' => 'spring56',
+                'name' => '春风物流',
+                'type' => 1,
+            ),
+        'exfresh' =>
+            array (
+                'comcode' => 'exfresh',
+                'name' => '安鲜达',
+                'type' => 1,
+            ),
+        'gooday365' =>
+            array (
+                'comcode' => 'gooday365',
+                'name' => '日日顺智慧物联',
                 'type' => 1,
             ),
         'hengluwuliu' =>
@@ -1155,40 +807,166 @@ class Express {
                 'name' => '恒路物流',
                 'type' => 1,
             ),
-        'lineone' =>
+        'chinasqk' =>
             array (
-                'comcode' => 'lineone',
-                'name' => '一号线',
+                'comcode' => 'chinasqk',
+                'name' => 'SQK国际速递',
                 'type' => 3,
             ),
-        'stoe56' =>
+        'stoexpress' =>
             array (
-                'comcode' => 'stoe56',
-                'name' => '申通快运',
+                'comcode' => 'stoexpress',
+                'name' => '美国申通',
+                'type' => 3,
+            ),
+        'singpost' =>
+            array (
+                'comcode' => 'singpost',
+                'name' => '新加坡小包(Singapore Post)',
+                'type' => 2,
+            ),
+        'hexinexpress' =>
+            array (
+                'comcode' => 'hexinexpress',
+                'name' => '合心速递',
                 'type' => 1,
             ),
-        'youban' =>
+        'emsen' =>
             array (
-                'comcode' => 'youban',
-                'name' => '邮邦国际',
-                'type' => 3,
+                'comcode' => 'emsen',
+                'name' => 'EMS-英文',
+                'type' => 2,
             ),
-        'farlogistis' =>
+        'jingshun' =>
             array (
-                'comcode' => 'farlogistis',
-                'name' => '泛远国际物流',
-                'type' => 3,
-            ),
-        'runhengfeng' =>
-            array (
-                'comcode' => 'runhengfeng',
-                'name' => '全时速运',
+                'comcode' => 'jingshun',
+                'name' => '景顺物流',
                 'type' => 1,
+            ),
+        'globaltracktrace' =>
+            array (
+                'comcode' => 'globaltracktrace',
+                'name' => 'globaltracktrace',
+                'type' => 3,
+            ),
+        'emsinten' =>
+            array (
+                'comcode' => 'emsinten',
+                'name' => 'EMS-国际件-英文',
+                'type' => 2,
+            ),
+        'doortodoor' =>
+            array (
+                'comcode' => 'doortodoor',
+                'name' => 'CJ物流',
+                'type' => 3,
+            ),
+        'huangmajia' =>
+            array (
+                'comcode' => 'huangmajia',
+                'name' => '黄马甲',
+                'type' => 1,
+            ),
+        'uszcn' =>
+            array (
+                'comcode' => 'uszcn',
+                'name' => '转运中国',
+                'type' => 3,
+            ),
+        'meixi' =>
+            array (
+                'comcode' => 'meixi',
+                'name' => '美西快递',
+                'type' => 3,
+            ),
+        'baifudongfang' =>
+            array (
+                'comcode' => 'baifudongfang',
+                'name' => '百福东方',
+                'type' => 3,
             ),
         'nanjingshengbang' =>
             array (
                 'comcode' => 'nanjingshengbang',
                 'name' => '晟邦物流',
+                'type' => 1,
+            ),
+        'tmwexpress' =>
+            array (
+                'comcode' => 'tmwexpress',
+                'name' => '明达国际速递',
+                'type' => 3,
+            ),
+        'ueq' =>
+            array (
+                'comcode' => 'ueq',
+                'name' => 'UEQ快递',
+                'type' => 3,
+            ),
+        'dpexen' =>
+            array (
+                'comcode' => 'dpexen',
+                'name' => 'Toll',
+                'type' => 3,
+            ),
+        'huanqiu' =>
+            array (
+                'comcode' => 'huanqiu',
+                'name' => '环球速运',
+                'type' => 3,
+            ),
+        'ocs' =>
+            array (
+                'comcode' => 'ocs',
+                'name' => 'OCS',
+                'type' => 3,
+            ),
+        'tstexp' =>
+            array (
+                'comcode' => 'tstexp',
+                'name' => 'TST速运通',
+                'type' => 3,
+            ),
+        'zhongtongphone' =>
+            array (
+                'comcode' => 'zhongtongphone',
+                'name' => '中通（带电话）',
+                'type' => 1,
+            ),
+        'newzealand' =>
+            array (
+                'comcode' => 'newzealand',
+                'name' => '新西兰（New Zealand Post）',
+                'type' => 2,
+            ),
+        'lianbangkuaidien' =>
+            array (
+                'comcode' => 'lianbangkuaidien',
+                'name' => '联邦快递-英文',
+                'type' => 1,
+            ),
+        'aotsd' =>
+            array (
+                'comcode' => 'aotsd',
+                'name' => '澳天速运',
+                'type' => 3,
+            ),
+        'datianwuliu' =>
+            array (
+                'comcode' => 'datianwuliu',
+                'name' => '大田物流',
+                'type' => 1,
+            ),
+        'ytkd' =>
+            array (
+                'comcode' => 'ytkd',
+                'name' => '运通中港快递',
+                'type' => 1,
+            ),
+        'yaofeikuaidi' =>
+            array (
+                'comcode' => 'yaofeikuaidi',
+                'name' => '耀飞同城快递',
                 'type' => 1,
             ),
         'sfwl' =>
@@ -1197,29 +975,65 @@ class Express {
                 'name' => '盛丰物流',
                 'type' => 1,
             ),
-        'deutschepost' =>
+        'euasia' =>
             array (
-                'comcode' => 'deutschepost',
-                'name' => '德国(Deutsche Post)',
-                'type' => 2,
-            ),
-        'lbex' =>
-            array (
-                'comcode' => 'lbex',
-                'name' => '龙邦物流',
-                'type' => 1,
-            ),
-        'tianma' =>
-            array (
-                'comcode' => 'tianma',
-                'name' => '天马迅达',
-                'type' => 1,
-            ),
-        'coe' =>
-            array (
-                'comcode' => 'coe',
-                'name' => 'COE',
+                'comcode' => 'euasia',
+                'name' => '欧亚专线',
                 'type' => 3,
+            ),
+        'bazirim' =>
+            array (
+                'comcode' => 'bazirim',
+                'name' => '皮牙子快递',
+                'type' => 1,
+            ),
+        'la911' =>
+            array (
+                'comcode' => 'la911',
+                'name' => '鼎润物流',
+                'type' => 1,
+            ),
+        'dpex' =>
+            array (
+                'comcode' => 'dpex',
+                'name' => 'DPEX',
+                'type' => 3,
+            ),
+        'suteng' =>
+            array (
+                'comcode' => 'suteng',
+                'name' => '广东速腾物流',
+                'type' => 1,
+            ),
+        'fastgo' =>
+            array (
+                'comcode' => 'fastgo',
+                'name' => '速派快递(FastGo)',
+                'type' => 3,
+            ),
+        'anxl' =>
+            array (
+                'comcode' => 'anxl',
+                'name' => '安迅物流',
+                'type' => 1,
+            ),
+        'xunsuexpress' =>
+            array (
+                'comcode' => 'xunsuexpress',
+                'name' => '迅速快递',
+                'type' => 1,
+            ),
+        'zhongchuan' =>
+            array (
+                'comcode' => 'zhongchuan',
+                'name' => '众川国际',
+                'type' => 3,
+            ),
+        'hd' =>
+            array (
+                'comcode' => 'hd',
+                'name' => '宏递快运',
+                'type' => 1,
             ),
         'hnht56' =>
             array (
@@ -1227,34 +1041,22 @@ class Express {
                 'name' => '鸿泰物流',
                 'type' => 1,
             ),
-        'cnws' =>
+        'fedexcn' =>
             array (
-                'comcode' => 'cnws',
-                'name' => '中国翼',
+                'comcode' => 'fedexcn',
+                'name' => 'Fedex-国际件-中文',
                 'type' => 3,
             ),
-        'bht' =>
+        'westwing' =>
             array (
-                'comcode' => 'bht',
-                'name' => 'BHT',
-                'type' => 3,
-            ),
-        'tywl99' =>
-            array (
-                'comcode' => 'tywl99',
-                'name' => '天翼物流',
+                'comcode' => 'westwing',
+                'name' => '西翼物流',
                 'type' => 1,
             ),
-        'japanpost' =>
+        'yafengsudi' =>
             array (
-                'comcode' => 'japanpost',
-                'name' => '日本郵便',
-                'type' => 3,
-            ),
-        'jialidatong' =>
-            array (
-                'comcode' => 'jialidatong',
-                'name' => '嘉里大通',
+                'comcode' => 'yafengsudi',
+                'name' => '亚风速递',
                 'type' => 1,
             ),
         'jiayiwuliu' =>
@@ -1263,154 +1065,16 @@ class Express {
                 'name' => '佳怡物流',
                 'type' => 1,
             ),
-        'anxl' =>
+        'synship' =>
             array (
-                'comcode' => 'anxl',
-                'name' => '安迅物流',
-                'type' => 1,
-            ),
-        'fastgoexpress' =>
-            array (
-                'comcode' => 'fastgoexpress',
-                'name' => '速派快递',
-                'type' => 1,
-            ),
-        'westwing' =>
-            array (
-                'comcode' => 'westwing',
-                'name' => '西翼物流',
-                'type' => 1,
-            ),
-        'wto56kj' =>
-            array (
-                'comcode' => 'wto56kj',
-                'name' => '臣邦同城',
-                'type' => 1,
-            ),
-        'yzswuliu' =>
-            array (
-                'comcode' => 'yzswuliu',
-                'name' => '亚洲顺物流',
+                'comcode' => 'synship',
+                'name' => 'SYNSHIP快递',
                 'type' => 3,
             ),
-        'ztong' =>
+        'dekuncn' =>
             array (
-                'comcode' => 'ztong',
-                'name' => '智通物流',
-                'type' => 1,
-            ),
-        'cccc58' =>
-            array (
-                'comcode' => 'cccc58',
-                'name' => '中集冷云',
-                'type' => 1,
-            ),
-        'ganzhongnengda' =>
-            array (
-                'comcode' => 'ganzhongnengda',
-                'name' => '能达速递',
-                'type' => 1,
-            ),
-        'tstexp' =>
-            array (
-                'comcode' => 'tstexp',
-                'name' => 'TST速运通',
-                'type' => 3,
-            ),
-        'anxindakuaixi' =>
-            array (
-                'comcode' => 'anxindakuaixi',
-                'name' => '安信达',
-                'type' => 1,
-            ),
-        'haizhongzhuanyun' =>
-            array (
-                'comcode' => 'haizhongzhuanyun',
-                'name' => '海中转运',
-                'type' => 1,
-            ),
-        'jgwl' =>
-            array (
-                'comcode' => 'jgwl',
-                'name' => '景光物流',
-                'type' => 1,
-            ),
-        'mmlogi' =>
-            array (
-                'comcode' => 'mmlogi',
-                'name' => '猛犸速递',
-                'type' => 3,
-            ),
-        'sut56' =>
-            array (
-                'comcode' => 'sut56',
-                'name' => '速通物流',
-                'type' => 1,
-            ),
-        'chuangyi' =>
-            array (
-                'comcode' => 'chuangyi',
-                'name' => '创一快递',
-                'type' => 1,
-            ),
-        'gsm' =>
-            array (
-                'comcode' => 'gsm',
-                'name' => 'GSM',
-                'type' => 3,
-            ),
-        'tcat' =>
-            array (
-                'comcode' => 'tcat',
-                'name' => '黑猫宅急便',
-                'type' => 3,
-            ),
-        'zlink' =>
-            array (
-                'comcode' => 'zlink',
-                'name' => '三真驿道',
-                'type' => 1,
-            ),
-        'hangrui' =>
-            array (
-                'comcode' => 'hangrui',
-                'name' => '上海航瑞货运',
-                'type' => 1,
-            ),
-        'meiguokuaidi' =>
-            array (
-                'comcode' => 'meiguokuaidi',
-                'name' => '美国快递',
-                'type' => 3,
-            ),
-        'postnlcn' =>
-            array (
-                'comcode' => 'postnlcn',
-                'name' => '荷兰邮政-中文(PostNL international registered mail)',
-                'type' => 2,
-            ),
-        'jinan' =>
-            array (
-                'comcode' => 'jinan',
-                'name' => '金岸物流',
-                'type' => 1,
-            ),
-        'pingandatengfei' =>
-            array (
-                'comcode' => 'pingandatengfei',
-                'name' => '平安达腾飞',
-                'type' => 1,
-            ),
-        'yousutongda' =>
-            array (
-                'comcode' => 'yousutongda',
-                'name' => '优速通达',
-                'type' => 1,
-            ),
-        'ftky365' =>
-            array (
-                'comcode' => 'ftky365',
-                'name' => '丰通快运',
+                'comcode' => 'dekuncn',
+                'name' => '德坤物流',
                 'type' => 1,
             ),
         'hrex' =>
@@ -1419,88 +1083,118 @@ class Express {
                 'name' => '锦程快递',
                 'type' => 1,
             ),
-        'ytchengnuoda' =>
+        'ecmscn' =>
             array (
-                'comcode' => 'ytchengnuoda',
-                'name' => '承诺达',
-                'type' => 1,
-            ),
-        'yuanchengwuliu' =>
-            array (
-                'comcode' => 'yuanchengwuliu',
-                'name' => '远成物流',
-                'type' => 1,
-            ),
-        'com1express' =>
-            array (
-                'comcode' => 'com1express',
-                'name' => '商壹国际物流',
+                'comcode' => 'ecmscn',
+                'name' => '易客满',
                 'type' => 3,
             ),
-        'gdkd' =>
+        'bflg' =>
             array (
-                'comcode' => 'gdkd',
-                'name' => '港快速递',
+                'comcode' => 'bflg',
+                'name' => '上海缤纷物流',
                 'type' => 1,
             ),
-        'hlyex' =>
+        'auod' =>
             array (
-                'comcode' => 'hlyex',
-                'name' => '好来运',
+                'comcode' => 'auod',
+                'name' => '澳德物流',
+                'type' => 3,
+            ),
+        'tcat' =>
+            array (
+                'comcode' => 'tcat',
+                'name' => '黑猫宅急便',
+                'type' => 3,
+            ),
+        'guexp' =>
+            array (
+                'comcode' => 'guexp',
+                'name' => '全联速运',
                 'type' => 1,
             ),
-        'postserv' =>
+        'sundarexpress' =>
             array (
-                'comcode' => 'postserv',
-                'name' => '台湾（中华邮政）',
+                'comcode' => 'sundarexpress',
+                'name' => '顺达快递',
+                'type' => 1,
+            ),
+        'sut56' =>
+            array (
+                'comcode' => 'sut56',
+                'name' => '速通物流',
+                'type' => 1,
+            ),
+        'stosolution' =>
+            array (
+                'comcode' => 'stosolution',
+                'name' => '申通国际',
+                'type' => 3,
+            ),
+        'lbex' =>
+            array (
+                'comcode' => 'lbex',
+                'name' => '龙邦物流',
+                'type' => 1,
+            ),
+        'mosuda' =>
+            array (
+                'comcode' => 'mosuda',
+                'name' => '魔速达',
+                'type' => 1,
+            ),
+        'est365' =>
+            array (
+                'comcode' => 'est365',
+                'name' => '东方汇',
+                'type' => 1,
+            ),
+        'efs' =>
+            array (
+                'comcode' => 'efs',
+                'name' => 'EFS Post（平安快递）',
                 'type' => 2,
             ),
-        'vangenexpress' =>
+        'jgwl' =>
             array (
-                'comcode' => 'vangenexpress',
-                'name' => '万庚国际速递',
-                'type' => 3,
-            ),
-        'chuanxiwuliu' =>
-            array (
-                'comcode' => 'chuanxiwuliu',
-                'name' => '传喜物流',
+                'comcode' => 'jgwl',
+                'name' => '景光物流',
                 'type' => 1,
             ),
-        'dhlbenelux' =>
+        'yzswuliu' =>
             array (
-                'comcode' => 'dhlbenelux',
-                'name' => 'DHL Benelux',
+                'comcode' => 'yzswuliu',
+                'name' => '亚洲顺物流',
                 'type' => 3,
             ),
-        'italiane' =>
+        'zhaijibian' =>
             array (
-                'comcode' => 'italiane',
-                'name' => '意大利(Poste Italiane)',
+                'comcode' => 'zhaijibian',
+                'name' => '宅急便',
+                'type' => 3,
+            ),
+        'pjbest' =>
+            array (
+                'comcode' => 'pjbest',
+                'name' => '品骏快递',
+                'type' => 1,
+            ),
+        'deutschepost' =>
+            array (
+                'comcode' => 'deutschepost',
+                'name' => '德国(Deutsche Post)',
                 'type' => 2,
-            ),
-        'lijisong' =>
-            array (
-                'comcode' => 'lijisong',
-                'name' => '成都立即送',
-                'type' => 1,
-            ),
-        'ndwl' =>
-            array (
-                'comcode' => 'ndwl',
-                'name' => '南方传媒物流',
-                'type' => 1,
-            ),
-        'pfcexpress' =>
-            array (
-                'comcode' => 'pfcexpress',
-                'name' => '皇家物流',
-                'type' => 1,
             ),
         'yunfeng56' =>
             array (
                 'comcode' => 'yunfeng56',
                 'name' => '韵丰物流',
+                'type' => 1,
+            ),
+        'cht361' =>
+            array (
+                'comcode' => 'cht361',
+                'name' => '诚和通',
                 'type' => 1,
             ),
         'cnpex' =>
@@ -1509,22 +1203,34 @@ class Express {
                 'name' => 'CNPEX中邮快递',
                 'type' => 3,
             ),
-        'kingfreight' =>
+        'mmlogi' =>
             array (
-                'comcode' => 'kingfreight',
-                'name' => '货运皇',
+                'comcode' => 'mmlogi',
+                'name' => '猛犸速递',
                 'type' => 3,
             ),
-        'postnlchina' =>
+        'xynyc' =>
             array (
-                'comcode' => 'postnlchina',
-                'name' => '荷兰邮政-中国件',
-                'type' => 2,
+                'comcode' => 'xynyc',
+                'name' => '新元国际',
+                'type' => 3,
             ),
-        'quansu' =>
+        'dhlbenelux' =>
             array (
-                'comcode' => 'quansu',
-                'name' => '全速物流',
+                'comcode' => 'dhlbenelux',
+                'name' => 'DHL Benelux',
+                'type' => 3,
+            ),
+        'qinyuan' =>
+            array (
+                'comcode' => 'qinyuan',
+                'name' => '秦远物流',
+                'type' => 1,
+            ),
+        'runhengfeng' =>
+            array (
+                'comcode' => 'runhengfeng',
+                'name' => '全时速运',
                 'type' => 1,
             ),
         'shipgce' =>
@@ -1533,76 +1239,40 @@ class Express {
                 'name' => '飞洋快递',
                 'type' => 3,
             ),
-        'zyzoom' =>
+        'pingandatengfei' =>
             array (
-                'comcode' => 'zyzoom',
-                'name' => '增速跨境 ',
-                'type' => 3,
-            ),
-        'astexpress' =>
-            array (
-                'comcode' => 'astexpress',
-                'name' => '安世通快递',
+                'comcode' => 'pingandatengfei',
+                'name' => '平安达腾飞',
                 'type' => 1,
             ),
-        'chronopostfra' =>
+        'haidaibao' =>
             array (
-                'comcode' => 'chronopostfra',
-                'name' => '法国大包、EMS-法文（Chronopost France）',
+                'comcode' => 'haidaibao',
+                'name' => '海带宝',
+                'type' => 3,
+            ),
+        'ukrpostcn' =>
+            array (
+                'comcode' => 'ukrpostcn',
+                'name' => '乌克兰邮政包裹',
                 'type' => 2,
             ),
-        'cnausu' =>
+        'fastgoexpress' =>
             array (
-                'comcode' => 'cnausu',
-                'name' => '中澳速递',
-                'type' => 3,
-            ),
-        'jiujiuwl' =>
-            array (
-                'comcode' => 'jiujiuwl',
-                'name' => '久久物流',
+                'comcode' => 'fastgoexpress',
+                'name' => '速派快递',
                 'type' => 1,
             ),
-        'adp' =>
+        'tywl99' =>
             array (
-                'comcode' => 'adp',
-                'name' => 'ADP国际快递',
-                'type' => 3,
-            ),
-        'colissimo' =>
-            array (
-                'comcode' => 'colissimo',
-                'name' => '法国小包（colissimo）',
-                'type' => 3,
-            ),
-        'correosdees' =>
-            array (
-                'comcode' => 'correosdees',
-                'name' => '西班牙(Correos de Espa?a)',
-                'type' => 2,
-            ),
-        'jiacheng' =>
-            array (
-                'comcode' => 'jiacheng',
-                'name' => '佳成快递 ',
+                'comcode' => 'tywl99',
+                'name' => '天翼物流',
                 'type' => 1,
             ),
-        'zengyisudi' =>
+        'bsht' =>
             array (
-                'comcode' => 'zengyisudi',
-                'name' => '增益速递',
-                'type' => 1,
-            ),
-        'easyexpress' =>
-            array (
-                'comcode' => 'easyexpress',
-                'name' => 'EASY EXPRESS',
-                'type' => 3,
-            ),
-        'sundarexpress' =>
-            array (
-                'comcode' => 'sundarexpress',
-                'name' => '顺达快递',
+                'comcode' => 'bsht',
+                'name' => '百事亨通',
                 'type' => 1,
             ),
         'ubuy' =>
@@ -1611,58 +1281,34 @@ class Express {
                 'name' => '德国优拜物流',
                 'type' => 3,
             ),
-        'yizhengdasuyun' =>
+        'feiyuanvipshop' =>
             array (
-                'comcode' => 'yizhengdasuyun',
-                'name' => '一正达速运',
+                'comcode' => 'feiyuanvipshop',
+                'name' => '飞远配送',
                 'type' => 1,
             ),
-        'yue777' =>
+        'kejie' =>
             array (
-                'comcode' => 'yue777',
-                'name' => '玥玛速运',
+                'comcode' => 'kejie',
+                'name' => '科捷物流',
                 'type' => 1,
             ),
-        'boyol' =>
+        'rufengda' =>
             array (
-                'comcode' => 'boyol',
-                'name' => '贝业物流',
+                'comcode' => 'rufengda',
+                'name' => '如风达',
                 'type' => 1,
             ),
-        'cameroon' =>
+        'dayangwuliu' =>
             array (
-                'comcode' => 'cameroon',
-                'name' => '喀麦隆(CAMPOST)',
-                'type' => 2,
-            ),
-        'minghangkuaidi' =>
-            array (
-                'comcode' => 'minghangkuaidi',
-                'name' => '民航快递',
+                'comcode' => 'dayangwuliu',
+                'name' => '大洋物流',
                 'type' => 1,
             ),
-        'spring56' =>
+        'sendtochina' =>
             array (
-                'comcode' => 'spring56',
-                'name' => '春风物流',
-                'type' => 1,
-            ),
-        'tzky' =>
-            array (
-                'comcode' => 'tzky',
-                'name' => '铁中快运',
-                'type' => 1,
-            ),
-        'ausexpress' =>
-            array (
-                'comcode' => 'ausexpress',
-                'name' => '澳世速递',
-                'type' => 3,
-            ),
-        'fedexus' =>
-            array (
-                'comcode' => 'fedexus',
-                'name' => 'FedEx-美国件',
+                'comcode' => 'sendtochina',
+                'name' => '速递中国',
                 'type' => 3,
             ),
         'koreapost' =>
@@ -1671,40 +1317,52 @@ class Express {
                 'name' => '韩国（Korea Post）',
                 'type' => 2,
             ),
-        'parcelforce' =>
+        'ytchengnuoda' =>
             array (
-                'comcode' => 'parcelforce',
-                'name' => '英国大包、EMS（Parcel Force）',
+                'comcode' => 'ytchengnuoda',
+                'name' => '承诺达',
+                'type' => 1,
+            ),
+        'yangbaoguo' =>
+            array (
+                'comcode' => 'yangbaoguo',
+                'name' => '洋包裹',
+                'type' => 3,
+            ),
+        'jxfex' =>
+            array (
+                'comcode' => 'jxfex',
+                'name' => '集先锋快递',
+                'type' => 1,
+            ),
+        'italiane' =>
+            array (
+                'comcode' => 'italiane',
+                'name' => '意大利(Poste Italiane)',
                 'type' => 2,
             ),
-        'signedexpress' =>
+        'cosco' =>
             array (
-                'comcode' => 'signedexpress',
-                'name' => '签收快递',
+                'comcode' => 'cosco',
+                'name' => '中远e环球',
+                'type' => 3,
+            ),
+        'hangrui' =>
+            array (
+                'comcode' => 'hangrui',
+                'name' => '上海航瑞货运',
                 'type' => 1,
             ),
-        'youyou' =>
+        'postnlcn' =>
             array (
-                'comcode' => 'youyou',
-                'name' => '优优速递',
-                'type' => 1,
+                'comcode' => 'postnlcn',
+                'name' => '荷兰邮政-中文(PostNL international registered mail)',
+                'type' => 2,
             ),
-        'baitengwuliu' =>
+        'zlink' =>
             array (
-                'comcode' => 'baitengwuliu',
-                'name' => '百腾物流',
-                'type' => 1,
-            ),
-        'buytong' =>
-            array (
-                'comcode' => 'buytong',
-                'name' => '百通物流',
-                'type' => 1,
-            ),
-        'chengtong' =>
-            array (
-                'comcode' => 'chengtong',
-                'name' => '城通物流',
+                'comcode' => 'zlink',
+                'name' => '三真驿道',
                 'type' => 1,
             ),
         'jym56' =>
@@ -1713,17 +1371,215 @@ class Express {
                 'name' => '加运美速递',
                 'type' => 1,
             ),
-        'kerrytj' =>
+        'correosdees' =>
             array (
-                'comcode' => 'kerrytj',
-                'name' => '嘉里大荣物流',
+                'comcode' => 'correosdees',
+                'name' => '西班牙(Correos de Espa?a)',
+                'type' => 2,
+            ),
+        'jiujiuwl' =>
+            array (
+                'comcode' => 'jiujiuwl',
+                'name' => '久久物流',
                 'type' => 1,
             ),
-        'meixi' =>
+        'jiajiwuliu' =>
             array (
-                'comcode' => 'meixi',
-                'name' => '美西快递',
+                'comcode' => 'jiajiwuliu',
+                'name' => '佳吉快运',
+                'type' => 1,
+            ),
+        'cccc58' =>
+            array (
+                'comcode' => 'cccc58',
+                'name' => '中集冷云',
+                'type' => 1,
+            ),
+        'sagawa' =>
+            array (
+                'comcode' => 'sagawa',
+                'name' => '佐川急便',
                 'type' => 3,
+            ),
+        'lineone' =>
+            array (
+                'comcode' => 'lineone',
+                'name' => '一号线',
+                'type' => 3,
+            ),
+        'yousutongda' =>
+            array (
+                'comcode' => 'yousutongda',
+                'name' => '优速通达',
+                'type' => 1,
+            ),
+        'anxindakuaixi' =>
+            array (
+                'comcode' => 'anxindakuaixi',
+                'name' => '安信达',
+                'type' => 1,
+            ),
+        'etong' =>
+            array (
+                'comcode' => 'etong',
+                'name' => 'E通速递',
+                'type' => 3,
+            ),
+        'sd138' =>
+            array (
+                'comcode' => 'sd138',
+                'name' => '泰国138国际物流',
+                'type' => 3,
+            ),
+        'kingfreight' =>
+            array (
+                'comcode' => 'kingfreight',
+                'name' => '货运皇',
+                'type' => 3,
+            ),
+        'cnausu' =>
+            array (
+                'comcode' => 'cnausu',
+                'name' => '中澳速递',
+                'type' => 3,
+            ),
+        'chronopostfra' =>
+            array (
+                'comcode' => 'chronopostfra',
+                'name' => '法国大包、EMS-法文（Chronopost France）',
+                'type' => 2,
+            ),
+        'jinan' =>
+            array (
+                'comcode' => 'jinan',
+                'name' => '金岸物流',
+                'type' => 1,
+            ),
+        'blueskyexpress' =>
+            array (
+                'comcode' => 'blueskyexpress',
+                'name' => '蓝天快递',
+                'type' => 1,
+            ),
+        'jialidatong' =>
+            array (
+                'comcode' => 'jialidatong',
+                'name' => '嘉里大通',
+                'type' => 1,
+            ),
+        'gdkd' =>
+            array (
+                'comcode' => 'gdkd',
+                'name' => '港快速递',
+                'type' => 1,
+            ),
+        'jiajikuaidi' =>
+            array (
+                'comcode' => 'jiajikuaidi',
+                'name' => '佳吉快递',
+                'type' => 1,
+            ),
+        'shangda' =>
+            array (
+                'comcode' => 'shangda',
+                'name' => '上大物流',
+                'type' => 1,
+            ),
+        'wherexpess' =>
+            array (
+                'comcode' => 'wherexpess',
+                'name' => '威盛快递',
+                'type' => 1,
+            ),
+        'zengyisudi' =>
+            array (
+                'comcode' => 'zengyisudi',
+                'name' => '增益速递',
+                'type' => 1,
+            ),
+        'jiacheng' =>
+            array (
+                'comcode' => 'jiacheng',
+                'name' => '佳成快递 ',
+                'type' => 1,
+            ),
+        'wto56kj' =>
+            array (
+                'comcode' => 'wto56kj',
+                'name' => '臣邦同城',
+                'type' => 1,
+            ),
+        'ztong' =>
+            array (
+                'comcode' => 'ztong',
+                'name' => '智通物流',
+                'type' => 1,
+            ),
+        'hac56' =>
+            array (
+                'comcode' => 'hac56',
+                'name' => '瀚朝物流',
+                'type' => 1,
+            ),
+        'cameroon' =>
+            array (
+                'comcode' => 'cameroon',
+                'name' => '喀麦隆(CAMPOST)',
+                'type' => 2,
+            ),
+        'japanpost' =>
+            array (
+                'comcode' => 'japanpost',
+                'name' => '日本郵便',
+                'type' => 3,
+            ),
+        'wtdchina' =>
+            array (
+                'comcode' => 'wtdchina',
+                'name' => '威时沛运货运',
+                'type' => 1,
+            ),
+        'ganzhongnengda' =>
+            array (
+                'comcode' => 'ganzhongnengda',
+                'name' => '能达速递',
+                'type' => 1,
+            ),
+        'zyzoom' =>
+            array (
+                'comcode' => 'zyzoom',
+                'name' => '增速跨境 ',
+                'type' => 3,
+            ),
+        'taoplus' =>
+            array (
+                'comcode' => 'taoplus',
+                'name' => '淘布斯国际物流',
+                'type' => 3,
+            ),
+        'jieanda' =>
+            array (
+                'comcode' => 'jieanda',
+                'name' => '捷安达',
+                'type' => 1,
+            ),
+        'emswuliu' =>
+            array (
+                'comcode' => 'emswuliu',
+                'name' => 'EMS物流',
+                'type' => 1,
+            ),
+        'com1express' =>
+            array (
+                'comcode' => 'com1express',
+                'name' => '商壹国际物流',
+                'type' => 3,
+            ),
+        'hlyex' =>
+            array (
+                'comcode' => 'hlyex',
+                'name' => '好来运',
+                'type' => 1,
             ),
         'nell' =>
             array (
@@ -1731,22 +1587,190 @@ class Express {
                 'name' => '尼尔快递',
                 'type' => 1,
             ),
-        'tnjex' =>
+        'yuanchengwuliu' =>
             array (
-                'comcode' => 'tnjex',
-                'name' => '明通国际快递',
+                'comcode' => 'yuanchengwuliu',
+                'name' => '远成物流',
+                'type' => 1,
+            ),
+        'thailand' =>
+            array (
+                'comcode' => 'thailand',
+                'name' => '泰国（Thailand Thai Post）',
+                'type' => 2,
+            ),
+        'boyol' =>
+            array (
+                'comcode' => 'boyol',
+                'name' => '贝业物流',
+                'type' => 1,
+            ),
+        'signedexpress' =>
+            array (
+                'comcode' => 'signedexpress',
+                'name' => '签收快递',
+                'type' => 1,
+            ),
+        'yizhengdasuyun' =>
+            array (
+                'comcode' => 'yizhengdasuyun',
+                'name' => '一正达速运',
+                'type' => 1,
+            ),
+        'ruidianyouzheng' =>
+            array (
+                'comcode' => 'ruidianyouzheng',
+                'name' => '瑞典（Sweden Post）',
+                'type' => 2,
+            ),
+        'farlogistis' =>
+            array (
+                'comcode' => 'farlogistis',
+                'name' => '泛远国际物流',
                 'type' => 3,
             ),
-        'trakpak' =>
+        'nebuex' =>
             array (
-                'comcode' => 'trakpak',
-                'name' => 'TRAKPAK',
+                'comcode' => 'nebuex',
+                'name' => '星云速递',
+                'type' => 1,
+            ),
+        'amazoncnorder' =>
+            array (
+                'comcode' => 'amazoncnorder',
+                'name' => '亚马逊中国订单',
                 'type' => 3,
             ),
-        'ydglobe' =>
+        'nzzto' =>
             array (
-                'comcode' => 'ydglobe',
-                'name' => '云达通',
+                'comcode' => 'nzzto',
+                'name' => '新西兰中通',
+                'type' => 3,
+            ),
+        'minghangkuaidi' =>
+            array (
+                'comcode' => 'minghangkuaidi',
+                'name' => '民航快递',
+                'type' => 1,
+            ),
+        'postserv' =>
+            array (
+                'comcode' => 'postserv',
+                'name' => '台湾（中华邮政）',
+                'type' => 2,
+            ),
+        'youban' =>
+            array (
+                'comcode' => 'youban',
+                'name' => '邮邦国际',
+                'type' => 3,
+            ),
+        'yue777' =>
+            array (
+                'comcode' => 'yue777',
+                'name' => '玥玛速运',
+                'type' => 1,
+            ),
+        'fedexus' =>
+            array (
+                'comcode' => 'fedexus',
+                'name' => 'FedEx-美国件',
+                'type' => 3,
+            ),
+        'koalaexp' =>
+            array (
+                'comcode' => 'koalaexp',
+                'name' => '考拉速递',
+                'type' => 1,
+            ),
+        'newsway' =>
+            array (
+                'comcode' => 'newsway',
+                'name' => '家家通快递',
+                'type' => 1,
+            ),
+        'qpost' =>
+            array (
+                'comcode' => 'qpost',
+                'name' => '卡塔尔（Qatar Post）',
+                'type' => 2,
+            ),
+        'parcelforce' =>
+            array (
+                'comcode' => 'parcelforce',
+                'name' => '英国大包、EMS（Parcel Force）',
+                'type' => 2,
+            ),
+        'tzky' =>
+            array (
+                'comcode' => 'tzky',
+                'name' => '铁中快运',
+                'type' => 1,
+            ),
+        'colissimo' =>
+            array (
+                'comcode' => 'colissimo',
+                'name' => '法国小包（colissimo）',
+                'type' => 3,
+            ),
+        'wuliuky' =>
+            array (
+                'comcode' => 'wuliuky',
+                'name' => '五六快运',
+                'type' => 1,
+            ),
+        'shangcheng' =>
+            array (
+                'comcode' => 'shangcheng',
+                'name' => '尚橙物流',
+                'type' => 1,
+            ),
+        'ftky365' =>
+            array (
+                'comcode' => 'ftky365',
+                'name' => '丰通快运',
+                'type' => 1,
+            ),
+        'jiazhoumao' =>
+            array (
+                'comcode' => 'jiazhoumao',
+                'name' => '加州猫速递',
+                'type' => 1,
+            ),
+        'wlwex' =>
+            array (
+                'comcode' => 'wlwex',
+                'name' => '星空国际',
+                'type' => 3,
+            ),
+        'httx56' =>
+            array (
+                'comcode' => 'httx56',
+                'name' => '汇通天下物流',
+                'type' => 1,
+            ),
+        'huanqiuabc' =>
+            array (
+                'comcode' => 'huanqiuabc',
+                'name' => '中国香港环球快运',
+                'type' => 3,
+            ),
+        'easyexpress' =>
+            array (
+                'comcode' => 'easyexpress',
+                'name' => 'EASY EXPRESS',
+                'type' => 3,
+            ),
+        'hotwms' =>
+            array (
+                'comcode' => 'hotwms',
+                'name' => '皇家云仓',
+                'type' => 1,
+            ),
+        'ndwl' =>
+            array (
+                'comcode' => 'ndwl',
+                'name' => '南方传媒物流',
                 'type' => 1,
             ),
         'zteexpress' =>
@@ -1755,64 +1779,112 @@ class Express {
                 'name' => 'ZTE中兴物流',
                 'type' => 3,
             ),
-        'abf' =>
+        'speedpost' =>
             array (
-                'comcode' => 'abf',
-                'name' => 'ABF',
+                'comcode' => 'speedpost',
+                'name' => '新加坡EMS、大包(Singapore Speedpost)',
+                'type' => 2,
+            ),
+        'asendiausa' =>
+            array (
+                'comcode' => 'asendiausa',
+                'name' => 'Asendia USA',
                 'type' => 3,
             ),
-        'ajexpress' =>
+        'lfexpress' =>
             array (
-                'comcode' => 'ajexpress',
-                'name' => '捷记方舟',
+                'comcode' => 'lfexpress',
+                'name' => '龙枫国际快递',
                 'type' => 3,
             ),
-        'beebird' =>
+        'youyou' =>
             array (
-                'comcode' => 'beebird',
-                'name' => '锋鸟物流',
+                'comcode' => 'youyou',
+                'name' => '优优速递',
                 'type' => 1,
             ),
-        'chunfai' =>
+        'trakpak' =>
             array (
-                'comcode' => 'chunfai',
-                'name' => '中国香港骏辉物流',
+                'comcode' => 'trakpak',
+                'name' => 'TRAKPAK',
                 'type' => 3,
             ),
-        'cosco' =>
+        'baitengwuliu' =>
             array (
-                'comcode' => 'cosco',
-                'name' => '中远e环球',
+                'comcode' => 'baitengwuliu',
+                'name' => '百腾物流',
+                'type' => 1,
+            ),
+        'csuivi' =>
+            array (
+                'comcode' => 'csuivi',
+                'name' => '法国(La Poste)',
+                'type' => 2,
+            ),
+        'yuananda' =>
+            array (
+                'comcode' => 'yuananda',
+                'name' => '源安达',
+                'type' => 1,
+            ),
+        'tykd' =>
+            array (
+                'comcode' => 'tykd',
+                'name' => '天翼快递',
+                'type' => 1,
+            ),
+        'meiguokuaidi' =>
+            array (
+                'comcode' => 'meiguokuaidi',
+                'name' => '美国快递',
                 'type' => 3,
             ),
-        'exsuda' =>
+        'postnl' =>
             array (
-                'comcode' => 'exsuda',
-                'name' => 'E速达',
+                'comcode' => 'postnl',
+                'name' => '荷兰邮政(PostNL international registered mail)',
+                'type' => 2,
+            ),
+        'lasership' =>
+            array (
+                'comcode' => 'lasership',
+                'name' => 'LaserShip',
+                'type' => 3,
+            ),
+        'yujiawl' =>
+            array (
+                'comcode' => 'yujiawl',
+                'name' => '宇佳物流',
                 'type' => 1,
             ),
-        'ht22' =>
+        'haizhongzhuanyun' =>
             array (
-                'comcode' => 'ht22',
-                'name' => '海淘物流',
+                'comcode' => 'haizhongzhuanyun',
+                'name' => '海中转运',
                 'type' => 1,
             ),
-        'hyytes' =>
+        'kenya' =>
             array (
-                'comcode' => 'hyytes',
-                'name' => '恒宇运通',
+                'comcode' => 'kenya',
+                'name' => '肯尼亚(POSTA KENYA)',
+                'type' => 2,
+            ),
+        'vps' =>
+            array (
+                'comcode' => 'vps',
+                'name' => '维普恩物流',
                 'type' => 1,
             ),
-        'jingshun' =>
+        'eupackage' =>
             array (
-                'comcode' => 'jingshun',
-                'name' => '景顺物流',
+                'comcode' => 'eupackage',
+                'name' => '易优包裹',
                 'type' => 1,
             ),
-        'koalaexp' =>
+        'goldjet' =>
             array (
-                'comcode' => 'koalaexp',
-                'name' => '考拉速递',
+                'comcode' => 'goldjet',
+                'name' => '高捷快运',
                 'type' => 1,
             ),
         'landmarkglobal' =>
@@ -1827,16 +1899,88 @@ class Express {
                 'name' => 'LUCFLOW EXPRESS',
                 'type' => 1,
             ),
-        'qpost' =>
+        'bht' =>
             array (
-                'comcode' => 'qpost',
-                'name' => '卡塔尔（Qatar Post）',
+                'comcode' => 'bht',
+                'name' => 'BHT',
+                'type' => 3,
+            ),
+        'gsm' =>
+            array (
+                'comcode' => 'gsm',
+                'name' => 'GSM',
+                'type' => 3,
+            ),
+        'homecourier' =>
+            array (
+                'comcode' => 'homecourier',
+                'name' => '如家国际快递',
+                'type' => 3,
+            ),
+        'ht22' =>
+            array (
+                'comcode' => 'ht22',
+                'name' => '海淘物流',
+                'type' => 1,
+            ),
+        'nederlandpost' =>
+            array (
+                'comcode' => 'nederlandpost',
+                'name' => '荷兰速递(Nederland Post)',
                 'type' => 2,
             ),
-        'saiaodi' =>
+        'chuangyi' =>
             array (
-                'comcode' => 'saiaodi',
-                'name' => '赛澳递',
+                'comcode' => 'chuangyi',
+                'name' => '创一快递',
+                'type' => 1,
+            ),
+        'chengtong' =>
+            array (
+                'comcode' => 'chengtong',
+                'name' => '城通物流',
+                'type' => 1,
+            ),
+        'yongchangwuliu' =>
+            array (
+                'comcode' => 'yongchangwuliu',
+                'name' => '永昌物流',
+                'type' => 1,
+            ),
+        'anjie88' =>
+            array (
+                'comcode' => 'anjie88',
+                'name' => '安捷物流',
+                'type' => 1,
+            ),
+        'tcxbthai' =>
+            array (
+                'comcode' => 'tcxbthai',
+                'name' => 'TCXB国际物流',
+                'type' => 3,
+            ),
+        'pfcexpress' =>
+            array (
+                'comcode' => 'pfcexpress',
+                'name' => '皇家物流',
+                'type' => 1,
+            ),
+        'dechuangwuliu' =>
+            array (
+                'comcode' => 'dechuangwuliu',
+                'name' => '深圳德创物流',
+                'type' => 1,
+            ),
+        'uhi' =>
+            array (
+                'comcode' => 'uhi',
+                'name' => '优海国际速递',
+                'type' => 3,
+            ),
+        'chukou1' =>
+            array (
+                'comcode' => 'chukou1',
+                'name' => '出口易',
                 'type' => 3,
             ),
         'sccod' =>
@@ -1845,41 +1989,323 @@ class Express {
                 'name' => '丰程物流',
                 'type' => 1,
             ),
+        'uscbexpress' =>
+            array (
+                'comcode' => 'uscbexpress',
+                'name' => '易境达国际物流',
+                'type' => 3,
+            ),
+        'hermes' =>
+            array (
+                'comcode' => 'hermes',
+                'name' => 'Hermes',
+                'type' => 3,
+            ),
+        'astexpress' =>
+            array (
+                'comcode' => 'astexpress',
+                'name' => '安世通快递',
+                'type' => 1,
+            ),
+        'ausexpress' =>
+            array (
+                'comcode' => 'ausexpress',
+                'name' => '澳世速递',
+                'type' => 3,
+            ),
+        'chuanxiwuliu' =>
+            array (
+                'comcode' => 'chuanxiwuliu',
+                'name' => '传喜物流',
+                'type' => 1,
+            ),
+        'citylink' =>
+            array (
+                'comcode' => 'citylink',
+                'name' => 'City-Link',
+                'type' => 3,
+            ),
+        'yingchao' =>
+            array (
+                'comcode' => 'yingchao',
+                'name' => '英超物流',
+                'type' => 3,
+            ),
+        'zlxdjwl' =>
+            array (
+                'comcode' => 'zlxdjwl',
+                'name' => '中粮鲜到家物流',
+                'type' => 1,
+            ),
+        'swisspost' =>
+            array (
+                'comcode' => 'swisspost',
+                'name' => '瑞士(Swiss Post)',
+                'type' => 2,
+            ),
+        'cnws' =>
+            array (
+                'comcode' => 'cnws',
+                'name' => '中国翼',
+                'type' => 3,
+            ),
+        'qichen' =>
+            array (
+                'comcode' => 'qichen',
+                'name' => '启辰国际速递',
+                'type' => 3,
+            ),
+        'guoeryue' =>
+            array (
+                'comcode' => 'guoeryue',
+                'name' => '天天快物流',
+                'type' => 1,
+            ),
+        'wandougongzhu' =>
+            array (
+                'comcode' => 'wandougongzhu',
+                'name' => '豌豆物流',
+                'type' => 1,
+            ),
+        'saiaodimmb' =>
+            array (
+                'comcode' => 'saiaodimmb',
+                'name' => '赛澳递for买卖宝',
+                'type' => 3,
+            ),
+        'ctoexp' =>
+            array (
+                'comcode' => 'ctoexp',
+                'name' => '泰国中通CTO',
+                'type' => 3,
+            ),
+        'postdanmarken' =>
+            array (
+                'comcode' => 'postdanmarken',
+                'name' => '丹麦(Post Denmark)',
+                'type' => 2,
+            ),
+        'jumstc' =>
+            array (
+                'comcode' => 'jumstc',
+                'name' => '聚盟共建',
+                'type' => 1,
+            ),
+        'buytong' =>
+            array (
+                'comcode' => 'buytong',
+                'name' => '百通物流',
+                'type' => 1,
+            ),
+        'tnjex' =>
+            array (
+                'comcode' => 'tnjex',
+                'name' => '明通国际快递',
+                'type' => 3,
+            ),
+        'jcex' =>
+            array (
+                'comcode' => 'jcex',
+                'name' => 'jcex',
+                'type' => 3,
+            ),
+        'quansutong' =>
+            array (
+                'comcode' => 'quansutong',
+                'name' => '全速通',
+                'type' => 1,
+            ),
         'sunspeedy' =>
             array (
                 'comcode' => 'sunspeedy',
                 'name' => '新速航',
                 'type' => 1,
             ),
-        'taoplus' =>
+        'chengpei' =>
             array (
-                'comcode' => 'taoplus',
-                'name' => '淘布斯国际物流',
+                'comcode' => 'chengpei',
+                'name' => '河北橙配',
+                'type' => 1,
+            ),
+        'humpline' =>
+            array (
+                'comcode' => 'humpline',
+                'name' => '驼峰国际',
                 'type' => 3,
             ),
-        'thailand' =>
+        'vnpost' =>
             array (
-                'comcode' => 'thailand',
-                'name' => '泰国（Thailand Thai Post）',
+                'comcode' => 'vnpost',
+                'name' => '越南EMS(VNPost Express)',
                 'type' => 2,
             ),
-        'wtdchina' =>
+        'dfwl' =>
             array (
-                'comcode' => 'wtdchina',
-                'name' => '威时沛运货运',
+                'comcode' => 'dfwl',
+                'name' => '达发物流',
                 'type' => 1,
             ),
-        'yuananda' =>
+        'onehcang' =>
             array (
-                'comcode' => 'yuananda',
-                'name' => '源安达',
-                'type' => 1,
-            ),
-        'zhaijibian' =>
-            array (
-                'comcode' => 'zhaijibian',
-                'name' => '宅急便',
+                'comcode' => 'onehcang',
+                'name' => '一号仓',
                 'type' => 3,
+            ),
+        'shenganwuliu' =>
+            array (
+                'comcode' => 'shenganwuliu',
+                'name' => '圣安物流',
+                'type' => 1,
+            ),
+        'benteng' =>
+            array (
+                'comcode' => 'benteng',
+                'name' => '奔腾物流',
+                'type' => 1,
+            ),
+        'highsince' =>
+            array (
+                'comcode' => 'highsince',
+                'name' => 'Highsince',
+                'type' => 3,
+            ),
+        'beckygo' =>
+            array (
+                'comcode' => 'beckygo',
+                'name' => '佰麒快递',
+                'type' => 1,
+            ),
+        'byht' =>
+            array (
+                'comcode' => 'byht',
+                'name' => '展勤快递',
+                'type' => 1,
+            ),
+        'malaysiapost' =>
+            array (
+                'comcode' => 'malaysiapost',
+                'name' => '马来西亚小包（Malaysia Post(Registered)）',
+                'type' => 2,
+            ),
+        'pochta' =>
+            array (
+                'comcode' => 'pochta',
+                'name' => '俄罗斯邮政(Russian Post)',
+                'type' => 2,
+            ),
+        'postnlchina' =>
+            array (
+                'comcode' => 'postnlchina',
+                'name' => '荷兰邮政-中国件',
+                'type' => 2,
+            ),
+        'shunjieda' =>
+            array (
+                'comcode' => 'shunjieda',
+                'name' => '顺捷达',
+                'type' => 1,
+            ),
+        'hyytes' =>
+            array (
+                'comcode' => 'hyytes',
+                'name' => '恒宇运通',
+                'type' => 1,
+            ),
+        'zhonghuanus' =>
+            array (
+                'comcode' => 'zhonghuanus',
+                'name' => '中环转运',
+                'type' => 3,
+            ),
+        'anjiekuaidi' =>
+            array (
+                'comcode' => 'anjiekuaidi',
+                'name' => '青岛安捷快递',
+                'type' => 1,
+            ),
+        'vangenexpress' =>
+            array (
+                'comcode' => 'vangenexpress',
+                'name' => '万庚国际速递',
+                'type' => 3,
+            ),
+        'gongsuda' =>
+            array (
+                'comcode' => 'gongsuda',
+                'name' => '共速达',
+                'type' => 1,
+            ),
+        'haihongwangsong' =>
+            array (
+                'comcode' => 'haihongwangsong',
+                'name' => '海红网送',
+                'type' => 1,
+            ),
+        'qbexpress' =>
+            array (
+                'comcode' => 'qbexpress',
+                'name' => '秦邦快运',
+                'type' => 1,
+            ),
+        'anposten' =>
+            array (
+                'comcode' => 'anposten',
+                'name' => '爱尔兰(An Post)',
+                'type' => 2,
+            ),
+        'beebird' =>
+            array (
+                'comcode' => 'beebird',
+                'name' => '锋鸟物流',
+                'type' => 1,
+            ),
+        'gotoubi' =>
+            array (
+                'comcode' => 'gotoubi',
+                'name' => 'UBI Australia',
+                'type' => 3,
+            ),
+        'zdepost' =>
+            array (
+                'comcode' => 'zdepost',
+                'name' => '直德邮',
+                'type' => 3,
+            ),
+        'zsky123' =>
+            array (
+                'comcode' => 'zsky123',
+                'name' => '准实快运',
+                'type' => 1,
+            ),
+        'kerrytj' =>
+            array (
+                'comcode' => 'kerrytj',
+                'name' => '嘉里大荣物流',
+                'type' => 1,
+            ),
+        'macao' =>
+            array (
+                'comcode' => 'macao',
+                'name' => '中国澳门(Macau Post)',
+                'type' => 2,
+            ),
+        'zhongjiwuliu' =>
+            array (
+                'comcode' => 'zhongjiwuliu',
+                'name' => '中技物流',
+                'type' => 1,
+            ),
+        'dongjun' =>
+            array (
+                'comcode' => 'dongjun',
+                'name' => '成都东骏物流',
+                'type' => 1,
+            ),
+        'shunfenghk' =>
+            array (
+                'comcode' => 'shunfenghk',
+                'name' => '顺丰-繁体',
+                'type' => 1,
             ),
         'bpostinter' =>
             array (
@@ -1887,22 +2313,16 @@ class Express {
                 'name' => '比利时国际(Bpost international)',
                 'type' => 2,
             ),
-        'bulgarian' =>
+        'cllexpress' =>
             array (
-                'comcode' => 'bulgarian',
-                'name' => '保加利亚（Bulgarian Posts）',
-                'type' => 2,
+                'comcode' => 'cllexpress',
+                'name' => '澳通华人物流',
+                'type' => 3,
             ),
-        'ccd' =>
+        'dhlecommerce' =>
             array (
-                'comcode' => 'ccd',
-                'name' => '河南次晨达',
-                'type' => 1,
-            ),
-        'chukou1' =>
-            array (
-                'comcode' => 'chukou1',
-                'name' => '出口易',
+                'comcode' => 'dhlecommerce',
+                'name' => 'dhl小包',
                 'type' => 3,
             ),
         'disifangau' =>
@@ -1910,6 +2330,84 @@ class Express {
                 'comcode' => 'disifangau',
                 'name' => '递四方澳洲',
                 'type' => 3,
+            ),
+        'feibaokuaidi' =>
+            array (
+                'comcode' => 'feibaokuaidi',
+                'name' => '飞豹快递',
+                'type' => 1,
+            ),
+        'fyex' =>
+            array (
+                'comcode' => 'fyex',
+                'name' => '飞云快递系统',
+                'type' => 1,
+            ),
+        'jcsuda' =>
+            array (
+                'comcode' => 'jcsuda',
+                'name' => '嘉诚速达',
+                'type' => 1,
+            ),
+        'koreapostcn' =>
+            array (
+                'comcode' => 'koreapostcn',
+                'name' => '韩国邮政',
+                'type' => 2,
+            ),
+        'shlindao' =>
+            array (
+                'comcode' => 'shlindao',
+                'name' => '林道国际快递',
+                'type' => 3,
+            ),
+        'xiyoug' =>
+            array (
+                'comcode' => 'xiyoug',
+                'name' => '西游寄',
+                'type' => 3,
+            ),
+        'yuefengwuliu' =>
+            array (
+                'comcode' => 'yuefengwuliu',
+                'name' => '越丰物流',
+                'type' => 1,
+            ),
+        'ztjieda' =>
+            array (
+                'comcode' => 'ztjieda',
+                'name' => '泰捷达国际物流',
+                'type' => 3,
+            ),
+        'adp' =>
+            array (
+                'comcode' => 'adp',
+                'name' => 'ADP国际快递',
+                'type' => 3,
+            ),
+        'baishiyp' =>
+            array (
+                'comcode' => 'baishiyp',
+                'name' => '百世云配',
+                'type' => 1,
+            ),
+        'bjemstckj' =>
+            array (
+                'comcode' => 'bjemstckj',
+                'name' => '北京EMS',
+                'type' => 2,
+            ),
+        'chunfai' =>
+            array (
+                'comcode' => 'chunfai',
+                'name' => '中国香港骏辉物流',
+                'type' => 3,
+            ),
+        'cnspeedster' =>
+            array (
+                'comcode' => 'cnspeedster',
+                'name' => '速舟物流',
+                'type' => 1,
             ),
         'efspost' =>
             array (
@@ -1923,52 +2421,10 @@ class Express {
                 'name' => '俄顺达',
                 'type' => 1,
             ),
-        'eupackage' =>
+        'exsuda' =>
             array (
-                'comcode' => 'eupackage',
-                'name' => '易优包裹',
-                'type' => 1,
-            ),
-        'fastway' =>
-            array (
-                'comcode' => 'fastway',
-                'name' => 'Fastway Ireland',
-                'type' => 3,
-            ),
-        'gslexpress' =>
-            array (
-                'comcode' => 'gslexpress',
-                'name' => '德尚国际速递',
-                'type' => 3,
-            ),
-        'hermes' =>
-            array (
-                'comcode' => 'hermes',
-                'name' => 'Hermes',
-                'type' => 3,
-            ),
-        'homecourier' =>
-            array (
-                'comcode' => 'homecourier',
-                'name' => '如家国际快递',
-                'type' => 3,
-            ),
-        'httx56' =>
-            array (
-                'comcode' => 'httx56',
-                'name' => '汇通天下物流',
-                'type' => 1,
-            ),
-        'malaysiapost' =>
-            array (
-                'comcode' => 'malaysiapost',
-                'name' => '马来西亚小包（Malaysia Post(Registered)）',
-                'type' => 2,
-            ),
-        'mingliangwuliu' =>
-            array (
-                'comcode' => 'mingliangwuliu',
-                'name' => '明亮物流',
+                'comcode' => 'exsuda',
+                'name' => 'E速达',
                 'type' => 1,
             ),
         'newgistics' =>
@@ -1977,149 +2433,89 @@ class Express {
                 'name' => 'Newgistics',
                 'type' => 3,
             ),
-        'ruidianyouzheng' =>
+        'quansu' =>
             array (
-                'comcode' => 'ruidianyouzheng',
-                'name' => '瑞典（Sweden Post）',
-                'type' => 2,
+                'comcode' => 'quansu',
+                'name' => '全速物流',
+                'type' => 1,
             ),
-        'sd138' =>
+        'ydglobe' =>
             array (
-                'comcode' => 'sd138',
-                'name' => '泰国138国际物流',
+                'comcode' => 'ydglobe',
+                'name' => '云达通',
+                'type' => 1,
+            ),
+        'airpak' =>
+            array (
+                'comcode' => 'airpak',
+                'name' => 'airpak expresss',
                 'type' => 3,
             ),
-        'tcxbthai' =>
+        'ynztsy' =>
             array (
-                'comcode' => 'tcxbthai',
-                'name' => 'TCXB国际物流',
+                'comcode' => 'ynztsy',
+                'name' => '纵通速运',
+                'type' => 1,
+            ),
+        'alog' =>
+            array (
+                'comcode' => 'alog',
+                'name' => '心怡物流',
+                'type' => 1,
+            ),
+        'gslexpress' =>
+            array (
+                'comcode' => 'gslexpress',
+                'name' => '德尚国际速递',
                 'type' => 3,
             ),
-        'vps' =>
+        'jieborne' =>
             array (
-                'comcode' => 'vps',
-                'name' => '维普恩物流',
+                'comcode' => 'jieborne',
+                'name' => '捷邦物流',
                 'type' => 1,
             ),
-        'wuliuky' =>
+        'yuntongkuaidi' =>
             array (
-                'comcode' => 'wuliuky',
-                'name' => '五六快运',
+                'comcode' => 'yuntongkuaidi',
+                'name' => '运通中港',
                 'type' => 1,
             ),
-        'yuefengwuliu' =>
+        'zhongtianwanyun' =>
             array (
-                'comcode' => 'yuefengwuliu',
-                'name' => '越丰物流',
+                'comcode' => 'zhongtianwanyun',
+                'name' => '中天万运',
                 'type' => 1,
             ),
-        'yujiawl' =>
+        'abf' =>
             array (
-                'comcode' => 'yujiawl',
-                'name' => '宇佳物流',
-                'type' => 1,
-            ),
-        'asendiausa' =>
-            array (
-                'comcode' => 'asendiausa',
-                'name' => 'Asendia USA',
+                'comcode' => 'abf',
+                'name' => 'ABF',
                 'type' => 3,
             ),
-        'bjemstckj' =>
+        'ksudi' =>
             array (
-                'comcode' => 'bjemstckj',
-                'name' => '北京EMS',
-                'type' => 2,
+                'comcode' => 'ksudi',
+                'name' => '快速递',
+                'type' => 1,
             ),
-        'eucnrail' =>
+        'ltx' =>
             array (
-                'comcode' => 'eucnrail',
-                'name' => '中欧国际物流',
+                'comcode' => 'ltx',
+                'name' => '蓝天国际快递',
                 'type' => 3,
             ),
-        'fastontime' =>
+        'luben' =>
             array (
-                'comcode' => 'fastontime',
-                'name' => '加拿大联通快运',
+                'comcode' => 'luben',
+                'name' => '陆本速递 LUBEN EXPRESS',
+                'type' => 1,
+            ),
+        'tntuk' =>
+            array (
+                'comcode' => 'tntuk',
+                'name' => 'TNT UK',
                 'type' => 3,
-            ),
-        'flowerkd' =>
-            array (
-                'comcode' => 'flowerkd',
-                'name' => '花瓣转运',
-                'type' => 3,
-            ),
-        'ftlexpress' =>
-            array (
-                'comcode' => 'ftlexpress',
-                'name' => '法翔速运',
-                'type' => 1,
-            ),
-        'goldjet' =>
-            array (
-                'comcode' => 'goldjet',
-                'name' => '高捷快运',
-                'type' => 1,
-            ),
-        'gongsuda' =>
-            array (
-                'comcode' => 'gongsuda',
-                'name' => '共速达',
-                'type' => 1,
-            ),
-        'kenya' =>
-            array (
-                'comcode' => 'kenya',
-                'name' => '肯尼亚(POSTA KENYA)',
-                'type' => 2,
-            ),
-        'nebuex' =>
-            array (
-                'comcode' => 'nebuex',
-                'name' => '星云速递',
-                'type' => 1,
-            ),
-        'nederlandpost' =>
-            array (
-                'comcode' => 'nederlandpost',
-                'name' => '荷兰速递(Nederland Post)',
-                'type' => 2,
-            ),
-        'newsway' =>
-            array (
-                'comcode' => 'newsway',
-                'name' => '家家通快递',
-                'type' => 1,
-            ),
-        'qbexpress' =>
-            array (
-                'comcode' => 'qbexpress',
-                'name' => '秦邦快运',
-                'type' => 1,
-            ),
-        'qichen' =>
-            array (
-                'comcode' => 'qichen',
-                'name' => '启辰国际速递',
-                'type' => 3,
-            ),
-        'shangcheng' =>
-            array (
-                'comcode' => 'shangcheng',
-                'name' => '尚橙物流',
-                'type' => 1,
-            ),
-        'swisspost' =>
-            array (
-                'comcode' => 'swisspost',
-                'name' => '瑞士(Swiss Post)',
-                'type' => 2,
-            ),
-        'tykd' =>
-            array (
-                'comcode' => 'tykd',
-                'name' => '天翼快递',
-                'type' => 1,
             ),
         'uspscn' =>
             array (
@@ -2127,16 +2523,142 @@ class Express {
                 'name' => 'USPSCN',
                 'type' => 3,
             ),
-        'zhuoshikuaiyun' =>
+        'zsda56' =>
             array (
-                'comcode' => 'zhuoshikuaiyun',
-                'name' => '卓实快运',
+                'comcode' => 'zsda56',
+                'name' => '转瞬达集运',
                 'type' => 1,
             ),
-        'anjiekuaidi' =>
+        'zsmhwl' =>
             array (
-                'comcode' => 'anjiekuaidi',
-                'name' => '青岛安捷快递',
+                'comcode' => 'zsmhwl',
+                'name' => '明辉物流',
+                'type' => 1,
+            ),
+        'aolau' =>
+            array (
+                'comcode' => 'aolau',
+                'name' => 'AOL澳通速递',
+                'type' => 3,
+            ),
+        'bqcwl' =>
+            array (
+                'comcode' => 'bqcwl',
+                'name' => '百千诚物流',
+                'type' => 1,
+            ),
+        'hhair56' =>
+            array (
+                'comcode' => 'hhair56',
+                'name' => '华瀚快递',
+                'type' => 1,
+            ),
+        'mingliangwuliu' =>
+            array (
+                'comcode' => 'mingliangwuliu',
+                'name' => '明亮物流',
+                'type' => 1,
+            ),
+        'pengyuanexpress' =>
+            array (
+                'comcode' => 'pengyuanexpress',
+                'name' => '鹏远国际速递',
+                'type' => 3,
+            ),
+        '1ziton' =>
+            array (
+                'comcode' => '1ziton',
+                'name' => '一智通',
+                'type' => 1,
+            ),
+        'ausbondexpress' =>
+            array (
+                'comcode' => 'ausbondexpress',
+                'name' => '澳邦国际物流',
+                'type' => 1,
+            ),
+        'bee001' =>
+            array (
+                'comcode' => 'bee001',
+                'name' => '蜜蜂速递',
+                'type' => 1,
+            ),
+        'excocotree' =>
+            array (
+                'comcode' => 'excocotree',
+                'name' => '可可树美中速运',
+                'type' => 1,
+            ),
+        'idamalu' =>
+            array (
+                'comcode' => 'idamalu',
+                'name' => '大马鹿',
+                'type' => 1,
+            ),
+        'shunjiefengda' =>
+            array (
+                'comcode' => 'shunjiefengda',
+                'name' => '顺捷丰达',
+                'type' => 1,
+            ),
+        'slovenia' =>
+            array (
+                'comcode' => 'slovenia',
+                'name' => '斯洛文尼亚(Slovenia Post)',
+                'type' => 2,
+            ),
+        'trackparcel' =>
+            array (
+                'comcode' => 'trackparcel',
+                'name' => 'track-parcel',
+                'type' => 3,
+            ),
+        'yidatong' =>
+            array (
+                'comcode' => 'yidatong',
+                'name' => '易达通',
+                'type' => 1,
+            ),
+        'yiouzhou' =>
+            array (
+                'comcode' => 'yiouzhou',
+                'name' => '易欧洲国际物流',
+                'type' => 3,
+            ),
+        'fanyukuaidi' =>
+            array (
+                'comcode' => 'fanyukuaidi',
+                'name' => '凡宇快递',
+                'type' => 1,
+            ),
+        'fastontime' =>
+            array (
+                'comcode' => 'fastontime',
+                'name' => '加拿大联通快运',
+                'type' => 3,
+            ),
+        'feikangda' =>
+            array (
+                'comcode' => 'feikangda',
+                'name' => '飞康达',
+                'type' => 1,
+            ),
+        'quanritongkuaidi' =>
+            array (
+                'comcode' => 'quanritongkuaidi',
+                'name' => '全日通',
+                'type' => 1,
+            ),
+        'zjgj56' =>
+            array (
+                'comcode' => 'zjgj56',
+                'name' => '振捷国际货运',
+                'type' => 3,
+            ),
+        'bangsongwuliu' =>
+            array (
+                'comcode' => 'bangsongwuliu',
+                'name' => '邦送物流',
                 'type' => 1,
             ),
         'bdatong' =>
@@ -2145,131 +2667,47 @@ class Express {
                 'name' => '八达通',
                 'type' => 1,
             ),
-        'benteng' =>
+        'belgiumpost' =>
             array (
-                'comcode' => 'benteng',
-                'name' => '奔腾物流',
-                'type' => 1,
-            ),
-        'biaojikuaidi' =>
-            array (
-                'comcode' => 'biaojikuaidi',
-                'name' => '彪记快递',
-                'type' => 1,
-            ),
-        'byht' =>
-            array (
-                'comcode' => 'byht',
-                'name' => '展勤快递',
-                'type' => 1,
-            ),
-        'cht361' =>
-            array (
-                'comcode' => 'cht361',
-                'name' => '诚和通',
-                'type' => 1,
-            ),
-        'cllexpress' =>
-            array (
-                'comcode' => 'cllexpress',
-                'name' => '澳通华人物流',
-                'type' => 3,
-            ),
-        'cnspeedster' =>
-            array (
-                'comcode' => 'cnspeedster',
-                'name' => '速舟物流',
-                'type' => 1,
-            ),
-        'dechuangwuliu' =>
-            array (
-                'comcode' => 'dechuangwuliu',
-                'name' => '深圳德创物流',
-                'type' => 1,
-            ),
-        'dongjun' =>
-            array (
-                'comcode' => 'dongjun',
-                'name' => '成都东骏物流',
-                'type' => 1,
-            ),
-        'feikangda' =>
-            array (
-                'comcode' => 'feikangda',
-                'name' => '飞康达',
-                'type' => 1,
-            ),
-        'guoeryue' =>
-            array (
-                'comcode' => 'guoeryue',
-                'name' => '天天快物流',
-                'type' => 1,
-            ),
-        'haihongwangsong' =>
-            array (
-                'comcode' => 'haihongwangsong',
-                'name' => '海红网送',
-                'type' => 1,
-            ),
-        'highsince' =>
-            array (
-                'comcode' => 'highsince',
-                'name' => 'Highsince',
-                'type' => 3,
-            ),
-        'hotwms' =>
-            array (
-                'comcode' => 'hotwms',
-                'name' => '皇家云仓',
-                'type' => 1,
-            ),
-        'jumstc' =>
-            array (
-                'comcode' => 'jumstc',
-                'name' => '聚盟共建',
-                'type' => 1,
-            ),
-        'kcs' =>
-            array (
-                'comcode' => 'kcs',
-                'name' => 'KCS',
-                'type' => 3,
-            ),
-        'kejie' =>
-            array (
-                'comcode' => 'kejie',
-                'name' => '科捷物流',
-                'type' => 1,
-            ),
-        'koali' =>
-            array (
-                'comcode' => 'koali',
-                'name' => '番薯国际货运',
-                'type' => 3,
-            ),
-        'lasership' =>
-            array (
-                'comcode' => 'lasership',
-                'name' => 'LaserShip',
-                'type' => 3,
-            ),
-        'lfexpress' =>
-            array (
-                'comcode' => 'lfexpress',
-                'name' => '龙枫国际快递',
-                'type' => 3,
-            ),
-        'lutong' =>
-            array (
-                'comcode' => 'lutong',
-                'name' => '鲁通快运',
-                'type' => 1,
-            ),
-        'macao' =>
-            array (
-                'comcode' => 'macao',
-                'name' => '中国澳门(Macau Post)',
+                'comcode' => 'belgiumpost',
+                'name' => '比利时(Belgium Post)',
                 'type' => 2,
+            ),
+        'bulgarian' =>
+            array (
+                'comcode' => 'bulgarian',
+                'name' => '保加利亚（Bulgarian Posts）',
+                'type' => 2,
+            ),
+        'esinotrans' =>
+            array (
+                'comcode' => 'esinotrans',
+                'name' => '中外运',
+                'type' => 3,
+            ),
+        'fox' =>
+            array (
+                'comcode' => 'fox',
+                'name' => 'FOX国际快递',
+                'type' => 3,
+            ),
+        'gttexpress' =>
+            array (
+                'comcode' => 'gttexpress',
+                'name' => 'GTT EXPRESS快递',
+                'type' => 1,
+            ),
+        'hmus' =>
+            array (
+                'comcode' => 'hmus',
+                'name' => '华美快递',
+                'type' => 1,
+            ),
+        'kuai8' =>
+            array (
+                'comcode' => 'kuai8',
+                'name' => '快8速运',
+                'type' => 1,
             ),
         'malaysiaems' =>
             array (
@@ -2289,47 +2727,23 @@ class Express {
                 'name' => '腾达速递',
                 'type' => 1,
             ),
-        'ocaargen' =>
+        'rpx' =>
             array (
-                'comcode' => 'ocaargen',
-                'name' => 'OCA Argentina',
+                'comcode' => 'rpx',
+                'name' => 'rpx',
                 'type' => 3,
             ),
-        'onehcang' =>
+        'saiaodi' =>
             array (
-                'comcode' => 'onehcang',
-                'name' => '一号仓',
+                'comcode' => 'saiaodi',
+                'name' => '赛澳递',
                 'type' => 3,
             ),
-        'pengyuanexpress' =>
+        'szuem' =>
             array (
-                'comcode' => 'pengyuanexpress',
-                'name' => '鹏远国际速递',
-                'type' => 3,
-            ),
-        'postnl' =>
-            array (
-                'comcode' => 'postnl',
-                'name' => '荷兰邮政(PostNL international registered mail)',
-                'type' => 2,
-            ),
-        'quanchuan56' =>
-            array (
-                'comcode' => 'quanchuan56',
-                'name' => '全川物流',
+                'comcode' => 'szuem',
+                'name' => '联运通物流',
                 'type' => 1,
-            ),
-        'sdsy888' =>
-            array (
-                'comcode' => 'sdsy888',
-                'name' => '首达速运',
-                'type' => 1,
-            ),
-        'speedpost' =>
-            array (
-                'comcode' => 'speedpost',
-                'name' => '新加坡EMS、大包(Singapore Speedpost)',
-                'type' => 2,
             ),
         'taijin' =>
             array (
@@ -2337,53 +2751,17 @@ class Express {
                 'name' => '泰进物流',
                 'type' => 1,
             ),
-        'trackparcel' =>
-            array (
-                'comcode' => 'trackparcel',
-                'name' => 'track-parcel',
-                'type' => 3,
-            ),
-        'uganda' =>
-            array (
-                'comcode' => 'uganda',
-                'name' => '乌干达(Posta Uganda)',
-                'type' => 2,
-            ),
-        'uhi' =>
-            array (
-                'comcode' => 'uhi',
-                'name' => '优海国际速递',
-                'type' => 3,
-            ),
         'xianglongyuntong' =>
             array (
                 'comcode' => 'xianglongyuntong',
                 'name' => '祥龙运通物流',
                 'type' => 1,
             ),
-        'yingchao' =>
+        'yinjiesudi' =>
             array (
-                'comcode' => 'yingchao',
-                'name' => '英超物流',
-                'type' => 3,
-            ),
-        'yongchangwuliu' =>
-            array (
-                'comcode' => 'yongchangwuliu',
-                'name' => '永昌物流',
+                'comcode' => 'yinjiesudi',
+                'name' => '银捷速递',
                 'type' => 1,
-            ),
-        'zdepost' =>
-            array (
-                'comcode' => 'zdepost',
-                'name' => '直德邮',
-                'type' => 3,
-            ),
-        'zjgj56' =>
-            array (
-                'comcode' => 'zjgj56',
-                'name' => '振捷国际货运',
-                'type' => 3,
             ),
         'a2u' =>
             array (
@@ -2397,28 +2775,640 @@ class Express {
                 'name' => '德方物流',
                 'type' => 1,
             ),
-        'airpak' =>
+        'ajexpress' =>
             array (
-                'comcode' => 'airpak',
-                'name' => 'airpak expresss',
+                'comcode' => 'ajexpress',
+                'name' => '捷记方舟',
                 'type' => 3,
             ),
-        'anjie88' =>
+        'bangbangpost' =>
             array (
-                'comcode' => 'anjie88',
-                'name' => '安捷物流',
-                'type' => 1,
+                'comcode' => 'bangbangpost',
+                'name' => '帮帮发',
+                'type' => 3,
             ),
-        'anposten' =>
+        'chronopostfren' =>
             array (
-                'comcode' => 'anposten',
-                'name' => '爱尔兰(An Post)',
+                'comcode' => 'chronopostfren',
+                'name' => '法国大包、EMS-英文(Chronopost France)',
                 'type' => 2,
             ),
-        'aolau' =>
+        'dadaoex' =>
             array (
-                'comcode' => 'aolau',
-                'name' => 'AOL澳通速递',
+                'comcode' => 'dadaoex',
+                'name' => '大道物流',
+                'type' => 1,
+            ),
+        'flowerkd' =>
+            array (
+                'comcode' => 'flowerkd',
+                'name' => '花瓣转运',
+                'type' => 3,
+            ),
+        'ftlexpress' =>
+            array (
+                'comcode' => 'ftlexpress',
+                'name' => '法翔速运',
+                'type' => 1,
+            ),
+        'hkems' =>
+            array (
+                'comcode' => 'hkems',
+                'name' => '云邮跨境快递',
+                'type' => 3,
+            ),
+        'jamaicapost' =>
+            array (
+                'comcode' => 'jamaicapost',
+                'name' => '牙买加（Jamaica Post）',
+                'type' => 2,
+            ),
+        'jiguang' =>
+            array (
+                'comcode' => 'jiguang',
+                'name' => '极光转运',
+                'type' => 3,
+            ),
+        'koali' =>
+            array (
+                'comcode' => 'koali',
+                'name' => '番薯国际货运',
+                'type' => 3,
+            ),
+        'lesotho' =>
+            array (
+                'comcode' => 'lesotho',
+                'name' => '莱索托(Lesotho Post)',
+                'type' => 2,
+            ),
+        'minbangsudi' =>
+            array (
+                'comcode' => 'minbangsudi',
+                'name' => '民邦速递',
+                'type' => 1,
+            ),
+        'postnlpacle' =>
+            array (
+                'comcode' => 'postnlpacle',
+                'name' => '荷兰包裹(PostNL International Parcels)',
+                'type' => 2,
+            ),
+        'riyuwuliu' =>
+            array (
+                'comcode' => 'riyuwuliu',
+                'name' => '日昱物流',
+                'type' => 1,
+            ),
+        'shipbyace' =>
+            array (
+                'comcode' => 'shipbyace',
+                'name' => '王牌快递',
+                'type' => 1,
+            ),
+        'ycgky' =>
+            array (
+                'comcode' => 'ycgky',
+                'name' => '远成快运',
+                'type' => 1,
+            ),
+        'zhongwaiyun' =>
+            array (
+                'comcode' => 'zhongwaiyun',
+                'name' => '中外运速递',
+                'type' => 3,
+            ),
+        'zhpex' =>
+            array (
+                'comcode' => 'zhpex',
+                'name' => '众派速递',
+                'type' => 1,
+            ),
+        'zhuoshikuaiyun' =>
+            array (
+                'comcode' => 'zhuoshikuaiyun',
+                'name' => '卓实快运',
+                'type' => 1,
+            ),
+        'bester' =>
+            array (
+                'comcode' => 'bester',
+                'name' => '飛斯特',
+                'type' => 3,
+            ),
+        'ccd' =>
+            array (
+                'comcode' => 'ccd',
+                'name' => '河南次晨达',
+                'type' => 1,
+            ),
+        'cces' =>
+            array (
+                'comcode' => 'cces',
+                'name' => 'CCES/国通快递',
+                'type' => 3,
+            ),
+        'comexpress' =>
+            array (
+                'comcode' => 'comexpress',
+                'name' => '邦通国际',
+                'type' => 3,
+            ),
+        'diantongkuaidi' =>
+            array (
+                'comcode' => 'diantongkuaidi',
+                'name' => '店通快递',
+                'type' => 1,
+            ),
+        'eucnrail' =>
+            array (
+                'comcode' => 'eucnrail',
+                'name' => '中欧国际物流',
+                'type' => 3,
+            ),
+        'fastway' =>
+            array (
+                'comcode' => 'fastway',
+                'name' => 'Fastway Ireland',
+                'type' => 3,
+            ),
+        'fbkd' =>
+            array (
+                'comcode' => 'fbkd',
+                'name' => '飞邦快递',
+                'type' => 1,
+            ),
+        'ghtexpress' =>
+            array (
+                'comcode' => 'ghtexpress',
+                'name' => 'GHT物流',
+                'type' => 3,
+            ),
+        'jixianda' =>
+            array (
+                'comcode' => 'jixianda',
+                'name' => '急先达',
+                'type' => 1,
+            ),
+        'kcs' =>
+            array (
+                'comcode' => 'kcs',
+                'name' => 'KCS',
+                'type' => 3,
+            ),
+        'khzto' =>
+            array (
+                'comcode' => 'khzto',
+                'name' => '柬埔寨中通',
+                'type' => 1,
+            ),
+        'maxeedexpress' =>
+            array (
+                'comcode' => 'maxeedexpress',
+                'name' => '澳洲迈速快递',
+                'type' => 3,
+            ),
+        'novaposhta' =>
+            array (
+                'comcode' => 'novaposhta',
+                'name' => 'Nova Poshta',
+                'type' => 3,
+            ),
+        'pakistan' =>
+            array (
+                'comcode' => 'pakistan',
+                'name' => '巴基斯坦(Pakistan Post)',
+                'type' => 2,
+            ),
+        'pcaexpress' =>
+            array (
+                'comcode' => 'pcaexpress',
+                'name' => 'PCA Express',
+                'type' => 3,
+            ),
+        'uzbekistan' =>
+            array (
+                'comcode' => 'uzbekistan',
+                'name' => '乌兹别克斯坦(Post of Uzbekistan)',
+                'type' => 2,
+            ),
+        'whgjkd' =>
+            array (
+                'comcode' => 'whgjkd',
+                'name' => '香港伟豪国际物流',
+                'type' => 3,
+            ),
+        'yundaexus' =>
+            array (
+                'comcode' => 'yundaexus',
+                'name' => '美国云达',
+                'type' => 3,
+            ),
+        'zhongxinda' =>
+            array (
+                'comcode' => 'zhongxinda',
+                'name' => '忠信达',
+                'type' => 1,
+            ),
+        'advancing' =>
+            array (
+                'comcode' => 'advancing',
+                'name' => '安达信',
+                'type' => 1,
+            ),
+        'anlexpress' =>
+            array (
+                'comcode' => 'anlexpress',
+                'name' => '新干线快递',
+                'type' => 1,
+            ),
+        'chinastarlogistics' =>
+            array (
+                'comcode' => 'chinastarlogistics',
+                'name' => '华欣物流',
+                'type' => 1,
+            ),
+        'cnair' =>
+            array (
+                'comcode' => 'cnair',
+                'name' => 'CNAIR',
+                'type' => 3,
+            ),
+        'dpdgermany' =>
+            array (
+                'comcode' => 'dpdgermany',
+                'name' => 'DPD Germany',
+                'type' => 3,
+            ),
+        'england' =>
+            array (
+                'comcode' => 'england',
+                'name' => '英国(大包,EMS)',
+                'type' => 2,
+            ),
+        'eta100' =>
+            array (
+                'comcode' => 'eta100',
+                'name' => '易达国际速递',
+                'type' => 3,
+            ),
+        'express7th' =>
+            array (
+                'comcode' => 'express7th',
+                'name' => '7号速递',
+                'type' => 1,
+            ),
+        'fedroad' =>
+            array (
+                'comcode' => 'fedroad',
+                'name' => 'FedRoad 联邦转运',
+                'type' => 3,
+            ),
+        'flysman' =>
+            array (
+                'comcode' => 'flysman',
+                'name' => '飞力士物流',
+                'type' => 1,
+            ),
+        'freakyquick' =>
+            array (
+                'comcode' => 'freakyquick',
+                'name' => 'FQ狂派速递',
+                'type' => 3,
+            ),
+        'georgianpost' =>
+            array (
+                'comcode' => 'georgianpost',
+                'name' => '格鲁吉亚(Georgian Pos）',
+                'type' => 3,
+            ),
+        'hltop' =>
+            array (
+                'comcode' => 'hltop',
+                'name' => '海联快递',
+                'type' => 1,
+            ),
+        'huaqikuaiyun' =>
+            array (
+                'comcode' => 'huaqikuaiyun',
+                'name' => '华企快运',
+                'type' => 1,
+            ),
+        'jdiex' =>
+            array (
+                'comcode' => 'jdiex',
+                'name' => 'JDIEX',
+                'type' => 3,
+            ),
+        'jindawuliu' =>
+            array (
+                'comcode' => 'jindawuliu',
+                'name' => '金大物流',
+                'type' => 1,
+            ),
+        'junfengguoji' =>
+            array (
+                'comcode' => 'junfengguoji',
+                'name' => '骏丰国际速递',
+                'type' => 3,
+            ),
+        'lutong' =>
+            array (
+                'comcode' => 'lutong',
+                'name' => '鲁通快运',
+                'type' => 1,
+            ),
+        'polarisexpress' =>
+            array (
+                'comcode' => 'polarisexpress',
+                'name' => '北极星快运',
+                'type' => 1,
+            ),
+        'portugalctt' =>
+            array (
+                'comcode' => 'portugalctt',
+                'name' => '葡萄牙（Portugal CTT）',
+                'type' => 3,
+            ),
+        'qesd' =>
+            array (
+                'comcode' => 'qesd',
+                'name' => '7E速递',
+                'type' => 3,
+            ),
+        'quanchuan56' =>
+            array (
+                'comcode' => 'quanchuan56',
+                'name' => '全川物流',
+                'type' => 1,
+            ),
+        'quantwl' =>
+            array (
+                'comcode' => 'quantwl',
+                'name' => '全通快运',
+                'type' => 1,
+            ),
+        'santaisudi' =>
+            array (
+                'comcode' => 'santaisudi',
+                'name' => '三态速递',
+                'type' => 1,
+            ),
+        'sdsy888' =>
+            array (
+                'comcode' => 'sdsy888',
+                'name' => '首达速运',
+                'type' => 1,
+            ),
+        'shiningexpress' =>
+            array (
+                'comcode' => 'shiningexpress',
+                'name' => '阳光快递',
+                'type' => 1,
+            ),
+        'tollpriority' =>
+            array (
+                'comcode' => 'tollpriority',
+                'name' => 'Toll Priority(Toll Online)',
+                'type' => 3,
+            ),
+        'yiex' =>
+            array (
+                'comcode' => 'yiex',
+                'name' => '宜送物流',
+                'type' => 1,
+            ),
+        'yitongda' =>
+            array (
+                'comcode' => 'yitongda',
+                'name' => '易通达',
+                'type' => 1,
+            ),
+        'yuanhhk' =>
+            array (
+                'comcode' => 'yuanhhk',
+                'name' => '远航国际快运',
+                'type' => 3,
+            ),
+        'yuanzhijiecheng' =>
+            array (
+                'comcode' => 'yuanzhijiecheng',
+                'name' => '元智捷诚',
+                'type' => 1,
+            ),
+        'auvanda' =>
+            array (
+                'comcode' => 'auvanda',
+                'name' => '中联速递',
+                'type' => 1,
+            ),
+        'baotongkd' =>
+            array (
+                'comcode' => 'baotongkd',
+                'name' => '宝通快递',
+                'type' => 1,
+            ),
+        'biaojikuaidi' =>
+            array (
+                'comcode' => 'biaojikuaidi',
+                'name' => '彪记快递',
+                'type' => 1,
+            ),
+        'canpostfr' =>
+            array (
+                'comcode' => 'canpostfr',
+                'name' => '加拿大邮政',
+                'type' => 2,
+            ),
+        'chengda' =>
+            array (
+                'comcode' => 'chengda',
+                'name' => '成达国际速递',
+                'type' => 3,
+            ),
+        'ckeex' =>
+            array (
+                'comcode' => 'ckeex',
+                'name' => '城晓国际快递',
+                'type' => 3,
+            ),
+        'cloudexpress' =>
+            array (
+                'comcode' => 'cloudexpress',
+                'name' => 'CE易欧通国际速递',
+                'type' => 3,
+            ),
+        'cncexp' =>
+            array (
+                'comcode' => 'cncexp',
+                'name' => 'C&C国际速递',
+                'type' => 3,
+            ),
+        'ecallturn' =>
+            array (
+                'comcode' => 'ecallturn',
+                'name' => 'E跨通',
+                'type' => 3,
+            ),
+        'emms' =>
+            array (
+                'comcode' => 'emms',
+                'name' => '澳州顺风快递',
+                'type' => 3,
+            ),
+        'gswtkd' =>
+            array (
+                'comcode' => 'gswtkd',
+                'name' => '万通快递',
+                'type' => 1,
+            ),
+        'gts' =>
+            array (
+                'comcode' => 'gts',
+                'name' => 'GTS快递',
+                'type' => 3,
+            ),
+        'hgy56' =>
+            array (
+                'comcode' => 'hgy56',
+                'name' => '环国运物流',
+                'type' => 1,
+            ),
+        'hkposten' =>
+            array (
+                'comcode' => 'hkposten',
+                'name' => '中国香港(HongKong Post)英文',
+                'type' => 2,
+            ),
+        'hungary' =>
+            array (
+                'comcode' => 'hungary',
+                'name' => '匈牙利（Magyar Posta）',
+                'type' => 2,
+            ),
+        'jdexpressusa' =>
+            array (
+                'comcode' => 'jdexpressusa',
+                'name' => '骏达快递',
+                'type' => 1,
+            ),
+        'jixiangyouau' =>
+            array (
+                'comcode' => 'jixiangyouau',
+                'name' => '吉祥邮（澳洲）',
+                'type' => 3,
+            ),
+        'kxda' =>
+            array (
+                'comcode' => 'kxda',
+                'name' => '凯信达',
+                'type' => 1,
+            ),
+        'latvia' =>
+            array (
+                'comcode' => 'latvia',
+                'name' => '拉脱维亚(Latvijas Pasts)',
+                'type' => 3,
+            ),
+        'mrw' =>
+            array (
+                'comcode' => 'mrw',
+                'name' => 'MRW',
+                'type' => 3,
+            ),
+        'ocaargen' =>
+            array (
+                'comcode' => 'ocaargen',
+                'name' => 'OCA Argentina',
+                'type' => 3,
+            ),
+        'quanjitong' =>
+            array (
+                'comcode' => 'quanjitong',
+                'name' => '全际通',
+                'type' => 1,
+            ),
+        'sanshengco' =>
+            array (
+                'comcode' => 'sanshengco',
+                'name' => '三盛快递',
+                'type' => 1,
+            ),
+        'shunbang' =>
+            array (
+                'comcode' => 'shunbang',
+                'name' => '顺邦国际物流',
+                'type' => 3,
+            ),
+        'sinoairinex' =>
+            array (
+                'comcode' => 'sinoairinex',
+                'name' => '中外运空运',
+                'type' => 3,
+            ),
+        'stkd' =>
+            array (
+                'comcode' => 'stkd',
+                'name' => '顺通快递',
+                'type' => 1,
+            ),
+        'sxhongmajia' =>
+            array (
+                'comcode' => 'sxhongmajia',
+                'name' => '红马甲物流',
+                'type' => 1,
+            ),
+        'uganda' =>
+            array (
+                'comcode' => 'uganda',
+                'name' => '乌干达(Posta Uganda)',
+                'type' => 2,
+            ),
+        'wykjt' =>
+            array (
+                'comcode' => 'wykjt',
+                'name' => '51跨境通',
+                'type' => 3,
+            ),
+        'xingyuankuaidi' =>
+            array (
+                'comcode' => 'xingyuankuaidi',
+                'name' => '新元快递',
+                'type' => 1,
+            ),
+        'yamaxunwuliu' =>
+            array (
+                'comcode' => 'yamaxunwuliu',
+                'name' => '亚马逊中国',
+                'type' => 3,
+            ),
+        'yibangwuliu' =>
+            array (
+                'comcode' => 'yibangwuliu',
+                'name' => '一邦速递',
+                'type' => 1,
+            ),
+        'yuntong' =>
+            array (
+                'comcode' => 'yuntong',
+                'name' => '运通速运',
+                'type' => 1,
+            ),
+        'abcglobal' =>
+            array (
+                'comcode' => 'abcglobal',
+                'name' => '全球快运',
+                'type' => 3,
+            ),
+        'adlerlogi' =>
+            array (
+                'comcode' => 'adlerlogi',
+                'name' => '德国雄鹰速递',
+                'type' => 3,
+            ),
+        'airgtc' =>
+            array (
+                'comcode' => 'airgtc',
+                'name' => '航空快递',
                 'type' => 3,
             ),
         'aosu' =>
@@ -2433,131 +3423,119 @@ class Express {
                 'name' => 'Aplus物流',
                 'type' => 3,
             ),
-        'ausbondexpress' =>
-            array (
-                'comcode' => 'ausbondexpress',
-                'name' => '澳邦国际物流',
-                'type' => 1,
-            ),
         'axexpress' =>
             array (
                 'comcode' => 'axexpress',
                 'name' => '澳新物流',
                 'type' => 3,
             ),
-        'baishiyp' =>
+        'baoxianda' =>
             array (
-                'comcode' => 'baishiyp',
-                'name' => '百世云配',
+                'comcode' => 'baoxianda',
+                'name' => '报通快递',
                 'type' => 1,
             ),
-        'bangsongwuliu' =>
+        'barbados' =>
             array (
-                'comcode' => 'bangsongwuliu',
-                'name' => '邦送物流',
-                'type' => 1,
-            ),
-        'beckygo' =>
-            array (
-                'comcode' => 'beckygo',
-                'name' => '佰麒快递',
-                'type' => 1,
-            ),
-        'bqcwl' =>
-            array (
-                'comcode' => 'bqcwl',
-                'name' => '百千诚物流',
-                'type' => 1,
-            ),
-        'cces' =>
-            array (
-                'comcode' => 'cces',
-                'name' => 'CCES/国通快递',
-                'type' => 3,
-            ),
-        'chengpei' =>
-            array (
-                'comcode' => 'chengpei',
-                'name' => '河北橙配',
-                'type' => 1,
-            ),
-        'chinastarlogistics' =>
-            array (
-                'comcode' => 'chinastarlogistics',
-                'name' => '华欣物流',
-                'type' => 1,
-            ),
-        'citylink' =>
-            array (
-                'comcode' => 'citylink',
-                'name' => 'City-Link',
-                'type' => 3,
-            ),
-        'csuivi' =>
-            array (
-                'comcode' => 'csuivi',
-                'name' => '法国(La Poste)',
+                'comcode' => 'barbados',
+                'name' => '巴巴多斯(Barbados Post)',
                 'type' => 2,
             ),
-        'ctoexp' =>
+        'cex' =>
             array (
-                'comcode' => 'ctoexp',
-                'name' => '泰国中通CTO',
+                'comcode' => 'cex',
+                'name' => '城铁速递',
+                'type' => 1,
+            ),
+        'chengji' =>
+            array (
+                'comcode' => 'chengji',
+                'name' => '城际快递',
+                'type' => 1,
+            ),
+        'chinatzx' =>
+            array (
+                'comcode' => 'chinatzx',
+                'name' => '同舟行物流',
+                'type' => 1,
+            ),
+        'chllog' =>
+            array (
+                'comcode' => 'chllog',
+                'name' => '嘉荣物流',
+                'type' => 1,
+            ),
+        'chunghwa56' =>
+            array (
+                'comcode' => 'chunghwa56',
+                'name' => '中骅物流',
+                'type' => 1,
+            ),
+        'cqxingcheng' =>
+            array (
+                'comcode' => 'cqxingcheng',
+                'name' => '重庆星程快递',
+                'type' => 1,
+            ),
+        'dfkuaidi' =>
+            array (
+                'comcode' => 'dfkuaidi',
+                'name' => '东风快递',
+                'type' => 1,
+            ),
+        'dfpost' =>
+            array (
+                'comcode' => 'dfpost',
+                'name' => '达方物流',
+                'type' => 1,
+            ),
+        'djy56' =>
+            array (
+                'comcode' => 'djy56',
+                'name' => '天翔东捷运',
+                'type' => 1,
+            ),
+        'edragon' =>
+            array (
+                'comcode' => 'edragon',
+                'name' => '龙象国际物流',
                 'type' => 3,
             ),
-        'dfwl' =>
+        'el56' =>
             array (
-                'comcode' => 'dfwl',
-                'name' => '达发物流',
+                'comcode' => 'el56',
+                'name' => '易联通达',
                 'type' => 1,
             ),
-        'dpdgermany' =>
+        'euexpress' =>
             array (
-                'comcode' => 'dpdgermany',
-                'name' => 'DPD Germany',
+                'comcode' => 'euexpress',
+                'name' => 'EU-EXPRESS',
                 'type' => 3,
             ),
-        'ecallturn' =>
+        'euguoji' =>
             array (
-                'comcode' => 'ecallturn',
-                'name' => 'E跨通',
+                'comcode' => 'euguoji',
+                'name' => '易邮国际',
                 'type' => 3,
             ),
-        'emswuliu' =>
+        'fedexukcn' =>
             array (
-                'comcode' => 'emswuliu',
-                'name' => 'EMS物流',
-                'type' => 1,
-            ),
-        'esinotrans' =>
-            array (
-                'comcode' => 'esinotrans',
-                'name' => '中外运',
+                'comcode' => 'fedexukcn',
+                'name' => 'FedEx-英国件',
                 'type' => 3,
             ),
-        'express7th' =>
+        'feihukuaidi' =>
             array (
-                'comcode' => 'express7th',
-                'name' => '7号速递',
+                'comcode' => 'feihukuaidi',
+                'name' => '飞狐快递',
                 'type' => 1,
             ),
-        'fanyukuaidi' =>
+        'finland' =>
             array (
-                'comcode' => 'fanyukuaidi',
-                'name' => '凡宇快递',
-                'type' => 1,
-            ),
-        'feibaokuaidi' =>
-            array (
-                'comcode' => 'feibaokuaidi',
-                'name' => '飞豹快递',
-                'type' => 1,
-            ),
-        'fyex' =>
-            array (
-                'comcode' => 'fyex',
-                'name' => '飞云快递系统',
-                'type' => 1,
+                'comcode' => 'finland',
+                'name' => '芬兰(Itella Posti Oy)',
+                'type' => 2,
             ),
         'gda' =>
             array (
@@ -2565,53 +3543,59 @@ class Express {
                 'name' => '安的快递',
                 'type' => 1,
             ),
-        'georgianpost' =>
+        'ghl' =>
             array (
-                'comcode' => 'georgianpost',
-                'name' => '格鲁吉亚(Georgian Pos）',
-                'type' => 3,
-            ),
-        'ghtexpress' =>
-            array (
-                'comcode' => 'ghtexpress',
-                'name' => 'GHT物流',
-                'type' => 3,
-            ),
-        'gotoubi' =>
-            array (
-                'comcode' => 'gotoubi',
-                'name' => 'UBI Australia',
-                'type' => 3,
-            ),
-        'gts' =>
-            array (
-                'comcode' => 'gts',
-                'name' => 'GTS快递',
-                'type' => 3,
-            ),
-        'hhair56' =>
-            array (
-                'comcode' => 'hhair56',
-                'name' => '华瀚快递',
+                'comcode' => 'ghl',
+                'name' => '环创物流',
                 'type' => 1,
             ),
-        'hkems' =>
+        'haimengsudi' =>
             array (
-                'comcode' => 'hkems',
-                'name' => '云邮跨境快递',
+                'comcode' => 'haimengsudi',
+                'name' => '海盟速递',
+                'type' => 1,
+            ),
+        'haoyoukuai' =>
+            array (
+                'comcode' => 'haoyoukuai',
+                'name' => '好又快物流',
+                'type' => 1,
+            ),
+        'hitaoe' =>
+            array (
+                'comcode' => 'hitaoe',
+                'name' => 'Hi淘易快递',
                 'type' => 3,
             ),
-        'hkposten' =>
+        'hnfy' =>
             array (
-                'comcode' => 'hkposten',
-                'name' => '中国香港(HongKong Post)英文',
-                'type' => 2,
+                'comcode' => 'hnfy',
+                'name' => '飞鹰物流',
+                'type' => 1,
             ),
-        'huanqiuabc' =>
+        'hnqst' =>
             array (
-                'comcode' => 'huanqiuabc',
-                'name' => '中国香港环球快运',
-                'type' => 3,
+                'comcode' => 'hnqst',
+                'name' => '河南全速通',
+                'type' => 1,
+            ),
+        'hongywl' =>
+            array (
+                'comcode' => 'hongywl',
+                'name' => '红远物流',
+                'type' => 1,
+            ),
+        'huada' =>
+            array (
+                'comcode' => 'huada',
+                'name' => '华达快运',
+                'type' => 1,
+            ),
+        'huandonglg' =>
+            array (
+                'comcode' => 'huandonglg',
+                'name' => '环东物流',
+                'type' => 1,
             ),
         'iceland' =>
             array (
@@ -2619,41 +3603,59 @@ class Express {
                 'name' => '冰岛(Iceland Post)',
                 'type' => 2,
             ),
-        'jcex' =>
+        'india' =>
             array (
-                'comcode' => 'jcex',
-                'name' => 'jcex',
+                'comcode' => 'india',
+                'name' => '印度(India Post)',
+                'type' => 2,
+            ),
+        'israelpost' =>
+            array (
+                'comcode' => 'israelpost',
+                'name' => '以色列(Israel Post)',
+                'type' => 2,
+            ),
+        'italysad' =>
+            array (
+                'comcode' => 'italysad',
+                'name' => 'Italy SDA',
                 'type' => 3,
             ),
-        'jcsuda' =>
+        'jintongkd' =>
             array (
-                'comcode' => 'jcsuda',
-                'name' => '嘉诚速达',
+                'comcode' => 'jintongkd',
+                'name' => '劲通快递',
                 'type' => 1,
             ),
-        'jdiex' =>
+        'jinyuekuaidi' =>
             array (
-                'comcode' => 'jdiex',
-                'name' => 'JDIEX',
-                'type' => 3,
-            ),
-        'jieanda' =>
-            array (
-                'comcode' => 'jieanda',
-                'name' => '捷安达',
+                'comcode' => 'jinyuekuaidi',
+                'name' => '晋越快递',
                 'type' => 1,
             ),
-        'jieborne' =>
+        'jordan' =>
             array (
-                'comcode' => 'jieborne',
-                'name' => '捷邦物流',
-                'type' => 1,
+                'comcode' => 'jordan',
+                'name' => '约旦(Jordan Post)',
+                'type' => 2,
             ),
         'kazpost' =>
             array (
                 'comcode' => 'kazpost',
                 'name' => '哈萨克斯坦(Kazpost)',
                 'type' => 2,
+            ),
+        'kfwnet' =>
+            array (
+                'comcode' => 'kfwnet',
+                'name' => '快服务',
+                'type' => 1,
+            ),
+        'lanbiaokuaidi' =>
+            array (
+                'comcode' => 'lanbiaokuaidi',
+                'name' => '蓝镖快递',
+                'type' => 1,
             ),
         'lishi' =>
             array (
@@ -2667,17 +3669,29 @@ class Express {
                 'name' => '隆浪快递',
                 'type' => 1,
             ),
-        'maxeedexpress' =>
+        'mailongdy' =>
             array (
-                'comcode' => 'maxeedexpress',
-                'name' => '澳洲迈速快递',
-                'type' => 3,
+                'comcode' => 'mailongdy',
+                'name' => '迈隆递运',
+                'type' => 1,
             ),
-        'nzzto' =>
+        'milkyway' =>
             array (
-                'comcode' => 'nzzto',
-                'name' => '新西兰中通',
-                'type' => 3,
+                'comcode' => 'milkyway',
+                'name' => '银河物流',
+                'type' => 1,
+            ),
+        'overseaex' =>
+            array (
+                'comcode' => 'overseaex',
+                'name' => '波音速递',
+                'type' => 1,
+            ),
+        'parcelforcecn' =>
+            array (
+                'comcode' => 'parcelforcecn',
+                'name' => '英国邮政大包EMS',
+                'type' => 2,
             ),
         'peisihuoyunkuaidi' =>
             array (
@@ -2685,23 +3699,29 @@ class Express {
                 'name' => '配思货运',
                 'type' => 1,
             ),
-        'portugalctt' =>
+        'posta' =>
             array (
-                'comcode' => 'portugalctt',
-                'name' => '葡萄牙（Portugal CTT）',
-                'type' => 3,
+                'comcode' => 'posta',
+                'name' => '坦桑尼亚（Tanzania Posts Corporation）',
+                'type' => 2,
             ),
-        'quanritongkuaidi' =>
+        'postpng' =>
             array (
-                'comcode' => 'quanritongkuaidi',
-                'name' => '全日通',
+                'comcode' => 'postpng',
+                'name' => '巴布亚新几内亚(PNG Post)',
+                'type' => 2,
+            ),
+        'rokin' =>
+            array (
+                'comcode' => 'rokin',
+                'name' => '荣庆物流',
                 'type' => 1,
             ),
-        'riyuwuliu' =>
+        'romanian' =>
             array (
-                'comcode' => 'riyuwuliu',
-                'name' => '日昱物流',
-                'type' => 1,
+                'comcode' => 'romanian',
+                'name' => '罗马尼亚（Posta Romanian）',
+                'type' => 2,
             ),
         'rrskx' =>
             array (
@@ -2715,23 +3735,71 @@ class Express {
                 'name' => 'Safexpress',
                 'type' => 3,
             ),
-        'saiaodimmb' =>
+        'sczpds' =>
             array (
-                'comcode' => 'saiaodimmb',
-                'name' => '赛澳递for买卖宝',
+                'comcode' => 'sczpds',
+                'name' => '速呈',
+                'type' => 1,
+            ),
+        'serbia' =>
+            array (
+                'comcode' => 'serbia',
+                'name' => '塞尔维亚(PE Post of Serbia)',
+                'type' => 2,
+            ),
+        'sfjhd' =>
+            array (
+                'comcode' => 'sfjhd',
+                'name' => '圣飞捷快递',
+                'type' => 1,
+            ),
+        'shengtongscm' =>
+            array (
+                'comcode' => 'shengtongscm',
+                'name' => '盛通快递',
+                'type' => 1,
+            ),
+        'shunshid' =>
+            array (
+                'comcode' => 'shunshid',
+                'name' => '顺士达速运',
+                'type' => 1,
+            ),
+        'siodemka' =>
+            array (
+                'comcode' => 'siodemka',
+                'name' => 'Siodemka',
                 'type' => 3,
             ),
-        'shenganwuliu' =>
+        'sofast56' =>
             array (
-                'comcode' => 'shenganwuliu',
-                'name' => '圣安物流',
+                'comcode' => 'sofast56',
+                'name' => '嗖一下同城快递',
                 'type' => 1,
             ),
-        'shunfenghk' =>
+        'staryvr' =>
             array (
-                'comcode' => 'shunfenghk',
-                'name' => '顺丰-繁体',
+                'comcode' => 'staryvr',
+                'name' => '星运快递',
                 'type' => 1,
+            ),
+        'suijiawuliu' =>
+            array (
+                'comcode' => 'suijiawuliu',
+                'name' => '穗佳物流',
+                'type' => 1,
+            ),
+        'superoz' =>
+            array (
+                'comcode' => 'superoz',
+                'name' => '速配欧翼',
+                'type' => 3,
+            ),
+        'swisspostcn' =>
+            array (
+                'comcode' => 'swisspostcn',
+                'name' => '瑞士邮政',
+                'type' => 2,
             ),
         'sxexpress' =>
             array (
@@ -2745,47 +3813,89 @@ class Express {
                 'name' => '深圳邮政',
                 'type' => 2,
             ),
+        'tdcargo' =>
+            array (
+                'comcode' => 'tdcargo',
+                'name' => 'TD Cargo',
+                'type' => 3,
+            ),
+        'thaizto' =>
+            array (
+                'comcode' => 'thaizto',
+                'name' => '泰国中通ZTO',
+                'type' => 3,
+            ),
         'tlky' =>
             array (
                 'comcode' => 'tlky',
                 'name' => '天联快运',
                 'type' => 1,
             ),
-        'tntuk' =>
+        'tonghetianxia' =>
             array (
-                'comcode' => 'tntuk',
-                'name' => 'TNT UK',
+                'comcode' => 'tonghetianxia',
+                'name' => '通和天下',
+                'type' => 1,
+            ),
+        'turtle' =>
+            array (
+                'comcode' => 'turtle',
+                'name' => '海龟国际快递',
                 'type' => 3,
             ),
-        'uscbexpress' =>
+        'uexiex' =>
             array (
-                'comcode' => 'uscbexpress',
-                'name' => '易境达国际物流',
-                'type' => 3,
-            ),
-        'vnpost' =>
-            array (
-                'comcode' => 'vnpost',
-                'name' => '越南EMS(VNPost Express)',
+                'comcode' => 'uexiex',
+                'name' => '欧洲UEX',
                 'type' => 2,
             ),
-        'wandougongzhu' =>
+        'vipexpress' =>
             array (
-                'comcode' => 'wandougongzhu',
-                'name' => '豌豆物流',
+                'comcode' => 'vipexpress',
+                'name' => '鹰运国际速递',
+                'type' => 3,
+            ),
+        'wotu' =>
+            array (
+                'comcode' => 'wotu',
+                'name' => '渥途国际速运',
+                'type' => 3,
+            ),
+        'wuyuansudi' =>
+            array (
+                'comcode' => 'wuyuansudi',
+                'name' => '伍圆速递',
                 'type' => 1,
             ),
-        'yidatong' =>
+        'xiangdawuliu' =>
             array (
-                'comcode' => 'yidatong',
-                'name' => '易达通',
+                'comcode' => 'xiangdawuliu',
+                'name' => '湘达物流',
                 'type' => 1,
             ),
-        'yiex' =>
+        'xsrd' =>
             array (
-                'comcode' => 'yiex',
-                'name' => '宜送物流',
+                'comcode' => 'xsrd',
+                'name' => '鑫世锐达',
                 'type' => 1,
+            ),
+        'xyd666' =>
+            array (
+                'comcode' => 'xyd666',
+                'name' => '鑫远东速运',
+                'type' => 1,
+            ),
+        'ydhex' =>
+            array (
+                'comcode' => 'ydhex',
+                'name' => 'YDH',
+                'type' => 1,
+            ),
+        'yemen' =>
+            array (
+                'comcode' => 'yemen',
+                'name' => '也门(Yemen Post)',
+                'type' => 2,
             ),
         'yifankd' =>
             array (
@@ -2793,65 +3903,35 @@ class Express {
                 'name' => '艺凡快递',
                 'type' => 1,
             ),
-        'yiouzhou' =>
+        'yongbangwuliu' =>
             array (
-                'comcode' => 'yiouzhou',
-                'name' => '易欧洲国际物流',
+                'comcode' => 'yongbangwuliu',
+                'name' => '永邦国际物流',
                 'type' => 3,
             ),
-        'yuanhhk' =>
+        'yourscm' =>
             array (
-                'comcode' => 'yuanhhk',
-                'name' => '远航国际快运',
+                'comcode' => 'yourscm',
+                'name' => '雅澳物流',
                 'type' => 3,
             ),
-        'yuntong' =>
+        'ywexpress' =>
             array (
-                'comcode' => 'yuntong',
-                'name' => '运通速运',
+                'comcode' => 'ywexpress',
+                'name' => '远为快递',
                 'type' => 1,
             ),
-        'yuntongkuaidi' =>
+        'yyqc56' =>
             array (
-                'comcode' => 'yuntongkuaidi',
-                'name' => '运通中港',
+                'comcode' => 'yyqc56',
+                'name' => '一运全成物流',
                 'type' => 1,
             ),
-        'zhongtianwanyun' =>
+        'zf365' =>
             array (
-                'comcode' => 'zhongtianwanyun',
-                'name' => '中天万运',
+                'comcode' => 'zf365',
+                'name' => '珠峰速运',
                 'type' => 1,
-            ),
-        'zhongwaiyun' =>
-            array (
-                'comcode' => 'zhongwaiyun',
-                'name' => '中外运速递',
-                'type' => 3,
-            ),
-        'zlxdjwl' =>
-            array (
-                'comcode' => 'zlxdjwl',
-                'name' => '中粮鲜到家物流',
-                'type' => 1,
-            ),
-        'zsmhwl' =>
-            array (
-                'comcode' => 'zsmhwl',
-                'name' => '明辉物流',
-                'type' => 1,
-            ),
-        '1ziton' =>
-            array (
-                'comcode' => '1ziton',
-                'name' => '一智通',
-                'type' => 1,
-            ),
-        'abcglobal' =>
-            array (
-                'comcode' => 'abcglobal',
-                'name' => '全球快运',
-                'type' => 3,
             ),
         'adaexpress' =>
             array (
@@ -2864,18 +3944,6 @@ class Express {
                 'comcode' => 'adiexpress',
                 'name' => '安达易国际速递',
                 'type' => 3,
-            ),
-        'adlerlogi' =>
-            array (
-                'comcode' => 'adlerlogi',
-                'name' => '德国雄鹰速递',
-                'type' => 3,
-            ),
-        'advancing' =>
-            array (
-                'comcode' => 'advancing',
-                'name' => '安达信',
-                'type' => 1,
             ),
         'afghan' =>
             array (
@@ -2901,12 +3969,6 @@ class Express {
                 'name' => '卡邦配送',
                 'type' => 1,
             ),
-        'airgtc' =>
-            array (
-                'comcode' => 'airgtc',
-                'name' => '航空快递',
-                'type' => 3,
-            ),
         'albania' =>
             array (
                 'comcode' => 'albania',
@@ -2919,18 +3981,6 @@ class Express {
                 'name' => '无忧物流',
                 'type' => 1,
             ),
-        'alog' =>
-            array (
-                'comcode' => 'alog',
-                'name' => '心怡物流',
-                'type' => 1,
-            ),
-        'amazoncnorder' =>
-            array (
-                'comcode' => 'amazoncnorder',
-                'name' => '亚马逊中国订单',
-                'type' => 3,
-            ),
         'amcnorder' =>
             array (
                 'comcode' => 'amcnorder',
@@ -2942,12 +3992,6 @@ class Express {
                 'comcode' => 'amusorder',
                 'name' => 'amazon-国际订单',
                 'type' => 3,
-            ),
-        'anlexpress' =>
-            array (
-                'comcode' => 'anlexpress',
-                'name' => '新干线快递',
-                'type' => 1,
             ),
         'apgecommerce' =>
             array (
@@ -2985,12 +4029,6 @@ class Express {
                 'name' => '奥地利(Austrian Post)',
                 'type' => 2,
             ),
-        'auvanda' =>
-            array (
-                'comcode' => 'auvanda',
-                'name' => '中联速递',
-                'type' => 1,
-            ),
         'auvexpress' =>
             array (
                 'comcode' => 'auvexpress',
@@ -3009,34 +4047,10 @@ class Express {
                 'name' => '巴林(Bahrain Post)',
                 'type' => 2,
             ),
-        'bangbangpost' =>
-            array (
-                'comcode' => 'bangbangpost',
-                'name' => '帮帮发',
-                'type' => 3,
-            ),
         'bangladesh' =>
             array (
                 'comcode' => 'bangladesh',
                 'name' => '孟加拉国(EMS)',
-                'type' => 2,
-            ),
-        'baotongkd' =>
-            array (
-                'comcode' => 'baotongkd',
-                'name' => '宝通快递',
-                'type' => 1,
-            ),
-        'baoxianda' =>
-            array (
-                'comcode' => 'baoxianda',
-                'name' => '报通快递',
-                'type' => 1,
-            ),
-        'barbados' =>
-            array (
-                'comcode' => 'barbados',
-                'name' => '巴巴多斯(Barbados Post)',
                 'type' => 2,
             ),
         'bcwelt' =>
@@ -3044,18 +4058,6 @@ class Express {
                 'comcode' => 'bcwelt',
                 'name' => 'BCWELT',
                 'type' => 3,
-            ),
-        'bee001' =>
-            array (
-                'comcode' => 'bee001',
-                'name' => '蜜蜂速递',
-                'type' => 1,
-            ),
-        'belgiumpost' =>
-            array (
-                'comcode' => 'belgiumpost',
-                'name' => '比利时(Belgium Post)',
-                'type' => 2,
             ),
         'belize' =>
             array (
@@ -3074,18 +4076,6 @@ class Express {
                 'comcode' => 'benniao',
                 'name' => '笨鸟国际',
                 'type' => 3,
-            ),
-        'bester' =>
-            array (
-                'comcode' => 'bester',
-                'name' => '飛斯特',
-                'type' => 3,
-            ),
-        'bflg' =>
-            array (
-                'comcode' => 'bflg',
-                'name' => '上海缤纷物流',
-                'type' => 1,
             ),
         'bjqywl' =>
             array (
@@ -3195,12 +4185,6 @@ class Express {
                 'name' => 'Canpar',
                 'type' => 3,
             ),
-        'canpostfr' =>
-            array (
-                'comcode' => 'canpostfr',
-                'name' => '加拿大邮政',
-                'type' => 2,
-            ),
         'cargolux' =>
             array (
                 'comcode' => 'cargolux',
@@ -3231,12 +4215,6 @@ class Express {
                 'name' => 'CEVA Logistic',
                 'type' => 3,
             ),
-        'cex' =>
-            array (
-                'comcode' => 'cex',
-                'name' => '城铁速递',
-                'type' => 1,
-            ),
         'cfss' =>
             array (
                 'comcode' => 'cfss',
@@ -3255,18 +4233,6 @@ class Express {
                 'name' => '长宇物流',
                 'type' => 1,
             ),
-        'chengda' =>
-            array (
-                'comcode' => 'chengda',
-                'name' => '成达国际速递',
-                'type' => 3,
-            ),
-        'chengji' =>
-            array (
-                'comcode' => 'chengji',
-                'name' => '城际快递',
-                'type' => 1,
-            ),
         'chile' =>
             array (
                 'comcode' => 'chile',
@@ -3279,35 +4245,11 @@ class Express {
                 'name' => '中邮电商',
                 'type' => 1,
             ),
-        'chinatzx' =>
-            array (
-                'comcode' => 'chinatzx',
-                'name' => '同舟行物流',
-                'type' => 1,
-            ),
-        'chllog' =>
-            array (
-                'comcode' => 'chllog',
-                'name' => '嘉荣物流',
-                'type' => 1,
-            ),
-        'chronopostfren' =>
-            array (
-                'comcode' => 'chronopostfren',
-                'name' => '法国大包、EMS-英文(Chronopost France)',
-                'type' => 2,
-            ),
         'chronopostport' =>
             array (
                 'comcode' => 'chronopostport',
                 'name' => 'Chronopost Portugal',
                 'type' => 2,
-            ),
-        'chunghwa56' =>
-            array (
-                'comcode' => 'chunghwa56',
-                'name' => '中骅物流',
-                'type' => 1,
             ),
         'city56' =>
             array (
@@ -3327,34 +4269,10 @@ class Express {
                 'name' => '大韩通运',
                 'type' => 1,
             ),
-        'ckeex' =>
-            array (
-                'comcode' => 'ckeex',
-                'name' => '城晓国际快递',
-                'type' => 3,
-            ),
-        'cloudexpress' =>
-            array (
-                'comcode' => 'cloudexpress',
-                'name' => 'CE易欧通国际速递',
-                'type' => 3,
-            ),
         'clsp' =>
             array (
                 'comcode' => 'clsp',
                 'name' => 'CL日中速运',
-                'type' => 3,
-            ),
-        'cnair' =>
-            array (
-                'comcode' => 'cnair',
-                'name' => 'CNAIR',
-                'type' => 3,
-            ),
-        'cncexp' =>
-            array (
-                'comcode' => 'cncexp',
-                'name' => 'C&C国际速递',
                 'type' => 3,
             ),
         'cneulogistics' =>
@@ -3380,12 +4298,6 @@ class Express {
                 'comcode' => 'colombia',
                 'name' => '哥伦比亚(4-72 La Red Postal de Colombia)',
                 'type' => 2,
-            ),
-        'comexpress' =>
-            array (
-                'comcode' => 'comexpress',
-                'name' => '邦通国际',
-                'type' => 3,
             ),
         'correios' =>
             array (
@@ -3417,12 +4329,6 @@ class Express {
                 'name' => '华中快递',
                 'type' => 1,
             ),
-        'cqxingcheng' =>
-            array (
-                'comcode' => 'cqxingcheng',
-                'name' => '重庆星程快递',
-                'type' => 1,
-            ),
         'crossbox' =>
             array (
                 'comcode' => 'crossbox',
@@ -3445,12 +4351,6 @@ class Express {
             array (
                 'comcode' => 'czwlyn',
                 'name' => '云南诚中物流',
-                'type' => 1,
-            ),
-        'dadaoex' =>
-            array (
-                'comcode' => 'dadaoex',
-                'name' => '大道物流',
                 'type' => 1,
             ),
         'dasu' =>
@@ -3483,24 +4383,6 @@ class Express {
                 'name' => '澳行快递',
                 'type' => 3,
             ),
-        'dfkuaidi' =>
-            array (
-                'comcode' => 'dfkuaidi',
-                'name' => '东风快递',
-                'type' => 1,
-            ),
-        'dfpost' =>
-            array (
-                'comcode' => 'dfpost',
-                'name' => '达方物流',
-                'type' => 1,
-            ),
-        'dhlecommerce' =>
-            array (
-                'comcode' => 'dhlecommerce',
-                'name' => 'dhl小包',
-                'type' => 3,
-            ),
         'dhlhk' =>
             array (
                 'comcode' => 'dhlhk',
@@ -3523,12 +4405,6 @@ class Express {
             array (
                 'comcode' => 'di5pll',
                 'name' => '递五方云仓',
-                'type' => 1,
-            ),
-        'diantongkuaidi' =>
-            array (
-                'comcode' => 'diantongkuaidi',
-                'name' => '店通快递',
                 'type' => 1,
             ),
         'dianyi' =>
@@ -3566,12 +4442,6 @@ class Express {
                 'comcode' => 'disifangus',
                 'name' => '递四方美国',
                 'type' => 3,
-            ),
-        'djy56' =>
-            array (
-                'comcode' => 'djy56',
-                'name' => '天翔东捷运',
-                'type' => 1,
             ),
         'donghanwl' =>
             array (
@@ -3645,12 +4515,6 @@ class Express {
                 'name' => '易达快运',
                 'type' => 1,
             ),
-        'edragon' =>
-            array (
-                'comcode' => 'edragon',
-                'name' => '龙象国际物流',
-                'type' => 3,
-            ),
         'edtexpress' =>
             array (
                 'comcode' => 'edtexpress',
@@ -3669,12 +4533,6 @@ class Express {
                 'name' => '艾菲尔国际速递',
                 'type' => 3,
             ),
-        'el56' =>
-            array (
-                'comcode' => 'el56',
-                'name' => '易联通达',
-                'type' => 1,
-            ),
         'elta' =>
             array (
                 'comcode' => 'elta',
@@ -3692,12 +4550,6 @@ class Express {
                 'comcode' => 'emirates',
                 'name' => '阿联酋(Emirates Post)',
                 'type' => 2,
-            ),
-        'emms' =>
-            array (
-                'comcode' => 'emms',
-                'name' => '澳州顺风快递',
-                'type' => 3,
             ),
         'emonitoring' =>
             array (
@@ -3723,23 +4575,11 @@ class Express {
                 'name' => '乌克兰EMS-中文(EMS Ukraine)',
                 'type' => 2,
             ),
-        'england' =>
-            array (
-                'comcode' => 'england',
-                'name' => '英国(大包,EMS)',
-                'type' => 2,
-            ),
         'epspost' =>
             array (
                 'comcode' => 'epspost',
                 'name' => '联众国际',
                 'type' => 3,
-            ),
-        'est365' =>
-            array (
-                'comcode' => 'est365',
-                'name' => '东方汇',
-                'type' => 1,
             ),
         'estafeta' =>
             array (
@@ -3753,12 +4593,6 @@ class Express {
                 'name' => 'Estes',
                 'type' => 3,
             ),
-        'eta100' =>
-            array (
-                'comcode' => 'eta100',
-                'name' => '易达国际速递',
-                'type' => 3,
-            ),
         'ethiopia' =>
             array (
                 'comcode' => 'ethiopia',
@@ -3770,18 +4604,6 @@ class Express {
                 'comcode' => 'eucpost',
                 'name' => '德国 EUC POST',
                 'type' => 2,
-            ),
-        'euexpress' =>
-            array (
-                'comcode' => 'euexpress',
-                'name' => 'EU-EXPRESS',
-                'type' => 3,
-            ),
-        'euguoji' =>
-            array (
-                'comcode' => 'euguoji',
-                'name' => '易邮国际',
-                'type' => 3,
             ),
         'europe8' =>
             array (
@@ -3799,12 +4621,6 @@ class Express {
             array (
                 'comcode' => 'eusacn',
                 'name' => '优莎速运',
-                'type' => 1,
-            ),
-        'excocotree' =>
-            array (
-                'comcode' => 'excocotree',
-                'name' => '可可树美中速运',
                 'type' => 1,
             ),
         'expressplus' =>
@@ -3837,35 +4653,11 @@ class Express {
                 'name' => '正途供应链',
                 'type' => 1,
             ),
-        'fbkd' =>
-            array (
-                'comcode' => 'fbkd',
-                'name' => '飞邦快递',
-                'type' => 1,
-            ),
         'fedexuk' =>
             array (
                 'comcode' => 'fedexuk',
                 'name' => 'FedEx-英国件（FedEx UK)',
                 'type' => 3,
-            ),
-        'fedexukcn' =>
-            array (
-                'comcode' => 'fedexukcn',
-                'name' => 'FedEx-英国件',
-                'type' => 3,
-            ),
-        'fedroad' =>
-            array (
-                'comcode' => 'fedroad',
-                'name' => 'FedRoad 联邦转运',
-                'type' => 3,
-            ),
-        'feihukuaidi' =>
-            array (
-                'comcode' => 'feihukuaidi',
-                'name' => '飞狐快递',
-                'type' => 1,
             ),
         'feikuaida' =>
             array (
@@ -3884,30 +4676,6 @@ class Express {
                 'comcode' => 'fiji',
                 'name' => '斐济(Fiji Post)',
                 'type' => 2,
-            ),
-        'finland' =>
-            array (
-                'comcode' => 'finland',
-                'name' => '芬兰(Itella Posti Oy)',
-                'type' => 2,
-            ),
-        'flysman' =>
-            array (
-                'comcode' => 'flysman',
-                'name' => '飞力士物流',
-                'type' => 1,
-            ),
-        'fox' =>
-            array (
-                'comcode' => 'fox',
-                'name' => 'FOX国际快递',
-                'type' => 3,
-            ),
-        'freakyquick' =>
-            array (
-                'comcode' => 'freakyquick',
-                'name' => 'FQ狂派速递',
-                'type' => 3,
             ),
         'fsexp' =>
             array (
@@ -3969,12 +4737,6 @@ class Express {
                 'name' => 'GE2D跨境物流',
                 'type' => 3,
             ),
-        'ghl' =>
-            array (
-                'comcode' => 'ghl',
-                'name' => '环创物流',
-                'type' => 1,
-            ),
         'gibraltar' =>
             array (
                 'comcode' => 'gibraltar',
@@ -4017,12 +4779,6 @@ class Express {
                 'name' => '哥士传奇速递',
                 'type' => 1,
             ),
-        'gswtkd' =>
-            array (
-                'comcode' => 'gswtkd',
-                'name' => '万通快递',
-                'type' => 1,
-            ),
         'gtgogo' =>
             array (
                 'comcode' => 'gtgogo',
@@ -4033,12 +4789,6 @@ class Express {
             array (
                 'comcode' => 'gtongsudi',
                 'name' => '广通速递',
-                'type' => 1,
-            ),
-        'gttexpress' =>
-            array (
-                'comcode' => 'gttexpress',
-                'name' => 'GTT EXPRESS快递',
                 'type' => 1,
             ),
         'guangdongtonglu' =>
@@ -4077,12 +4827,6 @@ class Express {
                 'name' => '海红for买卖宝',
                 'type' => 3,
             ),
-        'haimengsudi' =>
-            array (
-                'comcode' => 'haimengsudi',
-                'name' => '海盟速递',
-                'type' => 1,
-            ),
         'haiwaihuanqiu' =>
             array (
                 'comcode' => 'haiwaihuanqiu',
@@ -4113,12 +4857,6 @@ class Express {
                 'name' => '航宇快递',
                 'type' => 1,
             ),
-        'haoyoukuai' =>
-            array (
-                'comcode' => 'haoyoukuai',
-                'name' => '好又快物流',
-                'type' => 1,
-            ),
         'happylink' =>
             array (
                 'comcode' => 'happylink',
@@ -4143,18 +4881,6 @@ class Express {
                 'name' => '恒瑞物流',
                 'type' => 1,
             ),
-        'hgy56' =>
-            array (
-                'comcode' => 'hgy56',
-                'name' => '环国运物流',
-                'type' => 1,
-            ),
-        'hitaoe' =>
-            array (
-                'comcode' => 'hitaoe',
-                'name' => 'Hi淘易快递',
-                'type' => 3,
-            ),
         'hjs' =>
             array (
                 'comcode' => 'hjs',
@@ -4171,30 +4897,6 @@ class Express {
             array (
                 'comcode' => 'hlpgyl',
                 'name' => '共联配',
-                'type' => 1,
-            ),
-        'hltop' =>
-            array (
-                'comcode' => 'hltop',
-                'name' => '海联快递',
-                'type' => 1,
-            ),
-        'hmus' =>
-            array (
-                'comcode' => 'hmus',
-                'name' => '华美快递',
-                'type' => 1,
-            ),
-        'hnfy' =>
-            array (
-                'comcode' => 'hnfy',
-                'name' => '飞鹰物流',
-                'type' => 1,
-            ),
-        'hnqst' =>
-            array (
-                'comcode' => 'hnqst',
-                'name' => '河南全速通',
                 'type' => 1,
             ),
         'hnssd56' =>
@@ -4225,12 +4927,6 @@ class Express {
             array (
                 'comcode' => 'hongpinwuliu',
                 'name' => '宏品物流',
-                'type' => 1,
-            ),
-        'hongywl' =>
-            array (
-                'comcode' => 'hongywl',
-                'name' => '红远物流',
                 'type' => 1,
             ),
         'hqtd' =>
@@ -4275,24 +4971,6 @@ class Express {
                 'name' => '华通务达物流',
                 'type' => 1,
             ),
-        'huada' =>
-            array (
-                'comcode' => 'huada',
-                'name' => '华达快运',
-                'type' => 1,
-            ),
-        'huandonglg' =>
-            array (
-                'comcode' => 'huandonglg',
-                'name' => '环东物流',
-                'type' => 1,
-            ),
-        'huaqikuaiyun' =>
-            array (
-                'comcode' => 'huaqikuaiyun',
-                'name' => '华企快运',
-                'type' => 1,
-            ),
         'huaxiahuoyun' =>
             array (
                 'comcode' => 'huaxiahuoyun',
@@ -4304,18 +4982,6 @@ class Express {
                 'comcode' => 'huiqiangkuaidi',
                 'name' => '汇强快递',
                 'type' => 1,
-            ),
-        'humpline' =>
-            array (
-                'comcode' => 'humpline',
-                'name' => '驼峰国际',
-                'type' => 3,
-            ),
-        'hungary' =>
-            array (
-                'comcode' => 'hungary',
-                'name' => '匈牙利（Magyar Posta）',
-                'type' => 2,
             ),
         'huoban' =>
             array (
@@ -4353,12 +5019,6 @@ class Express {
                 'name' => '大达物流',
                 'type' => 1,
             ),
-        'idamalu' =>
-            array (
-                'comcode' => 'idamalu',
-                'name' => '大马鹿',
-                'type' => 1,
-            ),
         'iexpress' =>
             array (
                 'comcode' => 'iexpress',
@@ -4382,12 +5042,6 @@ class Express {
                 'comcode' => 'imlb2c',
                 'name' => '艾姆勒',
                 'type' => 3,
-            ),
-        'india' =>
-            array (
-                'comcode' => 'india',
-                'name' => '印度(India Post)',
-                'type' => 2,
             ),
         'indonesia' =>
             array (
@@ -4419,35 +5073,11 @@ class Express {
                 'name' => '伊朗（Iran Post）',
                 'type' => 2,
             ),
-        'israelpost' =>
-            array (
-                'comcode' => 'israelpost',
-                'name' => '以色列(Israel Post)',
-                'type' => 2,
-            ),
-        'italysad' =>
-            array (
-                'comcode' => 'italysad',
-                'name' => 'Italy SDA',
-                'type' => 3,
-            ),
         'iyoungspeed' =>
             array (
                 'comcode' => 'iyoungspeed',
                 'name' => '驿扬国际速运',
                 'type' => 3,
-            ),
-        'jamaicapost' =>
-            array (
-                'comcode' => 'jamaicapost',
-                'name' => '牙买加（Jamaica Post）',
-                'type' => 2,
-            ),
-        'jdexpressusa' =>
-            array (
-                'comcode' => 'jdexpressusa',
-                'name' => '骏达快递',
-                'type' => 1,
             ),
         'jdpplus' =>
             array (
@@ -4473,34 +5103,10 @@ class Express {
                 'name' => '佳家通货运',
                 'type' => 1,
             ),
-        'jiguang' =>
-            array (
-                'comcode' => 'jiguang',
-                'name' => '极光转运',
-                'type' => 3,
-            ),
         'jinchengwuliu' =>
             array (
                 'comcode' => 'jinchengwuliu',
                 'name' => '锦程物流',
-                'type' => 1,
-            ),
-        'jindawuliu' =>
-            array (
-                'comcode' => 'jindawuliu',
-                'name' => '金大物流',
-                'type' => 1,
-            ),
-        'jintongkd' =>
-            array (
-                'comcode' => 'jintongkd',
-                'name' => '劲通快递',
-                'type' => 1,
-            ),
-        'jinyuekuaidi' =>
-            array (
-                'comcode' => 'jinyuekuaidi',
-                'name' => '晋越快递',
                 'type' => 1,
             ),
         'jiugong' =>
@@ -4515,41 +5121,17 @@ class Express {
                 'name' => '久易快递',
                 'type' => 1,
             ),
-        'jixianda' =>
-            array (
-                'comcode' => 'jixianda',
-                'name' => '急先达',
-                'type' => 1,
-            ),
-        'jixiangyouau' =>
-            array (
-                'comcode' => 'jixiangyouau',
-                'name' => '吉祥邮（澳洲）',
-                'type' => 3,
-            ),
         'jjx888' =>
             array (
                 'comcode' => 'jjx888',
                 'name' => '佳捷翔物流',
                 'type' => 1,
             ),
-        'jordan' =>
-            array (
-                'comcode' => 'jordan',
-                'name' => '约旦(Jordan Post)',
-                'type' => 2,
-            ),
         'jsexpress' =>
             array (
                 'comcode' => 'jsexpress',
                 'name' => '骏绅物流',
                 'type' => 1,
-            ),
-        'junfengguoji' =>
-            array (
-                'comcode' => 'junfengguoji',
-                'name' => '骏丰国际速递',
-                'type' => 3,
             ),
         'juwu' =>
             array (
@@ -4569,29 +5151,11 @@ class Express {
                 'name' => '考拉国际速递',
                 'type' => 3,
             ),
-        'kfwnet' =>
-            array (
-                'comcode' => 'kfwnet',
-                'name' => '快服务',
-                'type' => 1,
-            ),
-        'khzto' =>
-            array (
-                'comcode' => 'khzto',
-                'name' => '柬埔寨中通',
-                'type' => 1,
-            ),
         'kjde' =>
             array (
                 'comcode' => 'kjde',
                 'name' => '跨境直邮通',
                 'type' => 3,
-            ),
-        'koreapostcn' =>
-            array (
-                'comcode' => 'koreapostcn',
-                'name' => '韩国邮政',
-                'type' => 2,
             ),
         'koreapostkr' =>
             array (
@@ -4604,18 +5168,6 @@ class Express {
                 'comcode' => 'krtao',
                 'name' => '淘韩国际快递',
                 'type' => 3,
-            ),
-        'ksudi' =>
-            array (
-                'comcode' => 'ksudi',
-                'name' => '快速递',
-                'type' => 1,
-            ),
-        'kuai8' =>
-            array (
-                'comcode' => 'kuai8',
-                'name' => '快8速运',
-                'type' => 1,
             ),
         'kuaidawuliu' =>
             array (
@@ -4635,29 +5187,11 @@ class Express {
                 'name' => '四川快优达速递',
                 'type' => 1,
             ),
-        'kxda' =>
-            array (
-                'comcode' => 'kxda',
-                'name' => '凯信达',
-                'type' => 1,
-            ),
         'kyrgyzpost' =>
             array (
                 'comcode' => 'kyrgyzpost',
                 'name' => '吉尔吉斯斯坦(Kyrgyz Post)',
                 'type' => 2,
-            ),
-        'kyue' =>
-            array (
-                'comcode' => 'kyue',
-                'name' => '跨跃国际',
-                'type' => 3,
-            ),
-        'lanbiaokuaidi' =>
-            array (
-                'comcode' => 'lanbiaokuaidi',
-                'name' => '蓝镖快递',
-                'type' => 1,
             ),
         'lanhukuaidi' =>
             array (
@@ -4683,12 +5217,6 @@ class Express {
                 'name' => '林安物流',
                 'type' => 1,
             ),
-        'latvia' =>
-            array (
-                'comcode' => 'latvia',
-                'name' => '拉脱维亚(Latvijas Pasts)',
-                'type' => 3,
-            ),
         'lbbk' =>
             array (
                 'comcode' => 'lbbk',
@@ -4712,12 +5240,6 @@ class Express {
                 'comcode' => 'leopard',
                 'name' => '云豹国际货运',
                 'type' => 3,
-            ),
-        'lesotho' =>
-            array (
-                'comcode' => 'lesotho',
-                'name' => '莱索托(Lesotho Post)',
-                'type' => 2,
             ),
         'letseml' =>
             array (
@@ -4803,18 +5325,6 @@ class Express {
                 'name' => '联通快递',
                 'type' => 3,
             ),
-        'ltx' =>
-            array (
-                'comcode' => 'ltx',
-                'name' => '蓝天国际快递',
-                'type' => 3,
-            ),
-        'luben' =>
-            array (
-                'comcode' => 'luben',
-                'name' => '陆本速递 LUBEN EXPRESS',
-                'type' => 1,
-            ),
         'lundao' =>
             array (
                 'comcode' => 'lundao',
@@ -4843,12 +5353,6 @@ class Express {
             array (
                 'comcode' => 'mailikuaidi',
                 'name' => '麦力快递',
-                'type' => 1,
-            ),
-        'mailongdy' =>
-            array (
-                'comcode' => 'mailongdy',
-                'name' => '迈隆递运',
                 'type' => 1,
             ),
         'maldives' =>
@@ -4911,18 +5415,6 @@ class Express {
                 'name' => 'Mexico Senda Express',
                 'type' => 3,
             ),
-        'milkyway' =>
-            array (
-                'comcode' => 'milkyway',
-                'name' => '银河物流',
-                'type' => 1,
-            ),
-        'minbangsudi' =>
-            array (
-                'comcode' => 'minbangsudi',
-                'name' => '民邦速递',
-                'type' => 1,
-            ),
         'mjexp' =>
             array (
                 'comcode' => 'mjexp',
@@ -4952,12 +5444,6 @@ class Express {
                 'comcode' => 'morocco',
                 'name' => '摩洛哥 ( Morocco Post )',
                 'type' => 2,
-            ),
-        'mrw' =>
-            array (
-                'comcode' => 'mrw',
-                'name' => 'MRW',
-                'type' => 3,
             ),
         'multipack' =>
             array (
@@ -5031,12 +5517,6 @@ class Express {
                 'name' => '华赫物流',
                 'type' => 1,
             ),
-        'novaposhta' =>
-            array (
-                'comcode' => 'novaposhta',
-                'name' => 'Nova Poshta',
-                'type' => 3,
-            ),
         'nuoer' =>
             array (
                 'comcode' => 'nuoer',
@@ -5073,18 +5553,6 @@ class Express {
                 'name' => 'OPEK',
                 'type' => 3,
             ),
-        'overseaex' =>
-            array (
-                'comcode' => 'overseaex',
-                'name' => '波音速递',
-                'type' => 1,
-            ),
-        'pakistan' =>
-            array (
-                'comcode' => 'pakistan',
-                'name' => '巴基斯坦(Pakistan Post)',
-                'type' => 2,
-            ),
         'paraguay' =>
             array (
                 'comcode' => 'paraguay',
@@ -5095,18 +5563,6 @@ class Express {
             array (
                 'comcode' => 'parcelchina',
                 'name' => '诚一物流',
-                'type' => 3,
-            ),
-        'parcelforcecn' =>
-            array (
-                'comcode' => 'parcelforcecn',
-                'name' => '英国邮政大包EMS',
-                'type' => 2,
-            ),
-        'pcaexpress' =>
-            array (
-                'comcode' => 'pcaexpress',
-                'name' => 'PCA Express',
                 'type' => 3,
             ),
         'pdstow' =>
@@ -5163,35 +5619,11 @@ class Express {
                 'name' => '先锋国际快递',
                 'type' => 3,
             ),
-        'pochta' =>
-            array (
-                'comcode' => 'pochta',
-                'name' => '俄罗斯邮政(Russian Post)',
-                'type' => 2,
-            ),
-        'polarisexpress' =>
-            array (
-                'comcode' => 'polarisexpress',
-                'name' => '北极星快运',
-                'type' => 1,
-            ),
         'portugalseur' =>
             array (
                 'comcode' => 'portugalseur',
                 'name' => 'Portugal Seur',
                 'type' => 3,
-            ),
-        'posta' =>
-            array (
-                'comcode' => 'posta',
-                'name' => '坦桑尼亚（Tanzania Posts Corporation）',
-                'type' => 2,
-            ),
-        'postdanmarken' =>
-            array (
-                'comcode' => 'postdanmarken',
-                'name' => '丹麦(Post Denmark)',
-                'type' => 2,
             ),
         'postelbe' =>
             array (
@@ -5209,18 +5641,6 @@ class Express {
             array (
                 'comcode' => 'postennorge',
                 'name' => '挪威（Posten Norge）',
-                'type' => 2,
-            ),
-        'postnlpacle' =>
-            array (
-                'comcode' => 'postnlpacle',
-                'name' => '荷兰包裹(PostNL International Parcels)',
-                'type' => 2,
-            ),
-        'postpng' =>
-            array (
-                'comcode' => 'postpng',
-                'name' => '巴布亚新几内亚(PNG Post)',
                 'type' => 2,
             ),
         'ptt' =>
@@ -5247,12 +5667,6 @@ class Express {
                 'name' => 'ANTS EXPRESS',
                 'type' => 3,
             ),
-        'qesd' =>
-            array (
-                'comcode' => 'qesd',
-                'name' => '7E速递',
-                'type' => 3,
-            ),
         'qhxykd' =>
             array (
                 'comcode' => 'qhxykd',
@@ -5265,29 +5679,11 @@ class Express {
                 'name' => '千顺快递',
                 'type' => 1,
             ),
-        'quanjitong' =>
-            array (
-                'comcode' => 'quanjitong',
-                'name' => '全际通',
-                'type' => 1,
-            ),
-        'quansutong' =>
-            array (
-                'comcode' => 'quansutong',
-                'name' => '全速通',
-                'type' => 1,
-            ),
         'quantium' =>
             array (
                 'comcode' => 'quantium',
                 'name' => 'Quantium',
                 'type' => 3,
-            ),
-        'quantwl' =>
-            array (
-                'comcode' => 'quantwl',
-                'name' => '全通快运',
-                'type' => 1,
             ),
         'quanxintong' =>
             array (
@@ -5319,24 +5715,6 @@ class Express {
                 'name' => '睿和泰速运',
                 'type' => 1,
             ),
-        'rokin' =>
-            array (
-                'comcode' => 'rokin',
-                'name' => '荣庆物流',
-                'type' => 1,
-            ),
-        'romanian' =>
-            array (
-                'comcode' => 'romanian',
-                'name' => '罗马尼亚（Posta Romanian）',
-                'type' => 2,
-            ),
-        'rpx' =>
-            array (
-                'comcode' => 'rpx',
-                'name' => 'rpx',
-                'type' => 3,
-            ),
         'rrthk' =>
             array (
                 'comcode' => 'rrthk',
@@ -5361,18 +5739,6 @@ class Express {
                 'name' => '萨摩亚(Samoa Post)',
                 'type' => 2,
             ),
-        'sanshengco' =>
-            array (
-                'comcode' => 'sanshengco',
-                'name' => '三盛快递',
-                'type' => 1,
-            ),
-        'santaisudi' =>
-            array (
-                'comcode' => 'santaisudi',
-                'name' => '三态速递',
-                'type' => 1,
-            ),
         'saudipost' =>
             array (
                 'comcode' => 'saudipost',
@@ -5391,23 +5757,11 @@ class Express {
                 'name' => '四川星程快递',
                 'type' => 1,
             ),
-        'sczpds' =>
-            array (
-                'comcode' => 'sczpds',
-                'name' => '速呈',
-                'type' => 1,
-            ),
         'selektvracht' =>
             array (
                 'comcode' => 'selektvracht',
                 'name' => 'Selektvracht',
                 'type' => 3,
-            ),
-        'serbia' =>
-            array (
-                'comcode' => 'serbia',
-                'name' => '塞尔维亚(PE Post of Serbia)',
-                'type' => 2,
             ),
         'seur' =>
             array (
@@ -5425,12 +5779,6 @@ class Express {
             array (
                 'comcode' => 'sfift',
                 'name' => '十方通物流',
-                'type' => 1,
-            ),
-        'sfjhd' =>
-            array (
-                'comcode' => 'sfjhd',
-                'name' => '圣飞捷快递',
                 'type' => 1,
             ),
         'sfpost' =>
@@ -5475,28 +5823,10 @@ class Express {
                 'name' => '商海德物流',
                 'type' => 1,
             ),
-        'shengtongscm' =>
-            array (
-                'comcode' => 'shengtongscm',
-                'name' => '盛通快递',
-                'type' => 1,
-            ),
         'shenma' =>
             array (
                 'comcode' => 'shenma',
                 'name' => '神马快递',
-                'type' => 1,
-            ),
-        'shiningexpress' =>
-            array (
-                'comcode' => 'shiningexpress',
-                'name' => '阳光快递',
-                'type' => 1,
-            ),
-        'shipbyace' =>
-            array (
-                'comcode' => 'shipbyace',
-                'name' => '王牌快递',
                 'type' => 1,
             ),
         'shipsoho' =>
@@ -5517,41 +5847,11 @@ class Express {
                 'name' => 'SHL畅灵国际物流',
                 'type' => 3,
             ),
-        'shlindao' =>
-            array (
-                'comcode' => 'shlindao',
-                'name' => '林道国际快递',
-                'type' => 3,
-            ),
         'shpostwish' =>
             array (
                 'comcode' => 'shpostwish',
                 'name' => 'wish邮',
                 'type' => 3,
-            ),
-        'shunbang' =>
-            array (
-                'comcode' => 'shunbang',
-                'name' => '顺邦国际物流',
-                'type' => 3,
-            ),
-        'shunjieda' =>
-            array (
-                'comcode' => 'shunjieda',
-                'name' => '顺捷达',
-                'type' => 1,
-            ),
-        'shunjiefengda' =>
-            array (
-                'comcode' => 'shunjiefengda',
-                'name' => '顺捷丰达',
-                'type' => 1,
-            ),
-        'shunshid' =>
-            array (
-                'comcode' => 'shunshid',
-                'name' => '顺士达速运',
-                'type' => 1,
             ),
         'sihaiet' =>
             array (
@@ -5565,22 +5865,10 @@ class Express {
                 'name' => '四海捷运',
                 'type' => 1,
             ),
-        'sinoairinex' =>
-            array (
-                'comcode' => 'sinoairinex',
-                'name' => '中外运空运',
-                'type' => 3,
-            ),
         'sinoex' =>
             array (
                 'comcode' => 'sinoex',
                 'name' => '中外运速递-中文',
-                'type' => 3,
-            ),
-        'siodemka' =>
-            array (
-                'comcode' => 'siodemka',
-                'name' => 'Siodemka',
                 'type' => 3,
             ),
         'sixroad' =>
@@ -5619,23 +5907,11 @@ class Express {
                 'name' => '斯洛伐克(Slovenská Posta)',
                 'type' => 2,
             ),
-        'slovenia' =>
-            array (
-                'comcode' => 'slovenia',
-                'name' => '斯洛文尼亚(Slovenia Post)',
-                'type' => 2,
-            ),
         'slpost' =>
             array (
                 'comcode' => 'slpost',
                 'name' => '斯里兰卡(Sri Lanka Post)',
                 'type' => 2,
-            ),
-        'sofast56' =>
-            array (
-                'comcode' => 'sofast56',
-                'name' => '嗖一下同城快递',
-                'type' => 1,
             ),
         'southafrican' =>
             array (
@@ -5667,18 +5943,6 @@ class Express {
                 'name' => '星速递',
                 'type' => 1,
             ),
-        'staryvr' =>
-            array (
-                'comcode' => 'staryvr',
-                'name' => '星运快递',
-                'type' => 1,
-            ),
-        'stkd' =>
-            array (
-                'comcode' => 'stkd',
-                'name' => '顺通快递',
-                'type' => 1,
-            ),
         'subaoex' =>
             array (
                 'comcode' => 'subaoex',
@@ -5703,23 +5967,11 @@ class Express {
                 'name' => '苏丹（Sudapost）',
                 'type' => 2,
             ),
-        'suijiawuliu' =>
-            array (
-                'comcode' => 'suijiawuliu',
-                'name' => '穗佳物流',
-                'type' => 1,
-            ),
         'sujievip' =>
             array (
                 'comcode' => 'sujievip',
                 'name' => '郑州速捷',
                 'type' => 1,
-            ),
-        'superoz' =>
-            array (
-                'comcode' => 'superoz',
-                'name' => '速配欧翼',
-                'type' => 3,
             ),
         'supinexpress' =>
             array (
@@ -5727,29 +5979,11 @@ class Express {
                 'name' => '速品快递',
                 'type' => 1,
             ),
-        'swisspostcn' =>
-            array (
-                'comcode' => 'swisspostcn',
-                'name' => '瑞士邮政',
-                'type' => 2,
-            ),
-        'sxhongmajia' =>
-            array (
-                'comcode' => 'sxhongmajia',
-                'name' => '红马甲物流',
-                'type' => 1,
-            ),
         'szdpex' =>
             array (
                 'comcode' => 'szdpex',
                 'name' => '深圳DPEX',
                 'type' => 3,
-            ),
-        'szuem' =>
-            array (
-                'comcode' => 'szuem',
-                'name' => '联运通物流',
-                'type' => 1,
             ),
         'taimek' =>
             array (
@@ -5767,18 +6001,6 @@ class Express {
             array (
                 'comcode' => 'tcixps',
                 'name' => 'TCI XPS',
-                'type' => 3,
-            ),
-        'tdcargo' =>
-            array (
-                'comcode' => 'tdcargo',
-                'name' => 'TD Cargo',
-                'type' => 3,
-            ),
-        'thaizto' =>
-            array (
-                'comcode' => 'thaizto',
-                'name' => '泰国中通ZTO',
                 'type' => 3,
             ),
         'thunderexpress' =>
@@ -5829,22 +6051,10 @@ class Express {
                 'name' => 'TNY物流',
                 'type' => 3,
             ),
-        'tollpriority' =>
-            array (
-                'comcode' => 'tollpriority',
-                'name' => 'Toll Priority(Toll Online)',
-                'type' => 3,
-            ),
         'tongdaxing' =>
             array (
                 'comcode' => 'tongdaxing',
                 'name' => '通达兴物流',
-                'type' => 1,
-            ),
-        'tonghetianxia' =>
-            array (
-                'comcode' => 'tonghetianxia',
-                'name' => '通和天下',
                 'type' => 1,
             ),
         'topshey' =>
@@ -5859,23 +6069,11 @@ class Express {
                 'name' => '突尼斯EMS(Rapid-Poste)',
                 'type' => 2,
             ),
-        'turtle' =>
-            array (
-                'comcode' => 'turtle',
-                'name' => '海龟国际快递',
-                'type' => 3,
-            ),
         'uex' =>
             array (
                 'comcode' => 'uex',
                 'name' => 'UEX国际物流',
                 'type' => 3,
-            ),
-        'uexiex' =>
-            array (
-                'comcode' => 'uexiex',
-                'name' => '欧洲UEX',
-                'type' => 2,
             ),
         'ugoexpress' =>
             array (
@@ -5925,12 +6123,6 @@ class Express {
                 'name' => 'UTAO优到',
                 'type' => 3,
             ),
-        'uzbekistan' =>
-            array (
-                'comcode' => 'uzbekistan',
-                'name' => '乌兹别克斯坦(Post of Uzbekistan)',
-                'type' => 2,
-            ),
         'vanuatu' =>
             array (
                 'comcode' => 'vanuatu',
@@ -5948,12 +6140,6 @@ class Express {
                 'comcode' => 'vietnam',
                 'name' => '越南小包(Vietnam Posts)',
                 'type' => 2,
-            ),
-        'vipexpress' =>
-            array (
-                'comcode' => 'vipexpress',
-                'name' => '鹰运国际速递',
-                'type' => 3,
             ),
         'wanboex' =>
             array (
@@ -5979,12 +6165,6 @@ class Express {
                 'name' => '文捷航空',
                 'type' => 3,
             ),
-        'whgjkd' =>
-            array (
-                'comcode' => 'whgjkd',
-                'name' => '香港伟豪国际物流',
-                'type' => 3,
-            ),
         'winit' =>
             array (
                 'comcode' => 'winit',
@@ -5996,12 +6176,6 @@ class Express {
                 'comcode' => 'wlfast',
                 'name' => '凡仕特物流',
                 'type' => 1,
-            ),
-        'wotu' =>
-            array (
-                'comcode' => 'wotu',
-                'name' => '渥途国际速运',
-                'type' => 3,
             ),
         'wowvip' =>
             array (
@@ -6015,22 +6189,10 @@ class Express {
                 'name' => 'WTD海外通',
                 'type' => 3,
             ),
-        'wuyuansudi' =>
-            array (
-                'comcode' => 'wuyuansudi',
-                'name' => '伍圆速递',
-                'type' => 1,
-            ),
         'wygj168' =>
             array (
                 'comcode' => 'wygj168',
                 'name' => '万运国际快递',
-                'type' => 3,
-            ),
-        'wykjt' =>
-            array (
-                'comcode' => 'wykjt',
-                'name' => '51跨境通',
                 'type' => 3,
             ),
         'wzhaunyun' =>
@@ -6057,12 +6219,6 @@ class Express {
                 'name' => '西安城联速递',
                 'type' => 1,
             ),
-        'xiangdawuliu' =>
-            array (
-                'comcode' => 'xiangdawuliu',
-                'name' => '湘达物流',
-                'type' => 1,
-            ),
         'xiangteng' =>
             array (
                 'comcode' => 'xiangteng',
@@ -6081,12 +6237,6 @@ class Express {
                 'name' => '西安喜来快递',
                 'type' => 1,
             ),
-        'xingyuankuaidi' =>
-            array (
-                'comcode' => 'xingyuankuaidi',
-                'name' => '新元快递',
-                'type' => 1,
-            ),
         'xinning' =>
             array (
                 'comcode' => 'xinning',
@@ -6099,35 +6249,11 @@ class Express {
                 'name' => '西邮寄',
                 'type' => 3,
             ),
-        'xiyoug' =>
-            array (
-                'comcode' => 'xiyoug',
-                'name' => '西游寄',
-                'type' => 3,
-            ),
-        'xsrd' =>
-            array (
-                'comcode' => 'xsrd',
-                'name' => '鑫世锐达',
-                'type' => 1,
-            ),
         'xtb' =>
             array (
                 'comcode' => 'xtb',
                 'name' => '鑫通宝物流',
                 'type' => 1,
-            ),
-        'xyd666' =>
-            array (
-                'comcode' => 'xyd666',
-                'name' => '鑫远东速运',
-                'type' => 1,
-            ),
-        'yamaxunwuliu' =>
-            array (
-                'comcode' => 'yamaxunwuliu',
-                'name' => '亚马逊中国',
-                'type' => 3,
             ),
         'yatfai' =>
             array (
@@ -6141,28 +6267,10 @@ class Express {
                 'name' => 'YCG物流',
                 'type' => 3,
             ),
-        'ycgky' =>
-            array (
-                'comcode' => 'ycgky',
-                'name' => '远成快运',
-                'type' => 1,
-            ),
-        'yemen' =>
-            array (
-                'comcode' => 'yemen',
-                'name' => '也门(Yemen Post)',
-                'type' => 2,
-            ),
         'yhtlogistics' =>
             array (
                 'comcode' => 'yhtlogistics',
                 'name' => '宇航通物流',
-                'type' => 1,
-            ),
-        'yibangwuliu' =>
-            array (
-                'comcode' => 'yibangwuliu',
-                'name' => '一邦速递',
                 'type' => 1,
             ),
         'yidihui' =>
@@ -6181,12 +6289,6 @@ class Express {
             array (
                 'comcode' => 'yilingsuyun',
                 'name' => '亿领速运',
-                'type' => 1,
-            ),
-        'yinjiesudi' =>
-            array (
-                'comcode' => 'yinjiesudi',
-                'name' => '银捷速递',
                 'type' => 1,
             ),
         'yiqiguojiwuliu' =>
@@ -6213,12 +6315,6 @@ class Express {
                 'name' => '宜送',
                 'type' => 1,
             ),
-        'yitongda' =>
-            array (
-                'comcode' => 'yitongda',
-                'name' => '易通达',
-                'type' => 1,
-            ),
         'yiyou' =>
             array (
                 'comcode' => 'yiyou',
@@ -6237,22 +6333,10 @@ class Express {
                 'name' => '洋口岸',
                 'type' => 3,
             ),
-        'ynztsy' =>
-            array (
-                'comcode' => 'ynztsy',
-                'name' => '纵通速运',
-                'type' => 1,
-            ),
         'yodel' =>
             array (
                 'comcode' => 'yodel',
                 'name' => 'YODEL',
-                'type' => 3,
-            ),
-        'yongbangwuliu' =>
-            array (
-                'comcode' => 'yongbangwuliu',
-                'name' => '永邦国际物流',
                 'type' => 3,
             ),
         'youjia' =>
@@ -6266,12 +6350,6 @@ class Express {
                 'comcode' => 'youlai',
                 'name' => '邮来速递',
                 'type' => 1,
-            ),
-        'yourscm' =>
-            array (
-                'comcode' => 'yourscm',
-                'name' => '雅澳物流',
-                'type' => 3,
             ),
         'ypsd' =>
             array (
@@ -6291,12 +6369,6 @@ class Express {
                 'name' => '远盾物流',
                 'type' => 1,
             ),
-        'yuanzhijiecheng' =>
-            array (
-                'comcode' => 'yuanzhijiecheng',
-                'name' => '元智捷诚',
-                'type' => 1,
-            ),
         'yuezhongsh' =>
             array (
                 'comcode' => 'yuezhongsh',
@@ -6309,28 +6381,10 @@ class Express {
                 'name' => '御风速运',
                 'type' => 1,
             ),
-        'yundaexus' =>
-            array (
-                'comcode' => 'yundaexus',
-                'name' => '美国云达',
-                'type' => 3,
-            ),
-        'ywexpress' =>
-            array (
-                'comcode' => 'ywexpress',
-                'name' => '远为快递',
-                'type' => 1,
-            ),
         'yyexp' =>
             array (
                 'comcode' => 'yyexp',
                 'name' => '西安运逸快递',
-                'type' => 1,
-            ),
-        'yyqc56' =>
-            array (
-                'comcode' => 'yyqc56',
-                'name' => '一运全成物流',
                 'type' => 1,
             ),
         'zenzen' =>
@@ -6338,12 +6392,6 @@ class Express {
                 'comcode' => 'zenzen',
                 'name' => '三三国际物流',
                 'type' => 3,
-            ),
-        'zf365' =>
-            array (
-                'comcode' => 'zf365',
-                'name' => '珠峰速运',
-                'type' => 1,
             ),
         'zhdwl' =>
             array (
@@ -6356,48 +6404,6 @@ class Express {
                 'comcode' => 'zhitengwuliu',
                 'name' => '志腾物流',
                 'type' => 1,
-            ),
-        'zhonghuanus' =>
-            array (
-                'comcode' => 'zhonghuanus',
-                'name' => '中环转运',
-                'type' => 3,
-            ),
-        'zhongjiwuliu' =>
-            array (
-                'comcode' => 'zhongjiwuliu',
-                'name' => '中技物流',
-                'type' => 1,
-            ),
-        'zhongxinda' =>
-            array (
-                'comcode' => 'zhongxinda',
-                'name' => '忠信达',
-                'type' => 1,
-            ),
-        'zhpex' =>
-            array (
-                'comcode' => 'zhpex',
-                'name' => '众派速递',
-                'type' => 1,
-            ),
-        'zsda56' =>
-            array (
-                'comcode' => 'zsda56',
-                'name' => '转瞬达集运',
-                'type' => 1,
-            ),
-        'zsky123' =>
-            array (
-                'comcode' => 'zsky123',
-                'name' => '准实快运',
-                'type' => 1,
-            ),
-        'ztjieda' =>
-            array (
-                'comcode' => 'ztjieda',
-                'name' => '泰捷达国际物流',
-                'type' => 3,
             ),
     );
 

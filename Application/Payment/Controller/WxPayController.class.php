@@ -21,9 +21,6 @@ class WxPayController extends BaseController{
         $pay_fee = $oinfo['pay_fee'];
         $refund_money = $oinfo['refund_money'];
 
-        $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
-        $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
-        $batch_no = $res_orderserial['serial_order'];
         $m_ordermap = new \Admin\Model\Smallapp\OrdermapModel();
         $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
         $refund_trade_no = $res_ordermap['list'][0]['id'];
@@ -35,7 +32,7 @@ class WxPayController extends BaseController{
         $m_baseinc = new \Payment\Model\BaseIncModel();
         $payconfig = $m_baseinc->getPayConfig($pk_type);
 
-        $trade_info = array('trade_no'=>$refund_trade_no,'batch_no'=>$batch_no,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+        $trade_info = array('trade_no'=>$refund_trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
         $is_refund = 0;

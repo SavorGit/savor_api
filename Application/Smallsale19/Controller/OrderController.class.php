@@ -228,7 +228,11 @@ class OrderController extends CommonController{
             $order_data['distance'] = $dd_transporter['distance'];
         }
         $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
-        $order_data['express'] = $m_orderexpress->getExpress($res_order['id']);
+        $express = $m_orderexpress->getExpress($res_order['id']);
+        if(empty($express)){
+            $express = new \stdClass();
+        }
+        $order_data['express'] = $express;
 
         $this->to_back($order_data);
     }
@@ -307,8 +311,11 @@ class OrderController extends CommonController{
                 if($res_order[0]['pay_type']==10){
                     if(!empty($res_order[0]['parent_oid'])){
                         $refund_oid = $res_order['parent_oid'];
+                        $res_porder = $m_order->getInfo(array('id'=>$refund_oid));
+                        $pay_fee = $res_porder['pay_fee'];
                     }else{
                         $refund_oid = $order_id;
+                        $pay_fee = $res_order[0]['pay_fee'];
                     }
 
                     $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
@@ -320,7 +327,7 @@ class OrderController extends CommonController{
                         $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$refund_oid),'id desc',0,1);
                         $trade_no = $res_ordermap['list'][0]['id'];
 
-                        $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order[0]['pay_fee'],'refund_money'=>$res_order[0]['pay_fee']);
+                        $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$res_order[0]['pay_fee']);
                         $m_wxpay = new \Payment\Model\WxpayModel();
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){

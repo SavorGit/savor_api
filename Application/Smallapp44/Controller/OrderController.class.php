@@ -384,6 +384,7 @@ class OrderController extends CommonController{
                 $this->to_back(92020);
             }
             $amount = $amount>0?$amount:1;
+            $amount = $amount>$res_goods['amount']?$res_goods['amount']:$amount;
             $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
                 'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                 'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
@@ -397,9 +398,11 @@ class OrderController extends CommonController{
                         $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
                         if(!empty($res_goods) && $res_goods['status']==1){
                             $merchant_id = $res_goods['merchant_id'];
+                            $amount = $v['amount']>0?$v['amount']:1;
+                            $amount = $amount>$res_goods['amount']?$res_goods['amount']:$amount;
                             $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
                                 'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
-                                'staff_id'=>$res_goods['staff_id'],'amount'=>$v['amount']);
+                                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
                             $goods[$merchant_id][] = $ginfo;
                         }
                     }
@@ -446,6 +449,9 @@ class OrderController extends CommonController{
                 $total_fee = $total_fee+$price;
                 $amount = $amount+$gv['amount'];
             }
+        }
+        if($total_fee<=0){
+            $this->to_back(90142);
         }
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
@@ -1090,8 +1096,11 @@ class OrderController extends CommonController{
         if($res_order['pay_type']==10){
             if(!empty($res_order['parent_oid'])){
                 $refund_oid = $res_order['parent_oid'];
+                $res_porder = $m_order->getInfo(array('id'=>$refund_oid));
+                $pay_fee = $res_porder['pay_fee'];
             }else{
                 $refund_oid = $order_id;
+                $pay_fee = $res_order['pay_fee'];
             }
             $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
             $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$refund_oid));
@@ -1102,7 +1111,7 @@ class OrderController extends CommonController{
                 $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$refund_oid),'id desc',0,1);
                 $trade_no = $res_ordermap['list'][0]['id'];
 
-                $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$res_order['pay_fee'],'refund_money'=>$res_order['pay_fee']);
+                $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$res_order['pay_fee']);
                 $m_wxpay = new \Payment\Model\WxpayModel();
                 $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                 if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){

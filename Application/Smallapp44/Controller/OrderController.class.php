@@ -453,6 +453,7 @@ class OrderController extends CommonController{
                 $amount = $amount+$gv['amount'];
             }
         }
+
         if($total_fee<=0){
             $this->to_back(90142);
         }
@@ -513,6 +514,7 @@ class OrderController extends CommonController{
         }else{
             $oid = $order_id;
         }
+        $trade_name = text_substr($trade_name,10);
         $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
         $trade_no = $m_ordermap->add(array('order_id'=>$oid,'pay_type'=>10));
         $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,

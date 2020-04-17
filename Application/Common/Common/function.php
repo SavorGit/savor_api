@@ -17,6 +17,24 @@ function check_phone_os(){
     return $otype;
 }
 
+function text_substr($str, $num){
+    $intro = '';
+    if($str){
+        $intro_length = mb_strlen($str,'utf-8');
+        if($intro_length <= $num){
+            $intro = $str;
+        }else{
+            $strArr = array('。','！','？', '~', '，');
+            $intro = mb_substr($str, 0, $num, 'utf-8');
+            $last_str  = mb_substr($intro, -1, 1, 'utf-8');
+            if(!in_array($last_str, $strArr)){
+                $intro = $intro.'...';
+            }
+        }
+    }
+    return $intro;
+}
+
 function rad($d){
     return $d * 0.017453292519943; //$d * 3.1415926535898 / 180.0;
 }

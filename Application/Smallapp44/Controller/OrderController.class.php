@@ -39,10 +39,6 @@ class OrderController extends CommonController{
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,'address_id'=>1001,
                     'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002);
                 break;
-            case 'detail':
-                $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
-                break;
             case 'getStatusChange':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
@@ -54,6 +50,10 @@ class OrderController extends CommonController{
             case 'orderlist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'status'=>1001,'page'=>1001,'type'=>1002,'pagesize'=>1002);
+                break;
+            case 'detail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'order_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -281,13 +281,11 @@ class OrderController extends CommonController{
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
                     'img_url'=>$img_url,'status'=>intval($v['status']));
-                if($v['status']==1){
-                    $total_amount = $total_amount+$dinfo['amount'];
-                    $tmp_money = sprintf("%.2f",$dinfo['amount']*$dinfo['price']);
-                    $dinfo['money'] = $tmp_money;
-                    $total_fee = $total_fee+$tmp_money;
-                    $res_online[$v['merchant_id']][]=$dinfo;
-                }
+                $total_amount = $total_amount+$dinfo['amount'];
+                $tmp_money = sprintf("%.2f",$dinfo['amount']*$dinfo['price']);
+                $dinfo['money'] = $tmp_money;
+                $total_fee = $total_fee+$tmp_money;
+                $res_online[$v['merchant_id']][]=$dinfo;
             }
             $datas['total_fee'] = $total_fee;
             $datas['amount'] = $total_amount;
@@ -380,11 +378,13 @@ class OrderController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         if($goods_id){
             $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
-            if(empty($res_goods) || $res_goods['status']==2){
-                $this->to_back(92020);
+            if(empty($res_goods) || $res_goods['amount']==0 || $res_goods['status']==2){
+                $this->to_back(90144);
             }
             $amount = $amount>0?$amount:1;
-            $amount = $amount>$res_goods['amount']?$res_goods['amount']:$amount;
+            if($amount>$res_goods['amount']){
+                $this->to_back(90143);
+            }
             $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
                 'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                 'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
@@ -396,15 +396,18 @@ class OrderController extends CommonController{
                 foreach ($cart_info as $v){
                     if(!empty($v)){
                         $res_goods = $m_goods->getInfo(array('id'=>$v['id']));
-                        if(!empty($res_goods) && $res_goods['status']==1){
-                            $merchant_id = $res_goods['merchant_id'];
-                            $amount = $v['amount']>0?$v['amount']:1;
-                            $amount = $amount>$res_goods['amount']?$res_goods['amount']:$amount;
-                            $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
-                                'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
-                                'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
-                            $goods[$merchant_id][] = $ginfo;
+                        if(empty($res_goods) || $res_goods['amount']==0 || $res_goods['status']==2){
+                            $this->to_back(90144);
                         }
+                        $merchant_id = $res_goods['merchant_id'];
+                        $amount = $v['amount']>0?$v['amount']:1;
+                        if($amount>$res_goods['amount']){
+                            $this->to_back(90143);
+                        }
+                        $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                            'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
+                            'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
+                        $goods[$merchant_id][] = $ginfo;
                     }
                 }
             }
@@ -503,7 +506,9 @@ class OrderController extends CommonController{
                 $m_invoice->add($invoice_adddata);
             }
         }
+        $jump_type = 2;
         if($parent_oid){
+            $jump_type = 1;
             $oid = $parent_oid;
         }else{
             $oid = $order_id;
@@ -523,7 +528,7 @@ class OrderController extends CommonController{
         $wxpay = $m_payment->pay($trade_info,$payconfig);
         $payinfo = json_decode($wxpay,true);
 
-        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo);
+        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type);
         $this->to_back($resp_data);
     }
 
@@ -1068,6 +1073,7 @@ class OrderController extends CommonController{
                 }
             }
         }
+        $order_data['service_tel'] = '13811966726';
         $this->to_back($order_data);
     }
 
@@ -1093,6 +1099,7 @@ class OrderController extends CommonController{
             $this->to_back(90137);
         }
         $message = '取消订单成功';
+        $is_cancel = 0;
         if($res_order['pay_type']==10){
             if(!empty($res_order['parent_oid'])){
                 $refund_oid = $res_order['parent_oid'];
@@ -1116,13 +1123,26 @@ class OrderController extends CommonController{
                 $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                 if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                     $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
+                    $is_cancel = 1;
                     $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到你的支付账户';
                 }else{
                     $message = '取消订单失败';
                 }
             }
         }else{
+            $is_cancel = 1;
             $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
+        }
+        if($is_cancel && $res_order['otype']==5){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+            $gfields = 'goods.id as goods_id,goods.status,goods.amount as all_amount,og.amount';
+            $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+            foreach ($res_goods as $v){
+                $now_amount = $v['all_amount'] + $v['amount'];
+                $updata = array('amount'=>$now_amount);
+                $m_goods->updateData(array('id'=>$v['goods_id']),$updata);
+            }
         }
         $res_data = array('message'=>$message);
         $this->to_back($res_data);

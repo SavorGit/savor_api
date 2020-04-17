@@ -17,7 +17,11 @@ class GoodsModel extends BaseModel{
         $data = array('total'=>0,'list'=>array());
         if(!empty($result[0]['num'])){
             $data['total'] = $result[0]['num'];
-            $sql = "select * from ({$all_sql}) as goods $where order by goods.add_time desc limit $start,$size";
+            $limit = '';
+            if($start==0 && $size>0){
+                $limit = "limit $start,$size";
+            }
+            $sql = "select * from ({$all_sql}) as goods $where order by goods.add_time desc $limit";
             $data['list'] = $this->query($sql);
         }
         return $data;

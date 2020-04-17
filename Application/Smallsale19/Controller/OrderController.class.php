@@ -308,6 +308,7 @@ class OrderController extends CommonController{
                 break;
             case 2://不接单
                 $message = '取消订单成功';
+                $is_cancel = 0;
                 if($res_order[0]['pay_type']==10){
                     if(!empty($res_order[0]['parent_oid'])){
                         $refund_oid = $res_order['parent_oid'];
@@ -331,6 +332,7 @@ class OrderController extends CommonController{
                         $m_wxpay = new \Payment\Model\WxpayModel();
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                            $is_cancel = 1;
                             $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
                             $message = '取消订单成功,且已经退款.款项在1到7个工作日内,退还到用户的支付账户';
                         }else{
@@ -340,7 +342,19 @@ class OrderController extends CommonController{
                         $message = '取消订单失败';
                     }
                 }else{
+                    $is_cancel = 1;
                     $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
+                }
+                if($is_cancel && $res_order[0]['otype']==5){
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+                    $gfields = 'goods.id as goods_id,goods.status,goods.amount as all_amount,og.amount';
+                    $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+                    foreach ($res_goods as $v){
+                        $now_amount = $v['all_amount'] + $v['amount'];
+                        $updata = array('amount'=>$now_amount);
+                        $m_goods->updateData(array('id'=>$v['goods_id']),$updata);
+                    }
                 }
                 $resp_data = array('message'=>$message);
                 break;

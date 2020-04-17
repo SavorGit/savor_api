@@ -13,7 +13,7 @@ class ShopController extends CommonController{
         switch(ACTION_NAME) {
             case 'goods':
                 $this->is_verify = 1;
-                $this->valid_fields = array('category_id'=>1002,'keywords'=>1002,'page'=>1001);
+                $this->valid_fields = array('category_id'=>1002,'keywords'=>1002,'openid'=>1002,'page'=>1001);
                 break;
             case 'recommend':
                 $this->is_verify = 1;
@@ -31,18 +31,35 @@ class ShopController extends CommonController{
         $category_id = isset($this->params['category_id'])?intval($this->params['category_id']):0;
         $keywords = isset($this->params['keywords'])?trim($this->params['keywords']):'';
         $page = intval($this->params['page']);
+        $openid = isset($this->params['openid'])?$this->params['openid']:'';
         $pagesize = 10;
-        $all_nums = $page * $pagesize;
-        if($category_id){
-            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,add_time";
-            $orderby = 'id desc';
-            $where = array('type'=>22,'status'=>1,'category_id'=>$category_id);
-            $res_goods = $m_goods->getDataList($fields,$where,$orderby,0,$all_nums);
-        }else{
-            $m_goods = new \Common\Model\Smallapp\GoodsModel();
-            $res_goods = $m_goods->getAllShopGoods($keywords,0,$all_nums);
+
+        $cache_key = C('SAPP_SHOPDATA').$openid.$category_id.$keywords;
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res_goods = $redis->get($cache_key);
+        if($page==1 || empty($res_goods['total'])){
+            if($category_id){
+                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,add_time";
+                $orderby = 'id desc';
+                $where = array('type'=>22,'status'=>1,'category_id'=>$category_id);
+                $all_goods = $m_goods->getDataList($fields,$where,$orderby);
+                $res_goods = array('list'=>$all_goods,'total'=>count($all_goods));
+            }else{
+                $m_goods = new \Common\Model\Smallapp\GoodsModel();
+                $res_goods = $m_goods->getAllShopGoods($keywords);
+            }
+            if($res_goods['total']){
+                $list = $res_goods['list'];
+                shuffle($list);
+                $res_goods['list'] = $list;
+            }
+            $redis->set($cache_key,json_encode($res_goods),3600);
         }
+        $all_nums = $page * $pagesize;
+        $res_goods['list'] = array_slice($res_goods['list'],0,$all_nums);
+
         $res_data = array('total'=>0,'datalist'=>array());
         if($res_goods['total']){
             $res_data['total'] = $res_goods['total'];
@@ -81,9 +98,7 @@ class ShopController extends CommonController{
                 }
                 $res_data['datalist'][]=$dinfo;
             }
-            $datalist = $res_data['datalist'];
-            shuffle($datalist);
-            $res_data['datalist'] = $datalist;
+            $res_data['datalist'] = $res_data['datalist'];
         }
         $this->to_back($res_data);
     }

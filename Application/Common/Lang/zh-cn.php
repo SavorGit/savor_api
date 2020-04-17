@@ -346,6 +346,9 @@ return array(
     'smallappsale_exchange_money_error'=>'提现金额有误',
     'smallapp_order_addshop_order_area_error'=>'订单中包含限售区域的商品',
     'smallapp_order_addshop_order_totalmoney_error'=>'订单金额有误',
+    'smallapp_order_amount_error'=>'当前购买数量有误,无法购买',
+    'smallappsale_goods_amount_gt_zero'=>'请输入大于0的整数',
+    'smallapp_goods_sale_out'=>'商品已售空下架',
 
 
 );

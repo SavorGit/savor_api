@@ -252,6 +252,17 @@ class PurchaseController extends CommonController{
 
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $goods_list = array();
+
+            $m_userdprofit = new \Common\Model\Smallapp\UserdistributionprofitModel();
+            $res_userdprofit = $m_userdprofit->getInfo(array('user_id'=>$res_user['user_id']));
+            if(!empty($res_userdprofit)){
+                $profit = $res_userdprofit['profit'];
+            }else{
+                $m_config = new \Common\Model\SysConfigModel();
+                $res_config = $m_config->getAllconfig();
+                $profit = $res_config['distribution_profit'];
+            }
+
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
@@ -262,7 +273,14 @@ class PurchaseController extends CommonController{
                     }
                 }
                 $price = $v['price'];
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'img_url'=>$img_url,'type'=>$v['type']);
+
+                $income_fee = 0;
+                if($v['price']>$v['supply_price']){
+                    $income_fee = ($v['price']-$v['supply_price'])*$profit;
+                    $income_fee = sprintf("%.2f",$income_fee);
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],
+                    'income_fee'=>$income_fee,'img_url'=>$img_url,'type'=>$v['type']);
                 $dinfo['qrcode_url'] = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&suid=$sale_uid&type=26";
                 $goods_list[] = $dinfo;
             }

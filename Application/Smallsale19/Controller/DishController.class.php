@@ -77,8 +77,12 @@ class DishController extends CommonController{
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,'type'=>$type,
             'staff_id'=>$staff_id,'status'=>1);
         if($type==22){
-            if(empty($category_id) || empty($supply_price) || empty($amount) ||empty($video_path)){
+            if(empty($category_id) || empty($supply_price) ||empty($video_path)){
                 $this->to_back(1001);
+            }
+            $amount = intval($amount);
+            if($amount==0){
+                $this->to_back(93051);
             }
             if($amount>999){
                 $this->to_back(93046);
@@ -166,8 +170,12 @@ class DishController extends CommonController{
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,'type'=>$type,
             'staff_id'=>$staff_id,'status'=>1);
         if($type==22){
-            if(empty($category_id) || empty($supply_price) || empty($amount) ||empty($video_path)){
+            if(empty($category_id) || empty($supply_price) ||empty($video_path)){
                 $this->to_back(1001);
+            }
+            $amount = intval($amount);
+            if($amount==0){
+                $this->to_back(93051);
             }
             if($amount>999){
                 $this->to_back(93046);
@@ -275,6 +283,7 @@ class DishController extends CommonController{
 
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&type=25";
+        $income_fee = 0;
         if($res_goods['type']==22){
             if($openid){
                 $m_user = new \Common\Model\Smallapp\UserModel();
@@ -288,10 +297,26 @@ class DishController extends CommonController{
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $sale_uid = $hashids->encode($res_user['user_id']);
                 $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
+
+                $m_userdprofit = new \Common\Model\Smallapp\UserdistributionprofitModel();
+                $res_userdprofit = $m_userdprofit->getInfo(array('user_id'=>$res_user['user_id']));
+                if(!empty($res_userdprofit)){
+                    $profit = $res_userdprofit['profit'];
+                }else{
+                    $m_config = new \Common\Model\SysConfigModel();
+                    $res_config = $m_config->getAllconfig();
+                    $profit = $res_config['distribution_profit'];
+                }
+                if($res_goods['price']>$res_goods['supply_price']){
+                    $income_fee = ($res_goods['price']-$res_goods['supply_price'])*$profit;
+                    $income_fee = sprintf("%.2f",$income_fee);
+                }
+
             }else{
                 $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&type=26";
             }
         }
+        $data['income_fee'] = $income_fee;
         $data['qrcode_url'] = $qrcode;
 
         $oss_host = "https://".C('OSS_HOST').'/';

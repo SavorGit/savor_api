@@ -283,6 +283,8 @@ return array(
 	    '90140'=>'smallapp_order_address_error',
 	    '90141'=>'smallapp_order_addshop_order_area_error',
 	    '90142'=>'smallapp_order_addshop_order_totalmoney_error',
+	    '90143'=>'smallapp_order_amount_error',
+	    '90144'=>'smallapp_goods_sale_out',
 
 
 
@@ -363,6 +365,7 @@ return array(
 	    '93048'=>'smallappsale_order_status_not_express',
 	    '93049'=>'smallappsale_exchange_day_money_upper_limit',
 	    '93050'=>'smallappsale_exchange_money_error',
+	    '93051'=>'smallappsale_goods_amount_gt_zero',
 
 	),
 );

@@ -281,6 +281,7 @@ return array(
     'SAPP_GUIDE_PROMPT'=>'smallapp:guideprompt:',
     'SAPP_INITDATA'=>'smallapp:initdata:',
     'SAPP_FORSCREENTRACK'=>'smallapp:trackforscreen:',
+    'SAPP_SHOPDATA'=>'smallapp:shopdata:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',

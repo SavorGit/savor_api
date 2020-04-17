@@ -12,27 +12,21 @@ class WxPayController extends BaseController{
     public function refundMoney(){
         $params = I('params','');
         $oinfo = decrypt_data($params);
-        if(!empty($oinfo['order_id'])){
+        if(empty($oinfo['trade_no'])){
             $error_info = array('code'=>10001,'msg'=>'params error');
             die(json_encode($error_info));
         }
-        $order_id = $oinfo['order_id'];
+        $trade_no = $oinfo['trade_no'];
+        $batch_no = $oinfo['batch_no'];
         $pk_type = $oinfo['pk_type'];
         $pay_fee = $oinfo['pay_fee'];
         $refund_money = $oinfo['refund_money'];
 
-        $m_ordermap = new \Admin\Model\Smallapp\OrdermapModel();
-        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
-        $refund_trade_no = $res_ordermap['list'][0]['id'];
-        if(empty($batch_no) || empty($trade_no)){
-            $error_info = array('code'=>10002,'msg'=>'batch_no or ordermapid not exist');
-            die(json_encode($error_info));
-        }
 
         $m_baseinc = new \Payment\Model\BaseIncModel();
         $payconfig = $m_baseinc->getPayConfig($pk_type);
 
-        $trade_info = array('trade_no'=>$refund_trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+        $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$batch_no,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
         $is_refund = 0;
@@ -43,7 +37,7 @@ class WxPayController extends BaseController{
                 $type = 1;
             }
             $m_refund = new \Common\Model\Smallapp\RefundModel();
-            $refund_data = array('trade_no'=>$order_id,'refund_money'=>$refund_money,'batch_no'=>$batch_no,
+            $refund_data = array('trade_no'=>$batch_no,'refund_money'=>$refund_money,'batch_no'=>$batch_no,
                 'type'=>$type,'status'=>2,'refund_time'=>date('Y-m-d H:i:s'),'succ_time'=>date('Y-m-d H:i:s'));
             $m_refund->addData($refund_data);
         }

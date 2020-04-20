@@ -77,7 +77,7 @@ class DishController extends CommonController{
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,'type'=>$type,
             'staff_id'=>$staff_id,'status'=>1);
         if($type==22){
-            if(empty($category_id) || empty($supply_price) ||empty($video_path)){
+            if(empty($category_id) || empty($supply_price)){
                 $this->to_back(1001);
             }
             $amount = intval($amount);
@@ -170,7 +170,7 @@ class DishController extends CommonController{
         $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,'type'=>$type,
             'staff_id'=>$staff_id,'status'=>1);
         if($type==22){
-            if(empty($category_id) || empty($supply_price) ||empty($video_path)){
+            if(empty($category_id) || empty($supply_price)){
                 $this->to_back(1001);
             }
             $amount = intval($amount);
@@ -278,7 +278,7 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'amount'=>$res_goods['amount'],
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],'amount'=>$res_goods['amount'],
             'supply_price'=>$res_goods['supply_price'],'is_localsale'=>$res_goods['is_localsale'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id']);
 
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
@@ -298,10 +298,8 @@ class DishController extends CommonController{
                 $sale_uid = $hashids->encode($res_user['user_id']);
                 $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
 
-                $m_userdprofit = new \Common\Model\Smallapp\UserdistributionprofitModel();
-                $res_userdprofit = $m_userdprofit->getInfo(array('user_id'=>$res_user['user_id']));
-                if(!empty($res_userdprofit)){
-                    $profit = $res_userdprofit['profit'];
+                if(!empty($res_goods)){
+                    $profit = $res_goods['distribution_profit'];
                 }else{
                     $m_config = new \Common\Model\SysConfigModel();
                     $res_config = $m_config->getAllconfig();

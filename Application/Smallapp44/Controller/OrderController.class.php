@@ -1005,6 +1005,7 @@ class OrderController extends CommonController{
         if(!empty($res_invoice)){
             $invoice['company'] = $res_invoice['company'];
             $invoice['credit_code'] = $res_invoice['credit_code'];
+            $invoice['email'] = $res_invoice['email'];
             $invoice['title_type'] = intval($res_invoice['title_type']);
         }
         $order_data['invoice'] = $invoice;

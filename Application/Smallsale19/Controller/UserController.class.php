@@ -450,35 +450,26 @@ class UserController extends CommonController{
         $data['dish_num'] = intval($dish_num);
 
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $where = array('merchant_id'=>$data['merchant_id']);
+        $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);
         $order_all_num = $m_order->countNum($where);
         $data['dishorder_all_num'] = intval($order_all_num);
         if($data['dishorder_all_num']){
-            $where = array('merchant_id'=>$data['merchant_id']);
+            $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);
             $where['status'] = array('in',array(1,13,14,15,16));
             $order_process_num = $m_order->countNum($where);
+            $data['dishorder_process_num'] = intval($order_process_num);
         }else{
-            $order_process_num = 0;
+            $data['dishorder_process_num'] = 0;
         }
-        $data['dishorder_process_num'] = intval($order_process_num);
 
-        $dishorder_common_num = $dishorder_purchase_num = 0;
-        if($data['is_purchase']){
-            $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);
-            $dishorder_common_num = $m_order->countNum($where);
-            if($order_all_num){
-                $dishorder_common_num = intval($dishorder_common_num);
-                $dishorder_purchase_num = $order_all_num - $dishorder_common_num;
-            }else{
-                $dishorder_purchase_num = 0;
-            }
-        }
-        $data['dishorder_common_num'] = intval($dishorder_common_num);
-        $data['dishorder_purchase_num'] = intval($dishorder_purchase_num);
-        if($res_staff[0]['mtype']==2){
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('merchant_id'=>$data['merchant_id'],'otype'=>5);
+        $shoporder_all_num = $m_order->countNum($where);
+        $data['shoporder_all_num'] = intval($shoporder_all_num);
+        if($data['shoporder_all_num']){
             $shopwhere = array('merchant_id'=>$data['merchant_id'],'otype'=>5);
             $shopwhere['status'] = array('in',array('51','52'));
-            $shoporder_process_num = $m_order->countNum($where);
+            $shoporder_process_num = $m_order->countNum($shopwhere);
             $data['shoporder_process_num'] = intval($shoporder_process_num);
         }else{
             $data['shoporder_process_num'] = 0;

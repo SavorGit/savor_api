@@ -253,15 +253,9 @@ class PurchaseController extends CommonController{
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $goods_list = array();
 
-            $m_userdprofit = new \Common\Model\Smallapp\UserdistributionprofitModel();
-            $res_userdprofit = $m_userdprofit->getInfo(array('user_id'=>$res_user['user_id']));
-            if(!empty($res_userdprofit)){
-                $profit = $res_userdprofit['profit'];
-            }else{
-                $m_config = new \Common\Model\SysConfigModel();
-                $res_config = $m_config->getAllconfig();
-                $profit = $res_config['distribution_profit'];
-            }
+            $m_config = new \Common\Model\SysConfigModel();
+            $res_config = $m_config->getAllconfig();
+            $profit = $res_config['distribution_profit'];
 
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
@@ -276,6 +270,9 @@ class PurchaseController extends CommonController{
 
                 $income_fee = 0;
                 if($v['price']>$v['supply_price']){
+                    if($v['distribution_profit']>0){
+                        $profit = $v['distribution_profit'];
+                    }
                     $income_fee = ($v['price']-$v['supply_price'])*$profit;
                     $income_fee = sprintf("%.2f",$income_fee);
                 }

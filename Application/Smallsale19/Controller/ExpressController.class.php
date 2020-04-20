@@ -80,22 +80,20 @@ class ExpressController extends CommonController{
 
         $res = $m_order->updateData(array('id'=>$order_id),array('status'=>53));
         if($res && $res_order['otype']==5 && !empty($res_order['sale_uid'])){
-            $m_userdprofit = new \Common\Model\Smallapp\UserdistributionprofitModel();
-            $res_userdprofit = $m_userdprofit->getInfo(array('user_id'=>$res_order['sale_uid']));
-            if(!empty($res_userdprofit)){
-                $profit = $res_userdprofit['profit'];
-            }else{
-                $m_config = new \Common\Model\SysConfigModel();
-                $res_config = $m_config->getAllconfig();
-                $profit = $res_config['distribution_profit'];
-            }
+            $m_config = new \Common\Model\SysConfigModel();
+            $res_config = $m_config->getAllconfig();
+            $profit = $res_config['distribution_profit'];
+
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-            $fields = 'og.goods_id,og.price,og.amount,goods.supply_price';
+            $fields = 'og.goods_id,og.price,og.amount,goods.supply_price,goods.distribution_profit';
             $where = array('og.order_id'=>$res_order['id']);
             $res_ordergoods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id asc');
 
             $add_data = array();
             foreach ($res_ordergoods as $v){
+                if($v['distribution_profit']>0){
+                    $profit = $v['distribution_profit'];
+                }
                 $income_fee = 0;
                 if($v['price']>$v['supply_price']){
                     $income_fee = ($v['price']-$v['supply_price'])*$profit;

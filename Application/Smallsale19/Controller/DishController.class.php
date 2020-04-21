@@ -298,7 +298,7 @@ class DishController extends CommonController{
                 $sale_uid = $hashids->encode($res_user['user_id']);
                 $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
 
-                if(!empty($res_goods)){
+                if($res_goods['distribution_profit']>0){
                     $profit = $res_goods['distribution_profit'];
                 }else{
                     $m_config = new \Common\Model\SysConfigModel();

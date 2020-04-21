@@ -302,7 +302,8 @@ class PurchaseController extends CommonController{
         $pagesize = 10;
         $all_nums = $page * $pagesize;
         $m_income = new \Common\Model\Smallapp\UserincomeModel();
-        $fields = 'i.id,i.openid,i.order_id,i.goods_id,i.price,i.amount,i.income_fee,i.add_time.u.nickName,u.avatarUrl';
+        $fields = 'i.id,i.openid,i.order_id,i.goods_id,i.price,i.amount,i.income_fee,i.add_time,u.nickName,u.avatarUrl';
+        $where = array('i.user_id'=>$res_user['user_id']);
         $res_income = $m_income->getList($fields,$where,'i.id desc',0,$all_nums);
         $income_data = array();
         if(!empty($res_income['total'])){
@@ -317,7 +318,7 @@ class PurchaseController extends CommonController{
                 $res_goods = $m_goods->find($v['goods_id']);
                 $pdate = date('Y-m-d',strtotime($v['add_time']));
                 $tmp_datas[$pdate][]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
-                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee'],'type'=>$v['type']);
+                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee']);
             }
             foreach ($tmp_datas as $k=>$v){
                 if(isset($alldate_str[$k])){

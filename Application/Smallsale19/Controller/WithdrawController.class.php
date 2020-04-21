@@ -232,15 +232,15 @@ class WithdrawController extends CommonController{
             $this->to_back(93049);
         }
 
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getMerchantStaff('a.openid,user.id as user_id',$where);
-        if(empty($res_staff)){
-            $this->to_back(93014);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth,role_id';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
         }
-
         $fields = 'sum(income_fee) as total_income_fee';
-        $where_income = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
+        $where_income = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
         $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
         $where_income['add_time'] = array('elt'=>$day_time);
         $m_income = new \Common\Model\Smallapp\UserincomeModel();
@@ -304,11 +304,11 @@ class WithdrawController extends CommonController{
         $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
 
         $fields = 'sum(income_fee) as total_income_fee';
-        $where_income = array('user_id'=>$res_staff[0]['user_id'],'is_withdraw'=>0);
+        $where_income = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
         $m_income = new \Common\Model\Smallapp\UserincomeModel();
         $res_income = $m_income->getDataList($fields,$where_income,'id desc');
         $income_fee = 0;
-        if(!empty($res_income)){
+        if(!empty($res_income[0]['total_income_fee'])){
             $income_fee =  $res_income[0]['total_income_fee'];
         }
         $res = array('message'=>$message,'tips'=>$tips,'withdraw_fee'=>0,'income_fee'=>$income_fee);

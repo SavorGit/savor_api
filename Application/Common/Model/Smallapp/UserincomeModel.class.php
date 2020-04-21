@@ -14,11 +14,15 @@ class UserincomeModel extends BaseModel{
                 ->order($orderby)
                 ->limit($start,$size)
                 ->select();
-            $count = $this->countNum($where);
+            $count = $this->alias('i')
+                ->join('savor_smallapp_user u on u.openid=i.openid','left')
+                ->field($fields)
+                ->where($where)
+                ->count();
             $data = array('list'=>$list,'total'=>$count);
         }else{
             $data = $this->alias('i')
-                ->join('savor_smallapp_user u on u.openid=i.openid','left')
+                ->join('savor_smallapp_user u on u.id=i.user_id','left')
                 ->field($fields)
                 ->where($where)
                 ->order($orderby)

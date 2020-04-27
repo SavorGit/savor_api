@@ -138,7 +138,7 @@ class CommonController extends Controller {
             $result = openssl_decrypt($aes_cipher, "AES-128-CBC", $aes_key, 1, $aes_iv);
             $decrypt_data = json_decode($result,true);
             if($decrypt_data == NULL){
-                $this->to_back(1008);
+                $decrypt_data = array('unionId'=>'');
             }
             $this->params['encryptedData'] = $decrypt_data;
         }

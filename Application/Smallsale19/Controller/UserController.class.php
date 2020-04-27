@@ -474,6 +474,8 @@ class UserController extends CommonController{
         }else{
             $data['shoporder_process_num'] = 0;
         }
+        $data['shoporder_all_num'] = 0;
+        $data['shoporder_process_num'] = 0;
 
         $hotel_id = $res_staff[0]['hotel_id'];
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();

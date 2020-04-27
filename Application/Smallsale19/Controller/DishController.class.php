@@ -352,8 +352,13 @@ class DishController extends CommonController{
             $video_url = $res_media['oss_addr'];
             $video_path = $res_media['oss_path'];
             $video_img = $video_url.'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
-
         }
+        $poster_img = '';
+        if(!empty($res_goods['poster_media_id'])){
+            $res_media = $m_media->getMediaInfoById($res_goods['poster_media_id'],'https');
+            $poster_img = $res_media['oss_addr'];
+        }
+        $data['poster_img'] = $poster_img;
         $data['video_url'] = $video_url;
         $data['video_path'] = $video_path;
         $data['video_img'] = $video_img;

@@ -59,7 +59,7 @@ class OrderModel extends BaseModel{
             $send_staff = array();
             foreach ($res_goods as $ov){
                 $goods_name[]=$ov['name'];
-                if(!in_array($ov['staff_id'],$send_staff)){
+                if(!in_array($ov['staff_id'],$send_staff) && $res_order['otype']!=5){
                     $res_staff = $m_staff->getInfo(array('id'=>$ov['staff_id']));
                     if(!empty($res_staff['openid'])){
                         $where = array('openid'=>$res_staff['openid']);
@@ -92,6 +92,9 @@ class OrderModel extends BaseModel{
             $template_code = $ucconfig['dish_send_cartsbuyer'];
         }
         $res_data = $alisms::sendSms($res_order['phone'],$params,$template_code);
+        if($res_data->Code=='OK'){
+            $is_notify_merchant = 1;
+        }
         $data = array('type'=>12,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
             'url'=>join(',',$params),'tel'=>$res_order['phone'],'resp_code'=>$res_data->Code,'msg_type'=>3
         );

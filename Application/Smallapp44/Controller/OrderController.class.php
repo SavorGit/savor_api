@@ -340,10 +340,13 @@ class OrderController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,role_id,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
+        }
+        if($res_user['role_id']!=3){
+            $sale_uid = 0;
         }
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;

@@ -86,6 +86,10 @@ class OrderController extends CommonController{
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $fields = 'id as order_id,merchant_id,openid,price,amount,total_fee,status,otype,contact,phone,address,delivery_type,delivery_time,remark,add_time,finish_time';
         $res_order = $m_order->getDataList($fields,$where,'add_time desc',0,$all_nums);
+        if($type==5){
+            $res_order['total']=0;
+            $res_order['list']=array();
+        }
         $datalist = array();
         if($res_order['total']){
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
@@ -156,12 +160,19 @@ class OrderController extends CommonController{
         if($res_order['selfpick_time']=='0000-00-00 00:00:00'){
             $res_order['selfpick_time'] = '';
         }
+        $order_types = array('3'=>1,'4'=>2);
+        if(isset($order_types[$res_order['otype']])){
+            $o_type = $order_types[$res_order['otype']];
+        }else{
+            $o_type = $res_order['otype'];
+        }
         $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],
             'total_fee'=>$res_order['total_fee'],'status'=>$res_order['status'],'status_str'=>'',
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
             'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],'delivery_fee'=>$res_order['delivery_fee'],
-            'selfpick_time'=>$res_order['selfpick_time'],'finish_time'=>$res_order['finish_time'],'type'=>$res_order['otype'],
+            'selfpick_time'=>$res_order['selfpick_time'],'finish_time'=>$res_order['finish_time'],'type'=>$o_type,
         );
+
         $order_status_str = C('ORDER_STATUS');
         if(isset($order_status_str[$res_order['status']])){
             $order_data['status_str'] = $order_status_str[$res_order['status']];

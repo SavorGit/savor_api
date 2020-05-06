@@ -36,6 +36,7 @@ class DishController extends CommonController{
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$merchant_id,'status'=>1,'type'=>$type);
+        $where['gtype'] = array('in',array(1,2));
         $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 
@@ -43,6 +44,24 @@ class DishController extends CommonController{
         if($res_goods['total']){
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             foreach ($res_goods['list'] as $v){
+                $price = $v['price'];
+                $line_price = $v['line_price'];
+                $stock_num = $v['amount'];
+                $goods_id = $v['id'];
+
+                $gtype = $v['gtype'];
+                $attrs = array();
+                $model_img = '';
+                if($gtype==2){
+                    $res_attrs = $m_goods->getGoodsAttr($v['id']);
+                    $price = $res_attrs['default']['price'];
+                    $line_price = $res_attrs['default']['line_price'];
+                    $stock_num = $res_attrs['default']['amount'];
+                    $goods_id = $res_attrs['default']['id'];
+                    $attrs = $res_attrs['attrs'];
+                    $model_img = $res_attrs['default']['model_img'];
+                }
+
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
                     $oss_host = "https://".C('OSS_HOST').'/';
@@ -51,14 +70,9 @@ class DishController extends CommonController{
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
-                $price = $v['price'];
-                if($type==2){
-                    if(floor($price)==$price){
-                        $price = floor($price);
-                    }
-                }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'type'=>$v['type'],
-                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'is_localsale'=>intval($v['is_localsale']),'status'=>intval($v['status']));
+                $dinfo = array('id'=>$goods_id,'name'=>$v['name'],'price'=>$price,'line_price'=>$line_price,'type'=>$v['type'],'gtype'=>$gtype,
+                    'model_img'=>$model_img,'stock_num'=>$stock_num,'img_url'=>$img_url,'is_localsale'=>intval($v['is_localsale']),
+                    'status'=>intval($v['status']),'attrs'=>$attrs);
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
             }
@@ -77,8 +91,32 @@ class DishController extends CommonController{
         if($res_goods['status']!=1){
             $this->to_back(93037);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],
-            'is_localsale'=>$res_goods['is_localsale'],'stock_num'=>$res_goods['amount'],'type'=>$res_goods['type']);
+
+        $price = $res_goods['price'];
+        $line_price = $res_goods['line_price'];
+        $stock_num = $res_goods['amount'];
+
+        $specification_goods = array();
+        $attrs = array();
+        $model_img = '';
+        if($res_goods['gtype']==3){
+            $res_attrs = $m_goods->getGoodsAttr($res_goods['parent_id'],$goods_id);
+            $all_goods = $res_attrs['all_goods'];
+            foreach ($all_goods as $v){
+                $specification_goods[]=array('goods_id'=>$v['id'],'name'=>$v['attr_name']);
+            }
+
+            $price = $res_attrs['default']['price'];
+            $line_price = $res_attrs['default']['line_price'];
+            $stock_num = $res_attrs['default']['amount'];
+            $model_img = $res_attrs['default']['model_img'];
+            $attrs = $res_attrs['attrs'];
+            $res_goods = $m_goods->getInfo(array('id'=>$res_goods['parent_id']));
+        }
+
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$price,'line_price'=>$line_price,
+            'is_localsale'=>$res_goods['is_localsale'],'stock_num'=>$stock_num,'type'=>$res_goods['type'],'notice'=>$res_goods['notice'],
+            'gtype'=>$res_goods['gtype'],'attrs'=>$attrs,'model_img'=>$model_img);
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs =array();
         if(!empty($res_goods['cover_imgs'])){
@@ -109,6 +147,7 @@ class DishController extends CommonController{
         $data['video_img'] = '';
         $data['video_url'] = '';
         $data['localsale_str'] = '';
+        $data['specification_goods'] = $specification_goods;
 
         $merchant = array();
         $merchant['merchant_id'] = $res_goods['merchant_id'];

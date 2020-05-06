@@ -38,13 +38,27 @@ class ShopController extends CommonController{
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $res_goods = $redis->get($cache_key);
+
+        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         if($page==1 || empty($res_goods['total'])){
             if($category_id){
-                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-                $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,add_time";
+                $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,gtype,add_time";
                 $orderby = 'id desc';
-                $where = array('type'=>22,'status'=>1,'category_id'=>$category_id);
-                $all_goods = $m_goods->getDataList($fields,$where,$orderby);
+                $where = array();
+                if($category_id==109){
+                    $where['_complex'] = array(
+                        array('category_id'=>$category_id),
+                        array('is_recommend'=>1),
+                        '_logic' => 'or'
+                    );
+                }else{
+                    $where['category_id'] = $category_id;
+                }
+                $where['type'] = 22;
+                $where['status'] = 1;
+                $where['gtype'] = array('in',array(1,2));
+
+                $all_goods = $m_dishgoods->getDataList($fields,$where,$orderby);
                 $res_goods = array('list'=>$all_goods,'total'=>count($all_goods));
             }else{
                 $m_goods = new \Common\Model\Smallapp\GoodsModel();
@@ -68,7 +82,7 @@ class ShopController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'line_price'=>$v['line_price'],'stock_num'=>$v['amount'],
-                    'type'=>$v['type'],'is_tv'=>0);
+                    'type'=>$v['type'],'is_tv'=>0,'gtype'=>$v['gtype']);
                 if($v['type']==10){
                     $media_id = $v['media_id'];
                     $media_info = $m_media->getMediaInfoById($media_id);
@@ -95,6 +109,19 @@ class ShopController extends CommonController{
                         }
                     }
                     $dinfo['img_url'] = $img_url;
+
+                    $dinfo['attrs'] = array();
+                    $dinfo['model_img'] = '';
+                    if($dinfo['gtype']==2){
+                        $res_attrs = $m_dishgoods->getGoodsAttr($v['id']);
+                        $dinfo['price'] = $res_attrs['default']['price'];
+                        $dinfo['line_price'] = $res_attrs['default']['line_price'];
+                        $dinfo['stock_num'] = $res_attrs['default']['amount'];
+                        $dinfo['id'] = $res_attrs['default']['id'];
+                        $dinfo['attrs'] = $res_attrs['attrs'];
+                        $dinfo['model_img'] = $res_attrs['default']['model_img'];
+                    }
+
                 }
                 $res_data['datalist'][]=$dinfo;
             }
@@ -107,7 +134,7 @@ class ShopController extends CommonController{
         $merchant_id = intval($this->params['merchant_id']);
         $page = intval($this->params['page']);
         $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
-        $goods_id = isset($this->params['goods_id'])?intval($this->params['goods_id']):10;
+        $goods_id = isset($this->params['goods_id'])?intval($this->params['goods_id']):0;
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('status'=>1,'type'=>22,'is_recommend'=>1);
@@ -135,7 +162,17 @@ class ShopController extends CommonController{
                 }
                 $price = $v['price'];
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],'type'=>$v['type'],
-                    'stock_num'=>$v['amount'],'img_url'=>$img_url,'status'=>intval($v['status']));
+                    'gtype'=>$v['gtype'],'stock_num'=>$v['amount'],'img_url'=>$img_url,'status'=>intval($v['status']));
+                if($dinfo['gtype']==2){
+                    $res_attrs = $m_goods->getGoodsAttr($v['id']);
+                    $dinfo['price'] = $res_attrs['default']['price'];
+                    $dinfo['line_price'] = $res_attrs['default']['line_price'];
+                    $dinfo['stock_num'] = $res_attrs['default']['amount'];
+                    $dinfo['id'] = $res_attrs['default']['id'];
+                    $dinfo['attrs'] = $res_attrs['attrs'];
+                    $dinfo['model_img'] = $res_attrs['default']['model_img'];
+                }
+
                 $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 $datalist[] = $dinfo;
             }
@@ -160,7 +197,8 @@ class ShopController extends CommonController{
         $datas = array('online'=>array(),'offline'=>array());
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fields = "id,name,price,amount,cover_imgs,type,is_localsale,status,merchant_id";
+            $m_media = new \Common\Model\MediaModel();
+            $fields = "id,name,attr_name,price,amount,cover_imgs,model_media_id,type,gtype,parent_id,is_localsale,status,merchant_id";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -182,7 +220,20 @@ class ShopController extends CommonController{
                     $ischecked = $id_mapinfo[$v['id']]['ischecked'];
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
-                    'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>$ischecked,'is_localsale'=>$v['is_localsale'],'localsale_str'=>'');
+                    'gtype'=>$v['gtype'],'img_url'=>$img_url,'status'=>intval($v['status']),'ischecked'=>$ischecked,'is_localsale'=>$v['is_localsale'],'localsale_str'=>'');
+                $dinfo['attr_name'] = $v['attr_name'];
+                if($v['gtype']==3){
+                    $res_media = $m_media->getMediaInfoById($v['model_media_id']);
+                    $dinfo['img_url'] = $res_media['oss_addr'];
+
+                    $res_gv = $m_goods->getInfo(array('id'=>$v['parent_id']));
+                    $dinfo['name'] = $res_gv['name'];
+                    $dinfo['gtype'] = $res_gv['gtype'];
+
+                    $v['is_localsale'] = $res_gv['is_localsale'];
+                    $v['type'] = $res_gv['type'];
+                    $v['merchant_id'] = $res_gv['merchant_id'];
+                }
                 if($v['is_localsale'] && $v['type']==22){
                     $m_merchant = new \Common\Model\Integral\MerchantModel();
                     $fields = 'hotel.area_id,area.region_name';

@@ -181,6 +181,9 @@ class OrderController extends CommonController{
         $merchant_id = $this->params['merchant_id'];
         $money = $this->params['money'];
 
+        $data = array('fee'=>0,'distance'=>0);
+        $this->to_back($data);
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
@@ -372,6 +375,7 @@ class OrderController extends CommonController{
             $amount = $amount+$gv['amount'];
         }
         $delivery_fee = 0;
+        /*
         if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
             $config = C('DADA');
             $hotel_id = $res_merchant[0]['hotel_id'];
@@ -384,6 +388,7 @@ class OrderController extends CommonController{
                 $delivery_fee = $res['result']['fee'];
             }
         }
+        */
         $total_fee = $total_fee+$delivery_fee;
         $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
             'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);

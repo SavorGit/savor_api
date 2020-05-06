@@ -410,9 +410,9 @@ class BaseIncModel extends Model{
                     }
                 }
 
-                $is_notify_merchant = $m_order->sendMessage($trade_no);
-                $log_notify = "order_id:$trade_no sms notify merchant status:".$is_notify_merchant;
-                $this->paynotify_log($paylog_type, $serial_no, $log_notify);
+//                $is_notify_merchant = $m_order->sendMessage($trade_no);
+//                $log_notify = "order_id:$trade_no sms notify merchant status:".$is_notify_merchant;
+//                $this->paynotify_log($paylog_type, $serial_no, $log_notify);
                 $is_notify_merchant = 1;
                 if($is_notify_merchant){
                     $m_order->updateData(array('id'=>$trade_no),array('status'=>51));

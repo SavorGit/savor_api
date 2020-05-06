@@ -306,6 +306,11 @@ class OrderController extends CommonController{
                         $dada = new \Common\Lib\Dada($config);
                         $res = $dada->addOrder($hotel_id,$order_id,$area_no,$money,$name,$address,$phone,$lnglat[1],$lnglat[0],$callback,$delay_publish_time);
 
+                        $msg = json_encode($res);
+                        $log_content = date('Y-m-d H:i:s')." 订单号:$order_id-- $msg \r\n";
+                        $log_file_name = C('DADALOGS_PATH').'order_'.date('Ym').'.log';
+                        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
                         if($res['code']==0 && !empty($res['result'])){
                             $m_order->updateData(array('id'=>$order_id),array('status'=>14));
                         }else{

@@ -257,7 +257,7 @@ class DishController extends CommonController{
                 }
                 $price = $v['price'];
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,'is_localsale'=>$v['is_localsale'],
-                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),'type'=>$v['type'],'flag'=>$v['flag']);
+                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),'type'=>$v['type'],'flag'=>$v['flag'],'gtype'=>$v['gtype']);
                 $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&type=25";
                 if($v['type']==22){
                     $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$v['id']}&type=26";
@@ -278,8 +278,10 @@ class DishController extends CommonController{
         if(empty($res_goods)){
             $this->to_back(93034);
         }
-        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],'amount'=>$res_goods['amount'],
-            'supply_price'=>$res_goods['supply_price'],'is_localsale'=>$res_goods['is_localsale'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id']);
+        $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],
+            'line_price'=>$res_goods['line_price'],'amount'=>$res_goods['amount'],'supply_price'=>$res_goods['supply_price'],
+            'is_localsale'=>$res_goods['is_localsale'],'type'=>$res_goods['type'],'category_id'=>$res_goods['category_id'],
+        );
 
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $qrcode = $host_name."/smallsale19/qrcode/dishQrcode?data_id={$goods_id}&type=25";

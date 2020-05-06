@@ -140,7 +140,7 @@ class OrderController extends CommonController{
             if($tmp_minutes<20){
                 $nowtime = strtotime("$now_date $tmp_hour:20:00");
             }elseif($tmp_minutes>=20 && $tmp_minutes<40){
-                    $nowtime = strtotime("$now_date $tmp_hour:40:00");
+                $nowtime = strtotime("$now_date $tmp_hour:40:00");
             }else{
                 if($tmp_hour+1<24){
                     $tmp_hour = $tmp_hour+1;
@@ -203,6 +203,11 @@ class OrderController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
+
+        $data = array('fee'=>0,'distance'=>0);
+        $this->to_back($data);
+
+
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $res_address = $m_address->getInfo(array('id'=>$address_id));
         $m_area = new \Common\Model\AreaModel();
@@ -260,7 +265,8 @@ class OrderController extends CommonController{
         $datas = array();
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $fields = "id,name,price,amount,cover_imgs,type,status,merchant_id";
+            $m_media = new \Common\Model\MediaModel();
+            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -279,8 +285,18 @@ class OrderController extends CommonController{
                 if($num>$v['amount']){
                     $num = $v['amount'];
                 }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],'type'=>$v['type'],
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],
+                    'attr_name'=>$v['attr_name'],'type'=>$v['type'],'gtype'=>$v['gtype'],
                     'img_url'=>$img_url,'status'=>intval($v['status']));
+                if($v['gtype']==3){
+                    $res_media = $m_media->getMediaInfoById($v['model_media_id']);
+                    $dinfo['img_url'] = $res_media['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";;
+
+                    $res_gv = $m_goods->getInfo(array('id'=>$v['parent_id']));
+                    $dinfo['name'] = $res_gv['name'];
+                    $dinfo['gtype'] = $res_gv['gtype'];
+                }
+
                 $total_amount = $total_amount+$dinfo['amount'];
                 $tmp_money = sprintf("%.2f",$dinfo['amount']*$dinfo['price']);
                 $dinfo['money'] = $tmp_money;
@@ -345,9 +361,7 @@ class OrderController extends CommonController{
         if(empty($res_user)){
             $this->to_back(92010);
         }
-        if($res_user['role_id']!=3){
-            $sale_uid = 0;
-        }
+
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
@@ -624,7 +638,7 @@ class OrderController extends CommonController{
         }
 
         if($delivery_type==1 && (empty($contact) || empty($phone) || empty($address))){
-           $this->to_back(1001);
+            $this->to_back(1001);
         }
         $is_check = check_mobile($phone);
         if(!$is_check){
@@ -682,6 +696,7 @@ class OrderController extends CommonController{
             $amount = $amount+$gv['amount'];
         }
         $delivery_fee = 0;
+        /*
         if($res_merchant[0]['delivery_platform']==1 && $delivery_type==1 && $address_id){
             $config = C('DADA');
             $hotel_id = $res_merchant[0]['hotel_id'];
@@ -694,6 +709,7 @@ class OrderController extends CommonController{
                 $delivery_fee = $res['result']['fee'];
             }
         }
+        */
         $total_fee = $total_fee+$delivery_fee;
         $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_fee,'delivery_fee'=>$delivery_fee,
             'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>3,'delivery_type'=>$delivery_type,'pay_type'=>$pay_type);
@@ -887,6 +903,7 @@ class OrderController extends CommonController{
         $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $m_merchant = new \Common\Model\Integral\MerchantModel();
             $m_media = new \Common\Model\MediaModel();
@@ -901,12 +918,19 @@ class OrderController extends CommonController{
                     $datalist[$k]['finish_time'] = '';
                 }
                 $order_id = $v['order_id'];
-                $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
+                $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.gtype,goods.attr_name,goods.parent_id,
+                goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
                 $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
                 $goods = array();
                 foreach ($res_goods as $gv){
-                    $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>$gv['amount'],
-                        'status'=>$gv['status']);
+                    $goods_name = $gv['goods_name'];
+                    if($gv['gtype']==3){
+                        $res_ginfo = $m_goods->getInfo(array('id'=>$gv['parent_id']));
+                        $goods_name = $res_ginfo['name'];
+                        $gv['gtype'] = $res_ginfo['gtype'];
+                    }
+                    $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'attr_name'=>$gv['attr_name'],'price'=>$gv['price'],
+                        'gtype'=>$gv['gtype'],'amount'=>$gv['amount'],'status'=>$gv['status']);
                     $cover_imgs_info = explode(',',$gv['cover_imgs']);
                     $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     $goods[]=$ginfo;
@@ -970,12 +994,21 @@ class OrderController extends CommonController{
             $order_data['finish_time'] = '';
         }
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,
+        goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
         $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
         $goods = array();
         foreach ($res_goods as $gv){
-            $ginfo = array('id'=>$gv['goods_id'],'name'=>$gv['goods_name'],'price'=>$gv['price'],'amount'=>intval($gv['amount']),
-                'status'=>$gv['status']);
+            $goods_name = $gv['goods_name'];
+            if($gv['gtype']==3){
+                $res_ginfo = $m_goods->getInfo(array('id'=>$gv['parent_id']));
+                $goods_name = $res_ginfo['name'];
+                $gv['gtype'] = $res_ginfo['gtype'];
+            }
+
+            $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'price'=>$gv['price'],'amount'=>intval($gv['amount']),
+                'status'=>$gv['status'],'gtype'=>$gv['gtype'],'attr_name'=>$gv['attr_name']);
             $cover_imgs_info = explode(',',$gv['cover_imgs']);
             $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
             $goods[]=$ginfo;

@@ -25,7 +25,6 @@ class GoodsController extends CommonController{
         foreach ($attr_arr as $v){
             $attrs[]=intval($v);
         }
-        $attr_id = $attrs[0];
 
         $attr_ids = join('_',$attrs);
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
@@ -35,6 +34,13 @@ class GoodsController extends CommonController{
         }
         $parent_goods_id = $res['parent_id'];
         $res_goods = $m_goods->getInfo(array('parent_id'=>$parent_goods_id,'attr_ids'=>$attr_ids));
+        if(empty($res_goods)){
+            $m_goodsattr = new \Common\Model\Smallapp\GoodsattrModel();
+            $res_goods = $m_goodsattr->getDataList('*',array('attr_id'=>$attrs[0]),'id asc',0,1);
+            if($res_goods['total']){
+                $res_goods = $m_goods->getInfo(array('id'=>$res_goods['list'][0]['goods_id']));
+            }
+        }
 
         $price = $res_goods['price'];
         $line_price = $res_goods['line_price'];
@@ -44,40 +50,9 @@ class GoodsController extends CommonController{
         $attrs = array();
         $model_img = '';
         if($res_goods['gtype']==3){
-            $res_attrs = $m_goods->getGoodsAttr($res_goods['parent_id'],$res_goods['id']);
+            $res_attrs = $m_goods->getGoodsAttr($parent_goods_id,$res_goods['id']);
             $model_img = $res_attrs['default']['model_img']."?x-oss-process=image/resize,p_50/quality,q_80";
             $attrs = $res_attrs['attrs'];
-
-            $attr_1 = $attrs[0]['attrs'];
-            $link_attrs = array();
-            foreach ($attr_1 as $v){
-                $link_attrs[]=$v['id'];
-            }
-            $goods_ids = array();
-            foreach ($res_attrs['all_goods'] as $v){
-                $goods_ids[]=$v['id'];
-            }
-            $where = array('goods_id'=>array('in',$goods_ids),'attr_id'=>$attr_id);
-            $orderby = 'id asc';
-            $m_goodsattr = new \Common\Model\Smallapp\GoodsattrModel();
-            $list = $m_goodsattr->field('goods_id')->where($where)->order($orderby)->group('goods_id')->select();
-            foreach ($list as $v){
-                if(isset($res_attrs['all_goods_attrs'][$v['goods_id']])){
-                    foreach ($res_attrs['all_goods_attrs'][$v['goods_id']] as $v){
-                        $link_attrs[]=$v['id'];
-                    }
-                }
-            }
-            foreach ($attrs as $k=>$v){
-                foreach ($v['attrs'] as $kk=>$vv){
-                    if(in_array($vv['id'],$link_attrs)){
-                        $v['attrs'][$kk]['is_disable']=0;
-                    }else{
-                        $v['attrs'][$kk]['is_disable']=1;
-                    }
-                }
-                $attrs[$k] = $v;
-            }
             $res_goods = $m_goods->getInfo(array('id'=>$res_goods['parent_id']));
         }
 

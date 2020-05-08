@@ -273,6 +273,9 @@ class OrderController extends CommonController{
             $total_fee = 0;
             $total_amount = 0;
             foreach ($res_goods as $v){
+                if($v['status']==2){
+                    continue;
+                }
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
                     $oss_host = "https://".C('OSS_HOST').'/';
@@ -338,7 +341,6 @@ class OrderController extends CommonController{
         $credit_code = $this->params['credit_code'];
         $email = $this->params['email'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
-
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -402,7 +404,12 @@ class OrderController extends CommonController{
             if($amount>$res_goods['amount']){
                 $this->to_back(90143);
             }
-            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+            $goods_name = $res_goods['name'];
+            if($res_goods['gtype']==3){
+                $res_pgoods = $m_goods->getInfo(array('id'=>$res_goods['parent_id']));
+                $goods_name = $res_pgoods['name'];
+            }
+            $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$goods_name,
                 'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                 'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
             $goods[$res_goods['merchant_id']][] = $ginfo;
@@ -421,7 +428,12 @@ class OrderController extends CommonController{
                         if($amount>$res_goods['amount']){
                             $this->to_back(90143);
                         }
-                        $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$res_goods['name'],
+                        $goods_name = $res_goods['name'];
+                        if($res_goods['gtype']==3){
+                            $res_pgoods = $m_goods->getInfo(array('id'=>$res_goods['parent_id']));
+                            $goods_name = $res_pgoods['name'];
+                        }
+                        $ginfo = array('goods_id'=>$res_goods['id'],'price'=>$res_goods['price'],'name'=>$goods_name,'attr_name'=>$res_goods['attr_name'],
                             'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
                             'staff_id'=>$res_goods['staff_id'],'amount'=>$amount);
                         $goods[$merchant_id][] = $ginfo;
@@ -452,6 +464,7 @@ class OrderController extends CommonController{
                     break;
             }
         }
+
 
         $amount = 0;
         $total_fee = 0;

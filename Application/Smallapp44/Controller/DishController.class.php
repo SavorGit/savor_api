@@ -103,7 +103,8 @@ class DishController extends CommonController{
             $res_attrs = $m_goods->getGoodsAttr($res_goods['parent_id'],$goods_id);
             $all_goods = $res_attrs['all_goods'];
             foreach ($all_goods as $v){
-                $specification_goods[]=array('goods_id'=>$v['id'],'name'=>$v['attr_name']);
+                $name = str_replace('_',',',$v['attr_name']);
+                $specification_goods[]=array('goods_id'=>$v['id'],'name'=>$name,'attr_ids'=>$v['attr_ids']);
             }
 
             $price = $res_attrs['default']['price'];

@@ -13,7 +13,7 @@ class ShopController extends CommonController{
         switch(ACTION_NAME) {
             case 'goods':
                 $this->is_verify = 1;
-                $this->valid_fields = array('category_id'=>1002,'keywords'=>1002,'openid'=>1002,'page'=>1001);
+                $this->valid_fields = array('category_id'=>1002,'keywords'=>1002,'openid'=>1002,'page'=>1001,'action'=>1002);
                 break;
             case 'recommend':
                 $this->is_verify = 1;
@@ -32,15 +32,24 @@ class ShopController extends CommonController{
         $keywords = isset($this->params['keywords'])?trim($this->params['keywords']):'';
         $page = intval($this->params['page']);
         $openid = isset($this->params['openid'])?$this->params['openid']:'';
+        $action = isset($this->params['action'])?intval($this->params['action']):0;
         $pagesize = 10;
 
         $cache_key = C('SAPP_SHOPDATA').$openid.$category_id.$keywords;
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $res_goods = $redis->get($cache_key);
+        $is_refresh = 0;
+        if($action){
+            $is_refresh = 1;
+        }else{
+            if($page==1){
+                $is_refresh = 1;
+            }
+        }
 
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
-        if($page==1 || empty($res_goods['total'])){
+        if($is_refresh || empty($res_goods['total'])){
             if($category_id){
                 $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,gtype,add_time";
                 $orderby = 'id desc';

@@ -235,6 +235,7 @@ class PurchaseController extends CommonController{
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('type'=>22,'status'=>1,'flag'=>2);
+        $where['gtype'] = 1;
         if($category_id){
             $where['category_id'] = $category_id;
         }

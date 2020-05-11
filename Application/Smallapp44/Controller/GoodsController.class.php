@@ -33,10 +33,10 @@ class GoodsController extends CommonController{
             $this->to_back(93034);
         }
         $parent_goods_id = $res['parent_id'];
-        $res_goods = $m_goods->getInfo(array('parent_id'=>$parent_goods_id,'attr_ids'=>$attr_ids));
+        $res_goods = $m_goods->getInfo(array('parent_id'=>$parent_goods_id,'attr_ids'=>$attr_ids,'status'=>1));
         if(empty($res_goods)){
             $m_goodsattr = new \Common\Model\Smallapp\GoodsattrModel();
-            $res_goods = $m_goodsattr->getDataList('*',array('attr_id'=>$attrs[0]),'id asc',0,1);
+            $res_goods = $m_goodsattr->getDataList('*',array('attr_id'=>$attrs[0],'status'=>1),'id asc',0,1);
             if($res_goods['total']){
                 $res_goods = $m_goods->getInfo(array('id'=>$res_goods['list'][0]['goods_id']));
             }

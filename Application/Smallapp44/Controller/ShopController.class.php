@@ -42,10 +42,6 @@ class ShopController extends CommonController{
         $is_refresh = 0;
         if($action){
             $is_refresh = 1;
-        }else{
-            if($page==1){
-                $is_refresh = 1;
-            }
         }
 
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();

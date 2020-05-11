@@ -7,7 +7,7 @@ class GoodsattrModel extends BaseModel{
 
     public function getGoodsAttrs($goods_ids,$default_goods_id){
         $fields = 'sattr.id,sattr.name,sattr.specification_id,a.goods_id';
-        $where = array('a.goods_id'=>array('in',$goods_ids));
+        $where = array('a.goods_id'=>array('in',$goods_ids),'a.status'=>1);
         $orderby = 'sattr.id asc';
         $list = $this->alias('a')
             ->join('savor_smallapp_goods_specificationattr sattr on a.attr_id=sattr.id','left')

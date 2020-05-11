@@ -932,20 +932,24 @@ class OrderController extends CommonController{
                 }
                 $order_id = $v['order_id'];
                 $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.gtype,goods.attr_name,goods.parent_id,
-                goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
+                goods.model_media_id,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
                 $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
                 $goods = array();
                 foreach ($res_goods as $gv){
                     $goods_name = $gv['goods_name'];
+                    $cover_imgs_info = explode(',',$gv['cover_imgs']);
+                    $img = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     if($gv['gtype']==3){
                         $res_ginfo = $m_goods->getInfo(array('id'=>$gv['parent_id']));
                         $goods_name = $res_ginfo['name'];
                         $gv['gtype'] = $res_ginfo['gtype'];
+                        if($gv['model_media_id']){
+                            $res_media = $m_media->getMediaInfoById($gv['model_media_id']);
+                            $img = $res_media['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
+                        }
                     }
                     $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'attr_name'=>$gv['attr_name'],'price'=>$gv['price'],
-                        'gtype'=>$gv['gtype'],'amount'=>$gv['amount'],'status'=>$gv['status']);
-                    $cover_imgs_info = explode(',',$gv['cover_imgs']);
-                    $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        'gtype'=>$gv['gtype'],'amount'=>$gv['amount'],'status'=>$gv['status'],'img'=>$img);
                     $goods[]=$ginfo;
                 }
 
@@ -1009,21 +1013,26 @@ class OrderController extends CommonController{
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,
-        goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
+        goods.model_media_id,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
         $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
         $goods = array();
+        $m_media = new \Common\Model\MediaModel();
         foreach ($res_goods as $gv){
             $goods_name = $gv['goods_name'];
+            $cover_imgs_info = explode(',',$gv['cover_imgs']);
+            $img = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
             if($gv['gtype']==3){
                 $res_ginfo = $m_goods->getInfo(array('id'=>$gv['parent_id']));
                 $goods_name = $res_ginfo['name'];
                 $gv['gtype'] = $res_ginfo['gtype'];
+                if($gv['model_media_id']){
+                    $res_media = $m_media->getMediaInfoById($gv['model_media_id']);
+                    $img = $res_media['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
+                }
             }
 
             $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'price'=>$gv['price'],'amount'=>intval($gv['amount']),
-                'status'=>$gv['status'],'gtype'=>$gv['gtype'],'attr_name'=>$gv['attr_name']);
-            $cover_imgs_info = explode(',',$gv['cover_imgs']);
-            $ginfo['img'] = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                'status'=>$gv['status'],'gtype'=>$gv['gtype'],'attr_name'=>$gv['attr_name'],'img'=>$img);
             $goods[]=$ginfo;
         }
         $order_data['goods'] = $goods;

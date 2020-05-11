@@ -24,7 +24,14 @@ class CategoryController extends CommonController{
             $category_name_list[]=$v['name'];
         }
         array_unshift($res_category,array('id'=>0,'name'=>'全部'));
-        $data = array('category_list'=>$res_category,'category_name_list'=>$category_name_list);
+        $tmp = $category_name_list[0];
+        $category_name_list[0] = $category_name_list[1];
+        $category_name_list[1] = $tmp;
+
+        $tmp = $res_category[0];
+        $res_category[0] = $res_category[1];
+        $res_category[1] = $tmp;
+	    $data = array('category_list'=>$res_category,'category_name_list'=>$category_name_list);
         $this->to_back($data);
     }
 

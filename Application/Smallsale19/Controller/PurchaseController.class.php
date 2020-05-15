@@ -237,7 +237,15 @@ class PurchaseController extends CommonController{
         $where = array('type'=>22,'status'=>1,'flag'=>2);
         $where['gtype'] = 1;
         if($category_id){
-            $where['category_id'] = $category_id;
+            if($category_id==109){
+                $where['_complex'] = array(
+                    array('category_id'=>$category_id),
+                    array('is_recommend'=>1),
+                    '_logic' => 'or'
+                );
+            }else{
+                $where['category_id'] = $category_id;
+            }
         }
         if(!empty($keywords)){
             $where['name'] = array('like',"%$keywords%");
@@ -319,7 +327,7 @@ class PurchaseController extends CommonController{
                 $res_goods = $m_goods->find($v['goods_id']);
                 $pdate = date('Y-m-d',strtotime($v['add_time']));
                 $tmp_datas[$pdate][]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
-                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee']);
+                    'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee'],'order_id'=>$v['order_id']);
             }
             foreach ($tmp_datas as $k=>$v){
                 if(isset($alldate_str[$k])){

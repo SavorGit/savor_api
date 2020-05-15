@@ -362,7 +362,7 @@ class OrderController extends CommonController{
                     $is_cancel = 1;
                     $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
                 }
-                if($is_cancel && $res_order[0]['otype']==5){
+                if($is_cancel && in_array($res_order[0]['otype'],array(5,6))){
                     $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
                     $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
                     $gfields = 'goods.id as goods_id,goods.status,goods.amount as all_amount,og.amount';
@@ -372,6 +372,8 @@ class OrderController extends CommonController{
                         $updata = array('amount'=>$now_amount);
                         $m_goods->updateData(array('id'=>$v['goods_id']),$updata);
                     }
+                    $m_income = new \Common\Model\Smallapp\UserincomeModel();
+                    $m_income->delData(array('order_id'=>$order_id));
                 }
                 $resp_data = array('message'=>$message);
                 break;

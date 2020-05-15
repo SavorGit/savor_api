@@ -285,6 +285,8 @@ return array(
 	    '90142'=>'smallapp_order_addshop_order_totalmoney_error',
 	    '90143'=>'smallapp_order_amount_error',
 	    '90144'=>'smallapp_goods_sale_out',
+	    '90145'=>'smallapp_order_upnum_gt_buynum',
+	    '90146'=>'smallapp_order_receivenum_gt_hasnum',
 
 
 

@@ -500,7 +500,7 @@ class UserController extends CommonController{
             $fields = 'sum(income_fee) as total_income_fee';
             $where = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
             $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
-            $where['add_time'] = array('elt'=>$day_time);
+            $where['add_time'] = array('elt',$day_time);
             $res_income = $m_income->getDataList($fields,$where,'id desc');
             if(!empty($res_income[0]['total_income_fee'])){
                 $withdraw_fee = $res_income[0]['total_income_fee'];

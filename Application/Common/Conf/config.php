@@ -36,7 +36,8 @@ return array(
 	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
-	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18','Smallsale19','Smallapp44',), //模块配置
+	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18',
+                                     'Smallsale19','Smallapp44','Smallapp45'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -274,6 +275,7 @@ return array(
     'SAPP_CALL_CLIMBTREE'=>'smallapp:callclimbtree:',
     'SAPP_CALL_CLIMBTREE_LOGOUT'=>'smallapp:callclimbtree:logout:',
     'SAPP_REDPACKET'=>'smallapp:redpacket:',
+    'SAPP_ORDER_GIFT'=>'smallapp:ordergift:',
     'SAPP_BIRTHDAYDEMAND'=>'smallapp:birthdaydemand',
     'SAPP_REDPACKET_JX'=>'smallapp:redpacket:jx',//抢红包页面精选内容
     'SAPP_FIND_INDEX_RAND'=>'smallapp:find:index:rand:',
@@ -445,12 +447,16 @@ return array(
         '51'=>'待处理',
         '52'=>'待发货',
         '53'=>'已派送',
-        '54'=>'已取消',
+        '61'=>'赠送中',
+        '62'=>'已过期',
+        '63'=>'获赠',
+
     ),
     'MAP_ORDER_STATUS'=>array(
         '1'=>3,//3普通订单 4分销订单
         '2'=>4,
         '3'=>4,
     ),
+    'GIFT_MESSAGE'=>'这份我最爱的礼物，送给与我同行的同路人，愿你万事顺遂～',
 
 );

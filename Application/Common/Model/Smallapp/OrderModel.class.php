@@ -34,6 +34,29 @@ class OrderModel extends BaseModel{
         return $data;
     }
 
+    public function getReceiveOrders($order_id){
+        $fields = 'o.id,o.openid,o.amount,o.add_time,u.nickName,u.avatarUrl';
+        $where = array('o.gift_oid'=>$order_id);
+        $res_data = $this->alias('o')
+            ->field($fields)
+            ->join('savor_smallapp_user u on o.openid=u.openid','left')
+            ->where($where)
+            ->select();
+        $data = array();
+        if(!empty($res_data)){
+            $receive_num = 0;
+            $receive_list = array();
+            foreach ($res_data as $v){
+                $receive_num+=$v['amount'];
+                $info = array('openid'=>$v['openid'],'avatarUrl'=>$v['avatarUrl'],'nickName'=>$v['nickName'],
+                    'amount'=>$v['amount'],'add_time'=>$v['add_time'],'time_str'=>viewTimes(strtotime($v['add_time'])));
+                $receive_list[]=$info;
+            }
+            $data = array('rnum'=>$receive_num,'list'=>$receive_list);
+        }
+        return $data;
+    }
+
 	public function sendMessage($order_id){
 	    $res_order = $this->getInfo(array('id'=>$order_id));
 

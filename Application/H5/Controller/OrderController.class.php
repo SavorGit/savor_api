@@ -146,6 +146,7 @@ class OrderController extends Controller {
             $m_baseinc = new \Payment\Model\BaseIncModel();
             $payconfig = $m_baseinc->getPayConfig(2);
             $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
             foreach ($res_order as $v){
                 $order_id=$v['id'];
                 $now_time = time();
@@ -156,7 +157,6 @@ class OrderController extends Controller {
                 if($v['pay_type']==10){
                     $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
                     if(!empty($res_orderserial)){
-                        $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
                         $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
                         $trade_no = $res_ordermap['list'][0]['id'];
 
@@ -180,4 +180,73 @@ class OrderController extends Controller {
         echo $nowdtime." finish\r\n";
     }
 
+
+    public function giftfailure(){
+        $nowdtime = date('Y-m-d H:i:s');
+        echo $nowdtime." start\r\n";
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('otype'=>6,'status'=>array('in',array(12,61)));
+
+        $res_order = $m_order->getDataList('*',$where,'id asc');
+        if(!empty($res_order)){
+            $diff_time = 86400*5;
+
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(2);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            foreach ($res_order as $v){
+                $order_id=$v['id'];
+                $now_time = time();
+                $order_time = strtotime($v['add_time']);
+                if($now_time-$order_time<$diff_time){
+                    continue;
+                }
+                if($v['pay_type']==10){
+                    $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+                    if(!empty($res_orderserial)){
+                        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+                        $trade_no = $res_ordermap['list'][0]['id'];
+
+                        $pay_fee = $v['pay_fee'];
+                        $refund_money = $v['pay_fee'];
+                        $cancel_oids = array();
+                        if($v['status']==61){
+                            $res_orders = $m_order->getDataList('id,total_fee,address',array('gift_oid'=>$order_id),'id desc');
+                            $receive_money = 0;
+                            foreach ($res_orders as $ov){
+                                if(empty($ov['address'])){
+                                    $cancel_oids[]=$ov['id'];
+                                }else{
+                                    $receive_money+=$ov['total_fee'];
+                                }
+                            }
+                            $refund_money = sprintf("%.2f",$pay_fee-$receive_money);
+                        }else{
+                            $cancel_oids[]=$order_id;
+                        }
+                        $cancel_info = json_encode(array('oids'=>$cancel_oids,'refund_money'=>$refund_money));
+                        echo "order_id:$order_id  cancel info:$cancel_info"."\r\n";
+
+                        $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+                        $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                            $data = array('status'=>62,'finish_time'=>date('Y-m-d H:i:s'));
+                            $where = array('id'=>array('in',$cancel_oids));
+                            $m_order->updateData($where,$data);
+                            echo "order_id:$order_id  cancel and refund ok"."\r\n";
+                        }else{
+                            echo "order_id:$order_id  cancel and refund error"."\r\n";
+                        }
+                    }else{
+                        echo "order_id:$order_id  cancel error"."\r\n";
+                    }
+                }else{
+                    echo "order_id:$order_id  cancel error paytype error"."\r\n";
+                }
+            }
+        }
+        echo $nowdtime." finish\r\n";
+    }
 }

@@ -387,16 +387,21 @@ class BaseIncModel extends Model{
                         $sql_uporder = "$update_condition where id='$oid'";
                         $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
                         $this->execute($sql_uporder);
-                        $order_ids[] = $oid;
+                        $order_ids[] = $v;
                     }
                 }else{
-                    $order_ids[] = $trade_no;
+                    $order_ids[] = $result_order[0];
                 }
+                $m_income = new \Common\Model\Smallapp\UserincomeModel();
+                $m_config = new \Common\Model\SysConfigModel();
+                $res_config = $m_config->getAllconfig();
+                $profit = $res_config['distribution_profit'];
                 $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
                 foreach ($order_ids as $v){
-                    $fields = 'og.goods_id,og.amount,goods.amount as gamount';
-                    $where = array('og.order_id'=>$v);
+                    $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit';
+                    $where = array('og.order_id'=>$v['id']);
                     $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
+                    $income_data = array();
                     foreach ($res_goods as $gv){
                         $goods_id = $gv['goods_id'];
                         $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
@@ -407,7 +412,30 @@ class BaseIncModel extends Model{
                         $sql_goods = "$upsql where id=$goods_id ";
                         $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
                         $this->execute($sql_goods);
+                        if($v['sale_uid']){
+                            if($gv['distribution_profit']>0){
+                                $profit = $gv['distribution_profit'];
+                            }
+                            $income_fee = 0;
+                            if($gv['price']>$gv['supply_price']){
+                                $income_fee = ($gv['price']-$gv['supply_price'])*$profit;
+                                $income_fee = sprintf("%.2f",$income_fee);
+                            }
+                            $total_fee = sprintf("%.2f",$gv['price']*$gv['amount']);
+                            $income_data[] = array('user_id'=>$v['sale_uid'],'openid'=>$v['openid'],'order_id'=>$v['id'],
+                                'goods_id'=>$gv['goods_id'],'price'=>$gv['price'],'supply_price'=>$gv['supply_price'],'amount'=>$gv['amount'],
+                                'total_fee'=>$total_fee,'income_fee'=>$income_fee, 'profit'=>$profit
+                            );
+                        }
                     }
+                    if(!empty($income_data)){
+                        $m_income->addAll($income_data);
+                        $sql_income = $m_income->getLastSql();
+                    }else{
+                        $sql_income = '';
+                    }
+                    $this->paynotify_log($paylog_type, $serial_no, "income:$sql_income");
+
                 }
 
 //                $is_notify_merchant = $m_order->sendMessage($trade_no);
@@ -419,6 +447,96 @@ class BaseIncModel extends Model{
                     $sql_uporder = $m_order->getLastSql();
                     $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
                 }
+            }
+        }else{
+            $is_succ = true;
+        }
+        return $is_succ;
+    }
+
+    public function handle_giftorder_notify($order_extend){
+        $is_succ = false;
+        $trade_no = $order_extend['trade_no'];
+        $serial_no = $order_extend['serial_no'];
+        $pay_fee = $order_extend['pay_fee'];
+        $paylog_type = $order_extend['paylog_type'];
+        $pay_type = $order_extend['pay_type'];
+
+        $sql_order = "select * from savor_smallapp_ordermap where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_ordermap = $this->query($sql_order);
+
+        $trade_no = intval($result_ordermap[0]['order_id']);
+        $sql_order = "select * from savor_smallapp_order where id='$trade_no'";
+        $this->paynotify_log($paylog_type, $serial_no, $sql_order);
+        $result_order = $this->query($sql_order);
+        if(in_array($result_order[0]['status'],array(10,11))){//10已下单 11支付失败 12支付成功
+            // 判断订单支付金额是否正常
+            $tmp_no_pay_fee = $result_order[0]['total_fee']-$result_order[0]['pay_fee']-$pay_fee;
+            $no_pay_fee = sprintf("%01.2f",$tmp_no_pay_fee);
+
+            if($no_pay_fee<=0){
+                $status = 12;
+            }else{
+                $status = 11;
+            }
+            $pay_time = date('Y-m-d H:i:s');
+            $update_condition = "update savor_smallapp_order set status='$status',pay_time='$pay_time',pay_fee='$pay_fee',pay_type='$pay_type' ";
+            $sql_uporder = "$update_condition where id='$trade_no'";
+            $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+            $row_num = $this->execute($sql_uporder);
+            if($row_num){
+                $is_succ = true;
+                $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
+                $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
+                $this->execute($sql_serialno);
+
+                $otype = $result_order[0]['otype'];
+                $this->paynotify_log($paylog_type, $serial_no,"order_id:$trade_no otype:$otype");
+
+                $m_income = new \Common\Model\Smallapp\UserincomeModel();
+                $m_config = new \Common\Model\SysConfigModel();
+                $res_config = $m_config->getAllconfig();
+                $profit = $res_config['distribution_profit'];
+                $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+                $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit';
+                $where = array('og.order_id'=>$trade_no);
+                $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
+                $income_data = array();
+                foreach ($res_goods as $gv){
+                    $goods_id = $gv['goods_id'];
+                    $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
+                    $upsql = "update savor_smallapp_dishgoods set amount=$amount";
+                    if($amount==0){
+                        $upsql.=",status=2";
+                    }
+                    $sql_goods = "$upsql where id=$goods_id ";
+                    $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
+                    $this->execute($sql_goods);
+
+                    if($result_order[0]['sale_uid']){
+                        if($gv['distribution_profit']>0){
+                            $profit = $gv['distribution_profit'];
+                        }
+                        $income_fee = 0;
+                        if($gv['price']>$gv['supply_price']){
+                            $income_fee = ($gv['price']-$gv['supply_price'])*$profit;
+                            $income_fee = sprintf("%.2f",$income_fee);
+                        }
+                        $total_fee = sprintf("%.2f",$gv['price']*$gv['amount']);
+                        $income_data[] = array('user_id'=>$result_order[0]['sale_uid'],'openid'=>$result_order[0]['openid'],'order_id'=>$result_order[0]['id'],
+                            'goods_id'=>$gv['goods_id'],'price'=>$gv['price'],'supply_price'=>$gv['supply_price'],'amount'=>$gv['amount'],
+                            'total_fee'=>$total_fee,'income_fee'=>$income_fee, 'profit'=>$profit
+                        );
+                    }
+                }
+                if(!empty($income_data)){
+                    $m_income->addAll($income_data);
+                    $sql_income = $m_income->getLastSql();
+                }else{
+                    $sql_income = '';
+                }
+                $this->paynotify_log($paylog_type, $serial_no, "income:$sql_income");
             }
         }else{
             $is_succ = true;

@@ -187,6 +187,9 @@ class WxpayModel extends Model{
                     case 40:
                         $is_continue = $this->baseInc->handle_shoporder_notify($order_extend,false);
                         break;
+                    case 50:
+                        $is_continue = $this->baseInc->handle_giftorder_notify($order_extend,false);
+                        break;
                     default:
                         $is_continue = $this->baseInc->handle_redpacket_notify($order_extend,false);
                 }

@@ -1170,6 +1170,7 @@ class OrderController extends CommonController{
                 break;
             case 8:
                 $where['status'] = 63;
+                break;
             default:
                 if($type==6){
                     $exclude_status = array(10,11);
@@ -1244,7 +1245,7 @@ class OrderController extends CommonController{
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $user_info = $m_user->getOne('id,openid,nickName,mpopenid',$where,'');
         if(empty($user_info)){
             $this->to_back(90116);
         }
@@ -1345,7 +1346,7 @@ class OrderController extends CommonController{
         $order_data['polyline'] = $dada_info['polyline'];
         $order_data['distance'] = $dada_info['distance'];
 
-        $expire_date = '';
+        $expire_date = $nickName = '';
         $receive_num = 0;
         $gift_records = array();
         if($res_order['otype']==6){
@@ -1357,7 +1358,17 @@ class OrderController extends CommonController{
                 $receive_num = $res_gift_receive['rnum'];
                 $gift_records = $res_gift_receive['list'];
             }
+            if(empty($res_order['gift_oid'])){
+                $nickName = $user_info['nickName'];
+            }else{
+                $res_gorder = $m_order->getInfo(array('id'=>$res_order['gift_oid']));
+                $where = array('openid'=>$res_gorder['openid'],'status'=>1);
+                $user_info = $m_user->getOne('id,openid,nickName,mpopenid',$where,'');
+                $nickName = $user_info['nickName'];
+            }
         }
+
+        $order_data['nickName'] = $nickName;
         $order_data['expire_date'] = $expire_date;
         $order_data['receive_num'] = $receive_num;
         $order_data['gift_records'] = $gift_records;
@@ -1380,10 +1391,10 @@ class OrderController extends CommonController{
         if(empty($res_order) || $res_order['openid']!=$openid){
             $this->to_back(90134);
         }
-        if(in_array($res_order['status'],array(18,19,53))){
+        if(in_array($res_order['status'],array(18,19,53,61,62,63))){
             $this->to_back(90136);
         }
-        if(!in_array($res_order['status'],array(13,51,52))){
+        if(!in_array($res_order['status'],array(12,13,51,52))){
             $this->to_back(90137);
         }
         $message = '取消订单成功';

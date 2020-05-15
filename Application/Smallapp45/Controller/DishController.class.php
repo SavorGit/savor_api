@@ -172,6 +172,9 @@ class DishController extends CommonController{
                 $gift = array('id'=>$res_ginfo['id'],'name'=>$res_ginfo['name']);
             }
         }
+        if(empty($gift)){
+            $gift = new \stdClass();
+        }
         $data['gift'] = $gift;
 
         $merchant['name'] = $res_merchantinfo[0]['name'];

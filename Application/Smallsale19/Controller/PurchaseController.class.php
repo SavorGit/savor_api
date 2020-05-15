@@ -323,11 +323,17 @@ class PurchaseController extends CommonController{
             $alldate_str = array($day=>'今天',$day_1=>'昨天',$day_2=>'前天');
             $tmp_datas = array();
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_orderexpress = new \Common\Model\Smallapp\OrderexpressModel();
             foreach ($res_income['list'] as $v){
                 $res_goods = $m_goods->find($v['goods_id']);
                 $pdate = date('Y-m-d',strtotime($v['add_time']));
-                $tmp_datas[$pdate][]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
+
+                $info = array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'goods_id'=>$v['goods_id'],
                     'goods_name'=>$res_goods['name'],'income_fee'=>$v['income_fee'],'order_id'=>$v['order_id']);
+                $express = $m_orderexpress->getExpressList($info['order_id']);
+                $info['express'] = $express;
+
+                $tmp_datas[$pdate][]=$info;
             }
             foreach ($tmp_datas as $k=>$v){
                 if(isset($alldate_str[$k])){

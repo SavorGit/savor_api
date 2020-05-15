@@ -211,11 +211,11 @@ class OrderController extends Controller {
 
                         $pay_fee = $v['pay_fee'];
                         $refund_money = $v['pay_fee'];
-                        $cancel_oids = array();
+                        $cancel_oids = array($order_id);
                         if($v['status']==61){
-                            $res_orders = $m_order->getDataList('id,total_fee,address',array('gift_oid'=>$order_id),'id desc');
+                            $receive_orders = $m_order->getDataList('id,total_fee,address',array('gift_oid'=>$order_id),'id desc');
                             $receive_money = 0;
-                            foreach ($res_orders as $ov){
+                            foreach ($receive_orders as $ov){
                                 if(empty($ov['address'])){
                                     $cancel_oids[]=$ov['id'];
                                 }else{
@@ -223,8 +223,10 @@ class OrderController extends Controller {
                                 }
                             }
                             $refund_money = sprintf("%.2f",$pay_fee-$receive_money);
-                        }else{
-                            $cancel_oids[]=$order_id;
+                        }
+                        if($refund_money<=0){
+                            echo "order_id:$order_id  cancel error money:$refund_money"."\r\n";
+                            continue;
                         }
                         $cancel_info = json_encode(array('oids'=>$cancel_oids,'refund_money'=>$refund_money));
                         echo "order_id:$order_id  cancel info:$cancel_info"."\r\n";

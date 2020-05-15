@@ -345,6 +345,7 @@ class GiftController extends CommonController{
                 $r_data['price'] = $res_ogoods[0]['price'];
                 $total_fee = sprintf("%.2f",$r_data['amount']*$r_data['price']);
                 $r_data['total_fee'] = $total_fee;
+                $r_data['merchant_id'] = $res_order['merchant_id'];
                 $row_id = $m_order->addData($r_data);
 
                 $order_goods = array('order_id'=>$row_id,'goods_id'=>$res_ogoods[0]['goods_id'],

@@ -79,6 +79,11 @@ class GiftController extends CommonController{
                 case 62:
                     $receive_type = 5;
                     break;
+                case 18:
+                case 19:
+                    $expire_time = strtotime($res_order['add_time']);
+                    $receive_type = 5;
+                    break;
                 default:
                     if($all_receive_num>=$amount){
                         $receive_type = 4;
@@ -307,6 +312,9 @@ class GiftController extends CommonController{
         }
         $row_id = 0;
         if($receive_type==1){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_goodsactivity = new \Common\Model\Smallapp\GoodsactivityModel();
+            $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $res_ogoods = $m_ordergoods->getDataList('*',array('order_id'=>$order_id),'id asc');
 
@@ -351,6 +359,17 @@ class GiftController extends CommonController{
                 $order_goods = array('order_id'=>$row_id,'goods_id'=>$res_ogoods[0]['goods_id'],
                     'price'=>$res_ogoods[0]['price'],'amount'=>$receive_num);
                 $m_ordergoods->addData($order_goods);
+
+                $res_activity = $m_goodsactivity->getInfo(array('goods_id'=>$order_goods['goods_id']));
+                if(!empty($res_activity)){
+                    $res_agoods = $m_goods->getInfo(array('id'=>$res_activity['gift_goods_id']));
+                    if(!empty($res_agoods) && $res_agoods['status']==1){
+                        $gifts=array('order_id'=>$order_goods['order_id'],'goods_id'=>$order_goods['goods_id'],
+                            'gift_goods_id'=>$res_activity['gift_goods_id'],'amount'=>$order_goods['amount']);
+                        $m_ordergift->add($gifts);
+                    }
+                }
+
                 if($receive_openid==$openid){
                     $receive_type = 3;
                 }
@@ -365,7 +384,11 @@ class GiftController extends CommonController{
                 $status = 17;
             }
             if($status){
-                $m_order->updateData(array('id'=>$order_id),array('status'=>$status));
+                $odata  = array('status'=>$status);
+                if($status==17){
+                    $odata['finish_time'] = date('Y-m-d H:i:s');
+                }
+                $m_order->updateData(array('id'=>$order_id),$odata);
             }
         }
         $message = '';
@@ -398,6 +421,16 @@ class GiftController extends CommonController{
         $m_area = new \Common\Model\AreaModel();
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $res_address = $m_address->getInfo(array('id'=>$address_id));
+
+        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $res_ordergoods = $m_ordergoods->getDataList('*',array('order_id'=>$order_id),'id desc',0,1);
+        $goods_id = $res_ordergoods['list'][0]['goods_id'];
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goodsinfo = $m_goods->getGoodsInfo('area.id as goods_areaid',array('a.id'=>$goods_id));
+        if($res_goodsinfo[0]['goods_areaid']!=$res_address['area_id']){
+            $this->to_back(90140);
+        }
+
         $res_area = $m_area->find($res_address['area_id']);
         $res_county = $m_area->find($res_address['county_id']);
 
@@ -417,9 +450,8 @@ class GiftController extends CommonController{
             $receive_data[$openid] = $r_data;
             $redis->set($order_receive_key,json_encode($receive_data),86400*7);
         }
-        $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-        $res_ordergoods = $m_ordergoods->getDataList('*',array('order_id'=>$order_id),'id desc',0,1);
-        $res_data = array('order_id'=>$order_id,'goods_id'=>$res_ordergoods['list'][0]['goods_id'],'message'=>'收货地址已确认，请注意查收');
+
+        $res_data = array('order_id'=>$order_id,'goods_id'=>$goods_id,'message'=>'收货地址已确认，请注意查收');
         $this->to_back($res_data);
     }
 

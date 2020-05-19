@@ -278,7 +278,7 @@ class OrderController extends CommonController{
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_media = new \Common\Model\MediaModel();
-            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id";
+            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -301,7 +301,7 @@ class OrderController extends CommonController{
                     $num = $v['amount'];
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],
-                    'attr_name'=>$v['attr_name'],'type'=>$v['type'],'gtype'=>$v['gtype'],
+                    'attr_name'=>$v['attr_name'],'type'=>$v['type'],'gtype'=>$v['gtype'],'is_localsale'=>$v['is_localsale'],
                     'img_url'=>$img_url,'status'=>intval($v['status']));
                 if($v['gtype']==3){
                     $res_media = $m_media->getMediaInfoById($v['model_media_id']);
@@ -323,12 +323,20 @@ class OrderController extends CommonController{
 
             foreach ($res_online as $k=>$v){
                 $m_merchant = new \Common\Model\Integral\MerchantModel();
-                $res_merchant = $m_merchant->getMerchantInfo('m.id,hotel.name as hotel_name',array('m.id'=>$k));
+                $res_merchant = $m_merchant->getMerchantInfo('m.id,hotel.name as hotel_name,area.region_name',array('m.id'=>$k));
                 $merchant_fee = 0;
                 $merchant_amount = 0;
                 foreach ($v as $kg=>$vg){
                     $merchant_fee+=$vg['money'];
                     $merchant_amount+=$vg['amount'];
+                    $tips = $localsale_str = '';
+                    if($vg['type']==22 && $vg['is_localsale']==1){
+                        $tips = "当前商品仅售{$res_merchant[0]['region_name']}，其他区域无法配送哦～";
+                        $localsale_str = '仅售'.$res_merchant[0]['region_name'];
+                    }
+                    $v[$kg]['tips'] = $tips;
+                    $v[$kg]['localsale_str'] = $localsale_str;
+
                     unset($v[$kg]['money']);
                 }
                 $info = array('merchant_id'=>$k,'name'=>$res_merchant[0]['hotel_name'],'money'=>$merchant_fee,'amount'=>$merchant_amount,
@@ -508,6 +516,8 @@ class OrderController extends CommonController{
             $parent_oid = $m_order->add($add_data);
         }
         $m_goodsactivity = new \Common\Model\Smallapp\GoodsactivityModel();
+        $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
+        $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
         $trade_name = '';
         foreach ($goods as $k=>$v){
             $amount = 0;
@@ -550,14 +560,11 @@ class OrderController extends CommonController{
             }
             $m_ordergoods->addAll($order_goods);
             if(!empty($gifts)){
-                $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
                 $m_ordergift->addAll($gifts);
             }
-
             if(!empty($invoice_data)){
                 $invoice_adddata = $invoice_data;
                 $invoice_adddata['order_id'] = $order_id;
-                $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
                 $m_invoice->add($invoice_adddata);
             }
         }
@@ -624,8 +631,6 @@ class OrderController extends CommonController{
             }
             $sale_uid = $decode_info[0];
         }
-
-
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
@@ -1163,7 +1168,7 @@ class OrderController extends CommonController{
                 $where['status'] = array('in',array(18,19));
                 break;
             case 6:
-                $where['status'] = 61;
+                $where['status'] = array('in',array(12,61));
                 break;
             case 7:
                 $where['status'] = 62;
@@ -1175,13 +1180,13 @@ class OrderController extends CommonController{
                 if($type==6){
                     $exclude_status = array(10,11);
                 }else{
-                    $exclude_status = array(10,11,12);
+                    $exclude_status = array(10,11);
                 }
                 $where['status'] = array('not in',$exclude_status);
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'id as order_id,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,gift_oid,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
         $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -1233,6 +1238,17 @@ class OrderController extends CommonController{
                     $merchant['img'] = $res_media['oss_addr'];
                 }
                 $datalist[$k]['merchant'] = $merchant;
+                $give_type = 0;
+                if($v['otype']==6){
+                    if($v['gift_oid']==0){
+                        $give_type = 1;
+                    }else{
+                        $give_type = 2;
+                    }
+                }
+                $datalist[$k]['give_type'] = $give_type;
+                unset($datalist[$k]['gift_oid']);
+
             }
         }
         $res_data = array('datalist'=>$datalist);
@@ -1277,6 +1293,18 @@ class OrderController extends CommonController{
         }
 
         $oss_host = "http://".C('OSS_HOST').'/';
+
+        $gifts = array();
+        $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
+        $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,
+        goods.model_media_id,goods.cover_imgs,og.amount,og.goods_id as buy_goods_id';
+        $res_gift_goods = $m_ordergift->getOrderGiftgoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+        if(!empty($res_gift_goods)){
+            foreach ($res_gift_goods as $v){
+                $gifts[$v['buy_goods_id']]=array('id'=>$v['goods_id'],'name'=>$v['goods_name'],'amount'=>intval($v['amount']));
+            }
+        }
+
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,
@@ -1297,9 +1325,15 @@ class OrderController extends CommonController{
                     $img = $res_media['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
                 }
             }
-
+            $gift_goods_id = 0;
+            $gift_name = '';
+            if(isset($gifts[$gv['goods_id']])){
+                $gift_goods_id = $gifts[$gv['goods_id']]['id'];
+                $gift_name = $gifts[$gv['goods_id']]['name'];
+            }
             $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'price'=>$gv['price'],'amount'=>intval($gv['amount']),
-                'status'=>$gv['status'],'gtype'=>$gv['gtype'],'attr_name'=>$gv['attr_name'],'img'=>$img);
+                'status'=>$gv['status'],'gtype'=>$gv['gtype'],'attr_name'=>$gv['attr_name'],'img'=>$img,
+                'gift_goods_id'=>$gift_goods_id,'gift_name'=>$gift_name);
             $goods[]=$ginfo;
         }
         $order_data['goods'] = $goods;
@@ -1427,6 +1461,8 @@ class OrderController extends CommonController{
                 }else{
                     $message = '取消订单失败';
                 }
+            }else{
+                $message = '取消订单失败';
             }
         }else{
             $is_cancel = 1;

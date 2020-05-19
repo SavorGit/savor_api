@@ -122,6 +122,17 @@ class GoodsController extends CommonController{
         $merchant['num'] = $m_goods->countNum($where);
         $data['merchant'] = $merchant;
 
+        $m_goodsactivity = new \Common\Model\Smallapp\GoodsactivityModel();
+        $res_activity = $m_goodsactivity->getInfo(array('goods_id'=>$now_goods_id));
+        $gift = array();
+        if(!empty($res_activity)){
+            $res_ginfo = $m_goods->getInfo(array('id'=>$res_activity['gift_goods_id']));
+            $gift = array('id'=>$res_ginfo['id'],'name'=>$res_ginfo['name']);
+        }
+        if(empty($gift)){
+            $gift = new \stdClass();
+        }
+        $data['gift'] = $gift;
         $this->to_back($data);
     }
 

@@ -242,7 +242,7 @@ class WithdrawController extends CommonController{
         $fields = 'sum(income_fee) as total_income_fee';
         $where_income = array('user_id'=>$res_user['user_id'],'is_withdraw'=>0);
         $day_time = date("Y-m-d H:i:s",strtotime("-7 day"));
-        $where_income['add_time'] = array('elt'=>$day_time);
+        $where_income['add_time'] = array('elt',$day_time);
         $m_income = new \Common\Model\Smallapp\UserincomeModel();
         $res_income = $m_income->getDataList($fields,$where_income,'id desc');
         $withdraw_fee = 0;

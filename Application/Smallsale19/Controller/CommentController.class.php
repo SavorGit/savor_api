@@ -67,6 +67,7 @@ class CommentController extends CommonController{
             $redis->select(15);
             $datalist = array();
 
+            $m_commenttag = new \Common\Model\Smallapp\CommenttagidsModel();
             foreach ($res_comment['list'] as $v){
                 $where = array('id'=>$v['user_id']);
                 $fields = 'openid,avatarUrl,nickName';
@@ -74,6 +75,17 @@ class CommentController extends CommonController{
                 $info = array('openid'=>$res_user['openid'],'nickName'=>$res_user['nickName'],
                     'avatarUrl'=>$res_user['avatarUrl'],'score'=>$v['score'],'content'=>$v['content'],
                     'time'=>date('Y-m-d H:i',strtotime($v['add_time'])));
+                if(empty($info['content'])){
+                    $tag_where = array('a.comment_id'=>$v['id']);
+                    $res_tags = $m_commenttag->getCommentTags('tag.name',$tag_where);
+                    if(!empty($res_tags)){
+                        $tags = array();
+                        foreach ($res_tags as $tv){
+                            $tags[]=$tv['name'];
+                        }
+                        $info['content'] = join(',',$tags);
+                    }
+                }
                 $staff_info = $m_staff->getInfo(array('id'=>$v['staff_id']));
                 $hotel_id = $staff_info['hotel_id'];
                 $room_id = $staff_info['room_id'];

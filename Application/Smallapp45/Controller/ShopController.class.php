@@ -43,6 +43,9 @@ class ShopController extends CommonController{
         if($action){
             $is_refresh = 1;
         }
+        if(!empty($res_goods)){
+            $res_goods = json_decode($res_goods,true);
+        }
 
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         if($is_refresh || empty($res_goods['total'])){
@@ -74,7 +77,7 @@ class ShopController extends CommonController{
                 shuffle($list);
                 $res_goods['list'] = $list;
             }
-            $redis->set($cache_key,json_encode($res_goods),3600);
+            $redis->set($cache_key,json_encode($res_goods),600);
         }
         $all_nums = $page * $pagesize;
         $res_goods['list'] = array_slice($res_goods['list'],0,$all_nums);

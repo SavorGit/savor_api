@@ -228,6 +228,7 @@ class WithdrawController extends CommonController{
         }else{
             $order_exchange = array();
         }
+        $money = sprintf("%.2f",$money);
         if($money>5000){
             $this->to_back(93049);
         }
@@ -277,7 +278,7 @@ class WithdrawController extends CommonController{
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
 
-        $m_income->updateData($where_income,array('is_withdraw'=>1));
+        $m_income->updateData($where_income,array('is_withdraw'=>1,'update_time'=>date('Y-m-d H:i:s')));
 
         if($res['code']==10000){
             $m_order->updateData(array('id'=>$order_id),array('status'=>21));

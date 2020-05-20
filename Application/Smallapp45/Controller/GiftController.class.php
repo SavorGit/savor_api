@@ -176,6 +176,9 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
+        if(in_array($res_order['status'],array(17,18,19,62))){
+            $this->to_back(90147);
+        }
 
         $amount = $res_order['amount'];
         $person_upnum = $res_order['person_upnum'];
@@ -212,6 +215,10 @@ class GiftController extends CommonController{
                 case 62:
                     $receive_type = 5;
                     break;
+                case 18:
+                case 19:
+                    $expire_time = strtotime($res_order['add_time']);
+                    $receive_type = 5;
                 default:
                     if($all_receive_num>=$amount){
                         $receive_type = 4;
@@ -266,6 +273,10 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
+        if(in_array($res_order['status'],array(17,18,19,62))){
+            $this->to_back(90147);
+        }
+
         $order_receive_key = C('SAPP_ORDER_GIFT').$order_id.':receive';
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -299,6 +310,10 @@ class GiftController extends CommonController{
                 case 62:
                     $receive_type = 5;
                     break;
+                case 18:
+                case 19:
+                    $expire_time = strtotime($res_order['add_time']);
+                    $receive_type = 5;
                 default:
                     if($all_receive_num>=$amount){
                         $receive_type = 4;
@@ -426,8 +441,8 @@ class GiftController extends CommonController{
         $res_ordergoods = $m_ordergoods->getDataList('*',array('order_id'=>$order_id),'id desc',0,1);
         $goods_id = $res_ordergoods['list'][0]['goods_id'];
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $res_goodsinfo = $m_goods->getGoodsInfo('area.id as goods_areaid',array('a.id'=>$goods_id));
-        if($res_goodsinfo[0]['goods_areaid']!=$res_address['area_id']){
+        $res_goodsinfo = $m_goods->getGoodsInfo('area.id as goods_areaid,a.is_localsale',array('a.id'=>$goods_id));
+        if($res_goodsinfo[0]['is_localsale']==1 && $res_goodsinfo[0]['goods_areaid']!=$res_address['area_id']){
             $this->to_back(90140);
         }
 

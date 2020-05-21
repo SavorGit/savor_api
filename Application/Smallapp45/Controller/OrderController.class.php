@@ -792,6 +792,8 @@ class OrderController extends CommonController{
             $merchant['img'] = $res_media['oss_addr'];
         }
         $order_data['merchant'] = $merchant;
+        $share_wx = $m_order->shareWeixin($order_data['nickName'],$order_data['goods']['name']);
+        $order_data['share_title'] = $share_wx['title'];
 
         $this->to_back($order_data);
     }
@@ -1143,7 +1145,7 @@ class OrderController extends CommonController{
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $user_info = $m_user->getOne('id,openid,mpopenid,nickName',$where,'');
         if(empty($user_info)){
             $this->to_back(90116);
         }
@@ -1247,6 +1249,9 @@ class OrderController extends CommonController{
                     }
                 }
                 $datalist[$k]['give_type'] = $give_type;
+                $share_wx = $m_order->shareWeixin($user_info['nickName'],$datalist[$k]['goods'][0]['name']);
+                $datalist[$k]['share_title'] = $share_wx['title'];
+
                 unset($datalist[$k]['gift_oid']);
 
             }

@@ -124,4 +124,11 @@ class OrderModel extends BaseModel{
         $m_account_sms_log->addData($data);
         return $is_notify_merchant;
     }
+
+    public function shareWeixin($username,$goods_name){
+        $title = $username.'送你小热点好物-'.$goods_name;
+        $share = array('title'=>$title);
+        return $share;
+
+    }
 }

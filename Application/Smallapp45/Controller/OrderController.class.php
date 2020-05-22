@@ -1411,7 +1411,7 @@ class OrderController extends CommonController{
         $order_data['expire_date'] = $expire_date;
         $order_data['receive_num'] = $receive_num;
         $order_data['gift_records'] = $gift_records;
-        $order_data['service_tel'] = '13811966726';
+        $order_data['service_tel'] = '13810024884';
         $this->to_back($order_data);
     }
 

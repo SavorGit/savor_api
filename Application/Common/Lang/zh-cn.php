@@ -351,6 +351,7 @@ return array(
     'smallapp_goods_sale_out'=>'商品已售空下架',
     'smallapp_order_upnum_gt_buynum'=>'限领份数不能大于购买数量',
     'smallapp_order_receivenum_gt_hasnum'=>'当前数量不足，请重新选择数量',
+    'smallapp_order_receive_over'=>'当前礼品已领完',
 
 
 );

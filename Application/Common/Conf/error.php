@@ -287,6 +287,7 @@ return array(
 	    '90144'=>'smallapp_goods_sale_out',
 	    '90145'=>'smallapp_order_upnum_gt_buynum',
 	    '90146'=>'smallapp_order_receivenum_gt_hasnum',
+	    '90147'=>'smallapp_order_receive_over',
 
 
 

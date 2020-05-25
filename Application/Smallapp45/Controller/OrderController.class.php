@@ -581,7 +581,7 @@ class OrderController extends CommonController{
         $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
             'wx_openid'=>$openid,'redirect_url'=>'','attach'=>40);
         $smallapp_config = C('SMALLAPP_CONFIG');
-        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
         $payconfig = array(
             'appid'=>$smallapp_config['appid'],
             'partner'=>$pay_wx_config['partner'],
@@ -720,7 +720,7 @@ class OrderController extends CommonController{
         $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
             'wx_openid'=>$openid,'redirect_url'=>'','attach'=>50);
         $smallapp_config = C('SMALLAPP_CONFIG');
-        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
         $payconfig = array(
             'appid'=>$smallapp_config['appid'],
             'partner'=>$pay_wx_config['partner'],
@@ -1045,7 +1045,7 @@ class OrderController extends CommonController{
             $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
                 'wx_openid'=>$openid,'redirect_url'=>'','attach'=>30);
             $smallapp_config = C('SMALLAPP_CONFIG');
-            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
             $payconfig = array(
                 'appid'=>$smallapp_config['appid'],
                 'partner'=>$pay_wx_config['partner'],
@@ -1459,6 +1459,10 @@ class OrderController extends CommonController{
                 $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$res_order['pay_fee']);
                 $m_wxpay = new \Payment\Model\WxpayModel();
                 $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                if(isset($res['err_code'])){
+                    $payconfig = $m_baseinc->getPayConfigOld(2);
+                    $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                }
                 if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                     $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
                     $is_cancel = 1;

@@ -29,6 +29,10 @@ class WxPayController extends BaseController{
         $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$batch_no,'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+        if(isset($res['err_code'])){
+            $payconfig = $m_baseinc->getPayConfigOld($pk_type);
+            $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+        }
         $is_refund = 0;
         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
             $is_refund = 1;

@@ -162,6 +162,10 @@ class OrderController extends Controller {
 
                         $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$v['pay_fee'],'refund_money'=>$v['pay_fee']);
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if(isset($res['err_code'])){
+                            $payconfig = $m_baseinc->getPayConfigOld(2);
+                            $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        }
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                             $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));
                             echo "order_id:$order_id  cancel and refund ok"."\r\n";
@@ -233,6 +237,11 @@ class OrderController extends Controller {
 
                         $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if(isset($res['err_code'])){
+                            $payconfig = $m_baseinc->getPayConfigOld(2);
+                            $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        }
+
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                             $data = array('status'=>62,'finish_time'=>date('Y-m-d H:i:s'));
                             $where = array('id'=>array('in',$cancel_oids));

@@ -124,9 +124,9 @@ class WithdrawController extends CommonController{
 
         if($res_goods['is_audit']==0){
             $smallapp_config = C('SMALLAPP_SALE_CONFIG');
-            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
-            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
-            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
             $payconfig = array(
                 'appid'=>$smallapp_config['appid'],
                 'partner'=>$pay_wx_config['partner'],
@@ -250,6 +250,7 @@ class WithdrawController extends CommonController{
         if(!empty($res_income)){
             $withdraw_fee =  $res_income[0]['total_income_fee'];
         }
+
         if($money>$withdraw_fee){
             $this->to_back(93050);
         }
@@ -264,9 +265,9 @@ class WithdrawController extends CommonController{
         $redis->set($cache_key,json_encode($order_exchange),86400);
 
         $smallapp_config = C('SMALLAPP_SALE_CONFIG');
-        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
-        $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
-        $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+        $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+        $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
         $payconfig = array(
             'appid'=>$smallapp_config['appid'],
             'partner'=>$pay_wx_config['partner'],
@@ -277,7 +278,6 @@ class WithdrawController extends CommonController{
         $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-
         $m_income->updateData($where_income,array('is_withdraw'=>1,'update_time'=>date('Y-m-d H:i:s')));
 
         if($res['code']==10000){
@@ -287,7 +287,7 @@ class WithdrawController extends CommonController{
                 //发送短信
                 $ucconfig = C('ALIYUN_SMS_CONFIG');
                 $alisms = new \Common\Lib\AliyunSms();
-                $params = array('merchant_no'=>1554975591);
+                $params = array('merchant_no'=>1594752111);
                 $template_code = $ucconfig['wx_money_not_enough_templateid'];
 
                 $phones = C('WEIXIN_MONEY_NOTICE');

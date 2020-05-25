@@ -348,6 +348,11 @@ class OrderController extends CommonController{
                         $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$order_id,'pay_fee'=>$pay_fee,'refund_money'=>$res_order[0]['pay_fee']);
                         $m_wxpay = new \Payment\Model\WxpayModel();
                         $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if(isset($res['err_code'])){
+                            $payconfig = $m_baseinc->getPayConfigOld(2);
+                            $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        }
+
                         if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
                             $is_cancel = 1;
                             $m_order->updateData(array('id'=>$order_id),array('status'=>18,'finish_time'=>date('Y-m-d H:i:s')));

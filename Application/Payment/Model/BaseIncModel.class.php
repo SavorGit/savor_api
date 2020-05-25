@@ -577,7 +577,7 @@ class BaseIncModel extends Model{
         fclose($fp);
     }
 
-    public function getPayConfig($pk_type=0){
+    public function getPayConfigOld($pk_type=0){
         if(!$pk_type){
             $pk_type = C('PK_TYPE');//1主干版h5服务号 2主干版本 5销售端
         }
@@ -623,6 +623,62 @@ class BaseIncModel extends Model{
                 $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
                 $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_cert.pem';
                 $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1554975591_apiclient_key.pem';
+                $payconfig = array(
+                    'appid'=>$smallapp_config['appid'],
+                    'partner'=>$pay_wx_config['partner'],
+                    'key'=>$pay_wx_config['key'],
+                    'sslcert_path'=>$sslcert_path,
+                    'sslkey_path'=>$sslkey_path,
+                );
+        }
+        return $payconfig;
+    }
+
+
+    public function getPayConfig($channel=0){
+        //channel 1服务号H5支付 2小程序热点投屏支付 5小热点销售端支付
+        switch ($channel){
+            case 1:
+                $fwh_config = C('WX_FWH_CONFIG');
+                $appid = $fwh_config['appid'];
+                $pay_config = C('PAY_WEIXIN_CONFIG');
+                $payconfig = array(
+                    'appid'=>$appid,
+                    'partner'=>$pay_config['partner'],
+                    'key'=>$pay_config['key']
+                );
+                break;
+            case 2:
+                $smallapp_config = C('SMALLAPP_CONFIG');
+                $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+                $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+                $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+                $payconfig = array(
+                    'appid'=>$smallapp_config['appid'],
+                    'partner'=>$pay_wx_config['partner'],
+                    'key'=>$pay_wx_config['key'],
+                    'sslcert_path'=>$sslcert_path,
+                    'sslkey_path'=>$sslkey_path,
+                );
+                break;
+            case 5:
+                $smallapp_config = C('SMALLAPP_SALE_CONFIG');
+                $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+                $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+                $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+                $payconfig = array(
+                    'appid'=>$smallapp_config['appid'],
+                    'partner'=>$pay_wx_config['partner'],
+                    'key'=>$pay_wx_config['key'],
+                    'sslcert_path'=>$sslcert_path,
+                    'sslkey_path'=>$sslkey_path,
+                );
+                break;
+            default:
+                $smallapp_config = C('SMALLAPP_CONFIG');
+                $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+                $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+                $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
                 $payconfig = array(
                     'appid'=>$smallapp_config['appid'],
                     'partner'=>$pay_wx_config['partner'],

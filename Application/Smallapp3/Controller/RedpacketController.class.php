@@ -130,7 +130,7 @@ class RedpacketController extends CommonController{
             $trade_info = array('trade_no'=>$order_id,'total_fee'=>$total_money,'trade_name'=>'小热点红包',
                 'buy_time'=>date('Y-m-d H:i:s'),'wx_openid'=>$open_id,'redirect_url'=>'','attach'=>20);
             $smallapp_config = C('SMALLAPP_CONFIG');
-            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
             $payconfig = array(
                 'appid'=>$smallapp_config['appid'],
                 'partner'=>$pay_wx_config['partner'],

@@ -20,7 +20,7 @@ class IndexController extends CommonController{
         }
         parent::_init_();
     }
-
+    
     public function pushnetty(){
         $box_mac = $this->params['box_mac'];
         $msg = $this->params['msg'];
@@ -36,7 +36,6 @@ class IndexController extends CommonController{
         $action = $message['action'];
         switch ($action){
             case 2://发现投视频
-            case 4://多图投屏
             case 5://点播官方视频
             case 6://生日歌点播
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
@@ -48,6 +47,7 @@ class IndexController extends CommonController{
                     $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
                 }
                 break;
+            case 4://多图投屏
             case 9://呼码
             case 10://投照片图集
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id']);
@@ -55,26 +55,16 @@ class IndexController extends CommonController{
             default:
                 $req_id = getMillisecond();
         }
+        $netty_position_num = 3;
+        $netty_num = 3;
 
         $netty_data = array('box_mac'=>$box_mac,'req_id'=>$req_id);
         $post_data = http_build_query($netty_data);
         $nettyBalanceURL = C('NETTY_BALANCE_URL');
 
-        $netty_position_stime = getMillisecond();
-        $result = $this->curlPost($nettyBalanceURL, $post_data);
-        $netty_position_etime = getMillisecond();
-        $position_result = json_decode($result,true);
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        $params = array(
-            'oss_stime'=>$message['res_sup_time'],
-            'oss_etime'=>$message['res_eup_time'],
-            'position_nettystime'=>$netty_position_stime,
-            'position_nettyetime'=>$netty_position_etime,
-            'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,
-            'netty_position_result'=>$position_result
-        );
-        $m_forscreen->recordTrackLog($req_id,$params);
-        if($position_result && $position_result['code']!=10000){
+        $position_result = array();
+        for ($i=1;$i<=$netty_position_num;$i++){
             $netty_position_stime = getMillisecond();
             $result = $this->curlPost($nettyBalanceURL, $post_data);
             $netty_position_etime = getMillisecond();
@@ -85,10 +75,17 @@ class IndexController extends CommonController{
                 'position_nettystime'=>$netty_position_stime,
                 'position_nettyetime'=>$netty_position_etime,
                 'netty_position_url'=>$nettyBalanceURL.'?'.$post_data,
-                'netty_position_result'=>$position_result
+                'netty_position_result'=>$position_result,
+                'netty_position_num'=>$i
             );
             $m_forscreen->recordTrackLog($req_id,$params);
+            if($position_result && $position_result['code']==10000){
+                break;
+            }else{
+                usleep(50000);
+            }
         }
+
 
         if($position_result){
             if($position_result['code']==10000){
@@ -99,16 +96,25 @@ class IndexController extends CommonController{
                 $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id);
                 $post_data = http_build_query($push_data);
 
-                $request_time = getMillisecond();
-                $netty_push_url = 'http://'.$position_result['result'].'/push/box';
-                $ret = $this->curlPost($netty_push_url,$post_data);
-
-                $params = array(
-                    'request_nettytime'=>$request_time,
-                    'netty_url'=>$netty_push_url.'?'.$post_data,
-                    'netty_result'=>json_decode($ret,true),
-                );
-                $m_forscreen->recordTrackLog($req_id,$params);
+                $ret = array();
+                for ($i=1;$i<=$netty_num;$i++){
+                    $request_time = getMillisecond();
+                    $netty_push_url = 'http://'.$position_result['result'].'/push/box';
+                    $ret = $this->curlPost($netty_push_url,$post_data);
+                    $netty_result = json_decode($ret,true);
+                    $params = array(
+                        'request_nettytime'=>$request_time,
+                        'netty_url'=>$netty_push_url.'?'.$post_data,
+                        'netty_result'=>$netty_result,
+                        'netty_num'=>$i,
+                    );
+                    $m_forscreen->recordTrackLog($req_id,$params);
+                    if($netty_result && $netty_result['code']==10000){
+                        break;
+                    }else{
+                        usleep(50000);
+                    }
+                }
 
                 if($ret){
                     $this->to_back(json_decode($ret,true));

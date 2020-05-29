@@ -418,7 +418,7 @@ class BaseIncModel extends Model{
                             }
                             $income_fee = 0;
                             if($gv['price']>$gv['supply_price']){
-                                $income_fee = ($gv['price']-$gv['supply_price'])*$profit;
+                                $income_fee = ($gv['price']-$gv['supply_price'])*$profit*$gv['amount'];
                                 $income_fee = sprintf("%.2f",$income_fee);
                             }
                             $total_fee = sprintf("%.2f",$gv['price']*$gv['amount']);

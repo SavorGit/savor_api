@@ -200,6 +200,7 @@ class OrderController extends Controller {
             $payconfig = $m_baseinc->getPayConfig(2);
             $m_wxpay = new \Payment\Model\WxpayModel();
             $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            $m_income = new \Common\Model\Smallapp\UserincomeModel();
             foreach ($res_order as $v){
                 $order_id=$v['id'];
                 $now_time = time();
@@ -215,17 +216,21 @@ class OrderController extends Controller {
 
                         $pay_fee = $v['pay_fee'];
                         $refund_money = $v['pay_fee'];
+                        $refund_amount = $v['amount'];
                         $cancel_oids = array($order_id);
                         if($v['status']==61){
-                            $receive_orders = $m_order->getDataList('id,total_fee,address',array('gift_oid'=>$order_id),'id desc');
+                            $receive_orders = $m_order->getDataList('id,amount,total_fee,address,status',array('gift_oid'=>$order_id),'id desc');
                             $receive_money = 0;
+                            $receive_amount = 0;
                             foreach ($receive_orders as $ov){
-                                if(empty($ov['address'])){
+                                if($ov['status']==63 && empty($ov['address'])){
                                     $cancel_oids[]=$ov['id'];
                                 }else{
                                     $receive_money+=$ov['total_fee'];
+                                    $receive_amount+=$ov['amount'];
                                 }
                             }
+                            $refund_amount = $refund_amount-$receive_amount;
                             $refund_money = sprintf("%.2f",$pay_fee-$receive_money);
                         }
                         if($refund_money<=0){
@@ -247,6 +252,22 @@ class OrderController extends Controller {
                             $where = array('id'=>array('in',$cancel_oids));
                             $m_order->updateData($where,$data);
                             echo "order_id:$order_id  cancel and refund ok"."\r\n";
+
+                            if($v['sale_uid']){
+                                $res_income = $m_income->getDataList('*',array('user_id'=>$v['sale_uid'],'order_id'=>$order_id),'id desc');
+                                if(!empty($res_income)){
+                                    $income_amount = $res_income[0]['amount']-$refund_amount>0?$res_income[0]['amount']-$refund_amount:0;
+                                    $income_fee = ($res_income[0]['price']-$res_income[0]['supply_price'])*$res_income[0]['profit']*$income_amount;
+                                    $income_fee = sprintf("%.2f",$income_fee);
+
+                                    $income_data = array('amount'=>$income_amount,'income_fee'=>$income_fee,'update_time'=>date('Y-m-d H:i:s'));
+                                    $m_income->updateData(array('id'=>$res_income[0]['id']),$income_data);
+                                    $income_sql = $m_income->getLastSql();
+                                    $income_info = 'old_amount:'.$res_income[0]['amount'].' refund_amount:'.$refund_amount.' sql:'.$income_sql;
+                                    echo "order_id:$order_id income_info: $income_info"."\r\n";
+                                }
+                            }
+
                         }else{
                             echo "order_id:$order_id  cancel and refund error"."\r\n";
                         }

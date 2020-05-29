@@ -141,7 +141,7 @@ class CommentController extends Controller {
         $hotel_id = $room_info['hotel_id'];
         $room_id = $box_info['room_id'];
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+        $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id,'status'=>1));
         $staff_openid = $res_staff['openid'];
         $where = array('openid'=>$staff_openid);
         $staffuser_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
@@ -212,7 +212,7 @@ class CommentController extends Controller {
             $hotel_id = $room_info['hotel_id'];
             $room_id = $box_info['room_id'];
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id,'status'=>1));
             $message = array('action'=>140,'forscreen_char'=>'感谢您的评价，您的建议是我们前进的动力～',
                 'waiterName'=>'','waiterIconUrl'=>'');
             if(!empty($res_staff)){

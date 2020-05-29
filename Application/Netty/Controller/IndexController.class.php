@@ -30,15 +30,19 @@ class IndexController extends CommonController{
         if(!is_array($message) || empty($message)){
             $this->to_back(90109);
         }
-        if(isset($message['forscreen_char'])){
-            $message['forscreen_char'] = str_replace(array("/r/n", "/r", "/n","↵"), "", $message['forscreen_char']);
-        }
         $action = $message['action'];
         switch ($action){
             case 2://发现投视频
             case 5://点播官方视频
             case 6://生日歌点播
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
+                break;
+            case 4://多图投屏
+                if(isset($message['img_list']) && !empty($message['img_list'])){
+                    $req_id = forscreen_serial($message['openid'],$message['forscreen_id']);
+                }else{
+                    $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
+                }
                 break;
             case 7://投文件图片
                 if(isset($message['resource_id'])){
@@ -47,7 +51,6 @@ class IndexController extends CommonController{
                     $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
                 }
                 break;
-            case 4://多图投屏
             case 9://呼码
             case 10://投照片图集
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id']);

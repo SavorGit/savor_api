@@ -24,12 +24,44 @@ class IndexController extends CommonController{
     public function pushnetty(){
         $box_mac = $this->params['box_mac'];
         $msg = $this->params['msg'];
-
         $jsonStr= stripslashes(html_entity_decode($msg));
         $message = json_decode($jsonStr,true);
         if(!is_array($message) || empty($message)){
+
+            $log_content = date("Y-m-d H:i:s").'[box_mac]'.$box_mac.'[msg]'.$msg.'[decode]error'."\n";
+            $log_file_name = APP_PATH.'Runtime/Logs/'.'netty_'.date("Ymd").".log";
+            @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
             $this->to_back(90109);
         }
+
+        $log_content = date("Y-m-d H:i:s").'[box_mac]'.$box_mac.'[msg]'.$msg."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'netty_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+        if(isset($message['avatarUrl'])){
+            $head_pic = '';
+            if(!empty($message['avatarUrl'])){
+                $head_pic = base64_encode($message['avatarUrl']);
+            }
+            $message['headPic'] = $head_pic;
+        }
+
+        //判断盒子是否为4G
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(!empty($forscreen_info) && isset($forscreen_info['box_id'])) {
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info, true);
+            if(!empty($box_info) && $box_info['is_4g']==1 && !empty($message['avatarUrl'])){
+                $message['avatarUrl'] = '';
+            }
+        }
+        //end
+
         $action = $message['action'];
         switch ($action){
             case 2://发现投视频
@@ -88,7 +120,6 @@ class IndexController extends CommonController{
                 usleep(50000);
             }
         }
-
 
         if($position_result){
             if($position_result['code']==10000){

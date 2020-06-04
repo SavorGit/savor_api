@@ -37,12 +37,12 @@ class OrderController extends CommonController{
             case 'addShoporder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,'address_id'=>1001,
-                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002);
+                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002,'box_id'=>1002);
                 break;
             case 'addGiftorder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'goods_id'=>1001,'amount'=>1001,'person_upnum'=>1001,'pay_type'=>1001,'remark'=>1002,
-                    'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002);
+                    'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002,'box_id'=>1002);
                 break;
             case 'reserveResult':
                 $this->valid_fields = array('order_id'=>1001);
@@ -361,6 +361,7 @@ class OrderController extends CommonController{
         $credit_code = $this->params['credit_code'];
         $email = $this->params['email'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
+        $box_id = $this->params['box_id'];
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -389,6 +390,29 @@ class OrderController extends CommonController{
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
 
         $redis = \Common\Lib\SavorRedis::getInstance();
+        $order_location = array();
+        $m_area = new \Common\Model\AreaModel();
+        if(!empty($box_id)){
+            $box_id = intval($box_id);
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info,true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $res_hotel = json_decode($redis_hotel_info, true);
+
+            $order_location = array('hotel_id'=>$room_info['hotel_id'],'hotel_name'=>$res_hotel['name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'room_id'=>$box_info['room_id'],'room_name'=>$room_info['name'],'box_id'=>$box_id,'box_mac'=>$box_info['mac'],'box_type'=>$box_info['box_type'],
+                'area_id'=>$res_hotel['area_id']
+            );
+            $res_area = $m_area->find($order_location['area_id']);
+            $order_location['area_name'] = $res_area['region_name'];
+        }
+
         $redis->select(14);
         $res_ordercache = $redis->get($order_space_key);
         if(!empty($res_ordercache)){
@@ -404,7 +428,6 @@ class OrderController extends CommonController{
             $user_order = array();
         }
 
-        $m_area = new \Common\Model\AreaModel();
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $res_address = $m_address->getInfo(array('id'=>$address_id));
         $res_area = $m_area->find($res_address['area_id']);
@@ -485,7 +508,6 @@ class OrderController extends CommonController{
             }
         }
 
-
         $amount = 0;
         $total_fee = 0;
         $m_merchant = new \Common\Model\Integral\MerchantModel();
@@ -507,17 +529,22 @@ class OrderController extends CommonController{
         if($total_fee<=0){
             $this->to_back(90142);
         }
+
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $parent_oid = 0;
         if(count($goods)>1){
             $add_data = array('openid'=>$openid,'amount'=>$amount,'total_fee'=>$total_fee,'contact'=>$contact,'phone'=>$phone,'address'=>$address,
                 'status'=>10,'otype'=>127,'pay_type'=>$pay_type);
+            if(!empty($order_location)){
+                $add_data['box_mac'] = $order_location['box_mac'];
+            }
             $parent_oid = $m_order->add($add_data);
         }
         $m_goodsactivity = new \Common\Model\Smallapp\GoodsactivityModel();
         $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
         $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
+        $m_orderlocation = new \Common\Model\Smallapp\OrderlocationModel();
         $trade_name = '';
         foreach ($goods as $k=>$v){
             $amount = 0;
@@ -542,7 +569,15 @@ class OrderController extends CommonController{
             if($sale_uid){
                 $add_data['sale_uid'] = $sale_uid;
             }
+            if(!empty($order_location)){
+                $add_data['box_mac'] = $order_location['box_mac'];
+            }
             $order_id = $m_order->add($add_data);
+            if(!empty($order_location)){
+                $location_data = $order_location;
+                $location_data['order_id'] = $order_id;
+                $m_orderlocation->add($location_data);
+            }
 
 //            $redis->set($order_space_key,$order_id,60);
             $user_order[] = $order_id;
@@ -608,6 +643,7 @@ class OrderController extends CommonController{
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
         $email = $this->params['email'];
         $uid = $this->params['uid'];
+        $box_id = $this->params['box_id'];
         if($person_upnum>$amount){
             $this->to_back(90145);
         }
@@ -636,6 +672,29 @@ class OrderController extends CommonController{
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
 
         $redis = \Common\Lib\SavorRedis::getInstance();
+        $order_location = array();
+        $m_area = new \Common\Model\AreaModel();
+        if(!empty($box_id)){
+            $box_id = intval($box_id);
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info,true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $res_hotel = json_decode($redis_hotel_info, true);
+
+            $order_location = array('hotel_id'=>$room_info['hotel_id'],'hotel_name'=>$res_hotel['name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'room_id'=>$box_info['room_id'],'room_name'=>$room_info['name'],'box_id'=>$box_id,'box_mac'=>$box_info['mac'],'box_type'=>$box_info['box_type'],
+                'area_id'=>$res_hotel['area_id']
+            );
+            $res_area = $m_area->find($order_location['area_id']);
+            $order_location['area_name'] = $res_area['region_name'];
+        }
+
         $redis->select(14);
         $res_ordercache = $redis->get($order_space_key);
         if(!empty($res_ordercache)){
@@ -664,8 +723,17 @@ class OrderController extends CommonController{
         if(!empty($remark)){
             $add_data['remark'] = $remark;
         }
+        if(!empty($order_location)){
+            $add_data['box_mac'] = $order_location['box_mac'];
+        }
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $order_id = $m_order->add($add_data);
+
+        if(!empty($order_location)){
+            $m_orderlocation = new \Common\Model\Smallapp\OrderlocationModel();
+            $order_location['order_id'] = $order_id;
+            $m_orderlocation->add($order_location);
+        }
 
 //        $redis->set($order_space_key,$order_id,60);
         $user_order[] = $order_id;

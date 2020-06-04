@@ -294,6 +294,7 @@ return array(
     'SAPP_SALE_WELCOME_RESOURCE'=>'smallappsale:welcomeresource',
 
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
+    'SAPP_SHOP_PROGRAM'=>'smallapp:shopprogram',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
     'SAPP_FIND_CONTENT'=>'smallapp:findcontent',

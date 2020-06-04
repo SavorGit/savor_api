@@ -99,7 +99,15 @@ class DishController extends CommonController{
         $specification_goods = array();
         $attrs = array();
         $model_img = '';
-        if($res_goods['gtype']==3){
+        if($res_goods['type']==22 && in_array($res_goods['gtype'],array(2,3))){
+            if($res_goods['gtype']==2){
+                $res_data = $m_goods->getDataList('*',array('parent_id'=>$goods_id,'status'=>1),'id asc',0,1);
+                if(!$res_data['total']){
+                    $this->to_back(93037);
+                }
+                $res_goods['parent_id'] = $goods_id;
+                $goods_id = $res_data['list'][0]['id'];
+            }
             $res_attrs = $m_goods->getGoodsAttr($res_goods['parent_id'],$goods_id);
             $all_goods = $res_attrs['all_goods'];
             foreach ($all_goods as $v){

@@ -10,7 +10,7 @@ class DishController extends CommonController{
         switch(ACTION_NAME) {
             case 'goodslist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('merchant_id'=>1001,'page'=>1001,'type'=>1002);
+                $this->valid_fields = array('merchant_id'=>1002,'page'=>1001,'type'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -24,6 +24,9 @@ class DishController extends CommonController{
         $merchant_id = intval($this->params['merchant_id']);
         $page = intval($this->params['page']);
         $type = isset($this->params['type'])?intval($this->params['type']):1;//1全部 2支持全国售卖
+        if($merchant_id==0){
+            $this->to_back(array());
+        }
 
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));

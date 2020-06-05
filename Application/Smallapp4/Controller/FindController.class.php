@@ -49,7 +49,7 @@ class FindController extends CommonController{
         $pagesize = 10;
 
         //内容选择 1点播10条 2精选20 3公开20
-        $content_num = array('num'=>50,'1'=>0.4,'2'=>0.4,'3'=>0.2);
+        $content_num = array('num'=>50,'1'=>0.16,'2'=>0.42,'3'=>0.42);
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
 

@@ -18,7 +18,7 @@ class QrcodeController extends CommonController{
                 break;
             case 'dishQrcode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('data_id'=>1001,'type'=>1001,'suid'=>1002);
+                $this->valid_fields = array('data_id'=>1001,'type'=>1001,'suid'=>1002,'box_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -72,8 +72,11 @@ class QrcodeController extends CommonController{
     public function dishQrcode(){
         $data_id = $this->params['data_id'];
         $suid = $this->params['suid'];
-        $type = $this->params['type'];//24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家
-
+        $box_id = $this->params['box_id'];
+        $type = $this->params['type'];//24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
+        if(empty($suid)){
+            $suid = 0;
+        }
         $short_urls = C('SHORT_URLS');
         switch ($type){
             case 24:
@@ -97,6 +100,10 @@ class QrcodeController extends CommonController{
                 if(!empty($suid)){
                     $content.='_'.$suid;
                 }
+                break;
+            case 28:
+                $code_url = $short_urls['SALE_SHOP_MERCHANT_QR'];
+                $content = $code_url.'shop_'.$data_id.'_'.$type.'_'.$suid.'_'.$box_id;
                 break;
             default:
                 $code_url = $short_urls['SALE_DISH_QR'];

@@ -411,7 +411,7 @@ class WelcomeController extends CommonController{
             $rets = $m_box->getBoxInfo('a.id box_id,c.id room_id,d.id hotel_id',$map);
             $hotel_info = $rets[0];
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id']));
+            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
             $message['type'] = 1;
             $message['waiterName'] = '';
             $message['waiterIconUrl'] = '';

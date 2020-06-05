@@ -243,6 +243,114 @@ class ProgramController extends CommonController{
         $this->to_back($res);
     }
 
+    public function getShopGoodsProgramList(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,c.type as room_type', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $hotel_id = $box_info[0]['hotel_id'];
+        $box_id = $box_info[0]['box_id'];
+
+        $m_programmenu = new \Common\Model\ProgramMenuHotelModel();
+        $res_menu = $m_programmenu->getLatestMenuid($hotel_id);
+        $menu_id = $res_menu['menu_id'];
+
+        $m_programitem = new \Common\Model\ProgramMenuItemModel();
+        $where = array('menu_id'=>$menu_id,'type'=>4);
+        $res_item = $m_programitem->getData('*',$where,'id asc');
+        $item_goods = array();
+        if(!empty($res_item)){
+            $goods_ids = array();
+            foreach ($res_item as $v){
+                if($v['ads_id'] && !in_array($v['ads_id'],$goods_ids)){
+                    $goods_ids[] = $v['ads_id'];
+                }
+            }
+            $where = array('id'=>array('in',$goods_ids));
+            $orderby = 'id desc';
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $res_goods = $m_goods->getDataList('*',$where,$orderby);
+            if(!empty($res_goods)){
+                foreach ($res_goods as $v){
+                    $item_goods[$v['id']] = $v;
+                }
+            }
+        }
+        $key = C('SAPP_SHOP_PROGRAM');
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(2);
+        $program_goods_key = $key.":$menu_id:goods";
+        $program_goods = array();
+        $res_program_goods = $redis->get($program_goods_key);
+        if(!empty($res_program_goods)){
+            $program_goods = json_decode($res_program_goods,true);
+        }
+        $is_newperiod = 0;
+        $program_period_key = $key.":$menu_id:period";
+        $res_period = $redis->get($program_period_key);
+        if(empty($res_period)){
+            $is_newperiod = 1;
+            $period = '';
+        }else{
+            $period_info = json_decode($res_period,true);
+            $period = $period_info['period'];
+        }
+
+        $program_list = array();
+        if(!empty($item_goods)){
+            $host_name = C('HOST_NAME');
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_item as $v){
+                $goods_id = $v['ads_id'];
+                if($goods_id && isset($item_goods[$goods_id])){
+                    $goods_info = $item_goods[$goods_id];
+                    if(!isset($program_goods[$goods_id])){
+                        $is_newperiod = 1;
+                        $program_goods[$goods_id] = array('id'=>$goods_info['id'],'tv_media_id'=>$goods_info['tv_media_id'],'status'=>$goods_info['status']);
+                    }else{
+                        if($goods_info['tv_media_id']!=$program_goods[$goods_id]['tv_media_id'] || $goods_info['status']!=$program_goods[$goods_id]['status']){
+                            $is_newperiod = 1;
+                            $program_goods[$goods_id]['tv_media_id'] = $goods_info['tv_media_id'];
+                            $program_goods[$goods_id]['status'] = $goods_info['status'];
+                        }
+                    }
+
+                    $info = array('goods_id'=>$goods_info['id'],'chinese_name'=>$goods_info['name'],'type'=>intval($goods_info['type']),
+                        'location_id'=>intval($v['location_id']));
+                    $media_info = $m_media->getMediaInfoById($goods_info['tv_media_id']);
+                    $info['oss_path'] = $media_info['oss_path'];
+                    $name_info = pathinfo($info['oss_path']);
+                    $info['name'] = $name_info['basename'];
+                    $info['media_type'] = $media_info['type'];
+                    $info['md5'] = $media_info['md5'];
+                    $info['duration'] = intval($v['duration']);
+
+                    $qrcode_url = $host_name."/smallsale19/qrcode/dishQrcode?box_id=$box_id&data_id={$info['goods_id']}&type=28";
+                    $info['qrcode_url'] = $qrcode_url;
+                    $program_list[] = $info;
+                }
+            }
+        }
+
+        if($is_newperiod){
+            $period = getMillisecond();
+            $period_data = array('period'=>$period);
+            $redis->set($program_period_key,json_encode($period_data),30*86400);
+            $redis->set($program_goods_key,json_encode($program_goods),30*86400);
+        }
+        $res = array('period'=>$period,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+
     public function getGoodsCountdown(){
         $goods_id = intval($this->params['goods_id']);
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
@@ -477,9 +585,9 @@ class ProgramController extends CommonController{
         $where = array('a.mac'=>$box_mac,'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
         $res_box = $m_box->getBoxInfo($fileds,$where);
         $hotel_id = $res_box[0]['hotel_id'];
-
         $m_programmenu = new \Common\Model\ProgramMenuHotelModel();
         $res_menu = $m_programmenu->getLatestMenuid($hotel_id);
+
         $menu_id = $res_menu['menu_id'];
         $m_programitem = new \Common\Model\ProgramMenuItemModel();
         $field = 'count(id) as num';
@@ -510,94 +618,64 @@ class ProgramController extends CommonController{
                 $typeinfo = C('RESOURCE_TYPEINFO');
                 $redis->select(5);
                 $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
-                if($version>2019082101){
-                    $m_user = new \Common\Model\Smallapp\UserModel();
-                    foreach ($help_forscreen as $v){
-                        $info = array('id'=>$v['id'],'duration'=>floor($v['duration']));
-                        $imgs_info = json_decode($v['imgs'],true);
-                        $oss_path = $imgs_info[0];
-                        $name_info = pathinfo($oss_path);
-                        $surfix = strtolower($name_info['extension']);
-                        $info['media_type'] = $typeinfo[$surfix];
-                        $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
-                        if(!empty($res_play)){
-                            $create_time = $res_play['create_time'];
-                        }else{
-                            $create_time = date('Y-m-d H:i:s');
 
-                            $push_data = array('openid'=>$v['openid'],'res_id'=>$v['id'],'type'=>4,'create_time'=>$create_time);
-                            $redis->rpush($push_key,json_encode($push_data));
-                            $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
-                            $m_play->add($add_data);
-                            $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
-                        }
-                        $info['start_date'] = $create_time;
-                        $end_date = strtotime($create_time)+$play_time;
-                        $info['end_date'] = date('Y-m-d H:i:s',$end_date);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                foreach ($help_forscreen as $v){
+                    $info = array('id'=>$v['id'],'duration'=>floor($v['duration']));
+                    $imgs_info = json_decode($v['imgs'],true);
+                    $oss_path = $imgs_info[0];
+                    $name_info = pathinfo($oss_path);
+                    $surfix = strtolower($name_info['extension']);
+                    $info['media_type'] = $typeinfo[$surfix];
+                    $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
+                    if(!empty($res_play)){
+                        $create_time = $res_play['create_time'];
+                    }else{
+                        $create_time = date('Y-m-d H:i:s');
 
-                        $subdata = array();
-                        switch ($info['media_type']){
-                            case 1:
-                                $subdata[] = array('vid'=>$v['resource_id'],'md5'=>$v['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
-                                break;
-                            case 2:
-                                $info['media_type']= 21;
-                                $fields = 'resource_id,imgs,md5_file';
-                                $where = array('forscreen_id'=>$v['forscreen_id']);
-                                $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
-                                $res_forscreen = $m_forscreenrecord->getWheredata($fields,$where,'id asc');
-                                foreach ($res_forscreen as $fv){
-                                    $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
-                                    $tmp_imgs_info = json_decode($fv['imgs'],true);
-                                    $sinfo['oss_path'] = $tmp_imgs_info[0];
-                                    $sname_info = pathinfo($sinfo['oss_path']);
-                                    $sinfo['name'] = $sname_info['basename'];
-                                    $subdata[]=$sinfo;
-                                }
-                                if(count($subdata)>1){
-                                    $info['duration']=3;
-                                }else{
-                                    $info['duration']=15;
-                                }
-                                break;
-                        }
-                        $info['subdata'] = $subdata;
-                        $userinfo = $m_user->getOne('avatarUrl,nickName', array('openid'=>$v['openid']));
-                        $info['nickName'] = $userinfo['nickName'];
-                        $info['avatarUrl'] = $userinfo['avatarUrl'];
-                        $program_list[] = $info;
+                        $push_data = array('openid'=>$v['openid'],'res_id'=>$v['id'],'type'=>4,'create_time'=>$create_time);
+                        $redis->rpush($push_key,json_encode($push_data));
+                        $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
+                        $m_play->add($add_data);
+                        $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
                     }
-                }else{
-                    foreach ($help_forscreen as $v){
-                        $info = array('vid'=>$v['id'],'chinese_name'=>'','duration'=>floor($v['duration']),'md5'=>$v['md5_file']);
-                        $imgs_info = json_decode($v['imgs'],true);
-                        $info['oss_path'] = $imgs_info[0];
-                        $name_info = pathinfo($info['oss_path']);
-                        $surfix = strtolower($name_info['extension']);
-                        $info['media_type'] = $typeinfo[$surfix];
-                        $info['name'] = $name_info['basename'];
-                        if($info['media_type']==2 && $info['duration']==0){
-                            $info['duration']=15;
-                        }
-                        $res_play = $m_play->getOne('create_time',array('res_id'=>$v['id'],'type'=>4),'id desc');
-                        if(!empty($res_play)){
-                            $create_time = $res_play['create_time'];
-                        }else{
-                            $create_time = date('Y-m-d H:i:s');
+                    $info['start_date'] = $create_time;
+                    $end_date = strtotime($create_time)+$play_time;
+                    $info['end_date'] = date('Y-m-d H:i:s',$end_date);
 
-                            $push_data = array('openid'=>$v['openid'],'res_id'=>$v['id'],'type'=>4,'create_time'=>$create_time);
-                            $redis->rpush($push_key,json_encode($push_data));
-
-                            $add_data = array('res_id'=>$v['id'],'type'=>4,'nums'=>0,'create_time'=>$create_time);
-                            $m_play->add($add_data);
-                            $m_help->updateData(array('id'=>$v['help_id']),array('status'=>3));
-                        }
-                        $info['start_date'] = $create_time;
-                        $end_date = strtotime($create_time)+$play_time;
-                        $info['end_date'] = date('Y-m-d H:i:s',$end_date);
-                        $program_list[] = $info;
+                    $subdata = array();
+                    switch ($info['media_type']){
+                        case 1:
+                            $subdata[] = array('vid'=>$v['resource_id'],'md5'=>$v['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
+                            break;
+                        case 2:
+                            $info['media_type']= 21;
+                            $fields = 'resource_id,imgs,md5_file';
+                            $where = array('forscreen_id'=>$v['forscreen_id']);
+                            $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+                            $res_forscreen = $m_forscreenrecord->getWheredata($fields,$where,'id asc');
+                            foreach ($res_forscreen as $fv){
+                                $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
+                                $tmp_imgs_info = json_decode($fv['imgs'],true);
+                                $sinfo['oss_path'] = $tmp_imgs_info[0];
+                                $sname_info = pathinfo($sinfo['oss_path']);
+                                $sinfo['name'] = $sname_info['basename'];
+                                $subdata[]=$sinfo;
+                            }
+                            if(count($subdata)>1){
+                                $info['duration']=3;
+                            }else{
+                                $info['duration']=15;
+                            }
+                            break;
                     }
+                    $info['subdata'] = $subdata;
+                    $userinfo = $m_user->getOne('avatarUrl,nickName', array('openid'=>$v['openid']));
+                    $info['nickName'] = $userinfo['nickName'];
+                    $info['avatarUrl'] = $userinfo['avatarUrl'];
+                    $program_list[] = $info;
                 }
+
             }
         }
         $redis->select(5);

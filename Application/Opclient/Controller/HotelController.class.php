@@ -372,31 +372,38 @@ class HotelController extends BaseController {
             }
             if(empty($heartbeat)){
                 $infos = $m_heart_log->getInfo('last_heart_time,small_ip',array('box_id'=>$vs['box_id'],'type'=>2));
-                
-                $ltime =$infos['last_heart_time'];
-                $diff = (time()-strtotime($ltime));
-                if($diff< 3600) {
-                    $box_list[$ks]['last_heart_time'] = floor($diff/60).'分钟';
-                
-                }else if ($diff >= 3600 && $diff <= 86400) {
-                    $hour = floor($diff/3600);
-                    $min = floor($diff%3600/60);
-                    $box_list[$ks]['last_heart_time'] = $hour.'小时'.$min.'分钟';
-                }else if ($diff > 86400) {
-                    $day = floor($diff/86400);
-                    $hour = floor($diff%86400/3600);
-                    $box_list[$ks]['last_heart_time'] = $day.'天'.$hour.'小时';
-                }
-                
-                $box_list[$ks]['last_heart_time'] = $box_list[$ks]['last_heart_time'].'前';
-                $box_list[$ks]['ltime'] = strtotime($ltime);
-                $box_list[$ks]['box_ip'] = $infos['small_ip'];
-                if($box_list[$ks]['ltime'] <= $start_time) {
-                    $unusual_num +=1;
+                if(!empty($infos)){
+                    $ltime =$infos['last_heart_time'];
+                    $diff = (time()-strtotime($ltime));
+                    if($diff< 3600) {
+                        $box_list[$ks]['last_heart_time'] = floor($diff/60).'分钟';
+                    
+                    }else if ($diff >= 3600 && $diff <= 86400) {
+                        $hour = floor($diff/3600);
+                        $min = floor($diff%3600/60);
+                        $box_list[$ks]['last_heart_time'] = $hour.'小时'.$min.'分钟';
+                    }else if ($diff > 86400) {
+                        $day = floor($diff/86400);
+                        $hour = floor($diff%86400/3600);
+                        $box_list[$ks]['last_heart_time'] = $day.'天'.$hour.'小时';
+                    }
+                    $box_list[$ks]['last_heart_time'] = $box_list[$ks]['last_heart_time'].'前';
+                    $box_list[$ks]['ltime'] = strtotime($ltime);
+                    $box_list[$ks]['box_ip'] = $infos['small_ip'];
+                    if($box_list[$ks]['ltime'] <= $start_time) {
+                        $unusual_num +=1;
+                        $box_list[$ks]['ustate'] = 0;
+                    } else {
+                        $box_list[$ks]['ustate'] = 1;
+                    }
+                }else {
+                    $box_list[$ks]['last_heart_time'] ='30+天';
                     $box_list[$ks]['ustate'] = 0;
-                } else {
-                    $box_list[$ks]['ustate'] = 1;
+                    $unusual_num +=1;
                 }
+                
+                
+                
                 
             }else {
                 $box_list[$ks]['box_ip'] = empty($heartbeat['intranet_ip'])

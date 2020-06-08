@@ -102,7 +102,7 @@ class QrcodeController extends CommonController{
                 }
                 break;
             case 28:
-                $code_url = $short_urls['SALE_SHOP_MERCHANT_QR'];
+                $code_url = $short_urls['SALE_SHOP_GOODS_QR'];
                 $content = $code_url.'shop_'.$data_id.'_'.$type.'_'.$suid.'_'.$box_id;
                 break;
             default:

@@ -455,7 +455,7 @@ class OrderController extends CommonController{
             $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
                 'wx_openid'=>$openid,'redirect_url'=>'','attach'=>30);
             $smallapp_config = C('SMALLAPP_CONFIG');
-            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1554975591');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
             $payconfig = array(
                 'appid'=>$smallapp_config['appid'],
                 'partner'=>$pay_wx_config['partner'],

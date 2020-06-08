@@ -1134,7 +1134,7 @@ class OrderController extends CommonController{
                 }
             }
         }
-        $order_data['service_tel'] = '13811966726';
+        $order_data['service_tel'] = '13810024884';
         $this->to_back($order_data);
     }
 

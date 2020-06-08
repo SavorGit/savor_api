@@ -81,7 +81,6 @@ class ProgramController extends CommonController{
         $cache_key = C('PROGRAM_PRO_CACHE_PRE').$hotelid;
         $menu_cache_info = $redis->get($cache_key);
         $menu_cache_info = json_decode($menu_cache_info,true);
-        $menu_cache_info = array();
         if(empty($menu_cache_info['media_list'])){//如果缓存中没有 ，查询该酒楼对应的节目单
             $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
             $ads = new \Common\Model\AdsModel();

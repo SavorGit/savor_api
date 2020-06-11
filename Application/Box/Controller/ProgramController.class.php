@@ -274,13 +274,15 @@ class ProgramController extends CommonController{
                     $goods_ids[] = $v['ads_id'];
                 }
             }
-            $where = array('id'=>array('in',$goods_ids));
-            $orderby = 'id desc';
-            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-            $res_goods = $m_goods->getDataList('*',$where,$orderby);
-            if(!empty($res_goods)){
-                foreach ($res_goods as $v){
-                    $item_goods[$v['id']] = $v;
+            if(!empty($goods_ids)){
+                $where = array('id'=>array('in',$goods_ids));
+                $orderby = 'id desc';
+                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                $res_goods = $m_goods->getDataList('*',$where,$orderby);
+                if(!empty($res_goods)){
+                    foreach ($res_goods as $v){
+                        $item_goods[$v['id']] = $v;
+                    }
                 }
             }
         }

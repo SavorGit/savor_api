@@ -38,7 +38,7 @@ class IndexController extends CommonController{
                 break;
             case 'recordWifiErr':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1002);
                 break;
         }
         parent::_init_();

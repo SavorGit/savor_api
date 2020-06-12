@@ -20,7 +20,7 @@ class NotifyController extends Controller{
             $res_message = json_decode($content, true);
             if(is_array($res_message) && !empty($res_message)){
                 $req_id = $res_message['req_id'];
-                $params = array('netty_callback_result'=>json_encode($res_message),'netty_callback_time'=>$res_message['timestamp']);
+                $params = array('netty_callback_result'=>$res_message,'netty_callback_time'=>$res_message['timestamp']);
                 $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
                 $m_forscreen->recordTrackLog($req_id,$params);
             }

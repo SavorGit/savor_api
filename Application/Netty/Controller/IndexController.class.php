@@ -20,7 +20,7 @@ class IndexController extends CommonController{
         }
         parent::_init_();
     }
-    
+
     public function pushnetty(){
         $box_mac = $this->params['box_mac'];
         $msg = $this->params['msg'];
@@ -122,12 +122,14 @@ class IndexController extends CommonController{
         }
 
         if($position_result){
+            $host_name = C('HOST_NAME');
+            $callback = $host_name.'/h5/notify/netty';
             if($position_result['code']==10000){
                 $cmd_command = C('SAPP_CALL_NETY_CMD');
                 $message['req_id'] = $req_id;
                 unset($message['res_sup_time'],$message['res_eup_time']);
 
-                $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id);
+                $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id,'callback'=>$callback);
                 $post_data = http_build_query($push_data);
 
                 $ret = array();

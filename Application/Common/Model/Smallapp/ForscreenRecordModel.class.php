@@ -60,6 +60,9 @@ class ForscreenRecordModel extends Model{
            'netty_receive_time'=>'netty接收php请求时间',
            'netty_pushbox_time'=>'netty推送盒子时间',
 
+           'netty_callback_result'=>'netty推送盒子后回调内容',
+           'netty_callback_time'=>'netty推送盒子后回调时间',
+
            'box_receivetime'=>'盒子接收netty时间',
            'box_downstime'=>'盒子下载开始时间',
            'box_downetime'=>'盒子下载完成时间',

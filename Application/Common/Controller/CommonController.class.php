@@ -60,23 +60,33 @@ class CommonController extends Controller {
 	 */
 	public function to_back($data,$type=1) {
 	    $apiResp = new \ApiResp();
-	    $errorinfo = C('errorinfo');
+        $resp_msg = '';
 	    if(is_numeric($data)){
-	        $resp_msg = $errorinfo[$data];
 	        $resp_code = $data;
 	        $resp_result = new \stdClass();
 	    }elseif(is_object($data)){
 	        $resp_code = $apiResp->code;
-	        $resp_msg = $errorinfo[$apiResp->code];
 	        $resp_result = $data;
 	    }elseif(is_array($data)){
-	        $resp_code = $apiResp->code;
-	        $resp_msg = $errorinfo[$apiResp->code];
+	        if(isset($data['code']) && isset($data['msg'])){
+                $resp_code = $data['code'];
+                $resp_msg = $data['msg'];
+            }else{
+                $resp_code = $apiResp->code;
+            }
 	        $resp_result = !empty($data)?$data:new \stdClass();
-	    }
-	    
-	    $apiResp->code = $resp_code;
-	    $apiResp->msg = L("$resp_msg");
+	    }else{
+	        $resp_code = 10000;
+            $resp_result = new \stdClass();
+        }
+        if(empty($resp_msg)){
+            $errorinfo = C('errorinfo');
+            $resp_msg = $errorinfo[$resp_code];
+            $apiResp->msg = L("$resp_msg");
+        }else{
+            $apiResp->msg = $resp_msg;
+        }
+        $apiResp->code = $resp_code;
 	    $apiResp->result = $resp_result;
 	    if($this->is_js ==1){
 	        $result = "h5turbine(".json_encode($apiResp).")";

@@ -37,7 +37,7 @@ return array(
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
 	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18',
-                                     'Smallsale19','Smallapp44','Smallapp45'), //模块配置
+                                     'Smallsale19','Smallapp44','Smallapp45','Smallapp46'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -370,7 +370,7 @@ return array(
     'REDPACKET_GETNUM' => 1,
     'SMALLAPP_REDPACKET_BLESS'=>array(
         1=>'生日快乐',2=>'happy birthday',3=>'福如东海，寿比南山',4=>'大吉大利，今晚吃鸡',
-        5=>'貌美如花，人见人夸',6=>'健康成长，天天快乐',
+        5=>'貌美如花，人见人夸',6=>'大鹏一日同风起，扶摇直上九万里',7=>'身体健康！茁壮成长！',8=>'新婚快乐，百年好合！'
     ),
     'SMALLAPP_BARRAGES'=>array('生日快乐','happy birthday','祝你生日快乐!愿健康、快乐永远和你相伴!',
         '祝生日快乐！请接受我迟到的祝福。','支支灿烂的烛光，岁岁生日的幸福，幸运的你，明天会更好',
@@ -378,6 +378,19 @@ return array(
         '一句问候，一声祝福，一切如愿，一生幸福，一世平安。祝生日快乐!',
         '祝你生日快乐!愿生日带给你的欢乐中蕴涵着一切美好!'
     ),
+    'SMALLAPP_TYPE_BARRAGES'=>array(
+        6=>array('祝你前程似锦，万事顺心！','愿你仗剑天涯，笑傲人生！','春风得意马蹄疾，一日看尽长安花！','乘风破浪会有时 直挂云帆济沧海！',
+            '海阔凭鱼跃，天高任鸟飞！','仰天大笑出门去，我辈岂是蓬蒿人！'),
+        7=>array(
+            '祝你健康成长，快乐幸福，将来 一定事业有成。','祝你身体健康，平平安安！','祝孩子快乐成长，前途无量！','待长成之时必成栋梁之才！',
+            '祝宝宝聪明伶俐，活泼可爱！','祝孩子聪明健康，茁壮成长！'
+        ),
+        8=>array(
+            '祝新人永浴爱河，白头偕老！','祝你们相亲相爱，永结同心！','敬祝婚姻幸福家美满，幸福快乐永相伴！','遥祝相亲相爱到永远，海枯石烂心不变！',
+            '愿你们百年好合永结同心！','祝相爱年年岁岁，相知岁岁年年！'
+        ),
+    ),
+
 
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
        1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',
@@ -451,6 +464,7 @@ return array(
         '61'=>'赠送中',
         '62'=>'已过期',
         '63'=>'获赠',
+        '71'=>'转赠中',
 
     ),
     'MAP_ORDER_STATUS'=>array(

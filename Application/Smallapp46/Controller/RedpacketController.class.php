@@ -522,7 +522,14 @@ class RedpacketController extends CommonController{
                 $m_netty = new \Common\Model\NettyModel();
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
-                $all_barrage = C('SMALLAPP_BARRAGES');
+
+                $bless_id = $res_order['bless_id'];
+                if(in_array($bless_id,array(6,7,8))){
+                    $all_barrage = C('SMALLAPP_TYPE_BARRAGES');
+                    $all_barrage = $all_barrage[$bless_id];
+                }else{
+                    $all_barrage = C('SMALLAPP_BARRAGES');
+                }
                 $user_barrages = array();
                 $getnum = C('REDPACKET_GETNUM');
                 for ($i=0;$i<$grab_num;$i++){

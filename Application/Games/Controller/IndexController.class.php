@@ -45,7 +45,7 @@ class IndexController extends CommonController{
         $limit = "limit $offset,$pagesize";
         $m_games = new \Common\Model\Smallapp\GamesModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $fields = "a.id as game_id,a.name game_name,concat('".$oss_host."',m.`oss_addr`) img_url";
+        $fields = "a.id as game_id,a.name game_name,url,game_url,game_m_url,concat('".$oss_host."',m.`oss_addr`) img_url";
         $where['status'] = 1;
         $order = 'a.sort_order desc';
         $list = $m_games->getWhere($fields, $where, $order, $limit);

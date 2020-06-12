@@ -288,6 +288,12 @@ return array(
 	    '90145'=>'smallapp_order_upnum_gt_buynum',
 	    '90146'=>'smallapp_order_receivenum_gt_hasnum',
 	    '90147'=>'smallapp_order_receive_over',
+	    '90148'=>'smallapp_order_had_give',
+	    '90149'=>'smallapp_order_gift_had_expire',
+	    '90150'=>'smallapp_order_gift_had_receive',
+	    '90151'=>'smallapp_order_givegift_had_receive',
+	    '90152'=>'smallapp_order_givegift_num_error',
+	    '90153'=>'smallapp_order_givegift_success',
 
 
 

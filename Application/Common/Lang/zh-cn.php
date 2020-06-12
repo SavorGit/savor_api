@@ -352,6 +352,12 @@ return array(
     'smallapp_order_upnum_gt_buynum'=>'限领份数不能大于购买数量',
     'smallapp_order_receivenum_gt_hasnum'=>'当前数量不足，请重新选择数量',
     'smallapp_order_receive_over'=>'当前礼品已领完',
+    'smallapp_order_had_give'=>'当前礼品已转赠',
+    'smallapp_order_gift_had_expire'=>'当前礼品已过期',
+    'smallapp_order_gift_had_receive'=>'当前礼品已领取',
+    'smallapp_order_givegift_had_receive'=>'当前转赠礼品已被领取',
+    'smallapp_order_givegift_num_error'=>'您需要将%d件商品进行分配',
+    'smallapp_order_givegift_success'=>'该商品已转增成功，无法自己领取',
 
 
 );

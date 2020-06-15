@@ -136,6 +136,11 @@ class GiftController extends CommonController{
                 case 62:
                     $receive_type = 5;
                     break;
+                case 63:
+                    if($res_order['amount']==$res_order['receive_num']){
+                        $receive_type = 4;
+                    }
+                    break;
                 case 18:
                 case 19:
                     $expire_time = strtotime($res_order['add_time']);
@@ -425,8 +430,8 @@ class GiftController extends CommonController{
                 $r_data['otype'] = $res_order['otype'];
                 if($res_order['otype']==7){
                     $r_data['gift_oidtrees'] = $res_order['gift_oidtrees']."$order_id,";
-                    $r_data['person_upnum'] = 1;
                 }
+                $r_data['person_upnum'] = 1;
                 $r_data['message'] = $res_order['message'];
                 $r_data['gift_oid'] = $order_id;
                 $r_data['price'] = $res_ogoods[0]['price'];
@@ -498,6 +503,17 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
+        $gift_where = array('otype'=>7);
+        $trees = ",$order_id,";
+        $gift_where['gift_oidtrees'] = array('like',"%$trees%");
+        $gift_where['receive_num'] = array('gt',0);
+        $res_ordertree = $m_order->getDataList('id',$gift_where,'id desc',0,1);
+        if($res_ordertree['total']){
+            unset($gift_where['receive_num']);
+            $m_order->updateData($gift_where,array('status'=>17));
+            $this->to_back(90153);
+        }
+
         $m_area = new \Common\Model\AreaModel();
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $res_address = $m_address->getInfo(array('id'=>$address_id));
@@ -510,14 +526,16 @@ class GiftController extends CommonController{
         if($res_goodsinfo[0]['is_localsale']==1 && $res_goodsinfo[0]['goods_areaid']!=$res_address['area_id']){
             $this->to_back(90140);
         }
-
         $res_area = $m_area->find($res_address['area_id']);
         $res_county = $m_area->find($res_address['county_id']);
 
         $contact = $res_address['consignee'];
         $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
         $phone = $res_address['phone'];
-        $up_data = array('contact'=>$contact,'address'=>$address,'phone'=>$phone,'receive_num'=>$res_order['amount']);
+        $up_data = array('contact'=>$contact,'address'=>$address,'phone'=>$phone);
+        if($res_order['receive_num']==0){
+            $up_data['receive_num']=$res_order['amount'];
+        }
         $m_order->updateData(array('id'=>$order_id),$up_data);
 
         $order_receive_key = C('SAPP_ORDER_GIFT').$res_order['gift_oid'].':receive';
@@ -557,13 +575,17 @@ class GiftController extends CommonController{
             if($res_order['receive_num']){
                 $this->to_back(90150);
             }
-        }else{
-            if($res_order['otype']==7 && $res_order['status']!=61){
+        }
+
+        if($res_order['otype']==7){
+            if(!in_array($res_order['status'],array(63,71))){
                 $this->to_back(90151);
-            }else{
+            }
+            if($res_order['receive_num']){
                 $this->to_back(90147);
             }
         }
+
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $fields = 'goods.id as goods_id,goods.name as goods_name,og.price';
         $res_ogoods = $m_ordergoods->getOrdergoodsList($fields,array('og.order_id'=>$order_id),'og.id desc');
@@ -681,7 +703,7 @@ class GiftController extends CommonController{
         $receive_order_id = $res_order['id'];
         $address = array();
         if(!empty($res_order['address'])){
-            $address = array('contact'=>$res_order['contact'],'address'=>$res_rorder['address'],'phone'=>$res_rorder['phone']);
+            $address = array('contact'=>$res_order['contact'],'address'=>$res_order['address'],'phone'=>$res_order['phone']);
         }
 
         $give_order_id = 0;

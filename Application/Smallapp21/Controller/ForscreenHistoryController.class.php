@@ -40,8 +40,13 @@ class ForscreenHistoryController extends CommonController{
                 $imgs = json_decode($v['imgs']);
                 
                 $tmp = array();
+                $resource_size = 0;
+                if(!empty($v['resource_size'])){
+                    $resource_size = $v['resource_size'];
+                }
                 if($v['action']==2){
                     $tmp['resource_id'] = $v['resource_id'];
+                    $tmp['resource_size'] = $resource_size;
                     $tmp['imgurl']      = $oss_host.$imgs[0]."?x-oss-process=video/snapshot,t_3000,f_jpg,w_90,m_fast";
                     $tmp['res_url']     = $oss_host.$imgs[0];
                     $tmp['res_type']    = 2;
@@ -56,6 +61,7 @@ class ForscreenHistoryController extends CommonController{
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
                 }else if($v['action']==4){
                     $tmp['resource_id'] = $v['resource_id'];
+                    $tmp['resource_size'] = $resource_size;
                     $tmp['imgurl']      = $oss_host.$imgs[0].'?x-oss-process=image/resize,p_20';;
                     $tmp['res_url']     = $oss_host.$imgs[0];
                     $tmp['res_type']    = 1;

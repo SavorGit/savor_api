@@ -46,6 +46,7 @@ class ForscreenRecordModel extends Model{
 
     public function recordTrackLog($serial,$params){
         $all_data = array(
+           'action'=>'投屏动作类型',
            'oss_stime'=>'oss上传开始时间',
            'oss_etime'=>'oss上传结束时间',
 

@@ -105,6 +105,7 @@ class IndexController extends CommonController{
             $netty_position_etime = getMillisecond();
             $position_result = json_decode($result,true);
             $params = array(
+                'action'=>$action,
                 'oss_stime'=>$message['res_sup_time'],
                 'oss_etime'=>$message['res_eup_time'],
                 'position_nettystime'=>$netty_position_stime,

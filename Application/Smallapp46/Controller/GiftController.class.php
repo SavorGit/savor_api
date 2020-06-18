@@ -64,7 +64,7 @@ class GiftController extends CommonController{
         $person_upnum = $res_order['person_upnum'];
         $order_receive_key = C('SAPP_ORDER_GIFT').$order_id.':receive';
         $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
+        $redis->select(1);
         $res_cache = $redis->get($order_receive_key);
         if(!empty($res_cache)){
             $receive_data = json_decode($res_cache,true);
@@ -109,8 +109,9 @@ class GiftController extends CommonController{
                     if(!empty($res_ordertree['total']) || ($res_sunorder['status']==63 && $res_sunorder['receive_num']==$res_sunorder['amount'] && !empty($res_sunorder['address']))){
                         $receive_type = 6;
                     }else{
-                        $selfreceive_num = $res_rorder['receive_num'];
+                        $selfreceive_num = $res_rorder['receive_num']>0?$res_rorder['receive_num']:$res_rorder['amount'];
                         $receive_type = 3;
+                        $r_order_id = $res_rorder['id'];
                     }
                 }else{
                     if(empty($receive_data[$openid]['address'])){
@@ -136,7 +137,7 @@ class GiftController extends CommonController{
                         if(!empty($res_ordertree['total']) || ($res_sunorder['status']==63 && $res_sunorder['receive_num']==$res_sunorder['amount'] && !empty($res_sunorder['address']))){
                             $receive_type = 6;
                         }else{
-                            $receive_type = 3;
+                            $receive_type = 8;
                         }
                     }else{
                         $selfreceive_num = $res_rorder['amount'];
@@ -272,7 +273,7 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
-        if(in_array($res_order['status'],array(17,18,19,62))){
+        if(in_array($res_order['status'],array(18,19,62))){
             $this->to_back(90147);
         }
 
@@ -280,7 +281,7 @@ class GiftController extends CommonController{
         $person_upnum = $res_order['person_upnum'];
         $order_receive_key = C('SAPP_ORDER_GIFT').$order_id.':receive';
         $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
+        $redis->select(1);
         $res_cache = $redis->get($order_receive_key);
         if(!empty($res_cache)){
             $receive_data = json_decode($res_cache,true);
@@ -302,7 +303,12 @@ class GiftController extends CommonController{
             $receive_type = 2;
             if(empty($receive_data[$openid]['address'])){
                 $receive_type = 3;
+            }else{
+                if($remain_num<=0){
+                    $receive_type = 4;
+                }
             }
+
         }else{
             switch ($res_order['status']){
                 case 17:
@@ -333,7 +339,7 @@ class GiftController extends CommonController{
         }
 
         if($receive_type==1){
-            $redis->select(5);
+            $redis->select(1);
             $order_receive_num_key = C('SAPP_ORDER_GIFT').$order_id.':receive_num';
             $res_receive_num = $redis->get($order_receive_num_key);
             if(!empty($res_receive_num)){
@@ -369,13 +375,13 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
-        if(in_array($res_order['status'],array(17,18,19,62))){
+        if(in_array($res_order['status'],array(18,19,62))){
             $this->to_back(90147);
         }
 
         $order_receive_key = C('SAPP_ORDER_GIFT').$order_id.':receive';
         $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
+        $redis->select(1);
         $res_cache = $redis->get($order_receive_key);
         if(!empty($res_cache)){
             $receive_data = json_decode($res_cache,true);
@@ -391,13 +397,19 @@ class GiftController extends CommonController{
             $all_receive_num +=$v['amount'];
         }
         $amount = $res_order['amount'];
+        $remain_num = $amount-$all_receive_num;
 
         $receive_type = 1;//1待领取 2已领取 3已领取待添加收货地址 4已领完 5已失效
         if(isset($receive_data[$openid])){
             $receive_type = 2;
             if(empty($receive_data[$openid]['address'])){
                 $receive_type = 3;
+            }else{
+                if($remain_num<=0){
+                    $receive_type = 4;
+                }
             }
+
         }else{
             switch ($res_order['status']){
                 case 17:
@@ -421,8 +433,10 @@ class GiftController extends CommonController{
                     }
             }
         }
-        $row_id = 0;
         $had_receive_num = 0;
+
+        $log_info = array('oid'=>$order_id,'openid'=>$openid,'queue'=>array());
+
         if($receive_type==1){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_goodsactivity = new \Common\Model\Smallapp\GoodsactivityModel();
@@ -430,7 +444,7 @@ class GiftController extends CommonController{
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $res_ogoods = $m_ordergoods->getDataList('*',array('order_id'=>$order_id),'id asc');
 
-            $redis->select(5);
+            $redis->select(1);
             $order_receive_num_key = C('SAPP_ORDER_GIFT').$order_id.':receive_num';
             $res_receive_num = $redis->get($order_receive_num_key);
             if(!empty($res_receive_num)){
@@ -438,12 +452,14 @@ class GiftController extends CommonController{
             }else{
                 $receive_nums = array();
             }
+
             $order_receive_queue_key = C('SAPP_ORDER_GIFT').$order_id.':receive_queue';
             for ($i=0;$i<$amount;$i++) {
                 $receive_openid = $redis->lpop($order_receive_queue_key);
                 if (empty($receive_openid)) {
                     break;
                 }
+
                 $receive_num = intval($receive_nums[$receive_openid]['num']);
                 $tmp_remain_num = $amount-$all_receive_num;
                 if($tmp_remain_num<=0){
@@ -479,6 +495,10 @@ class GiftController extends CommonController{
                 $r_data['merchant_id'] = $res_order['merchant_id'];
                 $row_id = $m_order->addData($r_data);
 
+
+                $log_info['queue'][]= array('openid'=>$openid,'order_id'=>$row_id);
+
+
                 $order_goods = array('order_id'=>$row_id,'goods_id'=>$res_ogoods[0]['goods_id'],
                     'price'=>$res_ogoods[0]['price'],'amount'=>$receive_num);
                 $m_ordergoods->addData($order_goods);
@@ -506,6 +526,7 @@ class GiftController extends CommonController{
                 }
             }else{
                 $status = 17;
+                $receive_type = 4;
             }
             if($status){
                 $odata  = array('status'=>$status);
@@ -516,13 +537,32 @@ class GiftController extends CommonController{
             }
         }
         $message = '';
+        if($receive_data[$openid]){
+            $receive_type = 3;
+        }
         if($receive_type==3){
             $where = array('openid'=>$res_order['openid']);
             $user_info = $m_user->getOne('id,openid,nickName',$where,'id desc');
             $message = "恭喜您领取到了{$user_info['nickName']}的赠品";
         }
 
-        $res_data = array('receive_type'=>$receive_type,'order_id'=>$row_id,'receive_num'=>$had_receive_num,'message'=>$message);
+        $log_content = date("Y-m-d H:i:s").'[queue]'.json_encode($log_info)."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'gift_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+        $res_oinfo = $m_order->getInfo(array('gift_oid'=>$order_id,'openid'=>$openid));
+        $my_order_id = 0;
+        if(!empty($res_oinfo)){
+            $had_receive_num = $res_oinfo['amount'];
+            $receive_type = 3;
+            $my_order_id = $res_oinfo['id'];
+        }
+        $res_data = array('receive_type'=>$receive_type,'order_id'=>$my_order_id,'receive_num'=>$had_receive_num,'message'=>$message);
+
+        $log_content = date("Y-m-d H:i:s").'[result]'.json_encode($res_data)."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'gift_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
         $this->to_back($res_data);
     }
 
@@ -556,7 +596,12 @@ class GiftController extends CommonController{
         }
 
         if(empty($res_order['gift_oidtrees'])){
-            $p_oid = $order_id;
+            $res_sunorder = $m_order->getInfo(array('gift_oid'=>$order_id));
+            if(!empty($res_sunorder)){
+                $p_oid = $order_id;
+            }else{
+                $p_oid = $res_order['gift_oid'];
+            }
         }else{
             $order_trees = trim($res_order['gift_oidtrees'],',');
             $order_trees_arr = explode(',',$order_trees);
@@ -567,25 +612,24 @@ class GiftController extends CommonController{
             $is_self = 1;
         }
         $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
+        $redis->select(1);
+        $order_getnum_key = C('SAPP_ORDER_GIFT').$p_oid.':getnum';
+        $res_getnum_cache = $redis->get($order_getnum_key);
+        if(!empty($res_getnum_cache)){
+            $get_num = json_decode($res_getnum_cache,true);
+        }else{
+            $m_order = new \Common\Model\Smallapp\OrderModel();
+            $res_porder = $m_order->getInfo(array('id'=>$p_oid));
+            $get_num = array('all_num'=>$res_porder['amount']-$res_porder['receive_num'],'num'=>0);
+        }
+        $get_num['num'] = $get_num['num']+1;
+        $redis->set($order_getnum_key,json_encode($get_num),86400*7);
+        if($get_num['all_num']-$get_num['num']<0){
+            $res_data = array('receive_order_id'=>$res_order['gift_oid']);
+            $this->to_back($res_data);
+        }
 
         if($is_self==0){
-            $order_getnum_key = C('SAPP_ORDER_GIFT').$p_oid.':getnum';
-            $res_getnum_cache = $redis->get($order_getnum_key);
-            if(!empty($res_getnum_cache)){
-                $get_num = json_decode($res_getnum_cache,true);
-            }else{
-                $m_order = new \Common\Model\Smallapp\OrderModel();
-                $res_porder = $m_order->getInfo(array('id'=>$p_oid));
-                $get_num = array('all_num'=>$res_porder['amount']-$res_porder['receive_num'],'num'=>0);
-            }
-            $get_num['num'] = $get_num['num']+1;
-            if($get_num['all_num']-$get_num['num']<0){
-                $res_data = array('receive_order_id'=>$res_order['gift_oid']);
-                $this->to_back($res_data);
-            }
-            $redis->set($order_getnum_key,json_encode($get_num),86400*7);
-
             $gift_where = array('otype'=>7);
             $trees = ",$order_id,";
             $gift_where['gift_oidtrees'] = array('like',"%$trees%");
@@ -608,7 +652,6 @@ class GiftController extends CommonController{
             $up_data['receive_num']=$res_order['amount'];
         }
         $m_order->updateData(array('id'=>$order_id),$up_data);
-
         if($is_self==0){
             $gift_where = array('otype'=>7);
             $trees = ",$order_id,";

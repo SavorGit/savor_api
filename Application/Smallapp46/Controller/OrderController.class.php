@@ -1238,12 +1238,14 @@ class OrderController extends CommonController{
                 $where['status'] = array('in',array(18,19));
                 break;
             case 6:
+                $where['otype'] = array('in',array(6,7));
                 $where['status'] = array('in',array(12,61,71));
                 break;
             case 7:
                 $where['status'] = 62;
                 break;
             case 8:
+                $where['otype'] = array('in',array(6,7));
                 $where['status'] = 63;
                 break;
             default:
@@ -1309,7 +1311,7 @@ class OrderController extends CommonController{
                 }
                 $datalist[$k]['merchant'] = $merchant;
                 $give_type = 0;
-                if($v['otype']==6){
+                if($v['otype']==6 || $v['otype']==7){
                     if($v['gift_oid']==0){
                         $give_type = 1;
                     }else{
@@ -1456,7 +1458,7 @@ class OrderController extends CommonController{
         $expire_date = $nickName = '';
         $receive_num = 0;
         $gift_records = array();
-        if($res_order['otype']==6){
+        if($res_order['otype']==6 || $res_order['otype']==7){
             $day_time = 5*86400;
             $expire_time = strtotime($res_order['add_time'])+$day_time;
             $expire_date = date('Y-m-d',$expire_time);

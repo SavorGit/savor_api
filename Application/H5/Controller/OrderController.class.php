@@ -281,4 +281,182 @@ class OrderController extends Controller {
         }
         echo $nowdtime." finish\r\n";
     }
+
+
+    public function giftgivefailure(){
+        $nowdtime = date('Y-m-d H:i:s');
+        echo $nowdtime." start\r\n";
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('otype'=>6,'status'=>array('in',array(12,61,17)));
+        $where['gift_oid'] = array('eq',0);
+
+        $res_order = $m_order->getDataList('*',$where,'id asc');
+        if(!empty($res_order)){
+            $diff_time = 86400*5;
+
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(2);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            $m_income = new \Common\Model\Smallapp\UserincomeModel();
+            $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+            foreach ($res_order as $v){
+                $order_id=$v['id'];
+                $now_time = time();
+                $order_time = strtotime($v['add_time']);
+                if($now_time-$order_time<$diff_time){
+                    continue;
+                }
+                if($v['pay_type']==10){
+                    $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+
+                    if(!empty($res_orderserial)){
+                        $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$order_id),'id desc',0,1);
+                        $trade_no = $res_ordermap['list'][0]['id'];
+
+                        $pay_fee = $v['pay_fee'];
+                        $refund_money = $v['pay_fee'];
+                        $refund_amount = $v['amount'];
+                        $receive_money = 0;
+                        $receive_amount = 0;
+                        $cancel_oids = array();
+                        switch ($v['status']){
+                            case 12:
+                                $cancel_oids[] = $order_id;
+                                break;
+                            case 61:
+                            case 17:
+                                $receive_orders = $m_order->getDataList('id,amount,receive_num,total_fee,address,status',array('gift_oid'=>$order_id),'id desc');
+                                foreach ($receive_orders as $ov){
+                                    if($ov['amount']==$ov['receive_num']){
+                                        //全部自己领取无转赠
+                                        if($ov['status']==63){
+                                            if(!empty($ov['address'])){
+                                                $receive_money+=$ov['total_fee'];
+                                                $receive_amount+=$ov['amount'];
+                                            }else{
+                                                $cancel_oids[]=$ov['id'];
+                                            }
+                                        }else{
+                                            $oidtrees = ",{$ov['id']},";
+                                            $sunwhere = array('gift_oidtrees'=>array('like',"%$oidtrees%"));
+                                            $sunwhere['otype'] = 7;
+                                            $receive_sunorders = $m_order->getDataList('id,amount,receive_num,total_fee,address,status',$sunwhere,'id desc');
+                                            $is_cancel = 1;
+                                            if(!empty($receive_sunorders)){
+                                                if($receive_sunorders[0]['status']==63 && $receive_sunorders[0]['amount']==$receive_sunorders[0]['receive_num'] && !empty($receive_sunorders[0]['address'])){
+                                                    $is_cancel = 0;
+                                                }else{
+                                                    $cancel_oids[]=$ov['id'];
+                                                    foreach ($receive_sunorders as $sov){
+                                                        if(in_array($sov['status'],array(63,71))){
+                                                            $cancel_oids[]=$sov['id'];
+                                                        }
+                                                    }
+                                                }
+                                            }else{
+                                                $cancel_oids[]=$ov['id'];
+                                            }
+                                            if($is_cancel==0){
+                                                $receive_money+=$ov['total_fee'];
+                                                $receive_amount+=$ov['amount'];
+                                            }
+                                        }
+                                    }else{
+                                        if($ov['status']==63){
+                                            if(!empty($ov['address'])){
+                                                $res_ogoods = $m_ordergoods->getDataList('*',array('order_id'=>$ov['id']),'id desc');
+                                                $receive_total_fee = sprintf("%.2f",$ov['receive_num']*$res_ogoods[0]['price']);
+                                                $receive_money+=$receive_total_fee;
+                                                $receive_amount+=$ov['receive_num'];
+                                            }else{
+                                                $cancel_oids[]=$ov['id'];
+                                            }
+                                        }
+
+                                        $oidtrees = ",{$ov['id']},";
+                                        $sunwhere = array('gift_oidtrees'=>array('like',"%$oidtrees%"));
+                                        $sunwhere['otype'] = 7;
+                                        $receive_sunorders = $m_order->getDataList('id,amount,receive_num,total_fee,address,status',$sunwhere,'id desc');
+                                        if(!empty($receive_sunorders)){
+                                            foreach ($receive_sunorders as $sov){
+                                                if(in_array($sov['status'],array(63,71))){
+                                                    if($sov['status']==63 && $sov['receive_num'] && !empty($sov['address'])){
+                                                        $res_sogoods = $m_ordergoods->getDataList('*',array('order_id'=>$sov['id']),'id desc');
+                                                        $receive_stotal_fee = sprintf("%.2f",$sov['receive_num']*$res_sogoods[0]['price']);
+                                                        $receive_money+=$receive_stotal_fee;
+                                                        $receive_amount+=$sov['receive_num'];
+                                                    }else{
+                                                        $cancel_oids[]=$sov['id'];
+                                                    }
+                                                }
+                                            }
+                                        }else{
+                                            $cancel_oids[]=$ov['id'];
+                                        }
+                                    }
+                                }
+                                if($v['status']==61){
+                                    $cancel_oids[]=$order_id;
+                                }else{
+                                    if(!empty($cancel_oids)){
+                                        $cancel_oids[]=$order_id;
+                                    }
+                                }
+                                break;
+                        }
+                        $refund_amount = $refund_amount-$receive_amount;
+                        $refund_money = sprintf("%.2f",$pay_fee-$receive_money);
+                        if(!empty($cancel_oids)){
+                            $cancel_oids = array_unique($cancel_oids);
+                        }
+                        if($refund_money<=0){
+                            echo "order_id:$order_id  cancel error money:$refund_money"."\r\n";
+                            continue;
+                        }
+                        $cancel_info = json_encode(array('oids'=>$cancel_oids,'refund_money'=>$refund_money));
+                        echo "order_id:$order_id  cancel info:$cancel_info"."\r\n";
+
+                        $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+                        $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        if(isset($res['err_code'])){
+                            $payconfig = $m_baseinc->getPayConfigOld(2);
+                            $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                        }
+
+                        if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                            $data = array('status'=>62,'finish_time'=>date('Y-m-d H:i:s'));
+                            $where = array('id'=>array('in',$cancel_oids));
+                            $m_order->updateData($where,$data);
+                            echo "order_id:$order_id  cancel and refund ok"."\r\n";
+
+                            if($v['sale_uid']){
+                                $res_income = $m_income->getDataList('*',array('user_id'=>$v['sale_uid'],'order_id'=>$order_id),'id desc');
+                                if(!empty($res_income)){
+                                    $income_amount = $res_income[0]['amount']-$refund_amount>0?$res_income[0]['amount']-$refund_amount:0;
+                                    $income_fee = ($res_income[0]['price']-$res_income[0]['supply_price'])*$res_income[0]['profit']*$income_amount;
+                                    $income_fee = sprintf("%.2f",$income_fee);
+
+                                    $income_data = array('amount'=>$income_amount,'income_fee'=>$income_fee,'update_time'=>date('Y-m-d H:i:s'));
+                                    $m_income->updateData(array('id'=>$res_income[0]['id']),$income_data);
+                                    $income_sql = $m_income->getLastSql();
+                                    $income_info = 'old_amount:'.$res_income[0]['amount'].' refund_amount:'.$refund_amount.' sql:'.$income_sql;
+                                    echo "order_id:$order_id income_info: $income_info"."\r\n";
+                                }
+                            }
+
+                        }else{
+                            echo "order_id:$order_id  cancel and refund error"."\r\n";
+                        }
+                    }else{
+                        echo "order_id:$order_id  cancel error"."\r\n";
+                    }
+                }else{
+                    echo "order_id:$order_id  cancel error paytype error"."\r\n";
+                }
+            }
+        }
+        echo $nowdtime." finish\r\n";
+    }
 }

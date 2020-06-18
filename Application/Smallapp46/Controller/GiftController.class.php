@@ -55,6 +55,11 @@ class GiftController extends CommonController{
             $this->to_back(90134);
         }
 
+        $is_hasget = 0;
+        if($res_order['amount']==$res_order['receive_num'] && $res_order['status']==63 && !empty($res_order['address'])){
+            $is_hasget = 1;
+        }
+
         $amount = $res_order['amount'];
         $person_upnum = $res_order['person_upnum'];
         $order_receive_key = C('SAPP_ORDER_GIFT').$order_id.':receive';
@@ -84,17 +89,32 @@ class GiftController extends CommonController{
         $receive_order_id = $give_order_id = 0;
         $share_title = '';
         $address = array();
+
         if(isset($receive_data[$openid])){
             $res_rorder = $m_order->getInfo(array('gift_oid'=>$order_id,'openid'=>$openid));
+            if($res_rorder['amount']==$res_rorder['receive_num'] && $res_rorder['status']==63 && !empty($res_rorder['address'])){
+                $is_hasget = 1;
+            }
             $receive_type = 2;
-
             $now_oid = $res_rorder['id'];
-            $res_sunorder = $m_order->getInfo(array('gift_oid'=>$now_oid,'openid'=>$openid));
+            $res_sunorder = $m_order->getInfo(array('gift_oid'=>$now_oid));
             if($res_rorder['otype']==6 && $receive_data[$openid]['amount']<2){
                 if(!empty($res_sunorder)){
-                    $receive_type = 6;
+                    $gift_where = array('otype'=>7);
+                    $trees = ",{$res_sunorder['id']},";
+                    $gift_where['gift_oidtrees'] = array('like',"%$trees%");
+                    $gift_where['receive_num'] = array('gt',0);
+                    $res_ordertree = $m_order->getDataList('id',$gift_where,'id desc',0,1);
+
+                    if(!empty($res_ordertree['total']) || ($res_sunorder['status']==63 && $res_sunorder['receive_num']==$res_sunorder['amount'] && !empty($res_sunorder['address']))){
+                        $receive_type = 6;
+                    }else{
+                        $selfreceive_num = $res_rorder['receive_num'];
+                        $receive_type = 3;
+                    }
                 }else{
                     if(empty($receive_data[$openid]['address'])){
+                        $selfreceive_num = $res_rorder['receive_num']>0?$res_rorder['receive_num']:$res_rorder['amount'];
                         $receive_type = 3;
                         $r_order_id = $res_rorder['id'];
                     }
@@ -108,8 +128,18 @@ class GiftController extends CommonController{
                 }
                 if($res_rorder['receive_num']==0){
                     if(!empty($res_sunorder)){
-                        $receive_type = 6;
+                        $gift_where = array('otype'=>7);
+                        $trees = ",{$res_sunorder['id']},";
+                        $gift_where['gift_oidtrees'] = array('like',"%$trees%");
+                        $gift_where['receive_num'] = array('gt',0);
+                        $res_ordertree = $m_order->getDataList('id',$gift_where,'id desc',0,1);
+                        if(!empty($res_ordertree['total']) || ($res_sunorder['status']==63 && $res_sunorder['receive_num']==$res_sunorder['amount'] && !empty($res_sunorder['address']))){
+                            $receive_type = 6;
+                        }else{
+                            $receive_type = 3;
+                        }
                     }else{
+                        $selfreceive_num = $res_rorder['amount'];
                         $receive_type = 7;
                         $r_order_id = $res_rorder['id'];
                     }
@@ -127,6 +157,9 @@ class GiftController extends CommonController{
                     $share_wx = $m_order->shareWeixin($res_user['nickName'],$res_ogoods[0]['goods_name']);
                     $share_title = $share_wx['title'];
                 }
+            }
+            if($is_hasget){
+                $receive_type = 4;
             }
         }else{
             switch ($res_order['status']){
@@ -162,7 +195,7 @@ class GiftController extends CommonController{
         $order_data = array('order_id'=>$r_order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$amount,'receive_num'=>$all_receive_num,
             'person_upnum'=>$person_upnum,'total_fee'=>$res_order['total_fee'],'type'=>$res_order['otype'],'message'=>$res_order['message'],
             'openid'=>$res_order['openid'],'nickName'=>$res_user['nickName'],'expire_date'=>$expire_date,'receive_type'=>$receive_type,
-            'selfreceive_num'=>$selfreceive_num,'give_num'=>$give_num,'address'=>$address,'receive_order_id'=>$receive_order_id,'give_order_id'=>$give_order_id,
+            'selfreceive_num'=>intval($selfreceive_num),'give_num'=>$give_num,'address'=>$address,'receive_order_id'=>$receive_order_id,'give_order_id'=>$give_order_id,
             'share_title'=>$share_title,
         );
         $oss_host = "http://".C('OSS_HOST').'/';
@@ -427,10 +460,16 @@ class GiftController extends CommonController{
                 $receive_data[$receive_openid] = $r_data;
                 $redis->set($order_receive_key,json_encode($receive_data),86400*7);
 
-                $r_data['otype'] = $res_order['otype'];
+                if(!empty($res_order['gift_oid']) && $res_order['otype']==6){
+                    $res_order['otype']=7;
+                }
                 if($res_order['otype']==7){
+                    if(empty($res_order['gift_oidtrees'])){
+                        $res_order['gift_oidtrees']= ',';
+                    }
                     $r_data['gift_oidtrees'] = $res_order['gift_oidtrees']."$order_id,";
                 }
+                $r_data['otype'] = $res_order['otype'];
                 $r_data['person_upnum'] = 1;
                 $r_data['message'] = $res_order['message'];
                 $r_data['gift_oid'] = $order_id;
@@ -503,17 +542,6 @@ class GiftController extends CommonController{
         if(empty($res_order)){
             $this->to_back(90134);
         }
-        $gift_where = array('otype'=>7);
-        $trees = ",$order_id,";
-        $gift_where['gift_oidtrees'] = array('like',"%$trees%");
-        $gift_where['receive_num'] = array('gt',0);
-        $res_ordertree = $m_order->getDataList('id',$gift_where,'id desc',0,1);
-        if($res_ordertree['total']){
-            unset($gift_where['receive_num']);
-            $m_order->updateData($gift_where,array('status'=>17));
-            $this->to_back(90153);
-        }
-
         $m_area = new \Common\Model\AreaModel();
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $res_address = $m_address->getInfo(array('id'=>$address_id));
@@ -526,21 +554,70 @@ class GiftController extends CommonController{
         if($res_goodsinfo[0]['is_localsale']==1 && $res_goodsinfo[0]['goods_areaid']!=$res_address['area_id']){
             $this->to_back(90140);
         }
+
+        if(empty($res_order['gift_oidtrees'])){
+            $p_oid = $order_id;
+        }else{
+            $order_trees = trim($res_order['gift_oidtrees'],',');
+            $order_trees_arr = explode(',',$order_trees);
+            $p_oid = $order_trees_arr[0];
+        }
+        $is_self = 0;
+        if($res_order['openid']==$openid && $res_order['receive_num']){
+            $is_self = 1;
+        }
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+
+        if($is_self==0){
+            $order_getnum_key = C('SAPP_ORDER_GIFT').$p_oid.':getnum';
+            $res_getnum_cache = $redis->get($order_getnum_key);
+            if(!empty($res_getnum_cache)){
+                $get_num = json_decode($res_getnum_cache,true);
+            }else{
+                $m_order = new \Common\Model\Smallapp\OrderModel();
+                $res_porder = $m_order->getInfo(array('id'=>$p_oid));
+                $get_num = array('all_num'=>$res_porder['amount']-$res_porder['receive_num'],'num'=>0);
+            }
+            $get_num['num'] = $get_num['num']+1;
+            if($get_num['all_num']-$get_num['num']<0){
+                $res_data = array('receive_order_id'=>$res_order['gift_oid']);
+                $this->to_back($res_data);
+            }
+            $redis->set($order_getnum_key,json_encode($get_num),86400*7);
+
+            $gift_where = array('otype'=>7);
+            $trees = ",$order_id,";
+            $gift_where['gift_oidtrees'] = array('like',"%$trees%");
+            $gift_where['receive_num'] = array('gt',0);
+            $res_ordertree = $m_order->getDataList('id',$gift_where,'id desc',0,1);
+            if($res_ordertree['total']){
+                $res_data = array('receive_order_id'=>$res_order['gift_oid']);
+                $this->to_back($res_data);
+            }
+        }
+
         $res_area = $m_area->find($res_address['area_id']);
         $res_county = $m_area->find($res_address['county_id']);
 
         $contact = $res_address['consignee'];
         $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
         $phone = $res_address['phone'];
-        $up_data = array('contact'=>$contact,'address'=>$address,'phone'=>$phone);
-        if($res_order['receive_num']==0){
+        $up_data = array('contact'=>$contact,'address'=>$address,'phone'=>$phone,'status'=>63);
+        if($is_self==0 && $res_order['receive_num']==0){
             $up_data['receive_num']=$res_order['amount'];
         }
         $m_order->updateData(array('id'=>$order_id),$up_data);
 
+        if($is_self==0){
+            $gift_where = array('otype'=>7);
+            $trees = ",$order_id,";
+            $gift_where['gift_oidtrees'] = array('like',"%$trees%");
+            $gift_where['receive_num'] = array('eq',0);
+            $m_order->updateData($gift_where,array('status'=>17));
+        }
+
         $order_receive_key = C('SAPP_ORDER_GIFT').$res_order['gift_oid'].':receive';
-        $redis  =  \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
         $res_cache = $redis->get($order_receive_key);
         if(!empty($res_cache)){
             $receive_data = json_decode($res_cache,true);
@@ -710,6 +787,7 @@ class GiftController extends CommonController{
         $give_num = 0;
         $share_title = '';
         $res_user = $m_user->getOne('*',array('openid'=>$res_order['openid']),'id desc');
+        $give_uname = $res_user['nickName'];
         $res_rorder = $m_order->getInfo(array('gift_oid'=>$order_id,'openid'=>$openid));
         if(!empty($res_rorder)){
             $give_num = $res_rorder['amount'];
@@ -721,9 +799,14 @@ class GiftController extends CommonController{
             $share_wx = $m_order->shareWeixin($res_user['nickName'],$res_ogoods[0]['goods_name']);
             $share_title = $share_wx['title'];
         }
+        if(!empty($res_order['gift_oid'])){
+            $res_porder = $m_order->getInfo(array('id'=>$res_order['gift_oid']));
+            $res_user = $m_user->getOne('*',array('openid'=>$res_porder['openid']),'id desc');
+            $give_uname = $res_user['nickName'];
+        }
 
         $order_data = array('order_id'=>$order_id,'merchant_id'=>$res_order['merchant_id'],'amount'=>$res_order['amount'],'message'=>$res_order['message'],
-            'openid'=>$res_order['openid'],'nickName'=>$res_user['nickName'],'selfreceive_num'=>$selfreceive_num,'give_num'=>$give_num,'address'=>$address,
+            'openid'=>$res_order['openid'],'nickName'=>$give_uname,'selfreceive_num'=>$selfreceive_num,'give_num'=>$give_num,'address'=>$address,
             'receive_order_id'=>$receive_order_id,'give_order_id'=>$give_order_id,'share_title'=>$share_title,
         );
         $oss_host = "http://".C('OSS_HOST').'/';

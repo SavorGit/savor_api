@@ -439,10 +439,11 @@ class UserController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase,merchant.mtype';
+        $fields = 'a.id as staff_id,a.level,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase,merchant.mtype';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         $data['merchant_id'] = $res_staff[0]['merchant_id'];
         $data['is_purchase'] = intval($res_staff[0]['is_purchase']);
+        $data['staff_level'] = intval($res_staff[0]['level']);
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$data['merchant_id'],'status'=>1);
@@ -508,6 +509,17 @@ class UserController extends CommonController{
         }
         $data['income_fee'] = $income_fee;
         $data['withdraw_fee'] = $withdraw_fee;
+
+        $score = 0;
+        if($data['staff_level']==2){
+            $condition = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
+            $m_comment = new \Common\Model\Smallapp\CommentModel();
+            $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
+            if(!empty($res_score) && $res_score[0]['score']>=1){
+                $score = sprintf("%01.1f",$res_score[0]['score']);
+            }
+        }
+        $data['score'] = $score;
 
         $this->to_back($data);
     }

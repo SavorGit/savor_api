@@ -13,6 +13,10 @@ class BoxLogController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'adsPlaylog':
+                $this->is_verify =1;
+                $this->valid_fields = array('box_mac'=>1001,'ads_id'=>1001);
+                break;
         }
         parent::_init_();
         //log_type 0：关闭  1：日志文件 2:文件下载情况 3：异常  4：遥控器按键日志 5：重启日志
@@ -42,4 +46,38 @@ class BoxLogController extends CommonController{
         }
         
     }
+
+    public function adsPlaylog(){
+        $box_mac = $this->params['box_mac'];
+        $ads_id = intval($this->params['ads_id']);
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+
+        if(isset($forscreen_info['box_id'])){
+            $redis = new \Common\Lib\SavorRedis();
+            $box_id = intval($forscreen_info['box_id']);
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info,true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $res_hotel = json_decode($redis_hotel_info, true);
+
+            $data = array('ads_id'=>$ads_id,'hotel_id'=>$room_info['hotel_id'],'hotel_name'=>$res_hotel['name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'room_id'=>$box_info['room_id'],'room_name'=>$room_info['name'],'box_id'=>$box_id,'box_mac'=>$box_info['mac'],'box_type'=>$box_info['box_type'],
+                'area_id'=>$res_hotel['area_id']
+            );
+            $m_area = new \Common\Model\AreaModel();
+            $res_area = $m_area->find($data['area_id']);
+            $data['area_name'] = $res_area['region_name'];
+            $m_adsplaylog = new \Common\Model\Smallapp\AdsplaylogModel();
+            $m_adsplaylog->add($data);
+        }
+        $this->to_back(array());
+    }
+
 }

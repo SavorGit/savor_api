@@ -17,6 +17,10 @@ class BoxLogController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001,'ads_id'=>1001);
                 break;
+            case 'welcomePlaylog':
+                $this->is_verify =1;
+                $this->valid_fields = array('box_mac'=>1001,'welcome_id'=>1001);
+                break;
         }
         parent::_init_();
         //log_type 0：关闭  1：日志文件 2:文件下载情况 3：异常  4：遥控器按键日志 5：重启日志
@@ -76,6 +80,17 @@ class BoxLogController extends CommonController{
             $data['area_name'] = $res_area['region_name'];
             $m_adsplaylog = new \Common\Model\Smallapp\AdsplaylogModel();
             $m_adsplaylog->add($data);
+        }
+        $this->to_back(array());
+    }
+
+    public function welcomePlaylog(){
+        $box_mac = $this->params['box_mac'];
+        $welcome_id = intval($this->params['welcome_id']);
+        $m_welcomerecord = new \Common\Model\Smallapp\WelcomePlayrecordModel();
+        $res_welcome = $m_welcomerecord->getInfo(array('welcome_id'=>$welcome_id,'box_mac'=>$box_mac));
+        if(!empty($res_welcome)){
+            $m_welcomerecord->updateData(array('id'=>$res_welcome['id']),array('status'=>2,'update_time'=>date('Y-m-d H:i:s')));
         }
         $this->to_back(array());
     }

@@ -47,16 +47,21 @@ class StaffController extends CommonController{
             if($hotel_id!=$res_staff[0]['hotel_id']){
                 $this->to_back(93001);
             }
-            $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
-            $res_staffs = $m_staff->getDataList('id,openid,parent_id',$staff_where,'id desc');
+            $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1);
+            if($res_staff[0]['level']==0 || $res_staff[0]['level']==1){
+                $staff_where['level'] = array('in',array(2,3));
+            }elseif($res_staff[0]['level']==2){
+                $staff_where['level'] = 3;
+            }
+            $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
         }else{
             if($res_staff[0]['level']==0 || $res_staff[0]['level']==1){
                 $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1);
                 $staff_where['level'] = array('in',array(2,3));
-                $res_staffs = $m_staff->getDataList('id,openid,parent_id',$staff_where,'id desc');
+                $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             }elseif($res_staff[0]['level']==2){
                 $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
-                $res_staffs = $m_staff->getDataList('id,openid,parent_id',$staff_where,'id desc');
+                $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             }else{
                 $res_staffs = $m_staff->getStaffsByOpenid($openid,0,$all_nums);
             }
@@ -83,6 +88,7 @@ class StaffController extends CommonController{
                     $res_user['avatarUrl'] = $res_user['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
                 }
                 $res_user['staff_id'] = $v['id'];
+                $res_user['level'] = intval($v['level']);
                 $datalist[] = $res_user;
             }
         }

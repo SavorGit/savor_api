@@ -509,10 +509,9 @@ class UserController extends CommonController{
         }
         $data['income_fee'] = $income_fee;
         $data['withdraw_fee'] = $withdraw_fee;
-
         $score = 0;
         if($data['staff_level']==2){
-            $condition = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
+            $condition = array('staff_id'=>$res_staff[0]['staff_id'],'status'=>1);
             $m_comment = new \Common\Model\Smallapp\CommentModel();
             $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
             if(!empty($res_score) && $res_score[0]['score']>=1){

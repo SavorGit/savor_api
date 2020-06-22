@@ -15,7 +15,7 @@ class StaffModel extends BaseModel{
     }
 
     public function getStaffsByOpenid($openid,$start,$size){
-        $fields = 'staff_lev1.id,staff_lev1.openid,staff_lev1.parent_id';
+        $fields = 'staff_lev1.id,staff_lev1.openid,staff_lev1.parent_id,staff_lev1.level';
         $res = $this->alias('a')
                     ->join('savor_integral_merchant_staff staff_lev1 on a.id= staff_lev1.parent_id')
                     ->field($fields)

@@ -406,7 +406,7 @@ class WelcomeController extends CommonController{
 
         $m_netty = new \Common\Model\NettyModel();
         $m_box = new \Common\Model\BoxModel();
-        $m_welcome_playfail = new \Common\Model\Smallapp\WelcomePlayfailrecordModel();
+        $m_welcome_playrecord = new \Common\Model\Smallapp\WelcomePlayrecordModel();
         if($res_welcome['type']==1){
             $map = array('a.mac'=>$res_welcome['box_mac'],'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
             $rets = $m_box->getBoxInfo('a.id box_id,c.id room_id,d.id hotel_id',$map);
@@ -427,13 +427,9 @@ class WelcomeController extends CommonController{
             }
 
             $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
-            if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
-                $res_netty = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
-            }
-            if(isset($res_netty['error_code'])){
-                $play_data = array('welcome_id'=>$res_welcome['id'],'box_mac'=>$res_welcome['box_mac'],'status'=>1);
-                $m_welcome_playfail->add($play_data);
-            }
+            $play_data = array('welcome_id'=>$res_welcome['id'],'box_mac'=>$res_welcome['box_mac'],'status'=>1,
+                'hotel_id'=>$res_welcome['hotel_id'],'type'=>$res_welcome['type'],'finish_time'=>$res_welcome['finish_time']);
+            $m_welcome_playrecord->add($play_data);
         }else{
             $fields = 'a.id as box_id,a.mac as box_mac';
             $res_box = $m_box->getBoxListByHotelid($fields,$res_welcome['hotel_id']);
@@ -467,14 +463,10 @@ class WelcomeController extends CommonController{
 
                 $box_mac = $v['box_mac'];
                 $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
-                if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
-                    $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
-                }
-                if(isset($res_netty['error_code'])){
-                    $play_data = array('welcome_id'=>$res_welcome['id'],'box_mac'=>$box_mac,'status'=>1);
-                    $m_welcome_playfail->add($play_data);
-                }
-                $push_log[]=array('mac',$box_mac,'nettymsg'=>$res_netty);
+                $play_data = array('welcome_id'=>$res_welcome['id'],'box_mac'=>$box_mac,'status'=>1,
+                    'hotel_id'=>$res_welcome['hotel_id'],'type'=>$res_welcome['type'],'finish_time'=>$res_welcome['finish_time']);
+                $m_welcome_playrecord->add($play_data);
+                $push_log[]=array('mac'=>$box_mac,'nettymsg'=>$res_netty);
             }
 
             $log_content = date("Y-m-d H:i:s").'[welcome_id]'.$id.'[push_log]'.json_encode($push_log).'[push_message]'.json_encode($message)."\r\n";

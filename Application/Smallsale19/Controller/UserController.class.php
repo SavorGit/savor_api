@@ -682,7 +682,7 @@ class UserController extends CommonController{
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.merchant_id,merchant.type',$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
@@ -696,6 +696,7 @@ class UserController extends CommonController{
                 $fields = 'openid,avatarUrl,nickName';
                 $res_user = $m_user->getOne($fields, $where);
                 $res_user['invite_id'] = $v['parent_id'];
+                $res_user['level'] = $v['level'];
                 $datalist[] = $res_user;
             }
         }

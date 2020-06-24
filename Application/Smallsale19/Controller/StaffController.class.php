@@ -120,7 +120,7 @@ class StaffController extends CommonController{
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_id';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
-        if(empty($res_staff) || $res_staff[0]['type']!=2){
+        if(empty($res_staff)){
             $this->to_back(93001);
         }
         if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_id'])){
@@ -154,7 +154,7 @@ class StaffController extends CommonController{
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_staff = new \Common\Model\Integral\StaffModel();
             foreach ($res_box as $k=>$v) {
-                $info = array('room_id'=>$v['room_id'],'room_name'=>$v['room_name'],
+                $info = array('room_id'=>$v['room_id'],'room_name'=>$v['box_name'],
                     'staff_id'=>0,'staff_name'=>'');
                 $where = array('a.hotel_id'=>$hotel_id,'a.room_id'=>$v['room_id'],
                     'a.status'=>1,'merchant.status'=>1);
@@ -179,7 +179,7 @@ class StaffController extends CommonController{
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff[0]['type']!=2){
+        if(empty($res_staff)){
             $this->to_back(93001);
         }
         $hotel_id = $res_staff[0]['hotel_id'];

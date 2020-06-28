@@ -9,7 +9,7 @@ class BuriedPointController extends CommonController{
             case 'boxNetLogs':
                 $this->is_verify = 1;
                 $this->valid_fields = array('req_id'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,'box_mac'=>1001,
-                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_break'=>1002,'receive_nettytime'=>1002);
+                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,'receive_nettytime'=>1002);
                 break;
             case 'boxReceiveNetty':
                 $this->is_verify = 1;
@@ -46,6 +46,7 @@ class BuriedPointController extends CommonController{
         $box_mac      = $this->params['box_mac'];
         $used_time    = abs($this->params['used_time']);//用时
         $is_exist     = intval($this->params['is_exist']);//是否存在
+        $is_exit     = intval($this->params['is_exit']);//是否退出
         $is_break     = $this->params['is_break'];
         $receive_nettytime = $this->params['receive_nettytime'];
 
@@ -77,25 +78,32 @@ class BuriedPointController extends CommonController{
         if(!empty($cache_data['action']) && $cache_data['action']==4){
             $is_exist = 0;
         }
-        $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
-            'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
+        if($is_exit){
+            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+                'box_mac'=>$box_mac,'is_exit'=>$is_exit,'is_exist'=>2);
+        }else{
+            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+                'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
+        }
 
         $log_content = date("Y-m-d H:i:s").'[params]'.json_encode($this->params).'[data]'.json_encode($data)."\n";
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
-        switch ($is_exist){
-            case 1://资源已存在于机顶盒，不走下载逻辑
-                break;
-            case 0:
-                $data['used_time'] = $used_time;
-                $data['box_res_sdown_time'] = $box_res_sdown_time;
-                $data['box_res_edown_time'] = $box_res_edown_time;
-                break;
-            case 2://下载失败
-                $data['box_res_sdown_time'] = $box_res_sdown_time;
-                $data['box_res_edown_time'] = 0 ;
-                break;
+        if(!$is_exit){
+            switch ($is_exist){
+                case 1://资源已存在于机顶盒，不走下载逻辑
+                    break;
+                case 0:
+                    $data['used_time'] = $used_time;
+                    $data['box_res_sdown_time'] = $box_res_sdown_time;
+                    $data['box_res_edown_time'] = $box_res_edown_time;
+                    break;
+                case 2://下载失败
+                    $data['box_res_sdown_time'] = $box_res_sdown_time;
+                    $data['box_res_edown_time'] = 0 ;
+                    break;
+            }
         }
 
         $redis = new \Common\Lib\SavorRedis();

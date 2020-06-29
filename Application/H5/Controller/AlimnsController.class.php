@@ -33,6 +33,18 @@ class AlimnsController extends Controller{
                     $redis = new \Common\Lib\SavorRedis();
                     $redis->select(5);
                     $cache_key = C('SAPP_FORSCREENTRACK').$req_id;
+
+                    $netty_cache_key = C('SAPP_FORSCREENTRACK').$req_id.'netty_time';
+                    if($type=='nettyapiin'){
+                        $netty_name = 'netty_receive_time';
+                    }else{
+                        $netty_name = 'netty_pushbox_time';
+                    }
+                    $redis->hSet($netty_cache_key,$netty_name,$res_message['timestamp']);
+                    $redis->expire($netty_cache_key,86400);
+
+                    $redis->watch($cache_key);
+
                     $res_cache = $redis->get($cache_key);
                     if(!empty($res_cache)){
                         $data = json_decode($res_cache,true);
@@ -44,9 +56,24 @@ class AlimnsController extends Controller{
                     }else{
                         $data['netty_pushbox_time']=$res_message['timestamp'];
                     }
+                    $redis->multi();
+
                     $redis->set($cache_key,json_encode($data),86400);
-//                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-//                    $m_forscreen->recordTrackLog($req_id,$params);
+
+                    $redis->exec();
+
+                    $message = json_encode($data);
+                    $log_content = date('Y-m-d H:i:s')."req_id|$req_id|type|$type|redis|$message \r\n";
+                    @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+                    /*
+                    if($type=='nettyapiin'){
+                        $params = array('netty_receive_time'=>$res_message['timestamp']);
+                    }else{
+                        $params = array('netty_pushbox_time'=>$res_message['timestamp']);
+                    }
+                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $m_forscreen->recordTrackLog($req_id,$params);
+                    */
                 }
             }
         }

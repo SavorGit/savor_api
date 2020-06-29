@@ -457,10 +457,23 @@ class SavorRedis {
     }
 
     public function multi(){
-        $ret = $this->getRedis()->multi(\Redis::PIPELINE);
+        $ret = $this->getRedis()->multi();
         return $ret;
     }
 
+    public function exec(){
+        $ret = $this->getRedis()->exec();
+        return $ret;
+    }
+
+    public function watch($key){
+        return $this->getRedis()->watch($key);
+    }
+
+    public function unwatch(){
+        $ret = $this->getRedis()->unwatch();
+        return $ret;
+    }
 
     public function zunionstore($newKey, $keyArray){
         $ret = $this->getRedis()->zunionstore($newKey, $keyArray);

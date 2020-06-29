@@ -61,6 +61,7 @@ class StaffController extends CommonController{
                 $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             }elseif($res_staff[0]['level']==2){
                 $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
+                $staff_where['parent_id'] = $res_staff[0]['id'];
                 $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             }else{
                 $res_staffs = $m_staff->getStaffsByOpenid($openid,0,$all_nums);
@@ -197,6 +198,13 @@ class StaffController extends CommonController{
             if(empty($res) || $res[0]['hotel_id']!=$hotel_id){
                 $this->to_back(93030);
             }
+            $where = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
+            $res = $m_staff->getInfo($where);
+            if(!empty($res)){
+                $data = array('hotel_id'=>0,'room_id'=>0);
+                $m_staff->updateData(array('id'=>$res['id']),$data);
+            }
+
             $data = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
             $m_staff->updateData(array('id'=>$staff_id),$data);
         }else{

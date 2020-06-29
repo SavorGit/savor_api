@@ -397,7 +397,7 @@ class HotelController extends BaseController {
                         $box_list[$ks]['ustate'] = 1;
                     }
                 }else {
-                    $box_list[$ks]['last_heart_time'] ='30+天';
+                    $box_list[$ks]['last_heart_time'] ='30+天前';
                     $box_list[$ks]['ustate'] = 0;
                     $unusual_num +=1;
                 }

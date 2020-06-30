@@ -1,5 +1,5 @@
 <?php
-namespace Smallsale19\Controller;
+namespace Smallsale20\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class WelcomeController extends CommonController{
@@ -434,7 +434,7 @@ class WelcomeController extends CommonController{
             }
         }else{
             $fields = 'a.id as box_id,a.mac as box_mac';
-            $res_box = $m_box->getBoxListByHotelid($fields,$res_welcome['hotel_id']);
+            $res_box = $m_box->getBoxListByHotelRelation($fields,$res_welcome['hotel_id']);
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
             $m_user = new \Common\Model\Smallapp\UserModel();

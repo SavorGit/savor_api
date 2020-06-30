@@ -156,6 +156,25 @@ class BoxModel extends Model{
         return $data;
     }
 
+    public function getBoxListByHotelRelation($fields,$hotel_id){
+        $cache_key = C('SMALLAPP_HOTEL_RELATION');
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(2);
+        $res_cache = $redis->get($cache_key.$hotel_id);
+        $where_hotel_id = "d.id=$hotel_id";
+        if(!empty($res_cache)){
+            $relation_hotel_id = intval($res_cache);
+            $where_hotel_id = "d.id in($hotel_id,$relation_hotel_id) ";
+        }
+        $data = $this->alias('a')
+            ->field($fields)
+            ->join('savor_room c on a.room_id= c.id','left')
+            ->join('savor_hotel d on c.hotel_id=d.id','left')
+            ->where($where_hotel_id.'and a.flag=0 and a.state =1 and d.flag=0 and d.state =1 ')
+            ->select();
+        return $data;
+    }
+
     public function saveData($save, $where) {
         $data = $this->where($where)->save($save);
         return $data;

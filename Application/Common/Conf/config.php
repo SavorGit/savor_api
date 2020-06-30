@@ -37,7 +37,7 @@ return array(
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
 	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18',
-                                     'Smallsale19','Smallapp44','Smallapp45','Smallapp46'), //模块配置
+                                     'Smallsale19','Smallapp44','Smallapp45','Smallapp46','Smallsale20',), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置
@@ -292,7 +292,7 @@ return array(
     'SAPP_SALE_OPGOODS_INTEGRAL'=>'smallappsale:opgoodsintegral:',
     'SAPP_SALE_ACTIVITY_PROMOTE'=>'smallappsale:activitypromote:',
     'SAPP_SALE_WELCOME_RESOURCE'=>'smallappsale:welcomeresource',
-
+    'SMALLAPP_HOTEL_RELATION'=>'smallapp:hotelrelation:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SHOP_PROGRAM'=>'smallapp:shopprogram',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',

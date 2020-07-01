@@ -31,6 +31,11 @@ class BuriedPointController extends CommonController{
         $m_forscreen->recordTrackLog($req_id,$params);
         $time = getMillisecond();
         $res = array('nowtime'=>$time);
+
+        $log_content = date("Y-m-d H:i:s").'|req_id|'.$req_id.'|start_report|'."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
         $this->to_back($res);
     }
 
@@ -86,7 +91,7 @@ class BuriedPointController extends CommonController{
                 'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
         }
 
-        $log_content = date("Y-m-d H:i:s").'[params]'.json_encode($this->params).'[data]'.json_encode($data)."\n";
+        $log_content = date("Y-m-d H:i:s").'|req_id|'.$req_id.'|end_report|params|'.json_encode($this->params)."\n";
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 

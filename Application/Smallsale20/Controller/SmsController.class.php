@@ -1,5 +1,5 @@
 <?php
-namespace Smallsale20\Controller;
+namespace Smallsale19\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class SmsController extends CommonController{
@@ -21,7 +21,7 @@ class SmsController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('mobile'=>1001,'invite_code'=>1001);
                 break;
-            
+
         }
         parent::_init_();
         $this->vcode_valid_time =  600;
@@ -37,7 +37,7 @@ class SmsController extends CommonController{
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $where = array('code'=>$invite_code,'mobile'=>$mobile,'status'=>1);
         $invite_code_info = $m_merchant->field('id')->where($where)->find();
-        
+
         //$invite_code_info = $m_hotel_invite_code->getInfo('a.id invite_id,a.is_import_customer,a.code,b.id hotel_id,b.name hotel_name,c.is_open_customer', $where);
         if(empty($invite_code_info)) {//输入的邀请码不正确
             $this->to_back(92002);
@@ -46,10 +46,18 @@ class SmsController extends CommonController{
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
         //发送短信
-        $info = array('tel'=>$mobile);
-        $param = $verify_code;
-        $ret = $this->sendToUcPas($info, $param);
-        if($ret){
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $params = array('code'=>$verify_code);
+        $template_code = $ucconfig['send_login_merchant'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>5,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>$verify_code,'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        if($res_data->Code == 'OK'){
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = 'smallappdinner_vcode_'.$mobile;
@@ -68,10 +76,18 @@ class SmsController extends CommonController{
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
         //发送短信
-        $info = array('tel'=>$mobile);
-        $param = $verify_code;
-        $ret = $this->sendToUcPas($info, $param);
-        if($ret){
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $params = array('code'=>$verify_code);
+        $template_code = $ucconfig['send_login_merchant'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>5,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>$verify_code,'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        if($res_data->Code == 'OK'){
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = 'smallappsale_bindmobile_vcode_'.$mobile;
@@ -142,7 +158,7 @@ class SmsController extends CommonController{
         $sjson = $ucpass->templateSMS($appId,$to,$templateId,$param);
         $sjson = json_decode($sjson,true);
         $code = $sjson['resp']['respCode'];
-    
+
         $data = array();
         $data['type'] = 5;
         $data['status'] = 1;
@@ -154,7 +170,7 @@ class SmsController extends CommonController{
         $data['msg_type'] = 2;
         $m_account_sms_log =  new \Common\Model\AccountMsgLogModel();
         $m_account_sms_log->addData($data);
-    
+
         if($code === '000000') {
             return true;
         }else{

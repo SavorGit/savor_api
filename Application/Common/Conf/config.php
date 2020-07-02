@@ -216,6 +216,7 @@ return array(
         'dish_send_buyer'=>'SMS_185811967',
         'dish_send_cartsbuyer'=>'SMS_185811876',
         'send_register_merchant'=>'SMS_183762008',
+        'send_login_merchant'=>'SMS_194920254',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',

@@ -46,10 +46,18 @@ class SmsController extends CommonController{
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
         //发送短信
-        $info = array('tel'=>$mobile);
-        $param = $verify_code;
-        $ret = $this->sendToUcPas($info, $param);
-        if($ret){
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $params = array('code'=>$verify_code);
+        $template_code = $ucconfig['send_login_merchant'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>5,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>$verify_code,'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        if($res_data->Code == 'OK'){
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = 'smallappdinner_vcode_'.$mobile;
@@ -68,10 +76,18 @@ class SmsController extends CommonController{
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
         //发送短信
-        $info = array('tel'=>$mobile);
-        $param = $verify_code;
-        $ret = $this->sendToUcPas($info, $param);
-        if($ret){
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $params = array('code'=>$verify_code);
+        $template_code = $ucconfig['send_login_merchant'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>5,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>$verify_code,'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        if($res_data->Code == 'OK'){
             $redis  =  \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = 'smallappsale_bindmobile_vcode_'.$mobile;

@@ -21,7 +21,7 @@ class WelcomeController extends CommonController{
                 break;
             case 'addwelcome':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'hotel_id'=>1002,'image'=>1002,'rotate'=>1002,
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'box_mac'=>1001,'hotel_id'=>1002,'image'=>1002,'rotate'=>1002,
                     'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,
                     'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002);
                 break;
@@ -125,6 +125,7 @@ class WelcomeController extends CommonController{
         $play_type = $this->params['play_type'];
         $play_date = $this->params['play_date'];
         $timing = $this->params['timing'];
+        $hotel_id = intval($this->params['hotel_id']);
 
         if(empty($image) && empty($backgroundimg_id)){
             $this->to_back(1001);
@@ -135,12 +136,7 @@ class WelcomeController extends CommonController{
                 $this->to_back(1001);
             }
         }
-
         if($box_mac==2){
-            $hotel_id = intval($this->params['hotel_id']);
-            if(empty($hotel_id)){
-                $this->to_back(1001);
-            }
             $box_mac = 0;
             $type = 2;
         }else{
@@ -157,7 +153,6 @@ class WelcomeController extends CommonController{
             if(empty($box_info)){
                 $this->to_back(70001);
             }
-            $hotel_id = $box_info[0]['hotel_id'];
         }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -412,7 +407,7 @@ class WelcomeController extends CommonController{
             $rets = $m_box->getBoxInfo('a.id box_id,c.id room_id,d.id hotel_id',$map);
             $hotel_info = $rets[0];
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
+            $res_staff = $m_staff->getInfo(array('hotel_id'=>$res_welcome['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
             $message['type'] = 1;
             $message['waiterName'] = '';
             $message['waiterIconUrl'] = '';
@@ -444,14 +439,10 @@ class WelcomeController extends CommonController{
                 $cache_key = 'savor_box_'.$v['box_id'];
                 $redis_box_info = $redis->get($cache_key);
                 $box_info = json_decode($redis_box_info,true);
-                $cache_key = 'savor_room_' . $box_info['room_id'];
-                $redis_room_info = $redis->get($cache_key);
-                $room_info = json_decode($redis_room_info, true);
 
-                $hotel_id = $room_info['hotel_id'];
                 $room_id = $box_info['room_id'];
                 $m_staff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+                $res_staff = $m_staff->getInfo(array('hotel_id'=>$res_welcome['hotel_id'],'room_id'=>$room_id));
                 $message['type'] = 1;
                 $message['waiterName'] = '';
                 $message['waiterIconUrl'] = '';

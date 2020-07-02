@@ -190,6 +190,7 @@ class IndexController extends CommonController{
             }else{
                 $is_compress = 1;
             }
+            $is_compress = 0;
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];

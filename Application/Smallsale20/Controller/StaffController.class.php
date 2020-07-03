@@ -189,8 +189,13 @@ class StaffController extends CommonController{
         $cache_key = 'savor_room_'.$room_id;
         $redis_room_info = $redis->get($cache_key);
         $room_info = json_decode($redis_room_info, true);
-        if($room_info['hotel_id']!=$hotel_id){
-            $this->to_back(93029);
+        if(!empty($room_info) && $room_info['hotel_id']!=$hotel_id){
+            $cache_key = C('SMALLAPP_HOTEL_RELATION');
+            $redis->select(2);
+            $res_cache = $redis->get($cache_key.$hotel_id);
+            if(empty($res_cache) || $res_cache!=$room_info['hotel_id']){
+                $this->to_back(93029);
+            }
         }
         if($staff_id){
             $where = array('a.id'=>$staff_id);

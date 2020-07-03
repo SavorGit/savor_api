@@ -1,5 +1,5 @@
 <?php
-namespace Smallsale19\Controller;
+namespace Smallsale20\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class SmsController extends CommonController{

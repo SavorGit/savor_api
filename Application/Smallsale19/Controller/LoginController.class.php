@@ -167,15 +167,11 @@ class LoginController extends CommonController{
         $manage_id = intval($decode_info[0]); //商家管理员id
         
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = [];
-        $where['a.id'] = $manage_id;
-        $where['a.status'] = 1;
-        $where['mt.status'] = 1;
+        $where = array('a.id'=>$manage_id,'a.status'=>1,'mt.status'=>1);
+        $fields = 'mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level';
         $manage_info = $m_staff->alias('a')
-                                 ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
-                                 ->field('mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level')
-                                 ->where($where)->find();
-        
+                                ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
+                                ->field($fields)->where($where)->find();
         if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
         }
@@ -194,7 +190,7 @@ class LoginController extends CommonController{
             $level = 1;
         }
 
-        $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'status'=>1))->find();
+        $staff_info = $m_staff->field('id,level')->where(array('openid'=>$openid,'status'=>1))->find();
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $manage_info['hotel_id'];
@@ -206,9 +202,11 @@ class LoginController extends CommonController{
             }
             
             $map['merchant_id'] = $manage_info['mt_id'];
-            $map['parent_id']   = $manage_id;
             $map['beinvited_time'] = date('Y-m-d H:i:s');
-            $map['level']       = $level;
+            if($staff_info['level']==0){
+                $map['parent_id']   = $manage_id;
+                $map['level']       = $level;
+            }
             $m_staff->updateData(array('id'=>$staff_info['id']), $map);
         }else {//未注册过员工
             $cache_key = C('SAPP_SALE_INVITE_QRCODE');

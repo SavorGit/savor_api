@@ -20,7 +20,7 @@ class LoginController extends CommonController{
     }
     public function login(){
         $mobile = $this->params['mobile'];
-        
+
         $openid = $this->params['openid'];
         $verify_code = trim($this->params['verify_code']);
         $invite_code = trim($this->params['invite_code']);//邀请码
@@ -40,20 +40,20 @@ class LoginController extends CommonController{
         $where['a.mobile'] = $mobile;
         $where['hotel.state'] = 1;
         $where['hotel.flag']  = 0;
-        
+
         $merchant_info = $m_merchant->alias('a')
-                                    ->join('savor_hotel hotel on hotel.id=a.hotel_id','left')
-                                    ->field('a.id,a.type,a.mtype,a.hotel_id,hotel.name hotel_name,a.service_model_id')
-                                    ->where($where)
-                                    ->find();
+            ->join('savor_hotel hotel on hotel.id=a.hotel_id','left')
+            ->field('a.id,a.type,a.mtype,a.hotel_id,hotel.name hotel_name,a.service_model_id')
+            ->where($where)
+            ->find();
         if(empty($merchant_info)) $this->to_back(92008);   //邀请码错误
-        
+
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = [];
         $where['merchant_id'] = $merchant_info['id'];
         $where['status']      = 1;
         $staff_info = $m_staff->field('openid')->where($where)->find();
-        
+
         if(!empty($staff_info) && $openid!=$staff_info['openid']){//已绑定其他用户
             $this->to_back(93013);
         }elseif(!empty($staff_info)&& $openid==$staff_info['openid']){
@@ -71,18 +71,18 @@ class LoginController extends CommonController{
                     $this->to_back(92007);
                 }
                 $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile,
-                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
-                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                    'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                    'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
                 );
             }else{
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $where = array('id'=>$userinfo['user_id']);
                 $m_user->updateInfo($where,$data);
                 $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile,
-                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
-                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                    'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                    'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
                 );
-            } 
+            }
         }else {//插入一条数据到staff表
             $data = [];
             $data['merchant_id'] = $merchant_info['id'];
@@ -106,16 +106,16 @@ class LoginController extends CommonController{
                     $this->to_back(92007);
                 }
                 $userinfo = array('user_id'=>$res,'openid'=>$openid,'mobile'=>$mobile,
-                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
-                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                    'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                    'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
                 );
             }else{
                 $data = array('mobile'=>$mobile,'small_app_id'=>5,'openid'=>$openid,'status'=>1);
                 $where = array('id'=>$userinfo['user_id']);
                 $m_user->updateInfo($where,$data);
                 $userinfo = array('user_id'=>$userinfo['user_id'],'openid'=>$openid,'mobile'=>$mobile,
-                                  'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
-                                  'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
+                    'avatarUrl'=>$userinfo['avatarUrl'],'nickName'=>$userinfo['nickName'],
+                    'status'=>$userinfo['status'],'is_wx_auth'=>$userinfo['is_wx_auth']
                 );
             }
         }
@@ -153,7 +153,7 @@ class LoginController extends CommonController{
             }
         }
         $userinfo['hotel_type'] = $hotel_type;
-        
+
         $this->to_back($userinfo);
     }
     public function scancodeLogin(){
@@ -165,17 +165,13 @@ class LoginController extends CommonController{
         }
         $decode_info = explode('&',$de_qrcode);
         $manage_id = intval($decode_info[0]); //商家管理员id
-        
+
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = [];
-        $where['a.id'] = $manage_id;
-        $where['a.status'] = 1;
-        $where['mt.status'] = 1;
+        $where = array('a.id'=>$manage_id,'a.status'=>1,'mt.status'=>1);
+        $fields = 'mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level';
         $manage_info = $m_staff->alias('a')
-                                 ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
-                                 ->field('mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level')
-                                 ->where($where)->find();
-        
+            ->join('savor_integral_merchant mt on a.merchant_id= mt.id','left')
+            ->field($fields)->where($where)->find();
         if(empty($manage_info)){//商家管理员不存在或已下线
             $this->to_back(93015);
         }
@@ -194,7 +190,7 @@ class LoginController extends CommonController{
             $level = 1;
         }
 
-        $staff_info = $m_staff->field('id')->where(array('openid'=>$openid,'status'=>1))->find();
+        $staff_info = $m_staff->field('id,level')->where(array('openid'=>$openid,'status'=>1))->find();
         if(!empty($staff_info)){//已注册过员工
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $manage_info['hotel_id'];
@@ -204,16 +200,18 @@ class LoginController extends CommonController{
             if($res_room){
                 $userinfo['hotel_has_room'] = 1;
             }
-            
+
             $map['merchant_id'] = $manage_info['mt_id'];
-            $map['parent_id']   = $manage_id;
             $map['beinvited_time'] = date('Y-m-d H:i:s');
-            $map['level']       = $level;
+            if($staff_info['level']==0){
+                $map['parent_id']   = $manage_id;
+                $map['level']       = $level;
+            }
             $m_staff->updateData(array('id'=>$staff_info['id']), $map);
         }else {//未注册过员工
             $cache_key = C('SAPP_SALE_INVITE_QRCODE');
             $code_key = $cache_key.$manage_id.":$de_qrcode";
-            
+
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $res_cache = $redis->get($code_key);
@@ -233,7 +231,7 @@ class LoginController extends CommonController{
 
             $userinfo = $this->getUserinfo($openid);
             $userinfo['hotel_id'] = $manage_info['hotel_id'];
-            
+
             $userinfo['hotel_has_room'] = 0;
             $m_hotel = new \Common\Model\HotelModel();
             $res_room = $m_hotel->getRoomNumByHotelId($manage_info['hotel_id']);
@@ -268,7 +266,7 @@ class LoginController extends CommonController{
     private function getServiceModel($userinfo,$service_model_id){
         $service_list = C('service_list');
         $service_list = array_keys($service_list);
-        
+
         if($userinfo['hotel_id']==-1 || empty($service_model_id)){
             $userinfo['service'] = $service_list;
         }else {
@@ -278,7 +276,7 @@ class LoginController extends CommonController{
             $where = [];
             $where['id']= array('in',$service_id_arr);
             $where['status'] = 1;
-            $m_service = new \Common\Model\Integral\ServiceModel(); 
+            $m_service = new \Common\Model\Integral\ServiceModel();
             $service_ret = $m_service->field('m_name')->where($where)->select();
             $service_temp = [];
             foreach($service_ret as $key=>$v){
@@ -287,7 +285,7 @@ class LoginController extends CommonController{
                 }
             }
             $userinfo['service'] = $service_temp;
-            
+
         }
         return $userinfo;
     }

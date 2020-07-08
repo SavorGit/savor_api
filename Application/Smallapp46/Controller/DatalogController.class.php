@@ -11,10 +11,38 @@ class DatalogController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'data_id'=>1001,'type'=>1001,'action_type'=>1001);
                 break;
+            case 'recordWifiErr':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002,'platform'=>1002);
+                break;
         }
         parent::_init_();
     }
 
+
+    public function recordWifiErr(){
+        $box_mac = $this->params['box_mac'];
+        $openid = $this->params['openid'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+        $platform = $this->params['platform'];
+
+        $err_info = str_replace('\\', '', $this->params['err_info']);
+        $m_err_info = new \Common\Model\Smallapp\WifiErrModel();
+        $data['box_mac'] = $box_mac !='undefined' ? $box_mac :'';
+        $data['openid'] = !empty($openid)?$openid:'';
+        $data['err_info'] = $err_info;
+        if(!empty($mobile_brand))   $data['mobile_brand'] = $mobile_brand;
+        if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
+        if(!empty($platform))       $data['platform'] = $platform;
+        if($data['box_mac']){
+            $m_err_info->addInfo($data);
+            $this->to_back(10000);
+        }else {
+            $this->to_back(30052);
+
+        }
+    }
 
     public function recordlog(){
         $openid = $this->params['openid'];

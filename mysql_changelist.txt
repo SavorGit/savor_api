@@ -117,3 +117,10 @@ CREATE TABLE IF NOT EXISTS `savor_smallapp_refund` (
   `add_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='退款';
+
+
+增加说明：新增红包业务相关表
+修改时间：2020-07-09 16:15
+修改人：张英涛
+执行SQL：
+ALTER TABLE  savor_smallapp_forscreen_record ADD COLUMN `serial_num` VARCHAR(50) NOT NULL DEFAULT '' AFTER `id`;

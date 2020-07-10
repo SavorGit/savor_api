@@ -344,7 +344,7 @@ class IndexController extends CommonController{
         $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
         $data['is_share']    = $is_share;
         $data['duration']    = $duration;
-        if($serial_number) $data['$serial_number'] = $serial_number;
+        if($serial_number) $data['serial_number'] = $serial_number;
         
         if($forscreen_id)  $data['forscreen_id'] = $forscreen_id;
     

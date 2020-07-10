@@ -123,4 +123,4 @@ CREATE TABLE IF NOT EXISTS `savor_smallapp_refund` (
 修改时间：2020-07-09 16:15
 修改人：张英涛
 执行SQL：
-ALTER TABLE  savor_smallapp_forscreen_record ADD COLUMN `serial_num` VARCHAR(50) NOT NULL DEFAULT '' AFTER `id`;
+ALTER TABLE  savor_smallapp_forscreen_record ADD COLUMN `serial_number` VARCHAR(50) NOT NULL DEFAULT '' AFTER `id`;

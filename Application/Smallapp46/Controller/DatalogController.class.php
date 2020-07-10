@@ -42,7 +42,7 @@ class DatalogController extends CommonController{
         if(!empty($platform))       $data['platform'] = $platform;
         if(!empty($system))         $data['system']   = $system;
         if(!empty($version))        $data['version']  = $version;
-        print_r($data);exit;
+        
         if($data['box_mac']){
             $m_err_info->addInfo($data);
             $this->to_back(10000);

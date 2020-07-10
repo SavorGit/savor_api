@@ -9,7 +9,7 @@ class BuriedPointController extends CommonController{
             case 'boxNetLogs':
                 $this->is_verify = 1;
                 $this->valid_fields = array('req_id'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,'box_mac'=>1001,
-                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,'receive_nettytime'=>1002);
+                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,'receive_nettytime'=>1002,'is_download'=>1002);
                 break;
             case 'boxReceiveNetty':
                 $this->is_verify = 1;
@@ -51,7 +51,8 @@ class BuriedPointController extends CommonController{
         $box_mac      = $this->params['box_mac'];
         $used_time    = abs($this->params['used_time']);//用时
         $is_exist     = intval($this->params['is_exist']);//是否存在
-        $is_exit     = intval($this->params['is_exit']);//是否退出
+        $is_exit      = intval($this->params['is_exit']);//是否退出
+        $is_download  = intval($this->params['is_download']);//是否下载完成
         $is_break     = $this->params['is_break'];
         $receive_nettytime = $this->params['receive_nettytime'];
 
@@ -95,6 +96,23 @@ class BuriedPointController extends CommonController{
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
+        if($is_download==1){
+            $box_finish_downtime = getMillisecond();
+
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(5);
+            $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
+            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+                'box_mac'=>$box_mac,'box_finish_downtime'=>$box_finish_downtime);
+            $redis->rpush($cache_key, json_encode($data));
+            
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $params = array(
+                'box_finish_downtime'=>$box_finish_downtime,
+            );
+            $m_forscreen->recordTrackLog($req_id,$params);
+            $this->to_back(10000);
+        }
         if(!$is_exit){
             switch ($is_exist){
                 case 1://资源已存在于机顶盒，不走下载逻辑

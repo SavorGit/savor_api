@@ -13,7 +13,10 @@ class DatalogController extends CommonController{
                 break;
             case 'recordWifiErr':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'openid'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002,'platform'=>1002);
+                $this->valid_fields = array('box_mac'=>1000,'err_info'=>1000,'openid'=>1001,'mobile_brand'=>1001,
+                                            'mobile_model'=>1001,'platform'=>1001,
+                                            'system'=>1001,'version'=>1001,
+                );
                 break;
         }
         parent::_init_();
@@ -26,6 +29,8 @@ class DatalogController extends CommonController{
         $mobile_brand = $this->params['mobile_brand'];
         $mobile_model = $this->params['mobile_model'];
         $platform = $this->params['platform'];
+        $system   = $this->params['system'];
+        $version  = $this->params['version'];
 
         $err_info = str_replace('\\', '', $this->params['err_info']);
         $m_err_info = new \Common\Model\Smallapp\WifiErrModel();
@@ -35,6 +40,9 @@ class DatalogController extends CommonController{
         if(!empty($mobile_brand))   $data['mobile_brand'] = $mobile_brand;
         if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
         if(!empty($platform))       $data['platform'] = $platform;
+        if(!empty($system))         $data['system']   = $system;
+        if(!empty($version))        $data['version']  = $version;
+        print_r($data);exit;
         if($data['box_mac']){
             $m_err_info->addInfo($data);
             $this->to_back(10000);

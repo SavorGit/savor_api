@@ -13,9 +13,9 @@ class DatalogController extends CommonController{
                 break;
             case 'recordWifiErr':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1000,'err_info'=>1000,'openid'=>1001,'mobile_brand'=>1001,
-                                            'mobile_model'=>1001,'platform'=>1001,
-                                            'system'=>1001,'version'=>1001,
+                $this->valid_fields = array('box_mac'=>1001,'err_info'=>1001,'openid'=>1001,'mobile_brand'=>1000,
+                                            'mobile_model'=>1000,'platform'=>1000,
+                                            'system'=>1000,'version'=>1000,
                 );
                 break;
         }

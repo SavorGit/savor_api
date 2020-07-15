@@ -838,10 +838,10 @@ class FindController extends CommonController{
         $order = 'a.res_type desc,a.create_time desc';
         $maps = array();
         $maps['a.forscreen_id'] = $forscreen_id;
-        $maps['hotel.state'] = 1;
+        /*$maps['hotel.state'] = 1;
         $maps['hotel.flag']  = 0;
         $maps['box.flag']    = 0;
-        $maps['box.state']   = 1;
+        $maps['box.state']   = 1;*/
         $rec_pub_list = $m_public->getList($fields, $maps);
         $pub_info = $rec_pub_list[0];
         $oss_host = 'http://'. C('OSS_HOST').'/';

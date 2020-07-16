@@ -146,8 +146,20 @@ class BaseIncModel extends Model{
                     $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
                     $where = array('id'=>$result_order[0]['user_id']);
                     $user_info = $m_user->getOne('*',$where,'');
+                    $head_pic = '';
+                    if(!empty($user_info['avatarUrl'])){
+                        $head_pic = base64_encode($user_info['avatarUrl']);
+                    }
                     $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                        'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                        'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+
+                    $m_box = new \Common\Model\BoxModel();
+                    $bwhere = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                    $res_box = $m_box->getBoxInfo('a.is_4g',$bwhere);
+                    if(!empty($res_box) && $res_box[0]['is_4g']==1){
+                        $message['avatarUrl'] = '';
+                    }
+
                     $m_netty->pushBox($result_order[0]['mac'],json_encode($message));
 
                     $log_content = '订单号:'.$trade_no.' 当前包间红包小程序码:'.$mpcode;
@@ -163,8 +175,18 @@ class BaseIncModel extends Model{
                             foreach ($all_box as $v){
                                 $qrinfo =  $trade_no.'_'.$v;
                                 $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                                $head_pic = '';
+                                if(!empty($user_info['avatarUrl'])){
+                                    $head_pic = base64_encode($user_info['avatarUrl']);
+                                }
                                 $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                                    'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                                    'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+
+                                $bwhere = array('a.mac'=>$v,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                                $res_box = $m_box->getBoxInfo('a.is_4g',$bwhere);
+                                if(!empty($res_box) && $res_box[0]['is_4g']==1){
+                                    $message['avatarUrl'] = '';
+                                }
                                 $m_netty->pushBox($v,json_encode($message));
                             }
                         }

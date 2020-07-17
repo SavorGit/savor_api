@@ -567,7 +567,11 @@ class RedpacketController extends CommonController{
 
                     //增加电视弹幕推送
                     $user_info = $m_user->getOne('*',array('id'=>$grab_user_id),'');
-                    $user_barrages[] = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+                    $head_pic = '';
+                    if(!empty($user_info['avatarUrl'])){
+                        $head_pic = base64_encode($user_info['avatarUrl']);
+                    }
+                    $user_barrages[] = array('nickName'=>$user_info['nickName'],'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
                     //end
 
                     //红包黑名单
@@ -598,9 +602,18 @@ class RedpacketController extends CommonController{
                     }
                 }
                 if(!empty($user_barrages)){
+                    $m_box = new \Common\Model\BoxModel();
+                    $bwhere = array('a.mac'=>$res_order['mac'],'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                    $res_box = $m_box->getBoxInfo('a.is_4g',$bwhere);
+                    if(!empty($res_box) && $res_box[0]['is_4g']==1){
+                        foreach ($user_barrages as $k=>$v){
+                            $user_barrages[$k]['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+                        }
+                    }
                     $message = array('action'=>122,'userBarrages'=>$user_barrages);
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
                 }
+
                 if(empty($unused_bonus)){
                     $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){

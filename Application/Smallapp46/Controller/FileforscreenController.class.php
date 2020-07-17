@@ -62,6 +62,9 @@ class FileforscreenController extends CommonController{
             $data['save_type'] = $save_type;
         }
 
+        $m_uploadtimes = new \Common\Model\Smallapp\UploadtimesModel();
+        $m_uploadtimes->addUploadtimes($data);
+
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');
         $endpoint = 'oss-cn-beijing.aliyuncs.com';

@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `savor_smallapp_refund` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='退款';
 
 
-增加说明：新增红包业务相关表
+增加说明：电视互动新增唯一序列号
 修改时间：2020-07-09 16:15
 修改人：张英涛
 执行SQL：

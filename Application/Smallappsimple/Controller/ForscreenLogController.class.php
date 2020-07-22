@@ -48,7 +48,8 @@ class ForscreenLogController extends CommonController{
         $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;                  //是否公开
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;               //视频时长
         $small_app_id  = $this->params['small_app_id'] ? $this->params['small_app_id'] :1;
-        $create_time   = $this->params['create_time'] ? $this->params['create_time'] :  date('Y-m-d H:i:s');
+        $create_time   = $this->params['create_time'] ? date('Y-m-d H:i:s',$this->params['create_time']/1000) :  date('Y-m-d H:i:s');
+        $serial_number = $this->params['serial_number'] ? $this->params['serial_number'] :'';
         $data = array();
         $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
@@ -68,6 +69,7 @@ class ForscreenLogController extends CommonController{
         $data['is_share']    = $is_share;
         $data['duration']    = $duration;
         $data['small_app_id']= $small_app_id;
+        if(!empty($serial_number)) $data['serial_number'] = $serial_number;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $cache_key = C('SAPP_SCRREN').":".$box_mac;

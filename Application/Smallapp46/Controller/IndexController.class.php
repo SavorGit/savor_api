@@ -4,6 +4,7 @@ use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
 use Common\Lib\Qrcode;
+use Common\Lib\AliyunOss;
 class IndexController extends CommonController{
     /**
      * @desc 构造函数

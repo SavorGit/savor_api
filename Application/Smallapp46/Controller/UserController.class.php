@@ -54,13 +54,23 @@ class UserController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid', $where);
         $data = array();
         if(empty($userinfo)){
             $data['openid'] = $openid;
             $data['status'] = 1;
             $m_user->addInfo($data);
             $userinfo['openid'] = $openid;
+            $userinfo['subscribe'] = 0;
+        }else {
+            if(!empty($userinfo['wx_mpopenid'])){
+                $wechat = new \Common\Lib\Wechat();
+                $access_token = $wechat->getWxAccessToken();
+                $res = $wechat->getWxUserDetail($access_token ,'o5mZpw4cUfhsqqQRroL8oKswnLQ0');
+                $userinfo['subscribe'] = $res['subscribe'];
+            }else {
+                $userinfo['subscribe'] = 0;
+            }
         }
         $data['userinfo'] = $userinfo;
         if(!empty($box_mac) && $box_mac!='undefined'){

@@ -8,7 +8,7 @@ namespace H5\Controller;
 use Think\Controller;
 
 class OfficialController extends Controller {
-    private $jumpUrl = 'https://mp.weixin.qq.com/s/39w1-K53lT9McBSR59BJcQ';
+    //private $jumpUrl = C('OFFICIAL_ACCOUNT_ARTICLE_URL');
     public function getUserInfo(){
         $params = I('p','');
         $code = I('code', '');
@@ -35,7 +35,7 @@ class OfficialController extends Controller {
             $wechat->wx_oauth($url);
         }else {
             $this->assign('openid',$user_info['wx_mpopenid']);
-            $this->assign('jumpurl',$this->jumpUrl);
+            $this->assign('jumpurl',C('OFFICIAL_ACCOUNT_ARTICLE_URL'));
             $this->display('getuserinfo');
         }
         
@@ -75,7 +75,7 @@ class OfficialController extends Controller {
                             break;
                     }
                     $this->assign('openid',$wx_mpopenid);
-                    $this->assign('jumpurl',$this->jumpUrl);
+                    $this->assign('jumpurl',C('OFFICIAL_ACCOUNT_ARTICLE_URL'));
                     $this->display('getuserinfo');
                 }
             }

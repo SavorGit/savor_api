@@ -476,5 +476,6 @@ return array(
         '3'=>4,
     ),
     'GIFT_MESSAGE'=>'这份我最爱的礼物，送给与我同行的同路人，愿你万事顺遂～',
+    'OFFICIAL_ACCOUNT_ARTICLE_URL'=>'https://mp.weixin.qq.com/s/39w1-K53lT9McBSR59BJcQ',
 
 );

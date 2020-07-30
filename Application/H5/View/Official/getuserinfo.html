@@ -9,35 +9,20 @@
 <script type="text/javascript" charset="UTF-8" src="https://res.wx.qq.com/open/js/jweixin-1.3.2.js"></script>
 <script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/core/1.11.1/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" charset="UTF-8" >
-    /*wx.miniProgram.getEnv(function(res) {
-        if(res.miniprogram) {
-            wx.miniProgram.navigateTo({
-                url: "/pages/hotel/waiter_evaluate?openid={$openid}&box_id={$box_id}"
-            });
-        }
-    });*/
+    
     var openid = $('#openid').val();
     var jumpurl = $('#jumpurl').val();
-    if(openid !=''){
-    	wx.miniProgram.getEnv(function(res) {
-        	
-            if(res.miniprogram) {
-                wx.miniProgram.redirectTo({
-                    //url: "/pages/hotel/waiter_evaluate?openid={$openid}&box_id={$box_id}"
-                	url: "/pages/h5/index?h5_url="+jumpurl
-                });
-            }
-        });
-    }
-    /*wx.miniProgram.getEnv(function(res) {
-    	console.log(res);
-        if(res.miniprogram && openid!='') {
-            wx.miniProgram.navigateTo({
-                //url: "/pages/hotel/waiter_evaluate?openid={$openid}&box_id={$box_id}"
-            	url: "/pages/h5/index?h5_url="+jumpurl
-            });
-        }
-    });*/
+    //if(openid !=''){
+   	wx.miniProgram.getEnv(function(res) {
+       	
+           if(res.miniprogram) {
+               wx.miniProgram.redirectTo({
+               	url: "/pages/h5/index?h5_url="+jumpurl
+               });
+           }
+       });
+    //}
+    
 </script>
 
 </body>

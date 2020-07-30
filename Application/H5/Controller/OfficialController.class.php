@@ -82,9 +82,10 @@ class OfficialController extends Controller {
         }
     }
     public function testone(){
+        $openid= I('openid');
         $wechat = new \Common\Lib\Wechat();
         $access_token = $wechat->getWxAccessToken();
-        $res = $wechat->getWxUserDetail($access_token ,'o5mZpw4cUfhsqqQRroL8oKswnLQ0');
+        $res = $wechat->getWxUserDetail($access_token ,$openid);
         print_r($res);exit;
     }
 }

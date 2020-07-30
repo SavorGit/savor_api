@@ -66,7 +66,7 @@ class UserController extends CommonController{
             if(!empty($userinfo['wx_mpopenid'])){
                 $wechat = new \Common\Lib\Wechat();
                 $access_token = $wechat->getWxAccessToken();
-                $res = $wechat->getWxUserDetail($access_token ,'o5mZpw4cUfhsqqQRroL8oKswnLQ0');
+                $res = $wechat->getWxUserDetail($access_token ,$userinfo['wx_mpopenid']);
                 $userinfo['subscribe'] = $res['subscribe'];
             }else {
                 $userinfo['subscribe'] = 0;

@@ -28,6 +28,7 @@ class ForscreenController extends CommonController{
             $data['is_sapp_forscreen'] = 0;
             $data['is_simple_sapp_forscreen'] = 0;
             $data['is_open_interactscreenad'] = 0;
+            $data['is_open_netty'] = 0;
             $this->to_back($data);
         }else if($versionCode>=$box_min_version_code){//上线前替换1234
             $m_box = new \Common\Model\BoxModel();
@@ -41,7 +42,7 @@ class ForscreenController extends CommonController{
             }
             $m_sys_config = new \Common\Model\SysConfigModel();
             $sys_info = $m_sys_config->getAllconfig();
-            
+            $data['is_open_netty']             = intval($box_info['is_open_netty']);
             $data['is_sapp_forscreen']         = intval($box_info['is_sapp_forscreen']);
             $data['is_simple_sapp_forscreen']  = intval($box_info['is_open_simple']);
             $data['is_open_interactscreenad']  = intval($box_info['is_open_interactscreenad']);

@@ -23,8 +23,8 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'recodeQrcodeLog':
-                $this->is_verify= 0;
-                $this->valid_fields = array('openid'=>1001,'type'=>1001);
+                $this->is_verify= 1;
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002);
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
@@ -216,18 +216,33 @@ class IndexController extends CommonController{
     }
 
 
+    /*
+     * type 1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码8:小程序二维码9:极简版节目大码
+     * 10:极简版大码11:极简版呼玛12:大二维码（节目）13:小程序呼二维码 15:大二维码（新节目）16：极简版二维码19:极简版节目大二维码
+     * 20:极简版大二维码21:极简版呼二维码22购物二维码 23销售二维码 24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
+     */
     public function recodeQrcodeLog(){
         $openid = $this->params['openid'];
-        $type   = intval($this->params['type']);
-        $data = array();
-        $data['box_mac'] = '';
-        $data['openid']  = $openid;
-        $data['type']    = $type;
-        $data['is_overtime'] = 0;
+        $type = intval($this->params['type']);
+        $data_id = intval($this->params['data_id']);
+        $box_id = intval($this->params['box_id']);
+
+        $data = array('openid'=>$openid,'type'=>$type,'is_overtime'=>0,'data_id'=>$data_id);
+        if($box_id){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $redis_box_info = $redis->get($cache_key);
+            if(!empty($redis_box_info)){
+                $box_info = json_decode($redis_box_info,true);
+                $data['box_mac'] = $box_info['mac'];
+            }
+        }
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
         $this->to_back(10000);
     }
+
     /**
      * @desc 扫码链接电视
      */

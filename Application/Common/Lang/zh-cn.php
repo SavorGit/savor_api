@@ -358,6 +358,7 @@ return array(
     'smallapp_order_givegift_had_receive'=>'当前转赠礼品已被领取',
     'smallapp_order_givegift_num_error'=>'您需要将%d件商品进行分配',
     'smallapp_order_givegift_success'=>'该商品已转增成功，无法自己领取',
+    'smallappsale_signin_num_upper_limit'=>'当天签到次数已达上限',
 
 
 );

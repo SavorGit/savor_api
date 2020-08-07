@@ -236,12 +236,11 @@ class WelcomeController extends CommonController{
             $m_box = new \Common\Model\BoxModel();
             foreach ($res_welcome['list'] as $k=>$v){
                 $box_mac = $v['box_mac'];
-                $res_box = $m_box->getInfoByHotelid($hotel_id,'box.name'," and box.mac='$box_mac' and box.state=1 and box.flag=0");
-
+                $res_box = $m_box->getHotelInfoByBoxMacNew($box_mac);
                 if(empty($res_box)){
                     $room_name = '全部包间';
                 }else{
-                    $room_name = $res_box[0]['name'];
+                    $room_name = $res_box['box_name'];
                 }
                 if($v['play_type']==1){
                     $start_time = date('Y-m-d H:i',strtotime($v['add_time']));

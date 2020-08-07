@@ -177,7 +177,8 @@ class IndexController extends CommonController{
             $m_box = new \Common\Model\BoxModel();
             $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
             $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,
-                'forscreen_type'=>$forscreen_info['forscreen_type'],'intranet_ip'=>$intranet_ip);
+                'forscreen_type'=>$forscreen_info['forscreen_type'],'forscreen_method'=>$forscreen_info['forscreen_method'],
+                'intranet_ip'=>$intranet_ip);
             if(isset($forscreen_info['box_id'])){
                 $redis->select(15);
                 $cache_key = 'savor_box_'.$forscreen_info['box_id'];

@@ -79,6 +79,7 @@ class BoxModel extends Model{
                 ->limit($limit)
                 ->find();
             $forscreen_type = 1;//1外网(主干) 2直连(极简)
+            $box_forscreen = '1-0';
             if(!empty($res_box)){
                 $box_id = $res_box['box_id'];
                 $box_forscreen = "{$res_box['is_sapp_forscreen']}-{$res_box['is_open_simple']}";
@@ -90,7 +91,7 @@ class BoxModel extends Model{
                         $forscreen_type = 2;
                         break;
                     case '1-1':
-                        if(in_array($res_box['box_type'],array(3,6))){
+                        if(in_array($res_box['box_type'],array(3,6,7))){
                             $forscreen_type = 2;
                         }elseif($res_box['box_type']==2){
                             $forscreen_type = 1;
@@ -102,7 +103,7 @@ class BoxModel extends Model{
             }else{
                 $box_id = 0;
             }
-            $forscreen_info = array('box_id'=>$box_id,'forscreen_type'=>$forscreen_type);
+            $forscreen_info = array('box_id'=>$box_id,'forscreen_type'=>$forscreen_type,'forscreen_method'=>$box_forscreen);
             $redis->set($box_key,json_encode($forscreen_info));
         }
         return $forscreen_info;

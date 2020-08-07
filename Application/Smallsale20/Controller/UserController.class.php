@@ -295,9 +295,22 @@ class UserController extends CommonController{
             if($res_usersign['signout_time']=='0000-00-00 00:00:00'){
                 $m_usersign->updateData(array('id'=>$pre_id),array('signout_time'=>$signinfo['signout_time']));
             }
+        }else{
+            $pre_time = time();
+            $signinfo = $this->checkSigninTime($pre_time);
         }
 
         $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
+        $where = array('openid'=>$openid,'box_mac'=>$box_mac);
+        $now_date = date('Y-m-d');
+        $begin_time = $now_date." 00:00:00";
+        $end_time = $now_date." 23:59:59";
+        $where['add_time'] = array(array('egt',$begin_time),array('elt',$end_time), 'and');
+        $res_sign = $m_usersign->getDataList('id',$where,'id desc',0,1);
+        if($res_sign['total']>=2 || $signinfo['is_signin']==2){
+            $this->to_back(93052);
+        }
+
         $add_data = array('openid'=>$openid,'box_mac'=>$box_mac,'signin_time'=>date('Y-m-d H:i:s'));
         $id = $m_usersign->addData($add_data);
 
@@ -853,12 +866,13 @@ class UserController extends CommonController{
             $over_time = $lunch_etime;
         }elseif($pre_time>=$lunch_stime && $pre_time<=$lunch_etime){
             $over_time = $lunch_etime;
-        }elseif($pre_time>$lunch_etime){
+        }elseif($pre_time>$lunch_etime && $pre_time<=$dinner_etime){
             $over_time = $dinner_etime;
         }else{
-            $over_time = $dinner_etime;
+            $over_time = '';
+            $is_signin = 2;
         }
-        if($now_time > $over_time){
+        if(!empty($over_time) && $now_time>$over_time){
             $is_signin = 1;
         }
         $res = array('is_signin'=>$is_signin,'signout_time'=>$over_time);

@@ -375,6 +375,7 @@ return array(
 	    '93049'=>'smallappsale_exchange_day_money_upper_limit',
 	    '93050'=>'smallappsale_exchange_money_error',
 	    '93051'=>'smallappsale_goods_amount_gt_zero',
+	    '93052'=>'smallappsale_signin_num_upper_limit',
 
 	),
 );

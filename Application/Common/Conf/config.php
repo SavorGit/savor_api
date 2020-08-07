@@ -393,7 +393,7 @@ return array(
             '愿你们百年好合永结同心！','祝相爱年年岁岁，相知岁岁年年！'
         ),
     ),
-
+    'WX_UBLACKLIST'=>array('o9GS-4qaJwiz9uJz2wvVU45eP5-Y','o9GS-4u6wf_l-YQ2jB31juYUfW6c'),
 
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
        1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',

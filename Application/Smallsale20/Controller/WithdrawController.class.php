@@ -62,6 +62,12 @@ class WithdrawController extends CommonController{
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
 
+        $openids = C('WX_UBLACKLIST');
+        $is_inlist = 0;
+        if(in_array($openid,$openids)){
+            $is_inlist = 1;
+        }
+
         $exchange_num = 1;
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'exchange:'.'openid'.$openid.date('Ymd');
@@ -105,6 +111,11 @@ class WithdrawController extends CommonController{
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $add_data = array('openid'=>$openid,'goods_id'=>$id,'price'=>$res_goods['price'],'hotel_id'=>$hotel_id,
             'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+        if($is_inlist){
+            $add_data['audit_status'] = 2;
+            $res_goods['is_audit'] = 1;
+        }
+
         $order_id = $m_order->add($add_data);
 
         $m_hotel = new \Common\Model\HotelModel();

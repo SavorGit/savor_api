@@ -340,8 +340,8 @@ class UserController extends CommonController{
         $org_arr = array();
         foreach($data as $key=>$v){
             $info = json_decode($v,true);
-            $org_arr[] = $info['forscreen_id'].'_'.$info['resource_id'];
-            
+            //$org_arr[] = $info['forscreen_id'].'_'.$info['resource_id'];
+            $org_arr[] = $info['forscreen_id'];
         }
         
         
@@ -354,10 +354,10 @@ class UserController extends CommonController{
             $info = json_decode($v,true);
             $action = $info['action'];
             $resource_type = $info['resource_type'];
-            if($action ==4 || ($action==2 and $resource_type==2)
-                || $action==11 || $action==12  ){
-        
-                $tmp = $info['forscreen_id'].'_'.$info['resource_id'];
+            //if($action ==4 || ($action==2 and $resource_type==2) || $action==11 || $action==12  ){
+            if($action ==4 || ($action==2 and $resource_type==2)){
+                //$tmp = $info['forscreen_id'].'_'.$info['resource_id'];
+                $tmp = $info['forscreen_id'];
                 if(!in_array($tmp, $org_arr)){
                     $is_forscreen = 1;
                     break;

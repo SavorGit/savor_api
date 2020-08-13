@@ -61,9 +61,10 @@ class UserController extends CommonController{
             $data['status'] = 1;
             $m_user->addInfo($data);
             $userinfo['openid'] = $openid;
-            $userinfo['subscribe'] = 0;
+            //$userinfo['subscribe'] = 0;
+            $userinfo['subscribe'] = 1;
         }else {
-            if(!empty($userinfo['wx_mpopenid'])){
+            /*if(!empty($userinfo['wx_mpopenid'])){
                 $wechat = new \Common\Lib\Wechat();
                 $access_token = $wechat->getWxAccessToken();
                 if(!empty($$access_token)){
@@ -75,7 +76,8 @@ class UserController extends CommonController{
                 
             }else {
                 $userinfo['subscribe'] = 0;
-            }
+            }*/
+            $userinfo['subscribe'] = 1;
         }
         $data['userinfo'] = $userinfo;
         if(!empty($box_mac) && $box_mac!='undefined'){

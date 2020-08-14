@@ -102,7 +102,7 @@ class IndexController extends CommonController{
         $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $key, true));
     
         $response              = array();
-        $response['accessid']  = $id;
+        //$response['accessid']  = $id;
         $response['host']      = $host;
         $response['policy']    = $base64_policy;
         $response['signature'] = $signature;

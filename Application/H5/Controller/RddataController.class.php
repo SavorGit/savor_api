@@ -115,14 +115,19 @@ class RddataController extends Controller {
         $beginweek = mktime(0,0,0,date('m'),date('d')-date('w')+1,date('y'));
         $begin_week_date = date('Y-m-d',$beginweek);
         $end_week_date = date('Y-m-d',strtotime('-1 day'));
-        $week_dates = $m_statichotel->getDates($begin_week_date,$end_week_date,2);
-        $week_where = array('date'=>array('in',$week_dates));
-        if($area_id){
-            $week_where['area_id'] = $area_id;
+
+        if($begin_week_date>$end_week_date){
+            $week = array('interact_num'=>0);
+        }else{
+            $week_dates = $m_statichotel->getDates($begin_week_date,$end_week_date,2);
+            $week_where = array('date'=>array('in',$week_dates));
+            if($area_id){
+                $week_where['area_id'] = $area_id;
+            }
+            $fields = 'sum(interact_num) as interact_num';
+            $res_week = $m_statichotel->getDataList($fields,$week_where,'');
+            $week = $res_week[0];
         }
-        $fields = 'sum(interact_num) as interact_num';
-        $res_week = $m_statichotel->getDataList($fields,$week_where,'');
-        $week = $res_week[0];
         $week_interact_num_color = 0;
         if($week['interact_num']>$last_week['interact_num']){
             $week_interact_num_color = 1;

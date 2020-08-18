@@ -294,6 +294,10 @@ return array(
 	    '90151'=>'smallapp_order_givegift_had_receive',
 	    '90152'=>'smallapp_order_givegift_num_error',
 	    '90153'=>'smallapp_order_givegift_success',
+	    '90154'=>'smallapp_comment_err',
+	    
+	    '90155'=>'smallapp_comment_score_err',
+	    '90156'=>'smallapp_comment_staff_empty',
 
 
 

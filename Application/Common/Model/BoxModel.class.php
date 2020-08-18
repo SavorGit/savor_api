@@ -66,7 +66,7 @@ class BoxModel extends Model{
         if(!empty($res_forscreen)){
             $forscreen_info = json_decode($res_forscreen,true);
         }else{
-            $fields = 'box.id as box_id,box.box_type,box.is_sapp_forscreen,box.is_open_simple';
+            $fields = 'box.id as box_id,box.box_type,box.is_sapp_forscreen,box.is_open_simple,box.is_open_popcomment';
             $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0,'hotel.state'=>1,'hotel.flag'=>0);
             $order = 'box.id desc';
             $limit = '0,1';
@@ -81,6 +81,7 @@ class BoxModel extends Model{
             $forscreen_type = 1;//1外网(主干) 2直连(极简)
             $box_forscreen = '1-0';
             if(!empty($res_box)){
+                $is_open_popcomment = $res_box['is_open_popcomment'];
                 $box_id = $res_box['box_id'];
                 $box_forscreen = "{$res_box['is_sapp_forscreen']}-{$res_box['is_open_simple']}";
                 switch ($box_forscreen){
@@ -103,8 +104,9 @@ class BoxModel extends Model{
                 }
             }else{
                 $box_id = 0;
+                $is_open_popcomment = 0;
             }
-            $forscreen_info = array('box_id'=>$box_id,'forscreen_type'=>$forscreen_type,'forscreen_method'=>$box_forscreen);
+            $forscreen_info = array('is_open_popcomment'=>$is_open_popcomment,'box_id'=>$box_id,'forscreen_type'=>$forscreen_type,'forscreen_method'=>$box_forscreen);
             $redis->set($box_key,json_encode($forscreen_info));
         }
         return $forscreen_info;

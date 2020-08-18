@@ -28,7 +28,7 @@ class IndexController extends CommonController{
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002);
                 break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
@@ -176,9 +176,10 @@ class IndexController extends CommonController{
 
             $m_box = new \Common\Model\BoxModel();
             $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+            
             $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,
                 'forscreen_type'=>$forscreen_info['forscreen_type'],'forscreen_method'=>$forscreen_info['forscreen_method'],
-                'intranet_ip'=>$intranet_ip);
+                'intranet_ip'=>$intranet_ip,'is_open_popcomment'=>$forscreen_info['is_open_popcomment']);
             if(isset($forscreen_info['box_id'])){
                 $redis->select(15);
                 $cache_key = 'savor_box_'.$forscreen_info['box_id'];
@@ -190,12 +191,12 @@ class IndexController extends CommonController{
                 $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
                 $redis_hotel_info = $redis->get($cache_key);
                 $res_hotel = json_decode($redis_hotel_info, true);
-
+                
                 $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
-                    'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac']);
+                    'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id']);
             }else{
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('a.id box_id,a.box_type,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
             if($hotel_info['box_type']==6){
@@ -204,6 +205,45 @@ class IndexController extends CommonController{
                 $is_compress = 1;
             }
             $is_compress = 0;
+            //$data['is_open_popcomment'] = 0;
+            //是否打开开关     是否有服务员并且2小时内评价过
+            if($data['is_open_popcomment']==1 && !empty($this->params['pop_eval'])){
+                //1、是否有服务员
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
+                
+                if(!empty($res_staff)){//如果有服务员并且两小时内是否有评价
+                    $m_comment = new \Common\Model\Smallapp\CommentModel();
+                    $comment_time = date('Y-m-d H:i:s',strtotime('-2 hours'));
+                    $comment_count = $m_comment->isHaveComment($openid,$comment_time);
+                    //print_r($comment_count);exit;
+                    if(empty($comment_count)){
+                       $data['is_open_popcomment'] = 1;
+                       $staff_openid = $res_staff['openid'];
+                       $where = array('openid'=>$staff_openid);
+                       $m_user = new \Common\Model\Smallapp\UserModel();
+                       $where = array('openid'=>$staff_openid);
+                       $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
+                       $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName']);
+                       $data['staff_user_info'] = $staffuser_info;
+                       $m_tags = new \Common\Model\Smallapp\TagsModel();
+                       $fields = 'id,name';
+                       $where = array('status'=>1,'category'=>1);
+                       $where['hotel_id'] = array('in',array($hotel_info['hotel_id'],0));
+                       $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
+                       foreach ($res_tags as $v){
+                           $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
+                       }
+                       $data['tags'] = $tags;
+                    }else {
+                        $data['is_open_popcomment'] = 0;
+                    }  
+                    
+                }else {
+                    $data['is_open_popcomment'] = 0;
+                }
+            }
+            
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];

@@ -2,7 +2,7 @@
 namespace Smallapp46\Controller;
 use \Common\Controller\CommonController as CommonController;
 
-class CommnetController extends CommonController{
+class CommentController extends CommonController{
     /**
      * 构造函数
      */
@@ -21,7 +21,7 @@ class CommnetController extends CommonController{
         $openid = $this->params['openid'];
         
         $score  = intval($this->params['score']);
-        $conent = $this->params['content'];
+        $content = $this->params['content'];
         $staff_id = $this->params['staff_id'];
         if($score>5){
             $this->to_back(90155);
@@ -50,12 +50,13 @@ class CommnetController extends CommonController{
             $data['staff_id']= $staff_id;
             $data['user_id'] = $user_info['id'];
             $data['score']   = $score;
-            $data['conent']  = $conent;
+            $data['content']  = $content;
+            $data['status']  = 1;
             
             
             $ret = $m_comment->add($data);
             if($ret){
-                $this->to_back(1000);
+                $this->to_back(10000);
             }else {
                 $this->to_back(90154);
             }

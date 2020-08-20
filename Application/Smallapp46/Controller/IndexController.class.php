@@ -253,6 +253,12 @@ class IndexController extends CommonController{
         }else{
             $data = array('is_have'=>0);
         }
+        $forscreen_openids = C('COLLECT_FORSCREEN_OPENIDS');
+        $is_test = 0;
+        if(array_key_exists($openid,$forscreen_openids)){
+            $is_test = 1;
+        }
+        $data['is_test'] = $is_test;
         $this->to_back($data);
     }
 

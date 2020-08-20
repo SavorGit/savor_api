@@ -249,6 +249,8 @@ class IndexController extends CommonController{
                     $data['tags'] = [];
                     $data['staff_user_info'] = [];
                 }
+            }else {
+                $data['is_open_popcomment'] = 0;
             }
             
             $data['box_id'] = $hotel_info['box_id'];

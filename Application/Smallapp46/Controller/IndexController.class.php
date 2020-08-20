@@ -213,10 +213,13 @@ class IndexController extends CommonController{
                 $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
                 
                 if(!empty($res_staff)){//如果有服务员并且两小时内是否有评价
-                    $m_comment = new \Common\Model\Smallapp\CommentModel();
+                    /* $m_comment = new \Common\Model\Smallapp\CommentModel();
                     $comment_time = date('Y-m-d H:i:s',strtotime('-2 hours'));
-                    $comment_count = $m_comment->isHaveComment($openid,$comment_time);
+                    $comment_count = $m_comment->isHaveComment($openid,$comment_time); */
                     //print_r($comment_count);exit;
+                    $redis->select(1);
+                    $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_mac);
+                    
                     if(empty($comment_count)){
                        $data['is_open_popcomment'] = 1;
                        $staff_openid = $res_staff['openid'];
@@ -237,10 +240,14 @@ class IndexController extends CommonController{
                        $data['tags'] = $tags;
                     }else {
                         $data['is_open_popcomment'] = 0;
+                        $data['tags'] = [];
+                        $data['staff_user_info'] = [];
                     }  
                     
                 }else {
                     $data['is_open_popcomment'] = 0;
+                    $data['tags'] = [];
+                    $data['staff_user_info'] = [];
                 }
             }
             

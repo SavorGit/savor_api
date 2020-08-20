@@ -1,7 +1,7 @@
 <?php
 namespace Smallapp46\Controller;
 use \Common\Controller\CommonController as CommonController;
-
+use Common\Lib\SavorRedis;
 class CommentController extends CommonController{
     /**
      * 构造函数
@@ -10,7 +10,7 @@ class CommentController extends CommonController{
         switch(ACTION_NAME) {
             case 'subComment':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1001,'staff_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1001,'staff_id'=>1001,'box_mac'=>1001);
                 break;
             
         }
@@ -23,6 +23,7 @@ class CommentController extends CommonController{
         $score  = intval($this->params['score']);
         $content = $this->params['content'];
         $staff_id = $this->params['staff_id'];
+        $box_mac = $this->params['box_mac'];
         if($score>5){
             $this->to_back(90155);
         }
@@ -56,6 +57,9 @@ class CommentController extends CommonController{
             
             $ret = $m_comment->add($data);
             if($ret){
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(1);
+                $redis->set('smallapp:comment:'.$openid.'_'.$box_mac, '1',7200);
                 $this->to_back(10000);
             }else {
                 $this->to_back(90154);

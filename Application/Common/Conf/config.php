@@ -485,6 +485,8 @@ return array(
     'OFFICIAL_ACCOUNT_ARTICLE_URL'=>'https://mp.weixin.qq.com/s/39w1-K53lT9McBSR59BJcQ',
     'COLLECT_FORSCREEN_OPENIDS' =>array('ofYZG4zmrApmvRSfzeA_mN-pHv2E'=>'郑伟','ofYZG42whtWOvSELbvxvnXHbzty8'=>'黄勇',
         'ofYZG49N0yz-cCTTgfPPEoL1F7l4'=>'鲍强强','ofYZG4xt_03ADzTTtf4QIrA1lt_c'=>'甘顺山','ofYZG43prBncpYjkYq-XaIWRlj6o'=>'吴琳',
-        'ofYZG4yZJHaV2h3lJHG5wOB9MzxE'=>'张英涛','ofYZG4-TBnXlWMTGx6afsUrjzXgk'=>'李智','ofYZG4zXTCn52wUjHPeOoNZHFKwo'=>'毕超'),
+        'ofYZG4yZJHaV2h3lJHG5wOB9MzxE'=>'张英涛','ofYZG4-TBnXlWMTGx6afsUrjzXgk'=>'李智','ofYZG4zXTCn52wUjHPeOoNZHFKwo'=>'毕超',
+        'ofYZG4ySsM6GN8bF9bw6iWlS9a44'=>'渠道1',
+        ),
 
 );

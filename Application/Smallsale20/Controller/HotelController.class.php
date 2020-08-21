@@ -10,8 +10,31 @@ class HotelController extends CommonController{
             case 'getHotelList':
                 $this->is_verify = 0;
                 break;
+            case 'tvHelpvideos':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
         }
         parent::_init_();
+    }
+
+    public function tvHelpvideos(){
+        $hotel_id = intval($this->params['hotel_id']);
+        $m_tvvideo = new \Common\Model\TvswitchvideoModel();
+        $where = array('hotel_id'=>$hotel_id,'status'=>1);
+        $res_videos = $m_tvvideo->getDataList('*',$where,'id desc');
+        $datalist = array();
+        if(!empty($res_videos)){
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_videos as $v){
+                $res_media = $m_media->getMediaInfoById($v['media_id']);
+                $res_url = $res_media['oss_addr'];
+                $info = array('name'=>$v['name'],'url'=>$res_url);
+                $datalist[]=$info;
+            }
+        }
+        $res = array('datalist'=>$datalist);
+        $this->to_back($res);
     }
 
     public function getHotelList(){

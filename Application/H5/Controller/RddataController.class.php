@@ -52,7 +52,7 @@ class RddataController extends Controller {
                 $last_week_where = array('date'=>array('in',$lastweek_dates),'hotel_id'=>$hotel_id);
                 $fields = 'avg(box_num) as box_num,avg(faultbox_num) as faultbox_num,avg(normalbox_num) as normalbox_num,avg(fault_rate) as fault_rate,
                 avg(lunch_rate) as lunch_rate,avg(dinner_rate) as dinner_rate,avg(zxrate) as zxrate,avg(fjrate) as fjrate,sum(scancode_num) as scancode_num,
-                sum(interact_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
+                sum(interact_standard_num+interact_mini_num+interact_sale_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
                 sum(interact_sale_num) as interact_sale_num';
                 $res_week = $m_statichotel->getDataList($fields,$last_week_where,'');
                 $raw_data_week = $res_week[0];
@@ -60,7 +60,7 @@ class RddataController extends Controller {
                 $last_week_diffwhere = array('date'=>array('in',$lastweek_dates_diff),'hotel_id'=>$hotel_id);
                 $fields = 'avg(box_num) as box_num,avg(faultbox_num) as faultbox_num,avg(normalbox_num) as normalbox_num,avg(fault_rate) as fault_rate,
                 avg(lunch_rate) as lunch_rate,avg(dinner_rate) as dinner_rate,avg(zxrate) as zxrate,avg(fjrate) as fjrate,sum(scancode_num) as scancode_num,
-                sum(interact_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
+                sum(interact_standard_num+interact_mini_num+interact_sale_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
                 sum(interact_sale_num) as interact_sale_num';
                 $res_week = $m_statichotel->getDataList($fields,$last_week_diffwhere,'');
                 $diff_data_week = $res_week[0];
@@ -70,7 +70,7 @@ class RddataController extends Controller {
                 $last_month_where = array('date'=>array('in',$lastmonth_dates),'hotel_id'=>$hotel_id);
                 $fields = 'avg(box_num) as box_num,avg(faultbox_num) as faultbox_num,avg(normalbox_num) as normalbox_num,avg(fault_rate) as fault_rate,
                 avg(lunch_rate) as lunch_rate,avg(dinner_rate) as dinner_rate,avg(zxrate) as zxrate,avg(fjrate) as fjrate,sum(scancode_num) as scancode_num,
-                sum(interact_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
+                sum(interact_standard_num+interact_mini_num+interact_sale_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
                 sum(interact_sale_num) as interact_sale_num';
                 $res_week = $m_statichotel->getDataList($fields,$last_month_where,'');
                 $raw_data_month = $res_week[0];
@@ -78,7 +78,7 @@ class RddataController extends Controller {
                 $last_month_diffwhere = array('date'=>array('in',$lastmonth_dates_diff),'hotel_id'=>$hotel_id);
                 $fields = 'avg(box_num) as box_num,avg(faultbox_num) as faultbox_num,avg(normalbox_num) as normalbox_num,avg(fault_rate) as fault_rate,
                 avg(lunch_rate) as lunch_rate,avg(dinner_rate) as dinner_rate,avg(zxrate) as zxrate,avg(fjrate) as fjrate,sum(scancode_num) as scancode_num,
-                sum(interact_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
+                sum(interact_standard_num+interact_mini_num+interact_sale_num) as interact_num,sum(interact_standard_num) as interact_standard_num,sum(interact_mini_num) as interact_mini_num,
                 sum(interact_sale_num) as interact_sale_num';
                 $res_week = $m_statichotel->getDataList($fields,$last_month_diffwhere,'');
                 $diff_data_month = $res_week[0];
@@ -170,7 +170,6 @@ class RddataController extends Controller {
         $data = array('now_date'=>$now_date,'month_num'=>$month['interact_num'],'month_num_color'=>$month_interact_num_color,'lastmonth_num'=>$last_month['interact_num'],
             'week_num'=>$week['interact_num'],'week_num_color'=>$week_interact_num_color,'lastweek_num'=>$last_week['interact_num'],'time_bucket'=>array());
 
-        $fields = "sum(interact_num) as interact_num,date";
         $begin_date = date('Y-m-d',strtotime('-14 day'));
         $end_date = date('Y-m-d',strtotime('-1 day'));
         $dates = $m_statichotel->getDates($begin_date,$end_date,2);
@@ -184,9 +183,13 @@ class RddataController extends Controller {
         if($area_id){
             $where['area_id'] = $area_id;
         }
+        $fields = "sum(interact_num) as interact_num,sum(interact_sale_num) as sale_num,
+        sum(interact_standard_num+interact_mini_num+interact_game_num) as user_num,date";
         $res_data = $m_statichotel->getDatas($fields,$where,'date');
         foreach ($res_data as $v){
             $data['time_bucket']['data'][] = intval($v['interact_num']);
+            $data['time_bucket']['data_user'][] = intval($v['user_num']);
+            $data['time_bucket']['data_sale'][] = intval($v['sale_num']);
         }
         $this->ajaxReturn($data,'jsonp');
         echo json_encode($data);

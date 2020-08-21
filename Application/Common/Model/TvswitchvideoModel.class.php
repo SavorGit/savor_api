@@ -2,5 +2,5 @@
 namespace Common\Model;
 
 class TvswitchvideoModel extends BaseModel {
-	protected $tableName='hotel_invite_code';
+	protected $tableName='tvswitch_video';
 }

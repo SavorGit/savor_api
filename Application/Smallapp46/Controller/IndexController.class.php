@@ -154,6 +154,7 @@ class IndexController extends CommonController{
 
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
+        $pop_eval = $this->params['pop_eval'];
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
@@ -205,49 +206,47 @@ class IndexController extends CommonController{
                 $is_compress = 1;
             }
             $is_compress = 0;
-            //$data['is_open_popcomment'] = 0;
-            //是否打开开关     是否有服务员并且2小时内评价过
-            if($data['is_open_popcomment']==1 && !empty($this->params['pop_eval'])){
-                //1、是否有服务员
-                $m_staff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
-                
-                if(!empty($res_staff)){//如果有服务员并且两小时内是否有评价
-                    /* $m_comment = new \Common\Model\Smallapp\CommentModel();
-                    $comment_time = date('Y-m-d H:i:s',strtotime('-2 hours'));
-                    $comment_count = $m_comment->isHaveComment($openid,$comment_time); */
-                    //print_r($comment_count);exit;
-                    $redis->select(1);
-                    $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_mac);
-                    
-                    if(empty($comment_count)){
-                       $data['is_open_popcomment'] = 1;
-                       $staff_openid = $res_staff['openid'];
-                       $where = array('openid'=>$staff_openid);
-                       $m_user = new \Common\Model\Smallapp\UserModel();
-                       $where = array('openid'=>$staff_openid);
-                       $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
-                       $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName']);
-                       $data['staff_user_info'] = $staffuser_info;
-                       $m_tags = new \Common\Model\Smallapp\TagsModel();
-                       $fields = 'id,name';
-                       $where = array('status'=>1,'category'=>1);
-                       $where['hotel_id'] = array('in',array($hotel_info['hotel_id'],0));
-                       $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
-                       foreach ($res_tags as $v){
-                           $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
-                       }
-                       $data['tags'] = $tags;
-                    }else {
-                        $data['is_open_popcomment'] = 0;
-                        $data['tags'] = [];
-                        $data['staff_user_info'] = [];
-                    }  
-                    
-                }else {
+            if($data['is_open_popcomment']==1 && !empty($pop_eval)){
+                //判断两小时内是否有评价
+                $redis->select(1);
+                $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_mac);
+                if(!empty($comment_count)){
                     $data['is_open_popcomment'] = 0;
-                    $data['tags'] = [];
-                    $data['staff_user_info'] = [];
+                    $data['tags'] = array();
+                    $data['staff_user_info'] = array();
+                }else{
+                    //是否有服务员
+                    $comment_str = '服务评分';
+                    $waiter_str = '服务专员';
+
+                    $m_staff = new \Common\Model\Integral\StaffModel();
+                    $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
+                    if(!empty($res_staff)){
+                        $staff_openid = $res_staff['openid'];
+                        $m_user = new \Common\Model\Smallapp\UserModel();
+                        $where = array('openid'=>$staff_openid);
+                        $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
+                        $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
+                            'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                        $category = 1;
+                    }else{
+                        $comment_str = '餐厅评分';
+                        $waiter_str = '';
+                        $staffuser_info = array('staff_id'=>0,'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                        $category = 3;
+                    }
+                    $m_tags = new \Common\Model\Smallapp\TagsModel();
+                    $fields = 'id,name';
+                    $where = array('status'=>1,'category'=>$category);
+                    $where['hotel_id'] = array('in',array($hotel_info['hotel_id'],0));
+                    $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
+                    $tags = array();
+                    foreach ($res_tags as $v){
+                        $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
+                    }
+                    $data['tags'] = $tags;
+                    $data['is_open_popcomment'] = 1;
+                    $data['staff_user_info'] = $staffuser_info;
                 }
             }else {
                 $data['is_open_popcomment'] = 0;

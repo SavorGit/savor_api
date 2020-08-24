@@ -22,24 +22,24 @@ class CommentController extends CommonController{
         
         $score  = intval($this->params['score']);
         $content = $this->params['content'];
-        $staff_id = $this->params['staff_id'];
+        $staff_id = intval($this->params['staff_id']);
         $box_mac = $this->params['box_mac'];
         if($score>5){
             $this->to_back(90155);
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = [];
-        $where['id'] = $staff_id;
-        $where['status'] = 1;
-        $where['hotel_id'] = array('neq',0);
-        $where['room_id']  = array('neq',0);
-        $res_staff = $m_staff->getInfo($where);
-        if(empty($res_staff)){
-            $this->to_back(90156);
+        $type = 2;
+        if($staff_id>0){
+            $type = 1;
+            $where = array('id'=>$staff_id,'status'=>1);
+            $where['hotel_id'] = array('neq',0);
+            $where['room_id']  = array('neq',0);
+            $res_staff = $m_staff->getInfo($where);
+            if(empty($res_staff)){
+                $this->to_back(90156);
+            }
         }
-        
-        
-        
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'small_app_id'=>1);
         $user_info = $m_user->getOne('id', $where, 'id desc');
@@ -50,11 +50,11 @@ class CommentController extends CommonController{
             
             $data['staff_id']= $staff_id;
             $data['user_id'] = $user_info['id'];
+            $data['box_mac'] = $box_mac;
             $data['score']   = $score;
             $data['content']  = $content;
             $data['status']  = 1;
-            
-            
+            $data['type']  = $type;
             $ret = $m_comment->add($data);
             if($ret){
                 $redis  =  \Common\Lib\SavorRedis::getInstance();

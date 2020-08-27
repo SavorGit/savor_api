@@ -1,6 +1,7 @@
 <?php
 namespace Smallapp46\Controller;
 use \Common\Controller\CommonController;
+use \Common\Lib\SavorRedis;
 class AdspositionController extends CommonController{
     /**
      * 构造函数
@@ -9,7 +10,7 @@ class AdspositionController extends CommonController{
         switch(ACTION_NAME) {
             case 'getAdspositionList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('position'=>1001);
+                $this->valid_fields = array('position'=>1001,'box_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -20,6 +21,49 @@ class AdspositionController extends CommonController{
      */
     public function getAdspositionList(){
         $position = $this->params['position'];
+        $box_id = $this->params['box_id'];
+        if(empty($box_id)){
+            $result = $this->getAdList($position);
+            
+        }else {
+            $redis = SavorRedis::getInstance();
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_id;
+            $box_info = $redis->get($cache_key);
+            $box_info = json_decode($box_info,true);
+            $cache_key = 'savor_room_'.$box_info['room_id'];
+            $room_info = $redis->get($cache_key);
+            $room_info = json_decode($room_info,true);
+            
+            //从缓存中读取抽奖的酒楼
+            $redis->select(1);
+            $cache_key = 'smallapp:activity:kingmealhotel';
+            $hotel_list = $redis->get($cache_key);
+            $hotel_list = json_decode($hotel_list);
+            $hotel_arr = [];
+            foreach($hotel_list as $key=>$v){
+                $hotel_arr[] = $key;
+            }
+            if(in_array($room_info['hotel_id'],$hotel_arr)){
+                $info = [];
+                $info['appid'] = '';
+                $info['bindtap'] = 'gotoActivity';
+                $info['clicktype'] = 2;
+                $info['id'] = 999;
+                $info['linkcontent'] = '/games/pages/activity/din_dash';
+                $info['name'] = '霸王餐';
+                $info['oss_addr'] = 'http://oss.littlehotspot.com/media/resource/5b5ks2pdzt.jpg';
+                $info['position'] = 2;
+                $result[2][]= $info;
+            }else {
+                $result = $this->getAdList($position);
+            }
+        }
+        
+        $this->to_back($result);
+        
+    }
+    private function getAdList($position){
         $fields = 'id,name,media_id,linkcontent,clicktype,appid,position,bindtap';
         $where = array('status'=>1);
         $orderby = 'sort desc,id desc';
@@ -27,7 +71,7 @@ class AdspositionController extends CommonController{
         
         $result = array();
         if($position && strstr($position, ',')){
-            
+        
             $where['position'] = array('in',$position);
             $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
             if(!empty($res_positions)){
@@ -42,9 +86,9 @@ class AdspositionController extends CommonController{
         }else {
             $where['position'] = $position;
             $order =" a.order desc";
-                        
+        
             $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
-            
+        
             if(!empty($res_positions)){
                 $m_media = new \Common\Model\MediaModel();
                 foreach ($res_positions as $k=>$v){
@@ -54,9 +98,8 @@ class AdspositionController extends CommonController{
                     $result[] = $v;
                 }
             }
-            
-        }
-        $this->to_back($result);
         
+        }
+        return $result;
     }
 }

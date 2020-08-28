@@ -363,7 +363,7 @@ return array(
     'smallapp_order_givegift_num_error'=>'您需要将%d件商品进行分配',
     'smallapp_order_givegift_success'=>'该商品已转增成功，无法自己领取',
     'smallappsale_signin_num_upper_limit'=>'当天签到次数已达上限',
-    'smallapp_activity_not_exist'=>'当前参与活动不存在',
+    'smallapp_activity_not_exist'=>'已过本轮抽奖时间，请等待下一轮抽奖',
 
 
 );

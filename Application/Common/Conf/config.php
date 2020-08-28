@@ -402,11 +402,11 @@ return array(
         '7'=>'promotionalvideo','8'=>'adsa','9'=>'adsb','10'=>'adsc','11'=>'demand','12'=>'recommendation',
         '13'=>'apk','14'=>'loading','15'=>'logo','20'=>'bonustomoney'),
     'SMALLAPP_ERWEI_CODE_TYPES'=>array('8'=>'小程序二维码','12'=>'大二维码（节目）','13'=>'小程序呼二维码','15'=>'大二维码（新节目）',
-        '29'=>'渠道投屏码','30'=>'投屏帮助视频码'),
-    //type 1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码8:小程序二维码9:极简版节目大码
-    // 10:极简版大码11:极简版呼玛12:大二维码（节目）13:小程序呼二维码 15:大二维码（新节目）16：极简版二维码19:极简版节目大二维码
-    // 20:极简版大二维码21:极简版呼二维码22购物二维码 23销售二维码 24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
-    // 29推广渠道投屏码 30投屏帮助视频
+        '29'=>'渠道投屏码','30'=>'投屏帮助视频码','31'=>'活动霸王菜'),
+//    type 1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码8:小程序二维码9:极简版节目大码
+//     10:极简版大码11:极简版呼玛12:大二维码（节目）13:小程序呼二维码 15:大二维码（新节目）16：极简版二维码19:极简版节目大二维码
+//     20:极简版大二维码21:极简版呼二维码22购物二维码 23销售二维码 24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
+//     29推广渠道投屏码 30投屏帮助视频 31活动霸王菜
 
     'SMALLAPP_JJ_ERWEI_CODE_TYPES'=>array('16'=>'极简版二维码','19'=>'极简版节目大二维码','20'=>'极简版大二维码','21'=>'极简版呼二维码'),
     'SAPP_FILE_FORSCREEN_TYPES'=>array(
@@ -486,7 +486,9 @@ return array(
     'COLLECT_FORSCREEN_OPENIDS' =>array('ofYZG4zmrApmvRSfzeA_mN-pHv2E'=>'郑伟','ofYZG42whtWOvSELbvxvnXHbzty8'=>'黄勇',
         'ofYZG49N0yz-cCTTgfPPEoL1F7l4'=>'鲍强强','ofYZG4xt_03ADzTTtf4QIrA1lt_c'=>'甘顺山','ofYZG43prBncpYjkYq-XaIWRlj6o'=>'吴琳',
         'ofYZG4yZJHaV2h3lJHG5wOB9MzxE'=>'张英涛','ofYZG4-TBnXlWMTGx6afsUrjzXgk'=>'李智','ofYZG4zXTCn52wUjHPeOoNZHFKwo'=>'毕超',
-        'ofYZG4ySsM6GN8bF9bw6iWlS9a44'=>'渠道1',
+        'ofYZG4ySsM6GN8bF9bw6iWlS9a44'=>'王习宗','ofYZG4-geGG-WO3drWsAZetCghSc'=>'何永锐','ofYZG43zZMAYXbuOiQxIqGfz25aM'=>'玉洁',
+        'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿'
         ),
+
 
 );

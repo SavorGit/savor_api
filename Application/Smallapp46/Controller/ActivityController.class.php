@@ -41,7 +41,7 @@ class ActivityController extends CommonController{
         }
 
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
-        if($activity_id){
+        if($activity_id>0){
             $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'hotel_id'=>$hotel_id));
         }else{
             $where = array('hotel_id'=>$hotel_id,'status'=>1);
@@ -92,7 +92,7 @@ class ActivityController extends CommonController{
                     $status = 1;
                 }
             }
-            $end_time = strtotime($res_activity['end_time']) - 300;
+            $end_time = strtotime($res_activity['end_time']);
             $now_time = time();
             if($status==0 && $now_time>$end_time){
                 $status = 2;
@@ -111,9 +111,6 @@ class ActivityController extends CommonController{
             case 1:
                 $tips = '恭喜您，报名成功';
                 $message = "开奖时间为{$activity_date}（今天）{$lottery_hour}，请及时关注中奖结果。详细奖项请看奖品列表";
-                if($is_apply==1){
-                    //todo 写入小程序投屏记录表
-                }
                 break;
             case 2:
                 $tips = '已过本轮抽奖时间，请等待下一轮抽奖';

@@ -41,15 +41,31 @@ class AdspositionController extends CommonController{
             $hotel_list = $redis->get($cache_key);
             $hotel_list = json_decode($hotel_list,true);
             $hotel_arr = [];
+            
+            $is_act_time = 0;
+            $now_time = date('Y-m-d H:i:s');
             foreach($hotel_list as $key=>$v){
                 $hotel_arr[] = $key;
+                
+                
+                
+            }
+            if(isset($hotel_list[$room_info['hotel_id']])){
+                foreach($hotel_list[$room_info['hotel_id']] as $vv){
+                    $start_time = $vv['start_time'];
+                    $end_time   = $vv['end_time'];
+                    if($now_time>=$start_time && $now_time<$end_time){
+                        $is_act_time = 1;
+                        break;
+                    }
+                }  
             }
             
-            $start_time = $hotel_list[$room_info['hotel_id']][0]['start_time'];
-            $end_time = $hotel_list[$room_info['hotel_id']][0]['end_time'];
             
-            $now_time = date('Y-m-d H:i:s');
-            if(in_array($room_info['hotel_id'],$hotel_arr)&& $now_time>=$start_time && $now_time<$end_time){
+            
+            
+            
+            if(in_array($room_info['hotel_id'],$hotel_arr)&& !empty($is_act_time)){
                 $info = [];
                 $info['appid'] = '';
                 $info['bindtap'] = 'gotoActivity';

@@ -19,7 +19,7 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
             case 'getConfig':
-                $this->valid_fields = array('box_id'=>1002);
+                $this->valid_fields = array('box_id'=>1002,'openid'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'recodeQrcodeLog':
@@ -340,6 +340,7 @@ class IndexController extends CommonController{
     }
     public function getConfig(){
         $box_id = intval($this->params['box_id']);
+        $openid = $this->params['openid'];
 
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
@@ -356,6 +357,7 @@ class IndexController extends CommonController{
             $redis->select(15);
             $cache_key = 'savor_box_'.$box_id;
             $redis_box_info = $redis->get($cache_key);
+            $is_open_popcomment = 0;
             if(!empty($redis_box_info)){
                 $box_info = json_decode($redis_box_info,true);
                 $cache_key = 'savor_room_' . $box_info['room_id'];
@@ -365,11 +367,62 @@ class IndexController extends CommonController{
                 $hotel_id = $room_info['hotel_id'];
                 $room_id = $box_info['room_id'];
                 $m_staff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id));
+                $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_id,'room_id'=>$room_id,'status'=>1));
                 if(!empty($res_staff)){
                     $is_comment = 1;
                 }
+
+                $redis->select(1);
+                $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_info['mac']);
+                if(!empty($comment_count)){
+                    $is_open_popcomment = 0;
+                }else{
+                    $m_box = new \Common\Model\BoxModel();
+                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
+                    if($forscreen_info['is_open_popcomment']==1){
+                        $is_open_popcomment = 1;
+                    }else{
+                        $is_open_popcomment = 0;
+                    }
+                }
+                $comment_str = '服务评分';
+                $waiter_str = '服务专员';
+                if(!empty($res_staff)){
+                    $staff_openid = $res_staff['openid'];
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $where = array('openid'=>$staff_openid);
+                    $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
+                    $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
+                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                    $category = 1;
+                }else{
+                    $comment_str = '餐厅评分';
+                    $waiter_str = '';
+                    $staffuser_info = array('staff_id'=>0,'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                    $category = 3;
+                }
+                $m_tags = new \Common\Model\Smallapp\TagsModel();
+                $fields = 'id,name';
+                $where = array('status'=>1,'category'=>$category);
+                $where['hotel_id'] = array('in',array($hotel_id,0));
+                $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
+                $tags = array();
+                foreach ($res_tags as $v){
+                    $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
+                }
+                $reward_money_list = C('REWARD_MONEY_LIST');
+                $reward_money = array();
+                $oss_host = C('OSS_HOST');
+                foreach ($reward_money_list as $v){
+                    $v['image'] = 'http://'.$oss_host.'/'.$v['image'];
+                    $v['selected'] = false;
+                    $reward_money[]=$v;
+                }
             }
+            $data['is_open_popcomment'] = $is_open_popcomment;
+            $data['tags'] = $tags;
+            $data['staff_user_info'] = $staffuser_info;
+            $data['reward_money'] = $reward_money;
         }
         $data['is_comment'] = $is_comment;
         $this->to_back($data);

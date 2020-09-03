@@ -299,6 +299,7 @@ return array(
 	    '90155'=>'smallapp_comment_score_err',
 	    '90156'=>'smallapp_comment_staff_empty',
 	    '90157'=>'smallapp_activity_not_exist',
+	    '90158'=>'smallapp_reward_money_not_exist',
 
 
 

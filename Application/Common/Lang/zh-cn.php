@@ -364,6 +364,7 @@ return array(
     'smallapp_order_givegift_success'=>'该商品已转增成功，无法自己领取',
     'smallappsale_signin_num_upper_limit'=>'当天签到次数已达上限',
     'smallapp_activity_not_exist'=>'已过本轮抽奖时间，请等待下一轮抽奖',
+    'smallapp_reward_money_not_exist'=>'当前打赏金额不存在，请选择其他打赏金额',
 
 
 );

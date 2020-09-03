@@ -352,6 +352,7 @@ class IndexController extends CommonController{
         $data['file_max_size'] = 41943040;
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
         $is_comment = 0;
+        $is_open_reward = 1;
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -418,7 +419,14 @@ class IndexController extends CommonController{
                     $v['selected'] = false;
                     $reward_money[]=$v;
                 }
+                if(isset($box_info['is_open_reward'])){
+                    $is_open_reward = $box_info['is_open_reward'];
+                }else{
+                    $is_open_reward = 1;
+                }
             }
+            
+            $data['is_open_reward']     = $is_open_reward;
             $data['is_open_popcomment'] = $is_open_popcomment;
             $data['tags'] = $tags;
             $data['staff_user_info'] = $staffuser_info;

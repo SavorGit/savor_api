@@ -474,8 +474,14 @@ return array(
         '62'=>'已过期',
         '63'=>'获赠',
         '71'=>'转赠中',
-
     ),
+    'REWARD_MONEY_LIST'=>array(
+        10001=>array('id'=>10001,'name'=>'¥2','price'=>2,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
+        10002=>array('id'=>10002,'name'=>'¥10','price'=>10,'image'=>'WeChat/resource/reward/jitui.png'),
+        10003=>array('id'=>10003,'name'=>'¥50','price'=>50,'image'=>'WeChat/resource/reward/hanbao.png'),
+        10004=>array('id'=>10004,'name'=>'¥100','price'=>100,'image'=>'WeChat/resource/reward/hongbao.png'),
+    ),
+
     'MAP_ORDER_STATUS'=>array(
         '1'=>3,//3普通订单 4分销订单
         '2'=>4,

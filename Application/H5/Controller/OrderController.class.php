@@ -72,6 +72,54 @@ class OrderController extends Controller {
         }
     }
 
+    public function reward(){
+        $now_time = date('Y-m-d H:i:s');
+        $ts = I('get.ts','');
+        if($ts!='qQHilxeO0zvgok47j'){
+            die($now_time.' error');
+        }
+        $hour = date('G');
+        if($hour!=13){
+            die($now_time.' hour error');
+        }
+        $nowdtime = date('Y-m-d H:i:s');
+        echo $nowdtime." start\r\n";
+
+        $start_time = date("Y-m-d 00:00:00", strtotime("-1 day"));
+        $end_time = date("Y-m-d 23:59:59", strtotime("-1 day"));
+        $where = array('status'=>2);
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $m_reward = new \Common\Model\Smallapp\RewardModel();
+        $res_order = $m_reward->getDataList('*',$where,'id asc');
+        if(!empty($res_order)){
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(5);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            foreach ($res_order as $v){
+                $order_id=$v['id'];
+                $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+                if(!empty($res_orderserial)){
+                    $res_staff = $m_staff->getInfo(array('id'=>$v['staff_id'],'status'=>1));
+                    if(!empty($res_staff)){
+                        $reward_openid = $res_staff['openid'];
+
+                        $trade_info = array('trade_no'=>$order_id,'money'=>$v['money'],'open_id'=>$reward_openid);
+                        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                        if($res['code']==10000){
+                            $condition = array('id'=>$order_id);
+                            $m_reward->updateData($condition,array('status'=>3,'update_time'=>date('Y-m-d H:i:s')));
+
+                            echo "order_id:$order_id  reward ok"."\r\n";
+                        }
+                    }
+                }
+            }
+        }
+        echo $nowdtime." finish\r\n";
+    }
+
     public function settlement(){
         $now_time = date('Y-m-d H:i:s');
         $ts = I('get.ts','');
@@ -289,7 +337,7 @@ class OrderController extends Controller {
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $where = array('otype'=>6,'status'=>array('in',array(12,61,17)));
         $where['gift_oid'] = array('eq',0);
-        $where['add_time'] = array('gt','2020-06-23 00:00:00');
+        $where['add_time'] = array('gt','2020-07-29 17:09:11');
 //        $where['id'] = array('eq',1001367);
 
         $res_order = $m_order->getDataList('*',$where,'id asc');
@@ -425,7 +473,7 @@ class OrderController extends Controller {
                         }else{
                             echo "order_id:$order_id  cancel and refund error"."\r\n";
                         }
-                        
+
                     }else{
                         echo "order_id:$order_id  cancel error"."\r\n";
                     }

@@ -476,8 +476,8 @@ return array(
         '71'=>'转赠中',
     ),
     'REWARD_MONEY_LIST'=>array(
-        10001=>array('id'=>10001,'name'=>'¥2','price'=>2,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
-        10002=>array('id'=>10002,'name'=>'¥10','price'=>10,'image'=>'WeChat/resource/reward/jitui.png'),
+        10001=>array('id'=>10001,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
+        10002=>array('id'=>10002,'name'=>'¥20','price'=>20,'image'=>'WeChat/resource/reward/jitui.png'),
         10003=>array('id'=>10003,'name'=>'¥50','price'=>50,'image'=>'WeChat/resource/reward/hanbao.png'),
         10004=>array('id'=>10004,'name'=>'¥100','price'=>100,'image'=>'WeChat/resource/reward/hongbao.png'),
     ),
@@ -493,7 +493,7 @@ return array(
         'ofYZG49N0yz-cCTTgfPPEoL1F7l4'=>'鲍强强','ofYZG4xt_03ADzTTtf4QIrA1lt_c'=>'甘顺山','ofYZG43prBncpYjkYq-XaIWRlj6o'=>'吴琳',
         'ofYZG4yZJHaV2h3lJHG5wOB9MzxE'=>'张英涛','ofYZG4-TBnXlWMTGx6afsUrjzXgk'=>'李智','ofYZG4zXTCn52wUjHPeOoNZHFKwo'=>'毕超',
         'ofYZG4ySsM6GN8bF9bw6iWlS9a44'=>'王习宗','ofYZG4-geGG-WO3drWsAZetCghSc'=>'何永锐','ofYZG43zZMAYXbuOiQxIqGfz25aM'=>'玉洁',
-        'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿'
+        'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿','ofYZG4zTOtj9RCaLmDXI0qfY-I34'=>'熊静怡',
         ),
 
 

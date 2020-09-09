@@ -365,6 +365,9 @@ return array(
     'smallappsale_signin_num_upper_limit'=>'当天签到次数已达上限',
     'smallapp_activity_not_exist'=>'已过本轮抽奖时间，请等待下一轮抽奖',
     'smallapp_reward_money_not_exist'=>'当前打赏金额不存在，请选择其他打赏金额',
+    'smallappsale_lottery_time_error'=>'请选择正确的开奖时间',
+    'smallappsale_lottery_time_repeat'=>'相同时间内不能存在多个活动',
+    'smallappsale_lotteryactivity_cancel_error'=>'当前活动不能取消',
 
 
 );

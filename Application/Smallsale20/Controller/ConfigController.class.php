@@ -52,7 +52,19 @@ class ConfigController extends CommonController{
         if(!empty($res_ads)){
             $is_have_adv = 1;
         }
-        $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status);
+        $m_hotelext = new \Common\Model\HotelExtModel();
+        $res_hotelext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+
+        $is_activity = intval($res_hotelext['is_activity']);
+        $activity_next_time = time() + 7200;
+        $now_year = date('Y',$activity_next_time);
+        $month = date('n',$activity_next_time);
+        $day = date('j',$activity_next_time);
+        $hour = date('G',$activity_next_time);
+        $activity_lottery_time = array($now_year-2020,$month-1,$day-1,intval($hour));
+
+        $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status,
+            'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time);
         $this->to_back($res_data);
     }
 

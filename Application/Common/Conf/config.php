@@ -475,6 +475,12 @@ return array(
         '63'=>'获赠',
         '71'=>'转赠中',
     ),
+    'ACTIVITY_STATUS'=>array(
+        '0'=>'待开始',
+        '1'=>'进行中',
+        '2'=>'已结束',
+        '3'=>'已取消',
+    ),
     'REWARD_MONEY_LIST'=>array(
         10001=>array('id'=>10001,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
         10002=>array('id'=>10002,'name'=>'¥20','price'=>20,'image'=>'WeChat/resource/reward/jitui.png'),

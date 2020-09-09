@@ -382,6 +382,9 @@ return array(
 	    '93050'=>'smallappsale_exchange_money_error',
 	    '93051'=>'smallappsale_goods_amount_gt_zero',
 	    '93052'=>'smallappsale_signin_num_upper_limit',
+	    '93053'=>'smallappsale_lottery_time_error',
+	    '93054'=>'smallappsale_lottery_time_repeat',
+	    '93055'=>'smallappsale_lotteryactivity_cancel_error',
 
 	),
 );

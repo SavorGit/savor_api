@@ -79,7 +79,7 @@ class OrderController extends Controller {
             die($now_time.' error');
         }
         $hour = date('G');
-        if($hour!=13){
+        if($hour!=10){
             die($now_time.' hour error');
         }
         $nowdtime = date('Y-m-d H:i:s');
@@ -87,6 +87,7 @@ class OrderController extends Controller {
 
         $start_time = date("Y-m-d 00:00:00", strtotime("-1 day"));
         $end_time = date("Y-m-d 23:59:59", strtotime("-1 day"));
+
         $where = array('status'=>2);
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
         $m_reward = new \Common\Model\Smallapp\RewardModel();

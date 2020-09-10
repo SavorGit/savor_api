@@ -7,7 +7,7 @@ class ActivityController extends CommonController{
         switch(ACTION_NAME) {
             case 'getActivityList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'page'=>1001);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -27,10 +27,14 @@ class ActivityController extends CommonController{
 
     public function getActivityList(){
         $hotel_id = intval($this->params['hotel_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+        $all_nums = $page * $pagesize;
+
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $where = array('hotel_id'=>$hotel_id);
         $fields = 'id,name,image_url,status';
-        $res_activity = $m_activity->getDataList($fields,$where,'id desc');
+        $res_activity = $m_activity->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if(!empty($res_activity)){
             $oss_host = 'http://'. C('OSS_HOST').'/';

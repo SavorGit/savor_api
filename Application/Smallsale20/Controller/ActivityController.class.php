@@ -36,10 +36,10 @@ class ActivityController extends CommonController{
         $fields = 'id,name,image_url,status';
         $res_activity = $m_activity->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
-        if(!empty($res_activity)){
+        if($res_activity['total']>0){
             $oss_host = 'http://'. C('OSS_HOST').'/';
             $all_status_str = C('ACTIVITY_STATUS');
-            foreach ($res_activity as $v){
+            foreach ($res_activity['list'] as $v){
                 $image_url = $oss_host.$v['image_url'];
                 $status_str = $all_status_str[$v['status']];
                 $info = array('activity_id'=>$v['id'],'name'=>$v['name'],'status'=>$v['status'],'status_str'=>$status_str,'image_url'=>$image_url);
@@ -110,7 +110,7 @@ class ActivityController extends CommonController{
         $start_time = date('Y-m-d H:i:s',$lottery_stime-3600);
         $end_time = date('Y-m-d H:i:s',$lottery_stime-300);
 
-        $where = array('hotel_id'=>$hotel_id);
+        $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('0','1')));
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getActivity('*',$where,'id desc',0,1);
         if(!empty($res_activity)){

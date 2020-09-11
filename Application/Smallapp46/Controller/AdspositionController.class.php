@@ -36,37 +36,25 @@ class AdspositionController extends CommonController{
             $room_info = json_decode($room_info,true);
             
             //从缓存中读取抽奖的酒楼
-            $redis->select(1);
-            $cache_key = 'smallapp:activity:kingmealhotel';
-            $hotel_list = $redis->get($cache_key);
-            $hotel_list = json_decode($hotel_list,true);
-            $hotel_arr = [];
-            
+            $hotel_id = $room_info['hotel_id'];
+            $m_activity = new \Common\Model\Smallapp\ActivityModel();
+            $start_time = date('Y-m-d 00:00:00');
+            $end_time = date('Y-m-d 23:59:59');
+            $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('1','0')));
+            $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+            $res_activity = $m_activity->getDataList('*',$where,'id asc');
             $is_act_time = 0;
-            $now_time = date('Y-m-d H:i:s');
-            foreach($hotel_list as $key=>$v){
-                $hotel_arr[] = $key;
-                
-                
-                
-            }
-            if(isset($hotel_list[$room_info['hotel_id']])){
-                foreach($hotel_list[$room_info['hotel_id']] as $vv){
-                    $start_time = $vv['start_time'];
-                    $end_time   = $vv['end_time'];
-                    if($now_time>=$start_time && $now_time<$end_time){
+            if(!empty($res_activity)){
+                $now_time = date('Y-m-d H:i:s');
+                foreach ($res_activity as $v){
+                    if($now_time>=$v['start_time'] && $now_time<$v['end_time']){
                         $is_act_time = 1;
                         break;
                     }
-                }  
+                }
             }
-            
-            
-            
-            
-            
-            if(in_array($room_info['hotel_id'],$hotel_arr)&& !empty($is_act_time)){
-                $info = [];
+            if($is_act_time==1){
+                $info = array();
                 $info['appid'] = '';
                 $info['bindtap'] = 'gotoActivity';
                 $info['clicktype'] = 2;

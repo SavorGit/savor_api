@@ -101,7 +101,12 @@ class ActivityController extends CommonController{
         $lottery_stime = strtotime($lottery_time);
         $lottery_time = date('Y-m-d H:i:s',$lottery_stime);
 
-        $tmp_lottery_time = time() + 7200;
+        $now_time = time();
+        if($now_time>$lottery_stime){
+            $this->to_back(93053);
+        }
+
+        $tmp_lottery_time = $now_time + 7200;
         $tmp_lottery_hour = date('H',$tmp_lottery_time);
         $lottery_hour = date('H',$lottery_stime);
         if($lottery_hour!=$tmp_lottery_hour){

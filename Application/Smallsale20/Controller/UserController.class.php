@@ -178,6 +178,7 @@ class UserController extends CommonController{
         $code = $this->params['code'];
         $m_small_app = new Smallapp_api($flag = 5);
         $data  = $m_small_app->getSmallappOpenid($code);
+        $data['official_account_article_url'] =C('OFFICIAL_ACCOUNT_ARTICLE_URL');
         $this->to_back($data);
     }
     

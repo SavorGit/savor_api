@@ -19,7 +19,7 @@ class ActivityController extends CommonController{
                 break;
             case 'addActivity':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'activity_name'=>1001,'prize'=>1001,'image'=>1001,'lottery_time'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'activity_name'=>1001,'prize'=>1001,'image'=>1001,'lottery_day'=>1001,'lottery_hour'=>1001);
                 break;
         }
         parent::_init_();
@@ -97,36 +97,51 @@ class ActivityController extends CommonController{
         $activity_name = trim($this->params['activity_name']);
         $prize = trim($this->params['prize']);
         $image_url = $this->params['image'];
-        $lottery_time = $this->params['lottery_time'];
+        $lottery_day = intval($this->params['lottery_day']);
+        $lottery_hour = $this->params['lottery_hour'];
+        if($lottery_day==0){
+            $lottery_time = date("Y-m-d $lottery_hour:00");
+        }else{
+            $lottery_time = date("Y-m-d $lottery_hour:00",strtotime("+$lottery_day day"));
+        }
         $lottery_stime = strtotime($lottery_time);
         $lottery_time = date('Y-m-d H:i:s',$lottery_stime);
 
         $now_time = time();
-        if($now_time>$lottery_stime){
+        $now_date = date('Ymd');
+        $lottery_date = date('Ymd',$lottery_stime);
+
+        if($now_time>$lottery_stime || $lottery_date<$now_date){
             $this->to_back(93053);
         }
 
-        $tmp_lottery_time = $now_time + 7200;
-        $tmp_lottery_hour = date('H',$tmp_lottery_time);
-        $lottery_hour = date('H',$lottery_stime);
-        if($lottery_hour!=$tmp_lottery_hour){
-            $this->to_back(93053);
+        if($lottery_date==$now_date){
+            $tmp_lottery_time = $now_time + 7200;
+            $tmp_lottery_hour = date('G',$tmp_lottery_time);
+            $lottery_hour = date('G',$lottery_stime);
+            if($lottery_hour<$tmp_lottery_hour){
+                $this->to_back(93053);
+            }
         }
+
         $start_time = date('Y-m-d H:i:s',$lottery_stime-3600);
         $end_time = date('Y-m-d H:i:s',$lottery_stime-300);
 
         $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('0','1')));
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
-        $res_activity = $m_activity->getActivity('*',$where,'id desc',0,1);
+        $res_activity = $m_activity->getActivity('*',$where,'id desc',0,100);
         if(!empty($res_activity)){
-            $last_lottery_time = strtotime($res_activity[0]['lottery_time']);
-            if($lottery_stime==$last_lottery_time){
-                $this->to_back(93054);
-            }
             $start_stime = strtotime($start_time);
-            if($last_lottery_time==$start_stime){
-                $start_stime = $start_stime + 600;
-                $start_time = date('Y-m-d H:i:s',$start_stime);
+            foreach ($res_activity as $v){
+                $last_lottery_time = strtotime($v['lottery_time']);
+                if($lottery_stime==$last_lottery_time){
+                    $this->to_back(93054);
+                }
+                if($last_lottery_time==$start_stime){
+                    $start_stime = $start_stime + 600;
+                    $start_time = date('Y-m-d H:i:s',$start_stime);
+                }
+
             }
         }
 

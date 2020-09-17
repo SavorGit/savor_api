@@ -38,7 +38,7 @@ class IndexController extends CommonController{
                     'resource_type'=>1000,'resource_id'=>1000,
                     'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                     'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
-                    'serial_number'=>1000,
+                    'serial_number'=>1000,'quality_type'=>1000,
                 );
                 break;
         }
@@ -351,6 +351,17 @@ class IndexController extends CommonController{
             'file_exts'=>array_keys($file_exts));
         $data['file_max_size'] = 41943040;
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
+        $quality_types = C('QUALITY_TYPES');
+        $quality_list = array();
+        foreach ($quality_types as $k=>$v){
+            $checked = false;
+            if($k==1){
+                $checked = true;
+            }
+            $quality_list[]=array('value'=>$k,'name'=>$v['name'],'quality'=>$v['value'],'checked'=>$checked);
+        }
+        $data['quality_list'] = $quality_list;
+
         $is_comment = 0;
         $is_open_reward = 1;
         if($box_id){
@@ -458,7 +469,8 @@ class IndexController extends CommonController{
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
         $res_nums = $this->params['res_nums']?intval($this->params['res_nums']):0;
         $serial_number = !empty($this->params['serial_number']) ? $this->params['serial_number'] : '';
-    
+        $quality_type = !empty($this->params['quality_type']) ? $this->params['quality_type'] : 0;
+
         $data = array();
         $data['openid'] = $openid;
         $data['box_mac']= $box_mac;
@@ -476,9 +488,10 @@ class IndexController extends CommonController{
         $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
         $data['is_share']    = $is_share;
         $data['duration']    = $duration;
+        $data['quality_type'] = $quality_type;
         if($serial_number) $data['serial_number'] = $serial_number;
-        
         if($forscreen_id)  $data['forscreen_id'] = $forscreen_id;
+
     
         $redis = SavorRedis::getInstance();
         $redis->select(5);

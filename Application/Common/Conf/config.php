@@ -437,6 +437,8 @@ return array(
         4=>'兑换',
         5=>'退回',
         6=>'活动促销',
+        7=>'评价奖励',
+        8=>'评价补贴',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式
@@ -486,6 +488,12 @@ return array(
         10002=>array('id'=>10002,'name'=>'¥20','price'=>20,'image'=>'WeChat/resource/reward/jitui.png'),
         10003=>array('id'=>10003,'name'=>'¥50','price'=>50,'image'=>'WeChat/resource/reward/hanbao.png'),
         10004=>array('id'=>10004,'name'=>'¥100','price'=>100,'image'=>'WeChat/resource/reward/hongbao.png'),
+    ),
+
+    'QUALITY_TYPES'=>array(
+        1=>array('name'=>'标清','value'=>'?x-oss-process=image/quality,q_40'),
+        2=>array('name'=>'高清','value'=>'?x-oss-process=image/quality,q_80'),
+        3=>array('name'=>'原图','value'=>''),
     ),
 
     'MAP_ORDER_STATUS'=>array(

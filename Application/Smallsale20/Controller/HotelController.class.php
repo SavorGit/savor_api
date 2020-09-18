@@ -40,17 +40,15 @@ class HotelController extends CommonController{
     public function getHotelList(){
         $m_hotel = new \Common\Model\HotelModel();
         $where = array('state'=>1,'flag'=>0);
-        $where['hotel_box_type'] = array('in',array(2,3,6));
+        $hotel_box_types = C('HEART_HOTEL_BOX_TYPE');
+        $box_types = array_keys($hotel_box_types);
+        $where['hotel_box_type'] = array('in',$box_types);
         $res_hotels = $m_hotel->getHotelList($where,'id asc','','id,name');
 
         $m_hotel = new \Common\Model\HotelModel();
         $all_hotels = array();
         foreach ($res_hotels as $v){
-            $hotel_has_room = 0;
-            $res_room = $m_hotel->getRoomNumByHotelId($v['id']);
-            if($res_room){
-                $hotel_has_room = 1;
-            }
+            $hotel_has_room = $m_hotel->checkHotelHasRoom($v['id']);
             $v['hotel_has_room'] = $hotel_has_room;
             $letter = getFirstCharter($v['name']);
             $all_hotels[$letter][]=$v;

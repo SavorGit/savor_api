@@ -146,6 +146,32 @@ class UserController extends CommonController{
             }
         }
         $userinfo['hotel_type'] = $hotel_type;
+
+        $subscribe_status = 0;//1无openID 2未关注公众号 3已关注公众号
+        if($openid){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = array('openid'=>$openid);
+            $user_info = $m_user->getOne('id,avatarUrl,nickName,wx_mpopenid,is_subscribe',$where,'id desc');
+            if(empty($user_info['wx_mpopenid'])){
+                $subscribe_status = 1;
+            }else{
+                $wechat = new \Common\Lib\Wechat();
+                $access_token = $wechat->getWxAccessToken();
+                $res = $wechat->getWxUserDetail($access_token,$user_info['wx_mpopenid']);
+                if(isset($res['openid']) && isset($res['subscribe'])){
+                    $is_subscribe = intval($res['subscribe']);
+                    if($is_subscribe){
+                        $subscribe_status = 3;
+                    }else{
+                        $subscribe_status = 2;
+                    }
+                    $m_user->updateInfo(array('id'=>$user_info['id']),array('is_subscribe'=>$is_subscribe));
+                }else{
+                    $subscribe_status = 2;
+                }
+            }
+        }
+        $userinfo['subscribe_status'] = $subscribe_status;
         $data['userinfo'] = $userinfo;
         $this->to_back($data);
     }

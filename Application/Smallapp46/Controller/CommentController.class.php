@@ -10,7 +10,7 @@ class CommentController extends CommonController{
         switch(ACTION_NAME) {
             case 'subComment':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1001,'staff_id'=>1001,'box_mac'=>1001);
+                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1001,'staff_id'=>1001,'box_mac'=>1001,'reward_id'=>1002);
                 break;
             case 'reward':
                 $this->is_verify = 1;
@@ -26,6 +26,7 @@ class CommentController extends CommonController{
         $score  = intval($this->params['score']);
         $content = $this->params['content'];
         $staff_id = intval($this->params['staff_id']);
+        $reward_id = intval($this->params['reward_id']);
         $box_mac = $this->params['box_mac'];
         if($score>5){
             $this->to_back(90155);
@@ -58,11 +59,25 @@ class CommentController extends CommonController{
             $data['content']  = $content;
             $data['status']  = 1;
             $data['type']  = $type;
+            if($reward_id>0){
+                $data['reward_id'] = $reward_id;
+            }
             $ret = $m_comment->add($data);
             if($ret){
                 $redis  =  \Common\Lib\SavorRedis::getInstance();
                 $redis->select(1);
                 $redis->set('smallapp:comment:'.$openid.'_'.$box_mac, '1',7200);
+
+                if($staff_id>0 && !empty($box_mac)){
+                    $m_box = new \Common\Model\BoxModel();
+                    $where = array('a.state'=>1,'a.flag'=>0);
+                    $res_box = $m_box->getBoxInfo('d.id as hotel_id',$where);
+                    if(!empty($res_box)){
+                        $m_taskuser = new  \Common\Model\Integral\TaskuserModel();
+                        $m_taskuser->getCommentTask($res_staff['openid'],$res_box[0]['hotel_id']);
+                    }
+                }
+
                 $this->to_back(10000);
             }else {
                 $this->to_back(90154);

@@ -130,6 +130,9 @@ class Smallapp_api {
 
 		    curl_close($ch);
 			$result = json_decode($re,true);
+			$log_content = date("Y-m-d H:i:s").'|result|'.$re."\n";
+			$log_file_name = APP_PATH.'Runtime/Logs/gettoken'.date("Ymd").".log";
+			@file_put_contents($log_file_name, $log_content, FILE_APPEND);
 			if(isset($result['access_token'])){
 				$redis->set($key_token,$result['access_token'],360);
 				$token = $result['access_token'];	
@@ -212,6 +215,10 @@ class Smallapp_api {
         
         curl_close($ch);
         $result = json_decode($re,true);
+        
+        $log_content = date("Y-m-d H:i:s").'|result|'.$re."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/getopenid_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
         return $result;
     }
 }

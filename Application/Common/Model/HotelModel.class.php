@@ -285,6 +285,18 @@ class HotelModel extends Model{
         }
         return $room_num;
     }
+
+    public function checkHotelHasRoom($hotel_id){
+        $sql = "select id from savor_room where hotel_id='$hotel_id' and state=1 and flag=0 order by id desc limit 0,1";
+        $res = $this->query($sql);
+        $is_has_room = 0;
+        if(!empty($res)){
+            $is_has_room = 1;
+        }
+        return $is_has_room;
+    }
+
+
     public function getHotelList($where,$order,$limit,$fields = '*'){
         $data = $this->field($fields)->where($where)->order($order)->limit($limit)->select();
         return $data;

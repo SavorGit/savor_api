@@ -485,4 +485,81 @@ class OrderController extends Controller {
         }
         echo $nowdtime." finish\r\n";
     }
+
+    public function handgiftrefund(){
+        $order_id = I('oid',0,'intval');
+        $nowdtime = date('Y-m-d H:i:s');
+        echo $nowdtime." start\r\n";
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('id'=>$order_id);
+        $res_order = $m_order->getDataList('*',$where,'id asc');
+        if(!empty($res_order)){
+            $diff_time = 86400*5;
+
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(2);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            foreach ($res_order as $v){
+                $order_id=$v['id'];
+                $now_time = time();
+                $order_time = strtotime($v['add_time']);
+                if($now_time-$order_time<$diff_time){
+                    continue;
+                }
+                $p_oid = $v['gift_oid'];
+                $p_id = 0;
+                $pay_fee = 0;
+                while ($p_oid>0){
+                    $tmp_order = $m_order->getInfo(array('id'=>$p_oid));
+                    if(!empty($tmp_order)){
+                        $p_oid = $tmp_order['gift_oid'];
+                        $p_id = $tmp_order['id'];
+                        $pay_fee = $tmp_order['pay_fee'];
+                    }
+                }
+                $res_user = $m_user->getOne('nickName',array('openid'=>$tmp_order['openid']),'');
+
+                echo "original_order_id:{$tmp_order['id']},user:{$res_user['nickName']},pay_money:{$tmp_order['pay_fee']},pay_time:{$tmp_order['pay_time']} \r\n";
+
+                $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$p_id));
+                if(!empty($res_orderserial)){
+                    $res_ordermap = $m_ordermap->getDataList('id',array('order_id'=>$p_id),'id desc',0,1);
+                    $trade_no = $res_ordermap['list'][0]['id'];
+
+                    $refund_money = $v['total_fee'];
+                    if($refund_money<=0){
+                        echo "order_id:$order_id  cancel error money:$refund_money"."\r\n";
+                        continue;
+                    }
+
+                    $trade_info = array('trade_no'=>$trade_no,'batch_no'=>$res_orderserial['serial_order'],'pay_fee'=>$pay_fee,'refund_money'=>$refund_money);
+                    echo "refund_info:".json_encode($trade_info)." \r\n";
+
+
+                    $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                    if(isset($res['err_code'])){
+                        $payconfig = $m_baseinc->getPayConfigOld(2);
+                        $res = $m_wxpay->wxrefund($trade_info,$payconfig);
+                    }
+                    if($res["return_code"]=="SUCCESS" && $res["result_code"]=="SUCCESS" && !isset($res['err_code'])){
+                        $data = array('status'=>62,'finish_time'=>date('Y-m-d H:i:s'));
+                        $where = array('id'=>$v['id']);
+                        $m_order->updateData($where,$data);
+                        echo "order_id:$order_id  cancel and refund ok"."\r\n";
+
+                    }else{
+                        echo "order_id:$order_id  cancel and refund error"."\r\n";
+                    }
+
+                }else{
+                    echo "order_id:$order_id  cancel error"."\r\n";
+                }
+
+            }
+        }
+        echo $nowdtime." finish\r\n";
+    }
 }

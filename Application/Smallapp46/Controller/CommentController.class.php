@@ -10,7 +10,7 @@ class CommentController extends CommonController{
         switch(ACTION_NAME) {
             case 'subComment':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1001,'staff_id'=>1001,'box_mac'=>1001,'reward_id'=>1002);
+                $this->valid_fields = array('openid'=>1001,'score'=>1001,'content'=>1002,'staff_id'=>1001,'box_mac'=>1001,'reward_id'=>1002);
                 break;
             case 'reward':
                 $this->is_verify = 1;

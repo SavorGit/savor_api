@@ -685,5 +685,19 @@ class IndexController extends CommonController{
         $data['is_overtime'] = $is_overtime ? $is_overtime :0;
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
+        
+        /*$redis = SavorRedis::getInstance();
+        $redis->select(1);
+        $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
+        $ret = $redis->get($cache_key);
+        if(empty($ret)){
+            $end_time = strtotime(date('Y-m-d').' 23:59:59');
+            $now_time = time();
+            $diff_time = $end_time - $now_time;
+            $redis->set($cache_key, $box_mac,$diff_time);
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_user->where(array('openid'=>$openid))->setInc('use_time',1);
+        }*/
+        
     }
 }

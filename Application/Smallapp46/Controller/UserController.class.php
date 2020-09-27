@@ -11,7 +11,7 @@ class UserController extends CommonController{
         switch(ACTION_NAME) {
             case 'isRegister':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000);
+                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000,'is_have_link'=>1000);
                 break;
             case 'refuseRegister':
                 $this->is_verify =1;
@@ -51,11 +51,14 @@ class UserController extends CommonController{
         $openid  = $this->params['openid'];
         $page_id = $this->params['page_id'];
         $box_mac = $this->params['box_mac'];
+        $is_have_link = $this->params['is_have_link'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid,use_time', $where);
         $data = array();
+        
+        $redis = SavorRedis::getInstance();
         if(empty($userinfo)){
             $data['openid'] = $openid;
             $data['status'] = 1;
@@ -63,6 +66,8 @@ class UserController extends CommonController{
             $userinfo['openid'] = $openid;
             //$userinfo['subscribe'] = 0;
             $userinfo['subscribe'] = 1;
+            $userinfo['use_time'] = array('use_time_str'=>'本次您是第1次使用热点投屏','cut_sec'=>5);
+            
         }else {
             /*if(!empty($userinfo['wx_mpopenid'])){
                 $wechat = new \Common\Lib\Wechat();
@@ -77,7 +82,29 @@ class UserController extends CommonController{
             }else {
                 $userinfo['subscribe'] = 0;
             }*/
+            
+            $redis->select(1);
+            $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
+            $is_rec = $redis->get($cache_key);
+            if(empty($is_rec)){
+                if($is_have_link==1){
+                    $is_show = true;
+                }else {
+                    $is_show = false;
+                }
+                $use_time = $userinfo['use_time']+1;
+                $use_time_str = '本次您是第'.$use_time.'次使用热点投屏';
+                $userinfo['use_time'] = array('use_time_str'=>$use_time_str,'cut_sec'=>5,'is_show'=>$is_show);
+                
+            }else {
+                $use_time = $userinfo['use_time']+1;
+                $use_time_str = '本次您是第'.$use_time.'次使用热点投屏1111';
+                $userinfo['use_time'] = array('use_time_str'=>$use_time_str,'cut_sec'=>5,'is_show'=>false);
+            }
+            
             $userinfo['subscribe'] = 1;
+            
+            
         }
         $data['userinfo'] = $userinfo;
         if(!empty($box_mac) && $box_mac!='undefined'){
@@ -90,7 +117,8 @@ class UserController extends CommonController{
             $data['userinfo']['is_open_simple'] = $ret['is_open_simple'];
         }
         if($page_id){
-            $redis = SavorRedis::getInstance();
+            
+            
             $redis->select(5);
             $cache_key = C('SAPP_PAGEVIEW_LOG').$openid;
             $map = array();
@@ -98,6 +126,17 @@ class UserController extends CommonController{
             $map['page_id']= $page_id;
             $map['create_time'] = date('Y-m-d H:i:s');
             $redis->rpush($cache_key, json_encode($map));
+            if($page_id == 1 && $is_have_link==1){
+                $redis->select(1);
+                $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
+                
+                $end_time = strtotime(date('Y-m-d').' 23:59:59');
+                $now_time = time();
+                $diff_time = $end_time - $now_time;
+                $redis->set($cache_key, 1,$diff_time);
+                
+            }
+            
         }
         $this->to_back($data);
     }

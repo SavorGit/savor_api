@@ -308,6 +308,7 @@ return array(
     'SAPP_OPTIMIZE_PROGRAM'=>'smallapp:optimize:program',
     'SAPP_FIND_PROGRAM'=>'smallapp:findprogram',
     'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
+    'SMALLAPP_DAY_QRCDE'     =>'smallapp:day:qrcode:',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

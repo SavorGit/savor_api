@@ -18,7 +18,7 @@ class ForscreenLogController extends CommonController{
                    'resource_type'=>1000,'resource_id'=>1000,
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                    'forscreen_id'=>1000,'small_app_id'=>1001,
-                   'goods_id'=>1002,
+                   'goods_id'=>1002,'create_time'=>1002
                );
                break;
         }
@@ -46,6 +46,8 @@ class ForscreenLogController extends CommonController{
         $is_share      = $this->params['is_share'] ? $this->params['is_share'] : 0;
         $duration      = $this->params['duration'] ? $this->params['duration'] : 0.00;
         $small_app_id  = $this->params['small_app_id'] ? $this->params['small_app_id'] :1;
+        $create_time = !empty($this->params['create_time']) ? $this->params['create_time'] : '';
+
         $data = array();
         $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
@@ -57,7 +59,11 @@ class ForscreenLogController extends CommonController{
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs;
         $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
-        $data['create_time'] = date('Y-m-d H:i:s');
+        if(!empty($create_time)){
+            $data['create_time'] = date('Y-m-d H:i:s',strtotime($create_time));
+        }else{
+            $data['create_time'] = date('Y-m-d H:i:s');
+        }
         $data['res_sup_time']= $res_sup_time;
         $data['res_eup_time']= $res_eup_time;
         $data['resource_size'] = $resource_size;

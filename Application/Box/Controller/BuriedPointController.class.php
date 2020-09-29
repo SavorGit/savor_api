@@ -53,6 +53,7 @@ class BuriedPointController extends CommonController{
         $is_exist     = intval($this->params['is_exist']);//是否存在
         $is_exit      = intval($this->params['is_exit']);//是否退出
         $is_download  = intval($this->params['is_download']);//是否下载完成
+        $is_play  = intval($this->params['is_play']);//是否播放
         $is_break     = $this->params['is_break'];
         $receive_nettytime = $this->params['receive_nettytime'];
 
@@ -96,6 +97,24 @@ class BuriedPointController extends CommonController{
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
+        if($is_play==1){
+            $box_play_time = getMillisecond();
+
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(5);
+            $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
+            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+                'box_mac'=>$box_mac,'box_play_time'=>$box_play_time);
+            $redis->rpush($cache_key, json_encode($data));
+
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $params = array(
+                'box_play_time'=>$box_play_time,
+            );
+            $m_forscreen->recordTrackLog($req_id,$params);
+            $this->to_back(10000);
+        }
+
         if($is_download==1){
             $box_finish_downtime = getMillisecond();
 
@@ -113,6 +132,7 @@ class BuriedPointController extends CommonController{
             $m_forscreen->recordTrackLog($req_id,$params);
             $this->to_back(10000);
         }
+
         if(!$is_exit){
             switch ($is_exist){
                 case 1://资源已存在于机顶盒，不走下载逻辑

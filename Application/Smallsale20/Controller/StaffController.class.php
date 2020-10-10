@@ -157,8 +157,8 @@ class StaffController extends CommonController{
             foreach ($res_box as $k=>$v) {
                 $info = array('room_id'=>$v['room_id'],'room_name'=>$v['box_name'],
                     'staff_id'=>0,'staff_name'=>'');
-                $where = array('a.hotel_id'=>$hotel_id,'a.room_id'=>$v['room_id'],
-                    'a.status'=>1,'merchant.status'=>1);
+                $where = array('a.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+                $where['a.room_ids'] = array('like',"%,{$v['room_id']},%");
                 $res_staff = $m_staff->getMerchantStaff('a.id,a.openid',$where);
                 if(!empty($res_staff)){
                     $where = array('openid'=>$res_staff[0]['openid']);
@@ -199,23 +199,57 @@ class StaffController extends CommonController{
         }
         if($staff_id){
             $where = array('a.id'=>$staff_id);
-            $res = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+            $res = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id,a.room_ids',$where);
             if(empty($res) || $res[0]['hotel_id']!=$hotel_id){
                 $this->to_back(93030);
             }
-            $where = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
+            $where = array('hotel_id'=>$hotel_id);
+            $where['room_ids'] = array('like',"%,$room_id,%");
             $res = $m_staff->getInfo($where);
             if(!empty($res)){
-                $data = array('hotel_id'=>0,'room_id'=>0);
+                if($res['id']!=$staff_id){
+                    $room_ids = trim($res['room_ids'],',');
+                    $room_ids = explode(',',$room_ids);
+                    $id_key = array_search($room_id,$room_ids);
+                    unset($room_ids[$id_key]);
+                    if(!empty($room_ids)){
+                        $room_ids = join(',',$room_ids);
+                        $room_ids = ",$room_ids,";
+                    }else{
+                        $hotel_id = 0;
+                        $room_ids = '';
+                    }
+                    $data = array('hotel_id'=>$hotel_id,'room_ids'=>$room_ids);
+                    $m_staff->updateData(array('id'=>$res['id']),$data);
+                }
+            }else{
+                if(!empty($res['room_ids'])){
+                    $room_ids = $res['room_ids']."$room_id,";
+                }else{
+                    $room_ids = ",$room_id,";
+                }
+                $data = array('hotel_id'=>$hotel_id,'room_ids'=>$room_ids);
+                $m_staff->updateData(array('id'=>$staff_id),$data);
+            }
+        }else{
+            $where = array('hotel_id'=>$hotel_id);
+            $where['room_ids'] = array('like',"%,$room_id,%");
+            $res = $m_staff->getInfo($where);
+            if(!empty($res)){
+                $room_ids = trim($res['room_ids'],',');
+                $room_ids = explode(',',$room_ids);
+                $id_key = array_search($room_id,$room_ids);
+                unset($room_ids[$id_key]);
+                if(!empty($room_ids)){
+                    $room_ids = join(',',$room_ids);
+                    $room_ids = ",$room_ids,";
+                }else{
+                    $hotel_id = 0;
+                    $room_ids = '';
+                }
+                $data = array('hotel_id'=>$hotel_id,'room_ids'=>$room_ids);
                 $m_staff->updateData(array('id'=>$res['id']),$data);
             }
-
-            $data = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
-            $m_staff->updateData(array('id'=>$staff_id),$data);
-        }else{
-            $where = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
-            $data = array('hotel_id'=>0,'room_id'=>0);
-            $m_staff->updateData($where,$data);
         }
         $this->to_back(array());
     }

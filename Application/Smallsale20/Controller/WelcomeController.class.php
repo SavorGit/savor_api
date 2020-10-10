@@ -406,7 +406,9 @@ class WelcomeController extends CommonController{
             $rets = $m_box->getBoxInfo('a.id box_id,c.id room_id,d.id hotel_id',$map);
             $hotel_info = $rets[0];
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $res_staff = $m_staff->getInfo(array('hotel_id'=>$res_welcome['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
+            $staff_where = array('hotel_id'=>$res_welcome['hotel_id'],'status'=>1);
+            $staff_where['room_ids'] = array('like',"%,{$hotel_info['room_id']},%");
+            $res_staff = $m_staff->getInfo($staff_where);
             $message['type'] = 1;
             $message['waiterName'] = '';
             $message['waiterIconUrl'] = '';
@@ -441,7 +443,9 @@ class WelcomeController extends CommonController{
 
                 $room_id = $box_info['room_id'];
                 $m_staff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_staff->getInfo(array('hotel_id'=>$res_welcome['hotel_id'],'room_id'=>$room_id));
+                $staff_where = array('hotel_id'=>$res_welcome['hotel_id'],'status'=>1);
+                $staff_where['room_ids'] = array('like',"%,$room_id,%");
+                $res_staff = $m_staff->getInfo($staff_where);
                 $message['type'] = 1;
                 $message['waiterName'] = '';
                 $message['waiterIconUrl'] = '';

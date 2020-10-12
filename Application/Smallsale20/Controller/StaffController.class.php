@@ -199,8 +199,8 @@ class StaffController extends CommonController{
         }
         if($staff_id){
             $where = array('a.id'=>$staff_id);
-            $res = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id,a.room_ids',$where);
-            if(empty($res) || $res[0]['hotel_id']!=$hotel_id){
+            $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id,a.room_ids',$where);
+            if(empty($res_staff) || $res_staff[0]['hotel_id']!=$hotel_id){
                 $this->to_back(93030);
             }
             $where = array('hotel_id'=>$hotel_id);
@@ -223,8 +223,8 @@ class StaffController extends CommonController{
                     $m_staff->updateData(array('id'=>$res['id']),$data);
                 }
             }else{
-                if(!empty($res['room_ids'])){
-                    $room_ids = $res['room_ids']."$room_id,";
+                if(!empty($res_staff[0]['room_ids'])){
+                    $room_ids = $res_staff[0]['room_ids']."$room_id,";
                 }else{
                     $room_ids = ",$room_id,";
                 }

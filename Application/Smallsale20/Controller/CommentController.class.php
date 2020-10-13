@@ -33,7 +33,7 @@ class CommentController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_id';
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_ids';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
@@ -48,7 +48,7 @@ class CommentController extends CommonController{
 
         $res_data = array('datalist'=>array(),'total'=>0,'avg_score'=>0,
             'start_date'=>$start_date,'end_date'=>$end_date);
-        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_id'])){
+        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_ids'])){
             $this->to_back($res_data);
         }
 

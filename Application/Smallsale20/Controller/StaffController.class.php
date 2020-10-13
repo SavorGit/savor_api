@@ -52,8 +52,14 @@ class StaffController extends CommonController{
                 $staff_where['level'] = array('in',array(2,3));
             }elseif($res_staff[0]['level']==2){
                 $staff_where['level'] = 3;
+            }elseif($res_staff[0]['level']==3){
+                $staff_where = array('id'=>$res_staff[0]['id']);
             }
             $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
+            if($res_staff[0]['level']==2){
+                $self_staffs = $m_staff->getDataList('id,openid,parent_id,level',array('id'=>$res_staff[0]['id']),'id desc');
+                $res_staffs = array_merge($self_staffs,$res_staffs);
+            }
         }else{
             if($res_staff[0]['level']==0 || $res_staff[0]['level']==1){
                 $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1);
@@ -63,6 +69,9 @@ class StaffController extends CommonController{
                 $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
                 $staff_where['parent_id'] = $res_staff[0]['id'];
                 $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
+
+                $self_staffs = $m_staff->getDataList('id,openid,parent_id,level',array('id'=>$res_staff[0]['id']),'id desc');
+                $res_staffs = array_merge($self_staffs,$res_staffs);
             }else{
                 $res_staffs = $m_staff->getStaffsByOpenid($openid,0,$all_nums);
             }
@@ -119,12 +128,12 @@ class StaffController extends CommonController{
         $openid = $this->params['openid'];
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_id';
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_ids';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         if(empty($res_staff)){
             $this->to_back(93001);
         }
-        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_id'])){
+        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_ids'])){
             $score = 0;
         }else{
             $condition = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
@@ -199,7 +208,7 @@ class StaffController extends CommonController{
         }
         if($staff_id){
             $where = array('a.id'=>$staff_id);
-            $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id,a.room_ids',$where);
+            $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,merchant.hotel_id,a.room_ids',$where);
             if(empty($res_staff) || $res_staff[0]['hotel_id']!=$hotel_id){
                 $this->to_back(93030);
             }
@@ -215,13 +224,28 @@ class StaffController extends CommonController{
                     if(!empty($room_ids)){
                         $room_ids = join(',',$room_ids);
                         $room_ids = ",$room_ids,";
+                        $data = array('hotel_id'=>$hotel_id,'room_ids'=>$room_ids);
                     }else{
-                        $hotel_id = 0;
-                        $room_ids = '';
+                        $data = array('hotel_id'=>0,'room_ids'=>'');
+                    }
+                    $m_staff->updateData(array('id'=>$res['id']),$data);
+
+                    if(!empty($res_staff[0]['room_ids'])){
+                        $room_ids = trim($res_staff[0]['room_ids'],',');
+                        $room_ids = explode(',',$room_ids);
+                        $id_key = array_search($room_id,$room_ids);
+                        if($id_key===false){
+                            $room_ids = $res_staff[0]['room_ids']."$room_id,";
+                        }else{
+                            $room_ids = $res_staff[0]['room_ids'];
+                        }
+                    }else{
+                        $room_ids = ",$room_id,";
                     }
                     $data = array('hotel_id'=>$hotel_id,'room_ids'=>$room_ids);
-                    $m_staff->updateData(array('id'=>$res['id']),$data);
+                    $m_staff->updateData(array('id'=>$staff_id),$data);
                 }
+
             }else{
                 if(!empty($res_staff[0]['room_ids'])){
                     $room_ids = $res_staff[0]['room_ids']."$room_id,";

@@ -51,7 +51,7 @@ class StaffController extends CommonController{
             if($res_staff[0]['level']==0 || $res_staff[0]['level']==1){
                 $staff_where['level'] = array('in',array(2,3));
             }elseif($res_staff[0]['level']==2){
-                $staff_where['level'] = 3;
+                $staff_where['level'] = array('in',array(2,3));
             }elseif($res_staff[0]['level']==3){
                 $staff_where = array('id'=>$res_staff[0]['id']);
             }
@@ -66,7 +66,8 @@ class StaffController extends CommonController{
                 $staff_where['level'] = array('in',array(2,3));
                 $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             }elseif($res_staff[0]['level']==2){
-                $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>3);
+                $staff_where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1);
+                $staff_where['level'] = array('in',array(2,3));
                 $staff_where['parent_id'] = $res_staff[0]['id'];
                 $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
 

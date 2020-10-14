@@ -220,7 +220,9 @@ class IndexController extends CommonController{
                     $waiter_str = '服务专员';
 
                     $m_staff = new \Common\Model\Integral\StaffModel();
-                    $res_staff = $m_staff->getInfo(array('hotel_id'=>$hotel_info['hotel_id'],'room_id'=>$hotel_info['room_id'],'status'=>1));
+                    $staff_where = array('hotel_id'=>$hotel_info['hotel_id'],'status'=>1);
+                    $staff_where['room_ids'] = array('like',"%,{$hotel_info['room_id']},%");
+                    $res_staff = $m_staff->getInfo($staff_where);
                     if(!empty($res_staff)){
                         $staff_openid = $res_staff['openid'];
                         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -380,7 +382,7 @@ class IndexController extends CommonController{
                 $room_id = $box_info['room_id'];
                 $m_staff = new \Common\Model\Integral\StaffModel();
                 $staff_where = array('hotel_id'=>$hotel_id,'status'=>1);
-                $staff_where['room_id'] = array('like',"%,$room_id,%");
+                $staff_where['room_ids'] = array('like',"%,$room_id,%");
                 $res_staff = $m_staff->getInfo($staff_where);
                 if(!empty($res_staff)){
                     $is_comment = 1;

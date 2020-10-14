@@ -72,6 +72,7 @@ class CommentController extends CommonController{
             $datalist = array();
 
             $m_commenttag = new \Common\Model\Smallapp\CommenttagidsModel();
+            $m_box = new \Common\Model\BoxModel();
             foreach ($res_comment['list'] as $v){
                 $where = array('id'=>$v['user_id']);
                 $fields = 'openid,avatarUrl,nickName';
@@ -90,17 +91,18 @@ class CommentController extends CommonController{
                         $info['content'] = join(',',$tags);
                     }
                 }
-                $staff_info = $m_staff->getInfo(array('id'=>$v['staff_id']));
-                $hotel_id = $staff_info['hotel_id'];
-                $room_id = $staff_info['room_id'];
-                $cache_key = 'savor_room_'.$room_id;
-                $redis_room_info = $redis->get($cache_key);
-                $room_info = json_decode($redis_room_info, true);
-                $cache_key = 'savor_hotel_'.$hotel_id;
-                $redis_hotel_info = $redis->get($cache_key);
-                $hotel_info = json_decode($redis_hotel_info, true);
-                $info['hotel_name'] = $hotel_info['name'];
-                $info['room_name'] = $room_info['name'];
+                $room_name = $hotel_name = '';
+                if(!empty($v['box_mac'])){
+                    $fileds = 'c.name as room_name,d.name as hotel_name';
+                    $res_box = $m_box->getBoxInfo($fileds,array('a.mac'=>$v['box_mac'],'a.state'=>1,'a.flag'=>0));
+                    if(!empty($res_box)){
+                        $room_name = $res_box[0]['room_name'];
+                        $hotel_name = $res_box[0]['hotel_name'];
+                    }
+                }
+                $info['hotel_name'] = $hotel_name;
+                $info['room_name'] = $room_name;
+
                 $datalist[] = $info;
             }
             $res_data['datalist'] = $datalist;

@@ -345,6 +345,7 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $openid  = $this->params['openid'];
         $type    = $this->params['type'];
+        if($openid=='undefined') $this->to_back(10000);
         $code = rand(100, 999);
         $redis = SavorRedis::getInstance();
         $redis->select(5);

@@ -171,6 +171,9 @@ class UserController extends CommonController{
                 }
             }
         }
+        if($hotel_id==791){
+            $subscribe_status = 3;
+        }
         $userinfo['subscribe_status'] = $subscribe_status;
         $data['userinfo'] = $userinfo;
         $this->to_back($data);

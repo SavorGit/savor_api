@@ -46,6 +46,11 @@ class FileforscreenController extends CommonController{
         $serial_number = $this->params['serial_number'] ? $this->params['serial_number'] :'';
 
         $imgs = json_encode(array($oss_addr));
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
 
         $data = array();
         $data['openid'] = $openid;

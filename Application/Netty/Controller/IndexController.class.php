@@ -39,6 +39,14 @@ class IndexController extends CommonController{
         $log_file_name = APP_PATH.'Runtime/Logs/'.'netty_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
+        if(isset($message['openid'])){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res = $m_user->getOne('id',array('openid'=>$message['openid'],'status'=>1),'id desc');
+            if(empty($res)){
+                $this->to_back(92010);
+            }
+        }
+
         if(isset($message['avatarUrl'])){
             $head_pic = '';
             if(!empty($message['avatarUrl'])){

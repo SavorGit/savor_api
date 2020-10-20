@@ -556,6 +556,23 @@ class IndexController extends CommonController{
             }else{
                 $data['duration'] = 0;
             }
+            $m_box = new \Common\Model\BoxModel();
+            $m_box = new \Common\Model\BoxModel();
+            $box_info = $m_box->getHotelInfoByBoxMacNew($box_mac);
+            $data['area_id']    = $box_info['area_id'];
+            $data['area_name']  = $box_info['area_name'];
+            $data['hotel_id']   = $box_info['hotel_id'];
+            $data['hotel_name'] = $box_info['hotel_name'];
+            $data['room_id']    = $box_info['room_id'];
+            $data['room_name']  = $box_info['room_name'];
+            $data['box_id']     = $box_info['box_id'];
+            $data['is_4g']      = $box_info['is_4g'];
+            $data['box_type']   = $box_info['box_type'];
+            $data['hotel_box_type'] = $box_info['hotel_box_type'];
+            $data['hotel_is_4g']= $box_info['hotel_is_4g'];
+            $data['box_name']   = $box_info['box_name'];
+            
+            
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
     

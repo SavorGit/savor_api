@@ -24,13 +24,13 @@ class ForscreenController extends CommonController{
         $versionCode = intval($this->params['versionCode']);
         $data = array();
         
-        if(empty($versionCode) || $versionCode <$box_min_version_code){  //上线前替换1234
+        if(empty($versionCode) || $versionCode <$box_min_version_code){
             $data['is_sapp_forscreen'] = 0;
             $data['is_simple_sapp_forscreen'] = 0;
             $data['is_open_interactscreenad'] = 0;
             $data['is_open_netty'] = 0;
             $this->to_back($data);
-        }else if($versionCode>=$box_min_version_code){//上线前替换1234
+        }else if($versionCode>=$box_min_version_code){
             $m_box = new \Common\Model\BoxModel();
             $where = array();
             $where['mac'] = $box_mac;
@@ -51,6 +51,13 @@ class ForscreenController extends CommonController{
             $data['is_open_signin']            = intval($box_info['is_open_signin']);
             $data['activity_adv_playtype']     = intval($sys_info['activity_adv_playtype']);//1替换 2队列
             $data['simple_upload_size']        = intval(C('SMALLAPP_JJ_UPLOAD_SIZE'));      //极简版投屏上传资源大小限制
+            $data['qrcode_gif']                = 'http://'.C('OSS_HOST').'/media/resource/cKxYpSAGnG.gif';
+            $data['qrcode_gif_filename']       = 'cKxYpSAGnG.gif';
+            $data['qrcode_gif_md5']            = '0db5459add3a662b3dfca0c222aef8ac';
+//            $data['qrcode_takttime']           = 60;
+//            $data['qrcode_showtime']           = 16;
+            $data['qrcode_takttime']           = 30;
+            $data['qrcode_showtime']           = 60;
             $this->to_back($data);
         }
     }

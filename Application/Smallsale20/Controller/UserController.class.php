@@ -265,6 +265,9 @@ class UserController extends CommonController{
                 $hotel_has_room = 1;
             }else {
                 $data['role_type'] = $rts['level'];
+                if($rts['level']==3){
+                    $data['role_type'] = 2;
+                }
             }
             $data['hotel_has_room'] = $hotel_has_room;
             $data = $this->getServiceModel($data,$rts['service_model_id']);

@@ -64,25 +64,9 @@ class UserController extends CommonController{
             $data['status'] = 1;
             $m_user->addInfo($data);
             $userinfo['openid'] = $openid;
-            //$userinfo['subscribe'] = 0;
             $userinfo['subscribe'] = 1;
             $userinfo['use_time'] = array('use_time_str'=>'本次您是第1次使用热点投屏','cut_sec'=>5);
-            
-        }else {
-            /*if(!empty($userinfo['wx_mpopenid'])){
-                $wechat = new \Common\Lib\Wechat();
-                $access_token = $wechat->getWxAccessToken();
-                if(!empty($$access_token)){
-                    $res = $wechat->getWxUserDetail($access_token ,$userinfo['wx_mpopenid']);
-                    $userinfo['subscribe'] = $res['subscribe'];
-                }else {
-                    $userinfo['subscribe'] = 0;
-                }
-                
-            }else {
-                $userinfo['subscribe'] = 0;
-            }*/
-            
+        }else{
             $redis->select(1);
             $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
             $is_rec = $redis->get($cache_key);
@@ -101,10 +85,7 @@ class UserController extends CommonController{
                 $use_time_str = '本次您是第'.$use_time.'次使用热点投屏1111';
                 $userinfo['use_time'] = array('use_time_str'=>$use_time_str,'cut_sec'=>5,'is_show'=>false);
             }
-            
             $userinfo['subscribe'] = 1;
-            
-            
         }
         $data['userinfo'] = $userinfo;
         if(!empty($box_mac) && $box_mac!='undefined'){
@@ -117,8 +98,6 @@ class UserController extends CommonController{
             $data['userinfo']['is_open_simple'] = $ret['is_open_simple'];
         }
         if($page_id){
-            
-            
             $redis->select(5);
             $cache_key = C('SAPP_PAGEVIEW_LOG').$openid;
             $map = array();
@@ -134,10 +113,17 @@ class UserController extends CommonController{
                 $now_time = time();
                 $diff_time = $end_time - $now_time;
                 $redis->set($cache_key, 1,$diff_time);
-                
             }
-            
         }
+        $guide_prompt = array();
+        $redis->select(5);
+        $key = C('SAPP_GUIDE_PROMPT').$openid;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)) {
+            $res_data = json_decode($res_cache, true);
+            $guide_prompt = array_keys($res_data);
+        }
+        $data['userinfo']['guide_prompt'] = $guide_prompt;
         $this->to_back($data);
     }
 

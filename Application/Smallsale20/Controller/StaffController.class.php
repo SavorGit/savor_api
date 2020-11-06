@@ -57,8 +57,17 @@ class StaffController extends CommonController{
             }
             $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
             if($res_staff[0]['level']==2){
-                $self_staffs = $m_staff->getDataList('id,openid,parent_id,level',array('id'=>$res_staff[0]['id']),'id desc');
-                $res_staffs = array_merge($self_staffs,$res_staffs);
+                $is_self = 0;
+                foreach ($res_staffs as $v){
+                    if($v['id']==$res_staff[0]['id']){
+                        $is_self = 1;
+                        break;
+                    }
+                }
+                if($is_self==0){
+                    $self_staffs = $m_staff->getDataList('id,openid,parent_id,level',array('id'=>$res_staff[0]['id']),'id desc');
+                    $res_staffs = array_merge($self_staffs,$res_staffs);
+                }
             }
         }else{
             if($res_staff[0]['level']==0 || $res_staff[0]['level']==1){

@@ -583,6 +583,16 @@ function getgeoByloa($lat,$lon){
         return $re['result'];
     }
 }
+function getgeoByTc($lat,$lon){
+    $ak = C('BAIDU_GEO_KEY');
+    $url = 'http://api.map.baidu.com/geoconv/v1/?coords='.$lon.','.$lat.'&from=1&to=5&ak='.$ak;
+    
+    $result = file_get_contents($url);
+    $re = json_decode($result,true);
+    if($re && $re['status'] == 0){
+        return $re['result'];
+    }
+}
 
 function getGDgeocodeByAddress($address){
     $key = C('GAODE_KEY');
@@ -648,4 +658,20 @@ function getRandNums($min=0,$max=100,$num=10){
     
     $result = array_slice($numbers,0,$num);
     return $result;
+}
+
+function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true)
+{
+ $pi80 = M_PI / 180;
+ $lat1 *= $pi80;
+ $lng1 *= $pi80;
+ $lat2 *= $pi80;
+ $lng2 *= $pi80;
+ $r = 6372.797; // mean radius of Earth in km
+ $dlat = $lat2 - $lat1;
+ $dlng = $lng2 - $lng1;
+ $a = sin($dlat/2)*sin($dlat/2)+cos($lat1)*cos($lat2)*sin($dlng/2)*sin($dlng/2);
+ $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+ $km = $r * $c;
+ return ($miles ? ($km * 0.621371192) : $km);
 }

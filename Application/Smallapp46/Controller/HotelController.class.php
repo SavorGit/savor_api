@@ -71,8 +71,8 @@ class HotelController extends CommonController{
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in',$hotel_box_type_arr);
         $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883');
-        //$order = " a.id asc";
-        //$limit = " 0 ,".$offset;
+        $order = " a.id asc";
+        $limit = " 0 ,".$offset;
         
         $hotel_list = $m_hotel->alias('a')
                 ->join('savor_hotel_ext b on a.id=b.hotel_id','left')
@@ -80,8 +80,8 @@ class HotelController extends CommonController{
                 ->join('savor_hotel_food_style d on b.food_style_id=d.id','left')
                 ->field($fields)
                 ->where($where)
-                ->order()
-                ->limit()
+                ->order($order)
+                ->limit($limit)
                 ->select();
         
         foreach($hotel_list as $key=>$v){
@@ -97,22 +97,28 @@ class HotelController extends CommonController{
             if(empty($v['food_name'])){
                 $hotel_list[$key]['food_name'] = '';
             }
-            $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
-            if($v['gps']!='' && $longitude>0 && $latitude>0 ){
+            if($v['img_url']){
+                $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
+            }else {
+                $hotel_list[$key]['img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+            }
+            
+            $hotel_list[$key]['dis'] = '';
+            /*if($v['gps']!='' && $longitude>0 && $latitude>0 ){
                 $rt = getgeoByTc($latitude,$longitude);
                 
                 $latitude = $rt[0]['y'];
                 $longitude = $rt[0]['x'];
                
                 $gps_arr = explode(',',$v['gps']);
-                $dis = getDistance($longitude,$latitude,$gps_arr[0],$gps_arr[1]);
-                $hotel_list[$key]['dis'] = '';
+                $dis = getDistance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                $hotel_list[$key]['dis'] = $dis;
             }else {
                 $hotel_list[$key]['dis'] = '';
-            }
+            }*/
         }
-        sortArrByOneField($hotel_list,'dis');
-        $hotel_list = array_slice($hotel_list,0,$offset);
+        //sortArrByOneField($hotel_list,'dis');
+        //$hotel_list = array_slice($hotel_list,0,$offset);
         $this->to_back($hotel_list);
         
         

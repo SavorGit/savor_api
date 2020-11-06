@@ -673,5 +673,10 @@ function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true)
  $a = sin($dlat/2)*sin($dlat/2)+cos($lat1)*cos($lat2)*sin($dlng/2)*sin($dlng/2);
  $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
  $km = $r * $c;
- return ($miles ? ($km * 0.621371192) : $km);
+ $dis = round(($miles ? ($km * 0.621371192) : $km),2);
+ if($dis<1){
+     return ($dis*1000).'m';
+ } else {
+     return $dis.'km';
+ }
 }

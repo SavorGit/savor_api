@@ -95,8 +95,6 @@ class CommentController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('id'=>$staff_id,'status'=>1);
-        $where['hotel_id'] = array('neq',0);
-        $where['room_id']  = array('neq',0);
         $res_staff = $m_staff->getInfo($where);
         if(empty($res_staff)){
             $this->to_back(90156);

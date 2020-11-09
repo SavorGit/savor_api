@@ -260,6 +260,10 @@ class IndexController extends CommonController{
             $data['room_name'] = $hotel_info['room_name'];
             $data['wifi_name'] = $hotel_info['wifi_name'];
             $data['wifi_password'] = $hotel_info['wifi_password'];
+            $data['chunkSize']  = 1024*1024*3;
+            $data['maxConcurrency'] = 4;
+            $data['limit_video_size'] = 10485760;
+            $data['tail_lenth']   = 1024*1024;
         }else{
             $data = array('is_have'=>0);
         }

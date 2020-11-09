@@ -35,6 +35,7 @@ class ShopController extends CommonController{
         $action = isset($this->params['action'])?intval($this->params['action']):0;
         $pagesize = 10;
 
+        /*
         $cache_key = C('SAPP_SHOPDATA').$openid.$category_id.$keywords;
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
@@ -46,8 +47,6 @@ class ShopController extends CommonController{
         if(!empty($res_goods)){
             $res_goods = json_decode($res_goods,true);
         }
-
-        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         if($is_refresh || empty($res_goods['total'])){
             if($category_id){
                 $fields = "id,name,price,line_price,'0' as media_id,cover_imgs,amount,type,gtype,add_time";
@@ -66,6 +65,7 @@ class ShopController extends CommonController{
                 $where['status'] = 1;
                 $where['gtype'] = array('in',array(1,2));
 
+                $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
                 $all_goods = $m_dishgoods->getDataList($fields,$where,$orderby);
                 $res_goods = array('list'=>$all_goods,'total'=>count($all_goods));
             }else{
@@ -81,6 +81,17 @@ class ShopController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $res_goods['list'] = array_slice($res_goods['list'],0,$all_nums);
+        */
+
+        $all_nums = $page * $pagesize;
+        $where['type'] = 22;
+        $where['status'] = 1;
+        $where['gtype'] = array('in',array(1,2));
+        if(!empty($keywords)){
+            $where['name'] = array('like',"%$keywords%");
+        }
+        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_dishgoods->getDataList('*',$where,'sort desc,id desc',0,$all_nums);
 
         $res_data = array('total'=>0,'datalist'=>array());
         if($res_goods['total']){

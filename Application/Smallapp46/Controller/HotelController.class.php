@@ -104,21 +104,21 @@ class HotelController extends CommonController{
             }
             
             $hotel_list[$key]['dis'] = '';
-            /*if($v['gps']!='' && $longitude>0 && $latitude>0 ){
-                $rt = getgeoByTc($latitude,$longitude);
+            if($v['gps']!='' && $longitude>0 && $latitude>0 ){
+                //$rt = getgeoByTc($latitude,$longitude);
                 
-                $latitude = $rt[0]['y'];
-                $longitude = $rt[0]['x'];
+                //$latitude = $rt[0]['y'];
+                //$longitude = $rt[0]['x'];
                
                 $gps_arr = explode(',',$v['gps']);
                 $dis = getDistance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
                 $hotel_list[$key]['dis'] = $dis;
             }else {
                 $hotel_list[$key]['dis'] = '';
-            }*/
+            }
         }
-        //sortArrByOneField($hotel_list,'dis');
-        //$hotel_list = array_slice($hotel_list,0,$offset);
+        sortArrByOneField($hotel_list,'dis');
+        $hotel_list = array_slice($hotel_list,0,$offset);
         $this->to_back($hotel_list);
         
         

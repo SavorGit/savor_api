@@ -674,6 +674,7 @@ function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true)
  $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
  $km = $r * $c;
  $dis = round(($miles ? ($km * 0.621371192) : $km),2);
+ return $dis;
  if($dis<1){
      return ($dis*1000).'m';
  } else {

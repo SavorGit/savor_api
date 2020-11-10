@@ -35,7 +35,6 @@ class HotelController extends CommonController{
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
         $hotel_box_type_arr = array_keys($hotel_box_type_arr);
-        
         $page     = $this->params['page'] ? $this->params['page'] :1;
         $area_id  = $this->params['area_id'] ? $this->params['area_id'] :1;
         $county_id = $this->params['county_id'];
@@ -43,17 +42,13 @@ class HotelController extends CommonController{
         $avg_id   = $this->params['avg_exp_id'];
         $latitude = $this->params['latitude'];
         $longitude = $this->params['longitude'];
-        
         $pagesize = 10;
-        
-        $offset = $page * $pagesize;
-        
+
         $m_hotel = new \Common\Model\HotelModel();
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,b.food_style_id,
                    b.avg_expense,concat('".$oss_host."',c.`oss_addr`) as img_url,
                    d.name food_name,a.gps";
         $where = array();
-        
         if($area_id){
             $where['a.area_id'] = $area_id;
         }
@@ -66,34 +61,37 @@ class HotelController extends CommonController{
         if($avg_id){
             $where['avg_expense'] = $this->getAvgWhere($avg_id);
         }
-        
+
         $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in',$hotel_box_type_arr);
         $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883');
         $order = " a.id asc";
+        $offset = $page * $pagesize;
         $limit = " 0 ,".$offset;
-        
+
         $hotel_list = $m_hotel->alias('a')
-                ->join('savor_hotel_ext b on a.id=b.hotel_id','left')
-                ->join('savor_media c on b.hotel_cover_media_id=c.id','left')
-                ->join('savor_hotel_food_style d on b.food_style_id=d.id','left')
-                ->field($fields)
-                ->where($where)
-                ->order($order)
-                ->limit($limit)
-                ->select();
-        
+            ->join('savor_hotel_ext b on a.id=b.hotel_id','left')
+            ->join('savor_media c on b.hotel_cover_media_id=c.id','left')
+            ->join('savor_hotel_food_style d on b.food_style_id=d.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($limit)
+            ->select();
+        $bd_lnglat = array();
+        if($longitude>0 && $latitude>0 ) {
+            $bd_lnglat = getgeoByTc($latitude, $longitude);
+        }
         foreach($hotel_list as $key=>$v){
             $sql ="select id from savor_integral_merchant where hotel_id=".$v['hotel_id']." and status=1";
-            
             $merchant_info = M()->query($sql);
             if(!empty($merchant_info)){
                 $merchant_info = $merchant_info[0];
                 $hotel_list[$key]['merchant_id'] = $merchant_info['id'];
             }else {
                 $hotel_list[$key]['merchant_id'] = 0;
-            }    
+            }
             if(empty($v['food_name'])){
                 $hotel_list[$key]['food_name'] = '';
             }
@@ -102,16 +100,14 @@ class HotelController extends CommonController{
             }else {
                 $hotel_list[$key]['img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
             }
-            
+
             $hotel_list[$key]['dis'] = '';
-            if($v['gps']!='' && $longitude>0 && $latitude>0 ){
-                //$rt = getgeoByTc($latitude,$longitude);
-                
-                //$latitude = $rt[0]['y'];
-                //$longitude = $rt[0]['x'];
-               
+            if($v['gps']!='' && $longitude>0 && $latitude>0){
+                $latitude = $bd_lnglat[0]['y'];
+                $longitude = $bd_lnglat[0]['x'];
+
                 $gps_arr = explode(',',$v['gps']);
-                $dis = getDistance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
                 $hotel_list[$key]['dis'] = $dis;
             }else {
                 $hotel_list[$key]['dis'] = '';
@@ -119,10 +115,22 @@ class HotelController extends CommonController{
         }
         sortArrByOneField($hotel_list,'dis');
         $hotel_list = array_slice($hotel_list,0,$offset);
+        foreach ($hotel_list as $k=>$v){
+            if(!empty($v['dis'])){
+                if($v['dis']>1000){
+                    $tmp_dis = $v['dis']/1000;
+                    $dis = sprintf('%0.2f',$tmp_dis);
+                    $dis = $dis.'km';
+                }else{
+                    $dis = intval($v['dis']);
+                    $dis = $dis.'m';
+                }
+                $hotel_list[$k]['dis'] = $dis;
+            }
+        }
         $this->to_back($hotel_list);
-        
-        
     }
+
     public function getExplist(){
         $data = $this->avg_exp_arr;
         $this->to_back($data);

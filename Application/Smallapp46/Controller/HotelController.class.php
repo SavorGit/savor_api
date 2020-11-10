@@ -76,8 +76,8 @@ class HotelController extends CommonController{
             ->join('savor_hotel_food_style d on b.food_style_id=d.id','left')
             ->field($fields)
             ->where($where)
-            ->order($order)
-            ->limit($limit)
+            ->order()
+            ->limit()
             ->select();
         $bd_lnglat = array();
         if($longitude>0 && $latitude>0 ) {
@@ -108,26 +108,24 @@ class HotelController extends CommonController{
 
                 $gps_arr = explode(',',$v['gps']);
                 $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                $hotel_list[$key]['dis_com'] = $dis;
+                if($dis>1000){
+                    $tmp_dis = $dis/1000;
+                    $dis = sprintf('%0.2f',$tmp_dis);
+                    $dis = $dis.'km';
+                }else{
+                    $dis = intval($dis);
+                    $dis = $dis.'m';
+                }
                 $hotel_list[$key]['dis'] = $dis;
+                
+                
             }else {
                 $hotel_list[$key]['dis'] = '';
             }
         }
-        sortArrByOneField($hotel_list,'dis');
+        sortArrByOneField($hotel_list,'dis_com');
         $hotel_list = array_slice($hotel_list,0,$offset);
-        foreach ($hotel_list as $k=>$v){
-            if(!empty($v['dis'])){
-                if($v['dis']>1000){
-                    $tmp_dis = $v['dis']/1000;
-                    $dis = sprintf('%0.2f',$tmp_dis);
-                    $dis = $dis.'km';
-                }else{
-                    $dis = intval($v['dis']);
-                    $dis = $dis.'m';
-                }
-                $hotel_list[$k]['dis'] = $dis;
-            }
-        }
         $this->to_back($hotel_list);
     }
 

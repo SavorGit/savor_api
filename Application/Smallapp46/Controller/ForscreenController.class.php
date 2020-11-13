@@ -33,10 +33,10 @@ class ForscreenController extends CommonController{
         if($type==1){
             $message_data['action']=2;
             $message_data['resource_type']=2;
-            $message_data['resource_size']=1149039;
-            $message_data['imgs']='["forscreen/resource/15368043845967.mp4"]';
+            $message_data['resource_size']=78299193;
+            $message_data['imgs']='["media/resource/exSsMBwBaG.MOV"]';
 
-            $netty_data = array('action'=>2,'resource_type'=>2,'url'=>'forscreen/resource/15368043845967.mp4','filename'=>"$now_timestamps.mp4",
+            $netty_data = array('action'=>2,'resource_type'=>2,'url'=>'media/resource/exSsMBwBaG.MOV','filename'=>"$now_timestamps.mp4",
                 'openid'=>$openid,'video_id'=>$now_timestamps,'forscreen_id'=>$now_timestamps
             );
         }else{

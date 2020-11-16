@@ -418,7 +418,7 @@ class IndexController extends CommonController{
             if($ret) $this->to_back(10000);
             else $this->to_back(90108);
         }else {
-            $this->to_back(90108);
+            $this->to_back(10000);
         }
     }
     public function getBoxType(){

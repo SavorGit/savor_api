@@ -13,7 +13,7 @@ class IndexController extends CommonController{
         switch(ACTION_NAME){
             case 'gencode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000);
+                $this->valid_fields = array('box_id'=>1000,'box_mac'=>1000,'openid'=>1001,'type'=>1000,'data_id'=>1000);
                 break;
             case 'getBoxQr':
                 $this->is_verify = 1;
@@ -265,6 +265,7 @@ class IndexController extends CommonController{
             $data['limit_video_size'] = 10485760;
             $data['tail_lenth']   = 1024*1024;
             $data['max_video_size'] = 1024*1024*150;
+            $data['max_user_forvideo_size'] = 1024*1024*20;
         }else{
             $data = array('is_have'=>0);
         }
@@ -308,10 +309,25 @@ class IndexController extends CommonController{
     /**
      * @desc 扫码链接电视
      */
-    public function gencode(){
+    public function genCode(){
         $box_mac = $this->params['box_mac'];
         $openid  = $this->params['openid'];
+        $type    = $this->params['type'];
+        $box_id = $this->params['box_id'];
+        $goods_id = $this->params['goods_id'];
+        $box_mac = !empty($this->params['box_mac']) ? $this->params['box_mac']:'';
+        $data_id = !empty($this->params['data_id']) ? $this->params['data_id']:'0';
+        if(!empty($box_id)){
+            $redis= SavorRedis::getInstance();
+            $redis->select(15);
+            $cache_key = "savor_box_".$box_id;
+            $box_redis_info = $redis->get($cache_key);
+            $box_redis_info = json_decode($box_redis_info,true);
+            $box_mac = $box_redis_info['mac'];
+        }
         
+        
+        if($openid=='undefined') $this->to_back(10000);
         $code = rand(100, 999);
         $redis = SavorRedis::getInstance();
         $redis->select(5);
@@ -323,7 +339,6 @@ class IndexController extends CommonController{
             $info['is_have'] = 1;
             $info['code'] = $code;
             $redis->set($cache_key, json_encode($info),7200);
-            
             $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
             $keys = $redis->keys($key);
             foreach($keys as $v){
@@ -340,9 +355,12 @@ class IndexController extends CommonController{
                 if($key_arr[2]!=$box_mac){
                     $redis->remove($v);
                 }
-            }   
+            }
+            
             $info = json_decode($info,true);
         }
+        //记录日志
+        $this->recodeScannCode($data_id,$box_mac,$openid,$type);
         $this->to_back($info);
     }
     public function getConfig(){
@@ -615,5 +633,22 @@ class IndexController extends CommonController{
         }
         $res = array('forscreen_id'=>$forscreen_id);
         $this->to_back($res);
+    }
+    /**
+     * @desc 记录扫码日志
+     * @param varchar $box_mac  盒子mac
+     * @param varchar $openid   openid
+     * @param tinyint $type     1:小码2:大码3:手机小程序呼码
+     */
+    private function recodeScannCode($data_id,$box_mac,$openid,$type,$is_overtime){
+        $data = array();
+        $data['data_id']= $data_id;
+        $data['box_mac'] = $box_mac;
+        $data['openid']  = $openid;
+        $data['type']    = !empty($type) ? $type :1;
+        $data['is_overtime'] = $is_overtime ? $is_overtime :0;
+        $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
+        $m_qrcode_log->addInfo($data);
+    
     }
 }

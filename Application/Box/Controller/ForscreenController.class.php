@@ -51,11 +51,9 @@ class ForscreenController extends CommonController{
             $data['is_open_signin']            = intval($box_info['is_open_signin']);
             $data['activity_adv_playtype']     = intval($sys_info['activity_adv_playtype']);//1替换 2队列
             $data['simple_upload_size']        = intval(C('SMALLAPP_JJ_UPLOAD_SIZE'));      //极简版投屏上传资源大小限制
-            $data['qrcode_gif']                = 'http://'.C('OSS_HOST').'/media/resource/cKxYpSAGnG.gif';
-            $data['qrcode_gif_filename']       = 'cKxYpSAGnG.gif';
-            $data['qrcode_gif_md5']            = '0db5459add3a662b3dfca0c222aef8ac';
-//            $data['qrcode_takttime']           = 60;
-//            $data['qrcode_showtime']           = 16;
+            $data['qrcode_gif']                = 'http://'.C('OSS_HOST').'/media/resource/QKHYcD5wiT.gif';
+            $data['qrcode_gif_filename']       = 'QKHYcD5wiT.gif';
+            $data['qrcode_gif_md5']            = '49a11f843ecd6cd81659eec27f05e8e3';
             $data['qrcode_takttime']           = 30;
             $data['qrcode_showtime']           = 60;
             $this->to_back($data);

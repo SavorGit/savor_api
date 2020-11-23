@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html lang="UTF-8">
+	<head>
+		<meta name="x5-orientation" content="portrait">
+		<meta name="browsermode" content="application" />
+		<meta name="full-screen" content="yes" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<meta name="viewport" content="width=device-width, user-scalable=0, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+		<title>热点数据可视化平台</title>
+		<meta http-equiv="pragma" content="no-cache"/>
+		<meta http-equiv="cache-control" content="no-cache"/>
+		<meta http-equiv="expires" content="0"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<link rel="icon" href="https://oss.littlehotspot.com/Html5/favicon.ico">
+		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/font-awesome-4.7.0/css/font-awesome.min.css" />
+		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/jquery/plug-in/artDialog/skins/aero.css" />
+		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/jquery/plug-in/showloading/showLoading.min.css" />
+		<style type="text/css">
+			*{margin:0;padding:0;}
+			html{font-size:12px;}
+			body{width:100vw;height:100vh;font-size:1rem;color:#000000;background-color:#FFFFFF;}
+			.loading-indicator {height: 160px; width: 160px; background: url('https://oss.littlehotspot.com/Html5/images/common/loading_3.gif'); background-repeat: no-repeat; background-position: center center;}
+			.loading-indicator-overlay {background-color: #000000; opacity: 0.6; filter: alpha(opacity = 60);}
+			.green-color{color:rgba(90, 208, 59, 1);}
+			.red-color{color:rgba(240, 67, 36, 1);}
+			.container{width:calc(100% - 10px);min-height:calc(100% - 10px);padding:5px;display:flex;flex-direction:column;align-items:stretch;justify-content:start;}
+			.group{width:100%;height:100%;display:flex;flex-direction:column;align-items:stretch;justify-content:start;}
+			.group>.head{width:calc(100% - 50px);height:60px;padding:10px 25px;background-color: rgb(51, 51, 51);}
+			.group>.head>.title-bar{width:100%;height:100%;display:flex;flex-direction:row;align-items:center;justify-content:start;}
+			.group>.head>.title-bar>.icon{font-size:30px;font-weight:700;color:#FFFFFF;}
+			.group>.head>.title-bar>.name{margin-left:10px;font-size:24px;font-weight:700;color:#FFFFFF;}
+			.group>.body{padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+			.group>.body>.list{width:100%;display:block;}
+			.hotel{width:320px;height:220px;margin:10px;box-shadow:rgba(0, 0, 0, 0.15) 0px 2px 6px 0px;border-radius: 3px 0px 0px;box-sizing:border-box;-moz-box-sizing:border-box;/* Firefox */-webkit-box-sizing:border-box;/* Safari */float:left;cursor:pointer;}
+			.hotel>.head{width:calc(100% - 40px);height:40px;padding:5px 20px;}
+			.hotel>.head>.title-bar{width:100%;height:100%;display:flex;flex-direction:row;align-items:center;justify-content:start;}
+			.hotel>.head>.title-bar>.icon{font-weight:700; font-size:18px; color:rgb(51, 51, 51);}
+			.hotel>.head>.title-bar>.name{margin-left:5px;font-weight:700; font-size:18px; color:rgb(51, 51, 51);}
+			.hotel>.body{width:100%;height:calc(100% - 93px);display:flex;flex-direction:row;align-items:center;justify-content:space-around;}
+			.hotel>.body>div{width:calc(50% - 1px);display:flex;flex-direction:column;align-items:center;}
+			.hotel>.body>div>.label{font-weight:400; font-size:14px; color:rgb(16, 16, 16);}
+			.hotel>.body>div>.count{font-weight:400;font-size:48px;}
+			.hotel>.body>.split-line{width:1px;height:88px;margin:0;padding:0;border:0;background-color:rgba(187,187,187,1);}
+			.hotel>.foot{width:100%;height:43px;background-color:rgb(237, 237, 237);display:flex;flex-direction:row;align-items:center;justify-content:center;}
+			.hotel>.foot>.label{font-weight:400;font-size:14px;color:rgb(16, 16, 16);}
+			.hotel>.foot>.count{font-weight:700;font-size:14px;color:rgb(16, 16, 16);}
+			.mask{position: absolute;left: 0;right: 0;top: 0;bottom: 0;background-color: rgba(0, 0, 0, 0.4);z-index: 10;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+			.hotel-detail-window{width:795px;height:542px;background-color:#FFFFFF;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:stretch;}
+			.hotel-detail-window>.head{width:100%;height:60px;}
+			.hotel-detail-window>.head>.title-bar{width:calc(100% - 50px);height:calc(100% - 20px);padding:10px 25px;display:flex;flex-direction:row;align-items:center;justify-content:center;}
+			.hotel-detail-window>.head>.title-bar>.title{font-weight:700; font-size:20px; color:rgb(51, 51, 51);}
+			.hotel-detail-window>.head>.btn-group{width:100%;height:100%;margin-top:-60px;display:flex;flex-direction:row;align-items:center;justify-content:flex-end;}
+			.hotel-detail-window>.head>.btn-group>.btn{width:30px;height:30px;line-height:30px;text-align:center;font-size:20px;border-width:1px;border-style:solid;border-radius:50%;cursor:pointer;}
+			.hotel-detail-window>.head>.btn-group>.close{color:#999999;border-color:#DEDEDE;margin-right:20px;}
+			.hotel-detail-window>.split-line{width:calc(100% - 50px);height:1px;margin:0;padding:0;border:0;background-color:rgba(187,187,187,1);}
+			.hotel-detail-window>.body{width:calc(100% - 50px);height:calc(100% - 211px);padding:25px;overflow-y: auto;}
+			.hotel-detail-window>.body>div{width:100%;}
+			.hotel-detail-window>.body>div>.label{width:100%;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;}
+			.hotel-detail-window>.body>div>.label>span{display:inline-block;}
+			.hotel-detail-window>.body>div>.label>.icon{width:24px;height:24px;border-radius:50%;}
+			.hotel-detail-window>.body>.open>.label>.icon{background-color:rgb(90, 208, 59);}
+			.hotel-detail-window>.body>.close>.label>.icon{background-color:rgb(240, 67, 36);}
+			.hotel-detail-window>.body>div>.label>.value{margin-left:10px;font-weight:700; font-size:18px; color:rgb(16, 16, 16);}
+			.hotel-detail-window>.body>div>.label>.count{margin-left:5px;font-weight:700; font-size:18px; color:rgb(16, 16, 16);}
+			.hotel-detail-window>.body>div>.box-list{width:calc(100% - 30px);min-height:10px;padding-left:30px;}
+			.hotel-detail-window>.body>div>.box-list>.box{margin:10px 20px;font-weight:400; font-size:14px; color:rgb(16, 16, 16);box-sizing:border-box;-moz-box-sizing:border-box;/* Firefox */-webkit-box-sizing:border-box;/* Safari */float:left;}
+			.hotel-detail-window>.foot{width:100%;height:100px;background-color:rgb(237, 237, 237);border-radius:0 0 5px 5px;display:flex;flex-direction:row;align-items:center;justify-content:space-around;}
+			.hotel-detail-window>.foot>.btn{width:155px;height:50px;line-height:50px;text-align:center;font-size:16px;border-radius:5px;cursor:pointer;}
+			.hotel-detail-window>.foot>.flush{background-color:rgb(240, 67, 36);color:#FFFFFF;}
+			.hotel-detail-window>.foot>.close{background-color:rgb(51, 51, 51);color:#FFFFFF;}
+		</style>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/plugins/JSON-js-master/json2.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/plugins/FileSaver/FileSaver.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jlNamespace.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/core/1.11.1/jquery-1.11.1.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/migrate/1.1.1/jquery-migrate-1.1.1.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/plug-in/artDialog/artDialog.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/jquery/plug-in/showloading/jquery.showLoading.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jquery.ui.logger.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jquery.url.parameters.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/StringUtil.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/DateUtil.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://oss.littlehotspot.com/Html5/script/my-js/jquery.ui.Toast-1.0.1.class.js"></script>
+		<script type="text/javascript" charset="UTF-8" src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+		<script type="text/javascript" charset="UTF-8" >
+			$(document).ready(function(docEvent){
+
+				flushHotelList();
+
+				// 点击窗口刷新按钮
+				$('.hotel-detail-window .btn.flush').click(function(e){
+					flushHotelDetail();
+				});
+
+				// 点击窗口关闭按钮
+				$('.hotel-detail-window .btn.close').click(function(e){
+					$('.mask').hide();
+				});
+
+				$('.mask').hide();
+			});
+
+			// 刷新页面酒楼列表数据
+			function flushHotelList(){
+				$('HTML').showLoading();
+				$.ajax({
+					url: 'https://mobile.littlehotspot.com/Opclient20/Bootsituation/getHotelsByMainId',
+					type: 'GET',
+					data: {
+						main_hotelid: 250
+					},
+					dataType: 'JSON',
+					success: function(response, textStatus){
+						$('HTML').hideLoading();
+						if(response.code == 10000){
+							var data = response.result;
+							$('.group>.head>.title-bar>.name').text(data.title);
+							$('.group>.body>.list').empty();
+							for(var index in data.hotels){
+								var hotel = data.hotels[index];
+								var openBoxLabel = '开机数量',
+										closeBoxLabel = '关机数量',
+										totalBoxLabel = '电视总数：';
+								var hotelCard = $('<div class="hotel" hotel-id="' + hotel.id + '"></div>')
+										.append('<div class="head"><div class="title-bar"><i class="icon fa fa-cutlery" aria-hidden="true"></i><div class="name">' + hotel.name + '</div></div></div>')
+										.append('<div class="body"><div class="open"><div class="count green-color">' + hotel.boxCount.open + '</div><div class="label">' + openBoxLabel + '</div></div><div class="split-line"></div><div class="close"><div class="count red-color">' + hotel.boxCount.close + '</div><div class="label">' + closeBoxLabel + '</div></div></div>')
+										.append('<div class="foot"><div class="label">' + totalBoxLabel + '</div><div class="count">' + hotel.boxCount.total + '</div></div>')
+										.click(function(e){
+											$('.hotel-detail-window').attr('hotel-id', $(this).attr('hotel-id'));
+											$('.mask').show();
+											flushHotelDetail();
+										});
+								$('.group>.body>.list').append(hotelCard);
+							}
+						}else{
+							art.dialog({
+								title: '提示',
+								content: '<span>获取酒楼列表信息失败。<br/>错误码：' + response.code + '<br/>错误信息：' + response.msg + '</span>'
+							}).lock();
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown){
+						$('HTML').hideLoading();
+						art.dialog({
+							title: '错误',
+							content: '<span>获取酒楼列表信息失败，稍后再试~~~</span>'
+						}).lock();
+					}
+				});
+			}
+
+			// 刷新酒楼详情窗口中的数据
+			function flushHotelDetail(){
+				$('HTML').showLoading();
+				var hotelId = $('.hotel-detail-window').attr('hotel-id');
+				$.ajax({
+					url: 'https://mobile.littlehotspot.com/Opclient20/Bootsituation/getDetailByHotelId',
+					type: 'GET',
+					data: {
+						'h_id': hotelId
+					},
+					dataType: 'JSON',
+					success: function(response, textStatus){
+						$('HTML').hideLoading();
+						if(response.code == 10000){
+							var data = response.result;
+							$('.hotel-detail-window .title-bar>.title').text(data.name);
+							for(var index in data.situation){
+								var situation = data.situation[index];
+								if('开机数量' === situation.label){
+									$('.hotel-detail-window .body>.open .value').text(situation.label);
+									$('.hotel-detail-window .body>.open .count').text(situation.count);
+									$('.hotel-detail-window .body>.open .box-list').empty();
+									for(var _index in situation.boxes){
+										var box = situation.boxes[_index];
+										$('.hotel-detail-window .body>.open .box-list').append('<div class="box" box-id="' + box.id + '">' + box.name + '</div>');
+									}
+								}else{
+									$('.hotel-detail-window .body>.close .value').text(situation.label);
+									$('.hotel-detail-window .body>.close .count').text(situation.count);
+									$('.hotel-detail-window .body>.close .box-list').empty();
+									for(var _index in situation.boxes){
+										var box = situation.boxes[_index];
+										$('.hotel-detail-window .body>.close .box-list').append('<div class="box" box-id="' + box.id + '">' + box.name + '</div>');
+									}
+								}
+							}
+						}else{
+							art.dialog({
+								title: '提示',
+								content: '<span>获取酒楼信息失败。<br/>错误码：' + response.code + '<br/>错误信息：' + response.msg + '</span>'
+							}).lock();
+						}
+					},
+					error: function(XMLHttpRequest, textStatus, errorThrown){
+						$('HTML').hideLoading();
+						art.dialog({
+							title: '错误',
+							content: '<span>获取酒楼信息失败，稍后再试~~~</span>'
+						}).lock();
+					}
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<div class="container">
+
+			<div class="group">
+				<div class="head">
+					<div class="title-bar">
+						<i class="icon fa fa-joomla" aria-hidden="true"></i>
+						<div class="name">----</div>
+					</div>
+				</div>
+				<div class="body">
+					<div class="list">
+						<!--
+						<div class="hotel">
+							<div class="head">
+								<div class="title-bar">
+									<i class="icon fa fa-cutlery" aria-hidden="true"></i>
+									<div class="name">--------</div>
+								</div>
+							</div>
+							<div class="body">
+								<div class="open">
+									<div class="count green-color">0</div>
+									<div class="label">--------</div>
+								</div>
+								<div class="split-line"></div>
+								<div class="close">
+									<div class="count red-color">0</div>
+									<div class="label">--------</div>
+								</div>
+							</div>
+							<div class="foot">
+								<div class="label">--------：</div>
+								<div class="count">0</div>
+							</div>
+						</div>
+						-->
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="mask">
+			<div class="hotel-detail-window">
+				<div class="head">
+					<div class="title-bar">
+						<div class="title">------</div>
+					</div>
+					<div class="btn-group">
+						<div class="btn close">X</div>
+					</div>
+				</div>
+				<div class="split-line"></div>
+				<div class="body">
+					<div class="open">
+						<div class="label"><span class="icon"></span><span class="value">----</span><span class="count">0</span></div>
+						<div class="box-list">
+							<div class="box">--</div>
+						</div>
+					</div>
+					<div class="close">
+						<div class="label"><span class="icon"></span><span class="value">----</span><span class="count">0</span></div>
+						<div class="box-list">
+							<div class="box">--</div>
+						</div>
+					</div>
+				</div>
+				<div class="foot">
+					<div class="btn flush">刷新</div>
+					<div class="btn close">关闭</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

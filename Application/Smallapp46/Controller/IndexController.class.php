@@ -193,11 +193,13 @@ class IndexController extends CommonController{
                 $redis_hotel_info = $redis->get($cache_key);
                 $res_hotel = json_decode($redis_hotel_info, true);
                 
-                $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],
-                    'wifi_password'=>$box_info['wifi_password'],'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id']);
+                $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],
+                    'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],'wifi_password'=>$box_info['wifi_password'],
+                    'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id'],
+                    'is_interact'=>$box_info['is_interact']);
             }else{
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
             if($hotel_info['box_type']==6){
@@ -258,6 +260,7 @@ class IndexController extends CommonController{
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
             $data['room_name'] = $hotel_info['room_name'];
+            $data['is_interact'] = $hotel_info['is_interact'];
             $data['wifi_name'] = $hotel_info['wifi_name'];
             $data['wifi_password'] = $hotel_info['wifi_password'];
             $data['chunkSize']  = 1024*1024*3;

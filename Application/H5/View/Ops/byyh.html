@@ -17,18 +17,21 @@
 		<link rel="stylesheet" type="text/css" href="https://oss.littlehotspot.com/Html5/script/jquery/plug-in/showloading/showLoading.min.css" />
 		<style type="text/css">
 			*{margin:0;padding:0;}
-			html{font-size:12px;}
-			body{width:100vw;height:100vh;font-size:1rem;color:#000000;background-color:#FFFFFF;}
+			html{font-size:12px;overflow:hidden;}
+			body{width:100vw;height:100vh;font-size:1rem;color:#000000;background-color:#FFFFFF;overflow:hidden;}
 			.loading-indicator {height: 160px; width: 160px; background: url('https://oss.littlehotspot.com/Html5/images/common/loading_3.gif'); background-repeat: no-repeat; background-position: center center;}
 			.loading-indicator-overlay {background-color: #000000; opacity: 0.6; filter: alpha(opacity = 60);}
 			.green-color{color:rgba(90, 208, 59, 1);}
 			.red-color{color:rgba(240, 67, 36, 1);}
-			.container{width:calc(100% - 10px);min-height:calc(100% - 10px);padding:5px;display:flex;flex-direction:column;align-items:stretch;justify-content:start;}
+			.container{width:calc(100vw - 10px);height:calc(100vh - 10px);padding:5px;overflow-y:auto;display:flex;flex-direction:column;align-items:stretch;justify-content:start;}
 			.group{width:100%;height:100%;display:flex;flex-direction:column;align-items:stretch;justify-content:start;}
-			.group>.head{width:calc(100% - 50px);height:60px;padding:10px 25px;background-color: rgb(51, 51, 51);}
+			.group>.head{width:calc(100% - 50px);height:60px;padding:10px 25px;background-color: rgb(51, 51, 51);display:flex;flex-direction:row;align-items:center;justify-content:space-between;}
 			.group>.head>.title-bar{width:100%;height:100%;display:flex;flex-direction:row;align-items:center;justify-content:start;}
 			.group>.head>.title-bar>.icon{font-size:30px;font-weight:700;color:#FFFFFF;}
 			.group>.head>.title-bar>.name{margin-left:10px;font-size:24px;font-weight:700;color:#FFFFFF;}
+			.group>.head>.btn-group{width:30%;height:100%;display:flex;flex-direction:row;align-items:center;justify-content:flex-end;}
+			.group>.head>.btn-group>.btn{width:155px;height:50px;line-height:50px;text-align:center;font-size:16px;border-radius:5px;cursor:pointer;}
+			.group>.head>.btn-group>.flush{background-color:rgb(240, 67, 36);color:#FFFFFF;}
 			.group>.body{padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 			.group>.body>.list{width:100%;display:block;}
 			.hotel{width:320px;height:220px;margin:10px;box-shadow:rgba(0, 0, 0, 0.15) 0px 2px 6px 0px;border-radius: 3px 0px 0px;box-sizing:border-box;-moz-box-sizing:border-box;/* Firefox */-webkit-box-sizing:border-box;/* Safari */float:left;cursor:pointer;}
@@ -86,6 +89,11 @@
 			$(document).ready(function(docEvent){
 
 				flushHotelList();
+				
+				// 点击页面刷新酒楼列表信息
+				$('.group>.head>.btn-group>.flush').click(function(e){
+					flushHotelList();
+				});
 
 				// 点击窗口刷新按钮
 				$('.hotel-detail-window .btn.flush').click(function(e){
@@ -126,6 +134,17 @@
 										.append('<div class="body"><div class="open"><div class="count green-color">' + hotel.boxCount.open + '</div><div class="label">' + openBoxLabel + '</div></div><div class="split-line"></div><div class="close"><div class="count red-color">' + hotel.boxCount.close + '</div><div class="label">' + closeBoxLabel + '</div></div></div>')
 										.append('<div class="foot"><div class="label">' + totalBoxLabel + '</div><div class="count">' + hotel.boxCount.total + '</div></div>')
 										.click(function(e){
+											var win = $(window);
+											if(win.width() < 795){
+												$('.hotel-detail-window').width(win.width());
+												$('.hotel-detail-window').height(win.width() * 542 / 795);
+											}else if(win.height() < 542){
+												$('.hotel-detail-window').width(win.height() * 795 / 542);
+												$('.hotel-detail-window').height(win.height());
+											}else{
+												$('.hotel-detail-window').width(795);
+												$('.hotel-detail-window').height(542);
+											}
 											$('.hotel-detail-window').attr('hotel-id', $(this).attr('hotel-id'));
 											$('.mask').show();
 											flushHotelDetail();
@@ -211,6 +230,9 @@
 					<div class="title-bar">
 						<i class="icon fa fa-joomla" aria-hidden="true"></i>
 						<div class="name">----</div>
+					</div>
+					<div class="btn-group">
+						<div class="btn flush">刷新</div>
 					</div>
 				</div>
 				<div class="body">

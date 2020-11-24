@@ -260,7 +260,7 @@ class IndexController extends CommonController{
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
             $data['room_name'] = $hotel_info['room_name'];
-            $data['is_interact'] = $hotel_info['is_interact'];
+            $data['is_interact'] = 0;
             $data['wifi_name'] = $hotel_info['wifi_name'];
             $data['wifi_password'] = $hotel_info['wifi_password'];
             $data['chunkSize']  = 1024*1024*3;

@@ -148,6 +148,18 @@ class AliyunOss{
 	    return $content;
 	}
 
+    public function deleteObject($oss_addr){
+        $ossClient = $this->ossClient;
+        $bucket = $this->bucket;
+        try{
+            $content = $ossClient->deleteObject($bucket,$oss_addr);
+        } catch(OssException $e) {
+            $this->error = __FUNCTION__ . ": FAILED". $e->getMessage();
+            return false;
+        }
+        return $content;
+    }
+
 	public function getObjectlist($prefix,$nextMarker='',$maxkeys=1000){
 	    $file_list = array();
         $ossClient = $this->ossClient;

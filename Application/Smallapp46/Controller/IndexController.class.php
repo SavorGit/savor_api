@@ -390,6 +390,7 @@ class IndexController extends CommonController{
         }
         $data['quality_list'] = $quality_list;
 
+        $tags = $staffuser_info = $reward_money = $cacsi = array();
         $is_comment = 0;
         $is_open_reward = 1;
         if($box_id){
@@ -403,6 +404,10 @@ class IndexController extends CommonController{
                 $cache_key = 'savor_room_' . $box_info['room_id'];
                 $redis_room_info = $redis->get($cache_key);
                 $room_info = json_decode($redis_room_info, true);
+
+                $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+                $redis_hotel_info = $redis->get($cache_key);
+                $res_hotel = json_decode($redis_hotel_info, true);
 
                 $hotel_id = $room_info['hotel_id'];
                 $room_id = $box_info['room_id'];
@@ -429,18 +434,29 @@ class IndexController extends CommonController{
                 }
                 $comment_str = '服务评分';
                 $waiter_str = '服务专员';
+                $service_str = '很高兴为您服务，期待您对本次饭局的评价。您的评价将是我们前进的动力及导向！';
                 if(!empty($res_staff)){
                     $staff_openid = $res_staff['openid'];
                     $m_user = new \Common\Model\Smallapp\UserModel();
                     $where = array('openid'=>$staff_openid);
                     $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
                     $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
-                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
                     $category = 1;
                 }else{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
-                    $staffuser_info = array('staff_id'=>0,'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                    $m_hotelext = new \Common\Model\HotelExtModel();
+                    $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+                    $m_media = new \Common\Model\MediaModel();
+                    $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
+                    $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                    if(!empty($res_media)){
+                        $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                    }
+
+                    $staffuser_info = array('staff_id'=>0,'nickName'=>$res_hotel['name'],'avatarUrl'=>$img_url,
+                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
                     $category = 3;
                 }
                 $m_tags = new \Common\Model\Smallapp\TagsModel();
@@ -465,11 +481,22 @@ class IndexController extends CommonController{
                 }else{
                     $is_open_reward = 1;
                 }
+                $comment_cacsi = C('COMMENT_CACSI');
+                foreach ($comment_cacsi as $k=>$v){
+                    $label = array();
+                    foreach ($v['label'] as $lv){
+                        $lv['selected'] = false;
+                        $label[] = $lv;
+                    }
+                    $comment_cacsi[$k]['label'] = $label;
+                }
+                $cacsi = $comment_cacsi;
             }
             
             $data['is_open_reward']     = $is_open_reward;
             $data['is_open_popcomment'] = $is_open_popcomment;
             $data['tags'] = $tags;
+            $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
             $data['reward_money'] = $reward_money;
         }

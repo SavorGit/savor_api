@@ -219,6 +219,40 @@ class WithdrawController extends CommonController{
             $message = sprintf($tips,$v['area_name'],$v['name'],$v['money']);
             $datalist[]=$message;
         }
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+        $res_box = $m_box->getBoxByCondition('box.mac,box.name as box_name,room.name as room_name',$where);
+        if(!empty($res_box)){
+            $boxs = array();
+            foreach ($res_box as $v){
+                $boxs[$v['mac']] = array('box_name'=>$v['box_name'],'room_name'=>$v['room_name']);
+            }
+            $m_reward = new \Common\Model\Smallapp\RewardModel();
+            $m_comment = new \Common\Model\Smallapp\CommentModel();
+            $where = array();
+            $start_time = date('Y-m-d 00:00:00');
+            $end_time = date('Y-m-d 23:59:59');
+            $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+            $where['box_mac'] = array('in',array_keys($boxs));
+            $where['status'] = 1;
+            $res_comment = $m_comment->getDataList('id,reward_id,box_mac',$where,'id desc');
+            if(!empty($res_comment)){
+                $comment_tips = C('comment_tips');
+                $reward_tips = C('reward_tips');
+                $comment = $reward = array();
+                foreach ($res_comment as $v){
+                    $room_name = $boxs[$v['box_mac']];
+                    $comment[] = sprintf($comment_tips,$room_name);
+                    if($v['reward_id']>0){
+                        $res_reward = $m_reward->getInfo(array('id'=>$v['reward_id'],'status'=>2));
+                        if(!empty($res_reward)){
+                            $reward[]=sprintf($reward_tips,$room_name);
+                        }
+                    }
+                }
+                $datalist = array_merge($reward,$comment,$datalist);
+            }
+        }
         $this->to_back(array('datalist'=>$datalist));
     }
 

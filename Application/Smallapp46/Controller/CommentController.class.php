@@ -31,7 +31,7 @@ class CommentController extends CommonController{
         $staff_id = intval($this->params['staff_id']);
         $reward_id = intval($this->params['reward_id']);
         $satisfaction_id = intval($this->params['satisfaction_id']);
-        $tag_ids = intval($this->params['tag_ids']);
+        $tag_ids = $this->params['tag_ids'];
         $box_mac = $this->params['box_mac'];
         if($score>5){
             $this->to_back(90155);

@@ -78,13 +78,14 @@ class CommentController extends CommonController{
 
             $m_commenttag = new \Common\Model\Smallapp\CommenttagidsModel();
             $m_box = new \Common\Model\BoxModel();
+            $comment_cacsi = C('COMMENT_CACSI');
             foreach ($res_comment['list'] as $v){
                 $where = array('id'=>$v['user_id']);
                 $fields = 'openid,avatarUrl,nickName';
                 $res_user = $m_user->getOne($fields, $where);
                 $info = array('openid'=>$res_user['openid'],'nickName'=>$res_user['nickName'],
                     'avatarUrl'=>$res_user['avatarUrl'],'score'=>$v['score'],'content'=>$v['content'],
-                    'satisfaction'=>$v['satisfaction'],'label'=>$v['label'],
+                    'satisfaction'=>$v['satisfaction'],'satisfaction_name'=>$comment_cacsi[$v['satisfaction']]['name'],'label'=>$v['label'],
                     'time'=>date('Y-m-d H:i',strtotime($v['add_time'])));
                 if(empty($info['content'])){
                     $tag_where = array('a.comment_id'=>$v['id']);
@@ -137,7 +138,8 @@ class CommentController extends CommonController{
             'start_date'=>$start_date,'end_date'=>$end_date,'hotel_logo'=>'','hotel_name'=>'');
         $m_comment = new \Common\Model\Smallapp\CommentModel();
         
-        $where = array('hotel.id'=>$hotel_id,'comment.status'=>1,'comment.type'=>2);
+        $where = array('hotel.id'=>$hotel_id,'comment.status'=>1,'comment.type'=>2,
+            'box.state'=>1,'box.flag'=>0);
         $start_time = "$start_date 00:00:00";
         $end_time = "$end_date 23:59:59";
         $where['comment.add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
@@ -160,6 +162,7 @@ class CommentController extends CommonController{
             $m_user = new \Common\Model\Smallapp\UserModel();
             $datalist = array();
             $m_commenttag = new \Common\Model\Smallapp\CommenttagidsModel();
+            $comment_cacsi = C('COMMENT_CACSI');
             foreach ($res_comment['list'] as $v){
                 $total_score +=$v['score'];
                 $where = array('id'=>$v['user_id']);
@@ -173,7 +176,7 @@ class CommentController extends CommonController{
                 }
                 $info = array('room_name'=>$v['room_name'],'openid'=>$res_user['openid'],'nickName'=>$res_user['nickName'],
                     'avatarUrl'=>$res_user['avatarUrl'],'score'=>$v['score'],'content'=>$v['content'],
-                    'satisfaction'=>$v['satisfaction'],'label'=>$v['label'],
+                    'satisfaction'=>$v['satisfaction'],'satisfaction_name'=>$comment_cacsi[$v['satisfaction']]['name'],'label'=>$v['label'],
                     'time'=>date('Y-m-d H:i',strtotime($v['add_time'])));
                 if(empty($info['content'])){
                     $tag_where = array('a.comment_id'=>$v['id']);
@@ -228,6 +231,22 @@ class CommentController extends CommonController{
             $m_reward = new \Common\Model\Smallapp\RewardModel();
             if(empty($promote)){
                 $is_prompt = 1;
+                $now_promote_comment = $now_promote_reward = array();
+                foreach ($res_comment as $v){
+                    $now_promote_comment[]=$v['id'];
+                    if($v['reward_id']){
+                        $res_reward = $m_reward->getInfo(array('id'=>$v['reward_id']));
+                        if($res_reward['status']==2){
+                            $now_promote_reward[]=$v['reward_id'];
+                        }
+                    }
+                }
+                if(!empty($now_promote_comment) || !empty($now_promote_reward)){
+                    $now_promote = array('comment'=>$now_promote_comment,'reward'=>$now_promote_reward);
+                    $redis->set($key_promote,json_encode($now_promote),86400);
+                }
+                $comment_num = count($now_promote_comment);
+                $reward_num = count($now_promote_reward);
             }else{
                 $now_promote_comment = $now_promote_reward = array();
                 foreach ($res_comment as $v){
@@ -244,7 +263,7 @@ class CommentController extends CommonController{
                     $redis->set($key_promote,json_encode($now_promote),86400);
                 }
                 $more_comment = array_diff($now_promote_comment,$promote['comment']);
-                $more_reward = array_diff($now_promote_comment,$promote['reward']);
+                $more_reward = array_diff($now_promote_reward,$promote['reward']);
                 if(!empty($more_comment) || !empty($more_reward)){
                     $is_prompt = 1;
                 }

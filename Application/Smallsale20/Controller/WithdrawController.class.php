@@ -241,7 +241,7 @@ class WithdrawController extends CommonController{
                 $reward_tips = C('reward_tips');
                 $comment = $reward = array();
                 foreach ($res_comment as $v){
-                    $room_name = $boxs[$v['box_mac']];
+                    $room_name = $boxs[$v['box_mac']]['room_name'];
                     $comment[] = sprintf($comment_tips,$room_name);
                     if($v['reward_id']>0){
                         $res_reward = $m_reward->getInfo(array('id'=>$v['reward_id'],'status'=>2));

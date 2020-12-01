@@ -53,10 +53,6 @@ class CommentController extends CommonController{
 
         $res_data = array('datalist'=>array(),'total'=>0,'avg_score'=>0,
             'start_date'=>$start_date,'end_date'=>$end_date);
-        if(empty($res_staff[0]['hotel_id']) || empty($res_staff[0]['room_ids'])){
-            $this->to_back($res_data);
-        }
-
         $m_comment = new \Common\Model\Smallapp\CommentModel();
         $where = array('staff_id'=>$res_staff[0]['id'],'status'=>1);
         $start_time = "$start_date 00:00:00";

@@ -401,6 +401,17 @@ class IndexController extends CommonController{
             $is_open_popcomment = 0;
             if(!empty($redis_box_info)){
                 $box_info = json_decode($redis_box_info,true);
+                $is_comment = intval($box_info['is_open_popcomment']);
+                if($is_comment==0){
+                    $m_box = new \Common\Model\BoxModel();
+                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
+                    if($forscreen_info['is_open_popcomment']==1){
+                        $is_comment = 1;
+                    }else{
+                        $is_comment = 0;
+                    }
+                }
+
                 $cache_key = 'savor_room_' . $box_info['room_id'];
                 $redis_room_info = $redis->get($cache_key);
                 $room_info = json_decode($redis_room_info, true);
@@ -415,26 +426,10 @@ class IndexController extends CommonController{
                 $staff_where = array('hotel_id'=>$hotel_id,'status'=>1);
                 $staff_where['room_ids'] = array('like',"%,$room_id,%");
                 $res_staff = $m_staff->getInfo($staff_where);
-                if(!empty($res_staff)){
-                    $is_comment = 1;
-                }
 
-                $redis->select(1);
-                $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_info['mac']);
-                if(!empty($comment_count)){
-                    $is_open_popcomment = 0;
-                }else{
-                    $m_box = new \Common\Model\BoxModel();
-                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
-                    if($forscreen_info['is_open_popcomment']==1){
-                        $is_open_popcomment = 1;
-                    }else{
-                        $is_open_popcomment = 0;
-                    }
-                }
                 $comment_str = '服务评分';
                 $waiter_str = '服务专员';
-                $service_str = '很高兴为您服务，期待您对本次饭局的评价。您的评价将是我们前进的动力及导向！';
+                $service_str = '“很高兴为您服务，期待您对本次饭局的评价。您的评价将是我们前进的动力及导向！”';
                 if(!empty($res_staff)){
                     $staff_openid = $res_staff['openid'];
                     $m_user = new \Common\Model\Smallapp\UserModel();
@@ -494,7 +489,7 @@ class IndexController extends CommonController{
             }
             
             $data['is_open_reward']     = $is_open_reward;
-            $data['is_open_popcomment'] = $is_open_popcomment;
+            $data['is_open_popcomment'] = 0;
             $data['tags'] = $tags;
             $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;

@@ -328,40 +328,41 @@ class IndexController extends CommonController{
             $box_redis_info = json_decode($box_redis_info,true);
             $box_mac = $box_redis_info['mac'];
         }
-        
-        
         if($openid=='undefined') $this->to_back(10000);
-        $code = rand(100, 999);
-        $redis = SavorRedis::getInstance();
-        $redis->select(5);
-        $cache_key = C('SMALLAPP_CHECK_CODE');
-        $cache_key .= $box_mac.':'.$openid;
-        $info = $redis->get($cache_key);
-        if(empty($info)){
-            $info = array();
-            $info['is_have'] = 1;
-            $info['code'] = $code;
-            $redis->set($cache_key, json_encode($info),7200);
-            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
-            $keys = $redis->keys($key);
-            foreach($keys as $v){
-                $key_arr = explode(':', $v);
-                if($key_arr[2]!=$box_mac){
-                    $redis->remove($v);
+        $info = array();
+        if(!empty($box_mac)){
+            $code = rand(100, 999);
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SMALLAPP_CHECK_CODE');
+            $cache_key .= $box_mac.':'.$openid;
+            $info = $redis->get($cache_key);
+            if(empty($info)){
+                $info = array();
+                $info['is_have'] = 1;
+                $info['code'] = $code;
+                $redis->set($cache_key, json_encode($info),7200);
+                $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+                $keys = $redis->keys($key);
+                foreach($keys as $v){
+                    $key_arr = explode(':', $v);
+                    if($key_arr[2]!=$box_mac){
+                        $redis->remove($v);
+                    }
                 }
-            }       
-        }else {
-            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
-            $keys = $redis->keys($key);
-            foreach($keys as $v){
-                $key_arr = explode(':', $v);
-                if($key_arr[2]!=$box_mac){
-                    $redis->remove($v);
+            }else {
+                $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+                $keys = $redis->keys($key);
+                foreach($keys as $v){
+                    $key_arr = explode(':', $v);
+                    if($key_arr[2]!=$box_mac){
+                        $redis->remove($v);
+                    }
                 }
+                $info = json_decode($info,true);
             }
-            
-            $info = json_decode($info,true);
         }
+
         //记录日志
         $this->recodeScannCode($data_id,$box_mac,$openid,$type);
         $this->to_back($info);

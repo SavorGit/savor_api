@@ -511,10 +511,10 @@ return array(
         '3'=>'已取消',
     ),
     'REWARD_MONEY_LIST'=>array(
-        10001=>array('id'=>10001,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
-        10002=>array('id'=>10002,'name'=>'¥20','price'=>20,'image'=>'WeChat/resource/reward/jitui.png'),
-        10003=>array('id'=>10003,'name'=>'¥50','price'=>50,'image'=>'WeChat/resource/reward/hanbao.png'),
-        10004=>array('id'=>10004,'name'=>'¥100','price'=>100,'image'=>'WeChat/resource/reward/hongbao.png'),
+        10001=>array('id'=>10001,'name'=>'¥1','price'=>1,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
+        10002=>array('id'=>10002,'name'=>'¥2','price'=>2,'image'=>'WeChat/resource/reward/jitui.png'),
+        10003=>array('id'=>10003,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/hanbao.png'),
+        10004=>array('id'=>10004,'name'=>'¥10','price'=>10,'image'=>'WeChat/resource/reward/hongbao.png'),
     ),
 
     'QUALITY_TYPES'=>array(

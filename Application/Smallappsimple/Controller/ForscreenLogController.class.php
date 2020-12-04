@@ -20,6 +20,7 @@ class ForscreenLogController extends CommonController{
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                    'forscreen_id'=>1000,'small_app_id'=>1000,
                    'small_app_id'=>1001,'create_time'=>1000,
+                   'res_sup_time'=>1002,'res_eup_time'=>1002
                );
                break;
             case 'updateForscreen':

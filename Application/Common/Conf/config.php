@@ -294,6 +294,7 @@ return array(
     'SAPP_SALE_INVITE_QRCODE'=>'smallappsale:inviteqrcode:',
     'SAPP_SALE_OPGOODS_INTEGRAL'=>'smallappsale:opgoodsintegral:',
     'SAPP_SALE_ACTIVITY_PROMOTE'=>'smallappsale:activitypromote:',
+    'SAPP_SALE_COMMENT_PROMOTE'=>'smallappsale:commentpromote:',
     'SAPP_SALE_WELCOME_RESOURCE'=>'smallappsale:welcomeresource',
     'SMALLAPP_HOTEL_RELATION'=>'smallapp:hotelrelation:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
@@ -395,6 +396,29 @@ return array(
         ),
     ),
     'WX_UBLACKLIST'=>array('o9GS-4qaJwiz9uJz2wvVU45eP5-Y','o9GS-4u6wf_l-YQ2jB31juYUfW6c'),
+    'COMMENT_CACSI'=>array(
+        '1'=>array('name'=>'很糟糕','title'=>'很糟糕，不太满意','desc'=>'本次饭局很糟糕，还需要改善','tv_tips'=>'感谢您的评价！很抱歉本次饭局没有让您满意，我们将针对您提出的意见进行改善。',
+            'images'=>array('/images/icon/1_select.png','/images/icon/1_no_select.png'),
+            'label'=>array('1001'=>array('id'=>1001,'name'=>'服务不好'),
+                            '1002'=>array('id'=>1002,'name'=>'菜品不好'),
+                            '1003'=>array('id'=>1003,'name'=>'环境不好'),
+                )
+        ),
+        '2'=>array('name'=>'一般般','title'=>'一般般，还需要改善','desc'=>'本次饭局一般般，还需要改善','tv_tips'=>'感谢您的评价！您的评价是我们前进的动力。',
+            'images'=>array('/images/icon/2_select.png','/images/icon/2_no_select.png'),
+            'label'=>array('2001'=>array('id'=>2001,'name'=>'服务一般'),
+                '2002'=>array('id'=>2002,'name'=>'菜品一般'),
+                '2003'=>array('id'=>2003,'name'=>'环境一般'),
+            )
+        ),
+        '3'=>array('name'=>'太赞了','title'=>'太赞了，十分满意','desc'=>'本次饭局太赞了，十分满意','tv_tips'=>'感谢您的评价！您的满意是我们不懈的追求。',
+            'images'=>array('/images/icon/3_select.png','/images/icon/3_no_select.png'),
+            'label'=>array('3001'=>array('id'=>3001,'name'=>'服务很好'),
+                '3002'=>array('id'=>3002,'name'=>'菜品很好'),
+                '3003'=>array('id'=>3003,'name'=>'环境很好'),
+            )
+        ),
+    ),
 
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
        1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',
@@ -449,6 +473,8 @@ return array(
         'task_manage'=>'任务管理'
     ),
     'exchange_tips'=>'%s的“%s”成功兑换了%d元现金',
+    'comment_tips'=>'%s包间产生了一条新的评价！',
+    'reward_tips'=>'%s包间产生了一条新的打赏！',
     'PAY_TYPES'=>array(
         '10'=>array('id'=>10,'name'=>'微信支付','icon'=>''),
         '20'=>array('id'=>20,'name'=>'线下支付','icon'=>''),
@@ -485,10 +511,10 @@ return array(
         '3'=>'已取消',
     ),
     'REWARD_MONEY_LIST'=>array(
-        10001=>array('id'=>10001,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
-        10002=>array('id'=>10002,'name'=>'¥20','price'=>20,'image'=>'WeChat/resource/reward/jitui.png'),
-        10003=>array('id'=>10003,'name'=>'¥50','price'=>50,'image'=>'WeChat/resource/reward/hanbao.png'),
-        10004=>array('id'=>10004,'name'=>'¥100','price'=>100,'image'=>'WeChat/resource/reward/hongbao.png'),
+        10001=>array('id'=>10001,'name'=>'¥1','price'=>1,'image'=>'WeChat/resource/reward/kuangquanshui.png'),
+        10002=>array('id'=>10002,'name'=>'¥2','price'=>2,'image'=>'WeChat/resource/reward/jitui.png'),
+        10003=>array('id'=>10003,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/hanbao.png'),
+        10004=>array('id'=>10004,'name'=>'¥10','price'=>10,'image'=>'WeChat/resource/reward/hongbao.png'),
     ),
 
     'QUALITY_TYPES'=>array(

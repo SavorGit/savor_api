@@ -329,40 +329,41 @@ class IndexController extends CommonController{
             $box_redis_info = json_decode($box_redis_info,true);
             $box_mac = $box_redis_info['mac'];
         }
-        
-        
         if($openid=='undefined') $this->to_back(10000);
-        $code = rand(100, 999);
-        $redis = SavorRedis::getInstance();
-        $redis->select(5);
-        $cache_key = C('SMALLAPP_CHECK_CODE');
-        $cache_key .= $box_mac.':'.$openid;
-        $info = $redis->get($cache_key);
-        if(empty($info)){
-            $info = array();
-            $info['is_have'] = 1;
-            $info['code'] = $code;
-            $redis->set($cache_key, json_encode($info),7200);
-            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
-            $keys = $redis->keys($key);
-            foreach($keys as $v){
-                $key_arr = explode(':', $v);
-                if($key_arr[2]!=$box_mac){
-                    $redis->remove($v);
+        $info = array();
+        if(!empty($box_mac)){
+            $code = rand(100, 999);
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SMALLAPP_CHECK_CODE');
+            $cache_key .= $box_mac.':'.$openid;
+            $info = $redis->get($cache_key);
+            if(empty($info)){
+                $info = array();
+                $info['is_have'] = 1;
+                $info['code'] = $code;
+                $redis->set($cache_key, json_encode($info),7200);
+                $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+                $keys = $redis->keys($key);
+                foreach($keys as $v){
+                    $key_arr = explode(':', $v);
+                    if($key_arr[2]!=$box_mac){
+                        $redis->remove($v);
+                    }
                 }
-            }       
-        }else {
-            $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
-            $keys = $redis->keys($key);
-            foreach($keys as $v){
-                $key_arr = explode(':', $v);
-                if($key_arr[2]!=$box_mac){
-                    $redis->remove($v);
+            }else {
+                $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
+                $keys = $redis->keys($key);
+                foreach($keys as $v){
+                    $key_arr = explode(':', $v);
+                    if($key_arr[2]!=$box_mac){
+                        $redis->remove($v);
+                    }
                 }
+                $info = json_decode($info,true);
             }
-            
-            $info = json_decode($info,true);
         }
+
         //记录日志
         $this->recodeScannCode($data_id,$box_mac,$openid,$type);
         $this->to_back($info);
@@ -391,6 +392,7 @@ class IndexController extends CommonController{
         }
         $data['quality_list'] = $quality_list;
 
+        $tags = $staffuser_info = $reward_money = $cacsi = array();
         $is_comment = 0;
         $is_open_reward = 1;
         if($box_id){
@@ -401,9 +403,24 @@ class IndexController extends CommonController{
             $is_open_popcomment = 0;
             if(!empty($redis_box_info)){
                 $box_info = json_decode($redis_box_info,true);
+                $is_comment = intval($box_info['is_open_popcomment']);
+                if($is_comment==0){
+                    $m_box = new \Common\Model\BoxModel();
+                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
+                    if($forscreen_info['is_open_popcomment']==1){
+                        $is_comment = 1;
+                    }else{
+                        $is_comment = 0;
+                    }
+                }
+
                 $cache_key = 'savor_room_' . $box_info['room_id'];
                 $redis_room_info = $redis->get($cache_key);
                 $room_info = json_decode($redis_room_info, true);
+
+                $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+                $redis_hotel_info = $redis->get($cache_key);
+                $res_hotel = json_decode($redis_hotel_info, true);
 
                 $hotel_id = $room_info['hotel_id'];
                 $room_id = $box_info['room_id'];
@@ -411,37 +428,32 @@ class IndexController extends CommonController{
                 $staff_where = array('hotel_id'=>$hotel_id,'status'=>1);
                 $staff_where['room_ids'] = array('like',"%,$room_id,%");
                 $res_staff = $m_staff->getInfo($staff_where);
-                if(!empty($res_staff)){
-                    $is_comment = 1;
-                }
 
-                $redis->select(1);
-                $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_info['mac']);
-                if(!empty($comment_count)){
-                    $is_open_popcomment = 0;
-                }else{
-                    $m_box = new \Common\Model\BoxModel();
-                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
-                    if($forscreen_info['is_open_popcomment']==1){
-                        $is_open_popcomment = 1;
-                    }else{
-                        $is_open_popcomment = 0;
-                    }
-                }
                 $comment_str = '服务评分';
                 $waiter_str = '服务专员';
+                $service_str = '“很高兴为您服务，期待您对本次饭局的评价。您的评价将是我们前进的动力及导向！”';
                 if(!empty($res_staff)){
                     $staff_openid = $res_staff['openid'];
                     $m_user = new \Common\Model\Smallapp\UserModel();
                     $where = array('openid'=>$staff_openid);
                     $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
                     $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
-                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
                     $category = 1;
                 }else{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
-                    $staffuser_info = array('staff_id'=>0,'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
+                    $m_hotelext = new \Common\Model\HotelExtModel();
+                    $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+                    $m_media = new \Common\Model\MediaModel();
+                    $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
+                    $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                    if(!empty($res_media)){
+                        $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                    }
+
+                    $staffuser_info = array('staff_id'=>0,'nickName'=>$res_hotel['name'],'avatarUrl'=>$img_url,
+                        'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
                     $category = 3;
                 }
                 $m_tags = new \Common\Model\Smallapp\TagsModel();
@@ -466,11 +478,22 @@ class IndexController extends CommonController{
                 }else{
                     $is_open_reward = 1;
                 }
+                $comment_cacsi = C('COMMENT_CACSI');
+                foreach ($comment_cacsi as $k=>$v){
+                    $label = array();
+                    foreach ($v['label'] as $lv){
+                        $lv['selected'] = false;
+                        $label[] = $lv;
+                    }
+                    $comment_cacsi[$k]['label'] = $label;
+                }
+                $cacsi = $comment_cacsi;
             }
             
             $data['is_open_reward']     = $is_open_reward;
-            $data['is_open_popcomment'] = $is_open_popcomment;
+            $data['is_open_popcomment'] = 0;
             $data['tags'] = $tags;
+            $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
             $data['reward_money'] = $reward_money;
         }

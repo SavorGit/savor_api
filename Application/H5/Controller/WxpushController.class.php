@@ -52,4 +52,17 @@ class WxpushController extends Controller {
             $wechat->wx_oauth($url);
         }
     }
+
+    public function readfileconfig(){
+        $redis = new \Common\Lib\SavorRedis();
+        $key = 'readfile_config';
+        $redis->select(1);
+        $res = $redis->get($key);
+        $dinfo = array();
+        if(!empty($res)){
+            $dinfo = json_decode($res,true);
+        }
+        $res = $dinfo;
+        echo json_encode($res);
+    }
 }

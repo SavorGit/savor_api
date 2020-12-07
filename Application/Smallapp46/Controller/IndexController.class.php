@@ -38,7 +38,8 @@ class IndexController extends CommonController{
                     'resource_type'=>1000,'resource_id'=>1000,
                     'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                     'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
-                    'serial_number'=>1000,'quality_type'=>1000,'create_time'=>1000
+                    'serial_number'=>1000,'quality_type'=>1000,'create_time'=>1000,
+                    'is_speed'=>1000,
                 );
                 break;
         }
@@ -501,6 +502,7 @@ class IndexController extends CommonController{
         $serial_number = !empty($this->params['serial_number']) ? $this->params['serial_number'] : '';
         $quality_type = !empty($this->params['quality_type']) ? $this->params['quality_type'] : 0;
         $create_time = !empty($this->params['create_time']) ? $this->params['create_time'] : '';
+        $is_speed    = !empty($this->params['is_speed']) ? $this->params['is_speed'] : 0;
 
         $data = array();
         $data['openid'] = $openid;
@@ -532,7 +534,9 @@ class IndexController extends CommonController{
         $redis->select(5);
         $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
         if($action==4 || ($action==2 && $resource_type==2)) {
-            $redis->rpush($history_cache_key, json_encode($data));
+            $history_arr = $data;
+            $history_arr['is_speed'] = $is_speed;
+            $redis->rpush($history_cache_key, json_encode($history_arr));
         }
     
         if($is_share){
@@ -629,10 +633,13 @@ class IndexController extends CommonController{
             $m_publicdetail = new \Common\Model\Smallapp\PubdetailModel();
             $m_publicdetail->add($pubdetail_data);
         }else{
-            $redis = SavorRedis::getInstance();
-            $redis->select(5);
-            $cache_key = C('SAPP_SCRREN').":".$box_mac;
-            $redis->rpush($cache_key, json_encode($data));
+            if($is_speed==0){
+                $redis = SavorRedis::getInstance();
+                $redis->select(5);
+                $cache_key = C('SAPP_SCRREN').":".$box_mac;
+                $redis->rpush($cache_key, json_encode($data));
+            }
+            
         }
         $res = array('forscreen_id'=>$forscreen_id);
         $this->to_back($res);

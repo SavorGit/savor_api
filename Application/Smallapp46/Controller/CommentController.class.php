@@ -103,7 +103,7 @@ class CommentController extends CommonController{
                 }
                 if($satisfaction_id>0 && $staff_id>0 && !empty($box_mac)){
                     $message = array('action'=>140,'forscreen_char'=>$comment_cacsi[$satisfaction_id]['tv_tips'],
-                        'waiterName'=>'','waiterIconUrl'=>'');
+                        'waiterName'=>'','waiterIconUrl'=>'','satisfaction'=>$satisfaction_id);
                     if(!empty($res_staff)){
                         $where = array('openid'=>$res_staff['openid']);
                         $m_user = new \Common\Model\Smallapp\UserModel();

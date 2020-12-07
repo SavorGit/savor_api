@@ -19,7 +19,7 @@ class BootsituationController extends CommonController{
 
     public function getHotelsByMainId(){
         $all_main_hotels = array(
-            250=>array('name'=>'宝燕壹号','hotel_ids'=>'255,252,258,285,254,260,261,264'),
+            250=>array('name'=>'宝燕壹号','hotel_ids'=>'255,252,258,285,254,260,261,264,262'),
             330=>array('name'=>'榕港','hotel_ids'=>'331,630,332,330,671,483,807,338,533,490,336,335,333'),
         );
         $last_heart_time = date('Y-m-d H:i:s',strtotime('-10 minutes'));

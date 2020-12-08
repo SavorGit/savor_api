@@ -53,8 +53,11 @@ class ForscreenHistoryController extends CommonController{
                     $tmp['duration'] = secToMinSec(intval($v['duration']));
                     $data[$v['forscreen_id']]['res_type'] = 2;
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
+                    $data[$v['forscreen_id']]['is_speed'] = $v['is_speed'];
+                    $data[$v['forscreen_id']]['is_box_have'] = 0;
                     //$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
+                    
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
                 }else if($v['action']==4){
                     $tmp['resource_id'] = $v['resource_id'];

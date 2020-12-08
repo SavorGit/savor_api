@@ -22,7 +22,6 @@ class CommonController extends Controller {
 	*
 	*/
 	protected function _init_() {
-	   
 		$params = file_get_contents('php://input');
 		if($_SERVER['HTTP_DES']=='true'){
 		    $this->is_des = 1;
@@ -34,6 +33,7 @@ class CommonController extends Controller {
 	    $this->params = array_merge($input_params,$_GET,$_POST);
 	    if(isset($this->params['token']) && $this->params['token']=='null')    $this->params['token']='';
 	    if(isset($this->params['is_js']) && $this->params['is_js'] ==1)        $this->is_js = 1;
+	    $this->record_accesslog();
 		if($this->is_verify){
 		    if(empty($this->params)){
 		        $this->to_back(1001);
@@ -151,6 +151,33 @@ class CommonController extends Controller {
                 $decrypt_data = array('unionId'=>'');
             }
             $this->params['encryptedData'] = $decrypt_data;
+        }
+        return true;
+    }
+
+    protected function record_accesslog(){
+        if(!empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_METHOD'])){
+            $method = $_SERVER['REQUEST_METHOD'];
+            $uri_info = parse_url($_SERVER['REQUEST_URI']);
+            $path = trim($uri_info['path'],'/');
+            $path_arr = explode('/',strtolower($path));
+            $version = $path_arr[0];
+            unset($path_arr[0]);
+            $api = join('/',$path_arr);
+            $params = json_encode($this->params);
+            $data = array('version'=>$version,'api'=>$api,'method'=>$method,'uri'=>$_SERVER['REQUEST_URI'],'params'=>$params);
+            if(isset($this->params['openid'])){
+                $data['openid'] = $this->params['openid'];
+            }
+            if(!empty($_SERVER['HTTP_SERIAL_NUMBER'])){
+                $data['serial_number'] = $_SERVER['HTTP_SERIAL_NUMBER'];
+            }
+            $user_agent = $_SERVER['HTTP_USER_AGENT'];
+            $ip = get_client_ip();
+            $data['user_agent'] = $user_agent;
+            $data['ip'] = $ip;
+            $m_accesslog = new \Common\Model\Smallapp\AccesslogModel();
+            $m_accesslog->add($data);
         }
         return true;
     }

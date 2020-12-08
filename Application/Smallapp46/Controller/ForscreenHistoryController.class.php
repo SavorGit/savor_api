@@ -55,6 +55,9 @@ class ForscreenHistoryController extends CommonController{
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
                     $data[$v['forscreen_id']]['is_speed'] = $v['is_speed'];
                     $data[$v['forscreen_id']]['is_box_have'] = 0;
+                    $data[$v['forscreen_id']]['resource_size'] = $resource_size;
+                    $data[$v['forscreen_id']]['filename'] = $v['forscreen_id'];
+                    $data[$v['forscreen_id']]['duration'] = $v['duration'];
                     //$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
                     

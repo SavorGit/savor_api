@@ -157,11 +157,20 @@ class CommonController extends Controller {
 
     protected function record_accesslog(){
         if(!empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_METHOD'])){
+            $user_agent = $_SERVER['HTTP_USER_AGENT'];
+            $ua_part = substr($user_agent,0,6);
+            if(in_array($ua_part,array('okhttp','Dalvik','*/*'))){
+                return true;
+            }
             $method = $_SERVER['REQUEST_METHOD'];
-            $uri_info = parse_url($_SERVER['REQUEST_URI']);
+            $uri = trim($_SERVER['REQUEST_URI'],"//");
+            $uri_info = parse_url($uri);
             $path = trim($uri_info['path'],'/');
             $path_arr = explode('/',strtolower($path));
             $version = $path_arr[0];
+            if(in_array($version,array('small','box'))){
+                return true;
+            }
             unset($path_arr[0]);
             $api = join('/',$path_arr);
             $params = json_encode($this->params);
@@ -172,7 +181,6 @@ class CommonController extends Controller {
             if(!empty($_SERVER['HTTP_SERIAL_NUMBER'])){
                 $data['serial_number'] = $_SERVER['HTTP_SERIAL_NUMBER'];
             }
-            $user_agent = $_SERVER['HTTP_USER_AGENT'];
             $ip = get_client_ip();
             $data['user_agent'] = $user_agent;
             $data['ip'] = $ip;

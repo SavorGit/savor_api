@@ -157,7 +157,7 @@ class CommonController extends Controller {
 
     protected function record_accesslog(){
         if(!empty($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_METHOD'])){
-            $user_agent = $_SERVER['HTTP_USER_AGENT'];
+            $user_agent = !empty($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:'unknown';
             $ua_part = substr($user_agent,0,6);
             if(in_array($ua_part,array('okhttp','Dalvik','*/*'))){
                 return true;
@@ -186,6 +186,11 @@ class CommonController extends Controller {
             $data['ip'] = $ip;
             $m_accesslog = new \Common\Model\Smallapp\AccesslogModel();
             $m_accesslog->add($data);
+            if(!empty($_SERVER['HTTP_X_WXAPP_CRAWLER_TIMESTAMP']) && !empty($_SERVER['HTTP_X_WXAPP_CRAWLER_NONCE']) && !empty($_SERVER['HTTP_X_WXAPP_CRAWLER_SIGNATURE'])){
+                if(in_array($api,array('index/ishavecallbox','index/gencode','user/isregister'))){
+                    $this->to_back(10000);
+                }
+            }
         }
         return true;
     }

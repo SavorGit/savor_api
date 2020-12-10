@@ -13,7 +13,7 @@ class DatalogController extends CommonController{
                 break;
             case 'recordWifiErr':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'err_info'=>1001,'openid'=>1001,'mobile_brand'=>1000,
+                $this->valid_fields = array('box_mac'=>1000,'err_info'=>1000,'openid'=>1000,'mobile_brand'=>1000,
                                             'mobile_model'=>1000,'platform'=>1000,
                                             'system'=>1000,'version'=>1000,
                 );
@@ -45,11 +45,8 @@ class DatalogController extends CommonController{
         
         if($data['box_mac']){
             $m_err_info->addInfo($data);
-            $this->to_back(10000);
-        }else {
-            $this->to_back(30052);
-
         }
+        $this->to_back(10000);
     }
 
     public function recordlog(){

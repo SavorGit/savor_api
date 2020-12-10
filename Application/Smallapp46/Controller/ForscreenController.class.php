@@ -68,14 +68,12 @@ class ForscreenController extends CommonController{
         curl_close($curl);
         $res = json_decode($response,true);
         if(is_array($res) && isset($res['code'])){
-            $push_boxs[]=$box_mac;
             $cache_key = 'smallapp:forscreen:'.$box_mac;
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(5);
             $redis->rpush($cache_key, json_encode($message_data));
         }
-        $result = array();
-        $this->to_back($result);
+        $this->to_back($res);
     }
 
 

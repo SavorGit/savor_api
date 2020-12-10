@@ -395,6 +395,9 @@ class WelcomeController extends CommonController{
         $m_sys_config = new \Common\Model\SysConfigModel();
         $sys_info = $m_sys_config->getAllconfig();
         $playtime = $sys_info['welcome_playtime'];
+        if(in_array($res_welcome['hotel_id'],array(1100,1029))){
+            $playtime = 50;
+        }
         $playtime = intval($playtime*60);
         $message['play_times'] = $playtime;
 

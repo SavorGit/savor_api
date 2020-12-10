@@ -59,7 +59,7 @@ class ForscreenHistoryController extends CommonController{
                     $data[$v['forscreen_id']]['filename'] = $v['forscreen_id'];
                     $data[$v['forscreen_id']]['duration'] = $v['duration'];
                     //$data[$v['forscreen_id']]['res_nums'] = $key;
-                    $data[$v['forscreen_id']]['list'][] = $tmp;
+                    $data[$v['forscreen_id']]['list'][0] = $tmp;
                     
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
                 }else if($v['action']==4){
@@ -68,6 +68,7 @@ class ForscreenHistoryController extends CommonController{
                     $tmp['imgurl']      = $oss_host.$imgs[0].'?x-oss-process=image/resize,p_20';;
                     $tmp['res_url']     = $oss_host.$imgs[0];
                     $tmp['res_type']    = 1;
+                    $tmp['forscreen_char'] = $v['forscreen_char'];
                     $tmp['forscreen_url']= $imgs[0];
                     $imgs_arr = explode('/', $imgs[0]);
                     $tmp['filename'] = $imgs_arr[2];
@@ -80,6 +81,8 @@ class ForscreenHistoryController extends CommonController{
 
                     $data[$v['forscreen_id']]['res_type'] = 1;
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
+                    $data[$v['forscreen_id']]['is_speed'] = $v['is_speed'];
+                    
                     ///$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));

@@ -51,7 +51,7 @@ class RtbadsController extends CommonController{
         $where['flag']  = 0;
         $room_info = $m_room->getOne('id,hotel_id',$where);
         if(empty($room_info)){
-            continue;
+            $this->to_back(80002);
         }
         //获取包间下的机顶盒
         

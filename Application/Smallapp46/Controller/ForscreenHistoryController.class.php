@@ -82,7 +82,7 @@ class ForscreenHistoryController extends CommonController{
                     $data[$v['forscreen_id']]['res_type'] = 1;
                     $data[$v['forscreen_id']]['forscreen_id'] = $v['forscreen_id'];
                     $data[$v['forscreen_id']]['is_speed'] = $v['is_speed'];
-                    
+                    $data[$v['forscreen_id']]['is_box_have'] = 0;
                     ///$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));

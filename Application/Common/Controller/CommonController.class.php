@@ -187,7 +187,7 @@ class CommonController extends Controller {
             $m_accesslog = new \Common\Model\Smallapp\AccesslogModel();
             $m_accesslog->add($data);
             if(!empty($_SERVER['HTTP_X_WXAPP_CRAWLER_TIMESTAMP']) && !empty($_SERVER['HTTP_X_WXAPP_CRAWLER_NONCE']) && !empty($_SERVER['HTTP_X_WXAPP_CRAWLER_SIGNATURE'])){
-                if(in_array($api,array('index/ishavecallbox','index/gencode','user/isregister'))){
+                if(in_array($api,array('index/getopenid','index/ishavecallbox','index/gencode','user/isregister'))){
                     $this->to_back(10000);
                 }
             }

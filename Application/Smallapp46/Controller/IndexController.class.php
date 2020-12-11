@@ -13,7 +13,8 @@ class IndexController extends CommonController{
         switch(ACTION_NAME){
             case 'gencode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_id'=>1000,'box_mac'=>1000,'openid'=>1001,'type'=>1000,'data_id'=>1000);
+                $this->valid_fields = array('box_id'=>1000,'box_mac'=>1000,'openid'=>1001,'type'=>1000,'data_id'=>1000,
+                    'mobile_brand'=>1000,'mobile_model'=>1000);
                 break;
             case 'getBoxQr':
                 $this->is_verify = 1;
@@ -321,6 +322,9 @@ class IndexController extends CommonController{
         $goods_id = $this->params['goods_id'];
         $box_mac = !empty($this->params['box_mac']) ? $this->params['box_mac']:'';
         $data_id = !empty($this->params['data_id']) ? $this->params['data_id']:'0';
+        $mobile_brand = !empty($this->params['mobile_brand']) ? $this->params['mobile_brand']:'';
+        $mobile_model = !empty($this->params['mobile_model']) ? $this->params['mobile_model']:'';
+
         if(!empty($box_id)){
             $redis= SavorRedis::getInstance();
             $redis->select(15);
@@ -365,7 +369,7 @@ class IndexController extends CommonController{
         }
 
         //记录日志
-        $this->recodeScannCode($data_id,$box_mac,$openid,$type);
+        $this->recodeScannCode($data_id,$box_mac,$openid,$type,0,$mobile_brand,$mobile_model);
         $this->to_back($info);
     }
     public function getConfig(){
@@ -673,13 +677,15 @@ class IndexController extends CommonController{
      * @param varchar $openid   openid
      * @param tinyint $type     1:小码2:大码3:手机小程序呼码
      */
-    private function recodeScannCode($data_id,$box_mac,$openid,$type,$is_overtime){
+    private function recodeScannCode($data_id,$box_mac,$openid,$type,$is_overtime=0,$mobile_brand='',$mobile_model=''){
         $data = array();
         $data['data_id']= $data_id;
         $data['box_mac'] = $box_mac;
         $data['openid']  = $openid;
         $data['type']    = !empty($type) ? $type :1;
         $data['is_overtime'] = $is_overtime ? $is_overtime :0;
+        if(!empty($mobile_brand))   $data['mobile_brand'] = $mobile_brand;
+        if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
     

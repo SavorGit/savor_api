@@ -13,7 +13,7 @@ class IndexController extends CommonController{
         switch(ACTION_NAME) {
             case 'genCode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000);
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000,'mobile_brand'=>1000,'mobile_model'=>1000);
                 break;
             case 'getBoxQr':
                 $this->is_verify = 1;
@@ -345,6 +345,8 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $openid  = $this->params['openid'];
         $type    = $this->params['type'];
+        $mobile_brand = !empty($this->params['mobile_brand']) ? $this->params['mobile_brand']:'';
+        $mobile_model = !empty($this->params['mobile_model']) ? $this->params['mobile_model']:'';
         if($openid=='undefined') $this->to_back(10000);
         $code = rand(100, 999);
         $redis = SavorRedis::getInstance();
@@ -393,7 +395,7 @@ class IndexController extends CommonController{
             $info = json_decode($info,true);
         }
         //记录日志
-        $this->recodeScannCode($box_mac,$openid,$type);
+        $this->recodeScannCode($box_mac,$openid,$type,0,$mobile_brand,$mobile_model);
         $this->to_back($info);
     }
     public function recOverQrcodeLog(){
@@ -678,12 +680,14 @@ class IndexController extends CommonController{
      * @param varchar $openid   openid
      * @param tinyint $type     1:小码2:大码3:手机小程序呼码
      */
-    private function recodeScannCode($box_mac,$openid,$type,$is_overtime){
+    private function recodeScannCode($box_mac,$openid,$type,$is_overtime=0,$mobile_brand='',$mobile_model=''){
         $data = array();
         $data['box_mac'] = $box_mac;
         $data['openid']  = $openid;
         $data['type']    = !empty($type) ? $type :1;
         $data['is_overtime'] = $is_overtime ? $is_overtime :0;
+        if(!empty($mobile_brand))   $data['mobile_brand'] = $mobile_brand;
+        if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
         

@@ -613,9 +613,9 @@ class BoxController extends BaseController{
             }else {
                 $difff_time = time() - strtotime($box_heart_info['last_heart_time']);
                 if($difff_time>600){
-                    $data['box_device_state'] = '离线  无法投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '在线  无法投屏点播';
+                    $data['box_device_state'] = '在线';
                 }
             }
         }else {
@@ -634,17 +634,17 @@ class BoxController extends BaseController{
             $data['box_device_name'] = $box_info['name'];
             if(empty($box_heart_info)){
                 if($net_info['inn_delay']==''){
-                    $data['box_device_state'] = '离线  不可以投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '离线  可以投屏点播';
+                    $data['box_device_state'] = '离线';
                 }
                 
             }else {
                 $difff_time = time() - strtotime($box_heart_info['last_heart_time']);
                 if($difff_time>600){
-                    $data['box_device_state'] = '离线  无法投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '在线  可以投屏点播';
+                    $data['box_device_state'] = '在线';
                 }
             }
             $data['box_net_state'] = '网络延时：外网('.$net_info['out_delay'].'毫秒)  内网('.$net_info['inn_delay'].'毫秒)';
@@ -656,8 +656,8 @@ class BoxController extends BaseController{
 
         $res_netty = $m_netty->pushBox($box_info['mac'],json_encode($netty_data));
         if($res_netty['code']==10000){
-            $netty_msg = '4、netty正常';
-            $data['remark'] = array('离线原因(仅供参考)','1、机顶盒没开机','2、局域网拥堵','3、外网网络断开等等',"$netty_msg");
+            $netty_msg = '1、netty正常';
+            $data['remark'] = array('信息跟踪',"$netty_msg");
         }else{
             if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
                 $netty_data = $res_netty['netty_data'];
@@ -665,7 +665,7 @@ class BoxController extends BaseController{
                 $netty_data = $res_netty;
             }
             $error_msg = 'code:'.$netty_data['code'].' msg:'.$netty_data['msg'];
-            $netty_msg = "4、netty异常(异常信息: $error_msg)";
+            $netty_msg = "1、netty异常(异常信息: $error_msg)";
             $res_box_version = $m_heart_log->getInfo('apk_version',array('box_id'=>$box_id));
             $box_version = '';
             if(!empty($res_box_version)){
@@ -678,11 +678,11 @@ class BoxController extends BaseController{
             $res_version = $m_device_version->getOneByVersionAndDevice($version_code,2);
             $version = $res_version['version_name'];
             if($version==$box_version){
-                $version_msg = '5.APK最新';
+                $version_msg = '2.APK最新';
             }else{
-                $version_msg = "5.APK不是最新(当前盒子版本:$box_version APK版本:$version)";
+                $version_msg = "2.APK不是最新(当前盒子版本:$box_version APK版本:$version)";
             }
-            $data['remark'] = array('离线原因(仅供参考)','1、机顶盒没开机','2、局域网拥堵','3、外网网络断开等等',"$netty_msg","$version_msg");
+            $data['remark'] = array('信息跟踪',"$netty_msg","$version_msg");
         }
         $this->to_back($data);
     }

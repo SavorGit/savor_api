@@ -399,6 +399,7 @@ class IndexController extends CommonController{
         $tags = $staffuser_info = $reward_money = $cacsi = array();
         $is_comment = 0;
         $is_open_reward = 1;
+        $is_open_simplehistory = 0;
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -500,8 +501,19 @@ class IndexController extends CommonController{
             $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
             $data['reward_money'] = $reward_money;
+
+            $m_heart_log = new \Common\Model\HeartLogModel();
+            $res_box_version = $m_heart_log->getInfo('apk_version',array('box_id'=>$box_id));
+            $box_version = '';
+            if(!empty($res_box_version)){
+                $box_version = $res_box_version['apk_version'];
+            }
+            if($box_version>='2.1.4'){
+                $is_open_simplehistory = 1;
+            }
         }
         $data['is_comment'] = $is_comment;
+        $data['is_open_simplehistory'] = $is_open_simplehistory;
         $this->to_back($data);
     }
     /**

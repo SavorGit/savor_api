@@ -21,9 +21,9 @@ class WelcomeController extends CommonController{
                 break;
             case 'addwelcome':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'box_mac'=>1001,'hotel_id'=>1002,'image'=>1002,'rotate'=>1002,
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'box_mac'=>1001,'hotel_id'=>1001,'image'=>1002,'rotate'=>1002,
                     'backgroundimg_id'=>1002,'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,
-                    'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002,'is_all'=>1002);
+                    'music_id'=>1001,'play_type'=>1001,'play_date'=>1002,'timing'=>1002,'is_allbox'=>1001);
                 break;
             case 'getwelcomelist':
                 $this->is_verify = 1;

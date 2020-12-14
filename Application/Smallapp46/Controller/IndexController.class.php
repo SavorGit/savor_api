@@ -405,19 +405,9 @@ class IndexController extends CommonController{
             $redis->select(15);
             $cache_key = 'savor_box_'.$box_id;
             $redis_box_info = $redis->get($cache_key);
-            $is_open_popcomment = 0;
             if(!empty($redis_box_info)){
                 $box_info = json_decode($redis_box_info,true);
                 $is_comment = intval($box_info['is_open_popcomment']);
-                if($is_comment==0){
-                    $m_box = new \Common\Model\BoxModel();
-                    $forscreen_info = $m_box->checkForscreenTypeByMac($box_info['mac']);
-                    if($forscreen_info['is_open_popcomment']==1){
-                        $is_comment = 1;
-                    }else{
-                        $is_comment = 0;
-                    }
-                }
 
                 $cache_key = 'savor_room_' . $box_info['room_id'];
                 $redis_room_info = $redis->get($cache_key);
@@ -429,6 +419,10 @@ class IndexController extends CommonController{
 
                 $hotel_id = $room_info['hotel_id'];
                 $room_id = $box_info['room_id'];
+
+                $m_hotelext = new \Common\Model\HotelExtModel();
+                $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+
                 $m_staff = new \Common\Model\Integral\StaffModel();
                 $staff_where = array('hotel_id'=>$hotel_id,'status'=>1);
                 $staff_where['room_ids'] = array('like',"%,$room_id,%");
@@ -448,8 +442,6 @@ class IndexController extends CommonController{
                 }else{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
-                    $m_hotelext = new \Common\Model\HotelExtModel();
-                    $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
                     $m_media = new \Common\Model\MediaModel();
                     $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
                     $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
@@ -493,9 +485,15 @@ class IndexController extends CommonController{
                     $comment_cacsi[$k]['label'] = $label;
                 }
                 $cacsi = $comment_cacsi;
+
+                if($res_ext['is_comment']==0){
+                    $is_comment = 0;
+                }
+                if($res_ext['is_reward']==0){
+                    $is_open_reward = 0;
+                }
             }
-            
-            $data['is_open_reward']     = $is_open_reward;
+
             $data['is_open_popcomment'] = 0;
             $data['tags'] = $tags;
             $data['cacsi'] = $cacsi;
@@ -512,6 +510,7 @@ class IndexController extends CommonController{
                 $is_open_simplehistory = 1;
             }
         }
+        $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;
         $this->to_back($data);

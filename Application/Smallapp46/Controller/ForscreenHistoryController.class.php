@@ -10,7 +10,7 @@ class ForscreenHistoryController extends CommonController{
         switch(ACTION_NAME) {
             case 'getList':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'page'=>1001,'is_speed'=>1000);
                 break;
             
         }
@@ -20,6 +20,7 @@ class ForscreenHistoryController extends CommonController{
         $openid   = $this->params['openid'];
         $box_mac  = $this->params['box_mac'];
         $page     = $this->params['page'] ? intval($this->params['page']) :1 ;
+        $is_speed = $this->params['is_speed'] ? intval($this->params['is_speed']) : 0;
         $cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
         
         $pagesize = 10;
@@ -34,6 +35,9 @@ class ForscreenHistoryController extends CommonController{
             $list = $redis->lgetrange($cache_key, 0, -1);
             foreach($list as $key=>$v){
                 $v = json_decode($v,true);
+                if($is_speed==0 && $v['is_speed']==1){
+                    continue;
+                }
                 $imgs = json_decode($v['imgs']);
                 
                 $tmp = array();

@@ -613,9 +613,9 @@ class BoxController extends BaseController{
             }else {
                 $difff_time = time() - strtotime($box_heart_info['last_heart_time']);
                 if($difff_time>600){
-                    $data['box_device_state'] = '离线  无法投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '在线  无法投屏点播';
+                    $data['box_device_state'] = '在线';
                 }
             }
         }else {
@@ -634,24 +634,56 @@ class BoxController extends BaseController{
             $data['box_device_name'] = $box_info['name'];
             if(empty($box_heart_info)){
                 if($net_info['inn_delay']==''){
-                    $data['box_device_state'] = '离线  不可以投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '离线  可以投屏点播';
+                    $data['box_device_state'] = '离线';
                 }
                 
             }else {
                 $difff_time = time() - strtotime($box_heart_info['last_heart_time']);
                 if($difff_time>600){
-                    $data['box_device_state'] = '离线  无法投屏点播';
+                    $data['box_device_state'] = '离线';
                 }else {
-                    $data['box_device_state'] = '在线  可以投屏点播';
+                    $data['box_device_state'] = '在线';
                 }
             }
             $data['box_net_state'] = '网络延时：外网('.$net_info['out_delay'].'毫秒)  内网('.$net_info['inn_delay'].'毫秒)';
-            
-            
         }
-        $data['remark'] = array('离线原因(仅供参考)','1、机顶盒没开机','2、局域网拥堵','3、外网网络断开等等');
+        $m_netty = new \Common\Model\NettyModel();
+        $now_timestamps = getMillisecond();
+        $netty_data = array('action'=>999,'url'=>'forscreen/resource/15368043845967.mp4','filename'=>"$now_timestamps.mp4",
+            'openid'=>'ofYZG4zmrApmvRSfzeA_mN-pHv2E','resource_type'=>2,'video_id'=>$now_timestamps,'forscreen_id'=>$now_timestamps);
+
+        $res_netty = $m_netty->pushBox($box_info['mac'],json_encode($netty_data));
+        if($res_netty['code']==10000){
+            $netty_msg = '1、netty正常';
+            $data['remark'] = array('信息跟踪',"$netty_msg");
+        }else{
+            if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+                $netty_data = $res_netty['netty_data'];
+            }else{
+                $netty_data = $res_netty;
+            }
+            $error_msg = 'code:'.$netty_data['code'].' msg:'.$netty_data['msg'];
+            $netty_msg = "1、netty异常(异常信息: $error_msg)";
+            $res_box_version = $m_heart_log->getInfo('apk_version',array('box_id'=>$box_id));
+            $box_version = '';
+            if(!empty($res_box_version)){
+                $box_version = $res_box_version['apk_version'];
+            }
+            $m_device_upgrade = new \Common\Model\DeviceUpgradeModel();
+            $res_upgrade = $m_device_upgrade->getLastSmallPtInfo($box_info['hotel_id'],'',2);
+            $version_code = $res_upgrade['version'];
+            $m_device_version = new \Common\Model\DeviceVersionModel();
+            $res_version = $m_device_version->getOneByVersionAndDevice($version_code,2);
+            $version = $res_version['version_name'];
+            if($version==$box_version){
+                $version_msg = '2.APK最新';
+            }else{
+                $version_msg = "2.APK不是最新(当前盒子版本:$box_version APK版本:$version)";
+            }
+            $data['remark'] = array('信息跟踪',"$netty_msg","$version_msg");
+        }
         $this->to_back($data);
     }
     

@@ -62,7 +62,7 @@ class ForscreenLogController extends CommonController{
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs ? $imgs :'[]';
         $data['forscreen_char'] = !empty($forscreen_char) ? $forscreen_char : '';
-        $data['create_time'] = $create_time;
+        $data['create_time'] = date('Y-m-d H:i:s');
         $data['res_sup_time']= $res_sup_time;
         $data['res_eup_time']= $res_eup_time;
         $data['resource_size'] = $resource_size;

@@ -442,14 +442,28 @@ class IndexController extends CommonController{
                 }else{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
-                    $m_media = new \Common\Model\MediaModel();
-                    $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
-                    $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
-                    if(!empty($res_media)){
-                        $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+
+                    $m_staff = new \Common\Model\Integral\StaffModel();
+                    $staff_where = array('hotel_id'=>$hotel_id,'status'=>1,'level'=>1);
+                    $res_staff = $m_staff->getDataList('*',$staff_where,'id asc');
+                    if(!empty($res_staff)){
+                        $staff_openid = $res_staff['openid'];
+                        $m_user = new \Common\Model\Smallapp\UserModel();
+                        $where = array('openid'=>$staff_openid);
+                        $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
+                        $avatarUrl = $user_info['avatarUrl'];
+                        $nickName = $user_info['nickName'];
+                    }else{
+                        $m_media = new \Common\Model\MediaModel();
+                        $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
+                        $avatarUrl = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                        if(!empty($res_media)){
+                            $avatarUrl = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                        }
+                        $nickName = $res_hotel['name'];
                     }
 
-                    $staffuser_info = array('staff_id'=>0,'nickName'=>$res_hotel['name'],'avatarUrl'=>$img_url,
+                    $staffuser_info = array('staff_id'=>0,'nickName'=>$nickName,'avatarUrl'=>$avatarUrl,
                         'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
                     $category = 3;
                 }

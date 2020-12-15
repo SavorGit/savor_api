@@ -594,6 +594,9 @@ class BaseIncModel extends Model{
                     $sql_serialno = "INSERT INTO `savor_smallapp_orderserial` (`trade_no`,`serial_order`,`goods_id`,`pay_type`)VALUES ($trade_no,'$serial_no',0,$pay_type)";
                     $this->execute($sql_serialno);
                     $this->paynotify_log($paylog_type, $serial_no, $sql_serialno);
+
+                    $message_oid = $trade_no;
+                    sendTopicMessage($message_oid,30);
                 }
             }
         }else{

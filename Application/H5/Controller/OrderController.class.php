@@ -121,6 +121,49 @@ class OrderController extends Controller {
         echo $nowdtime." finish\r\n";
     }
 
+    public function rewardmoney(){
+        $content = file_get_contents('php://input');
+        $orders = array();
+        if(!empty($content)) {
+            $res = json_decode($content, true);
+            if (!empty($res['Message'])) {
+                $message = base64_decode($res['Message']);
+                $orders = json_decode($message,true);
+            }
+        }
+        if(empty($orders[0]['order_id'])){
+            $now_time = date('Y-m-d H:i:s');
+            die($now_time.' error');
+        }
+        $order_id = intval($orders[0]['order_id']);
+        $m_reward = new \Common\Model\Smallapp\RewardModel();
+        $res_order = $m_reward->getInfo(array('id'=>$order_id));
+        if(!empty($res_order) && $res_order['status']==2 && $res_order['staff_id']>0){
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(5);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_staff = new \Common\Model\Integral\StaffModel();
+
+            $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+            if(!empty($res_orderserial)){
+                $res_staff = $m_staff->getInfo(array('id'=>$res_order['staff_id'],'status'=>1));
+                if(!empty($res_staff)){
+                    $reward_openid = $res_staff['openid'];
+
+                    $trade_info = array('trade_no'=>$order_id,'money'=>$res_order['money'],'open_id'=>$reward_openid);
+                    $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    if($res['code']==10000){
+                        $condition = array('id'=>$order_id);
+                        $m_reward->updateData($condition,array('status'=>3,'update_time'=>date('Y-m-d H:i:s')));
+
+                        echo "order_id:$order_id  reward ok"."\r\n";
+                    }
+                }
+            }
+        }
+    }
+
     public function settlement(){
         $now_time = date('Y-m-d H:i:s');
         $ts = I('get.ts','');

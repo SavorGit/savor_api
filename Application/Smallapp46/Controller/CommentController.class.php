@@ -85,6 +85,10 @@ class CommentController extends CommonController{
                     $data['label'] = join(',',$label_arr);
                 }
             }
+            $m_box = new \Common\Model\BoxModel();
+            $where = array('a.mac'=>$box_mac,'a.state'=>1,'a.flag'=>0);
+            $res_box = $m_box->getBoxInfo('d.id as hotel_id',$where);
+            $data['hotel_id'] = intval($res_box[0]['hotel_id']);
 
             $ret = $m_comment->add($data);
             if($ret){
@@ -93,9 +97,6 @@ class CommentController extends CommonController{
                 $redis->set('smallapp:comment:'.$openid.'_'.$box_mac, '1',7200);
 
                 if($staff_id>0 && !empty($box_mac)){
-                    $m_box = new \Common\Model\BoxModel();
-                    $where = array('a.mac'=>$box_mac,'a.state'=>1,'a.flag'=>0);
-                    $res_box = $m_box->getBoxInfo('d.id as hotel_id',$where);
                     if(!empty($res_box)){
                         $m_taskuser = new  \Common\Model\Integral\TaskuserModel();
                         $m_taskuser->getCommentTask($res_staff['openid'],$res_box[0]['hotel_id']);
@@ -169,9 +170,14 @@ class CommentController extends CommonController{
                 $this->to_back(90158);
             }
         }
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('a.mac'=>$box_mac,'a.state'=>1,'a.flag'=>0);
+        $res_box = $m_box->getBoxInfo('d.id as hotel_id',$where);
+
 
         $m_reward = new \Common\Model\Smallapp\RewardModel();
         $add_data = array('staff_id'=>$staff_id,'user_id'=>$user_info['id'],'box_mac'=>$box_mac,'money'=>$money,'status'=>1);
+        $add_data['hotel_id'] = intval($res_box[0]['hotel_id']);
         $order_id = $m_reward->add($add_data);
         $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
         $trade_no = $m_ordermap->add(array('order_id'=>$order_id,'pay_type'=>10));

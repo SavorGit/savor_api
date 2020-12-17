@@ -2,7 +2,6 @@
 namespace Smallsale21\Controller;
 use \Common\Controller\CommonController;
 use Common\Lib\Smallapp_api;
-use Common\Lib\SavorRedis;
 
 class UserController extends CommonController{
     /**
@@ -76,6 +75,30 @@ class UserController extends CommonController{
             case 'edit':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002);
+                break;
+            case 'assigntypes':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'assignrecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'type'=>1002,'idate'=>1002);
+                break;
+            case 'rewardmoneytypes':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'rewardmoneyrecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'idate'=>1002);
+                break;
+            case 'rewardintegraltypes':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'rewardintegralrecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'idate'=>1002);
                 break;
         }
         parent::_init_();
@@ -459,42 +482,17 @@ class UserController extends CommonController{
         if(!empty($res_userintegral)){
             $integral = intval($res_userintegral['integral']);
         }
-        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral,'is_open_integral'=>0);
-        $month_integral = 0;
-        $next_month_integral = 0;
-
-        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'sum(integral) as total_integral';
-        $where = array('openid'=>$openid,'type'=>3,'source'=>3);
-        $month_date = date("Ym", strtotime("-1 month"));
-        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
-        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
-        if(!empty($res_month_integral)){
-            $month_integral = intval($res_month_integral[0]['total_integral']);
-        }
-
-        $month_date = date("Ym");
-        $where['DATE_FORMAT(integral_time, "%Y%m")'] = $month_date;
-        $res_month_integral = $m_userintegral_record->getDataList($fields,$where,'id desc');
-        if(!empty($res_month_integral)){
-            $next_month_integral = intval($res_month_integral[0]['total_integral']);
-        }
-
-        $data['month_integral'] = $month_integral;
-        $data['next_month_integral'] = $next_month_integral;
+        $data = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'integral'=>$integral);
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id as staff_id,a.level,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase,merchant.mtype';
+        $fields = 'a.id as staff_id,a.level,merchant.id as merchant_id,merchant.hotel_id,merchant.is_purchase,merchant.mtype,merchant.money,merchant.integral';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         $data['merchant_id'] = $res_staff[0]['merchant_id'];
         $data['is_purchase'] = intval($res_staff[0]['is_purchase']);
         $data['staff_level'] = intval($res_staff[0]['level']);
-
-        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $where = array('merchant_id'=>$data['merchant_id'],'status'=>1);
-        $dish_num = $m_goods->countNum($where);
-        $data['dish_num'] = intval($dish_num);
+        $data['reward_money'] = intval($res_staff[0]['money']);
+        $data['reward_integral'] = intval($res_staff[0]['integral']);
 
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);
@@ -524,17 +522,6 @@ class UserController extends CommonController{
         $data['shoporder_all_num'] = 0;
         $data['shoporder_process_num'] = 0;
 
-        $hotel_id = $res_staff[0]['hotel_id'];
-        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'g.id as goods_id';
-        $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2);
-        $where['g.type']= array('in',array(30,31));
-        $orderby = 'g.id desc';
-        $limit = "0,1";
-        $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,$limit);
-        if(!empty($res_goods)){
-            $data['is_open_integral'] = 1;
-        }
         $income_fee = $withdraw_fee = 0;
         if($res_user['role_id']==3){
             $m_income = new \Common\Model\Smallapp\UserincomeModel();
@@ -556,13 +543,17 @@ class UserController extends CommonController{
         $data['income_fee'] = $income_fee;
         $data['withdraw_fee'] = $withdraw_fee;
         $score = 0;
-        if($data['staff_level']==2 || $data['staff_level']==3){
+        if($data['staff_level']==1){
+            $condition = array('hotel_id'=>$res_staff[0]['hotel_id'],'status'=>1);
+        }elseif($data['staff_level']==2 || $data['staff_level']==3){
             $condition = array('staff_id'=>$res_staff[0]['staff_id'],'status'=>1);
-            $m_comment = new \Common\Model\Smallapp\CommentModel();
-            $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
-            if(!empty($res_score) && $res_score[0]['score']>=1){
-                $score = sprintf("%01.1f",$res_score[0]['score']);
-            }
+        }else{
+            $condition = array('hotel_id'=>$res_staff[0]['hotel_id'],'status'=>1);
+        }
+        $m_comment = new \Common\Model\Smallapp\CommentModel();
+        $res_score = $m_comment->getCommentInfo('avg(score) as score',$condition);
+        if(!empty($res_score) && $res_score[0]['score']>=1){
+            $score = sprintf("%01.1f",$res_score[0]['score']);
         }
         $data['score'] = $score;
 
@@ -616,7 +607,7 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,content,type,integral_time,goods_id,source';
+        $fields = 'room_name,integral,money,content,type,integral_time,goods_id,source';
         $where = array('openid'=>$openid);
         if($type){
             $where['type'] = $type;
@@ -654,7 +645,15 @@ class UserController extends CommonController{
                     $content = $all_types[$v['type']];
                     break;
                 case 6:
+                case 7:
+                case 8:
                     $content = $all_types[$v['type']];
+                    break;
+                case 9:
+                    $content = $all_types[$v['type']];
+                    if($v['money']>0){
+                        $info['integral'] = $v['money'].'元';
+                    }
                     break;
                 default:
                     $content = "";
@@ -719,6 +718,293 @@ class UserController extends CommonController{
         $this->to_back($data);
     }
 
+    public function assigntypes(){
+        $openid = $this->params['openid'];
+        $type_list = array(
+            array('id'=>0,'name'=>'全部'),
+            array('id'=>1,'name'=>'现金分配'),
+            array('id'=>2,'name'=>'积分分配'),
+        );
+        $type_name_list = array();
+        foreach ($type_list as $k=>$v){
+            $type_name_list[] = $v['name'];
+        }
+
+        $start_date = '2020-12';
+        $end_date = date('Y-m');
+        $start    = new \DateTime($start_date);
+        $end      = new \DateTime($end_date);
+        $interval = \DateInterval::createFromDateString('1 month');
+        $period   = new \DatePeriod($start, $interval, $end);
+        $date_list = array();
+        $date_name_list = array();
+
+        $has_integral_date = 0;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $where = array('openid'=>$openid,'type'=>9);
+        $res_record = $m_userintegral_record->getDataList('id,add_time',$where,'id desc',0,1);
+        if($res_record['total']){
+            $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
+        }
+
+        $date_key = 1200;
+        foreach ($period as $k=>$dt) {
+            $name = $dt->format("Y年m月");
+            $dt_date = $dt->format("Ym");
+            $date_list[] = array('id'=>$dt_date,'name'=>$name);
+            $date_name_list[]=$name;
+            if($dt_date==$has_integral_date){
+                $date_key = $k;
+            }
+        }
+        $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
+        $date_name_list[] = date('Y年m月',strtotime($end_date));
+        if($date_key==1200){
+            $date_key = count($date_name_list)-1;
+        }
+        $data = array('type_list'=>$type_list,'type_name_list'=>$type_name_list,'date_list'=>$date_list,'date_name_list'=>$date_name_list);
+        $data['date_key'] = $date_key;
+        $this->to_back($data);
+    }
+
+    public function assignrecord(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $type = $this->params['type'];
+        $idate = $this->params['idate'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
+        $pagesize = 15;
+        $all_nums = $page * $pagesize;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'openid,integral,money,integral_time,add_time';
+        $where = array('hotel_id'=>$res_staff[0]['hotel_id'],'type'=>9);
+        if($type){
+            if($type==1){
+                $where['money'] = array('gt',0);
+            }else{
+                $where['integral'] = array('gt',0);
+            }
+        }
+        if(empty($idate))   $idate = date('Ym');
+        if($idate){
+            $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
+        }
+        $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
+        $datalist = array();
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        foreach ($res_record as $v){
+            $add_time = date('Y-m-d',strtotime($v['integral_time']));
+            $where = array('openid'=>$v['openid']);
+            $fields = 'openid,avatarUrl,nickName';
+            $res_user = $m_user->getOne($fields, $where);
+
+            $info = array('openid'=>$v['openid'],'avatarUrl'=>$res_user['avatarUrl'],'nickName'=>$res_user['nickName'],
+                'integral'=>$v['integral'],'add_time'=>$add_time);
+            if($v['integral']>0){
+                $info['integral'] = $v['integral'].'分';
+            }elseif($v['money']>0){
+                $info['integral'] = $v['money'].'元';
+            }
+            $datalist[] = $info;
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function rewardmoneytypes(){
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
+        $start_date = '2020-12';
+        $end_date = date('Y-m');
+        $start    = new \DateTime($start_date);
+        $end      = new \DateTime($end_date);
+        $interval = \DateInterval::createFromDateString('1 month');
+        $period   = new \DatePeriod($start, $interval, $end);
+        $date_list = array();
+        $date_name_list = array();
+
+        $has_reward_date = 0;
+        $m_reward = new \Common\Model\Smallapp\RewardModel();
+        $where = array('hotel_id'=>$res_staff[0]['hotel_id'],'staff_id'=>0,'status'=>array('in',array(2,3)));
+        $res_reward = $m_reward->getDataList('id,add_time',$where,'id desc',0,1);
+        if($res_reward['total']){
+            $has_reward_date = date('Ym',strtotime($res_reward['list'][0]['add_time']));
+        }
+
+        $date_key = 1200;
+        foreach ($period as $k=>$dt) {
+            $name = $dt->format("Y年m月");
+            $dt_date = $dt->format("Ym");
+            $date_list[] = array('id'=>$dt_date,'name'=>$name);
+            $date_name_list[]=$name;
+            if($dt_date==$has_reward_date){
+                $date_key = $k;
+            }
+        }
+        $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
+        $date_name_list[] = date('Y年m月',strtotime($end_date));
+        if($date_key==1200){
+            $date_key = count($date_name_list)-1;
+        }
+        $data = array('date_list'=>$date_list,'date_name_list'=>$date_name_list);
+        $data['date_key'] = $date_key;
+        $this->to_back($data);
+    }
+
+    public function rewardmoneyrecord(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $idate = $this->params['idate'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
+        $pagesize = 15;
+        $all_nums = $page * $pagesize;
+        $m_reward = new \Common\Model\Smallapp\RewardModel();
+        $where = array('hotel_id'=>$res_staff[0]['hotel_id'],'staff_id'=>0,'status'=>array('in',array(2,3)));
+        if(empty($idate))   $idate = date('Ym');
+        if($idate){
+            $where['DATE_FORMAT(add_time, "%Y%m")'] = $idate;
+        }
+        $res_reward = $m_reward->getDataList('*',$where,'id desc',0,$all_nums);
+        $datalist = array();
+        if($res_reward['total']>0){
+            $m_box = new \Common\Model\BoxModel();
+            $all_boxs = array();
+            $where = array('box.state'=>1,'box.flag'=>0,'hotel.id'=>$res_staff[0]['hotel_id']);
+            $res_box = $m_box->getBoxByCondition('box.mac,room.name as room_name',$where);
+            foreach ($res_box as $v){
+                $all_boxs[$v['mac']] = $v['room_name'];
+            }
+            foreach ($res_reward['list'] as $v){
+                $room_name = isset($all_boxs[$v['box_mac']])?$all_boxs[$v['box_mac']]:'';
+                $info = array('room_name'=>$room_name,'money'=>$v['money'],'add_time'=>$v['add_time'],'content'=>'评价打赏');
+                $datalist[]=$info;
+            }
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function rewardintegraltypes(){
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
+        $start_date = '2020-12';
+        $end_date = date('Y-m');
+        $start    = new \DateTime($start_date);
+        $end      = new \DateTime($end_date);
+        $interval = \DateInterval::createFromDateString('1 month');
+        $period   = new \DatePeriod($start, $interval, $end);
+        $date_list = array();
+        $date_name_list = array();
+
+        $has_integral_date = 0;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $where = array('openid'=>$res_staff[0]['hotel_id'],'hotel_id'=>$res_staff[0]['hotel_id']);
+        $where['type'] = array('in',array(7,8));
+        $res_record = $m_userintegral_record->getDataList('id,add_time',$where,'id desc',0,1);
+        if($res_record['total']){
+            $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
+        }
+
+        $date_key = 1200;
+        foreach ($period as $k=>$dt) {
+            $name = $dt->format("Y年m月");
+            $dt_date = $dt->format("Ym");
+            $date_list[] = array('id'=>$dt_date,'name'=>$name);
+            $date_name_list[]=$name;
+            if($dt_date==$has_integral_date){
+                $date_key = $k;
+            }
+        }
+        $date_list[] = array('id'=>date('Ym',strtotime($end_date)),'name'=>date('Y年m月',strtotime($end_date)));
+        $date_name_list[] = date('Y年m月',strtotime($end_date));
+        if($date_key==1200){
+            $date_key = count($date_name_list)-1;
+        }
+        $data = array('date_list'=>$date_list,'date_name_list'=>$date_name_list);
+        $data['date_key'] = $date_key;
+        $this->to_back($data);
+    }
+
+    public function rewardintegralrecord(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $idate = $this->params['idate'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
+        $pagesize = 15;
+        $all_nums = $page * $pagesize;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $where = array('openid'=>$res_staff[0]['hotel_id'],'hotel_id'=>$res_staff[0]['hotel_id']);
+        $where['type'] = array('in',array(7,8));
+        if(empty($idate))   $idate = date('Ym');
+        if($idate){
+            $where['DATE_FORMAT(add_time, "%Y%m")'] = $idate;
+        }
+        $res_record = $m_userintegral_record->getDataList('id,room_name,integral,add_time',$where,'id desc',0,$all_nums);
+        $datalist = array();
+        if($res_record['total']>0){
+            foreach ($res_record['list'] as $v){
+                $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$v['add_time'],'content'=>'评价任务积分');
+                $datalist[]=$info;
+            }
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+
     public function employeelist(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
@@ -772,11 +1058,6 @@ class UserController extends CommonController{
 
     public function invite(){
         $openid = $this->params['openid'];
-        /* $m_hotel_invite_code = new \Common\Model\HotelInviteCodeModel();
-        $fields = 'id,hotel_id,bind_mobile,openid,type';
-        $where = array('openid'=>$openid,'state'=>1,'flag'=>0);
-        $res_invite_code = $m_hotel_invite_code->getOne($fields,$where); */
-        
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'mt.status'=>1);
         $res_invite_code = $m_staff->alias('a')
@@ -787,7 +1068,6 @@ class UserController extends CommonController{
         if($res_invite_code['type']!=2){
             $this->to_back(93001);
         }
-
         $cache_key = C('SAPP_SALE_INVITE_QRCODE');
         $uniq_id = uniqid('',true);
         $invite_cache_key = $res_invite_code['id'].'&'.$uniq_id;
@@ -827,39 +1107,12 @@ class UserController extends CommonController{
             $this->to_back(93010);
         }
     }
-    /**
-     * @desc 检查手机号是否分配邀请码
-     */
-    public function checkUser(){
-        $this->to_back(10000);
-        /* $mobile = $this->params['mobile'];
-        $openid = $this->params['openid'];
-        $m_hotel_invite = new \Common\Model\HotelInviteCodeModel();
-        $fields = 'id';
-        $where = array();
-        if($openid){
-            $where['openid'] = $openid;
-        }
-        if($mobile){
-            $where['bind_mobile'] = $mobile;
-        }
-        if(empty($where)){
-            $this->to_back(92008);
-        }
-        $where['flag']  = 0;
-        $info = $m_hotel_invite->getOne($fields, $where);
-        if(empty($info)){
-            $this->to_back(92008);
-        }else {
-            $this->to_back(10000);
-        } */
-    }
+
     private function getServiceModel($userinfo,$service_model_id){
         $service_list = C('service_list');
         $service_list = array_keys($service_list);
     
         if($userinfo['hotel_id']==-1 || empty($service_model_id)){
-    
             $userinfo['service'] = $service_list;
         }else {
             $m_service_mx = new \Common\Model\Integral\ServiceMxModel();
@@ -877,10 +1130,10 @@ class UserController extends CommonController{
                 }
             }
             $userinfo['service'] = $service_temp;
-    
         }
         return $userinfo;
     }
+
     private function checkSigninTime($signin_time){
         $is_signin = 0;
         $feast_time = C('FEAST_TIME');

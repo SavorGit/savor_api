@@ -98,10 +98,11 @@ class ShopController extends CommonController{
             $res_data['total'] = $res_goods['total'];
 
             $oss_host = "http://".C('OSS_HOST').'/';
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'line_price'=>$v['line_price'],'stock_num'=>$v['amount'],
-                    'type'=>$v['type'],'is_tv'=>0,'gtype'=>$v['gtype']);
+                    'type'=>$v['type'],'is_tv'=>0,'gtype'=>$v['gtype'],'is_tvdemand'=>0);
                 if($v['type']==10){
                     $media_id = $v['media_id'];
                     $media_info = $m_media->getMediaInfoById($media_id);
@@ -128,6 +129,20 @@ class ShopController extends CommonController{
                         }
                     }
                     $dinfo['img_url'] = $img_url;
+
+                    if($v['tv_media_id']){
+                        $media_info = $m_media->getMediaInfoById($v['tv_media_id']);
+                        $oss_path = $media_info['oss_path'];
+                        $oss_path_info = pathinfo($oss_path);
+
+                        $dinfo['is_tvdemand'] = 1;
+                        $dinfo['duration'] = $media_info['duration'];
+                        $dinfo['tx_url'] = $media_info['oss_addr'];
+                        $dinfo['filename'] = $oss_path_info['basename'];
+                        $dinfo['forscreen_url'] = $oss_path;
+                        $dinfo['resource_size'] = $media_info['oss_filesize'];
+                        $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=32";
+                    }
 
                     $dinfo['attrs'] = array();
                     $dinfo['model_img'] = '';

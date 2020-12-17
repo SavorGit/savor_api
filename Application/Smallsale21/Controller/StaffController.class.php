@@ -28,6 +28,14 @@ class StaffController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'staff_id'=>1001,'is_scangoods'=>1001);
                 break;
+            case 'getAssigninfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'assignMoney':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'staff_id'=>1001,'money'=>1002,'integral'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -55,7 +63,7 @@ class StaffController extends CommonController{
             }elseif($res_staff[0]['level']==3){
                 $staff_where = array('id'=>$res_staff[0]['id']);
             }
-            $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'id desc');
+            $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'level asc');
             if($res_staff[0]['level']==2){
                 $is_self = 0;
                 foreach ($res_staffs as $v){
@@ -330,6 +338,92 @@ class StaffController extends CommonController{
         }
         $data = array('permission'=>$permission);
         $this->to_back($data);
+    }
+
+    public function getAssigninfo(){
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.openid,a.level,merchant.type,merchant.hotel_id,merchant.money,merchant.integral';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+        $res = array('money'=>intval($res_staff[0]['money']),'integral'=>intval($res_staff[0]['integral']));
+        $this->to_back($res);
+    }
+
+    public function assignMoney(){
+        $openid = $this->params['openid'];
+        $staff_id = $this->params['staff_id'];
+        $money = intval($this->params['money']);
+        $integral = intval($this->params['integral']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.openid,a.level,merchant.type,merchant.hotel_id,merchant.money,merchant.integral';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+        $res_data = $m_staff->getInfo(array('id'=>$staff_id));
+        if(empty($res_data) || $res_data['status']!=1 || $res_data['merchant_id']!=$res_staff[0]['merchant_id']){
+            $this->to_back(93032);
+        }
+        $total_money = $res_staff[0]['money'];
+        $total_integral = $res_staff[0]['integral'];
+        if(!$money && !$integral){
+            $this->to_back(93056);
+        }
+        $m_hotel = new \Common\Model\HotelModel();
+        $field = 'hotel.id as hotel_id,hotel.name as hotel_name,hotel.hotel_box_type,area.id as area_id,area.region_name as area_name';
+        $res_hotel = $m_hotel->getHotelById($field,array('hotel.id'=>$res_staff[0]['hotel_id']));
+
+        $add_data = array('openid'=>$res_data['openid'],'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+            'hotel_id'=>$res_hotel['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'type'=>9,'integral_time'=>date('Y-m-d H:i:s')
+            );
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        if($money){
+            if($money>$total_money){
+                $this->to_back(93057);
+            }
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(5);
+            $add_data['money'] = $money;
+            $order_id = $m_userintegral_record->add($add_data);
+
+            $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$res_data['openid']);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            if($res['code']==10000){
+                $now_money = $total_money - $money;
+                $m_merchant->updateData(array('id'=>$res_staff[0]['merchant_id']),array('money'=>$now_money));
+                $total_money = $now_money;
+            }else{
+                $m_userintegral_record->updateData(array('id'=>$order_id),array('status'=>2));
+                $this->to_back(93058);
+            }
+        }
+        if($integral){
+            if($integral>$total_integral){
+                $this->to_back(93059);
+            }
+            $add_data['integral'] = $integral;
+            $m_userintegral_record->add($add_data);
+            $now_integral = $total_integral - $integral;
+            $m_merchant->updateData(array('id'=>$res_staff[0]['merchant_id']),array('integral'=>$now_integral));
+            $total_integral = $now_integral;
+        }
+        $res = array('money'=>intval($total_money),'integral'=>intval($total_integral));
+        $this->to_back($res);
     }
 
 

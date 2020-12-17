@@ -385,6 +385,10 @@ return array(
 	    '93053'=>'smallappsale_lottery_time_error',
 	    '93054'=>'smallappsale_lottery_time_repeat',
 	    '93055'=>'smallappsale_lotteryactivity_cancel_error',
+	    '93056'=>'smallappsale_input_assign_moneyorintegral',
+	    '93057'=>'smallappsale_input_assign_money_error',
+	    '93058'=>'smallappsale_merchant_assign_money_error',
+	    '93059'=>'smallappsale_input_assign_integral_error',
 
 	),
 );

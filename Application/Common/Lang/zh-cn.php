@@ -368,6 +368,10 @@ return array(
     'smallappsale_lottery_time_error'=>'请选择正确的开奖时间',
     'smallappsale_lottery_time_repeat'=>'相同时间内不能存在多个活动',
     'smallappsale_lotteryactivity_cancel_error'=>'当前活动不能取消',
+    'smallappsale_input_assign_moneyorintegral'=>'请输入要分配的金额或积分',
+    'smallappsale_input_assign_money_error'=>'输入分配的金额有误',
+    'smallappsale_merchant_assign_money_error'=>'分配系统正在维护中，请明天再试。',
+    'smallappsale_input_assign_integral_error'=>'输入分配的积分有误',
 
 
 );

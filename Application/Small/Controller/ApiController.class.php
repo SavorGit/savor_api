@@ -250,12 +250,12 @@ class ApiController extends CommonController{
         if(!empty($redis_sys_config)){
             $redis_sys_config = json_decode($redis_sys_config,true);
             foreach($redis_sys_config as $key=>$v){
-                if(in_array($v['config_key'], array('system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume'))){
+                if(in_array($v['config_key'], array('system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume','system_for_screen_volume'))){
                     $sys_vol_arr [] = $v;
                 }
             }
         }else {
-            $where = " 'system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume' ";
+            $where = " 'system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume','system_for_screen_volume' ";
             $sys_vol_arr = $sysconfigModel->getInfo($where);
         }
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
@@ -537,11 +537,6 @@ class ApiController extends CommonController{
     }
 
 
-
-
-
-
-
     /**
      * changeroomList  将已经数组修改字段名称
      * @access public
@@ -555,7 +550,8 @@ class ApiController extends CommonController{
             foreach ($res as $vk=>$val) {
                 foreach($ro_type as $k=>$v){
                     if($k == $val['room_type']){
-                        $res[$vk]['room_type']  = $v;                                   }
+                        $res[$vk]['room_type']  = $v;
+                    }
                 }
                 foreach($val as $rk=>$rv){
                     if($rk!='room_name'){
@@ -593,16 +589,15 @@ class ApiController extends CommonController{
                 $rc_key =  $val['config_key'];
                 foreach($vol_arr as $k=>$v){
                     if($k == $rc_key){
-                        $res[$vk]['label']  = $v;                                   }
+                        $res[$vk]['label']  = $v;
+                    }
                 }
                 $res[$vk]['configKey'] =  $res[$vk]['config_key'];
-                $res[$vk]['configValue'] =  ($res[$vk]['config_value']==='')
-                ?$vol_default[$rc_key]:$res[$vk]['config_value'];
+                $res[$vk]['configValue'] =  ($res[$vk]['config_value']==='')?$vol_default[$rc_key]:$res[$vk]['config_value'];
                 unset($res[$vk]['config_key']);
                 unset($res[$vk]['config_value']);
                 unset($res[$vk]['status']);
             }
-
         }
         return $res;
         //如果是空

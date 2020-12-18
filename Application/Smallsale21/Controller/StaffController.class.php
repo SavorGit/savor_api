@@ -64,7 +64,7 @@ class StaffController extends CommonController{
                 $staff_where = array('id'=>$res_staff[0]['id']);
             }
             $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'level asc');
-            if($res_staff[0]['level']==2){
+            if($res_staff[0]['level']==1 || $res_staff[0]['level']==2){
                 $is_self = 0;
                 foreach ($res_staffs as $v){
                     if($v['id']==$res_staff[0]['id']){
@@ -364,7 +364,7 @@ class StaffController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.openid,a.level,merchant.type,merchant.hotel_id,merchant.money,merchant.integral';
+        $fields = 'a.openid,a.level,a.merchant_id,merchant.type,merchant.hotel_id,merchant.money,merchant.integral';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
@@ -374,7 +374,7 @@ class StaffController extends CommonController{
         }
         $res_data = $m_staff->getInfo(array('id'=>$staff_id));
         if(empty($res_data) || $res_data['status']!=1 || $res_data['merchant_id']!=$res_staff[0]['merchant_id']){
-            $this->to_back(93032);
+            $this->to_back(93030);
         }
         $total_money = $res_staff[0]['money'];
         $total_integral = $res_staff[0]['integral'];
@@ -416,6 +416,7 @@ class StaffController extends CommonController{
             if($integral>$total_integral){
                 $this->to_back(93059);
             }
+            $add_data['money'] = 0;
             $add_data['integral'] = $integral;
             $m_userintegral_record->add($add_data);
             $now_integral = $total_integral - $integral;

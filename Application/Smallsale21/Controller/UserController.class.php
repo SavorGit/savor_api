@@ -616,7 +616,6 @@ class UserController extends CommonController{
         if($idate){
             $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
         }
-        $where['integral'] = array('gt',0);
         $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
         $datalist = array();
         $all_types = C('INTEGRAL_TYPES');
@@ -651,7 +650,9 @@ class UserController extends CommonController{
                     break;
                 case 9:
                     $content = $all_types[$v['type']];
-                    if($v['money']>0){
+                    if($v['integral']>0){
+                        $info['integral'] = $v['integral'].'积分';
+                    }elseif($v['money']>0){
                         $info['integral'] = $v['money'].'元';
                     }
                     break;
@@ -720,6 +721,17 @@ class UserController extends CommonController{
 
     public function assigntypes(){
         $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+
+        if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $this->to_back(93001);
+        }
+        if($res_staff[0]['level']!=1){
+            $this->to_back(93031);
+        }
+
         $type_list = array(
             array('id'=>0,'name'=>'全部'),
             array('id'=>1,'name'=>'现金分配'),
@@ -730,7 +742,7 @@ class UserController extends CommonController{
             $type_name_list[] = $v['name'];
         }
 
-        $start_date = '2020-12';
+        $start_date = '2020-11';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);
@@ -738,15 +750,13 @@ class UserController extends CommonController{
         $period   = new \DatePeriod($start, $interval, $end);
         $date_list = array();
         $date_name_list = array();
-
         $has_integral_date = 0;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $where = array('openid'=>$openid,'type'=>9);
+        $where = array('hotel_id'=>$res_staff[0]['hotel_id'],'type'=>9);
         $res_record = $m_userintegral_record->getDataList('id,add_time',$where,'id desc',0,1);
         if($res_record['total']){
             $has_integral_date = date('Ym',strtotime($res_record['list'][0]['add_time']));
         }
-
         $date_key = 1200;
         foreach ($period as $k=>$dt) {
             $name = $dt->format("Y年m月");
@@ -800,10 +810,10 @@ class UserController extends CommonController{
         if($idate){
             $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
         }
-        $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
+        $res_record = $m_userintegral_record->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         $m_user = new \Common\Model\Smallapp\UserModel();
-        foreach ($res_record as $v){
+        foreach ($res_record['list'] as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
             $where = array('openid'=>$v['openid']);
             $fields = 'openid,avatarUrl,nickName';
@@ -812,7 +822,7 @@ class UserController extends CommonController{
             $info = array('openid'=>$v['openid'],'avatarUrl'=>$res_user['avatarUrl'],'nickName'=>$res_user['nickName'],
                 'integral'=>$v['integral'],'add_time'=>$add_time);
             if($v['integral']>0){
-                $info['integral'] = $v['integral'].'分';
+                $info['integral'] = $v['integral'].'积分';
             }elseif($v['money']>0){
                 $info['integral'] = $v['money'].'元';
             }
@@ -835,7 +845,7 @@ class UserController extends CommonController{
             $this->to_back(93031);
         }
 
-        $start_date = '2020-12';
+        $start_date = '2020-11';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);
@@ -929,7 +939,7 @@ class UserController extends CommonController{
             $this->to_back(93031);
         }
 
-        $start_date = '2020-12';
+        $start_date = '2020-11';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);

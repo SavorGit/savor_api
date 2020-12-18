@@ -146,12 +146,15 @@ class CommentController extends CommonController{
         $money = intval($this->params['money']);
         $box_mac = $this->params['box_mac'];
 
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = array('id'=>$staff_id,'status'=>1);
-        $res_staff = $m_staff->getInfo($where);
-        if(empty($res_staff)){
-            $this->to_back(90156);
+        if($staff_id>0){
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $where = array('id'=>$staff_id,'status'=>1);
+            $res_staff = $m_staff->getInfo($where);
+            if(empty($res_staff)){
+                $this->to_back(90156);
+            }
         }
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'small_app_id'=>1);
         $user_info = $m_user->getOne('id', $where, 'id desc');

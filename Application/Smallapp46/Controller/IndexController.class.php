@@ -443,11 +443,16 @@ class IndexController extends CommonController{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
 
-                    $m_staff = new \Common\Model\Integral\StaffModel();
-                    $staff_where = array('hotel_id'=>$hotel_id,'status'=>1,'level'=>1);
-                    $res_staff = $m_staff->getDataList('*',$staff_where,'id asc');
+                    $m_merchant = new \Common\Model\Integral\MerchantModel();
+                    $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
+                    $res_staff = array();
+                    if(!empty($res_merchant)){
+                        $m_staff = new \Common\Model\Integral\StaffModel();
+                        $staff_where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'level'=>1);
+                        $res_staff = $m_staff->getDataList('*',$staff_where,'id asc');
+                    }
                     if(!empty($res_staff)){
-                        $staff_openid = $res_staff['openid'];
+                        $staff_openid = $res_staff[0]['openid'];
                         $m_user = new \Common\Model\Smallapp\UserModel();
                         $where = array('openid'=>$staff_openid);
                         $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');

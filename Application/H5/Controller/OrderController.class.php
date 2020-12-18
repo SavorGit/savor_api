@@ -168,7 +168,7 @@ class OrderController extends Controller {
                 if(!empty($res_merchant)){
                     $now_money = $res_merchant['money'] + $res_order['money'];
                     $where = array('id'=>$res_merchant['id']);
-                    $m_merchant->where($where)->setInc('money',$now_money);
+                    $m_merchant->updateData($where,array('money'=>$now_money));
                 }
             }
 

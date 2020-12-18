@@ -742,7 +742,7 @@ class UserController extends CommonController{
             $type_name_list[] = $v['name'];
         }
 
-        $start_date = '2020-11';
+        $start_date = '2020-12';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);
@@ -845,7 +845,7 @@ class UserController extends CommonController{
             $this->to_back(93031);
         }
 
-        $start_date = '2020-11';
+        $start_date = '2020-12';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);
@@ -939,7 +939,7 @@ class UserController extends CommonController{
             $this->to_back(93031);
         }
 
-        $start_date = '2020-11';
+        $start_date = '2020-12';
         $end_date = date('Y-m');
         $start    = new \DateTime($start_date);
         $end      = new \DateTime($end_date);

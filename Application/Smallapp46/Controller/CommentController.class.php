@@ -67,6 +67,7 @@ class CommentController extends CommonController{
             if($reward_id>0){
                 $data['reward_id'] = $reward_id;
             }
+            $now_tag_ids = array();
             if($satisfaction_id>0){
                 $comment_cacsi = C('COMMENT_CACSI');
                 $label = $comment_cacsi[$satisfaction_id]['label'];
@@ -74,12 +75,26 @@ class CommentController extends CommonController{
                 $data['score']   = $score_map[$satisfaction_id];
                 $data['satisfaction'] = $satisfaction_id;
                 if(!empty($tag_ids)){
+                    $m_tags = new \Common\Model\Smallapp\TagsModel();
+                    $fields = 'id,satisfaction,name';
+                    $where = array('status'=>1,'category'=>1);
+                    $res_tags = $m_tags->getDataList($fields,$where,'id desc');
+                    $all_tags = array();
+                    foreach ($res_tags as $v){
+                        $all_tags[$v['id']]=$v;
+                    }
                     $tag_ids_arr = explode(',',$tag_ids);
                     $label_arr = array();
                     foreach ($tag_ids_arr as $v){
                         $label_id = intval($v);
                         if($label_id>0){
-                            $label_arr[]=$label[$label_id]['name'];
+                            $now_tag_ids[]=$label_id;
+                            if(isset($label[$label_id])){
+                                $label_name = $label[$label_id]['name'];
+                            }else{
+                                $label_name = $all_tags[$label_id]['name'];
+                            }
+                            $label_arr[]=$label_name;
                         }
                     }
                     $data['label'] = join(',',$label_arr);
@@ -92,6 +107,15 @@ class CommentController extends CommonController{
 
             $ret = $m_comment->add($data);
             if($ret){
+                if(!empty($now_tag_ids)){
+                    $add_tag = array();
+                    foreach ($now_tag_ids as $v){
+                        $add_tag[]=array('comment_id'=>$ret,'tag_id'=>$v);
+                    }
+                    $m_comment_tag = new \Common\Model\Smallapp\CommenttagidsModel();
+                    $m_comment_tag->addAll($add_tag);
+                }
+
                 $redis  =  \Common\Lib\SavorRedis::getInstance();
                 $redis->select(1);
                 $redis->set('smallapp:comment:'.$openid.'_'.$box_mac, '1',7200);

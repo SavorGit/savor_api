@@ -438,7 +438,6 @@ class IndexController extends CommonController{
                     $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
                     $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
                         'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
-                    $category = 1;
                 }else{
                     $comment_str = '餐厅评分';
                     $waiter_str = '';
@@ -470,16 +469,23 @@ class IndexController extends CommonController{
 
                     $staffuser_info = array('staff_id'=>0,'nickName'=>$nickName,'avatarUrl'=>$avatarUrl,
                         'comment_str'=>$comment_str,'waiter_str'=>$waiter_str,'service_str'=>$service_str);
-                    $category = 3;
                 }
                 $m_tags = new \Common\Model\Smallapp\TagsModel();
-                $fields = 'id,name';
-                $where = array('status'=>1,'category'=>$category);
+                $fields = 'id,hotel_id,satisfaction,name';
+                $where = array('status'=>1,'category'=>1);
                 $where['hotel_id'] = array('in',array($hotel_id,0));
-                $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
-                $tags = array();
+                $res_tags = $m_tags->getDataList($fields,$where,'id desc');
+                $hotel_satisfaction = array();
+                $default_satisfaction = array();
                 foreach ($res_tags as $v){
-                    $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
+                    if($v['satisfaction']){
+                        $info = array('id'=>$v['id'],'name'=>$v['name'],'selected'=>false);;
+                        if($v['hotel_id']){
+                            $hotel_satisfaction[$v['satisfaction']][] = $info;
+                        }else{
+                            $default_satisfaction[$v['satisfaction']][] = $info;
+                        }
+                    }
                 }
                 $reward_money_list = C('REWARD_MONEY_LIST');
                 $reward_money = array();
@@ -496,11 +502,7 @@ class IndexController extends CommonController{
                 }
                 $comment_cacsi = C('COMMENT_CACSI');
                 foreach ($comment_cacsi as $k=>$v){
-                    $label = array();
-                    foreach ($v['label'] as $lv){
-                        $lv['selected'] = false;
-                        $label[] = $lv;
-                    }
+                    $label = isset($hotel_satisfaction[$k])?$hotel_satisfaction[$k]:$default_satisfaction[$k];
                     $comment_cacsi[$k]['label'] = $label;
                 }
                 $cacsi = $comment_cacsi;
@@ -514,7 +516,6 @@ class IndexController extends CommonController{
             }
 
             $data['is_open_popcomment'] = 0;
-            $data['tags'] = $tags;
             $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
             $data['reward_money'] = $reward_money;

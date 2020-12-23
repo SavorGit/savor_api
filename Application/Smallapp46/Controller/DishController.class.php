@@ -199,6 +199,22 @@ class DishController extends CommonController{
         $where = array('merchant_id'=>$merchant['merchant_id'],'status'=>1);
         $merchant['num'] = $m_goods->countNum($where);
         $data['merchant'] = $merchant;
+        $data['is_tvdemand'] = 0;
+        if($res_goods['tv_media_id']){
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $m_media = new \Common\Model\MediaModel();
+            $media_info = $m_media->getMediaInfoById($res_goods['tv_media_id']);
+            $oss_path = $media_info['oss_path'];
+            $oss_path_info = pathinfo($oss_path);
+
+            $data['is_tvdemand'] = 1;
+            $data['duration'] = $media_info['duration'];
+            $data['tx_url'] = $media_info['oss_addr'];
+            $data['filename'] = $oss_path_info['basename'];
+            $data['forscreen_url'] = $oss_path;
+            $data['resource_size'] = $media_info['oss_filesize'];
+            $data['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
+        }
 
         $this->to_back($data);
     }

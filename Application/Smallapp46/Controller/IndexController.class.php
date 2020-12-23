@@ -366,6 +366,7 @@ class IndexController extends CommonController{
                 }
                 $info = json_decode($info,true);
             }
+            $info['box_mac'] = $box_mac;
         }
 
         //记录日志

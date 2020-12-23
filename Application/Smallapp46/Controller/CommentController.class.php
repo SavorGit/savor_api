@@ -126,11 +126,29 @@ class CommentController extends CommonController{
                         $m_taskuser->getCommentTask($res_staff['openid'],$res_box[0]['hotel_id']);
                     }
                 }
-                if($satisfaction_id>0 && $staff_id>0 && !empty($box_mac)){
+                if($satisfaction_id>0 && !empty($box_mac)){
                     $message = array('action'=>140,'forscreen_char'=>$comment_cacsi[$satisfaction_id]['tv_tips'],
                         'waiterName'=>'','waiterIconUrl'=>'','satisfaction'=>$satisfaction_id);
-                    if(!empty($res_staff)){
-                        $where = array('openid'=>$res_staff['openid']);
+                    $now_staff_openid = '';
+                    if($staff_id>0){
+                        if(!empty($res_staff)){
+                            $now_staff_openid = $res_staff['openid'];
+                        }
+                    }else{
+                        $m_merchant = new \Common\Model\Integral\MerchantModel();
+                        $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$res_box[0]['hotel_id'],'status'=>1));
+                        $res_staff = array();
+                        if(!empty($res_merchant)){
+                            $m_staff = new \Common\Model\Integral\StaffModel();
+                            $staff_where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'level'=>1);
+                            $res_staff = $m_staff->getDataList('*',$staff_where,'id asc');
+                        }
+                        if(!empty($res_staff)){
+                            $now_staff_openid = $res_staff[0]['openid'];
+                        }
+                    }
+                    if(!empty($now_staff_openid)){
+                        $where = array('openid'=>$now_staff_openid);
                         $m_user = new \Common\Model\Smallapp\UserModel();
                         $res_user = $m_user->getOne('id as user_id,avatarUrl,nickName',$where,'id desc');
                         $message['waiterName'] = $res_user['nickName'];
@@ -146,6 +164,7 @@ class CommentController extends CommonController{
                         $res_media = $m_media->getMediaInfoById($res_font['media_id']);
                         $message['font_oss_addr'] = $res_media['oss_addr'];
                     }
+
                     $m_netty = new \Common\Model\NettyModel();
                     $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
                     if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){

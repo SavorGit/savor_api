@@ -607,7 +607,7 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'room_name,integral,money,content,type,integral_time,goods_id,source';
+        $fields = 'hotel_id,room_name,integral,money,content,type,integral_time,goods_id,source';
         $where = array('openid'=>$openid);
         if($type){
             $where['type'] = $type;
@@ -620,6 +620,7 @@ class UserController extends CommonController{
         $datalist = array();
         $all_types = C('INTEGRAL_TYPES');
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $m_staff = new \Common\Model\Integral\StaffModel();
         foreach ($res_record as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
             $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time,'type'=>$v['type']);
@@ -654,6 +655,11 @@ class UserController extends CommonController{
                         $info['integral'] = $v['integral'].'积分';
                     }elseif($v['money']>0){
                         $info['integral'] = $v['money'].'元';
+                    }
+                    $wheres = array('merchant.hotel_id'=>$v['hotel_id'],'a.status'=>1,'a.level'=>1);
+                    $res_staff = $m_staff->getMerchantStaff('user.nickName',$wheres);
+                    if(!empty($res_staff)){
+                        $info['room_name'] = $res_staff[0]['nickName'];
                     }
                     break;
                 default:

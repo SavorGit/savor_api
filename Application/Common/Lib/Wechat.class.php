@@ -13,6 +13,8 @@ class Wechat{
     private $url_get_userinfo = 'https://api.weixin.qq.com/sns/userinfo';
     private $url_userinfo = 'https://api.weixin.qq.com/cgi-bin/user/info';
     private $url_templatesend = 'https://api.weixin.qq.com/cgi-bin/message/template/send';
+    private $url_customsend = 'https://api.weixin.qq.com/cgi-bin/message/custom/send';
+    private $url_qrcodecreate = 'https://api.weixin.qq.com/cgi-bin/qrcode/create';
 
     public function __construct($config=array()){
         if(!empty($config)){
@@ -181,6 +183,62 @@ class Wechat{
         curl_close($ch);
         return $result;
     }
+
+    /*
+     * $data = array(
+            'touser'=>$res['openid'],
+            'msgtype'=>"miniprogrampage",
+            'miniprogrampage'=>array(
+                'title'=>'欢迎',
+                'appid'=>'wxfdf0346934bb672f',
+                'pagepath'=>'pages/index/index',
+                'thumb_media_id'=>'s_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w',
+            ),
+        );
+     */
+    public function customsend($data){
+        $access_token = $this->getWxAccessToken();
+        $url = $this->url_customsend."?access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+
+    /*
+     * $data = array(
+            'expire_seconds'=>86400,
+            'action_name'=>"QR_STR_SCENE",
+            'action_info'=>array(
+                'scene'=>array('scene_str'=>'znqNb')
+            ),
+        );
+     */
+    public function qrcodecreate($data){
+        $access_token = $this->getWxAccessToken();
+        $url = $this->url_qrcodecreate."?access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+
 
     /**
      * 微信js签名算法

@@ -28,53 +28,53 @@ class IndexController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
                 break;
             case 'getBoxType':
-               $this->is_verify = 1;
-               $this->valid_fields = array('box_mac'=>1001);
-               break;
-           case 'getTestBoxQr':
-               $this->is_verify = 1;
-               $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
-               break;
-           case 'closeauthLog':
-               $this->is_verify =1;
-               $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
-               break;
-           case 'getConfig':
-               $this->is_verify = 0;
-               break;
-           case 'recordForScreenPics':
-               $this->is_verify = 1;
-               $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
-                   'imgs'=>1001,'mobile_brand'=>1000,
-                   'mobile_model'=>1000,'action'=>1000,
-                   'resource_type'=>1000,'resource_id'=>1000,
-                   'is_pub_hotelinfo'=>1000,'is_share'=>1000,
-                   'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
-               );
-               break;
-           case 'isFind':
-               $this->is_verify = 0;
-               break;
-           case 'isOpenFind':
-               $this->is_verify = 0;
-               break;
-           case 'setOpenFind':
-               $this->is_verify = 0;
-               break;
-           case 'happylist':
-               $this->is_verify = 0;
-               break;
-           case 'getQrCode':
-               $this->is_verify = 0;
-               break;
-           case 'getIndexBoxQr':
-               $this->is_verify = 1;
-               $this->valid_fields = array('type'=>1001);
-               break;
-           case 'getBoxQrcode'://主干版小程序盒子请求的二维码 小程序码接口
-               $this->is_verify = 1;
-               $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
-               break;
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+            case 'getTestBoxQr':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+                break;
+            case 'closeauthLog':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
+                break;
+            case 'getConfig':
+                $this->is_verify = 0;
+                break;
+            case 'recordForScreenPics':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
+                    'imgs'=>1001,'mobile_brand'=>1000,
+                    'mobile_model'=>1000,'action'=>1000,
+                    'resource_type'=>1000,'resource_id'=>1000,
+                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
+                    'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
+                );
+                break;
+            case 'isFind':
+                $this->is_verify = 0;
+                break;
+            case 'isOpenFind':
+                $this->is_verify = 0;
+                break;
+            case 'setOpenFind':
+                $this->is_verify = 0;
+                break;
+            case 'happylist':
+                $this->is_verify = 0;
+                break;
+            case 'getQrCode':
+                $this->is_verify = 0;
+                break;
+            case 'getIndexBoxQr':
+                $this->is_verify = 1;
+                $this->valid_fields = array('type'=>1001);
+                break;
+            case 'getBoxQrcode'://主干版小程序盒子请求的二维码 小程序码接口
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+                break;
             case 'getQrcontent':
                 $this->is_verify = 1;
                 $this->valid_fields = array('content'=>1001);
@@ -93,7 +93,7 @@ class IndexController extends CommonController{
         $tokens  = $m_small_app->getWxAccessToken();
         header('content-type:image/png');
         $data = array();
-        
+
         $data['scene'] = $box_mac.'_'.$type;//自定义信息，可以填写诸如识别用户身份的字段，注意用中文时的情况
         $data['page'] = "pages/forscreen/forscreen";//扫描后对应的path
         $data['width'] = "560";//自定义的尺寸
@@ -210,10 +210,10 @@ class IndexController extends CommonController{
      */
     public function getBoxQr(){
         $box_mac = $this->params['box_mac'];
-        $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码
+        $type    = $this->params['type'];//1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码 8小程序主干版本二维码 33手机公众号二维码
         $small_erwei_code_arr = C('SMALLAPP_ERWEI_CODE_TYPES');
         $small_erwei_code_arr = array_keys($small_erwei_code_arr);
-        
+
         if(in_array($type, $small_erwei_code_arr)){
 
             $m_box = new \Common\Model\BoxModel();
@@ -223,7 +223,7 @@ class IndexController extends CommonController{
             $map['a.flag']  = 0;
             $map['d.state'] = 1;
             $map['d.flag']  = 0;
-            $box_info = $m_box->getBoxInfo('a.id as box_id', $map);
+            $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
             if(empty($box_info)){
                 $this->to_back(70001);
             }
@@ -280,6 +280,23 @@ class IndexController extends CommonController{
                 imagepng($target_image);
                 imagedestroy($target_image);
                 exit;
+            }elseif($type==33){
+                $data = array(
+                    'expire_seconds'=>7200,
+                    'action_name'=>"QR_STR_SCENE",
+                    'action_info'=>array(
+                        'scene'=>array('scene_str'=>$s)
+                    ),
+                );
+                $wechat = new \Common\Lib\Wechat();
+                $res = $wechat->qrcodecreate(json_encode($data));
+                if(empty($res)){
+                    $res = $wechat->qrcodecreate(json_encode($data));
+                }
+                $res_info = json_decode($res,true);
+                if(!empty($res_info['url'])){
+                    Qrcode::png($res_info['url'],false,$errorCorrectionLevel, $matrixPointSize, 0);
+                }
             }else{
                 Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
             }
@@ -306,7 +323,7 @@ class IndexController extends CommonController{
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
-    
+
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
         $redis = SavorRedis::getInstance();
@@ -329,14 +346,14 @@ class IndexController extends CommonController{
             $code_info = $redis->get($keys);
             $code_info = json_decode($code_info,true);
             $this->to_back(array('is_have'=>$code_info['is_have'],
-                'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
-                'room_name'=>$hotel_info['room_name']
-            )
+                    'box_mac'=>$box_mac,'hotel_name'=>$hotel_info['hotel_name'],
+                    'room_name'=>$hotel_info['room_name']
+                )
             );
         }else {
             $this->to_back(array('is_have'=>0,'openid'=>$openid));
         }
-    
+
     }
     /**
      * @desc 发送随机验证码给电视
@@ -363,17 +380,17 @@ class IndexController extends CommonController{
             $box_info = $m_box->alias('a')
             ->join('savor_room room on a.room_id= room.id','left')
             ->field('room.type type')->where($maps)->find();
-            
+
             if($box_info['type']==1){
                 $info['is_have'] = 1;
             }else {
                 $info['is_have'] = 0;
             } */
             $info['is_have'] = 1;
-            
+
             $info['code'] = $code;
             $redis->set($cache_key, json_encode($info),7200);
-            
+
             $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
             $keys = $redis->keys($key);
             foreach($keys as $v){
@@ -381,7 +398,7 @@ class IndexController extends CommonController{
                 if($key_arr[2]!=$box_mac){
                     $redis->remove($v);
                 }
-            }       
+            }
         }else {
             $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
             $keys = $redis->keys($key);
@@ -391,7 +408,7 @@ class IndexController extends CommonController{
                     $redis->remove($v);
                 }
             }
-            
+
             $info = json_decode($info,true);
         }
         //记录日志
@@ -431,14 +448,14 @@ class IndexController extends CommonController{
         $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $box_info = $m_box->alias('a')
-              ->join('savor_room room on a.room_id= room.id','left')
-              ->field('room.type')->where($where)->find();
+            ->join('savor_room room on a.room_id= room.id','left')
+            ->field('room.type')->where($where)->find();
         list($t1, $t2) = explode(' ', microtime());
         $nowtime = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         $data['box_type'] = $box_info['type'];
         $data['nowtime']  = $nowtime;
         $this->to_back($data);
-        
+
     }
     public function closeauthLog(){
         $openid  = $this->params['openid'];
@@ -607,7 +624,7 @@ class IndexController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $is_open = $redis->get('small_app_is_open_find');
-        
+
         $data['is_open'] = $is_open;
         $this->to_back($data);
     }
@@ -625,20 +642,20 @@ class IndexController extends CommonController{
         $m_ads = new \Common\Model\AdsModel();
         $where = array();
         $oss_host = "http://".C('OSS_HOST').'/';
-        
+
         //$where['a.id'] = array('in','4803,4795,4794,4793');
         //$where['a.id'] = array('in','4803,4795,4794,5233');
         //$where['a.id'] = array('in','5288,5246,5245,5244');
         $where['a.id'] = array('in','5514,5246,5245,5244');
-        
+
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
                     CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
-        
+
         $data = $m_ads->alias('a')
-                      ->join('savor_media media on a.media_id = media.id','left')
-                      ->field($fields)
-                      ->where($where)
-                      ->order('a.sort_num asc')->select();
+            ->join('savor_media media on a.media_id = media.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order('a.sort_num asc')->select();
         $result = array();
         foreach ($data as $v){
             $name_arr = explode('-',$v['name']);
@@ -649,7 +666,7 @@ class IndexController extends CommonController{
         $this->to_back($result);
     }
     public function getQrCode(){
-        
+
         $r = $this->params['r'] !='' ? $this->params['r'] : 255;
         $g = $this->params['g'] !='' ? $this->params['g'] : 255;
         $b = $this->params['b'] !='' ? $this->params['b'] : 255;
@@ -672,8 +689,8 @@ class IndexController extends CommonController{
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
     }
-    
-    
+
+
     /**
      * @desc 记录扫码日志
      * @param varchar $box_mac  盒子mac
@@ -690,7 +707,7 @@ class IndexController extends CommonController{
         if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
-        
+
         /*$redis = SavorRedis::getInstance();
         $redis->select(1);
         $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
@@ -703,6 +720,6 @@ class IndexController extends CommonController{
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_user->where(array('openid'=>$openid))->setInc('use_time',1);
         }*/
-        
+
     }
 }

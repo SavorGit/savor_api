@@ -44,6 +44,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'session_key'=>1001,'iv'=>1001,'encryptedData'=>1001);
                 break;
+            case 'bindOffiaccount':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'wxmpopenid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -125,6 +129,21 @@ class UserController extends CommonController{
         }
         $data['userinfo']['guide_prompt'] = $guide_prompt;
         $this->to_back($data);
+    }
+
+    public function bindOffiaccount(){
+        $openid  = $this->params['openid'];
+        $wxmpopenid = $this->params['wxmpopenid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $userinfo = $m_user->getOne('id,openid,wx_mpopenid', $where);
+        if(empty($userinfo)){
+            $data = array('openid'=>$openid,'wx_mpopenid'=>$wxmpopenid,'status'=>1);
+            $m_user->addInfo($data);
+        }else{
+            $m_user->updateInfo(array('id'=>$userinfo['id']),array('wx_mpopenid'=>$wxmpopenid));
+        }
+        $this->to_back(array());
     }
 
     public function refuseRegister(){

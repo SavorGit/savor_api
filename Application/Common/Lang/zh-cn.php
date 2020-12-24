@@ -231,7 +231,7 @@ return array(
     'small_app_add_failed'=>'新增失败',
     'small_app_del_failed'=>'删除失败',
     'small_app_breanlink_failed'=>'断开连接失败',
-    'netty_box_empty' => '网络异常,暂时无法使用,请稍后再试',
+    'netty_box_empty' => '您选择的包间设备异常，请稍后再试',
     'small_app_launch_game_failed'=>'发起游戏失败',
     'small_app_game_have_start'=>'游戏已开始',
     'small_app_game_start_failed'=>'游戏开始失败',

@@ -281,8 +281,9 @@ class IndexController extends CommonController{
                 imagedestroy($target_image);
                 exit;
             }elseif($type==33){
+                $expire_seconds = 3600*4;
                 $data = array(
-                    'expire_seconds'=>7200,
+                    'expire_seconds'=>$expire_seconds,
                     'action_name'=>"QR_STR_SCENE",
                     'action_info'=>array(
                         'scene'=>array('scene_str'=>$s)

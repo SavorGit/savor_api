@@ -51,7 +51,7 @@ class WechatController extends Controller {
                             $qrcode = $eventinfo['key'];
                         }
                         $wx_mpopenid = $revObj->getRevFrom();
-                        $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}&s={$qrcode}";
+                        $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}";
                         $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w';
                         $data = array(
                             'touser'=>$wx_mpopenid,

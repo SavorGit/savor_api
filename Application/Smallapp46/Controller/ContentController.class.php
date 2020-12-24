@@ -23,6 +23,11 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
                 break;
+            case 'feedback':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'contact'=>1002,'mobile'=>1002,'content'=>1001,
+                    'mobile_brand'=>1001,'mobile_model'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -387,6 +392,30 @@ class ContentController extends CommonController{
             $redis->set($user_key,json_encode($user_data),3600*4);
         }
         return $user_data;
+    }
+
+    public function feedback(){
+        $openid = $this->params['openid'];
+        $contact = $this->params['contact'];
+        $mobile = $this->params['mobile'];
+        $content = $this->params['content'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+
+        if(!empty($mobile)){
+            if(!check_mobile($mobile)){//验证手机格式
+                $this->to_back(92001);
+            }
+        }
+        $ip = get_client_ip();
+        $data = array('openid'=>$openid,'content'=>$content,'ip'=>$ip);
+        if(!empty($contact))        $data['contact'] = $contact;
+        if(!empty($content))        $data['content'] = $content;
+        if(!empty($mobile_brand))    $data['mobile_brand'] = $mobile_brand;
+        if(!empty($mobile_model))    $data['mobile_model'] = $mobile_model;
+        $m_feedback = new \Common\Model\Smallapp\FeedbackModel();
+        $m_feedback->add($data);
+        $this->to_back(array());
     }
 
 }

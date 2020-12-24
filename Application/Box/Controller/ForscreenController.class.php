@@ -42,6 +42,7 @@ class ForscreenController extends CommonController{
             }
             $m_sys_config = new \Common\Model\SysConfigModel();
             $sys_info = $m_sys_config->getAllconfig();
+            $oss_host = 'http://'.C('OSS_HOST');
             $data['is_open_netty']             = intval($box_info['is_open_netty']);
             $data['is_sapp_forscreen']         = intval($box_info['is_sapp_forscreen']);
             $data['is_simple_sapp_forscreen']  = intval($box_info['is_open_simple']);
@@ -51,11 +52,23 @@ class ForscreenController extends CommonController{
             $data['is_open_signin']            = intval($box_info['is_open_signin']);
             $data['activity_adv_playtype']     = intval($sys_info['activity_adv_playtype']);//1替换 2队列
             $data['simple_upload_size']        = intval(C('SMALLAPP_JJ_UPLOAD_SIZE'));      //极简版投屏上传资源大小限制
-            $data['qrcode_gif']                = 'http://'.C('OSS_HOST').'/media/resource/QKHYcD5wiT.gif';
+            $data['qrcode_gif']                = $oss_host.'/media/resource/QKHYcD5wiT.gif';
             $data['qrcode_gif_filename']       = 'QKHYcD5wiT.gif';
             $data['qrcode_gif_md5']            = '49a11f843ecd6cd81659eec27f05e8e3';
             $data['qrcode_takttime']           = 30;
             $data['qrcode_showtime']           = 60;
+            $forscreen_help_images = array(
+                'is_show'=>1,'show_time'=>5,'forscreen_num'=>3,
+                'image_url'=>$oss_host.'/media/resource/6rWtCXsSyd.jpg',
+                'image_filename'=>'6rWtCXsSyd.jpg',
+                'video_url'=>$oss_host.'/media/resource/JziayDDiSj.jpg',
+                'video_filename'=>'JziayDDiSj.jpg',
+                'file_url'=>$oss_host.'/media/resource/CiTsGnkpyy.jpg',
+                'file_filename'=>'CiTsGnkpyy.jpg',
+                'forscreen_box_url'=>$oss_host.'/media/resource/DnkBtp2QSe.jpg',
+                'forscreen_box_filename'=>'DnkBtp2QSe.jpg',
+            );
+            $data['forscreen_help_images'] = $forscreen_help_images;
             $this->to_back($data);
         }
     }

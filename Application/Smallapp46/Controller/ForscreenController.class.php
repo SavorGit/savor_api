@@ -10,6 +10,10 @@ class ForscreenController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'type'=>1001);
                 break;
+            case 'helpimage':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -76,5 +80,20 @@ class ForscreenController extends CommonController{
         $this->to_back($res);
     }
 
+    public function helpimage(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $netty_data = array('action'=>150);
+        $m_netty = new \Common\Model\NettyModel();
+        $res = $m_netty->pushBox($box_mac,json_encode($netty_data));
+        $this->to_back($res);
+    }
 
 }

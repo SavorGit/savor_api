@@ -46,7 +46,7 @@ class UserController extends CommonController{
                 break;
             case 'bindOffiaccount':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'wxmpopenid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'wxmpopenid'=>1001,'subscribe_time'=>1002);
                 break;
         }
         parent::_init_();
@@ -134,11 +134,15 @@ class UserController extends CommonController{
     public function bindOffiaccount(){
         $openid  = $this->params['openid'];
         $wxmpopenid = $this->params['wxmpopenid'];
+        $subscribe_time = $this->params['subscribe_time'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $userinfo = $m_user->getOne('id,openid,wx_mpopenid', $where);
-        $subscribe_time = date('Y-m-d H:i:s');
-        $data = array('openid'=>$openid,'wx_mpopenid'=>$wxmpopenid,'is_subscribe'=>1,'status'=>1,'subscribe_time'=>$subscribe_time);
+        $data = array('openid'=>$openid,'wx_mpopenid'=>$wxmpopenid,'is_subscribe'=>1,'status'=>1);
+        if(!empty($subscribe_time)){
+            $subscribe_time = date('Y-m-d H:i:s',$subscribe_time);
+            $data['subscribe_time'] = $subscribe_time;
+        }
         if(empty($userinfo)){
             $m_user->addInfo($data);
         }else{

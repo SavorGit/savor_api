@@ -47,11 +47,13 @@ class WechatController extends Controller {
                     if(!empty($eventinfo['key'])){
                         if($eventinfo['event'] == WechatMessage::EVENT_SUBSCRIBE){
                             $qrcode = str_replace('qrscene_','',$eventinfo['key']);//qrscene_mxxonmaEg
+                            $subscribe_time = time();
                         }else{
                             $qrcode = $eventinfo['key'];
+                            $subscribe_time = 0;
                         }
                         $wx_mpopenid = $revObj->getRevFrom();
-                        $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}";
+                        $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
                         $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w';
                         $data = array(
                             'touser'=>$wx_mpopenid,

@@ -74,6 +74,15 @@ class WechatController extends Controller {
                         $log_content = date('Y-m-d H:i:s')."|openid|$wx_mpopenid|push_result|$res \r\n";
                         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
                     }
+                }elseif($eventinfo['event'] == WechatMessage::EVENT_UNSUBSCRIBE){
+                    $wx_mpopenid = $revObj->getRevFrom();
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $where = array('wx_mpopenid'=>$wx_mpopenid);
+                    $userinfo = $m_user->getOne('id,openid,wx_mpopenid', $where);
+                    if(!empty($userinfo)){
+                        $data = array('wx_mpopenid'=>'','is_subscribe'=>0,'subscribe_time'=>'0000-00-00 00:00:00');
+                        $m_user->updateInfo(array('id'=>$userinfo['id']),$data);
+                    }
                 }
                 break;
         }

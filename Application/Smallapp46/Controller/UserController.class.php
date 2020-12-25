@@ -137,11 +137,12 @@ class UserController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $userinfo = $m_user->getOne('id,openid,wx_mpopenid', $where);
+        $subscribe_time = date('Y-m-d H:i:s');
+        $data = array('openid'=>$openid,'wx_mpopenid'=>$wxmpopenid,'is_subscribe'=>1,'status'=>1,'subscribe_time'=>$subscribe_time);
         if(empty($userinfo)){
-            $data = array('openid'=>$openid,'wx_mpopenid'=>$wxmpopenid,'status'=>1);
             $m_user->addInfo($data);
         }else{
-            $m_user->updateInfo(array('id'=>$userinfo['id']),array('wx_mpopenid'=>$wxmpopenid));
+            $m_user->updateInfo(array('id'=>$userinfo['id']),$data);
         }
         $this->to_back(array());
     }

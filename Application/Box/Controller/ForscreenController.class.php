@@ -59,7 +59,7 @@ class ForscreenController extends CommonController{
             $data['qrcode_showtime']           = 60;
             $is_show = C('FORSCREEN_GUIDE_IMAGE_SWITCH');
             $forscreen_help_images = array(
-                'is_show'=>$is_show,'show_time'=>5,'forscreen_num'=>3,
+                'is_show'=>$is_show,'show_time'=>5,'forscreen_num'=>6,
                 'image_url'=>$oss_host.'/media/resource/6rWtCXsSyd.jpg',
                 'image_filename'=>'6rWtCXsSyd.jpg',
                 'video_url'=>$oss_host.'/media/resource/JziayDDiSj.jpg',

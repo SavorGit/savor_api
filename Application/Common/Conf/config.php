@@ -539,6 +539,7 @@ return array(
         'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿','ofYZG4zTOtj9RCaLmDXI0qfY-I34'=>'熊静怡','ofYZG45GWNg7k9CLVHoRdUqQVPJ4'=>'黎晓欣',
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
+    'FORSCREEN_GUIDE_IMAGE_SWITCH'=>1,
 
 
 );

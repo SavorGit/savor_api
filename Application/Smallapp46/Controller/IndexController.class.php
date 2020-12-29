@@ -19,13 +19,30 @@ class IndexController extends CommonController{
             case 'getBoxQr':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'type'=>1001);
+                break;
+            case 'recOverQrcodeLog':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000,'is_overtime'=>1001);
+                break;
+            case 'closeauthLog':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
+                break;
             case 'getConfig':
                 $this->valid_fields = array('box_id'=>1002,'openid'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'getQrcontent':
+                $this->is_verify = 1;
+                $this->valid_fields = array('content'=>1001);
+                break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 1;
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002);
+                break;
+            case 'breakLink':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
@@ -42,6 +59,9 @@ class IndexController extends CommonController{
                     'serial_number'=>1000,'quality_type'=>1000,'create_time'=>1000,
                     'is_speed'=>1000,
                 );
+                break;
+            case 'happylist':
+                $this->is_verify = 0;
                 break;
         }
         parent::_init_();
@@ -152,6 +172,25 @@ class IndexController extends CommonController{
         $data['is_hyaline'] = true;
         $data = json_encode($data);
         $m_small_app->getSmallappCode($tokens,$data);
+    }
+
+    public function getQrcontent(){
+        $content = $this->params['content'];
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($content);
+        if(empty($decode_info)){
+            $this->to_back(90101);
+        }
+        $cache_key = C('SAPP_QRCODE').$decode_info[0];
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $res = $redis->get($cache_key);
+        if(empty($res)){
+            $this->to_back(90101);
+        }
+        $content = array('content'=>$res);
+        $this->to_back($content);
     }
 
     public function isHaveCallBox(){
@@ -284,6 +323,32 @@ class IndexController extends CommonController{
         $this->to_back($data);
     }
 
+    public function recOverQrcodeLog(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $type    = $this->params['type'];
+        $is_overtime = $this->params['is_overtime'];
+        $this->recodeScannCode($box_mac,$openid,$type,$is_overtime);
+        $this->to_back(10000);
+    }
+
+    //断开连接
+    public function breakLink(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SMALLAPP_CHECK_CODE');
+        $cache_key .= $box_mac.':'.$openid;
+        $info = $redis->get($cache_key);
+        if(!empty($info)){
+            $ret = $redis->remove($cache_key);
+            if($ret) $this->to_back(10000);
+            else $this->to_back(90108);
+        }else {
+            $this->to_back(10000);
+        }
+    }
 
     /*
      * type 1:小码2:大码(节目)3:手机小程序呼码5:大码（新节目）6:极简版7:主干版桌牌码8:小程序二维码9:极简版节目大码
@@ -387,6 +452,7 @@ class IndexController extends CommonController{
             'file_exts'=>array_keys($file_exts));
         $data['file_max_size'] = 41943040;
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
+        $data['forscreen_call_code_filename']  = 're6bB4RHfC.mp4';
         $quality_types = C('QUALITY_TYPES');
         $quality_list = array();
         foreach ($quality_types as $k=>$v){
@@ -537,6 +603,18 @@ class IndexController extends CommonController{
         $data['is_open_simplehistory'] = $is_open_simplehistory;
         $this->to_back($data);
     }
+
+    public function closeauthLog(){
+        $openid  = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $data = array();
+        $data['openid'] = $openid;
+        $data['box_mac']= $box_mac;
+        $m_closeauth_log = new \Common\Model\Smallapp\CloseauthLogModel();
+        $m_closeauth_log->addInfo($data);
+        $this->to_back(10000);
+    }
+
     /**
      * @desc 记录用户投屏的图片、视频
      */
@@ -704,6 +782,34 @@ class IndexController extends CommonController{
         $res = array('forscreen_id'=>$forscreen_id);
         $this->to_back($res);
     }
+
+    /**
+     * @desc 生日歌列表
+     */
+    public function happylist(){
+        $m_ads = new \Common\Model\AdsModel();
+        $where = array();
+        $oss_host = "http://".C('OSS_HOST').'/';
+        $where['a.id'] = array('in','5514,5246,5245,5244');
+
+        $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
+                    CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
+
+        $data = $m_ads->alias('a')
+            ->join('savor_media media on a.media_id = media.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order('a.sort_num asc')->select();
+        $result = array();
+        foreach ($data as $v){
+            $name_arr = explode('-',$v['name']);
+            $v['title'] = $name_arr[0];
+            $v['sub_title'] = $name_arr[1];
+            $result[] = $v;
+        }
+        $this->to_back($result);
+    }
+
     /**
      * @desc 记录扫码日志
      * @param varchar $box_mac  盒子mac

@@ -29,6 +29,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1000);
                 break;
+            case 'isForscreenIng':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac');
+                break;
             case 'getMyPublic':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1000);
@@ -592,7 +596,42 @@ class UserController extends CommonController{
         }
 
         $this->to_back($encryptedData);
+    }
 
+
+    /**
+     * @desc 判断是否有正在投屏的内容，提示是否打断
+     */
+    public function isForscreenIng(){
+        $box_mac = $this->params['box_mac'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+
+        $box_net_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
+        $data = $redis->lgetrange($box_net_key,0,-1);
+        $org_arr = array();
+        foreach($data as $key=>$v){
+            $info = json_decode($v,true);
+            $org_arr[] = $info['forscreen_id'];
+        }
+        $small_cache_key = C('SAPP_SCRREN').":".$box_mac;
+        $data = $redis->lgetrange($small_cache_key,0,-1);
+        $is_forscreen = 0;
+        foreach($data as $key=>$v){
+            $info = json_decode($v,true);
+            $action = $info['action'];
+            $resource_type = $info['resource_type'];
+            if($action ==4 || ($action==2 and $resource_type==2)){
+                $tmp = $info['forscreen_id'];
+                if(!in_array($tmp, $org_arr)){
+                    $is_forscreen = 1;
+                    break;
+                }
+            }
+        }
+
+        $ars = array('is_forscreen'=>$is_forscreen);
+        $this->to_back($ars);
     }
 
 }

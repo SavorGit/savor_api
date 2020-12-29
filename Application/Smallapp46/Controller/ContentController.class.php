@@ -53,7 +53,7 @@ class ContentController extends CommonController{
 
         $orderby = 'nums desc';
         $limit = "0,$all_nums";
-        $fields = 'res_id as forscreen_id,nums as play_nums';
+        $fields = 'res_id,nums as play_nums';
         $res_play = $m_playlog->getWhere($fields,$where,$orderby,$limit,'');
 
         $datalist = array();
@@ -66,7 +66,8 @@ class ContentController extends CommonController{
                 $v['play_nums'] = floor($v['play_nums']/10000).'w';
             }
 
-            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['forscreen_id']));
+            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));
+            $v['forscreen_id'] = $res_forscreen['forscreen_id'];
             $v['res_type'] = $res_forscreen['resource_type'];
             $where = array('openid'=>$res_forscreen['openid']);
             $fields = 'id user_id,avatarUrl,nickName';

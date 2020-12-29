@@ -616,12 +616,12 @@ class UserController extends CommonController{
         if($idate){
             $where['DATE_FORMAT(integral_time, "%Y%m")'] = $idate;
         }
-        $res_record = $m_userintegral_record->getDataList($fields,$where,0,$all_nums);
+        $res_record = $m_userintegral_record->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         $all_types = C('INTEGRAL_TYPES');
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $m_staff = new \Common\Model\Integral\StaffModel();
-        foreach ($res_record as $v){
+        foreach ($res_record['list'] as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
             $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time,'type'=>$v['type']);
             switch ($v['type']){

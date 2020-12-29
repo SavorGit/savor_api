@@ -82,7 +82,7 @@ class WechatController extends Controller {
                     $where = array('wx_mpopenid'=>$wx_mpopenid);
                     $userinfo = $m_user->getOne('id,openid,wx_mpopenid', $where);
                     if(!empty($userinfo)){
-                        $data = array('wx_mpopenid'=>'','is_subscribe'=>0,'subscribe_time'=>'0000-00-00 00:00:00');
+                        $data = array('is_subscribe'=>0,'subscribe_time'=>'0000-00-00 00:00:00');
                         $m_user->updateInfo(array('id'=>$userinfo['id']),$data);
                     }
                 }

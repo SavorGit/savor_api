@@ -70,6 +70,12 @@ class ForscreenController extends CommonController{
                 'forscreen_box_filename'=>'DnkBtp2QSe.jpg',
             );
             $data['forscreen_help_images'] = $forscreen_help_images;
+            $forscreen_call_code = array(
+                'url'=>$oss_host.'/media/resource/re6bB4RHfC.mp4',
+                'filename'=>'re6bB4RHfC.mp4',
+                'md5'=>'b7c1c5fd2962c2f49af36ffabb4c3fd7',
+            );
+            $data['forscreen_call_code'] = $forscreen_call_code;
             $this->to_back($data);
         }
     }

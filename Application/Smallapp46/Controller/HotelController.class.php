@@ -97,8 +97,10 @@ class HotelController extends CommonController{
             }
             if($v['img_url']){
                 $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
+                $hotel_list[$key]['ori_img_url'] = $v['img_url'];
             }else {
                 $hotel_list[$key]['img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                $hotel_list[$key]['ori_img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
             }
 
             $hotel_list[$key]['dis'] = '';

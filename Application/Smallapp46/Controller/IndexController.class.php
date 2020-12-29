@@ -271,6 +271,7 @@ class IndexController extends CommonController{
             $data['tail_lenth']   = 1024*1024;
             $data['max_video_size'] = 1024*1024*150;
             $data['max_user_forvideo_size'] = 1024*1024*20;
+            $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
         }else{
             $data = array('is_have'=>0);
         }

@@ -31,12 +31,12 @@ class AreaController extends CommonController{
         $longitude= $this->params['longitude']; //经度
 
         $ret = getgeoByloa($latitude,$longitude);
+        $m_area = new \Common\Model\AreaModel();
         if(empty($ret)){
             $area_id = 1;
             $region_name = '北京';
         }else {
             $city_name = $ret['addressComponent']['city'];
-            $m_area = new \Common\Model\AreaModel();
             $fields = "id,region_name";
             $where['region_name'] = $city_name;
             $where['is_in_hotel'] = 1;
@@ -55,6 +55,7 @@ class AreaController extends CommonController{
         $where['is_in_hotel'] = 1;
         $where['is_valid']    = 1;
         $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
+        $cityindex = 0;
         foreach($city_list as $key=>$v){
             if($v['id'] == $area_id){
                 $cityindex = $key;

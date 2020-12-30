@@ -34,14 +34,10 @@ class ShareController extends CommonController{
         $data['type']    = $type;
         $data['status']  = $status;
         $m_share = new \Common\Model\Smallapp\ShareModel();
-        $ret = $m_share->addInfo($data,1);
-        if($ret){
-            $nums = $m_share->countNum(array('res_id'=>$res_id,'status'=>1));
-            
-            $this->to_back(array('share_nums'=>$nums));
-        }else {
-            $this->to_back(90106);
-        }
+        $m_share->addInfo($data,1);
+
+        $nums = $m_share->countNum(array('res_id'=>$res_id,'status'=>1));
+        $this->to_back(array('share_nums'=>$nums));
     }
     public function showVideo(){
         $res_id = $this->params['res_id'];
@@ -53,24 +49,17 @@ class ShareController extends CommonController{
         $m_share   = new \Common\Model\Smallapp\ShareModel();
         $m_play_log= new \Common\Model\Smallapp\PlayLogModel();
         if($type==3){//投屏视频
-            
             $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-            
-            
             $fields = 'ads.id res_id,ads.name title,ads.img_url,ads.duration,media.oss_addr video_url';
             $where = array();
             $where['ads.id'] = $res_id;
-            
-            
             $info = $m_program_menu_item->alias('a')
             ->join('savor_ads ads on a.ads_id = ads.id','left')
             ->join('savor_media media on ads.media_id =media.id ','left')
             ->field($fields)
             ->where($where)
-            
             ->find();
-            
-            
+
             //收藏个数
             $map = array();
             $map['res_id'] =$res_id;
@@ -103,7 +92,6 @@ class ShareController extends CommonController{
             $info['nickName']  = '';
             $info['type']  = 3;
         }else if($type==2){//节目单视频
-            
             $where = array();
             $where['a.forscreen_id'] = $res_id;
             $m_public = new \Common\Model\Smallapp\PublicModel();
@@ -148,7 +136,6 @@ class ShareController extends CommonController{
         $map = array();
         $map['openid']=$openid;
         $map['res_id'] =$res_id;
-        
         $map['status'] = 1;
         $is_collect = $m_collect->countNum($map);
         if(empty($is_collect)){

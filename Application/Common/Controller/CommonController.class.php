@@ -87,7 +87,8 @@ class CommonController extends Controller {
             $apiResp->msg = $resp_msg;
         }
         $apiResp->code = $resp_code;
-	    $apiResp->result = $resp_result;
+	    $apiResp->msg = "【{$resp_code}】{$apiResp->msg}";
+        $apiResp->result = $resp_result;
 	    if($this->is_js ==1){
 	        $result = "h5turbine(".json_encode($apiResp).")";
 	        echo $result;

@@ -11,6 +11,13 @@ class IndexController extends CommonController{
      */
     function _init_(){
         switch(ACTION_NAME){
+            case 'getOssParams':
+                $this->is_verify = 0;
+                break;
+            case 'getOpenid':
+                $this->is_verify  =1;
+                $this->valid_fields = array('code'=>1001);
+                break;
             case 'gencode':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1000,'box_mac'=>1000,'openid'=>1001,'type'=>1000,'data_id'=>1000,
@@ -30,7 +37,7 @@ class IndexController extends CommonController{
                 break;
             case 'getConfig':
                 $this->valid_fields = array('box_id'=>1002,'openid'=>1002);
-                $this->is_verify = 1;
+                $this->is_verify = 0;
                 break;
             case 'getQrcontent':
                 $this->is_verify = 1;
@@ -65,6 +72,70 @@ class IndexController extends CommonController{
                 break;
         }
         parent::_init_();
+    }
+
+    /**
+     * 获取OSS资源上传的配置初始化参数
+     *
+     */
+    public function getOssParams(){
+        $id = C('OSS_ACCESS_ID');
+        $key = C('OSS_ACCESS_KEY');
+        //$host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST');
+        $host = 'https://'.C('OSS_HOST');
+        $callbackUrl = C('HOST_NAME').'/'.C('OSS_SYNC_CALLBACK_URL');
+        $callback_param = array(
+            'callbackUrl'=>$callbackUrl,
+            'callbackBody'=>'filename=${object}&size=${size}&mimeType=${mimeType}&height=${imageInfo.height}&width=${imageInfo.width}',
+            'callbackBodyType'=>"application/x-www-form-urlencoded"
+        );
+        $callback_string = json_encode($callback_param);
+        $base64_callback_body = base64_encode($callback_string);
+        $now = time();
+        $expire = 30; //设置该policy超时时间是10s. 即这个policy过了这个有效时间，将不能访问
+        $end = $now + $expire;
+        $expiration = $this->_gmt_iso8601($end);
+
+        $rand = rand(10,99);
+
+        //资源空间的目录前缀
+        $dir = C('OSS_FORSCREEN_ADDR_PATH');
+
+        //最大文件大小.用户可以自己设置
+        $condition = array(0=>'content-length-range', 1=>0, 2=>1048576000);
+        $conditions[] = $condition;
+
+        //表示用户上传的数据,必须是以$dir开始, 不然上传会失败,这一步不是必须项,只是为了安全起见,防止用户通过policy上传到别人的目录
+        $start = array(0=>'starts-with', 1=>'$key', 2=>$dir);
+        $conditions[] = $start;
+        $arr = array('expiration'=>$expiration,'conditions'=>$conditions);
+        $policy = json_encode($arr);
+        $base64_policy = base64_encode($policy);
+        $string_to_sign = $base64_policy;
+        $signature = base64_encode(hash_hmac('sha1', $string_to_sign, $key, true));
+
+        $response              = array();
+        //$response['accessid']  = $id;
+        $response['host']      = $host;
+        $response['policy']    = $base64_policy;
+        $response['signature'] = $signature;
+        $response['expire']    = $end;
+        $response['callback']  = $base64_callback_body;
+        //这个参数是设置用户上传指定的前缀
+        $response['dir']       = $dir;
+        echo json_encode($response);
+        exit;
+    }
+
+    /**
+     *@desc 获取openid
+     */
+    public function getOpenid(){
+        $code = $this->params['code'];
+        $m_small_app = new Smallapp_api();
+        $data  = $m_small_app->getSmallappOpenid($code);
+        $data['official_account_article_url'] =C('OFFICIAL_ACCOUNT_ARTICLE_URL');
+        $this->to_back($data);
     }
 
     /**
@@ -828,5 +899,14 @@ class IndexController extends CommonController{
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
     
+    }
+
+    private function _gmt_iso8601($time){
+        $dtStr = date("c", $time);
+        $mydatetime = new \DateTime($dtStr);
+        $expiration = $mydatetime->format(\DateTime::ISO8601);
+        $pos = strpos($expiration, '+');
+        $expiration = substr($expiration, 0, $pos);
+        return $expiration."Z";
     }
 }

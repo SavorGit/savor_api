@@ -52,6 +52,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'wxmpopenid'=>1001,'subscribe_time'=>1002);
                 break;
+            case 'delMyCollect':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'res_id'=>1000);
+                break;
         }
         parent::_init_();
     }
@@ -587,14 +591,12 @@ class UserController extends CommonController{
 
     public function bindMobile(){
         $openid = $this->params['openid'];
-
         $encryptedData = $this->params['encryptedData'];
         if(!empty($encryptedData['phoneNumber'])){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
             $m_user->updateInfo($where, array('mobile'=>$encryptedData['phoneNumber']));
         }
-
         $this->to_back($encryptedData);
     }
 
@@ -629,9 +631,23 @@ class UserController extends CommonController{
                 }
             }
         }
-
         $ars = array('is_forscreen'=>$is_forscreen);
         $this->to_back($ars);
+    }
+
+    /**
+     * @desc 删除我的收藏
+     */
+    public function delMyCollect(){
+        $openid = $this->params['openid'];
+        $res_id = $this->params['res_id'];
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $where = array();
+        $where['openid']= $openid;
+        $where['res_id'] = $res_id;
+        $m_collect->updateInfo($where, array('status'=>0));
+        $this->to_back(10000);
+
     }
 
 }

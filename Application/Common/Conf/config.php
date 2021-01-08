@@ -455,6 +455,7 @@ return array(
         'SALE_DISHMERCHANT_QR'=>'http://rd0.cn/dm?p=',
         'SALE_SHOP_GOODS_QR'=>'http://rd0.cn/sg?p=',
         'SALE_SHOP_MERCHANT_QR'=>'http://rd0.cn/sm?p=',
+        'SHARE_FILE_QR'=>'http://rd0.cn/sf?p=',
     ),
     'INTEGRAL_TYPES'=>array(
         1=>'开机',

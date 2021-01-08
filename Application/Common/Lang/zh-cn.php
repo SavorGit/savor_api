@@ -372,6 +372,9 @@ return array(
     'smallappsale_input_assign_money_error'=>'输入分配的金额有误',
     'smallappsale_merchant_assign_money_error'=>'分配系统正在维护中，请明天再试。',
     'smallappsale_input_assign_integral_error'=>'输入分配的积分有误',
+    'smallapp_add_sharefile_uplimit'=>'当前分享的文件已达上限',
+    'smallapp_del_sharefile_error'=>'删除分享文件失败，请稍后重试',
+    'smallapp_sharefile_not_exist'=>'分享文件失败，请稍后重试'
 
 
 );

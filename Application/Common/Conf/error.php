@@ -295,11 +295,13 @@ return array(
 	    '90152'=>'smallapp_order_givegift_num_error',
 	    '90153'=>'smallapp_order_givegift_success',
 	    '90154'=>'smallapp_comment_err',
-	    
 	    '90155'=>'smallapp_comment_score_err',
 	    '90156'=>'smallapp_comment_staff_empty',
 	    '90157'=>'smallapp_activity_not_exist',
 	    '90158'=>'smallapp_reward_money_not_exist',
+	    '90159'=>'smallapp_add_sharefile_uplimit',
+	    '90160'=>'smallapp_del_sharefile_error',
+	    '90161'=>'smallapp_sharefile_not_exist',
 
 
 

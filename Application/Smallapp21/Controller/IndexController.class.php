@@ -215,6 +215,9 @@ class IndexController extends CommonController{
         $small_erwei_code_arr = array_keys($small_erwei_code_arr);
 
         if(in_array($type, $small_erwei_code_arr)){
+            if($type==33){
+                $type = 8;
+            }
 
             $m_box = new \Common\Model\BoxModel();
             $map = array();

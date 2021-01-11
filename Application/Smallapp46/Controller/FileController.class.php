@@ -142,9 +142,12 @@ class FileController extends CommonController{
         if(!empty($res_files)){
             foreach ($res_files as $v){
                 $filename = str_replace('forscreen/resource/','',$v['file_path']);
-
                 $file_info = pathinfo($v['file_path']);
-                $info = array('file_id'=>$v['id'],'name'=>$filename,'oss_file_path'=>$v['file_path'],'extension'=>$file_info['extension']);
+                $tmp_file_name = str_replace(".{$file_info['extension']}",'',$filename);
+                $view_file_name = text_substr($tmp_file_name, 11,'***');
+                $view_file_name = $view_file_name.'.'.$file_info['extension'];
+
+                $info = array('file_id'=>$v['id'],'name'=>$filename,'view_file_name'=>$view_file_name,'oss_file_path'=>$v['file_path'],'extension'=>$file_info['extension']);
                 $share_file[] = $info;
             }
         }

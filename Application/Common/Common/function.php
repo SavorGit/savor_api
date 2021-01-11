@@ -17,7 +17,7 @@ function check_phone_os(){
     return $otype;
 }
 
-function text_substr($str, $num){
+function text_substr($str, $num,$sub_content='...'){
     $intro = '';
     if($str){
         $intro_length = mb_strlen($str,'utf-8');
@@ -28,7 +28,7 @@ function text_substr($str, $num){
             $intro = mb_substr($str, 0, $num, 'utf-8');
             $last_str  = mb_substr($intro, -1, 1, 'utf-8');
             if(!in_array($last_str, $strArr)){
-                $intro = $intro.'...';
+                $intro = $intro.$sub_content;
             }
         }
     }

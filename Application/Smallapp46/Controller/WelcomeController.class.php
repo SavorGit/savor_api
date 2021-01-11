@@ -13,7 +13,7 @@ class WelcomeController extends CommonController{
                 break;
             case 'addwelcome':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'box_mac'=>1001,'images'=>1001,
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'images'=>1001,
                     'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,'stay_time'=>1001,'type'=>1001);
                 break;
             case 'detail':
@@ -153,8 +153,8 @@ class WelcomeController extends CommonController{
                     }
                 }
             }
-            $data['image'] = $image;
-            $data['image_path'] = $image_path;
+            $data['image_path'] = $image;
+            $data['images'] = $image_path;
         }
         $this->to_back($data);
     }
@@ -173,8 +173,8 @@ class WelcomeController extends CommonController{
         if($res_welcome['user_id']!=$res_user['id']){
             $this->to_back(93020);
         }
-        $this->push_welcome($res_welcome);
-        $this->to_back(array());
+        $res_push = $this->push_welcome($res_welcome);
+        $this->to_back($res_push);
     }
 
     private function push_welcome($res_welcome){
@@ -224,8 +224,9 @@ class WelcomeController extends CommonController{
         }
         $playtime = intval($res_welcome['stay_time']*60);
         $message['play_times'] = $playtime;
+
         $m_netty = new \Common\Model\NettyModel();
-        $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
-        return $message;
+        $res_push = $m_netty->pushBox($res_welcome['box_mac'],json_encode($message));
+        return $res_push;
     }
 }

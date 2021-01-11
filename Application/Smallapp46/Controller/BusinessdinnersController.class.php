@@ -58,11 +58,21 @@ class BusinessdinnersController extends CommonController{
         $res_welcome = $m_welcome->getInfo($condition);
         if(!empty($res_welcome)){
             $welcome = array('welcome_id'=>$res_welcome['id'],'content'=>$res_welcome['content']);
+            $imgs = explode(',',$res_welcome['image']);
+            $image_path = array();
+            if(!empty($imgs)){
+                foreach ($imgs as $v){
+                    if(!empty($v)){
+                        $image_path[] = $v;
+                    }
+                }
+            }
+            $welcome['images'] = $image_path;
         }
         $share_file = array();
 
         $m_userfile = new \Common\Model\Smallapp\UserfileModel();
-        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>1);
+        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>1,'status'=>1);
         $start_time = date('Y-m-d 00:00:00');
         $end_time = date('Y-m-d 23:59:59');
         $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
@@ -70,10 +80,11 @@ class BusinessdinnersController extends CommonController{
         if(!empty($res_files)){
             foreach ($res_files as $v){
                 $file_info = pathinfo($v['file_path']);
-                $share_file[] = array('file_id'=>$v['id'],'name'=>$file_info['basename']);
+                $share_file[] = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path']);
             }
         }
-        $resp_data = array('card'=>$card,'welcome'=>$welcome,'share_file'=>$share_file);
+        $share_file_num = count($share_file);
+        $resp_data = array('card'=>$card,'welcome'=>$welcome,'share_file'=>$share_file,'share_file_num'=>$share_file_num);
         $this->to_back($resp_data);
     }
 
@@ -93,12 +104,12 @@ class BusinessdinnersController extends CommonController{
         $is_card = 0;
         if(!empty($res_usercard)){
             $card = array('name'=>$res_usercard['name'],'job'=>$res_usercard['job'],'mobile'=>$res_usercard['mobile'],'company'=>$res_usercard['company'],
-                'head_img'=>'','head_img_path'=>$res_usercard['head_img'],'qrcode_img'=>'','qrcode_img_path'=>$res_usercard['qrcode_img']);
+                'head_img'=>$res_usercard['head_img'],'head_img_path'=>'','qrcode_img'=>$res_usercard['qrcode_img'],'qrcode_img_path'=>'');
             if(!empty($res_usercard['head_img'])){
-                $card['head_img'] = $oss_host.$res_usercard['head_img'];
+                $card['head_img_path'] = $oss_host.$res_usercard['head_img'];
             }
             if(!empty($res_usercard['qrcode_img'])){
-                $card['qrcode_img'] = $oss_host.$res_usercard['qrcode_img'];
+                $card['qrcode_img_path'] = $oss_host.$res_usercard['qrcode_img'];
             }
             $is_card = 1;
         }
@@ -128,6 +139,7 @@ class BusinessdinnersController extends CommonController{
         $oss_host = "https://".C('OSS_HOST').'/';
         $m_usercard = new \Common\Model\Smallapp\UsercardModel();
         $res_usercard = $m_usercard->getInfo(array('user_id'=>$user_info['id']));
+        $res_push = array();
         if(!empty($res_usercard)){
             $message = array('action'=>160,'nickName'=>$res_usercard['name'],'mobile'=>$res_usercard['mobile'],
                 'job'=>$res_usercard['job'],'company'=>$res_usercard['company'],'headPic'=>'','codeUrl'=>'',
@@ -140,9 +152,9 @@ class BusinessdinnersController extends CommonController{
                 $message['codeUrl'] = $oss_host.$res_usercard['qrcode_img'];
             }
             $m_netty = new \Common\Model\NettyModel();
-            $m_netty->pushBox($box_mac,json_encode($message));
+            $res_push = $m_netty->pushBox($box_mac,json_encode($message));
         }
-        $this->to_back(array());
+        $this->to_back($res_push);
     }
 
 }

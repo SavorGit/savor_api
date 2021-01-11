@@ -146,13 +146,16 @@ class BusinessdinnersController extends CommonController{
                 'countdown'=>$share_countdown
             );
             if(!empty($res_usercard['head_img'])){
-                $message['headPic'] = base64_decode($oss_host.$res_usercard['head_img']);
+                $message['headPic'] = base64_encode($oss_host.$res_usercard['head_img']);
             }
             if(!empty($res_usercard['qrcode_img'])){
                 $message['codeUrl'] = $oss_host.$res_usercard['qrcode_img'];
             }
             $m_netty = new \Common\Model\NettyModel();
             $res_push = $m_netty->pushBox($box_mac,json_encode($message));
+            if($res_push['error_code'] && $res_push['error_code']==90109){
+                $this->to_back(90109);
+            }
         }
         $this->to_back($res_push);
     }

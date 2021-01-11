@@ -82,12 +82,18 @@ class FileController extends CommonController{
             $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
             $condition['status'] = 1;
             $res_userfile = $m_userfile->getDataList('*',$condition,'id desc');
-            $has_file_count = count($res_userfile);
+            $has_files = array();
+            if(!empty($res_userfile)){
+                foreach ($res_userfile as $v){
+                    $has_files[]=$v['file_path'];
+                }
+            }
+            $has_file_count = count($has_files);
 
             $now_files = array();
             $file_path_arr = explode(',',$file_path);
             foreach ($file_path_arr as $v){
-                if(!empty($v)){
+                if(!empty($v) && !in_array($v,$has_files)){
                     $now_files[]=$v;
                 }
             }
@@ -135,8 +141,11 @@ class FileController extends CommonController{
         $share_file = array();
         if(!empty($res_files)){
             foreach ($res_files as $v){
+                $filename = str_replace('forscreen/resource/','',$v['file_path']);
+
                 $file_info = pathinfo($v['file_path']);
-                $share_file[] = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'extension'=>$file_info['extension']);
+                $info = array('file_id'=>$v['id'],'name'=>$filename,'oss_file_path'=>$v['file_path'],'extension'=>$file_info['extension']);
+                $share_file[] = $info;
             }
         }
         $share_file_num = count($share_file);
@@ -193,7 +202,6 @@ class FileController extends CommonController{
         if(empty($res_file)){
             $this->to_back(90161);
         }
-        $file_info = pathinfo($res_file['file_path']);
 
         $m_box = new \Common\Model\BoxModel();
         $condition = array('box.mac'=>$res_file['box_mac'],'box.state'=>1,'box.flag'=>0);
@@ -201,16 +209,20 @@ class FileController extends CommonController{
         if(empty($res_box)){
             $this->to_back(70001);
         }
-
+        $filename = str_replace('forscreen/resource/','',$res_file['file_path']);
         $host_name = C('HOST_NAME');
         $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_id={$res_box['box_id']}&type=34&data_id={$file_id}";
         $message = array('action'=>170,'nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),
-            'filename'=>$file_info['basename'],'codeUrl'=>$qrcode_url,'countdown'=>$share_countdown
+            'filename'=>$filename,'codeUrl'=>$qrcode_url,'countdown'=>$share_countdown
         );
 
         $m_netty = new \Common\Model\NettyModel();
         $res_push = $m_netty->pushBox($res_file['box_mac'],json_encode($message));
-        $this->to_back($res_push);
+        if($res_push['error_code'] && $res_push['error_code']==90109){
+            $this->to_back(90109);
+        }else{
+            $this->to_back(array());
+        }
     }
 
     public function info(){
@@ -235,9 +247,9 @@ class FileController extends CommonController{
         if(in_array($extension,$open_file_ext)){
             $is_open = 1;
         }
-        $res = array('file_id'=>$res_file['id'],'file_path'=>$res_file['file_path'],'name'=>$file_info['basename'],
+        $res = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
+            'file_id'=>$res_file['id'],'file_path'=>$res_file['file_path'],'name'=>$file_info['basename'],
             'extension'=>$extension,'is_open'=>$is_open);
-
         $this->to_back($res);
     }
 }

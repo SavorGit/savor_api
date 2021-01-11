@@ -174,7 +174,11 @@ class WelcomeController extends CommonController{
             $this->to_back(93020);
         }
         $res_push = $this->push_welcome($res_welcome);
-        $this->to_back($res_push);
+        if($res_push['error_code'] && $res_push['error_code']==90109){
+            $this->to_back(90109);
+        }else{
+            $this->to_back(array());
+        }
     }
 
     private function push_welcome($res_welcome){
@@ -202,16 +206,17 @@ class WelcomeController extends CommonController{
         $message = array('action'=>$action,'id'=>$res_welcome['id'],'forscreen_char'=>$res_welcome['content'],
             'wordsize'=>$resource_info[$wordsize_id]['tv_wordsize'],'color'=>$resource_info[$color_id]['color'],
             'finish_time'=>date('Y-m-d H:i:s',$finish_time));
-        $image_path = array();
+        $img_list = array();
         $imgs = explode(',',$res_welcome['image']);
         if(!empty($imgs)){
             foreach ($imgs as $v){
                 if(!empty($v)){
-                    $image_path[] = $v;
+                    $file_info = pathinfo($v);
+                    $img_list[] = array('url'=>$v,'filename'=>$file_info['basename']);
                 }
             }
         }
-        $message['image_path'] = $image_path;
+        $message['img_list'] = $img_list;
 
         $m_media = new \Common\Model\MediaModel();
         if(isset($resource_info[$font_id])){

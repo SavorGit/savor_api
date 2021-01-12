@@ -413,12 +413,9 @@ class IndexController extends CommonController{
         $cache_key .= $box_mac.':'.$openid;
         $info = $redis->get($cache_key);
         if(!empty($info)){
-            $ret = $redis->remove($cache_key);
-            if($ret) $this->to_back(10000);
-            else $this->to_back(90108);
-        }else {
-            $this->to_back(10000);
+            $redis->remove($cache_key);
         }
+        $this->to_back(10000);
     }
 
     /*

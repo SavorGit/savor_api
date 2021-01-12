@@ -36,10 +36,6 @@ class SuggestionController extends CommonController{
         $data['create_time'] = date('Y-m-d H:i:s');
         $m_smallapp_suggestion = new \Common\Model\Smallapp\SuggestionModel(); 
         $ret = $m_smallapp_suggestion->addInfo($data,$type = 1);
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back(91011);
-        }
+        $this->to_back(10000);
     }
 }

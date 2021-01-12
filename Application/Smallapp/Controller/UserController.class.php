@@ -152,7 +152,6 @@ class UserController extends CommonController{
             $data['gender']    = $this->params['gender'];
             $data['status']    = 1;
             $ret = $m_user->addInfo($data,1);
-            
             if($ret){
                 $user_id = $m_user->getLastInsID();
                 $data['user_id'] = $user_id;
@@ -162,10 +161,8 @@ class UserController extends CommonController{
             }
         }else {
             $user_info = $m_user->getOne('id user_id,openid,avatarUrl,nickName,gender', $where);
-            
             $this->to_back($user_info);
         }
-        $this->to_back(91014);
     }
     /**
      * @desc 获取我的公开记录

@@ -234,16 +234,6 @@ return array(
 	    '91001'=>'for_screen_failed',
 	    '91002'=>'stop_screen_failed',
 	    //小程序投屏
-	    '91010'=>'forscreen_record_failed',
-	    '91011'=>'forscreen_push_suggestion_failed',
-	    '91012'=>'smallapp_turntable_log_failed',
-	    '91013'=>'smallapp_order_time_failed',
-	    '91014'=>'smallapp_user_exist',
-	    '91015'=>'smallapp_user_add_failed',
-	    '91016'=>'small_app_add_failed',
-	    '90107'=>'small_app_del_failed',
-	    '90108'=>'small_app_breanlink_failed',
-	    '90109'=>'netty_box_empty',
 	    '90100'=>'smallapp_qrcode_type_error',
 	    '90101'=>'smallapp_qrcode_content_error',
 	    '90102'=>'smallapp_forscreen_file_not_exist',
@@ -253,8 +243,8 @@ return array(
 	    '90106'=>'smallapp_forscreen_has_addhelpplay',
 	    '90107'=>'smallapp_forscreen_has_addhelp',
 	    '90108'=>'smallapp_resource_foul',
+        '90109'=>'smallapp_pushnetty_box_empty',
 
-        //小程序游戏
 	    '90110'=>'small_app_launch_game_failed',
 	    '90111'=>'small_app_game_have_start',
 	    '90112'=>'small_app_game_start_failed',
@@ -303,6 +293,14 @@ return array(
 	    '90160'=>'smallapp_del_sharefile_error',
 	    '90161'=>'smallapp_sharefile_not_exist',
 
+        '90162'=>'smallapp_pushnetty_msg_error',
+        '90163'=>'smallapp_pushnetty_position_error',
+        '90164'=>'smallapp_pushnetty_position_timeout',
+        '90165'=>'smallapp_pushnetty_pushbox_error',
+        '90166'=>'smallapp_qrcode_has_expire',
+
+        '91015'=>'smallapp_user_add_failed',
+        '91016'=>'small_app_addcollect_failed',
 
 
         //小程序餐厅端

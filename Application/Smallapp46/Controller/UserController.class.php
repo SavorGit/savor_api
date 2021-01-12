@@ -212,7 +212,6 @@ class UserController extends CommonController{
 
         $ret = $m_user->updateInfo($where, $data);
         if($ret){
-
             $this->to_back(10000);
         }else {
             $this->to_back(91015);

@@ -206,9 +206,10 @@ class FileforscreenController extends CommonController{
         $cache_key = $key.':'.$md5_file;
         $res_cache = $redis->get($cache_key);
         if(empty($res_cache)) {
-            $this->to_back(90102);
+            $imgs = array();
+        }else{
+            $imgs = json_decode($res_cache, true);
         }
-        $imgs = json_decode($res_cache, true);
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');
         $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);

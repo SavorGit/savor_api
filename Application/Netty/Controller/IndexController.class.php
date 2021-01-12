@@ -32,7 +32,7 @@ class IndexController extends CommonController{
             $log_file_name = APP_PATH.'Runtime/Logs/'.'netty_'.date("Ymd").".log";
             @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
-            $this->to_back(90109);
+            $this->to_back(90162);
         }
 
         $log_content = date("Y-m-d H:i:s").'[box_mac]'.$box_mac.'[msg]'.$msg."\n";
@@ -129,49 +129,47 @@ class IndexController extends CommonController{
                 usleep(50000);
             }
         }
-
-        if($position_result){
-            $host_name = C('HOST_NAME');
-            $callback = $host_name.'/h5/notify/netty';
-            if($position_result['code']==10000){
-                $cmd_command = C('SAPP_CALL_NETY_CMD');
-                $message['req_id'] = $req_id;
-                unset($message['res_sup_time'],$message['res_eup_time']);
-
-                $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id,'callback'=>$callback);
-                $post_data = http_build_query($push_data);
-
-                $ret = array();
-                for ($i=1;$i<=$netty_num;$i++){
-                    $request_time = getMillisecond();
-                    $netty_push_url = 'http://'.$position_result['result'].'/push/box';
-                    $ret = $this->curlPost($netty_push_url,$post_data);
-                    $netty_result = json_decode($ret,true);
-                    $params = array(
-                        'request_nettytime'=>$request_time,
-                        'netty_url'=>$netty_push_url.'?'.$post_data,
-                        'netty_result'=>$netty_result,
-                        'netty_num'=>$i,
-                    );
-                    $m_forscreen->recordTrackLog($req_id,$params);
-                    if($netty_result && $netty_result['code']==10000){
-                        break;
-                    }else{
-                        usleep(50000);
-                    }
-                }
-
-                if($ret){
-                    $this->to_back(json_decode($ret,true));
-                }else {
-                    $this->to_back(90109);
-                }
-            }else{
-                $this->to_back(90109);
-            }
-        }else{
-            $this->to_back(90109);
+        if(empty($position_result)){
+            $this->to_back(90164);
         }
+        if($position_result['code']!=10000){
+            $this->to_back(90163);
+        }
+        $host_name = C('HOST_NAME');
+        $callback = $host_name.'/h5/notify/netty';
+
+        $cmd_command = C('SAPP_CALL_NETY_CMD');
+        $message['req_id'] = $req_id;
+        unset($message['res_sup_time'],$message['res_eup_time']);
+
+        $push_data = array('box_mac'=>$box_mac,'cmd'=>$cmd_command,'msg'=>json_encode($message),'req_id'=>$req_id,'callback'=>$callback);
+        $post_data = http_build_query($push_data);
+
+        $ret = array();
+        $netty_result = array();
+        for ($i=1;$i<=$netty_num;$i++){
+            $request_time = getMillisecond();
+            $netty_push_url = 'http://'.$position_result['result'].'/push/box';
+            $ret = $this->curlPost($netty_push_url,$post_data);
+            $netty_result = json_decode($ret,true);
+            $params = array(
+                'request_nettytime'=>$request_time,
+                'netty_url'=>$netty_push_url.'?'.$post_data,
+                'netty_result'=>$netty_result,
+                'netty_num'=>$i,
+            );
+            $m_forscreen->recordTrackLog($req_id,$params);
+            if($netty_result && $netty_result['code']==10000){
+                break;
+            }else{
+                usleep(50000);
+            }
+        }
+        if($netty_result['code']!=10000){
+            $this->to_back(90165);
+        }
+        $res = json_decode($ret,true);
+        $this->to_back($res);
     }
 
 
@@ -210,7 +208,7 @@ class IndexController extends CommonController{
 //                    }
                 }
                 if($is_foul){
-                    $this->to_back('90108');
+                    $this->to_back(90108);
                 }else {
                     $map['req_id']  = $req_id;
                     $post_data = http_build_query($map);

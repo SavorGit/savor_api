@@ -212,7 +212,7 @@ class CommentController extends CommonController{
             $money = $money_list[$reward_id]['price'];
         }else{
             $money = intval($money);
-            if($money<0){
+            if($money<=0){
                 $this->to_back(90158);
             }
         }

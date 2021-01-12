@@ -95,12 +95,8 @@ class ActivityController extends CommonController{
         //$data['join_num']    = 1;
         $data['create_time'] = date('Y-m-d H:i:s');
         $data['is_start']    = 0;
-        $ret = $m_turntable_log->addInfo($data);
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back(91012);
-        }
+        $m_turntable_log->addInfo($data);
+        $this->to_back(10000);
     }
     /**
      * @dfesc 是否可以加入游戏
@@ -170,12 +166,8 @@ class ActivityController extends CommonController{
         $data['mobile_model']= $mobile_model;
         $data['join_time']   = getMillisecond();
         $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel(); 
-        $ret = $m_turntable_detail->addInfo($data,1);
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back(91012);
-        }
+        $m_turntable_detail->addInfo($data,1);
+        $this->to_back(10000);
     }
     /**
      * @desc 记录开始游戏
@@ -190,13 +182,8 @@ class ActivityController extends CommonController{
         $data['is_start']       = 1;
         $data['update_time']    = date('Y-m-d H:i:s'); 
         $data['play_times']     = 1;
-        $ret = $m_turntable_log->updateInfo($where, $data);
-        
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back(91012);
-        }
+        $m_turntable_log->updateInfo($where, $data);
+        $this->to_back(10000);
     }
     /**
      * @desc 重玩游戏
@@ -204,12 +191,8 @@ class ActivityController extends CommonController{
     public function retryGame(){
         $activity_id = $this->params['activity_id'];
         $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
-        $ret = $m_turntable_log->where('activity_id='.$activity_id)->setInc('play_times'); 
-        if($ret){
-            $this->to_back(10000);
-        }else {
-            $this->to_back(91013);
-        }  
+        $ret = $m_turntable_log->where('activity_id='.$activity_id)->setInc('play_times');
+        $this->to_back(10000);
     }
     /**
      * @desc 记录想要玩游戏的用户信息

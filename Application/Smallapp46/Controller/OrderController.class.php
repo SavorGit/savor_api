@@ -376,9 +376,10 @@ class OrderController extends CommonController{
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $decode_info = $hashids->decode($uid);
             if (empty($decode_info)) {
-                $this->to_back(90101);
+                $sale_uid = 0;
+            }else{
+                $sale_uid = $decode_info[0];
             }
-            $sale_uid = $decode_info[0];
         }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -668,9 +669,10 @@ class OrderController extends CommonController{
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $decode_info = $hashids->decode($uid);
             if (empty($decode_info)) {
-                $this->to_back(92010);
+                $sale_uid = 0;
+            }else{
+                $sale_uid = $decode_info[0];
             }
-            $sale_uid = $decode_info[0];
         }
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
@@ -1588,9 +1590,10 @@ class OrderController extends CommonController{
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $decode_info = $hashids->decode($uid);
             if(empty($decode_info)){
-                $this->to_back(90101);
+                $sale_uid = 0;
+            }else{
+                $sale_uid = $decode_info[0];
             }
-            $sale_uid = $decode_info[0];
         }
 
         $m_user = new \Common\Model\Smallapp\UserModel();

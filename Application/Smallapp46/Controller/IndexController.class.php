@@ -514,10 +514,11 @@ class IndexController extends CommonController{
         list($t1, $t2) = explode(' ', microtime());
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         $file_exts = C('SAPP_FILE_FORSCREEN_TYPES');
+        $share_file_exts = C('SHARE_FILE_TYPES');
         $exp_time   = 7200000;//扫码失效时间
         $redpacket_exp_time = 1800000;
         $data = array('sys_time'=>$sys_time,'exp_time'=>$exp_time,'redpacket_exp_time'=>$redpacket_exp_time,
-            'file_exts'=>array_keys($file_exts));
+            'file_exts'=>array_keys($file_exts),'share_file_exts'=>$share_file_exts);
         $data['file_max_size'] = 41943040;
         $data['polling_time']  = 120;  //文件投屏默认轮询时间60s
         $data['forscreen_call_code_filename']  = 're6bB4RHfC.mp4';

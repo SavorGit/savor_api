@@ -243,16 +243,21 @@ class FileController extends CommonController{
         if(empty($res_file)){
             $this->to_back(90161);
         }
+        $filename = str_replace('forscreen/resource/','',$res_file['file_path']);
+        $oss_host = "https://".C('OSS_HOST').'/';
         $file_info = pathinfo($res_file['file_path']);
-        $open_file_ext = array('doc','docx','xls','xlsx','ppt','pptx','pdf');
+        $open_file_ext = C('SHARE_FILE_TYPES');
         $extension =  $file_info['extension'];
         $is_open = 0;
         if(in_array($extension,$open_file_ext)){
             $is_open = 1;
         }
+        $where = array('id'=>$res_file['user_id']);
+        $user_info = $m_user->getOne('id,nickName,avatarUrl', $where, 'id desc');
+
         $res = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
-            'file_id'=>$res_file['id'],'file_path'=>$res_file['file_path'],'name'=>$file_info['basename'],
-            'extension'=>$extension,'is_open'=>$is_open);
+            'file_id'=>$res_file['id'],'file_path'=>$res_file['file_path'],'name'=>$filename,
+            'oss_file_path'=>$oss_host.$res_file['file_path'],'extension'=>$extension,'is_open'=>$is_open);
         $this->to_back($res);
     }
 }

@@ -58,8 +58,8 @@ class UserController extends CommonController{
                 break;
             case 'editCard':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1002,'head_img'=>1002,
-                    'job'=>1002,'company'=>1002,'qrcode_img'=>1002);
+                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
+                    'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
                 break;
         }
         parent::_init_();
@@ -168,7 +168,6 @@ class UserController extends CommonController{
         $openid  = $this->params['openid'];
         $name  = trim($this->params['name']);
         $mobile = $this->params['mobile'];
-        $head_img = $this->params['head_img'];
         $job = $this->params['job'];
         $company = $this->params['company'];
         $qrcode_img = $this->params['qrcode_img'];
@@ -187,7 +186,6 @@ class UserController extends CommonController{
         }
         $data = array('user_id'=>$user_info['id'],'name'=>$name,'update_time'=>date('Y-m-d H:i:s'));
         if($mobile)     $data['mobile'] = $mobile;
-        if($head_img)   $data['head_img'] = $head_img;
         if($job)        $data['job'] = $job;
         if($company)    $data['company'] = $company;
         if($qrcode_img) $data['qrcode_img'] = $qrcode_img;

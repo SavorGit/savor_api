@@ -441,6 +441,7 @@ return array(
         'doc'=>2,'wps'=>2,'docx'=>2,
         'pdf'=>2,'rtf'=>2,'txt'=>2
     ),
+    'SHARE_FILE_TYPES'=>array('doc','docx','xls','xlsx','ppt','pptx','pdf'),
     'FEAST_TIME'=>array('lunch'=>array('11:30','14:30'),'dinner'=>array('18:00','21:00')),
     'HASH_IDS_KEY'=>'Q1t80oXSKl',
     'HASH_IDS_KEY_ADMIN'=>'Q1xsCaoby2o',

@@ -25,7 +25,7 @@ class QrcodeController extends CommonController{
         switch ($type){
             case 34:
                 $code_url = $short_urls['SHARE_FILE_QR'];
-                $content = $code_url.'file_'.$data_id.'_'.$type.'_'.$box_id.'_'.$times;
+                $content = $code_url.'file_'.$data_id.'_'.$type.'_'.$box_id;
                 break;
             default:
                 $code_url = $short_urls['SHARE_FILE_QR'];

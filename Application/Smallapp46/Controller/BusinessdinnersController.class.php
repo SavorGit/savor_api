@@ -142,12 +142,9 @@ class BusinessdinnersController extends CommonController{
         $res_push = array();
         if(!empty($res_usercard)){
             $message = array('action'=>160,'nickName'=>$res_usercard['name'],'mobile'=>$res_usercard['mobile'],
-                'job'=>$res_usercard['job'],'company'=>$res_usercard['company'],'headPic'=>'','codeUrl'=>'',
+                'job'=>$res_usercard['job'],'company'=>$res_usercard['company'],'codeUrl'=>'',
                 'countdown'=>$share_countdown
             );
-            if(!empty($res_usercard['head_img'])){
-                $message['headPic'] = base64_encode($oss_host.$res_usercard['head_img']);
-            }
             if(!empty($res_usercard['qrcode_img'])){
                 $message['codeUrl'] = $oss_host.$res_usercard['qrcode_img'];
             }

@@ -109,7 +109,7 @@ class ShopController extends CommonController{
                     $oss_path = $media_info['oss_path'];
                     $oss_path_info = pathinfo($oss_path);
                     if($media_info['type']==2){
-                        $img_url = $media_info['oss_addr']."?x-oss-process=image/resize,p_50/quality,q_80";
+                        $img_url = $media_info['oss_addr'];
                     }else{
                         $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
                     }
@@ -125,7 +125,7 @@ class ShopController extends CommonController{
                     if(!empty($v['cover_imgs'])){
                         $cover_imgs_info = explode(',',$v['cover_imgs']);
                         if(!empty($cover_imgs_info[0])){
-                            $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                            $img_url = $oss_host.$cover_imgs_info[0];
                         }
                     }
                     $dinfo['img_url'] = $img_url;

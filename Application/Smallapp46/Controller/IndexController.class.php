@@ -526,7 +526,7 @@ class IndexController extends CommonController{
         $quality_list = array();
         foreach ($quality_types as $k=>$v){
             $checked = false;
-            if($k==2){
+            if($k==3){
                 $checked = true;
             }
             $quality_list[]=array('value'=>$k,'name'=>$v['name'],'quality'=>$v['value'],'checked'=>$checked);

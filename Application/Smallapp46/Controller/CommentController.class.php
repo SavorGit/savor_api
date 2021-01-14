@@ -167,7 +167,7 @@ class CommentController extends CommonController{
 
                     $m_netty = new \Common\Model\NettyModel();
                     $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
-                    if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+                    if(isset($res_netty['error_code'])){
                         $m_netty->pushBox($box_mac,json_encode($message));
                     }
                 }

@@ -231,11 +231,27 @@ return array(
     'small_app_addcollect_failed'=>'收藏失败，请稍后重试',
     'small_app_del_failed'=>'删除失败',
     'small_app_breanlink_failed'=>'断开连接失败',
-    'smallapp_pushnetty_box_empty' => '您选择的包间设备异常，请稍后再试',
-    'smallapp_pushnetty_msg_error' => '您选择的包间设备异常，请稍后再试',
-    'smallapp_pushnetty_position_error' => '您选择的包间设备异常，请稍后再试',
-    'smallapp_pushnetty_position_timeout' => '您选择的包间设备异常，请稍后再试',
-    'smallapp_pushnetty_pushbox_error' => '您选择的包间设备异常，请稍后再试',
+
+    'smallapp_pushnetty_msg_error'=>'您选择的包间设备异常，请稍后再试',
+
+    'smallapp_netty_position_requestid_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_position_mac_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_position_location_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_position_mac_notregister'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_position_other_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_position_timeout'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_requestid_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_pushbox_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_requestid_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_pushcmd_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_box_notexist'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_box_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_content_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_nobox_register'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_box_notregister'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_other_error'=>'您选择的包间设备异常，请稍后再试',
+    'smallapp_netty_push_timeout'=>'您选择的包间设备异常，请稍后再试',
+
 
 
     'small_app_launch_game_failed'=>'网络异常，发起游戏失败，请稍后再试',

@@ -9,18 +9,65 @@ class NettyModel extends Model{
         $req_id  = getMillisecond();
         $params = array('box_mac'=>$box_mac,'req_id'=>$req_id);
         $post_data = http_build_query($params);
-        $balance_url = C('NETTY_BALANCE_URL');
+        $balance_url = C('NETTY_BALANCE_URL');//定位接口
         $result = $this->curlPost($balance_url, $post_data);
         $result = json_decode($result,true);
-        if(is_array($result) && $result['code'] ==10000){
-            $netty_push_url = 'http://'.$result['result'].'/push/box';
-            $req_id  = getMillisecond();
-            $box_params = array('box_mac'=>$box_mac,'msg'=>$message,'req_id'=>$req_id,'cmd'=>C('SAPP_CALL_NETY_CMD'));
-            $post_data = http_build_query($box_params);
-            $ret = $this->curlPost($netty_push_url,$post_data);
-            $ret = json_decode($ret,true);
+        if(is_array($result)){
+            if($result['code'] ==10000){
+                $netty_push_url = 'http://'.$result['result'].'/push/box';
+                $req_id  = getMillisecond();
+                $box_params = array('box_mac'=>$box_mac,'msg'=>$message,'req_id'=>$req_id,'cmd'=>C('SAPP_CALL_NETY_CMD'));
+                $post_data = http_build_query($box_params);
+                $ret = $this->curlPost($netty_push_url,$post_data);
+                $res_pushbox = json_decode($ret,true);
+                if(is_array($res_pushbox)){
+                    if($res_pushbox['code']==10000){
+                        $ret = $res_pushbox;
+                    }else{
+                        if($result['code']==10008 && $result['msg']=='请求标识不存在'){
+                            $error_code = 91008;
+                        }elseif($result['code']==10006 && $result['msg']=='数据推送到机顶盒失败'){
+                            $error_code = 91009;
+                        }elseif($result['code']==10200 && $result['msg']=='请求标识不存在'){
+                            $error_code = 91010;
+                        }elseif($result['code']==10200 && $result['msg']=='推送指令不存在'){
+                            $error_code = 91011;
+                        }elseif($result['code']==10200 && $result['msg']=='要推送的 MAC 地址不存在'){
+                            $error_code = 91012;
+                        }elseif($result['code']==10201 && $result['msg']=='请输入正确的的 MAC 地址'){
+                            $error_code = 91013;
+                        }elseif($result['code']==10200 && $result['msg']=='要推送的消息内容不存在'){
+                            $error_code = 91014;
+                        }elseif($result['code']==10008 && $result['msg']=='无机顶盒注册'){
+                            $error_code = 91017;
+                        }elseif($result['code']==10008 && $result['msg']=='机顶盒没有注册'){
+                            $error_code = 91018;
+                        }else{
+                            $error_code = 91019;
+                        }
+                        $ret = array('error_code'=>$error_code,'netty_data'=>$result);
+                    }
+                }else{
+                    $error_code = 91020;//推送接口返回结果异常 超时
+                    $ret = array('error_code'=>$error_code,'netty_data'=>$result);
+                }
+            }else{
+                if($result['code']==10200 && $result['msg']=='请求标识不存在'){
+                    $error_code = 91002;
+                }elseif($result['code']==10200 && $result['msg']=='MAC地址不存在'){
+                    $error_code = 91003;
+                }elseif($result['code']==10006 && $result['msg']=='定位失败'){
+                    $error_code = 91004;
+                }elseif($result['code']==10008 && $result['msg']=='该 MAC 地址未注册'){
+                    $error_code = 91005;
+                }else{
+                    $error_code = 91006;
+                }
+                $ret = array('error_code'=>$error_code,'netty_data'=>$result);
+            }
         }else{
-            $ret = array('error_code'=>90109,'netty_data'=>$result);
+            $error_code = 91007;//定位接口返回结果异常 超时
+            $ret = array('error_code'=>$error_code,'netty_data'=>$result);
         }
         return $ret;
     }

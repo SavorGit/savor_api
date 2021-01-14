@@ -221,8 +221,8 @@ class FileController extends CommonController{
 
         $m_netty = new \Common\Model\NettyModel();
         $res_push = $m_netty->pushBox($res_file['box_mac'],json_encode($message));
-        if($res_push['error_code'] && $res_push['error_code']==90109){
-            $this->to_back(90109);
+        if($res_push['error_code']){
+            $this->to_back($res_push['error_code']);
         }else{
             $this->to_back(array());
         }

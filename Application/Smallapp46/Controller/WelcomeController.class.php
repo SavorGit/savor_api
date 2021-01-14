@@ -174,8 +174,8 @@ class WelcomeController extends CommonController{
             $this->to_back(93020);
         }
         $res_push = $this->push_welcome($res_welcome);
-        if($res_push['error_code'] && $res_push['error_code']==90109){
-            $this->to_back(90109);
+        if($res_push['error_code']){
+            $this->to_back($res_push['error_code']);
         }else{
             $this->to_back(array());
         }

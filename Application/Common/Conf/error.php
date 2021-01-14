@@ -229,10 +229,7 @@ return array(
 	    '90001'=>'poly_ads_empty',
 	    '90002'=>'poly_hotel_not_normal',
 	    '90003'=>'poly_box_empty',
-	    
-	    //4G投屏
-	    '91001'=>'for_screen_failed',
-	    '91002'=>'stop_screen_failed',
+
 	    //小程序投屏
 	    '90100'=>'smallapp_qrcode_type_error',
 	    '90101'=>'smallapp_qrcode_content_error',
@@ -293,14 +290,38 @@ return array(
 	    '90160'=>'smallapp_del_sharefile_error',
 	    '90161'=>'smallapp_sharefile_not_exist',
 
+        '90166'=>'smallapp_qrcode_has_expire',
+
+
         '90162'=>'smallapp_pushnetty_msg_error',
         '90163'=>'smallapp_pushnetty_position_error',
         '90164'=>'smallapp_pushnetty_position_timeout',
         '90165'=>'smallapp_pushnetty_pushbox_error',
-        '90166'=>'smallapp_qrcode_has_expire',
 
         '91015'=>'smallapp_user_add_failed',
         '91016'=>'small_app_addcollect_failed',
+
+        '91001'=>'smallapp_pushnetty_msg_error',
+        '91002'=>'smallapp_netty_position_requestid_notexist',
+        '91003'=>'smallapp_netty_position_mac_notexist',
+        '91004'=>'smallapp_netty_position_location_error',
+        '91005'=>'smallapp_netty_position_mac_notregister',
+        '91006'=>'smallapp_netty_position_other_error',
+        '91007'=>'smallapp_netty_position_timeout',
+        '91008'=>'smallapp_netty_push_requestid_notexist',
+        '91009'=>'smallapp_netty_push_pushbox_error',
+        '91010'=>'smallapp_netty_push_requestid_notexist',
+        '91011'=>'smallapp_netty_push_pushcmd_notexist',
+        '91012'=>'smallapp_netty_push_box_notexist',
+        '91013'=>'smallapp_netty_push_box_error',
+        '91014'=>'smallapp_netty_push_content_error',
+        '91017'=>'smallapp_netty_push_nobox_register',
+        '91018'=>'smallapp_netty_push_box_notregister',
+        '91019'=>'smallapp_netty_push_other_error',
+        '91020'=>'smallapp_netty_push_timeout',
+
+
+
 
 
         //小程序餐厅端

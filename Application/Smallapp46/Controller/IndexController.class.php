@@ -258,7 +258,7 @@ class IndexController extends CommonController{
         $redis->select(5);
         $res = $redis->get($cache_key);
         if(empty($res)){
-            $this->to_back(90101);
+            $this->to_back(90166);
         }
         $content = array('content'=>$res);
         $this->to_back($content);

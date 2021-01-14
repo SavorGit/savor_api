@@ -32,7 +32,7 @@ class IndexController extends CommonController{
             $log_file_name = APP_PATH.'Runtime/Logs/'.'netty_'.date("Ymd").".log";
             @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
-            $this->to_back(90162);
+            $this->to_back(91001);
         }
 
         $log_content = date("Y-m-d H:i:s").'[box_mac]'.$box_mac.'[msg]'.$msg."\n";
@@ -129,12 +129,25 @@ class IndexController extends CommonController{
                 usleep(50000);
             }
         }
+
         if(empty($position_result)){
-            $this->to_back(90164);
+            $this->to_back(91007);
         }
         if($position_result['code']!=10000){
-            $this->to_back(90163);
+            if($position_result['code']==10200 && $position_result['msg']=='请求标识不存在'){
+                $error_code = 91002;
+            }elseif($position_result['code']==10200 && $position_result['msg']=='MAC地址不存在'){
+                $error_code = 91003;
+            }elseif($position_result['code']==10006 && $position_result['msg']=='定位失败'){
+                $error_code = 91004;
+            }elseif($position_result['code']==10008 && $position_result['msg']=='该 MAC 地址未注册'){
+                $error_code = 91005;
+            }else{
+                $error_code = 91006;
+            }
+            $this->to_back($error_code);
         }
+
         $host_name = C('HOST_NAME');
         $callback = $host_name.'/h5/notify/netty';
 
@@ -165,8 +178,32 @@ class IndexController extends CommonController{
                 usleep(50000);
             }
         }
+        if(empty($netty_result)){
+            $this->to_back(91020);
+        }
         if($netty_result['code']!=10000){
-            $this->to_back(90165);
+            if($netty_result['code']==10008 && $netty_result['msg']=='请求标识不存在'){
+                $error_code = 91008;
+            }elseif($netty_result['code']==10006 && $netty_result['msg']=='数据推送到机顶盒失败'){
+                $error_code = 91009;
+            }elseif($netty_result['code']==10200 && $netty_result['msg']=='请求标识不存在'){
+                $error_code = 91010;
+            }elseif($netty_result['code']==10200 && $netty_result['msg']=='推送指令不存在'){
+                $error_code = 91011;
+            }elseif($netty_result['code']==10200 && $netty_result['msg']=='要推送的 MAC 地址不存在'){
+                $error_code = 91012;
+            }elseif($netty_result['code']==10201 && $netty_result['msg']=='请输入正确的的 MAC 地址'){
+                $error_code = 91013;
+            }elseif($netty_result['code']==10200 && $netty_result['msg']=='要推送的消息内容不存在'){
+                $error_code = 91014;
+            }elseif($netty_result['code']==10008 && $netty_result['msg']=='无机顶盒注册'){
+                $error_code = 91017;
+            }elseif($netty_result['code']==10008 && $netty_result['msg']=='机顶盒没有注册'){
+                $error_code = 91018;
+            }else{
+                $error_code = 91019;
+            }
+            $this->to_back($error_code);
         }
         $res = json_decode($ret,true);
         $this->to_back($res);

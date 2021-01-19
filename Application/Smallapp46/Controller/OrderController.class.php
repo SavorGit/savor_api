@@ -1227,7 +1227,10 @@ class OrderController extends CommonController{
         $where = array('openid'=>$openid);
         if($type){
             $where['otype'] = $type;
+        }else{
+            $where['otype'] = 3;
         }
+
         switch ($status){
             case 1:
                 $where['status'] = array('in',array(1,13,14,15,16,51));

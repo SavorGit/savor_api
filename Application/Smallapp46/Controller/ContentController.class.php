@@ -85,7 +85,7 @@ class ContentController extends CommonController{
                 if($v['res_type']==1){
                     $img_url = $res_url."?x-oss-process=image/quality,Q_50";
                 }else{
-                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_5000,f_jpg,w_450,m_fast';
+                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
                 }
                 $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
                     'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);

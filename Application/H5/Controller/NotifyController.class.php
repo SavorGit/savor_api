@@ -4,6 +4,7 @@
  * 
  */
 namespace H5\Controller;
+use Common\Lib\AliyunImm;
 use Think\Controller;
 use Common\Lib\AliyunOss;
 
@@ -145,6 +146,61 @@ class NotifyController extends Controller{
                         $log_content.= "\r\n";
                         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
                     }
+                }
+            }
+        }
+    }
+
+
+    public function fileConversion(){
+        $content = file_get_contents('php://input');
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'filecnv_'.date("Ymd").".log";
+        $log_content = date('Y-m-d H:i:s').'|content|'.$content."\r\n";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+        if(!empty($content)) {
+            $res_message = json_decode($content,true);
+            if(is_array($res_message) && !empty($res_message)){
+                $redis = \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $key = C('SAPP_FILE_FORSCREEN');
+                $m_userfile = new \Common\Model\Smallapp\UserfileModel();
+                foreach ($res_message['events'] as $v){
+                    $task_id = $v['imm']['taskId'];
+                    $log_content = date('Y-m-d H:i:s').'|task_id|'.$task_id.'|imm|'.json_encode($v['imm'])."\r\n";
+                    @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+                    $id = 0;
+                    $res_ufile = $m_userfile->getInfo(array('task_id'=>$task_id));
+                    if(!empty($res_ufile)){
+                        $md5_file = $res_ufile['md5_file'];
+                        $id = $res_ufile['id'];
+                    }else{
+                        $task_key = $key.':'.$task_id;
+                        $md5_file = $redis->get($task_key);
+                    }
+                    $percent = intval($v['imm']['percent']);
+                    if($v['imm']['code']=='NoError' && $percent==100){
+                        $aliyun = new AliyunImm();
+                        $res = $aliyun->getImgResponse($task_id);
+                        $response = print_r($res,true);
+                        $log_content = date('Y-m-d H:i:s').'|task_id|'.$task_id.'|response|'.$response."\r\n";
+                        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+                        $result = $m_userfile->getCreateOfficeConversionResult($res);
+                        if($result['status']==2){
+                            if(!empty($md5_file)){
+                                $cache_key = $key.':'.$md5_file;
+                                $redis->set($cache_key,json_encode($result['imgs']));
+                            }
+                        }
+                        $file_conversion_status = 2;
+                    }else{
+                        $file_conversion_status = 3;
+                    }
+                    if($id){
+                        $data = array('file_conversion_status'=>$file_conversion_status,'end_time'=>date('Y-m-d H:i:s'));
+                        $m_userfile->updateData(array('id'=>$id),$data);
+                    }
+
                 }
             }
         }

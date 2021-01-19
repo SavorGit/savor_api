@@ -16,6 +16,8 @@ class AliyunImm{
         $access_key = C('IMM_ACCESS_KEY');
         $projectName = C('IMM_PROJECT');
         $oss_bucket = C('OSS_BUCKET');
+        $imm_topic_name = C('IMM_TOPIC_NAME');
+        $end_point = C('QUEUE_ENDPOINT');
 
         $iClientProfile = \DefaultProfile::getProfile($region_id,$access_id,$access_key);
         $client = new \DefaultAcsClient($iClientProfile);
@@ -30,6 +32,9 @@ class AliyunImm{
         $request->setMaxSheetCol(-1);//转换所有列，设置为-1
         $request->setMaxSheetCount(-1);//转换所有Sheet，设置为-1
         $request->setSrcUri("oss://$oss_bucket/$oss_addr");
+        $request->setNotifyTopicName($imm_topic_name);
+        $request->setNotifyEndpoint($end_point);
+
         // 设置文件输出格式
         $request->setTgtType("png");
         // 设置转换后的输出路径

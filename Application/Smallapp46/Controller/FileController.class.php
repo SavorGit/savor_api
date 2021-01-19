@@ -27,6 +27,10 @@ class FileController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'file_id'=>1001);
                 break;
+            case 'getConversionResult':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
         }
         parent::_init_();
 
@@ -39,7 +43,7 @@ class FileController extends CommonController{
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $file_path = $this->params['file_path'];
-        $type = $this->params['type'];//1分享文件 2投屏文件
+        $type = $this->params['type'];//1分享文件 2投屏文件 3视频 4图片
         $file_ids = $this->params['file_ids'];//如果有值则删除
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -114,6 +118,9 @@ class FileController extends CommonController{
                 $add_data[]=$data;
             }
             $m_userfile->addAll($add_data);
+            if($type==2){
+                sendTopicMessage($user_info['id'],40);
+            }
         }
 
         $resp_data = array();
@@ -258,6 +265,54 @@ class FileController extends CommonController{
         $res = array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
             'file_id'=>$res_file['id'],'file_path'=>$res_file['file_path'],'name'=>$filename,
             'oss_file_path'=>$oss_host.$res_file['file_path'],'extension'=>$extension,'is_open'=>$is_open);
+        $this->to_back($res);
+    }
+
+    public function getConversionResult(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>1);
+        $user_info = $m_user->getOne('id', $where, 'id desc');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $m_userfile = new \Common\Model\Smallapp\UserfileModel();
+        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>2);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $condition['status'] = 1;
+        $res_files = $m_userfile->getDataList('*',$condition,'id desc');
+        $is_stop = 1;
+        $forscreen_file = array();
+        $forscreen_file_num = 0;
+        if(!empty($res_files)){
+            foreach ($res_files as $v){
+                $file_info = pathinfo($v['file_path']);
+                $info = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path']);
+                $file_conversion_status = $v['file_conversion_status'];
+                if(in_array($file_conversion_status,array(2,4))){
+                    $file_conversion_status = 2;
+                }
+//                elseif($v['file_conversion_status']==1 && !empty($v['task_id'])){
+//                    $file_conversion_status = $m_userfile->getConversionStatusByTaskId($v['task_id']);
+//                }
+                if($file_conversion_status==0 || $file_conversion_status==1){
+                    $is_stop = 0;
+                }
+                if($file_conversion_status==2){
+                    $forscreen_status = 2;
+                }else{
+                    $forscreen_status = 1;
+                }
+                $info['forscreen_status'] = $forscreen_status;
+                $forscreen_file[]=$info;
+            }
+            $forscreen_file_num = count($forscreen_file);
+        }
+        $res = array('is_stop'=>$is_stop,'forscreen_file_num'=>$forscreen_file_num,'forscreen_file'=>$forscreen_file);
         $this->to_back($res);
     }
 }

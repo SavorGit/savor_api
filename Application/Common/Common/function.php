@@ -304,7 +304,7 @@ function sendTopicMessage($message,$type){
     if(empty($message) || empty($type)){
         return false;
     }
-    $all_type = array('20'=>'bonustomoney','30'=>'rewardmoney');
+    $all_type = array('20'=>'bonustomoney','30'=>'rewardmoney','40'=>'fileconversion');
     $accessId = C('OSS_ACCESS_ID');
     $accessKey= C('OSS_ACCESS_KEY');
     $endPoint = C('QUEUE_ENDPOINT');

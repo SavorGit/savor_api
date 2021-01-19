@@ -4,7 +4,8 @@
  */
 namespace H5\Controller;
 use Think\Controller;
-
+use Common\Lib\AliyunOss;
+use Common\Lib\AliyunImm;
 class FileforscreenController extends Controller {
 
     public function index(){
@@ -79,6 +80,64 @@ class FileforscreenController extends Controller {
             $res['msg'] = 'success';
         }
         $this->ajaxReturn($res,'JSONP');
+    }
+
+    /*
+     * 商务宴请MNS通知转换文件
+     */
+    public function conversion(){
+        $content = file_get_contents('php://input');
+        $user_id = 0;
+        if(!empty($content)) {
+            $res = json_decode($content, true);
+            if (!empty($res['Message'])) {
+                $message = base64_decode($res['Message']);
+                $res_message = json_decode($message,true);
+                $user_id = intval($res_message[0]['order_id']);
+            }
+        }
+        $condition = array('user_id'=>$user_id,'type'=>2);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $condition['status'] = 1;
+        $condition['file_conversion_status'] = 0;
+        $m_userfile = new \Common\Model\Smallapp\UserfileModel();
+        $res_userfile = $m_userfile->getDataList('*',$condition,'id desc');
+        if(!empty($res_userfile)){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $key = C('SAPP_FILE_FORSCREEN');
+
+            $accessKeyId = C('OSS_ACCESS_ID');
+            $accessKeySecret = C('OSS_ACCESS_KEY');
+            $endpoint = 'oss-cn-beijing.aliyuncs.com';
+            $bucket = C('OSS_BUCKET');
+            $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
+            $aliyunoss->setBucket($bucket);
+            foreach ($res_userfile as $v){
+                $oss_addr = $v['file_path'];
+                $fileinfo = $aliyunoss->getObject($oss_addr,'');
+                if($fileinfo){
+                    $md5_file = md5($fileinfo);
+                    $cache_key = $key.':'.$md5_file;
+                    $res_cache = $redis->get($cache_key);
+                    if(empty($res_cache)){
+                        $aliyun = new AliyunImm();
+                        $res = $aliyun->createOfficeConversion($oss_addr);
+                        $task_id = $res->TaskId;
+                        if(!empty($task_id)){
+                            $data = array('task_id'=>$task_id,'file_conversion_status'=>1,'md5_file'=>$md5_file,
+                                'start_time'=>date('Y-m-d H:i:s'));
+                            $m_userfile->updateInfo(array('id'=>$v['id']),$data);
+                        }
+                    }else{
+                        $data = array('file_conversion_status'=>4,'md5_file'=>$md5_file);
+                        $m_userfile->updateInfo(array('id'=>$v['id']),$data);
+                    }
+                }
+            }
+        }
     }
 
 }

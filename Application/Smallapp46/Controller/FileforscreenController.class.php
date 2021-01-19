@@ -122,7 +122,7 @@ class FileforscreenController extends CommonController{
             }
             if($result['task_id'] && $md5_file){
                 $task_key = $key.':'.$result['task_id'];
-                $redis->set($task_key,$md5_file,1800);
+                $redis->set($task_key,$md5_file,7200);
             }
         }else{
             $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));

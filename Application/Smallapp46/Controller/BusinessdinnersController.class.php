@@ -69,7 +69,7 @@ class BusinessdinnersController extends CommonController{
             }
             $welcome['images'] = $image_path;
         }
-        $share_file = array();
+        $share_file = $forscreen_file = $videos = $images = array();
 
         $m_userfile = new \Common\Model\Smallapp\UserfileModel();
         $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>1,'status'=>1);
@@ -80,11 +80,41 @@ class BusinessdinnersController extends CommonController{
         if(!empty($res_files)){
             foreach ($res_files as $v){
                 $file_info = pathinfo($v['file_path']);
-                $share_file[] = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path']);
+                $info = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path']);
+                switch ($v['type']){
+                    case 1:
+                        $share_file[] = $info;
+                        break;
+                    case 2:
+                        $file_conversion_status = $v['file_conversion_status'];
+                        if(in_array($file_conversion_status,array(2,4))){
+                            $file_conversion_status = 2;
+                        }
+                        if($file_conversion_status==2){
+                            $forscreen_status = 2;
+                        }else{
+                            $forscreen_status = 1;
+                        }
+                        $info['forscreen_status'] = $forscreen_status;
+                        $forscreen_file[]=$info;
+                        break;
+                    case 3:
+                        $videos[]=$info;
+                        break;
+                    case 4:
+                        $images[]=$info;
+                        break;
+                }
             }
         }
         $share_file_num = count($share_file);
-        $resp_data = array('card'=>$card,'welcome'=>$welcome,'share_file'=>$share_file,'share_file_num'=>$share_file_num);
+        $forscreen_file_num = count($forscreen_file);
+        $videos_num = count($videos);
+        $images_num = count($images);
+        $resp_data = array('card'=>$card,'welcome'=>$welcome,'share_file'=>$share_file,'share_file_num'=>$share_file_num,
+            'forscreen_file'=>$forscreen_file,'forscreen_file_num'=>$forscreen_file_num,'videos'=>$videos,'videos_num'=>$videos_num,
+            'images'=>$images,'images_num'=>$images_num,
+        );
         $this->to_back($resp_data);
     }
 

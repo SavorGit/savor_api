@@ -5,6 +5,76 @@ use Common\Lib\AliyunImm;
 class UserfileModel extends BaseModel{
 	protected $tableName='smallapp_userfile';
 
+	public function pushDwonloadFile($file_info,$type){
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $cachedown_key = C('SAPP_FILE_DOWNLOAD');
+        $resource_list = array();
+        switch ($type){//1分享文件 2投屏文件 3视频(商务宴请) 4图片(商务宴请) 5视频(生日聚会) 6图片(生日聚会)
+            case 2:
+                $download_key = $cachedown_key.':file:'.$file_info['id'];
+                $res_download = $redis->get($download_key);
+                if(!empty($res_download)){
+                    $res_download = json_decode($res_download,true);
+                    if(isset($res_download['code']) && $res_download['code']==10000){
+                        return $res_download;
+                    }
+                }
+                $resource_type = 3;
+                $md5_file = $file_info['md5_file'];
+                $cache_key = C('SAPP_FILE_FORSCREEN').':'.$md5_file;
+                $res_cache = $redis->get($cache_key);
+                if(!empty($res_cache)) {
+                    $imgs = json_decode($res_cache, true);
+                    if(!empty($imgs)){
+                        foreach ($imgs as $v){
+                            $filename = str_replace(array('forscreen/','/'),array('','_'),$v);
+                            $resource_list[]=array('url'=>$v,'filename'=>$filename);
+                        }
+                    }
+                }
+                break;
+            case 3:
+            case 5:
+                $video_ids = array();
+                foreach ($file_info as $v){
+                    $video_ids[]=$v['id'];
+                    $file_info_arr = pathinfo($v['file_path']);
+                    $filename = $file_info_arr['basename'];
+
+                    $resource_list[]=array('url'=>$v['file_path'],'filename'=>$filename);
+                }
+                $video_ids_str = join('-',$video_ids);
+                $download_key = $cachedown_key.':video:'.$video_ids_str;
+                $resource_type = 1;
+                break;
+            case 4:
+            case 6:
+                $img_ids = array();
+                foreach ($file_info as $v){
+                    $img_ids[]=$v['id'];
+                    $file_info_arr = pathinfo($v['file_path']);
+                    $filename = $file_info_arr['basename'];
+
+                    $resource_list[]=array('url'=>$v['file_path'],'filename'=>$filename);
+                }
+                $img_ids_str = join('-',$img_ids);
+                $download_key = $cachedown_key.':image:'.$img_ids_str;
+                $resource_type = 2;
+                break;
+            default:
+                $resource_type = 0;
+                $download_key = '';
+        }
+        if(!empty($resource_list)){
+            $message = array('action'=>171,'resource_type'=>$resource_type,'resource_list'=>$resource_list);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_netty = $m_netty->pushBox($file_info['box_mac'],$message);
+            $res_netty['push_downtime'] = date('Y-m-d H:i:s');
+            $redis->set($download_key,json_encode($res_netty),86400);
+        }
+    }
+
 	public function getConversionStatusByTaskId($task_id){
         $aliyun = new AliyunImm();
         $res = $aliyun->getImgResponse($task_id);

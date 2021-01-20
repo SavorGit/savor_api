@@ -267,6 +267,7 @@ return array(
     'SAPP_UPDOWN_FORSCREEN'=>'smallapp:boxupdown:',
     'SAPP_QRCODE'=>'smallapp:qrcode:',
     'SAPP_FILE_FORSCREEN'=>'smallapp:fileforscreen',
+    'SAPP_FILE_DOWNLOAD'=>'smallapp:filedownload',
     'SAPP_WANT_GAME'      =>'smallapp:wantgame', //想要点开小程序互动游戏
     'SAPP_PLAY_GAME'      =>'smallapp:playgame',
     'SAPP_SUNCODE_LOG'    =>'smallapp:suncodelog:', //电视显示小程序码时长日志

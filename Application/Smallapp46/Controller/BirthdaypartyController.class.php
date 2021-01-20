@@ -46,7 +46,38 @@ class BirthdaypartyController extends CommonController{
             }
             $welcome['images'] = $image_path;
         }
-        $resp_data = array('welcome'=>$welcome);
+        $videos = $images = array();
+
+        $m_userfile = new \Common\Model\Smallapp\UserfileModel();
+        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'status'=>1);
+        $condition['type'] = array('in',array(5,6));
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $res_files = $m_userfile->getDataList('*',$condition,'id desc');
+        if(!empty($res_files)){
+            foreach ($res_files as $v){
+                $file_info = pathinfo($v['file_path']);
+                $info = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path'],
+                    'resource_size'=>$v['resource_size'],'duration'=>intval($v['duration']));
+                switch ($v['type']){
+                    case 5:
+                        $img_url = $v['file_path'].'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
+                        $info['img_url'] = $img_url;
+                        $info['video_id'] = $file_info['filename'];
+                        $videos[]=$info;
+                        break;
+                    case 6:
+                        $info['img_id'] = $file_info['filename'];
+                        $images[]=$info;
+                        break;
+                }
+            }
+        }
+        $videos_num = count($videos);
+        $images_num = count($images);
+        $resp_data = array('welcome'=>$welcome,'videos'=>$videos,'videos_num'=>$videos_num,
+            'images'=>$images,'images_num'=>$images_num);
         $this->to_back($resp_data);
     }
 

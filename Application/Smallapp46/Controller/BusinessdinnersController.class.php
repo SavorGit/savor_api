@@ -72,7 +72,7 @@ class BusinessdinnersController extends CommonController{
         $share_file = $forscreen_file = $videos = $images = array();
 
         $m_userfile = new \Common\Model\Smallapp\UserfileModel();
-        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>1,'status'=>1);
+        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'status'=>1);
         $start_time = date('Y-m-d 00:00:00');
         $end_time = date('Y-m-d 23:59:59');
         $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
@@ -80,7 +80,8 @@ class BusinessdinnersController extends CommonController{
         if(!empty($res_files)){
             foreach ($res_files as $v){
                 $file_info = pathinfo($v['file_path']);
-                $info = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path']);
+                $info = array('file_id'=>$v['id'],'name'=>$file_info['basename'],'file_path'=>$v['file_path'],
+                    'resource_size'=>$v['resource_size'],'duration'=>intval($v['duration']));
                 switch ($v['type']){
                     case 1:
                         $share_file[] = $info;
@@ -99,9 +100,13 @@ class BusinessdinnersController extends CommonController{
                         $forscreen_file[]=$info;
                         break;
                     case 3:
+                        $img_url = $v['file_path'].'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
+                        $info['img_url'] = $img_url;
+                        $info['video_id'] = $file_info['filename'];
                         $videos[]=$info;
                         break;
                     case 4:
+                        $info['img_id'] = $file_info['filename'];
                         $images[]=$info;
                         break;
                 }

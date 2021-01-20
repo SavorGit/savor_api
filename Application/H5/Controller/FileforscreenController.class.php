@@ -87,6 +87,9 @@ class FileforscreenController extends Controller {
      */
     public function conversion(){
         $content = file_get_contents('php://input');
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'file_mns_'.date("Ymd").".log";
+        $log_content = date('Y-m-d H:i:s').'|content|'.$content."\r\n";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
         $user_id = 0;
         if(!empty($content)) {
             $res = json_decode($content, true);
@@ -129,11 +132,11 @@ class FileforscreenController extends Controller {
                         if(!empty($task_id)){
                             $data = array('task_id'=>$task_id,'file_conversion_status'=>1,'md5_file'=>$md5_file,
                                 'start_time'=>date('Y-m-d H:i:s'));
-                            $m_userfile->updateInfo(array('id'=>$v['id']),$data);
+                            $m_userfile->updateData(array('id'=>$v['id']),$data);
                         }
                     }else{
                         $data = array('file_conversion_status'=>4,'md5_file'=>$md5_file);
-                        $m_userfile->updateInfo(array('id'=>$v['id']),$data);
+                        $m_userfile->updateData(array('id'=>$v['id']),$data);
                     }
                 }
             }

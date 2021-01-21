@@ -38,14 +38,16 @@ class FileController extends CommonController{
 
 
     public function addFile(){
-        $max_file = 6;
-
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $file_path = $this->params['file_path'];
         $type = $this->params['type'];//1分享文件 2投屏文件 3视频(商务宴请) 4图片(商务宴请) 5视频(生日聚会) 6图片(生日聚会)
         $file_ids = $this->params['file_ids'];//如果有值则删除
         $file_info = $this->params['file_info'];
+        $max_file = 6;
+        if($type==4 || $type==6){
+            $max_file = 9;
+        }
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'small_app_id'=>1);

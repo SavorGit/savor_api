@@ -293,11 +293,6 @@ return array(
         '90166'=>'smallapp_qrcode_has_expire',
 
 
-        '90162'=>'smallapp_pushnetty_msg_error',
-        '90163'=>'smallapp_pushnetty_position_error',
-        '90164'=>'smallapp_pushnetty_position_timeout',
-        '90165'=>'smallapp_pushnetty_pushbox_error',
-
         '91015'=>'smallapp_user_add_failed',
         '91016'=>'small_app_addcollect_failed',
 
@@ -319,10 +314,6 @@ return array(
         '91018'=>'smallapp_netty_push_box_notregister',
         '91019'=>'smallapp_netty_push_other_error',
         '91020'=>'smallapp_netty_push_timeout',
-
-
-
-
 
         //小程序餐厅端
         '92001'=>'smallappdinner_mobile_error',

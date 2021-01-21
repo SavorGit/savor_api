@@ -33,6 +33,7 @@ class UserfileModel extends BaseModel{
                         }
                     }
                 }
+                $box_mac = $file_info['box_mac'];
                 break;
             case 3:
             case 5:
@@ -46,6 +47,7 @@ class UserfileModel extends BaseModel{
                 }
                 $video_ids_str = join('-',$video_ids);
                 $download_key = $cachedown_key.':video:'.$video_ids_str;
+                $box_mac = $file_info[0]['box_mac'];
                 $resource_type = 1;
                 break;
             case 4:
@@ -60,16 +62,18 @@ class UserfileModel extends BaseModel{
                 }
                 $img_ids_str = join('-',$img_ids);
                 $download_key = $cachedown_key.':image:'.$img_ids_str;
+                $box_mac = $file_info[0]['box_mac'];
                 $resource_type = 2;
                 break;
             default:
                 $resource_type = 0;
                 $download_key = '';
+                $box_mac = '';
         }
         if(!empty($resource_list)){
             $message = array('action'=>171,'resource_type'=>$resource_type,'resource_list'=>$resource_list);
             $m_netty = new \Common\Model\NettyModel();
-            $res_netty = $m_netty->pushBox($file_info['box_mac'],$message);
+            $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
             $res_netty['push_downtime'] = date('Y-m-d H:i:s');
             $redis->set($download_key,json_encode($res_netty),86400);
         }

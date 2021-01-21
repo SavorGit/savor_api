@@ -23,6 +23,10 @@ class ShopController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_ids'=>1001);
                 break;
+            case 'scenegift':
+                $this->is_verify = 1;
+                $this->valid_fields = array('page'=>1001,'pagesize'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -289,6 +293,85 @@ class ShopController extends CommonController{
             }
         }
         $this->to_back($datas);
+    }
+
+    public function scenegift(){
+        $page = intval($this->params['page']);
+        $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
+
+        $all_nums = $page * $pagesize;
+        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('type'=>22,'status'=>1,'is_scenegift'=>1,'gtype'=>array('in',array(1,2)));
+        $res_goods = $m_dishgoods->getDataList('*',$where,'sort desc,id desc',0,$all_nums);
+
+        $res_data = array('total'=>0,'datalist'=>array());
+        if($res_goods['total']){
+            $res_data['total'] = $res_goods['total'];
+
+            $oss_host = "http://".C('OSS_HOST').'/';
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_goods['list'] as $v){
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'line_price'=>$v['line_price'],'stock_num'=>$v['amount'],
+                    'type'=>$v['type'],'is_tv'=>0,'gtype'=>$v['gtype'],'is_tvdemand'=>0);
+                if($v['type']==10){
+                    $media_id = $v['media_id'];
+                    $media_info = $m_media->getMediaInfoById($media_id);
+                    $oss_path = $media_info['oss_path'];
+                    $oss_path_info = pathinfo($oss_path);
+                    if($media_info['type']==2){
+                        $img_url = $media_info['oss_addr'];
+                    }else{
+                        $img_url = $media_info['oss_addr'].'?x-oss-process=video/snapshot,t_1000,f_jpg,w_450,m_fast';
+                    }
+                    $dinfo['is_tv'] = $this->is_tv;
+                    $dinfo['img_url'] = $img_url;
+                    $dinfo['duration'] = $media_info['duration'];
+                    $dinfo['tx_url'] = $media_info['oss_addr'];
+                    $dinfo['filename'] = $oss_path_info['basename'];
+                    $dinfo['forscreen_url'] = $oss_path;
+                    $dinfo['resource_size'] = $media_info['oss_filesize'];
+                }else{
+                    $img_url = '';
+                    if(!empty($v['cover_imgs'])){
+                        $cover_imgs_info = explode(',',$v['cover_imgs']);
+                        if(!empty($cover_imgs_info[0])){
+                            $img_url = $oss_host.$cover_imgs_info[0];
+                        }
+                    }
+                    $dinfo['img_url'] = $img_url;
+
+                    if($v['tv_media_id']){
+                        $media_info = $m_media->getMediaInfoById($v['tv_media_id']);
+                        $oss_path = $media_info['oss_path'];
+                        $oss_path_info = pathinfo($oss_path);
+
+                        $dinfo['is_tvdemand'] = 1;
+                        $dinfo['duration'] = $media_info['duration'];
+                        $dinfo['tx_url'] = $media_info['oss_addr'];
+                        $dinfo['filename'] = $oss_path_info['basename'];
+                        $dinfo['forscreen_url'] = $oss_path;
+                        $dinfo['resource_size'] = $media_info['oss_filesize'];
+                        $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=32";
+                    }
+
+                    $dinfo['attrs'] = array();
+                    $dinfo['model_img'] = '';
+                    if($dinfo['gtype']==2){
+                        $res_attrs = $m_dishgoods->getGoodsAttr($v['id']);
+                        $dinfo['price'] = $res_attrs['default']['price'];
+                        $dinfo['line_price'] = $res_attrs['default']['line_price'];
+                        $dinfo['stock_num'] = $res_attrs['default']['amount'];
+                        $dinfo['id'] = $res_attrs['default']['id'];
+                        $dinfo['attrs'] = $res_attrs['attrs'];
+                        $dinfo['model_img'] = $res_attrs['default']['model_img'];
+                    }
+
+                }
+                $res_data['datalist'][]=$dinfo;
+            }
+        }
+        $this->to_back($res_data);
     }
 
 

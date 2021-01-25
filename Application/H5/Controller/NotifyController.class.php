@@ -182,10 +182,12 @@ class NotifyController extends Controller{
                         $aliyun = new AliyunImm();
                         $res = $aliyun->getImgResponse($task_id);
                         $response = print_r($res,true);
-                        $log_content = date('Y-m-d H:i:s').'|task_id|'.$task_id.'|response|'.$response."\r\n";
+                        $log_content = date('Y-m-d H:i:s').'|task_id|'.$task_id.'|id|'.$id.'|response|'.$response."\r\n";
                         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
 
                         $result = $m_userfile->getCreateOfficeConversionResult($res);
+                        $log_content = date('Y-m-d H:i:s').'|task_id|'.$task_id.'|id|'.$id.'|response_result|'.json_encode($result)."\r\n";
+                        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
                         if($result['status']==2){
                             if(!empty($md5_file)){
                                 $cache_key = $key.':'.$md5_file;

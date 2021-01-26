@@ -146,7 +146,7 @@ class ActivityController extends CommonController{
         }
 
         $data = array('hotel_id'=>$hotel_id,'name'=>$activity_name,'prize'=>$prize,'image_url'=>$image_url,
-            'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'status'=>0);
+            'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'status'=>0,'type'=>1);
         $m_activity->add($data);
         $this->to_back(array());
     }

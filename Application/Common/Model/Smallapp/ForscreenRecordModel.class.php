@@ -67,6 +67,7 @@ class ForscreenRecordModel extends Model{
            'box_receivetime'=>'盒子接收netty时间',
            'box_downstime'=>'盒子下载开始时间',
            'box_downetime'=>'盒子下载完成时间',
+            'box_play_time'=>'盒子播放时间',
            'box_finish_downtime'=>'盒子完全下载完成时间',
         );
         $redis = new \Common\Lib\SavorRedis();

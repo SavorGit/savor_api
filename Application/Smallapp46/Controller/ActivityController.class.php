@@ -48,6 +48,21 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1002);
                 break;
+            case 'joinLottery':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
+            case 'getConfigLotteryStatus':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
+            case 'addLottery':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'prize'=>1001,'image'=>1001);
+                break;
+            case 'openLottery':
+                $this->valid_fields = array('openid'=>1001,'activity_id'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -230,6 +245,358 @@ class ActivityController extends CommonController{
         $this->to_back($data);
     }
 
+    public function getConfigLotteryStatus(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $where = array('openid'=>$openid,'box_mac'=>$box_mac,'type'=>2);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getDataList('*',$where,'id desc',0,1);
+        $activity_id = 0;
+        $lottery_status = 0;
+        if($res_activity['total']>0){
+            $res_activity = $res_activity['list'][0];
+            $activity_id = intval($res_activity['id']);
+            if($res_activity['status']==1){
+                $lottery_status = 2;
+            }elseif($res_activity['status']==3){
+                $lottery_status = 3;
+            }elseif($res_activity['status']==2){
+                $lottery_status = 4;
+            }
+        }
+        $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status);
+        $this->to_back($res_data);
+    }
+
+    public function addLottery(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $prize = trim($this->params['prize']);
+        $image_url = $this->params['image'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id'])){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info,true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $hotel_id = $room_info['hotel_id'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $rets = $m_box->getBoxInfo('d.id as hotel_id,',$where);
+            $hotel_id = $rets[0]['hotel_id'];
+        }
+        $start_time = date('Y-m-d H:i:s');
+        $data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'prize'=>$prize,'image_url'=>$image_url,
+            'start_time'=>$start_time,'status'=>0,'type'=>2);
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_id = $m_activity->add($data);
+        if($res_id){
+            $lottery_countdown = 60;
+            $partakedish_img = $image_url.'?x-oss-process=image/resize,m_mfit,h_200,w_300';
+            $img_info = pathinfo($image_url);
+            $netty_data = array('action'=>135,'countdown'=>$lottery_countdown,'lottery_time'=>'',
+                'lottery_countdown'=>$lottery_countdown,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
+                'partake_name'=>$prize,'activity_name'=>'抽奖活动',
+            );
+            $message = json_encode($netty_data);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_push = $m_netty->pushBox($box_mac,$message);
+            if($res_push['error_code']){
+                $this->to_back($res_push['error_code']);
+            }
+            $updata = array('start_time'=>date('Y-m-d H:i:s'),'status'=>1);
+            $m_activity->updateData(array('id'=>$res_id),$updata);
+        }
+        $resp_data = array('activity_id'=>$res_id);
+        $this->to_back($resp_data);
+    }
+
+    public function openLottery(){
+        $openid = $this->params['openid'];
+        $activity_id = intval($this->params['activity_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'openid'=>$openid));
+        if(empty($res_activity)){
+            $this->to_back(90162);
+        }
+        if($res_activity['status']!=1){
+            $this->to_back(90163);
+        }
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $where = array('activity_id'=>$activity_id);
+        $res_apply_user = $m_activityapply->getDataList('*',$where,'id asc');
+        if(empty($res_apply_user)){
+            $updata = array('end_time'=>date('Y-m-d H:i:s'),'lottery_time'=>date('Y-m-d H:i:s'),'status'=>2);
+            $m_activity->updateData(array('id'=>$activity_id),$updata);
+            $res_data = array('activity_id'=>$activity_id,'lottery_status'=>4);
+            $this->to_back($res_data);
+        }
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $where = array('status'=>2);
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $res_lotteryuser = $m_activityapply->getDataList('openid',$where,'id desc');
+        $now_lottery_openids = array();
+        if(!empty($res_lotteryuser)){
+            foreach ($res_lotteryuser as $v){
+                $now_lottery_openids[]=$v['openid'];
+            }
+        }
+
+        $all_lottery_openid = array();
+        foreach ($res_apply_user as $ak=>$av){
+            $all_lottery_openid[]=$av['openid'];
+            if(in_array($av['openid'],$now_lottery_openids)){
+                unset($res_apply_user[$ak]);
+            }
+        }
+        if(!empty($res_apply_user)){
+            $res_apply_user = array_values($res_apply_user);
+            $user_num = count($res_apply_user) - 1;
+            $lottery_rand = mt_rand(0,$user_num);
+            $lottery_apply_id = $res_apply_user[$lottery_rand]['id'];
+            $lottery_openid = $res_apply_user[$lottery_rand]['openid'];
+        }else{
+            $lottery_apply_id = 0;
+            $lottery_openid = 0;
+        }
+        if($lottery_apply_id==0){
+            $updata = array('end_time'=>date('Y-m-d H:i:s'),'lottery_time'=>date('Y-m-d H:i:s'),'status'=>2);
+            $m_activity->updateData(array('id'=>$activity_id),$updata);
+            $res_data = array('activity_id'=>$activity_id,'lottery_status'=>4);
+            $this->to_back($res_data);
+        }
+        $lwhere = array('openid'=>array('in',$all_lottery_openid));
+        $users = $m_user->getWhere('openid,avatarUrl,nickName',$lwhere,'id desc','','');
+        $partake_user = array();
+        foreach ($users as $uv){
+            $is_lottery = 0;
+            if($uv['openid']==$lottery_openid){
+                $is_lottery = 1;
+            }
+            $partake_user[] = array('avatarUrl'=>base64_encode($uv['avatarurl']),'nickName'=>$uv['nickname'],'is_lottery'=>$is_lottery);
+        }
+        $lottery = array('dish_name'=>$res_activity['prize'],'dish_image'=>$res_activity['image_url']);
+        $netty_data = array('action'=>136,'partake_user'=>$partake_user,'lottery'=>$lottery);
+        $message = json_encode($netty_data);
+        $m_netty = new \Common\Model\NettyModel();
+        $res_push = $m_netty->pushBox($res_activity['box_mac'],$message);
+        if($res_push['error_code']){
+            $this->to_back($res_push['error_code']);
+        }
+        $updata = array('lottery_time'=>date('Y-m-d H:i:s'),'status'=>3);
+        $m_activity->updateData(array('id'=>$activity_id),$updata);
+
+        $redis = new \Common\Lib\SavorRedis();
+        $lkey = C('SMALLAPP_LOTTERY');
+        $redis->select(1);
+        $cache_key = $lkey.":result:$activity_id";
+        $cdata = array('open_time'=>time(),'lottery_apply_id'=>$lottery_apply_id);
+        $redis->set($cache_key,json_encode($cdata),86400);
+        $res_data = array('activity_id'=>$activity_id,'lottery_status'=>3);
+        $this->to_back($res_data);
+    }
+
+    public function getLotteryResult(){
+        $openid = $this->params['openid'];
+        $activity_id = intval($this->params['activity_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90157);
+        }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'openid'=>$openid));
+        if(empty($res_activity)){
+            $this->to_back(90162);
+        }
+        if($res_activity['status']!=3){
+            $this->to_back(90164);
+        }
+        $redis = new \Common\Lib\SavorRedis();
+        $lkey = C('SMALLAPP_LOTTERY');
+        $redis->select(1);
+        $cache_key = $lkey.":result:$activity_id";
+        $res_cache = $redis->get($cache_key);
+        $lottery_info = json_decode($res_cache,true);
+        $lottery_apply_id = $lottery_info['lottery_apply_id'];
+        $open_time = $lottery_info['open_time'];
+        $now_time = time();
+        $lottery_status = 3;
+        if($now_time - $open_time>=20){
+            $lottery_status = 4;
+            $updata = array('end_time'=>date('Y-m-d H:i:s'),'status'=>2);
+            $m_activity->updateData(array('id'=>$activity_id),$updata);
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $m_activityapply->updateData(array('id'=>$lottery_apply_id),array('status'=>2));
+            $condition = array('activity_id'=>$activity_id,'id'=>array('neq',$lottery_apply_id));
+            $m_activityapply->updateData($condition,array('status'=>3));
+        }
+        $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status);
+        $this->to_back($res_data);
+    }
+
+    public function joinLottery(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $where = array('box_mac'=>$box_mac,'status'=>1);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $res_activity = $m_activity->getDataList('*',$where,'id desc',0,1);
+        if(empty($res_activity)){
+            $this->to_back(90157);
+        }
+        $res_activity = $res_activity['list'][0];
+        $activity_id = intval($res_activity['id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $redis = new \Common\Lib\SavorRedis();
+        $lkey = C('SMALLAPP_LOTTERY');
+        $cache_key = $lkey.":$activity_id:$openid";
+        $redis->select(1);
+        $status = 0;
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        if($res_activity['status']==2 || $res_activity['status']==3){
+            $where = array('openid'=>$openid,'activity_id'=>$activity_id);
+            $res_apply = $m_activityapply->getDataList('*',$where,'id desc',0,1);
+            if($res_apply['total'] && $res_apply['list'][0]['status']==2){
+                $status = 3;
+            }else{
+                $status = 4;
+            }
+        }else{
+            $res_cache = $redis->get($cache_key);
+            if(!empty($res_cache)){
+                $status = 1;
+            }else{
+                $where = array('openid'=>$openid,'activity_id'=>$activity_id);
+                $res_apply = $m_activityapply->getDataList('*',$where,'id desc',0,1);
+                if($res_apply['total']){
+                    $status = 1;
+                }
+            }
+            $end_time = strtotime($res_activity['end_time']);
+            $now_time = time();
+            if($status==0 && $now_time>$end_time){
+                $status = 2;
+            }
+            $now_time = date('Y-m-d H:i:s');
+            if($status==0 && $now_time>$res_activity['start_time'] && $now_time<=$res_activity['end_time']){
+                $adata = array('activity_id'=>$activity_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1);
+                $m_activityapply->add($adata);
+                $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
+                $status = 1;
+            }
+
+        }
+        switch ($status){
+            case 1:
+                $tips = '恭喜您，参与成功';
+                break;
+            case 2:
+            case 3:
+            case 4:
+                $tips = '已过本轮抽奖时间，请等待下一轮抽奖';
+                break;
+            default:
+                $tips = '';
+        }
+        $data = array('activity_id'=>$activity_id,'tips'=>$tips);
+        $this->to_back($data);
+    }
+
+    public function againLottery(){
+        $openid = $this->params['openid'];
+        $activity_id = intval($this->params['activity_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90157);
+        }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'openid'=>$openid));
+        if(empty($res_activity)){
+            $this->to_back(90162);
+        }
+        if($res_activity['status']!=2){
+            $this->to_back(90165);
+        }
+        $start_time = date('Y-m-d H:i:s');
+        $data = array('hotel_id'=>$res_activity['hotel_id'],'box_mac'=>$res_activity['box_mac'],
+            'prize'=>$res_activity['prize'],'image_url'=>$res_activity['image_url'],
+            'start_time'=>$start_time,'status'=>0,'type'=>2);
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_id = $m_activity->add($data);
+        if($res_id){
+            $lottery_countdown = 60;
+            $partakedish_img = $res_activity['image_url'].'?x-oss-process=image/resize,m_mfit,h_200,w_300';
+            $img_info = pathinfo($res_activity['image_url']);
+            $netty_data = array('action'=>135,'countdown'=>$lottery_countdown,'lottery_time'=>'',
+                'lottery_countdown'=>$lottery_countdown,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
+                'partake_name'=>$res_activity['prize'],'activity_name'=>'抽奖活动',
+            );
+            $message = json_encode($netty_data);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_push = $m_netty->pushBox($res_activity['box_mac'],$message);
+            if($res_push['error_code']){
+                $this->to_back($res_push['error_code']);
+            }
+            $updata = array('start_time'=>date('Y-m-d H:i:s'),'status'=>1);
+            $m_activity->updateData(array('id'=>$res_id),$updata);
+        }
+        $resp_data = array('activity_id'=>$res_id);
+        $this->to_back($resp_data);
+    }
+
     public function lottery(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
@@ -281,7 +648,8 @@ class ActivityController extends CommonController{
 
         $is_apply = 0;
         $redis = new \Common\Lib\SavorRedis();
-        $cache_key = "smallapp:activity:lottery:$activity_id:$openid";
+        $lkey = C('SMALLAPP_LOTTERY');
+        $cache_key = $lkey.":$activity_id:$openid";
         $redis->select(1);
         $status = 0;
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();

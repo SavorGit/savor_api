@@ -397,7 +397,11 @@ return array(
     'smallappsale_input_assign_integral_error'=>'输入分配的积分有误',
     'smallapp_add_sharefile_uplimit'=>'当前分享的文件已达上限',
     'smallapp_del_sharefile_error'=>'删除分享文件失败，请稍后重试',
-    'smallapp_sharefile_not_exist'=>'分享文件失败，请稍后重试'
+    'smallapp_sharefile_not_exist'=>'分享文件失败，请稍后重试',
+    'smallapp_lottery_not_exist'=>'抽奖活动正在维护中，请稍后再试。',
+    'smallapp_lottery_not_config'=>'请先配置抽奖活动',
+    'smallapp_lottery_not_start'=>'请先开始抽奖',
+    'smallapp_lottery_not_finish'=>'抽奖活动还未结束',
 
 
 );

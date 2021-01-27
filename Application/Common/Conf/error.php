@@ -289,7 +289,10 @@ return array(
 	    '90159'=>'smallapp_add_sharefile_uplimit',
 	    '90160'=>'smallapp_del_sharefile_error',
 	    '90161'=>'smallapp_sharefile_not_exist',
-
+	    '90162'=>'smallapp_lottery_not_exist',
+	    '90163'=>'smallapp_lottery_not_config',
+	    '90164'=>'smallapp_lottery_not_start',
+	    '90165'=>'smallapp_lottery_not_finish',
         '90166'=>'smallapp_qrcode_has_expire',
 
 

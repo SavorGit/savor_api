@@ -1,11 +1,12 @@
 <?php
 namespace Common\Model\Smallapp;
+use Common\Lib\AliyunOss;
 use Common\Model\BaseModel;
 use Common\Lib\AliyunImm;
 class UserfileModel extends BaseModel{
-	protected $tableName='smallapp_userfile';
+    protected $tableName='smallapp_userfile';
 
-	public function pushDwonloadFile($file_info,$type){
+    public function pushDwonloadFile($file_info,$type){
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(5);
         $cachedown_key = C('SAPP_FILE_DOWNLOAD');
@@ -79,7 +80,7 @@ class UserfileModel extends BaseModel{
         }
     }
 
-	public function getConversionStatusByTaskId($task_id){
+    public function getConversionStatusByTaskId($task_id){
         $aliyun = new AliyunImm();
         $res = $aliyun->getImgResponse($task_id);
         switch ($res->Status){
@@ -103,6 +104,9 @@ class UserfileModel extends BaseModel{
     }
 
     public function getCreateOfficeConversionResult($res){
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'filecnv_'.date("Ymd").".log";
+        $log_content = date('Y-m-d H:i:s').'|task_id|'.$res->TaskId.'|conversionresult|start'."\r\n";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
         $oss_host = C('OSS_HOST');
         $bucket = C('OSS_BUCKET');
         $file_types = C('SAPP_FILE_FORSCREEN_TYPES');
@@ -129,6 +133,9 @@ class UserfileModel extends BaseModel{
                     $aliyunoss = new AliyunOss($accessKeyId, $accessKeySecret, $endpoint);
                     $aliyunoss->setBucket($bucket);
                     $exl_files = $aliyunoss->getObjectlist($prefix);
+                    $log_content = date('Y-m-d H:i:s').'|task_id|'.$res->TaskId.'|conversionresult|result'.json_encode($exl_files)."\r\n";
+                    @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
                     $tmp_imgs = array();
                     foreach ($exl_files as $v){
                         $img_info = pathinfo($v);
@@ -172,6 +179,8 @@ class UserfileModel extends BaseModel{
                 if($img_num==0){
                     $status = 3;
                 }
+                $log_content = date('Y-m-d H:i:s').'|task_id|'.$res->TaskId.'|conversionresult|end'."\r\n";
+                @file_put_contents($log_file_name, $log_content, FILE_APPEND);
                 break;
             case 'Failed':
                 $status = 3;

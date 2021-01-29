@@ -402,6 +402,8 @@ return array(
     'smallapp_lottery_not_config'=>'请先配置抽奖活动',
     'smallapp_lottery_not_start'=>'请先开始抽奖',
     'smallapp_lottery_not_finish'=>'抽奖活动还未结束',
+    'smallapp_lottery_has_exist_noopen'=>'当前包间存在未开奖的抽奖活动，请稍后重试',
+    'smallapp_lottery_join_people_num_error'=>'请邀请当前包间所有人进行参与抽奖吧',
 
 
 );

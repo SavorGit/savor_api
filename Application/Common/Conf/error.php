@@ -294,6 +294,8 @@ return array(
 	    '90164'=>'smallapp_lottery_not_start',
 	    '90165'=>'smallapp_lottery_not_finish',
         '90166'=>'smallapp_qrcode_has_expire',
+        '90167'=>'smallapp_lottery_has_exist_noopen',
+        '90168'=>'smallapp_lottery_join_people_num_error',
 
 
         '91015'=>'smallapp_user_add_failed',

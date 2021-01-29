@@ -10,7 +10,7 @@ class QrcodeController extends CommonController{
         switch(ACTION_NAME) {
             case 'getBoxQrcode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('data_id'=>1001,'type'=>1001,'box_id'=>1002);
+                $this->valid_fields = array('data_id'=>1001,'type'=>1001,'box_id'=>1002,'box_mac'=>1002);
                 break;
         }
         parent::_init_();
@@ -19,6 +19,7 @@ class QrcodeController extends CommonController{
     public function getBoxQrcode(){
         $data_id = $this->params['data_id'];
         $box_id = $this->params['box_id'];
+        $box_mac = $this->params['box_mac'];
         $type = $this->params['type'];//34分享文件二维码
         $short_urls = C('SHORT_URLS');
         $times = getMillisecond();
@@ -26,6 +27,22 @@ class QrcodeController extends CommonController{
             case 34:
                 $code_url = $short_urls['SHARE_FILE_QR'];
                 $content = $code_url.'file_'.$data_id.'_'.$type.'_'.$box_id;
+                break;
+            case 35:
+                $now_time = date('zH');
+                $encode_key = "$type{$box_id}$now_time{$data_id}";
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $times = getMillisecond();
+                $scene = $box_mac.'_'.$type.'_'.$times.'_'.$data_id;;
+                $cache_key = C('SAPP_QRCODE').$encode_key;
+                $redis->set($cache_key,$scene,3600*3);
+
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $s = $hashids->encode($encode_key);
+                $short_urls = C('SHORT_URLS');
+                $content = $short_urls['BOX_QR'].$s;
                 break;
             default:
                 $code_url = $short_urls['SHARE_FILE_QR'];

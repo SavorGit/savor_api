@@ -44,6 +44,12 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('activity_id'=>1001);
                 break;
+            case 'againTurntable':
+                $this->is_verify = 1;
+                $this->valid_fields = array('activity_id'=>1001,'box_mac'=>1001,
+                    'openid'=>1001,
+                );
+                break;
             case 'lottery':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1002);
@@ -62,6 +68,9 @@ class ActivityController extends CommonController{
                 break;
             case 'openLottery':
                 $this->valid_fields = array('openid'=>1001,'activity_id'=>1002);
+                break;
+            case 'againLottery':
+                $this->valid_fields = array('openid'=>1001,'activity_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -245,6 +254,46 @@ class ActivityController extends CommonController{
         $this->to_back($data);
     }
 
+    public function againTurntable(){
+        $activity_id = intval($this->params['activity_id']);
+        $box_mac     = $this->params['box_mac'];
+        $openid      = $this->params['openid'];
+        $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
+        $m_turntable_log->where('activity_id='.$activity_id)->setInc('play_times');
+
+        $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel();
+        $where = array('activity_id'=>$activity_id);
+        $fields = 'mobile_model,mobile_brand,openid';
+        $res_details = $m_turntable_detail->getDatas($fields,$where,'id asc');
+        if(!empty($res_details)){
+            $turntable_openids = array();
+            foreach ($res_details as $v){
+                $turntable_openids[]=$v['openid'];
+                $data = array('activity_id'=>$activity_id,'openid'=>$v['openid'],
+                    'mobile_brand'=>$v['mobile_brand'],'mobile_model'=>$v['mobile_model'],
+                    'join_time'=>getMillisecond());
+                $m_turntable_detail->addInfo($data,1);
+            }
+            $lwhere = array('openid'=>array('in',$turntable_openids));
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $users = $m_user->getWhere('openid,avatarUrl,nickName',$lwhere,'id desc','','');
+            $turntable_user = array();
+            foreach ($users as $uv){
+                $turntable_user[] = array('avatarUrl'=>base64_encode($uv['avatarUrl']),'nickName'=>$uv['nickName']);
+            }
+            $netty_data = array('action'=>105,'openid'=>$openid,'activity_id'=>$activity_id,'turntable_user'=>$turntable_user);
+            $message = json_encode($netty_data);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_push = $m_netty->pushBox($box_mac,$message);
+            if($res_push['error_code']){
+                $this->to_back($res_push['error_code']);
+            }
+        }
+
+        $this->to_back(10000);
+
+    }
+
     public function getConfigLotteryStatus(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
@@ -275,7 +324,13 @@ class ActivityController extends CommonController{
             $res_activity = $res_activity['list'][0];
             $activity_id = intval($res_activity['id']);
             if($res_activity['status']==1){
-                $lottery_status = 2;
+                $pre_time = strtotime($res_activity['add_time']);
+                $now_time = time();
+                if($now_time-$pre_time>1800){
+                    $lottery_status = 0;
+                }else{
+                    $lottery_status = 2;
+                }
             }elseif($res_activity['status']==3){
                 $lottery_status = 3;
             }elseif($res_activity['status']==2){
@@ -322,7 +377,11 @@ class ActivityController extends CommonController{
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getDataList('*',$where,'id desc',0,1);
         if($res_activity['total']>0){
-            $this->to_back(90167);
+            $pre_time = strtotime($res_activity['list'][0]['add_time']);
+            $now_time = time();
+            if($now_time-$pre_time<1800){
+                $this->to_back(90167);
+            }
         }
 
         $start_time = date('Y-m-d H:i:s');
@@ -330,7 +389,7 @@ class ActivityController extends CommonController{
             'start_time'=>$start_time,'status'=>0,'type'=>2);
         $res_id = $m_activity->add($data);
         if($res_id){
-            $lottery_countdown = 60;
+            $countdown = 120;
             $partakedish_img = $image_url.'?x-oss-process=image/resize,m_mfit,h_200,w_300';
             $img_info = pathinfo($image_url);
 
@@ -339,8 +398,8 @@ class ActivityController extends CommonController{
             $res_box = $m_box->getBoxByCondition('box.id as box_id',$condition);
             $host_name = C('HOST_NAME');
             $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&type=35&data_id={$res_id}&box_id={$res_box['box_id']}";
-            $netty_data = array('action'=>135,'countdown'=>$lottery_countdown,'lottery_time'=>'',
-                'lottery_countdown'=>$lottery_countdown,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
+            $netty_data = array('action'=>135,'countdown'=>$countdown,'lottery_time'=>'',
+                'lottery_countdown'=>0,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
                 'partake_name'=>$prize,'activity_name'=>'抽奖活动','codeUrl'=>$qrcode_url
             );
             $message = json_encode($netty_data);
@@ -351,6 +410,15 @@ class ActivityController extends CommonController{
             }
             $updata = array('start_time'=>date('Y-m-d H:i:s'),'status'=>1);
             $m_activity->updateData(array('id'=>$res_id),$updata);
+
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $adata = array('activity_id'=>$res_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1);
+            $m_activityapply->add($adata);
+            $redis = new \Common\Lib\SavorRedis();
+            $lkey = C('SMALLAPP_LOTTERY');
+            $cache_key = $lkey.":$res_id:$openid";
+            $redis->select(1);
+            $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
         }
         $resp_data = array('activity_id'=>$res_id);
         $this->to_back($resp_data);
@@ -580,7 +648,11 @@ class ActivityController extends CommonController{
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_hasactivity = $m_activity->getDataList('*',$where,'id desc',0,1);
         if($res_hasactivity['total']>0){
-            $this->to_back(90167);
+            $pre_time = strtotime($res_hasactivity['list'][0]['add_time']);
+            $now_time = time();
+            if($now_time-$pre_time<1800){
+                $this->to_back(90167);
+            }
         }
         $start_time = date('Y-m-d H:i:s');
         $data = array('hotel_id'=>$res_activity['hotel_id'],'box_mac'=>$res_activity['box_mac'],'openid'=>$openid,
@@ -588,7 +660,7 @@ class ActivityController extends CommonController{
             'start_time'=>$start_time,'status'=>0,'type'=>2);
         $res_id = $m_activity->add($data);
         if($res_id){
-            $lottery_countdown = 60;
+            $countdown = 120;
             $partakedish_img = $res_activity['image_url'].'?x-oss-process=image/resize,m_mfit,h_200,w_300';
             $img_info = pathinfo($res_activity['image_url']);
             $m_box = new \Common\Model\BoxModel();
@@ -596,8 +668,8 @@ class ActivityController extends CommonController{
             $res_box = $m_box->getBoxByCondition('box.id as box_id',$condition);
             $host_name = C('HOST_NAME');
             $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac={$res_activity['box_mac']}&type=35&data_id={$res_id}&box_id={$res_box['box_id']}";
-            $netty_data = array('action'=>135,'countdown'=>$lottery_countdown,'lottery_time'=>'',
-                'lottery_countdown'=>$lottery_countdown,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
+            $netty_data = array('action'=>135,'countdown'=>$countdown,'lottery_time'=>'',
+                'lottery_countdown'=>0,'partake_img'=>$partakedish_img,'partake_filename'=>$img_info['basename'],
                 'partake_name'=>$res_activity['prize'],'activity_name'=>'抽奖活动','codeUrl'=>$qrcode_url
             );
             $message = json_encode($netty_data);

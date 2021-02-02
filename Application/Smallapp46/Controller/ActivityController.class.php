@@ -274,6 +274,13 @@ class ActivityController extends CommonController{
                     'join_time'=>getMillisecond());
                 $m_turntable_detail->addInfo($data,1);
             }
+            if(!in_array($openid,$turntable_openids)){
+                $data = array('activity_id'=>$activity_id,'openid'=>$openid,
+                    'mobile_brand'=>'','mobile_model'=>'',
+                    'join_time'=>getMillisecond());
+                $m_turntable_detail->addInfo($data,1);
+                $turntable_openids[]=$openid;
+            }
             $lwhere = array('openid'=>array('in',$turntable_openids));
             $m_user = new \Common\Model\Smallapp\UserModel();
             $users = $m_user->getWhere('openid,avatarUrl,nickName',$lwhere,'id desc','','');
@@ -281,7 +288,10 @@ class ActivityController extends CommonController{
             foreach ($users as $uv){
                 $turntable_user[] = array('avatarUrl'=>base64_encode($uv['avatarUrl']),'nickName'=>$uv['nickName']);
             }
-            $netty_data = array('action'=>105,'openid'=>$openid,'activity_id'=>$activity_id,'turntable_user'=>$turntable_user);
+            $host_name = C('HOST_NAME');
+            $gamecode = $host_name."/smallapp46/activity/getGameCode?scene={$box_mac}_$activity_id";
+            $netty_data = array('action'=>105,'openid'=>$openid,'activity_id'=>$activity_id,'gamecode'=>$gamecode
+            ,'turntable_user'=>$turntable_user);
             $message = json_encode($netty_data);
             $m_netty = new \Common\Model\NettyModel();
             $res_push = $m_netty->pushBox($box_mac,$message);
@@ -444,7 +454,7 @@ class ActivityController extends CommonController{
         }
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $where = array('activity_id'=>$activity_id);
-        $res_apply_user = $m_activityapply->getDataList('*',$where,'id asc');
+        $res_apply_user = $m_activityapply->getApplylist('*',$where,'id asc','openid');
         if(count($res_apply_user)<2){
             $this->to_back(90168);
         }
@@ -680,6 +690,23 @@ class ActivityController extends CommonController{
             }
             $updata = array('start_time'=>date('Y-m-d H:i:s'),'status'=>1);
             $m_activity->updateData(array('id'=>$res_id),$updata);
+
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $where = array('activity_id'=>$activity_id);
+            $res_apply_user = $m_activityapply->getDataList('*',$where,'id asc');
+            if(!empty($res_apply_user)){
+                $redis = new \Common\Lib\SavorRedis();
+                $lkey = C('SMALLAPP_LOTTERY');
+                foreach ($res_apply_user as $v){
+                    $adata = array('activity_id'=>$res_id,'box_mac'=>$res_activity['box_mac'],'openid'=>$v['openid'],'status'=>1);
+                    $m_activityapply->add($adata);
+
+                    $cache_key = $lkey.":$res_id:{$v['openid']}";
+                    $redis->select(1);
+                    $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
+                }
+            }
+
         }
         $resp_data = array('activity_id'=>$res_id);
         $this->to_back($resp_data);

@@ -14,7 +14,7 @@ class IndexController extends CommonController{
                break;
            case 'gameList':
                $this->is_verify = 1;
-               $this->valid_fields = array('page'=>1001);
+               $this->valid_fields = array('page'=>1001,'version'=>1002);
                break;
            case 'getGameInfo':
                $this->is_verify = 1;
@@ -39,16 +39,22 @@ class IndexController extends CommonController{
      */
     public function gameList(){
         $page = $this->params['page'] ? intval($this->params['page']) : 1;
+        $version = !empty($this->params['version'])?$this->params['version']:'';
         $pagesize = 10;
         $offset = ($page-1) * $pagesize;
         
         $limit = "limit $offset,$pagesize";
         $m_games = new \Common\Model\Smallapp\GamesModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $fields = "a.id as game_id,a.name game_name,url,game_url,game_m_url,concat('".$oss_host."',m.`oss_addr`) img_url";
+        $fields = "a.id as game_id,a.name game_name,a.desc,url,game_url,game_m_url,concat('".$oss_host."',m.`oss_addr`) img_url";
         $where['status'] = 1;
+        $now_version = '4.6.20';
+        if(empty($version)){
+            $where['a.id'] = array('in',array(2,3));
+        }
         $order = 'a.sort_order desc';
         $list = $m_games->getWhere($fields, $where, $order, $limit);
+
         $this->to_back($list);
         
     }

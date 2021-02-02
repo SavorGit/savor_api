@@ -336,7 +336,8 @@ class ActivityController extends CommonController{
             if($res_activity['status']==1){
                 $pre_time = strtotime($res_activity['add_time']);
                 $now_time = time();
-                if($now_time-$pre_time>1800){
+                $lottery_timeout = C('LOTTERY_TIMEOUT');
+                if($now_time-$pre_time>$lottery_timeout){
                     $lottery_status = 0;
                 }else{
                     $lottery_status = 2;
@@ -389,7 +390,8 @@ class ActivityController extends CommonController{
         if($res_activity['total']>0){
             $pre_time = strtotime($res_activity['list'][0]['add_time']);
             $now_time = time();
-            if($now_time-$pre_time<1800){
+            $lottery_timeout = C('LOTTERY_TIMEOUT');
+            if($now_time-$pre_time<$lottery_timeout){
                 $this->to_back(90167);
             }
         }
@@ -451,6 +453,12 @@ class ActivityController extends CommonController{
         }
         if($res_activity['status']!=1){
             $this->to_back(90163);
+        }
+        $pre_time = strtotime($res_activity['add_time']);
+        $now_time = time();
+        $lottery_timeout = C('LOTTERY_TIMEOUT');
+        if($now_time-$pre_time>$lottery_timeout){
+            $this->to_back(90169);
         }
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $where = array('activity_id'=>$activity_id);
@@ -660,7 +668,8 @@ class ActivityController extends CommonController{
         if($res_hasactivity['total']>0){
             $pre_time = strtotime($res_hasactivity['list'][0]['add_time']);
             $now_time = time();
-            if($now_time-$pre_time<1800){
+            $lottery_timeout = C('LOTTERY_TIMEOUT');
+            if($now_time-$pre_time<$lottery_timeout){
                 $this->to_back(90167);
             }
         }

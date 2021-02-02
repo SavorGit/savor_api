@@ -404,6 +404,7 @@ return array(
     'smallapp_lottery_not_finish'=>'抽奖活动还未结束',
     'smallapp_lottery_has_exist_noopen'=>'当前包间存在未开奖的抽奖活动，请稍后重试',
     'smallapp_lottery_join_people_num_error'=>'大于2人才可开始抽奖，快来邀请好友加入吧',
+    'smallapp_lottery_timeout_error'=>'活动已超时结束，请重新发起。',
 
 
 );

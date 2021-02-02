@@ -544,6 +544,6 @@ return array(
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>1,
-
+    'LOTTERY_TIMEOUT'=>300,
 
 );

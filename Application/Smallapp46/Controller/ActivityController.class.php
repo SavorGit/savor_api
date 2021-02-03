@@ -401,7 +401,7 @@ class ActivityController extends CommonController{
             'start_time'=>$start_time,'status'=>0,'type'=>2);
         $res_id = $m_activity->add($data);
         if($res_id){
-            $countdown = 120;
+            $countdown = 300;
             $partakedish_img = $image_url.'?x-oss-process=image/resize,m_mfit,h_200,w_300';
             $img_info = pathinfo($image_url);
 
@@ -679,7 +679,7 @@ class ActivityController extends CommonController{
             'start_time'=>$start_time,'status'=>0,'type'=>2);
         $res_id = $m_activity->add($data);
         if($res_id){
-            $countdown = 120;
+            $countdown = 300;
             $partakedish_img = $res_activity['image_url'].'?x-oss-process=image/resize,m_mfit,h_200,w_300';
             $img_info = pathinfo($res_activity['image_url']);
             $m_box = new \Common\Model\BoxModel();

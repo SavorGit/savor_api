@@ -14,7 +14,8 @@ class WelcomeController extends CommonController{
             case 'addwelcome':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'images'=>1001,
-                    'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,'stay_time'=>1001,'type'=>1001);
+                    'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,
+                    'music_id'=>1002,'stay_time'=>1001,'type'=>1001);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -81,6 +82,7 @@ class WelcomeController extends CommonController{
         $wordsize_id = $this->params['wordsize_id'];
         $color_id = $this->params['color_id'];
         $font_id = intval($this->params['font_id']);
+        $music_id = intval($this->params['music_id']);
         $stay_time = $this->params['stay_time'];
         $type = intval($this->params['type']);//3商务宴请 4生日聚会
 
@@ -106,7 +108,7 @@ class WelcomeController extends CommonController{
         }
         $user_id = $res_user['id'];
         $data = array('user_id'=>$user_id,'content'=>$content,'wordsize_id'=>$wordsize_id,'font_id'=>$font_id,
-            'color_id'=>$color_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'type'=>$type,'stay_time'=>$stay_time);
+            'color_id'=>$color_id,'music_id'=>$music_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'type'=>$type,'stay_time'=>$stay_time);
         $data['image'] = join(',',$all_images);
 
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
@@ -139,7 +141,7 @@ class WelcomeController extends CommonController{
         $data = array();
         if(!empty($res_welcome)){
             $data = array('welcome_id'=>$welcome_id,'content'=>$res_welcome['content'],'wordsize_id'=>$res_welcome['wordsize_id'],
-                'color_id'=>$res_welcome['color_id'],'font_id'=>$res_welcome['font_id'],'stay_time'=>$res_welcome['stay_time']
+                'color_id'=>$res_welcome['color_id'],'font_id'=>$res_welcome['font_id'],'music_id'=>$res_welcome['music_id'],'stay_time'=>$res_welcome['stay_time']
             );
             $oss_host = "https://".C('OSS_HOST').'/';
             $image = $image_path = array();
@@ -188,10 +190,14 @@ class WelcomeController extends CommonController{
         $color_id = $res_welcome['color_id'];
         $backgroundimg_id = $res_welcome['backgroundimg_id'];
         $font_id = $res_welcome['font_id'];
+        $music_id = $res_welcome['music_id'];
 
         $ids = array($wordsize_id,$color_id);
         if($font_id){
             $ids[]=$font_id;
+        }
+        if($music_id){
+            $ids[]=$music_id;
         }
         if($backgroundimg_id){
             $ids[]=$backgroundimg_id;
@@ -226,6 +232,14 @@ class WelcomeController extends CommonController{
         }else{
             $message['font_id'] = 0;
             $message['font_oss_addr'] = '';
+        }
+        if(isset($resource_info[$music_id])){
+            $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['media_id']);
+            $message['music_id'] = intval($music_id);
+            $message['music_oss_addr'] = $res_media['oss_addr'];
+        }else{
+            $message['music_id'] = 0;
+            $message['music_oss_addr'] = '';
         }
         $playtime = intval($res_welcome['stay_time']*60);
         $message['play_times'] = $playtime;

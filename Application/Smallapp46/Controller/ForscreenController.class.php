@@ -85,13 +85,20 @@ class ForscreenController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $user_info = $m_user->getOne('id,openid,mpopenid,avatarUrl,nickName',$where,'');
         if(empty($user_info)){
             $this->to_back(90116);
         }
         $is_show = C('FORSCREEN_GUIDE_IMAGE_SWITCH');
         if($is_show==1){
-            $netty_data = array('action'=>150);
+            $headPic = $nickName = '';
+            if(!empty($user_info['avatarUrl'])){
+                $headPic = base64_encode($user_info['avatarUrl']);
+            }
+            if(!empty($user_info['nickName'])){
+                $nickName = $user_info['nickName'];
+            }
+            $netty_data = array('action'=>150,'headPic'=>$headPic,'nickName'=>$nickName);
             $m_netty = new \Common\Model\NettyModel();
             $res = $m_netty->pushBox($box_mac,json_encode($netty_data));
             $this->to_back($res);

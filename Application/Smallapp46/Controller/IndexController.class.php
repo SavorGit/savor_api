@@ -293,7 +293,8 @@ class IndexController extends CommonController{
             $data = array('is_have'=>$code_info['is_have'],'box_mac'=>$box_mac,
                 'forscreen_type'=>$forscreen_info['forscreen_type'],'forscreen_method'=>$forscreen_info['forscreen_method'],
                 'intranet_ip'=>$intranet_ip,'is_open_popcomment'=>$forscreen_info['is_open_popcomment']);
-            if(isset($forscreen_info['box_id'])){
+            $hotel_info = array('hotel_name'=>'','room_name'=>'');
+            if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
                 $redis->select(15);
                 $cache_key = 'savor_box_'.$forscreen_info['box_id'];
                 $redis_box_info = $redis->get($cache_key);
@@ -309,11 +310,13 @@ class IndexController extends CommonController{
                     'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],'wifi_password'=>$box_info['wifi_password'],
                     'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id'],
                     'is_interact'=>$box_info['is_interact']);
-            }else{
+            }
+            if(empty($hotel_info['hotel_name']) || empty($hotel_info['room_name'])){
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
                 $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
+
             if($hotel_info['box_type']==6){
                 $is_compress = 0;
             }else{

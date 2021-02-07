@@ -60,14 +60,14 @@ class ForscreenController extends CommonController{
             $is_show = C('FORSCREEN_GUIDE_IMAGE_SWITCH');
             $forscreen_help_images = array(
                 'is_show'=>$is_show,'show_time'=>5,'forscreen_num'=>6,
-                'image_url'=>$oss_host.'/media/resource/6rWtCXsSyd.jpg',
-                'image_filename'=>'6rWtCXsSyd.jpg',
-                'video_url'=>$oss_host.'/media/resource/JziayDDiSj.jpg',
-                'video_filename'=>'JziayDDiSj.jpg',
-                'file_url'=>$oss_host.'/media/resource/CiTsGnkpyy.jpg',
-                'file_filename'=>'CiTsGnkpyy.jpg',
-                'forscreen_box_url'=>$oss_host.'/media/resource/DnkBtp2QSe.jpg',
-                'forscreen_box_filename'=>'DnkBtp2QSe.jpg',
+                'image_url'=>$oss_host.'/media/resource/yYN5a33w3k.jpeg',
+                'image_filename'=>'yYN5a33w3k.jpg',
+                'video_url'=>$oss_host.'/media/resource/epkAdaGzSh.jpeg',
+                'video_filename'=>'epkAdaGzSh.jpg',
+                'file_url'=>$oss_host.'/media/resource/kCtzCQFH8M.jpeg',
+                'file_filename'=>'kCtzCQFH8M.jpeg',
+                'forscreen_box_url'=>$oss_host.'/media/resource/6zcQr5iZBJ.jpeg',
+                'forscreen_box_filename'=>'6zcQr5iZBJ.jpeg',
             );
             $data['forscreen_help_images'] = $forscreen_help_images;
             $forscreen_call_code = array(

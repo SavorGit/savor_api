@@ -312,6 +312,7 @@ return array(
     'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
     'SMALLAPP_DAY_QRCDE'     =>'smallapp:day:qrcode:',
     'SMALLAPP_LOTTERY'     =>'smallapp:activity:lottery',
+    'SAPP_HOTPLAYDEMAND'=>'smallapp:hotplaydemand',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

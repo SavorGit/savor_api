@@ -3,7 +3,7 @@ namespace Box\Controller;
 use Think\Controller;
 use Common\Lib\SavorRedis;
 use \Common\Controller\CommonController as CommonController;
-class ProgramController extends CommonController{ 
+class ProgramController extends CommonController{
     private $box_download_pre ;
     private $box_program_play_pre;
     /**
@@ -35,11 +35,15 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'getHotPlayProgramList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
             case 'getWelcomeResource':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
-                 
+
         }
         parent::_init_();
         $this->box_download_pre = 'box:download:';
@@ -65,7 +69,7 @@ class ProgramController extends CommonController{
             }
         }else {
             $this->to_back(30071);
-        }   
+        }
     }
     /**
      * @desc 机顶盒当前已下载(播放中)的节目单资源
@@ -76,14 +80,14 @@ class ProgramController extends CommonController{
         $redis = new SavorRedis();
         $redis->select(14);
         $cache_key = $this->box_program_play_pre.$box_mac;
-        
+
         $play_info = $redis->get($cache_key);
         if(md5($resource_info)!== md5($play_info)){
             $redis->set($cache_key, $resource_info);
             $this->to_back(10000);
         }else {
             $this->to_back(30073);
-        }  
+        }
     }
 
     public function getGoodsProgramList(){
@@ -688,6 +692,68 @@ class ProgramController extends CommonController{
             $redis->set($program_key,$period);
         }
         $res = array('period'=>$period,'type'=>1,'datalist'=>$program_list);
+        $this->to_back($res);
+    }
+
+    public function getHotPlayProgramList(){
+        $box_mac = $this->params['box_mac'];
+        $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
+        $program_list = array();
+
+        $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
+        $res_playlog = $m_playlog->getWhere('res_id',array('type'=>4),'id desc','0,8','');
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        foreach ($res_playlog as $v){
+            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));
+            $resource_type = $res_forscreen['resource_type'];//1图片 2视频
+            if($resource_type==2){
+                $media_type = 1;
+            }else{
+                $media_type = 2;
+            }
+            $info = array('id'=>$v['res_id'],'media_type'=>$media_type);
+            $subdata = array();
+            switch ($info['media_type']){
+                case 1:
+                    $info['duration'] = floor($res_forscreen['duration']);
+                    $imgs_info = json_decode($res_forscreen['imgs'],true);
+                    $oss_path = $imgs_info[0];
+                    $name_info = pathinfo($oss_path);
+                    $subdata[] = array('vid'=>$res_forscreen['resource_id'],'md5'=>$res_forscreen['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
+                    break;
+                case 2:
+                    $info['media_type']= 21;
+                    $fields = 'resource_id,imgs,md5_file';
+                    $where = array('forscreen_id'=>$res_forscreen['forscreen_id']);
+                    $res_allforscreen = $m_forscreen->getWheredata($fields,$where,'id asc');
+                    foreach ($res_allforscreen as $fv){
+                        $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
+                        $tmp_imgs_info = json_decode($fv['imgs'],true);
+                        $sinfo['oss_path'] = $tmp_imgs_info[0];
+                        $sname_info = pathinfo($sinfo['oss_path']);
+                        $sinfo['name'] = $sname_info['basename'];
+                        $subdata[]=$sinfo;
+                    }
+                    if(count($subdata)>1){
+                        $info['duration']=3;
+                    }else{
+                        $info['duration']=15;
+                    }
+                    break;
+            }
+            $info['subdata'] = $subdata;
+            $program_list[] = $info;
+        }
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+        $program_key = C('SAPP_HOTPLAYDEMAND');
+        $period = $redis->get($program_key);
+        if(empty($period)){
+            $period = getMillisecond();
+            $redis->set($program_key,$period);
+        }
+        $res = array('period'=>$period,'type'=>3,'datalist'=>$program_list);
         $this->to_back($res);
     }
 

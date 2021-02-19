@@ -59,6 +59,7 @@ $config_db =  array(
     ),
 
     'REDIS_CONFIG' => $redis,
+	//'OSS_ACCESS_ID'   => 'tnDh4AQqRYbV9mq8',
 );
 $config_api_host = array(
 'CONTENT_HOST' => 'http://devp.admin.littlehotspot.com/',

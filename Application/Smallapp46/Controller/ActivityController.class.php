@@ -14,6 +14,10 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('scene'=>'1001');
                 break;
+            case 'getTurntableStatus':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001);
+                break;
             case 'orgGameLog':   //发起游戏
                 $this->is_verify = 1;
                 $this->valid_fields = array('activity_id'=>1001,'box_mac'=>1001,
@@ -26,6 +30,10 @@ class ActivityController extends CommonController{
                 $this->valid_fields = array('activity_id'=>1001,'openid'=>1001,
                     'mobile_brand'=>1001,'mobile_model'=>1001
                 );
+                break;
+            case 'startTurntable':
+                $this->is_verify = 1;
+                $this->valid_fields = array('activity_id'=>1001);
                 break;
             case 'startGameLog':
                 $this->is_verify = 1;
@@ -208,6 +216,77 @@ class ActivityController extends CommonController{
         $m_turntable_log->updateInfo($where, $data);
         $this->to_back(10000);
     }
+
+    public function getTurntableStatus(){
+        $box_mac = $this->params['box_mac'];
+        $openid  = $this->params['openid'];
+        $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
+        $where = array('openid'=>$openid,'box_mac'=>$box_mac,'is_start'=>0);
+        $res_activity = $m_turntable_log->getOne('*',$where);
+        $activity_id = 0;
+        $status = 0;
+        if(!empty($res_activity)){
+            $create_time = strtotime($res_activity['create_time']);
+            $now_time = time();
+            if($now_time-$create_time<600){
+                $activity_id = $res_activity['activity_id'];
+                $status = 1;
+            }
+        }
+        $data = array('activity_id'=>$activity_id,'status'=>$status);
+        $this->to_back($data);
+    }
+
+    public function startTurntable(){
+        $activity_id = $this->params['activity_id'];
+        $m_turntable_log = new \Common\Model\Smallapp\TurntableLogModel();
+        $where = array('activity_id'=>$activity_id,'is_start'=>0);
+        $res_activity = $m_turntable_log->getOne('*',$where);
+        if(!empty($res_activity)){
+            $create_time = strtotime($res_activity['create_time']);
+            $now_time = time();
+            if($now_time-$create_time>600){
+                $this->to_back(90170);
+            }
+        }
+        $data = array('startgame_time'=>getMillisecond(),'is_start'=>1,'update_time'=>date('Y-m-d H:i:s'),'play_times'=>1);
+        $m_turntable_log->updateInfo($where, $data);
+
+        $m_turntable_detail = new \Common\Model\Smallapp\TurntableDetailModel();
+        $where = array('activity_id'=>$activity_id);
+        $fields = 'mobile_model,mobile_brand,openid';
+        $res_details = $m_turntable_detail->getDatas($fields,$where,'id asc');
+        if(!empty($res_details)){
+            $turntable_openids = array();
+            foreach ($res_details as $v){
+                $turntable_openids[]=$v['openid'];
+            }
+            $lwhere = array('openid'=>array('in',$turntable_openids));
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $users = $m_user->getWhere('openid,avatarUrl,nickName',$lwhere,'id desc','','');
+            $turntable_user = array();
+            foreach ($users as $uv){
+                $turntable_user[] = array('avatarUrl'=>base64_encode($uv['avatarUrl']),'nickName'=>$uv['nickName']);
+            }
+            $host_name = C('HOST_NAME');
+            $gamecode = $host_name."/smallapp46/activity/getGameCode?scene={$res_activity['box_mac']}_$activity_id";
+            $netty_data = array('action'=>105,'openid'=>$res_activity['openid'],'activity_id'=>$activity_id,'gamecode'=>$gamecode
+            ,'turntable_user'=>$turntable_user);
+            $message = json_encode($netty_data);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_push = $m_netty->pushBox($res_activity['box_mac'],$message);
+            if($res_push['error_code']){
+                $this->to_back($res_push['error_code']);
+            }
+        }
+
+        $this->to_back(10000);
+    }
+
+    /*
+     * 接口1 判断当前用户是否有未开始的游戏
+     * 接口2 开始游戏 判断当前是否有
+     */
 
     /**
      * @desc 重玩游戏

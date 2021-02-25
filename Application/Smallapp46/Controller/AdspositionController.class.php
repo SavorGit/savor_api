@@ -10,7 +10,7 @@ class AdspositionController extends CommonController{
         switch(ACTION_NAME) {
             case 'getAdspositionList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('position'=>1001,'box_id'=>1002);
+                $this->valid_fields = array('position'=>1001,'box_id'=>1002,'version'=>1002,'goods_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -22,6 +22,8 @@ class AdspositionController extends CommonController{
     public function getAdspositionList(){
         $position = $this->params['position'];
         $box_id = $this->params['box_id'];
+        $goods_id = !empty($this->params['goods_id'])?intval($this->params['goods_id']):0;
+        $version = $this->params['version'];
         if(empty($box_id)){
             $result = $this->getAdList($position);
         }else {
@@ -71,6 +73,7 @@ class AdspositionController extends CommonController{
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         $m_media = new \Common\Model\MediaModel();
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+        $goods_index = 0;
         foreach ($result as $k=>$v){
             foreach ($v as $kv=>$vv){
                 $is_tvdemand = 0;
@@ -79,7 +82,10 @@ class AdspositionController extends CommonController{
                     if(!empty($url_info['query'])){
                         $query_params = array();
                         parse_str($url_info['query'],$query_params);
-                        if(isset($query_params['goods_id']) && $query_params['goods_id']>0 ){
+                        if(isset($query_params['goods_id']) && $query_params['goods_id']>0){
+                            if($k==2 && $query_params['goods_id']==$goods_id){
+                                $goods_index = $kv;
+                            }
                             $res_goods = $m_dishgoods->getInfo(array('id'=>$query_params['goods_id']));
                             if($res_goods['tv_media_id']){
                                 $is_tvdemand = 1;
@@ -102,9 +108,14 @@ class AdspositionController extends CommonController{
                 $result[$k][$kv]['is_tvdemand'] = $is_tvdemand;
             }
         }
-
+        if(!empty($version) && $version>='4.6.22'){
+            $datalist = $result;
+            $resp_data = array('datalist'=>$datalist,'goods_index'=>$goods_index,'switch_time'=>3000,'slide_time'=>1000);
+        }else{
+            $resp_data = $result;
+        }
         
-        $this->to_back($result);
+        $this->to_back($resp_data);
         
     }
     private function getAdList($position){

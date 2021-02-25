@@ -76,6 +76,16 @@ class ForscreenController extends CommonController{
                 'md5'=>'b7c1c5fd2962c2f49af36ffabb4c3fd7',
             );
             $data['forscreen_call_code'] = $forscreen_call_code;
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(1);
+            $key = C('SAPP_SCAN_BOX_CODE');
+            $cache_key = $key.':'.$box_mac.':'.date('Ymd');
+            $res_redis = $redis->get($cache_key);
+            $isShowAnimQRcode = true;
+            if(!empty($res_redis)){
+                $isShowAnimQRcode = false;
+            }
+            $data['isShowAnimQRcode'] = $isShowAnimQRcode;
             $this->to_back($data);
         }
     }

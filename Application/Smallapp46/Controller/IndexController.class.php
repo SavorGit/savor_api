@@ -323,54 +323,6 @@ class IndexController extends CommonController{
                 $is_compress = 1;
             }
             $is_compress = 0;
-            if($data['is_open_popcomment']==1 && !empty($pop_eval)){
-                //判断两小时内是否有评价
-                $redis->select(1);
-                $comment_count = $redis->get('smallapp:comment:'.$openid.'_'.$box_mac);
-                if(!empty($comment_count)){
-                    $data['is_open_popcomment'] = 0;
-                    $data['tags'] = array();
-                    $data['staff_user_info'] = array();
-                }else{
-                    //是否有服务员
-                    $comment_str = '服务评分';
-                    $waiter_str = '服务专员';
-
-                    $m_staff = new \Common\Model\Integral\StaffModel();
-                    $staff_where = array('hotel_id'=>$hotel_info['hotel_id'],'status'=>1);
-                    $staff_where['room_ids'] = array('like',"%,{$hotel_info['room_id']},%");
-                    $res_staff = $m_staff->getInfo($staff_where);
-                    if(!empty($res_staff)){
-                        $staff_openid = $res_staff['openid'];
-                        $m_user = new \Common\Model\Smallapp\UserModel();
-                        $where = array('openid'=>$staff_openid);
-                        $user_info = $m_user->getOne('avatarUrl,nickName',$where,'id desc');
-                        $staffuser_info = array('staff_id'=>$res_staff['id'],'avatarUrl'=>$user_info['avatarUrl'],'nickName'=>$user_info['nickName'],
-                            'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
-                        $category = 1;
-                    }else{
-                        $comment_str = '餐厅评分';
-                        $waiter_str = '';
-                        $staffuser_info = array('staff_id'=>0,'comment_str'=>$comment_str,'waiter_str'=>$waiter_str);
-                        $category = 3;
-                    }
-                    $m_tags = new \Common\Model\Smallapp\TagsModel();
-                    $fields = 'id,name';
-                    $where = array('status'=>1,'category'=>$category);
-                    $where['hotel_id'] = array('in',array($hotel_info['hotel_id'],0));
-                    $res_tags = $m_tags->getDataList($fields,$where,'type desc,id desc');
-                    $tags = array();
-                    foreach ($res_tags as $v){
-                        $tags[] = array('id'=>$v['id'],'value'=>$v['name'],'selected'=>false);
-                    }
-                    $data['tags'] = $tags;
-                    $data['is_open_popcomment'] = 1;
-                    $data['staff_user_info'] = $staffuser_info;
-                }
-            }else {
-                $data['is_open_popcomment'] = 0;
-            }
-            
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
@@ -385,6 +337,7 @@ class IndexController extends CommonController{
             $data['max_video_size'] = 1024*1024*300;
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
+            $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
         }else{
             $data = array('is_have'=>0);
         }
@@ -899,7 +852,18 @@ class IndexController extends CommonController{
         if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
-    
+        if($type==33){
+            $redis = SavorRedis::getInstance();
+            $redis->select(1);
+            $key = C('SAPP_SCAN_BOX_CODE');
+            $cache_key = $key.':'.$box_mac.':'.date('Ymd');
+            $res_redis = $redis->get($cache_key);
+            if(empty($res_redis)){
+                $rdata = array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'));
+                $redis->set($cache_key,json_encode($rdata),86400);
+            }
+        }
+        return true;
     }
 
     private function _gmt_iso8601($time){

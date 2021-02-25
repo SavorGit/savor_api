@@ -313,6 +313,7 @@ return array(
     'SMALLAPP_DAY_QRCDE'     =>'smallapp:day:qrcode:',
     'SMALLAPP_LOTTERY'     =>'smallapp:activity:lottery',
     'SAPP_HOTPLAYDEMAND'=>'smallapp:hotplaydemand',
+    'SAPP_SCAN_BOX_CODE'=>'smallapp:scanboxcode',
 
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',

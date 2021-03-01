@@ -11,7 +11,7 @@ class UserController extends CommonController{
         switch(ACTION_NAME) {
             case 'isRegister':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000,'is_have_link'=>1000);
+                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000,'is_have_link'=>1000,'unionid'=>1000);
                 break;
             case 'refuseRegister':
                 $this->is_verify =1;
@@ -41,9 +41,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,
                                             'nickName'=>1000,'gender'=>1000,
-                                            'session_key'=>1001,'iv'=>1001,
-                                            'encryptedData'=>1001,
+                                            'session_key'=>1000,'iv'=>1000,
+                                            'encryptedData'=>1000,
                 );
+                break;
             case 'bindMobile':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'session_key'=>1001,'iv'=>1001,'encryptedData'=>1001);
@@ -56,11 +57,6 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'res_id'=>1000);
                 break;
-            case 'editCard':
-                $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
-                    'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
-                break;
         }
         parent::_init_();
     }
@@ -69,6 +65,7 @@ class UserController extends CommonController{
         $page_id = $this->params['page_id'];
         $box_mac = $this->params['box_mac'];
         $is_have_link = $this->params['is_have_link'];
+        $unionid = $this->params['unionid'] ? $this->params['unionid']: "";
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -79,9 +76,13 @@ class UserController extends CommonController{
         if(empty($userinfo)){
             $data['openid'] = $openid;
             $data['status'] = 1;
+            $data['unionId'] = $unionid;
             $m_user->addInfo($data);
             $userinfo['openid'] = $openid;
             $userinfo['subscribe'] = 1;
+            $userinfo['avatarUrl'] = '';
+            $userinfo['nickName']  = '';
+            $userinfo['is_wx_auth']= 0;
             $userinfo['use_time'] = array('use_time_str'=>'本次您是第1次使用热点投屏','cut_sec'=>5);
         }else{
             $redis->select(1);
@@ -99,7 +100,7 @@ class UserController extends CommonController{
                 
             }else {
                 $use_time = $userinfo['use_time']+1;
-                $use_time_str = '本次您是第'.$use_time.'次使用热点投屏1111';
+                $use_time_str = '本次您是第'.$use_time.'次使用热点投屏';
                 $userinfo['use_time'] = array('use_time_str'=>$use_time_str,'cut_sec'=>5,'is_show'=>false);
             }
             $userinfo['subscribe'] = 1;
@@ -143,7 +144,7 @@ class UserController extends CommonController{
         $data['userinfo']['guide_prompt'] = $guide_prompt;
         $this->to_back($data);
     }
-
+    
     public function bindOffiaccount(){
         $openid  = $this->params['openid'];
         $wxmpopenid = $this->params['wxmpopenid'];
@@ -164,42 +165,6 @@ class UserController extends CommonController{
         $this->to_back(array());
     }
 
-    public function editCard(){
-        $openid  = $this->params['openid'];
-        $name  = trim($this->params['name']);
-        $mobile = $this->params['mobile'];
-        $job = $this->params['job'];
-        $company = $this->params['company'];
-        $qrcode_img = $this->params['qrcode_img'];
-
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$openid,'small_app_id'=>1);
-        $user_info = $m_user->getOne('id', $where, 'id desc');
-        if(empty($user_info)){
-            $this->to_back(90116);
-        }
-        if(!empty($mobile)){
-            $is_check = check_mobile($mobile);
-            if(!$is_check){
-                $this->to_back(93006);
-            }
-        }
-        $data = array('user_id'=>$user_info['id'],'name'=>$name,'update_time'=>date('Y-m-d H:i:s'));
-        if($mobile)     $data['mobile'] = $mobile;
-        if($job)        $data['job'] = $job;
-        if($company)    $data['company'] = $company;
-        if($qrcode_img) $data['qrcode_img'] = $qrcode_img;
-
-        $m_usercard = new \Common\Model\Smallapp\UsercardModel();
-        $res_usercard = $m_usercard->getInfo(array('user_id'=>$user_info['id']));
-        if(empty($res_usercard)){
-            $m_usercard->add($data);
-        }else{
-            $m_usercard->updateData(array('id'=>$res_usercard['id']),$data);
-        }
-        $this->to_back(array());
-    }
-
     public function refuseRegister(){
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -210,6 +175,7 @@ class UserController extends CommonController{
 
         $ret = $m_user->updateInfo($where, $data);
         if($ret){
+
             $this->to_back(10000);
         }else {
             $this->to_back(91015);
@@ -606,7 +572,11 @@ class UserController extends CommonController{
             $data['avatarUrl'] = $this->params['avatarUrl'];
             $data['nickName']  = $this->params['nickName'];
             $data['gender']    = $this->params['gender'];
-            $data['unionId']   = $encryptedData['unionId'];
+            if(!empty($encryptedData['unionId'])){
+                $data['unionId']   = $encryptedData['unionId'];
+            }else if(!empty($this->params['unionid'])){
+                $data['unionId'] =$this->params['unionid'];
+            }
             if(!empty($encryptedData['phoneNumber'])){
                 $data['mobile'] = $encryptedData['phoneNumber'];
             }
@@ -618,7 +588,12 @@ class UserController extends CommonController{
             $data['avatarUrl'] = $this->params['avatarUrl'];
             $data['nickName']  = $this->params['nickName'];
             $data['gender']    = $this->params['gender'];
-            $data['unionId']   = $encryptedData['unionId'];
+            if(!empty($encryptedData['unionId'])){
+                $data['unionId']   = $encryptedData['unionId'];
+            }else if(!empty($this->params['unionid'])){
+                $data['unionId'] =$this->params['unionid'];
+            }
+            
             if(!empty($encryptedData['phoneNumber'])){
                 $data['mobile'] = $encryptedData['phoneNumber'];
             }

@@ -57,6 +57,11 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'res_id'=>1000);
                 break;
+			case 'editCard':
+			$this->is_verify = 1;
+			$this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
+				'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
+			break;
         }
         parent::_init_();
     }
@@ -164,7 +169,41 @@ class UserController extends CommonController{
         }
         $this->to_back(array());
     }
+	public function editCard(){
+        $openid  = $this->params['openid'];
+        $name  = trim($this->params['name']);
+        $mobile = $this->params['mobile'];
+        $job = $this->params['job'];
+        $company = $this->params['company'];
+        $qrcode_img = $this->params['qrcode_img'];
 
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>1);
+        $user_info = $m_user->getOne('id', $where, 'id desc');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        if(!empty($mobile)){
+            $is_check = check_mobile($mobile);
+            if(!$is_check){
+                $this->to_back(93006);
+            }
+        }
+        $data = array('user_id'=>$user_info['id'],'name'=>$name,'update_time'=>date('Y-m-d H:i:s'));
+        if($mobile)     $data['mobile'] = $mobile;
+        if($job)        $data['job'] = $job;
+        if($company)    $data['company'] = $company;
+        if($qrcode_img) $data['qrcode_img'] = $qrcode_img;
+
+        $m_usercard = new \Common\Model\Smallapp\UsercardModel();
+        $res_usercard = $m_usercard->getInfo(array('user_id'=>$user_info['id']));
+        if(empty($res_usercard)){
+            $m_usercard->add($data);
+        }else{
+            $m_usercard->updateData(array('id'=>$res_usercard['id']),$data);
+        }
+        $this->to_back(array());
+    }
     public function refuseRegister(){
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();

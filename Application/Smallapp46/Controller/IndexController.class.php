@@ -853,14 +853,33 @@ class IndexController extends CommonController{
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
         if($type==33){
-            $redis = SavorRedis::getInstance();
-            $redis->select(1);
-            $key = C('SAPP_SCAN_BOX_CODE');
-            $cache_key = $key.':'.$box_mac.':'.date('Ymd');
-            $res_redis = $redis->get($cache_key);
-            if(empty($res_redis)){
-                $rdata = array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'));
-                $redis->set($cache_key,json_encode($rdata),86400);
+            $now_time = date('Y-m-d H:i:s');
+            $meal_time = C('MEAL_TIME');
+            $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
+            $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
+            $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
+            $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
+            $meal_type = '';
+            if($now_time>=$lunch_stime && $now_time<$lunch_etime){
+                $meal_type = 'lunch';
+            }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+                $meal_type = 'dinner';
+            }
+            if($meal_type){
+                $redis = SavorRedis::getInstance();
+                $redis->select(1);
+                $key = C('SAPP_SCAN_BOX_CODE');
+                $cache_key = $key.':'.$box_mac.':'.date('Ymd');
+                $res_redis = $redis->get($cache_key);
+                if(empty($res_redis)){
+                    $data = array();
+                }else{
+                    $data = json_decode($res_redis,true);
+                }
+                if(!isset($data[$meal_type])){
+                    $data[$meal_type] = $rdata = array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'));
+                    $redis->set($cache_key,json_encode($data),86400);
+                }
             }
         }
         return true;

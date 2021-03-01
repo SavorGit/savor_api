@@ -83,7 +83,22 @@ class ForscreenController extends CommonController{
             $res_redis = $redis->get($cache_key);
             $isShowAnimQRcode = true;
             if(!empty($res_redis)){
-                $isShowAnimQRcode = false;
+                $now_time = date('Y-m-d H:i:s');
+                $meal_time = C('MEAL_TIME');
+                $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
+                $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
+                $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
+                $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
+                $meal_type = '';
+                if($now_time>=$lunch_stime && $now_time<$lunch_etime){
+                    $meal_type = 'lunch';
+                }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+                    $meal_type = 'dinner';
+                }
+                $scan_data = json_decode($res_redis,true);
+                if(!empty($meal_type) && isset($scan_data[$meal_type])){
+                    $isShowAnimQRcode = false;
+                }
             }
             $data['isShowAnimQRcode'] = $isShowAnimQRcode;
             $this->to_back($data);

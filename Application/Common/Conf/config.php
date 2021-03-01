@@ -547,5 +547,5 @@ return array(
         ),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>1,
     'LOTTERY_TIMEOUT'=>300,
-
+    'MEAL_TIME'=>array('lunch'=>array('10:00','15:00'),'dinner'=>array('17:00','23:59')),
 );

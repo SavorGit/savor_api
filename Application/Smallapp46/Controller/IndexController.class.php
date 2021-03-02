@@ -877,7 +877,7 @@ class IndexController extends CommonController{
                     $data = json_decode($res_redis,true);
                 }
                 if(!isset($data[$meal_type])){
-                    $data[$meal_type] = $rdata = array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'));
+                    $data[$meal_type] = array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'));
                     $redis->set($cache_key,json_encode($data),86400);
                 }
             }

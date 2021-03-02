@@ -20,7 +20,7 @@ class QrcodeController extends CommonController{
         $data_id = $this->params['data_id'];
         $box_id = $this->params['box_id'];
         $box_mac = $this->params['box_mac'];
-        $type = $this->params['type'];//34分享文件二维码
+        $type = $this->params['type'];//34分享文件二维码 28商城商品大屏购买
         $short_urls = C('SHORT_URLS');
         $times = getMillisecond();
         switch ($type){
@@ -29,12 +29,13 @@ class QrcodeController extends CommonController{
                 $content = $code_url.'file_'.$data_id.'_'.$type.'_'.$box_id;
                 break;
             case 35:
+            case 28:
                 $now_time = date('zH');
                 $encode_key = "$type{$box_id}$now_time{$data_id}";
                 $redis  =  \Common\Lib\SavorRedis::getInstance();
                 $redis->select(5);
                 $times = getMillisecond();
-                $scene = $box_mac.'_'.$type.'_'.$times.'_'.$data_id;;
+                $scene = $box_mac.'_'.$type.'_'.$times.'_'.$data_id;
                 $cache_key = C('SAPP_QRCODE').$encode_key;
                 $redis->set($cache_key,$scene,3600*3);
 

@@ -339,7 +339,8 @@ class ProgramController extends CommonController{
                     $info['md5'] = $media_info['md5'];
                     $info['duration'] = intval($v['duration']);
 
-                    $qrcode_url = $host_name."/smallsale19/qrcode/dishQrcode?box_id=$box_id&data_id={$info['goods_id']}&type=28";
+//                    $qrcode_url = $host_name."/smallsale19/qrcode/dishQrcode?box_id=$box_id&data_id={$info['goods_id']}&type=28";
+                    $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$info['goods_id']}&type=28";
                     $info['qrcode_url'] = $qrcode_url;
                     $program_list[] = $info;
                 }
@@ -701,7 +702,7 @@ class ProgramController extends CommonController{
         $program_list = array();
 
         $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
-        $res_playlog = $m_playlog->getWhere('res_id',array('type'=>4),'id desc','0,8','');
+        $res_playlog = $m_playlog->getWhere('res_id',array('type'=>4),'nums desc','0,8','');
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         foreach ($res_playlog as $v){
             $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));

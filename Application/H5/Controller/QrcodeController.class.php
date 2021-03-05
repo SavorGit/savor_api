@@ -33,6 +33,29 @@ class QrcodeController extends Controller {
         $m_small_app->getSmallappCode($tokens,$data);
     }
 
+    public function bonusQrcode(){
+        $qrinfo = I('get.qrinfo','');
+        $expire_seconds = 3600*4;
+        $data = array(
+            'expire_seconds'=>$expire_seconds,
+            'action_name'=>"QR_STR_SCENE",
+            'action_info'=>array(
+                'scene'=>array('scene_str'=>$qrinfo)
+            ),
+        );
+        $wechat = new \Common\Lib\Wechat();
+        $res = $wechat->qrcodecreate(json_encode($data));
+        if(empty($res)){
+            $res = $wechat->qrcodecreate(json_encode($data));
+        }
+        $res_info = json_decode($res,true);
+        if(!empty($res_info['url'])){
+            $errorCorrectionLevel = 'L';//容错级别
+            $matrixPointSize = 5;//生成图片大小
+            Qrcode::png($res_info['url'],false,$errorCorrectionLevel, $matrixPointSize, 0);
+        }
+    }
+
     public function testmd5(){
         $accessKeyId = C('OSS_ACCESS_ID');
         $accessKeySecret = C('OSS_ACCESS_KEY');

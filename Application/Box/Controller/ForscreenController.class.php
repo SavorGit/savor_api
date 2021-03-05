@@ -68,6 +68,8 @@ class ForscreenController extends CommonController{
                 'file_filename'=>'kCtzCQFH8M.jpeg',
                 'forscreen_box_url'=>$oss_host.'/media/resource/6zcQr5iZBJ.jpeg',
                 'forscreen_box_filename'=>'6zcQr5iZBJ.jpeg',
+                'bonus_forscreen_url'=>$oss_host.'/media/resource/6zcQr5iZBJ.jpeg',
+                'bonus_forscreen_filename'=>'6zcQr5iZBJ.jpeg',
             );
             $data['forscreen_help_images'] = $forscreen_help_images;
             $forscreen_call_code = array(

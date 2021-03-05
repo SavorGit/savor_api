@@ -17,6 +17,7 @@ class Weixin_api {
 	    $wx_config = C('WX_FWH_CONFIG');
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
+        $this->cacheprefix = $wx_config['cache_key'];
 		//$this->appid = 'wxb19f976865ae9404';
 		//$this->appsecret = '977d15e1ce3c342c123ae6f30bcfeb48';
 		//$this->cacheprefix = C('CACHE_PREFIX').'activity';
@@ -59,7 +60,7 @@ class Weixin_api {
 	 * @return Ambigous <mixed, string>
 	 */
 	private function getWxJsTicket(){
-		$key_ticket = 'savor_wxjsticket';
+		$key_ticket = $this->cacheprefix.'savor_wxjsticket';
 		$redis = SavorRedis::getInstance();
 		$redis->select(15);
 		$ticket = $redis->get($key_ticket);
@@ -82,7 +83,7 @@ class Weixin_api {
 	 * @return Ambigous <mixed, string>
 	 */
 	public function getWxAccessToken(){
-		$key_token = 'savor_wxtoken';
+		$key_token = $this->cacheprefix.'savor_wxtoken';
 		$redis = SavorRedis::getInstance();
 		$redis->select(15);
 		$token = $redis->get($key_token);

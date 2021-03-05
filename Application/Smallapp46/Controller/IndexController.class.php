@@ -45,7 +45,7 @@ class IndexController extends CommonController{
                 break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 1;
-                $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002);
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002,'box_mac'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
                 break;
             case 'breakLink':
                 $this->is_verify = 1;
@@ -384,6 +384,9 @@ class IndexController extends CommonController{
         $type = intval($this->params['type']);
         $data_id = intval($this->params['data_id']);
         $box_id = intval($this->params['box_id']);
+        $box_mac = $this->params['box_mac'];
+        $mobile_brand = !empty($this->params['mobile_brand']) ? $this->params['mobile_brand']:'';
+        $mobile_model = !empty($this->params['mobile_model']) ? $this->params['mobile_model']:'';
 
         $data = array('openid'=>$openid,'type'=>$type,'is_overtime'=>0,'data_id'=>$data_id);
         if($box_id){
@@ -395,6 +398,16 @@ class IndexController extends CommonController{
                 $box_info = json_decode($redis_box_info,true);
                 $data['box_mac'] = $box_info['mac'];
             }
+        }else{
+            if(!empty($box_mac)){
+                $data['box_mac'] = $box_mac;
+            }
+        }
+        if(!empty($mobile_brand)){
+            $data['mobile_brand'] = $mobile_brand;
+        }
+        if(!empty($mobile_model)){
+            $data['mobile_model'] = $mobile_model;
         }
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
@@ -626,6 +639,7 @@ class IndexController extends CommonController{
         $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;
+        $data['redpacket_content'] = '即刻分享视频照片，一键投屏，让饭局分享爽不停';
         $this->to_back($data);
     }
 

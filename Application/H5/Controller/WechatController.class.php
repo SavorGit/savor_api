@@ -53,18 +53,37 @@ class WechatController extends Controller {
                             $subscribe_time = 0;
                         }
                         $wx_mpopenid = $revObj->getRevFrom();
-                        $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
-                        $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w';
+                        $qrcode_flag = substr($qrcode,0,5);
+                        if($qrcode_flag=='bonus'){
+                            $bonus_no = substr($qrcode,5);
+                            $order_id = intval($bonus_no);
+                            $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+                            $res_redpacket = $m_redpacket->getInfo(array('id'=>$order_id));
+                            $box_mac = '';
+                            if(!empty($res_redpacket)){
+                                $box_mac = $res_redpacket['mac'];
+                            }
+                            $times = getMillisecond();
+                            $page_url = "pages/thematic/money_blessing/grab?order_id={$order_id}&box_mac={$box_mac}&redpackt_qrcode_createtime={$times}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
+                            $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpWefOt5AP-DFMlizSV-Qbew';
+                            $title = '点击即可领取红包';
+                        }else{
+                            $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
+                            $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w';
+                            $title = '欢迎使用热点投屏';
+                        }
+
                         $data = array(
                             'touser'=>$wx_mpopenid,
                             'msgtype'=>"miniprogrampage",
                             'miniprogrampage'=>array(
-                                'title'=>'欢迎使用热点投屏',
+                                'title'=>$title,
                                 'appid'=>$appid,
                                 'pagepath'=>$page_url,
                                 'thumb_media_id'=>$thumb_media_id,
                             ),
                         );
+
                         $wechat = new \Common\Lib\Wechat();
                         $res = $wechat->customsend(json_encode($data,JSON_UNESCAPED_UNICODE));
                         if(!empty($res)){
@@ -73,6 +92,9 @@ class WechatController extends Controller {
                                 $res = $wechat->customsend(json_encode($data,JSON_UNESCAPED_UNICODE));
                             }
                         }
+                        $log_content = date('Y-m-d H:i:s')."|openid|$wx_mpopenid|page_url|$page_url \r\n";
+                        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
                         $log_content = date('Y-m-d H:i:s')."|openid|$wx_mpopenid|push_result|$res \r\n";
                         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
                     }

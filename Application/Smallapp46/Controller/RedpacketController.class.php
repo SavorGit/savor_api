@@ -56,6 +56,18 @@ class RedpacketController extends CommonController{
             foreach($cf_bless_arr as $v){
                 $bless_tmp[] = $v;
             }
+            $range_list = array();
+            foreach($cf_range_arr as $k=>$v){
+                $rinfo = array('id'=>$k,'name'=>$v);
+                if($type==4){
+                    if($k==3){
+                        $range_list[] = $rinfo;
+                    }
+                }else{
+                    $range_list[] = $rinfo;
+                }
+            }
+
             if($type==4){
                 unset($cf_range_arr[1],$cf_range_arr[2]);
             }
@@ -64,6 +76,7 @@ class RedpacketController extends CommonController{
             }
             $data['bless'] = $bless_tmp;
             $data['range'] = $range_tmp;
+            $data['range_list'] = $range_list;
         }else if($type==3){
             list($t1, $t2) = explode(' ', microtime());
             $data['systemtime'] = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);

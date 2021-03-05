@@ -11,6 +11,10 @@ class WelcomeController extends CommonController{
             case 'config':
                 $this->is_verify = 0;
                 break;
+            case 'checkwelcome':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
             case 'addwelcome':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'images'=>1001,
@@ -84,7 +88,7 @@ class WelcomeController extends CommonController{
         $font_id = intval($this->params['font_id']);
         $music_id = intval($this->params['music_id']);
         $stay_time = $this->params['stay_time'];
-        $type = intval($this->params['type']);//3商务宴请 4生日聚会
+        $type = intval($this->params['type']);//3商务宴请 4生日聚会 5首页致欢迎词
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
@@ -181,6 +185,31 @@ class WelcomeController extends CommonController{
         }else{
             $this->to_back(array());
         }
+    }
+
+    public function checkwelcome(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>1);
+        $user_info = $m_user->getOne('id', $where, 'id desc');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $welcome_id = 0;
+        $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
+        $condition = array('user_id'=>$user_info['id'],'box_mac'=>$box_mac,'type'=>5);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time = date('Y-m-d 23:59:59');
+        $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $res_welcome = $m_welcome->getInfo($condition);
+        if(!empty($res_welcome)){
+            $welcome_id = $res_welcome['id'];
+        }
+        $res = array('welcome_id'=>$welcome_id);
+        $this->to_back($res);
     }
 
     private function push_welcome($res_welcome){

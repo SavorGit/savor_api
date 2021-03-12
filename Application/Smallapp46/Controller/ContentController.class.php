@@ -9,7 +9,7 @@ class ContentController extends CommonController{
         switch(ACTION_NAME) {
             case 'getHotplaylist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('page'=>1001,'pagesize'=>1002,'box_mac'=>1002);
                 break;
             case 'addFormid':
                 $this->is_verify = 1;
@@ -47,12 +47,14 @@ class ContentController extends CommonController{
     public function getHotplaylist(){
         $page = intval($this->params['page']);
         $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):6;
-        $all_nums = $page * $pagesize;
+        $box_mac = $this->params['box_mac'];
+        $total_num = 10;
+        $all_hot_nums = 8;
         $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
         $where = array('type'=>4);
 
         $orderby = 'nums desc';
-        $limit = "0,$all_nums";
+        $limit = "0,$all_hot_nums";
         $fields = 'res_id,nums as play_nums';
         $res_play = $m_playlog->getWhere($fields,$where,$orderby,$limit,'');
 
@@ -95,7 +97,99 @@ class ContentController extends CommonController{
             }
             $v['is_show'] = 1;
             $v['pubdetail'] = $pubdetails;
+            $v['type'] = 1;
+            $v['title'] = '';
             $datalist[] = $v;
+        }
+        if(!empty($box_mac)){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(14);
+            $cache_key = 'box:play:'.$box_mac;
+            $res_boxplays = $redis->get($cache_key);
+            if(!empty($res_boxplays)){
+                $box_resources = json_decode($res_boxplays,true);
+                $all_datalist = array();
+                if(!empty($box_resources['hotplay'])){
+                    $play_ids = array_unique($box_resources['hotplay']);
+                    foreach ($datalist as $v){
+                        if(in_array($v['res_id'],$play_ids)){
+                            $v['type'] = 1;
+                            $v['title'] = '';
+                            $all_datalist[]=$v;
+                        }
+                    }
+                }
+                $last_num = $total_num - count($all_datalist);
+                $tmp_pro_ids = array();
+                if(!empty($box_resources['list'])){
+                    $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+                    $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                    foreach ($box_resources['list'] as $v){
+                        if($v['type']=='pro'){
+                            $tmp_pro_ids[$v['media_id']] = $v['media_id'];
+                        }
+                    }
+                    $media_ids = array_values($tmp_pro_ids);
+
+                    $m_program_list =  new \Common\Model\ProgramMenuListModel();
+                    $where  = array('menu_num'=>$box_resources['menu_num']);
+                    $order = "id desc";
+                    $program_info = $m_program_list->getInfo('id', $where, $order);
+
+                    $fields = 'ads.id as ads_id,ads.name title,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
+                    $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
+                    $where['media.id']  = array('in',$media_ids);
+                    $order = 'a.sort_num asc';
+                    $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+                    $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$last_num",'media.id');
+                    $m_media = new \Common\Model\MediaModel();
+                    foreach($res_demand as $v){
+                        if($v['media_type']==1){
+                            $res_type = 2;
+                        }else{
+                            $res_type = 1;
+                        }
+                        $play_where = array('res_id'=>$v['ads_id'],'type'=>3);
+                        $play_info = $m_play_log->getOne('nums',$play_where);
+                        $play_nums = 0;
+                        if(!empty($play_info)){
+                            $play_nums = intval($play_info['nums']);
+                        }
+
+                        $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
+                            'title'=>$v['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1);
+                        $res_url = $oss_host.$v['oss_addr'];
+                        $forscreen_url = $v['oss_addr'];
+                        $duration = intval($v['duration']);
+                        $resource_size = $v['resource_size'];
+                        $res_id = $v['media_id'];
+
+                        if($v['portraitmedia_id']){
+                            $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
+                            $res_url = $res_media['oss_addr'];
+                        }
+
+                        $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
+                            'resource_size'=>$resource_size,'res_id'=>$res_id);
+                        $oss_info = pathinfo($forscreen_url);
+                        $pdetail['filename'] = $oss_info['basename'];
+                        if(!empty($v['img_url'])){
+                            $img_url = $oss_host.$v['img_url'];
+                        }else{
+                            if($v['res_type']==1){
+                                $img_url = $res_url."?x-oss-process=image/quality,Q_50";
+                            }else{
+                                $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
+                            }
+                        }
+                        $pdetail['img_url'] = $img_url;
+                        $dinfo['pubdetail'] = array($pdetail);
+                        $dinfo['type'] = 2;
+                        $all_datalist[] = $dinfo;
+                    }
+                }
+                $datalist = $all_datalist;
+            }
         }
         $data = array('datalist'=>$datalist);
         $this->to_back($data);

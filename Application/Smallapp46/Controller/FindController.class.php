@@ -15,7 +15,7 @@ class FindController extends CommonController{
                 break;
             case 'showPic':
                 $this->is_verify = 1;
-                $this->valid_fields = array('forscreen_id'=>1001,'openid'=>1001);
+                $this->valid_fields = array('forscreen_id'=>1001,'openid'=>1001,'res_id'=>1002);
                 break;
             case 'redPacketJx':  //抢红包成功失败页面获取精选内容
                 $this->is_verify = 1;
@@ -809,39 +809,38 @@ class FindController extends CommonController{
     public function showPic(){
         $forscreen_id = $this->params['forscreen_id'];
         $openid       = $this->params['openid'];
+        $res_id       = intval($this->params['res_id']);
+
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
 
-
-        //播放数据+1
         $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
-        $nums = $m_play_log->countNum(array('res_id'=>$forscreen_id));
-        if(empty($nums)){
-            $data = array();
-            $data['res_id'] = $forscreen_id;
-            $data['type']   = 2;
-            $data['nums']   = 1;
-            $m_play_log->addInfo($data);
+        if($res_id<=0){
+            $res_id = $forscreen_id;
+            $type = 2;
+        }else{
+            $type = 4;
+        }
+        $play_where = array('res_id'=>$res_id,'type'=>$type);
+        $res_play = $m_play_log->getOne('nums',$play_where,'id desc');
+        if(!empty($res_play)){
+            $m_play_log->where($play_where)->setInc('nums',1);
+            $play_num = intval($res_play['nums']) + 1;
         }else {
-            $where = array();
-            $where['res_id'] = $forscreen_id;
-            $where['type']   = 2;
-            $m_play_log->where($where)->setInc('nums',1);
-
+            $data = array('res_id'=>$res_id,'type'=>$type,'nums'=>1);
+            $m_play_log->addInfo($data);
+            $play_num = 1;
+        }
+        if($play_num>100000){
+            $play_num = floor($play_num/10000).'w';
         }
 
-        //echo $v['create_time'];exit;
         $fields= 'a.forscreen_id,a.forscreen_char,a.public_text,a.res_type,a.res_nums,a.is_pub_hotelinfo,
                     a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
         $order = 'a.res_type desc,a.create_time desc';
-        $maps = array();
-        $maps['a.forscreen_id'] = $forscreen_id;
-        /*$maps['hotel.state'] = 1;
-        $maps['hotel.flag']  = 0;
-        $maps['box.flag']    = 0;
-        $maps['box.state']   = 1;*/
+        $maps = array('a.forscreen_id'=>$forscreen_id);
         $rec_pub_list = $m_public->getList($fields, $maps);
         $pub_info = $rec_pub_list[0];
         $oss_host = 'http://'. C('OSS_HOST').'/';
@@ -855,7 +854,6 @@ class FindController extends CommonController{
         foreach($pubdetail_info as $kk=>$vv){
             if($pub_info['res_type']==2){
                 $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
-
                 $pubdetail_info[$kk]['filename'] = $filename[2];
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[$kk]['res_id']   = $tmp_arr[$kk];
@@ -863,57 +861,31 @@ class FindController extends CommonController{
                 $pubdetail_info[$kk]['duration'] = secToMinSec(intval($pubdetail_info[$kk]['duration']));
             }else{
                 $filename = explode('/', $vv['forscreen_url']);
-
                 $pubdetail_info[$kk]['filename'] = $filename[2];
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[$kk]['res_id']   = $tmp_arr[0];
             }
-
-
         }
 
-        $map = array();
-        $map['openid']=$openid;
-        $map['res_id'] =$forscreen_id;
-
-        $map['status'] = 1;
+        $map = array('openid'=>$openid,'res_id'=>$forscreen_id,'status'=>1);
         $is_collect = $m_collect->countNum($map);
-
-
         $data = array();
         if(!empty($rec_pub_list)){
-
             if(empty($pub_info['avatarUrl'])){
                 $pub_info['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
-
             }
             if(empty($pub_info['nickName'])){
                 $pub_info['nickName'] = '游客';
             }
             $create_time = viewTimes(strtotime($pub_info['create_time']));
             //收藏个数
-            $map = array();
-            $map['res_id'] =$forscreen_id;
-            $map['type']   = 2;
-
-            $map['status'] = 1;
+            $map = array('res_id'=>$forscreen_id,'type'=>2,'status'=>1);
             $collect_num = $m_collect->countNum($map);
             $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
             $ret = $m_collect_count->field('nums')->where(array('res_id'=>$forscreen_id))->find();
             //分享个数
-            $map = array();
-            $map['res_id'] =$forscreen_id;
-            $map['type']   = 2;
-            $map['status'] = 1;
+            $map = array('res_id'=>$forscreen_id,'type'=>2,'status'=>1);
             $share_num = $m_share->countNum($map);
-
-            //播放次数
-            $map = array();
-            $map['res_id'] = $forscreen_id;
-            $map['type']   = 2;
-            $play_info = $m_play_log->getOne('nums',$map);
-            $play_num  = intval($play_info['nums']);
-
             if(empty($is_collect)){
                 $pub_info['is_collect'] = "0";
             }else {
@@ -923,7 +895,6 @@ class FindController extends CommonController{
             $pub_info['collect_num'] = $collect_num + $ret['nums'];
             $pub_info['share_num']   = $share_num;
             $pub_info['play_num']    = $play_num;
-
             $pub_info['pubdetail']   = $pubdetail_info;
             $this->to_back($pub_info);
         }else {

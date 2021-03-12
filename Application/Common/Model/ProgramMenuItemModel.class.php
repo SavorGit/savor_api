@@ -12,13 +12,14 @@ class ProgramMenuItemModel extends Model
 	protected $tableName='programmenu_item';
 
 
-	public function getList($fields,$where,$order,$limit){
+	public function getList($fields,$where,$order,$limit,$group=''){
         $res = $this->alias('a')
                     ->join('savor_ads ads on a.ads_id = ads.id','left')
                     ->join('savor_media media on ads.media_id =media.id ','left')
                     ->field($fields)
                     ->where($where)
                     ->order($order)
+                    ->group($group)
                     ->limit($limit)
                     ->select();
         return $res;

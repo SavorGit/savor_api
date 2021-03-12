@@ -110,7 +110,7 @@ class AdspositionController extends CommonController{
         }
         if(!empty($version) && $version>='4.6.22'){
             $datalist = $result;
-            $resp_data = array('datalist'=>$datalist,'goods_index'=>$goods_index,'switch_time'=>3000,'slide_time'=>1000);
+            $resp_data = array('datalist'=>$datalist,'goods_index'=>$goods_index,'switch_time'=>5000,'slide_time'=>1000);
         }else{
             $resp_data = $result;
         }

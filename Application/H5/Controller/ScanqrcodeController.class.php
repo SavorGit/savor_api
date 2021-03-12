@@ -29,18 +29,9 @@ class ScanqrcodeController extends Controller {
         $box_mac = $result_order[0]['mac'];
         $scope = $result_order[0]['scope'];
 
-        //碧草测试
-        if($result_order[0]['user_id']=='10047'){
-            $qrinfo =  $trade_no.'_'.$box_mac;
-            $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
-            $message = array('action'=>121,'nickName'=>$user_info['nickName'],
-                'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
-            $m_netty->pushBox($box_mac,json_encode($message));
-            echo 'bicao push ok';
-        }
-        //end
-
-        if(in_array($scope,array(1,2))){
+        switch ($scope){
+            case 1:
+            case 2:
             $all_box = $m_netty->getPushBox(2,$box_mac);
             if(!empty($all_box)){
                 foreach ($all_box as $v){
@@ -86,7 +77,15 @@ class ScanqrcodeController extends Controller {
 //                    $redis->set($key,json_encode($res_data));
 //                }
 //            }
+                break;
+            case 3:
+                $qrinfo =  $trade_no.'_'.$box_mac;
+                $mpcode = $http_host.'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
+                $message = array('action'=>121,'nickName'=>$user_info['nickName'],
+                    'avatarUrl'=>$user_info['avatarUrl'],'codeUrl'=>$mpcode);
+                $m_netty->pushBox($box_mac,json_encode($message));
         }
+
         $key = C('SAPP_REDPACKET').'smallprogramcode';
         $res = $redis->get($key);
         if(!empty($res)){

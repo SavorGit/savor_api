@@ -66,7 +66,7 @@ class WechatController extends Controller {
                             $times = getMillisecond();
                             $page_url = "pages/thematic/money_blessing/grab?order_id={$order_id}&box_mac={$box_mac}&redpackt_qrcode_createtime={$times}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
                             $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpc9yC62dMI8gwNtFwhifStA';
-                            $title = '点击即可领取红包';
+                            $title = '点击领取红包，靓照上电视，大屏分享更快乐！';
                         }else{
                             $page_url = "pages/forscreen/forscreen?official={$qrcode}&wxmpopenid={$wx_mpopenid}&subscribe_time={$subscribe_time}";
                             $thumb_media_id = 's_KxN5aPbIS1vmNmCnJCpUwtzlzS0vOaibLW9Qs1O-w';

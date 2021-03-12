@@ -242,10 +242,12 @@ class RedpacketController extends CommonController{
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
+            $key_bonusqueue = $red_packet_key.$order_id.':bonusqueue';//红包队列列表
+            $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
 
             $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
-            $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
-            if(empty($resdata['unused']) || count($res_grabbonus)>=$res_order['amount']*2){
+            $res_grabbonus = $redis->lgetrange($key_grabbonus,0,2000);
+            if(empty($res_redpacketqueue) || count($res_grabbonus)>=$res_order['amount']*2){
                 $status = 2;//红包已领完,未领到
             }
         }else{
@@ -263,6 +265,8 @@ class RedpacketController extends CommonController{
                 $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
                 $res_redpacket = $redis->get($key_bonus);
                 $resdata = json_decode($res_redpacket,true);
+                $key_bonusqueue = $red_packet_key.$order_id.':bonusqueue';//红包队列列表
+                $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
 
                 //红包黑名单
                 $key_invaliduser = $red_packet_key.'invaliduser';
@@ -293,16 +297,16 @@ class RedpacketController extends CommonController{
                     }
                 }
 
-                if(empty($resdata['unused']) || $is_finish){
+                if(empty($res_redpacketqueue) || $is_finish){
                     $status = 2;//红包已领完,未领到
                 }else{
                     $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
-                    $res_getbonus = $redis->lgetrange($key_getbonus,0,1000);
+                    $res_getbonus = $redis->lgetrange($key_getbonus,0,2000);
                     if(in_array($user_id,$res_getbonus)){
                         $status = 3;//正在领红包
                     }else{
                         $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
-                        $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+                        $res_grabbonus = $redis->lgetrange($key_grabbonus,0,2000);
                         if(empty($res_grabbonus)){
                             $redis->rpush($key_grabbonus,$user_id);
                             $status = 4;//进入抢红包队列,同时生成token
@@ -431,16 +435,18 @@ class RedpacketController extends CommonController{
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
-            if(empty($resdata['unused'])){
+            $key_bonusqueue = $red_packet_key.$order_id.':bonusqueue';//红包队列列表
+            $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
+            if(empty($res_redpacketqueue)){
                 $status = 2;//红包已领完,未领到
             }else{
                 $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
-                $res_getbonus = $redis->lgetrange($key_getbonus,0,1000);
+                $res_getbonus = $redis->lgetrange($key_getbonus,0,2000);
                 if(in_array($user_id,$res_getbonus)){
                     $status = 3;//正在领红包
                 }else{
                     $key_grabbonus = $red_packet_key.$order_id.':grabbonus';//抢红包用户队列
-                    $res_grabbonus = $redis->lgetrange($key_grabbonus,0,1000);
+                    $res_grabbonus = $redis->lgetrange($key_grabbonus,0,2000);
                     if(!in_array($user_id,$res_grabbonus)){
                         $status = 2;
                     }else{
@@ -525,12 +531,13 @@ class RedpacketController extends CommonController{
             $key_bonus = $red_packet_key.$order_id.':bonus';//红包列表
             $res_redpacket = $redis->get($key_bonus);
             $resdata = json_decode($res_redpacket,true);
-            if(empty($resdata) || empty($resdata['unused'])){
+            $key_bonusqueue = $red_packet_key.$order_id.':bonusqueue';//红包队列列表
+            $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
+            if(empty($res_redpacketqueue)){
                 $status = 2;//红包已领完,未领到
             }else{
                 $grab_num = $res_order['amount'];
                 $key_getbonus = $red_packet_key.$order_id.':getbonus';//领红包用户队列
-
                 $unused_bonus = $resdata['unused'];
                 $used_bonus = $resdata['used'];
 
@@ -552,24 +559,25 @@ class RedpacketController extends CommonController{
                     if(empty($grab_user_id)){
                         break;
                     }
-                    $now_money = $unused_bonus[$i];
+                    $now_money = $redis->lpop($key_bonusqueue);;
+//                    $now_money = $unused_bonus[$i];
                     if(empty($now_money)){
                         break;
                     }
-                    unset($unused_bonus[$i]);
+                    $unused_key = array_search($now_money, $unused_bonus);
+                    if($unused_key!==false){
+                        unset($unused_bonus[$unused_key]);
+                    }
                     $used_bonus[] = $now_money;
-
-                    shuffle($unused_bonus);
                     $all_bonus = array('unused'=>$unused_bonus,'used'=>$used_bonus);
                     $redis->set($key_bonus,json_encode($all_bonus),86400);
 
                     $hasget_users[$grab_user_id] = $now_money;
                     $redis->set($key_hasget,json_encode($hasget_users),86400);
 
+                    //红包记录进入数据库
                     shuffle($all_barrage);
                     $barrage = $all_barrage[0];
-
-                    //红包记录进入数据库
                     $get_data = array('redpacket_id'=>$order_id,'user_id'=>$grab_user_id,'money'=>$now_money,
                         'barrage'=>$barrage);
                     $receive_id = $m_redpacketreceive->addData($get_data);
@@ -628,8 +636,8 @@ class RedpacketController extends CommonController{
                     $message = array('action'=>122,'userBarrages'=>$user_barrages);
                     $m_netty->pushBox($res_order['mac'],json_encode($message));
                 }
-
-                if(empty($unused_bonus)){
+                $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
+                if(empty($res_redpacketqueue)){
                     $data = array('status'=>5);
                     if(empty($res_order['grab_time'])){
                         $data['grab_time'] = date('Y-m-d H:i:s');
@@ -719,7 +727,7 @@ class RedpacketController extends CommonController{
         }
 
         if($info['status']==5){
-            $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time'])) ;
+            $info['diff_time'] = changeTimeType(strtotime($info['grab_time']) - strtotime($info['pay_time']));
         }
         //领取详情
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();

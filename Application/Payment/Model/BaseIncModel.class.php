@@ -131,6 +131,10 @@ class BaseIncModel extends Model{
                     $key = C('SAPP_REDPACKET').$trade_no.':bonus';
                     $all_moneys = array('unused'=>$all_money,'used'=>array());
                     $redis->set($key,json_encode($all_moneys),86400);
+                    $key_queue = C('SAPP_REDPACKET').$trade_no.':bonusqueue';
+                    foreach ($all_money as $mv){
+                        $redis->rpush($key_queue,$mv);
+                    }
 
                     $log_content = '订单号:'.$trade_no.' 发红包为:'.json_encode($all_money)." 费率:$rate 费率金额:$rate_fee".' 总金额:'.array_sum($all_money);
                     $this->paynotify_log($paylog_type, $serial_no, $log_content);

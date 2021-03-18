@@ -55,6 +55,9 @@ class AlimnsController extends Controller{
                         $data['netty_receive_time']=$res_message['timestamp'];
                     }else{
                         $data['netty_pushbox_time']=$res_message['timestamp'];
+                        if(!empty($res_message['context']['nettyChaId'])){
+                            $data['netty_pushbox_chaid']=$res_message['context']['nettyChaId'];
+                        }
                     }
                     $redis->multi();
 

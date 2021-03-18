@@ -46,29 +46,32 @@ class ForscreenRecordModel extends Model{
 
     public function recordTrackLog($serial,$params){
         $all_data = array(
-           'action'=>'投屏动作类型',
-           'oss_stime'=>'oss上传开始时间',
-           'oss_etime'=>'oss上传结束时间',
+            'action'=>'投屏动作类型',
+            'oss_stime'=>'oss上传开始时间',
+            'oss_etime'=>'oss上传结束时间',
 
-           'position_nettystime'=>'php请求定位netty接口开始时间',
-           'position_nettyetime'=>'php请求定位netty接口结束时间',
-           'netty_position_url'=>'netty定位接口',
-           'netty_position_result'=>'netty定位接口返回数据',
+            'position_nettystime'=>'php请求定位netty接口开始时间',
+            'position_nettyetime'=>'php请求定位netty接口结束时间',
+            'netty_position_url'=>'netty定位接口',
+            'netty_position_result'=>'netty定位接口返回数据',
 
-           'request_nettytime'=>'PHP请求netty时间',
-           'netty_url'=>'php请求netty接口',
-           'netty_result'=>'netty返回数据',
-           'netty_receive_time'=>'netty接收php请求时间',
-           'netty_pushbox_time'=>'netty推送盒子时间',
+            'request_nettytime'=>'PHP请求netty时间',
+            'netty_url'=>'php请求netty接口',
+            'netty_result'=>'netty返回数据',
+            'netty_receive_time'=>'netty接收php请求时间',
+            'netty_pushbox_time'=>'netty推送盒子时间',
+            'netty_pushbox_time'=>'netty推送盒子时间',
+            'netty_pushbox_chaid'=>'netty推送盒子通道ID',
 
-           'netty_callback_result'=>'netty推送盒子后回调内容',
-           'netty_callback_time'=>'netty推送盒子后回调时间',
+            'netty_callback_result'=>'netty推送盒子后回调内容',
+            'netty_callback_time'=>'netty推送盒子后回调时间',
+            'netty_callback_chaid'=>'netty推送盒子后回调通道ID',
 
-           'box_receivetime'=>'盒子接收netty时间',
-           'box_downstime'=>'盒子下载开始时间',
-           'box_downetime'=>'盒子下载完成时间',
+            'box_receivetime'=>'盒子接收netty时间',
+            'box_downstime'=>'盒子下载开始时间',
+            'box_downetime'=>'盒子下载完成时间',
             'box_play_time'=>'盒子播放时间',
-           'box_finish_downtime'=>'盒子完全下载完成时间',
+            'box_finish_downtime'=>'盒子完全下载完成时间',
         );
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);

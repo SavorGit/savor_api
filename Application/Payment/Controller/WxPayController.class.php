@@ -88,8 +88,8 @@ class WxPayController extends BaseController{
                 if(empty($res_receive)){
                     die("redpacket_id:$order_id send bonus finish");
                 }
-                foreach ($res_receive as $v){
 
+                foreach ($res_receive as $v){
                     $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
                     $res_hasget = $redis->get($key_hasget);
                     if(!empty($res_hasget)){
@@ -147,6 +147,106 @@ class WxPayController extends BaseController{
                 }
             }
         }
+    }
+
+    public function reissueredpacket(){
+        $start_time = date('Y-m-d H:i:s',strtotime("-20 minutes"));
+        $end_time = date('Y-m-d H:i:s',strtotime("-10 minutes"));
+        $where = array('status'=>6);
+        $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $res = $m_redpacket->getDataList('*',$where,'id asc');
+        if(empty($res)){
+            $now_time = date('Y-m-d H:i:s');
+            echo "reissue_time: $now_time no bonus";
+            exit;
+        }
+        $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
+        $payconfig = $this->getPayConfig();
+        $red_packet_key = C('SAPP_REDPACKET');
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(5);
+
+        $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+        $m_refund = new \Common\Model\Smallapp\RefundModel();
+        $m_wxpay = new \Payment\Model\WxpayModel();
+        foreach ($res as $rv){
+            $order_id = $rv['id'];
+            $res_refund = $m_refund->getInfo(array('trade_no'=>$order_id));
+            if(!empty($res_refund)){
+                echo "redpacket_id:$order_id has refund \r\n";
+                continue;
+            }
+            $fields = 'a.id,a.redpacket_id,a.user_id,a.money,user.openid as small_openid,user.mpopenid as openid';
+            $where = "a.redpacket_id=$order_id and a.status=0";
+            $order = 'id asc';
+            $res_receive = $m_redpacket_receive->getList($fields,$where,$order);
+            if(empty($res_receive)){
+                echo "redpacket_id:$order_id no send fail bonus \r\n";
+            }
+            $total_money = $rv['total_fee']-$rv['rate_fee'];
+            $sum_fields = 'sum(money) as rmoney';
+            $swhere = array('redpacket_id'=>$order_id,'status'=>1);
+            $res_money = $m_redpacket_receive->getDataList($sum_fields,$swhere,'id desc');
+            $receive_money = 0;
+            if(!empty($res_money)){
+                $receive_money = $res_money[0]['rmoney'];
+            }
+            $now_receive_money = 0;
+            foreach ($res_receive as $v){
+                $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
+                $res_hasget = $redis->get($key_hasget);
+                if(!empty($res_hasget)){
+                    $res_hasget = json_decode($res_hasget,true);
+                }else{
+                    $res_hasget = array();
+                }
+                if(!array_key_exists($v['user_id'],$res_hasget)){
+                    echo "redpacket_id:$order_id receive_id:{$v['id']} no hasget \r\n";
+                    continue;
+                }
+
+                $key_getmoney = $red_packet_key.$order_id.':getmoney';//已经抢到红包的用户列表
+                $res_getmoney = $redis->get($key_getmoney);
+                if(!empty($res_getmoney)){
+                    $res_moneyuser = json_decode($res_getmoney,true);
+                }else{
+                    $res_moneyuser = array();
+                }
+                if($pk_type==1){
+                    $open_id = $v['openid'];
+                }else{
+                    $open_id = $v['small_openid'];
+                }
+                if(empty($open_id) || array_key_exists($v['user_id'],$res_moneyuser)){
+                    echo "redpacket_id:$order_id receive_id:{$v['id']} hasget \r\n";
+                    continue;
+                }
+                $now_receive_money+=$v['money'];
+                if($now_receive_money+$receive_money>$total_money){
+                    echo "redpacket_id:$order_id receive_money gt total_money \r\n";
+                    continue;
+                }
+
+                $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$open_id);
+                $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                if($res['code']==10000){
+                    $res_moneyuser[$v['user_id']] = $v['money'];
+                    $redis->set($key_getmoney,json_encode($res_moneyuser),86400);
+
+                    $condition = array('id'=>$v['id']);
+                    $m_redpacket_receive->updateData($condition,array('status'=>1,'receive_time'=>date('Y-m-d H:i:s')));
+                    echo "redpacket_id:$order_id receive_id:{$v['id']} send bonus ok"."\r\n";
+
+                    if($now_receive_money+$receive_money==$total_money){
+                        $m_redpacket->updateData(array('id'=>$order_id),array('status'=>5,'grab_time'=>date('Y-m-d H:i:s')));
+                        echo "redpacket_id:$order_id send bonus finish \r\n";
+                    }
+                    continue;
+                }
+            }
+        }
+
     }
 
     public function paychange(){

@@ -25,6 +25,7 @@ class IndexController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $msg = $this->params['msg'];
         $jsonStr= stripslashes(html_entity_decode($msg));
+        $jsonStr = str_replace('\\','\\\\',$jsonStr);
         $message = json_decode($jsonStr,true);
         if(!is_array($message) || empty($message)){
 

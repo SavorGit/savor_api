@@ -9,11 +9,12 @@ class BuriedPointController extends CommonController{
             case 'boxNetLogs':
                 $this->is_verify = 1;
                 $this->valid_fields = array('req_id'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,'box_mac'=>1001,
-                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,'receive_nettytime'=>1002,'is_download'=>1002);
+                    'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,
+                    'receive_nettytime'=>1002,'is_download'=>1002,'box_downstime'=>1002,'box_downetime'=>1002);
                 break;
             case 'boxReceiveNetty':
                 $this->is_verify = 1;
-                $this->valid_fields = array('req_id'=>1001);
+                $this->valid_fields = array('req_id'=>1001,'box_downstime'=>1002);
                 break;
         }
         parent::_init_();
@@ -21,12 +22,16 @@ class BuriedPointController extends CommonController{
 
     public function boxReceiveNetty(){
         $req_id = $this->params['req_id'];
+        $box_downstime = $this->params['box_downstime'];
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $receive_nettytime = getMillisecond();
+        if(empty($box_downstime)){
+            $box_downstime = $receive_nettytime;
+        }
         $params = array(
             'box_receivetime'=>$receive_nettytime,
-            'box_downstime'=>$receive_nettytime,
+            'box_downstime'=>$box_downstime,
         );
         $m_forscreen->recordTrackLog($req_id,$params);
         $time = getMillisecond();
@@ -56,6 +61,8 @@ class BuriedPointController extends CommonController{
         $is_play  = intval($this->params['is_play']);//是否播放
         $is_break     = $this->params['is_break'];
         $receive_nettytime = $this->params['receive_nettytime'];
+        $box_downstime = $this->params['box_downstime'];
+        $box_downetime = $this->params['box_downetime'];
 
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);
@@ -70,6 +77,20 @@ class BuriedPointController extends CommonController{
         if(!empty($used_time) && !empty($receive_nettytime)){
             $box_res_sdown_time = $receive_nettytime;
             $box_res_edown_time = $receive_nettytime + $used_time;
+        }elseif(!empty($box_downetime)){
+            $box_res_edown_time = $box_downetime;
+            $box_res_sdown_time  =0;
+            if(!empty($box_downstime)){
+                $box_res_sdown_time = $box_downstime;
+            }else{
+                if(!empty($cache_data)){
+                    $box_res_sdown_time = intval($cache_data['box_downstime']);
+                }
+            }
+            $used_time = 0;
+            if($box_res_sdown_time && $box_res_edown_time){
+                $used_time = $box_res_edown_time - $box_res_sdown_time;
+            }
         }else{
             $box_res_sdown_time  =0;
             if(!empty($cache_data)){

@@ -23,8 +23,8 @@ class NotifyController extends Controller{
             if(is_array($res_message) && !empty($res_message)){
                 $req_id = $res_message['req_id'];
                 $params = array('netty_callback_result'=>$res_message,'netty_callback_time'=>$res_message['timestamp']);
-                if(!empty($res_message['nettyChaId'])){
-                    $params['netty_callback_chaid']=$res_message['nettyChaId'];
+                if(!empty($res_message['result']['nettyChaId'])){
+                    $params['netty_callback_chaid']=$res_message['result']['nettyChaId'];
                 }
                 $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
                 $m_forscreen->recordTrackLog($req_id,$params);

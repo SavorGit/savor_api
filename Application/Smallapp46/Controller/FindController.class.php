@@ -838,18 +838,18 @@ class FindController extends CommonController{
         }
 
         $fields= 'a.forscreen_id,a.forscreen_char,a.public_text,a.res_type,a.res_nums,a.is_pub_hotelinfo,
-                    a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-        $order = 'a.res_type desc,a.create_time desc';
-        $maps = array('a.forscreen_id'=>$forscreen_id,'box.state'=>1,'box.flag'=>0);
-        $rec_pub_list = $m_public->getList($fields, $maps);
+                    a.create_time,user.avatarUrl,user.nickName';
+        $maps = array('a.forscreen_id'=>$forscreen_id);
+        $rec_pub_list = $m_public->getPublicinfo($fields,$maps);
         $pub_info = $rec_pub_list[0];
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $where = array('forscreen_id'=>$forscreen_id);
+        $res_forscreen = $m_forscreen->getWheredata('hotel_name',$where,'id asc');
+        $pub_info['hotel_name'] = $res_forscreen[0]['hotel_name'];
+
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $field = "forscreen_id,resource_id,openid,box_mac,resource_type,imgs";
-        $where = array();
-        $where['forscreen_id'] = $forscreen_id;
+        $where = array('forscreen_id'=>$forscreen_id);
         $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url,duration,resource_size";
-        $where = array();
-        $where['forscreen_id'] = $forscreen_id;
         $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
         foreach($pubdetail_info as $kk=>$vv){
             if($pub_info['res_type']==2){
@@ -877,13 +877,7 @@ class FindController extends CommonController{
             if(empty($pub_info['nickName'])){
                 $pub_info['nickName'] = '游客';
             }
-            $now = time();
-            $diff_time =  $now - strtotime($pub_info['create_time']);
-            if($diff_time<=86400){
-                $create_time = viewTimes(strtotime($pub_info['create_time']));
-            }else{
-                $create_time = '';
-            }
+            $create_time = viewTimes(strtotime($pub_info['create_time']));
             //收藏个数
             $map = array('res_id'=>$forscreen_id,'type'=>2,'status'=>1);
             $collect_num = $m_collect->countNum($map);
@@ -1085,13 +1079,7 @@ class FindController extends CommonController{
                 }
             }
             $all_public[$key]['pubdetail'] = $pubdetail_info;
-            $now = time();
-            $diff_time =  $now - strtotime($v['create_time']);
-            if($diff_time<=86400){
-                $all_public[$key]['create_time'] = viewTimes(strtotime($v['create_time']));
-            }else{
-                $all_public[$key]['create_time'] = '';
-            }
+            $all_public[$key]['create_time'] = viewTimes(strtotime($v['create_time']));
 
             //获取是否收藏、分享个数、收藏个数、获取播放次数
             $rets = $this->getFindnums($openid,$v['forscreen_id'],2);

@@ -22,6 +22,15 @@ class PublicModel extends Model
 	                 ->select();
 	    return $data;
 	}
+
+    public function getPublicinfo($fields,$where){
+        $data = $this->alias('a')
+            ->join('savor_smallapp_user user on a.openid=user.openid','left')
+            ->field($fields)
+            ->where($where)
+            ->select();
+        return $data;
+    }
 	
 	public function addInfo($data,$type=1){
 	    if($type==1){

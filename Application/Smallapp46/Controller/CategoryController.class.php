@@ -68,11 +68,10 @@ class CategoryController extends CommonController{
                 $res_category = $m_category->getDataList('id,name',$where,'sort desc,id desc');
                 $default_cate = array('id'=>0,'name'=>'全部');
         }
-        $category_name_list = array();
         if(!empty($default_cate)){
-            $category_name_list = array($default_cate['name']);
             array_unshift($res_category,$default_cate);
         }
+        $category_name_list = array();
         foreach ($res_category as $v){
             $category_name_list[]=$v['name'];
         }

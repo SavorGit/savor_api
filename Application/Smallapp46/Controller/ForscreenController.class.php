@@ -55,7 +55,8 @@ class ForscreenController extends CommonController{
         }
 
         $netty_url = 'https://mobile.littlehotspot.com/Netty/index/pushnetty';
-        $msg = json_encode($netty_data);
+        $msg = json_encode($netty_data,JSON_UNESCAPED_SLASHES);
+
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => $netty_url,

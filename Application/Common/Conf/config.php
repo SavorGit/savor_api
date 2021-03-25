@@ -103,6 +103,7 @@ return array(
     //热点投屏小程序配置
 	'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
     'SMALLAPP_FORSCREEN_ADS'=>'smallapp:forscreen:ads:',
+    'SMALLAPP_LIFE_ADS'=>'smallapp:life:ads:',
 
 
     'PAYLOGS_PATH'  =>  str_replace('Application/', 'paylogs/', APP_PATH),//支付回调日志目录
@@ -548,4 +549,9 @@ return array(
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>1,
     'LOTTERY_TIMEOUT'=>300,
     'MEAL_TIME'=>array('lunch'=>array('10:00','15:00'),'dinner'=>array('17:00','23:59')),
+    'PERSON_PRICE'=>array(
+        '1'=>array('id'=>1,'name'=>'100以下','min'=>0,'max'=>100),
+        '2'=>array('id'=>2,'name'=>'100-200','min'=>100,'max'=>200),
+        '3'=>array('id'=>3,'name'=>'200以上','min'=>200,'max'=>1000000)
+    ),
 );

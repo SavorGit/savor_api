@@ -19,6 +19,10 @@ class AreaController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('area_id'=>1001,'type'=>1002);
                 break;
+            case 'getCityAreaList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('area_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -146,6 +150,39 @@ class AreaController extends CommonController{
         }
         $data['area_list'] = $area_list;
         $data['area_name_list'] = $area_name_list;
+        $this->to_back($data);
+    }
+
+    public function getCityAreaList(){
+        $area_id = intval($this->params['area_id']);
+        $m_area = new \Common\Model\AreaModel();
+        $fields = "id,region_name as name";
+
+        $where = array('is_in_hotel'=>1,'is_valid'=>1);
+        $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
+        $area_list = array();
+        $city_names = $area_names = array();
+        $index = 0;
+        foreach ($city_list as $k=>$v){
+            $city_names[]=$v['name'];
+
+            $parent_id = $this->getParentAreaid($v['id']);
+            $fields = 'id,region_name as name';
+            $where = array('parent_id'=>$parent_id,'is_valid'=>1);
+            $order = 'id asc';
+            $city_area_list = $m_area->getWhere($fields, $where, $order, '',2);
+            $tmp = array('id'=>0,'name'=>'全部区域');
+            array_unshift($city_area_list, $tmp);
+            if($v['id']==$area_id){
+                $index = $k;
+                foreach ($city_area_list as $av){
+                    $area_names[]=$av['name'];
+                }
+            }
+            $area_list[]=$city_area_list;
+        }
+        $names = array($city_names,$area_names);
+        $data = array('city_list'=>$city_list,'area_list'=>$area_list,'index'=>array($index,0),'names'=>$names);
         $this->to_back($data);
     }
 }

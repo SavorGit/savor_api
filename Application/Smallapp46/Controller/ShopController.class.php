@@ -38,7 +38,6 @@ class ShopController extends CommonController{
         $openid = isset($this->params['openid'])?$this->params['openid']:'';
         $action = isset($this->params['action'])?intval($this->params['action']):0;
         $pagesize = 10;
-
         /*
         $cache_key = C('SAPP_SHOPDATA').$openid.$category_id.$keywords;
         $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -145,7 +144,7 @@ class ShopController extends CommonController{
                         $dinfo['filename'] = $oss_path_info['basename'];
                         $dinfo['forscreen_url'] = $oss_path;
                         $dinfo['resource_size'] = $media_info['oss_filesize'];
-                        $dinfo['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$v['id']}&type=32";
+                        $dinfo['qrcode_url'] = $host_name."/smallsale21/qrcode/dishQrcode?data_id={$v['id']}&type=32";
                     }
 
                     $dinfo['attrs'] = array();

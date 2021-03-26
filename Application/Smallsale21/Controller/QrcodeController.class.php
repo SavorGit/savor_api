@@ -88,6 +88,7 @@ class QrcodeController extends CommonController{
                 $content = $code_url.'dish_'.$data_id.'_'.$type;
                 break;
             case 26:
+            case 32:
                 $code_url = $short_urls['SALE_SHOP_GOODS_QR'];
                 $content = $code_url.'shop_'.$data_id.'_'.$type;
                 if(!empty($suid)){

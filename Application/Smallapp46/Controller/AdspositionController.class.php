@@ -69,43 +69,44 @@ class AdspositionController extends CommonController{
                 $result = $this->getAdList($position);
             }
         }
-
-        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
-        $m_media = new \Common\Model\MediaModel();
-        $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $goods_index = 0;
-        foreach ($result as $k=>$v){
-            foreach ($v as $kv=>$vv){
-                $is_tvdemand = 0;
-                if($vv['clicktype']==2){
-                    $url_info = parse_url($vv['linkcontent']);
-                    if(!empty($url_info['query'])){
-                        $query_params = array();
-                        parse_str($url_info['query'],$query_params);
-                        if(isset($query_params['goods_id']) && $query_params['goods_id']>0){
-                            if($k==2 && $query_params['goods_id']==$goods_id){
-                                $goods_index = $kv;
-                            }
-                            $res_goods = $m_dishgoods->getInfo(array('id'=>$query_params['goods_id']));
-                            if($res_goods['tv_media_id']){
-                                $is_tvdemand = 1;
-                                $media_info = $m_media->getMediaInfoById($res_goods['tv_media_id']);
-                                $oss_path = $media_info['oss_path'];
-                                $oss_path_info = pathinfo($oss_path);
+        if($position!=4){
+            $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_media = new \Common\Model\MediaModel();
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            foreach ($result as $k=>$v){
+                foreach ($v as $kv=>$vv){
+                    $is_tvdemand = 0;
+                    if($vv['clicktype']==2){
+                        $url_info = parse_url($vv['linkcontent']);
+                        if(!empty($url_info['query'])){
+                            $query_params = array();
+                            parse_str($url_info['query'],$query_params);
+                            if(isset($query_params['goods_id']) && $query_params['goods_id']>0){
+                                if($k==2 && $query_params['goods_id']==$goods_id){
+                                    $goods_index = $kv;
+                                }
+                                $res_goods = $m_dishgoods->getInfo(array('id'=>$query_params['goods_id']));
+                                if($res_goods['tv_media_id']){
+                                    $is_tvdemand = 1;
+                                    $media_info = $m_media->getMediaInfoById($res_goods['tv_media_id']);
+                                    $oss_path = $media_info['oss_path'];
+                                    $oss_path_info = pathinfo($oss_path);
 
-                                $result[$k][$kv]['action'] = 14;
-                                $result[$k][$kv]['res_id'] = $res_goods['id'];
-                                $result[$k][$kv]['duration'] = $media_info['duration'];
-                                $result[$k][$kv]['tx_url'] = $media_info['oss_addr'];
-                                $result[$k][$kv]['filename'] = $oss_path_info['basename'];
-                                $result[$k][$kv]['forscreen_url'] = $oss_path;
-                                $result[$k][$kv]['resource_size'] = $media_info['oss_filesize'];
-                                $result[$k][$kv]['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
+                                    $result[$k][$kv]['action'] = 14;
+                                    $result[$k][$kv]['res_id'] = $res_goods['id'];
+                                    $result[$k][$kv]['duration'] = $media_info['duration'];
+                                    $result[$k][$kv]['tx_url'] = $media_info['oss_addr'];
+                                    $result[$k][$kv]['filename'] = $oss_path_info['basename'];
+                                    $result[$k][$kv]['forscreen_url'] = $oss_path;
+                                    $result[$k][$kv]['resource_size'] = $media_info['oss_filesize'];
+                                    $result[$k][$kv]['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
+                                }
                             }
                         }
                     }
+                    $result[$k][$kv]['is_tvdemand'] = $is_tvdemand;
                 }
-                $result[$k][$kv]['is_tvdemand'] = $is_tvdemand;
             }
         }
         if(!empty($version) && $version>='4.6.22'){
@@ -130,9 +131,13 @@ class AdspositionController extends CommonController{
             $m_adsposition = new \Common\Model\Smallapp\AdspositionModel();
             
             $result = array();
-            if($position && strstr($position, ',')){
-            
-                $where['position'] = array('in',$position);
+            if(!empty($position)){
+                $all_position = explode(',',$position);
+                if(count($all_position)>1){
+                    $where['position'] = array('in',$all_position);
+                }else{
+                    $where['position'] = intval($position);
+                }
                 $res_positions = $m_adsposition->getDataList($fields,$where,$orderby);
                 if(!empty($res_positions)){
                     $m_media = new \Common\Model\MediaModel();

@@ -213,7 +213,7 @@ class DishController extends CommonController{
             $data['filename'] = $oss_path_info['basename'];
             $data['forscreen_url'] = $oss_path;
             $data['resource_size'] = $media_info['oss_filesize'];
-            $data['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
+            $data['qrcode_url'] = $host_name."/smallsale21/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
         }
 
         $this->to_back($data);

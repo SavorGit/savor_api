@@ -80,6 +80,15 @@ class BoxLogController extends CommonController{
             $data['area_name'] = $res_area['region_name'];
             $m_adsplaylog = new \Common\Model\Smallapp\AdsplaylogModel();
             $m_adsplaylog->add($data);
+
+            $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+            $res_play = $m_play_log->getOne('*',array('res_id'=>$ads_id,'type'=>3),'id desc');
+            if(empty($res_play)){
+                $data = array('res_id'=>$ads_id,'type'=>3,'nums'=>1);
+                $m_play_log->addInfo($data);
+            }else{
+                $m_play_log->where(array('id'=>$res_play[0]['id']))->setInc('nums',1);
+            }
         }
         $this->to_back(array());
     }

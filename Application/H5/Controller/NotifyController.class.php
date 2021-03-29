@@ -196,6 +196,18 @@ class NotifyController extends Controller{
                                 $cache_key = $key.':'.$md5_file;
                                 $redis->set($cache_key,json_encode($result['imgs']));
                             }
+
+                            $redis->select(5);
+                            $key = C('SAPP_FILE_FORSCREEN');
+                            $task_key = $key.':'.$task_id;
+                            $res_task = $redis->get($task_key);
+                            if(!empty($res_task)){
+                                $task_info = json_decode($res_task,true);
+                                if(!empty($task_info['forscreen_id'])){
+                                    $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+                                    $m_forscreenrecord->updateInfo(array('id'=>$task_info['forscreen_id']),array('file_conversion_status'=>1));
+                                }
+                            }
                         }
                         $file_conversion_status = 2;
                     }else{

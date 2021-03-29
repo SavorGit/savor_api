@@ -122,7 +122,8 @@ class FileforscreenController extends CommonController{
             }
             if($result['task_id'] && $md5_file){
                 $task_key = $key.':'.$result['task_id'];
-                $redis->set($task_key,$md5_file,7200);
+                $task_info = array('md5'=>$md5_file,'forscreen_id'=>$forscreen_id);
+                $redis->set($task_key,json_encode($task_info),86400);
             }
         }else{
             $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));
@@ -155,12 +156,16 @@ class FileforscreenController extends CommonController{
         $redis->select(5);
         $key = C('SAPP_FILE_FORSCREEN');
         $task_key = $key.':'.$task_id;
-        $md5_file = $redis->get($task_key);
-        if($md5_file){
+        $res_task = $redis->get($task_key);
+        if(!empty($res_task)){
+            $task_info = json_decode($res_task,true);
+            $md5_file = $task_info['md5'];
             $cache_key = $key.':'.$md5_file;
             $res_cache = $redis->get($cache_key);
         }else{
             $res_cache = array();
+            $md5_file = '';
+            $cache_key = '';
         }
 
         if(!empty($res_cache)){
@@ -178,7 +183,9 @@ class FileforscreenController extends CommonController{
                     $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
                     $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('file_conversion_status'=>1));
                 }
-                $redis->set($cache_key,json_encode($result['imgs']));
+                if(!empty($cache_key)){
+                    $redis->set($cache_key,json_encode($result['imgs']));
+                }
 
                 if($forscreen_id){
                     $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();

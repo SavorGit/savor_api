@@ -472,7 +472,7 @@ class ContentController extends CommonController{
         $data['collect_num'] = $collect_num + $ret['nums'];
         $data['share_num']   = $share_num;
         $data['play_num']    = $play_num;
-        $data['pubdetail']   = $pubdetail_info;
+        $data['pubdetail']   = array($pubdetail_info);
         $this->to_back($data);
     }
 

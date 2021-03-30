@@ -31,7 +31,7 @@ class CategoryController extends CommonController{
                 if($cate_id){
                     $where = array('type'=>$type,'parent_id'=>$cate_id,'level'=>2);
                     $res_category = $m_category->getDataList('id,name',$where,'sort desc,id desc');
-                    $default_cate = array('id'=>0,'name'=>'全部');
+                    $default_cate = array('id'=>$cate_id,'name'=>'全部');
                 }else{
                     $where = array('type'=>$type,'parent_id'=>0,'level'=>1);
                     $res_data = $m_category->getDataList('id,name,media_id',$where,'sort desc,id desc');

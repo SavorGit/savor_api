@@ -228,7 +228,11 @@ class DemandController extends CommonController{
             $where['res_id'] = $res_id;
             $where['type']   = 3;
             $m_play_log->where($where)->setInc('nums',1);
-            
+        }
+        $m_ads = new \Common\Model\AdsModel();
+        $res_ads = $m_ads->getWhere(array('id'=>$res_id),'*');
+        if($res_ads[0]['type']==8){
+            $type = 5;
         }
         $data = $this->getPubShareInfo($openid, $res_id, $type);
         $data['res_type'] = $type;
@@ -303,6 +307,9 @@ class DemandController extends CommonController{
         $share_num = $m_share->countNum($map);
         $data['share_num'] = $share_num;
         //播放次数
+        if($type==5){
+            $type = 3;
+        }
         $map = array();
         $map['res_id'] = $ads_id;
         $map['type']   = $type;

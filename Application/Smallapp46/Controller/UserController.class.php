@@ -247,7 +247,7 @@ class UserController extends CommonController{
         $where = array();
         $where['a.openid'] = $openid;
         $where['a.status'] = 1;
-        $where['a.type'] = array('in',array(1,2,3));
+        $where['a.type'] = array('in',array(1,2,3,5));
     
         $order="create_time desc";
         $collect_info = $m_collect->getList($fields, $where, $order, $limit);
@@ -284,18 +284,18 @@ class UserController extends CommonController{
                     }
                     $collect_info[$key]['res_num'] = count($pubdetails);
                 }
-            }else if($v['type']==3){
-                $collect_info[$key]['res_type'] = 3;
+            }else if($v['type']==3 || $v['type']==5){
+                $collect_info[$key]['res_type'] = $v['type'];
                 if(empty($v['avatarUrl']) || empty($v['nickName'])){
                     $collect_info[$key]['nickName'] = '小热点';
                     $collect_info[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
                 }
-
                 $info = $m_ads->alias('a')
                 ->field("a.id,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
                 ->join('savor_media media on a.media_id=media.id')
                 ->where(array('a.id'=>$v['res_id']))
                 ->find();
+                $collect_info[$key]['media_type'] = $info['media_type'];
                 if(empty($info['imgurl'])){
                     if($info['media_type']==1){
                         $imgurl = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
@@ -339,7 +339,12 @@ class UserController extends CommonController{
             //播放次数
             $map = array();
             $map['res_id'] = $v['res_id'];
-            $map['type']   = $v['type'];
+            if($v['type']==5){
+                $play_type = 3;
+            }else{
+                $play_type = $v['type'];
+            }
+            $map['type'] = $play_type;
             $play_info = $m_play_log->getOne('nums',$map); 
             $play_num  = intval($play_info['nums']);
             $collect_info[$key]['play_num'] =$play_num;
@@ -422,7 +427,7 @@ class UserController extends CommonController{
         $where = array();
         $where['a.openid'] = $openid;
         $where['a.status'] = 1;
-        $where['a.type']   = array('in','1,2,3');
+        $where['a.type']   = array('in','1,2,3,5');
         $order="a.create_time desc";
         $collect_info = $m_collect->getList($fields, $where, $order, $limit);
     
@@ -434,7 +439,7 @@ class UserController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         foreach($collect_info as $key=>$v){
-            switch ($v['type']){//1:点播2:投屏3:节目单资源4:商品
+            switch ($v['type']){//1:点播2:投屏3:节目单资源4:商品 5本地生活
                 case 1:
                     $collect_info[$key]['res_type'] = 2;
                     $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
@@ -465,12 +470,15 @@ class UserController extends CommonController{
                     }
                     break;
                 case 3:
-                    $collect_info[$key]['res_type'] = 3;
+                case 5:
+                    $collect_info[$key]['res_type'] = $v['type'];
                     $info = $m_ads->alias('a')
                         ->field("a.id,a.name title,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,`oss_addr` lz_url")
                         ->join('savor_media media on a.media_id=media.id')
                         ->where(array('a.id'=>$v['res_id']))
                         ->find();
+                    $collect_info[$key]['media_type'] = $info['media_type'];
+
                     $filename = explode('/', $info['lz_url']);
                     $collect_info[$key]['filename'] = $filename[2];
                     $collect_info[$key]['res_nums'] = 1;

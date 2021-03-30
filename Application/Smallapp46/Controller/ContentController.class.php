@@ -455,21 +455,22 @@ class ContentController extends CommonController{
             'resource_size'=>$ads_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$res_id
         );
 
-        //收藏个数
-        $map = array('res_id'=>$forscreen_id,'type'=>3,'status'=>1);
-        $collect_num = $m_collect->countNum($map);
-        $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
-        $ret = $m_collect_count->field('nums')->where(array('res_id'=>$forscreen_id))->find();
-        //分享个数
-        $map = array('res_id'=>$forscreen_id,'type'=>3,'status'=>1);
-        $share_num = $m_share->countNum($map);
+        $map = array('openid'=>$openid,'res_id'=>$res_id,'status'=>1);
+        $is_collect = $m_collect->countNum($map);
         if(empty($is_collect)){
             $data['is_collect'] = "0";
         }else {
             $data['is_collect'] = "1";
         }
+        //收藏个数
+        $map = array('res_id'=>$res_id,'type'=>5,'status'=>1);
+        $collect_num = $m_collect->countNum($map);
+        //分享个数
+        $map = array('res_id'=>$res_id,'type'=>5,'status'=>1);
+        $share_num = $m_share->countNum($map);
+
         $data['create_time'] = $create_time;
-        $data['collect_num'] = $collect_num + $ret['nums'];
+        $data['collect_num'] = $collect_num;
         $data['share_num']   = $share_num;
         $data['play_num']    = $play_num;
         $data['pubdetail']   = array($pubdetail_info);

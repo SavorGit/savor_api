@@ -27,6 +27,10 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
                 break;
+            case 'adsinfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'res_id'=>1001);
+                break;
             case 'feedback':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'contact'=>1002,'mobile'=>1002,'content'=>1001,
@@ -161,7 +165,6 @@ class ContentController extends CommonController{
                         $res_life_ads = $m_life_ads_hotel->getList($fields,$where,'lads.id desc','0,2');
                         $all_ads = array_merge($res_pro_ads,$res_life_ads);
                     }
-
                     $m_media = new \Common\Model\MediaModel();
                     $pro_ads = $life_ads = array();
                     foreach($all_ads as $v){
@@ -197,7 +200,7 @@ class ContentController extends CommonController{
                         if(!empty($v['img_url'])){
                             $img_url = $oss_host.$v['img_url'];
                         }else{
-                            if($v['res_type']==1){
+                            if($res_type==1){
                                 $img_url = $res_url."?x-oss-process=image/quality,Q_50";
                             }else{
                                 $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
@@ -205,7 +208,12 @@ class ContentController extends CommonController{
                         }
                         $pdetail['img_url'] = $img_url;
                         $dinfo['pubdetail'] = array($pdetail);
-                        $dinfo['type'] = 2;
+                        if($v['ads_type']==8){
+                            $dinfo['type'] = 3;
+                        }else{
+                            $dinfo['type'] = 2;
+                        }
+
                         if($v['ads_type']==2){
                             $pro_ads[]=$dinfo;
                         }else{
@@ -406,6 +414,68 @@ class ContentController extends CommonController{
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
     }
+
+    public function adsinfo(){
+        $openid = $this->params['openid'];
+        $res_id = intval($this->params['res_id']);
+
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $m_share   = new \Common\Model\Smallapp\ShareModel();
+        $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+        $play_where = array('res_id'=>$res_id,'type'=>3);
+        $res_play = $m_play_log->getOne('nums',$play_where,'id desc');
+        $play_num = 0;
+        if(!empty($res_play)){
+            $play_num = intval($res_play['nums']);
+        }
+        $avatarUrl = "http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg";
+        $nickName = '小热点';
+        $data = array('forscreen_id'=>$res_id,'forscreen_char'=>'','public_text'=>'','res_type'=>1,
+            'res_nums'=>1,'is_pub_hotelinfo'=>0,'create_time'=>'','avatarUrl'=>$avatarUrl,'nickName'=>$nickName,
+            'hotel_name'=>''
+        );
+
+        $m_ads = new \Common\Model\AdsModel();
+        $field = 'a.id,a.name title,a.create_time,a.type as ads_type,a.duration,b.type as media_type,b.oss_addr,b.oss_filesize';
+        $where = array('a.id'=>$res_id);
+        $res_ads = $m_ads->getAdsList($field,$where,$order,'0,1');
+        $ads_info = $res_ads[0];
+
+        $now = time();
+        $diff_time =  $now - strtotime($ads_info['create_time']);
+        if($diff_time<=86400){
+            $create_time = viewTimes(strtotime($ads_info['create_time']));
+        }else{
+            $create_time = '';
+        }
+        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_path = $ads_info['oss_addr'];
+        $oss_path_info = pathinfo($oss_path);
+        $pubdetail_info = array('res_url'=>$oss_host.$oss_path,'forscreen_url'=>$oss_path,'duration'=>$ads_info['duration'],
+            'resource_size'=>$ads_info['oss_filesize'],'filename'=>$oss_path_info['basename'],'res_id'=>$res_id
+        );
+
+        //收藏个数
+        $map = array('res_id'=>$forscreen_id,'type'=>3,'status'=>1);
+        $collect_num = $m_collect->countNum($map);
+        $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
+        $ret = $m_collect_count->field('nums')->where(array('res_id'=>$forscreen_id))->find();
+        //分享个数
+        $map = array('res_id'=>$forscreen_id,'type'=>3,'status'=>1);
+        $share_num = $m_share->countNum($map);
+        if(empty($is_collect)){
+            $data['is_collect'] = "0";
+        }else {
+            $data['is_collect'] = "1";
+        }
+        $data['create_time'] = $create_time;
+        $data['collect_num'] = $collect_num + $ret['nums'];
+        $data['share_num']   = $share_num;
+        $data['play_num']    = $play_num;
+        $data['pubdetail']   = $pubdetail_info;
+        $this->to_back($data);
+    }
+
 
     public function addFormid(){
         $openid = $this->params['openid'];

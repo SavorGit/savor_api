@@ -286,11 +286,31 @@ class UserController extends CommonController{
                 }
             }else if($v['type']==3){
                 $collect_info[$key]['res_type'] = 3;
+                if(empty($v['avatarUrl']) || empty($v['nickName'])){
+                    $collect_info[$key]['nickName'] = '小热点';
+                    $collect_info[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                }
+
                 $info = $m_ads->alias('a')
-                ->field("a.id,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
+                ->field("a.id,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
                 ->join('savor_media media on a.media_id=media.id')
                 ->where(array('a.id'=>$v['res_id']))
                 ->find();
+                if(empty($info['imgurl'])){
+                    if($info['media_type']==1){
+                        $imgurl = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                    }else{
+                        $imgurl = $info['res_url'];
+                    }
+                    $info['imgurl'] = $imgurl;
+                }else {
+                    $info['imgurl']  = $info['imgurl'];
+                }
+                if(empty($info['avatarUrl']) || empty($info['nickName'])){
+                    $info['nickName'] = '小热点';
+                    $info['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                }
+
                 $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
                 $collect_info[$key]['list'] = $info;
             }
@@ -447,7 +467,7 @@ class UserController extends CommonController{
                 case 3:
                     $collect_info[$key]['res_type'] = 3;
                     $info = $m_ads->alias('a')
-                        ->field("a.id,a.name title,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,`oss_addr` lz_url")
+                        ->field("a.id,a.name title,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,`oss_addr` lz_url")
                         ->join('savor_media media on a.media_id=media.id')
                         ->where(array('a.id'=>$v['res_id']))
                         ->find();
@@ -456,7 +476,12 @@ class UserController extends CommonController{
                     $collect_info[$key]['res_nums'] = 1;
                     $collect_info[$key]['title']  = $info['title'];
                     if(empty($info['imgurl'])){
-                        $collect_info[$key]['imgurl'] = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                        if($info['media_type']==1){
+                            $imgurl = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                        }else{
+                            $imgurl = $info['res_url'];
+                        }
+                        $collect_info[$key]['imgurl'] = $imgurl;
                     }else {
                         $collect_info[$key]['imgurl']  = $info['imgurl'];
                     }

@@ -61,8 +61,46 @@ class ConfigController extends CommonController{
         $hour = date('G',$activity_next_time);
         $activity_lottery_time = array($day,intval($hour));
 
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'openmoneytask:'.date('Ymd').':'.$openid;
+        $res_cache = $redis->get($cache_key);
+        $is_open_money_task = 0;
+        $money_task_img_path = 'http://'.C('OSS_HOST').'/media/resource/1617100691760.jpg';
+        $money_task_img = '';
+        if(!empty($res_cache)){
+            $is_open_money_task = intval($res_cache);
+            if($is_open_money_task==1){
+                $money_task_img = $money_task_img_path;
+                $is_open_money_task = 0;
+            }
+        }else{
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+            $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
+            if($res_staff[0]['type']==2){
+                $m_task = new \Common\Model\Integral\TaskHotelModel();
+                $where = array('a.hotel_id'=>$hotel_id,'task.type'=>2,'task.task_type'=>21,'task.status'=>1,'task.flag'=>1);
+                $res_task = $m_task->getHotelTasks('a.id',$where);
+                if(!empty($res_task)){
+                    $is_open_money_task = 1;
+                }else{
+                    $is_open_money_task = 0;
+                }
+            }else{
+                $is_open_money_task = 0;
+            }
+            $redis->set($cache_key,$is_open_money_task,86400);
+            if($is_open_money_task==1){
+                $money_task_img = $money_task_img_path;
+            }
+        }
+
+
+
         $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status,
-            'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time);
+            'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time,
+            'is_open_money_task'=>$is_open_money_task,'money_task_img'=>$money_task_img);
         $this->to_back($res_data);
     }
 

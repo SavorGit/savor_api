@@ -181,6 +181,10 @@ class ContentController extends CommonController{
                         if(!empty($play_info)){
                             $play_nums = intval($play_info['nums']);
                         }
+                        if($v['ads_type']!=8 && $play_nums<10000){
+                            $play_nums = $play_nums + rand(10000,100000);
+                            $m_play_log->updateInfo(array('id'=>$play_info['id']),array('nums'=>$play_nums));
+                        }
 
                         $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
                             'title'=>$v['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1);

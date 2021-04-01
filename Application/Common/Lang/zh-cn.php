@@ -406,6 +406,12 @@ return array(
     'smallapp_lottery_join_people_num_error'=>'大于2人才可开始抽奖，快来邀请好友加入吧',
     'smallapp_lottery_timeout_error'=>'活动已超时结束，请重新发起。',
     'smallapp_turntable_game_has_exist'=>'活动已超时结束，请重新发起。',
+    'smallappsale_not_has_cash_task'=>'请先领取现金红包任务',
+    'smallappsale_cash_task_had_expire'=>'任务已超时结束，请重新领取现金任务',
+    'smallappsale_cash_task_had_withdraw'=>'现金已领取，请再次领取现金任务',
+    'smallappsale_cash_task_had_recevie'=>'现金任务已领取，请完成后再次领取',
+    'smallappsale_claim_income_error'=>'收益已被其他人领取，请选取其他包间',
+    'smallappsale_notcash_task_claim_error'=>'请先领取现金红包任务',
 
 
 );

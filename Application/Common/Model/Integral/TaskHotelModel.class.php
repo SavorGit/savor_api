@@ -25,4 +25,33 @@ class TaskHotelModel extends BaseModel{
             ->select();
         return $task_list;
     }
+
+    public function getTaskinfo($task,$utask=array()){
+        $content = array();
+        if($task['meal_num']>0){
+            $info = array('name'=>'互动饭局数','num'=>$task['meal_num']);
+            if(!empty($utask)){
+                $finish_num = $utask['meal_num']>$task['meal_num']?$task['meal_num']:$utask['meal_num'];
+                $info['finish_num'] = $finish_num;
+            }
+            $content[] = $info;
+        }
+        if($task['comment_num']>0){
+            $info = array('name'=>'邀请客人对您进行评价','num'=>$task['comment_num']);
+            if(!empty($utask)){
+                $finish_num = $utask['comment_num']>$task['comment_num']?$task['comment_num']:$utask['comment_num'];
+                $info['finish_num'] = $finish_num;
+            }
+            $content[] = $info;
+        }
+        if($task['interact_num']>0){
+            $info = array('name'=>'邀请客人扫码进行投屏','num'=>$task['interact_num']);
+            if(!empty($utask)){
+                $finish_num = $utask['interact_num']>$task['interact_num']?$task['interact_num']:$utask['interact_num'];
+                $info['finish_num'] = $finish_num;
+            }
+            $content[] = $info;
+        }
+        return $content;
+    }
 }

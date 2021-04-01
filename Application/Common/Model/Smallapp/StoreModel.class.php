@@ -24,7 +24,7 @@ class StoreModel extends BaseModel {
     }
 
     public function buildHotelSql($area_id,$county_id=0,$food_style_id=0,$avg_id=0){
-        $sql_hotel = "select hotel.id as hotel_id,hotel.media_id,hotel.name,hotel.addr,hotel.tel,hotel.gps,ext.avg_expense,food.name tag_name,'120' as cate_id
+        $sql_hotel = "select hotel.id as hotel_id,ext.hotel_cover_media_id as media_id,hotel.name,hotel.addr,hotel.tel,hotel.gps,ext.avg_expense,food.name tag_name,'120' as cate_id
             from savor_hotel as hotel left join savor_hotel_ext as ext on hotel.id=ext.hotel_id left join savor_hotel_food_style as food on ext.food_style_id=food.id
             where hotel.area_id={$area_id} and hotel.state=1 and hotel.flag=0";
         $hotel_box_types = C('HEART_HOTEL_BOX_TYPE');

@@ -13,7 +13,7 @@ class TaskuserModel extends BaseModel{
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(2);
             $res_cache = $redis->get($cache_key.$hotel_id);
-            $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
+            $where = array('a.hotel_id'=>$hotel_id,'task.type'=>1,'task.status'=>1,'task.flag'=>1);
             if(!empty($res_cache)){
                 $relation_hotel_id = intval($res_cache);
                 $where['a.hotel_id'] = array('in',array($hotel_id,$relation_hotel_id));
@@ -56,7 +56,7 @@ class TaskuserModel extends BaseModel{
         $redis->select(2);
         $res_cache = $redis->get($cache_key.$hotel_id);
 
-        $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'task.type'=>1,'task.status'=>1,'task.flag'=>1);
         $where['task.task_type'] = array('in',array(4,5));//任务类型1开机,2互动,3活动推广,4邀请食客评价,5打赏补贴
         if(!empty($res_cache)){
             $relation_hotel_id = intval($res_cache);

@@ -408,6 +408,13 @@ return array(
 	    '93057'=>'smallappsale_input_assign_money_error',
 	    '93058'=>'smallappsale_merchant_assign_money_error',
 	    '93059'=>'smallappsale_input_assign_integral_error',
+	    '93060'=>'smallappsale_not_has_cash_task',
+	    '93061'=>'smallappsale_cash_task_had_expire',
+	    '93062'=>'smallappsale_cash_task_had_withdraw',
+	    '93063'=>'smallappsale_cash_task_had_recevie',
+	    '93064'=>'smallappsale_claim_income_error',
+	    '93065'=>'smallappsale_notcash_task_claim_error',
+
 
 	),
 );

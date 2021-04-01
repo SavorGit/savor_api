@@ -164,6 +164,8 @@ class ContentController extends CommonController{
                         $where['media.id']  = array('in',array_values($tmp_life_ids));
                         $res_life_ads = $m_life_ads_hotel->getList($fields,$where,'lads.id desc','0,2');
                         $all_ads = array_merge($res_pro_ads,$res_life_ads);
+                    }else{
+                        $all_ads = $res_pro_ads;
                     }
                     $m_media = new \Common\Model\MediaModel();
                     $pro_ads = $life_ads = array();

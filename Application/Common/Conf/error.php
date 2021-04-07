@@ -414,6 +414,7 @@ return array(
 	    '93063'=>'smallappsale_cash_task_had_recevie',
 	    '93064'=>'smallappsale_claim_income_error',
 	    '93065'=>'smallappsale_notcash_task_claim_error',
+	    '93066'=>'smallappsale_cash_task_not_finish',
 
 
 	),

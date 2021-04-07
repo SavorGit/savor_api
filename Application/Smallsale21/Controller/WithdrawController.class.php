@@ -15,6 +15,10 @@ class WithdrawController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('id'=>1001,'openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'claimMoney':
+                $this->is_verify = 1;
+                $this->valid_fields = array('task_id'=>1001,'openid'=>1001,'hotel_id'=>1001);
+                break;
             case 'exchangerecord':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
@@ -360,4 +364,98 @@ class WithdrawController extends CommonController{
         $res = array('message'=>$message,'tips'=>$tips,'withdraw_fee'=>0,'income_fee'=>$income_fee);
         $this->to_back($res);
     }
+
+
+    public function claimMoney(){
+        $task_id = intval($this->params['task_id']);
+        $hotel_id = intval($this->params['hotel_id']);
+        $openid = $this->params['openid'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,a.hotel_id,a.room_ids,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $staff_info = $res_staff[0];
+
+        $m_usertask = new \Common\Model\Smallapp\UserTaskModel();
+        $where = array('id'=>$task_id,'openid'=>$openid);
+        $res_usertask = $m_usertask->getInfo($where);
+        if(empty($res_usertask)){
+            $this->to_back(93060);
+        }
+        if($res_usertask['status']==1){
+            $this->to_back(93066);
+        }
+        if($res_usertask['status']==3){
+            $this->to_back(93061);
+        }
+        if(in_array($res_usertask['status'],array(4,5))){
+            $this->to_back(93062);
+        }
+        $data = array();
+        if($res_usertask['status']==2 && $res_usertask['money']==$res_usertask['get_money']){
+            $smallapp_config = C('SMALLAPP_SALE_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key'],
+                'sslcert_path'=>$sslcert_path,
+                'sslkey_path'=>$sslkey_path,
+            );
+            $total_fee = $res_usertask['money'];
+            $m_order = new \Common\Model\Smallapp\ExchangeModel();
+            $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>3,
+                'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+            $order_id = $m_order->add($add_data);
+
+            $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            if($res['code']==10000){
+                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+                $m_usertask->updateData(array('id'=>$task_id),array('status'=>4,'withdraw_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $m_usertask->updateData(array('id'=>$task_id),array('status'=>5,'withdraw_time'=>date('Y-m-d H:i:s')));
+
+                if($res['code']==10003){
+                    //发送短信
+                    $ucconfig = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $params = array('merchant_no'=>1594752111);
+                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                    $phones = C('WEIXIN_MONEY_NOTICE');
+                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                    foreach ($phones as $vp){
+                        $res_data = $alisms::sendSms($vp,$params,$template_code);
+                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_data->Code,'msg_type'=>3
+                        );
+                        $m_account_sms_log->addData($data);
+                    }
+                }
+            }
+            $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('name',$hotel_id);
+
+            $record_data = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['name'],
+                'task_hotel_id'=>$res_usertask['task_hotel_id'],'meal_num'=>$res_usertask['meal_num'],
+                'interact_num'=>$res_usertask['interact_num'],'comment_num'=>$res_usertask['comment_num'],
+                'type'=>1
+            );
+            $m_usertaskrecord->add($record_data);
+            $message = '您已提现成功，请注意查收。';
+            $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
+            $data = array('message'=>$message,'tips'=>$tips);
+        }
+        $this->to_back($data);
+    }
+
 }

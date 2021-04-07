@@ -412,6 +412,7 @@ return array(
     'smallappsale_cash_task_had_recevie'=>'现金任务已领取，请完成后再次领取',
     'smallappsale_claim_income_error'=>'收益已被其他人领取，请选取其他包间',
     'smallappsale_notcash_task_claim_error'=>'请先领取现金红包任务',
+    'smallappsale_cash_task_not_finish'=>'请先完成现金红包任务',
 
 
 );

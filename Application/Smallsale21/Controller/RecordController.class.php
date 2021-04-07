@@ -20,6 +20,14 @@ class RecordController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'page'=>1);
                 break;
+            case 'taskfinish':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'page'=>1);
+                break;
+            case 'rollexchangelist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
 
 
         }
@@ -57,7 +65,7 @@ class RecordController extends CommonController{
                 $ut_fields = 'sum(meal_num) as meal_num,sum(comment_num) as comment_num,sum(interact_num) as interact_num';
                 $res_list = $m_usertaskrecord->getDataList($ut_fields,$where,'id desc');
                 $content = $m_hoteltask->getTaskinfo($res_list[0]);
-                $info = array('date_str'=>date("j月d日",strtotime($date)),'content'=>$content);
+                $info = array('date_str'=>date("n月d日",strtotime($date)),'content'=>$content);
                 $datalist[]=$info;
             }
         }
@@ -98,7 +106,7 @@ class RecordController extends CommonController{
                 foreach ($res_list as $cv){
                     $date_clist[]=array('box_name'=>$cv['box_name'],'content'=>$m_hoteltask->getTaskinfo($cv));
                 }
-                $info = array('date_str'=>date("j月d日",strtotime($date)),'list'=>$date_clist);
+                $info = array('date_str'=>date("n月d日",strtotime($date)),'list'=>$date_clist);
                 $datalist[]=$info;
             }
         }
@@ -129,11 +137,54 @@ class RecordController extends CommonController{
         $datalist = array();
         if($res_usertask['total']>0){
             foreach ($res_usertask['list'] as $k=>$v){
-                $datalist[]=array('id'=>$v['id'],'money'=>$v['money'],'date_str'=>date("Y年j月d日",strtotime($v['withdraw_time'])));
+                $datalist[]=array('id'=>$v['id'],'money'=>$v['money'],'date_str'=>date("Y年n月d日",strtotime($v['withdraw_time'])));
             }
         }
         $data = array('total'=>$total,'datalist'=>$datalist);
         $this->to_back($data);
+    }
+
+    public function rollexchangelist(){
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'exchangerecord';
+        $res_cache = $redis->get($cache_key);
+        $cache_record = array();
+        if(!empty($res_cache)){
+            $res_cache = json_decode($res_cache,true);
+            shuffle($res_cache);
+            $cache_record = array_slice($res_cache,0,50);
+        }
+        $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
+        $fileds = 'a.openid,a.money,user.avatarUrl as avatar_url,user.nickName as name';
+        $where = array('a.hotel_id'=>$hotel_id,'a.type'=>1);
+        $res_hotelrecord = $m_usertaskrecord->getFinishRecordlist($fileds,$where,'a.id desc',0,50);
+        $exchange_list = array();
+        $total = 50;
+        if(count($res_hotelrecord)<50){
+            $hotel_num = $total - count($res_hotelrecord);
+            $where = array('a.hotel_id'=>array('neq',$hotel_id),'a.type'=>1);
+            $res_other_hotelrecord = $m_usertaskrecord->getFinishRecordlist($fileds,$where,'a.id desc',0,$hotel_num);
+            $other_hotel_num = count($res_other_hotelrecord);
+            $last_num = $hotel_num - $other_hotel_num;
+            if($last_num>0){
+                $cache_record = array_slice($cache_record,0,$last_num);
+                $exchange_list = array_merge($res_hotelrecord,$res_other_hotelrecord,$cache_record);
+            }else{
+                $exchange_list = array_merge($res_hotelrecord,$res_other_hotelrecord);
+            }
+        }else{
+            $exchange_list = $res_hotelrecord;
+        }
+        $datalist = array();
+        foreach ($exchange_list as $v){
+            $content = "{$v['name']}领取了{$v['money']}元现金红包";
+            $info = array('avatar_url'=>$v['avatar_url'],'content'=>$content);
+            $datalist[]=$info;
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
 

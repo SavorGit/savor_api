@@ -35,12 +35,20 @@ class BoxincomeController extends CommonController{
         }
         $m_boxincome = new \Common\Model\Smallapp\BoxincomeModel();
         $where = array('hotel_id'=>$hotel_id);
+        $day_time = strtotime("-1 day");
+        $start_time = date('Y-m-d 00:00:00',$day_time);
+        $end_time = date('Y-m-d 23:59:59',$day_time);
+        $where['add_time'] =  array(array('egt',$start_time),array('elt',$end_time),'and');
         $res_data = $m_boxincome->getDataList('*',$where,'id desc');
         $datalist = array();
+        $total = 0;
         if(!empty($res_data)){
             foreach ($res_data as $v){
                 $num = $v['meal_num'] + $v['comment_num'] + $v['interact_num'];
                 $info = array('id'=>$v['id'],'box_name'=>$v['box_name'],'num'=>$num,'is_claim'=>$v['is_claim']);
+                if($v['is_claim']==1){
+                    $total++;
+                }
                 $datalist[]=$info;
             }
         }
@@ -107,6 +115,10 @@ class BoxincomeController extends CommonController{
             'interact_num'=>$user_task_info['interact_num']+$interact_num,
             'comment_num'=>$user_task_info['comment_num']+$comment_num,'get_money'=>$get_money
         );
+        if($get_money==$user_task_info['money']){
+            $up_usertask_data['finish_time'] = date('Y-m-d H:i:s');
+            $up_usertask_data['status'] = 2;
+        }
         $m_usertask->updateData(array('id'=>$user_task_info['id']),$up_usertask_data);
 
         $usertask_record = array('openid'=>$openid,'hotel_id'=>$res_income['hotel_id'],'hotel_name'=>$res_income['hotel_name'],

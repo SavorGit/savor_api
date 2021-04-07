@@ -16,4 +16,15 @@ class UserTaskRecordModel extends BaseModel{
         }
         return $data;
     }
+
+    public function getFinishRecordlist($fileds,$where,$orderby,$start,$size){
+        $res = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_smallapp_user user on user.openid=a.openid','left')
+            ->where($where)
+            ->order($orderby)
+            ->limit($start,$size)
+            ->select();
+        return $res;
+    }
 }

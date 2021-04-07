@@ -235,7 +235,8 @@ class TaskController extends CommonController{
         $name = $img_url = $end_time = '';
 
         if($res_usertask['total']>0){
-            $task_id = $res_usertask['list'][0]['task_hotel_id'];
+            $task_id = $res_usertask['list'][0]['id'];
+            $task_hotel_id = $res_usertask['list'][0]['task_hotel_id'];
             $status = $res_usertask['list'][0]['status'];
             if($status==1){
                 $now_time = date('Y-m-d H:i:s');
@@ -253,9 +254,9 @@ class TaskController extends CommonController{
             }else{
                 $percent = 100;
             }
-            if($task_id){
+            if($task_id && $task_hotel_id){
                 $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
-                $where = array('a.id'=>$task_id);
+                $where = array('a.id'=>$task_hotel_id);
                 $fileds = 'a.meal_num,a.interact_num,a.comment_num,a.finish_num,task.name,task.media_id,task.end_time';
                 $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
                 $name = $res_task[0]['name'];
@@ -291,7 +292,7 @@ class TaskController extends CommonController{
         }
 
         $m_usertask = new \Common\Model\Smallapp\UserTaskModel();
-        $where = array('openid'=>$openid,'task_hotel_id'=>$task_id);
+        $where = array('id'=>$task_id,'openid'=>$openid);
         $res_usertask = $m_usertask->getInfo($where);
         if(empty($res_usertask)){
             $this->to_back(93060);
@@ -308,7 +309,7 @@ class TaskController extends CommonController{
         $money = $get_money = 0;
         $content = array();
         if(in_array($res_usertask['status'],array(1,2))){
-            $task_id = $res_usertask['task_hotel_id'];
+            $task_id = $res_usertask['id'];
             $status = $res_usertask['status'];
             if($status==1){
                 $now_time = date('Y-m-d H:i:s');
@@ -349,8 +350,9 @@ class TaskController extends CommonController{
                 $content = $m_hoteltask->getTaskinfo($res_task[0],$res_usertask);
             }
         }
+        $diff_money = $money - $get_money;
         $data = array('task_id'=>$task_id,'status'=>$status,'percent'=>$percent,'money'=>$money,
-            'get_money'=>$get_money,'name'=>$name,'img_url'=>$img_url,'end_time'=>$end_time,
+            'get_money'=>$get_money,'diff_money'=>$diff_money,'name'=>$name,'img_url'=>$img_url,'end_time'=>$end_time,
             'send_num'=>$send_num,'is_bind_room'=>$is_bind_room,'content'=>$content
         );
         $this->to_back($data);

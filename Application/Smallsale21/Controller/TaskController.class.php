@@ -183,7 +183,7 @@ class TaskController extends CommonController{
         }
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
         $fields = 'a.id as task_hid,a.task_id,task.name,task.media_id,task.end_time';
-        $where = array('task.type'=>2,'task.task_type'=>21,'task.status'=>1,'task.flag'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'task.type'=>2,'task.task_type'=>21,'task.status'=>1,'task.flag'=>1);
         $where['task.end_time'] = array('egt',date('Y-m-d H:i:s'));
         $res_task = $m_hoteltask->getHotelTaskList($fields,$where,'task.money desc',0,100);
         $datalist = array();
@@ -338,9 +338,10 @@ class TaskController extends CommonController{
                 }
 
                 $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
-                $where = array('a.id'=>$task_id);
+                $where = array('a.id'=>$res_usertask['task_hotel_id']);
                 $fileds = 'a.meal_num,a.interact_num,a.comment_num,a.finish_num,task.name,task.media_id,task.end_time';
                 $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+                $name = $res_task[0]['name'];
                 $end_time = $res_task[0]['end_time'];
                 if(!empty($res_task[0]['media_id'])){
                     $m_media = new \Common\Model\MediaModel();
@@ -350,7 +351,7 @@ class TaskController extends CommonController{
                 $content = $m_hoteltask->getTaskinfo($res_task[0],$res_usertask);
             }
         }
-        $diff_money = $money - $get_money;
+        $diff_money = $money-$get_money>0?$money-$get_money:0;
         $data = array('task_id'=>$task_id,'status'=>$status,'percent'=>$percent,'money'=>$money,
             'get_money'=>$get_money,'diff_money'=>$diff_money,'name'=>$name,'img_url'=>$img_url,'end_time'=>$end_time,
             'send_num'=>$send_num,'is_bind_room'=>$is_bind_room,'content'=>$content

@@ -298,6 +298,7 @@ return array(
     'SAPP_SALE_ACTIVITY_PROMOTE'=>'smallappsale:activitypromote:',
     'SAPP_SALE_COMMENT_PROMOTE'=>'smallappsale:commentpromote:',
     'SAPP_SALE_WELCOME_RESOURCE'=>'smallappsale:welcomeresource',
+    'SAPP_SALE_TASK_SENDNUM'=>'smallappsale:tasksendnum:',
     'SMALLAPP_HOTEL_RELATION'=>'smallapp:hotelrelation:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
     'SAPP_SHOP_PROGRAM'=>'smallapp:shopprogram',

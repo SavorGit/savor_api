@@ -34,11 +34,8 @@ class BoxincomeController extends CommonController{
             $this->to_back(93014);
         }
         $m_boxincome = new \Common\Model\Smallapp\BoxincomeModel();
-        $where = array('hotel_id'=>$hotel_id);
-        $day_time = strtotime("-1 day");
-        $start_time = date('Y-m-d 00:00:00',$day_time);
-        $end_time = date('Y-m-d 23:59:59',$day_time);
-        $where['add_time'] =  array(array('egt',$start_time),array('elt',$end_time),'and');
+        $static_date = date('Y-m-d',strtotime("-1 day"));
+        $where = array('hotel_id'=>$hotel_id,'static_date'=>$static_date);
         $res_data = $m_boxincome->getDataList('*',$where,'id desc');
         $datalist = array();
         $all_total = count($res_data);
@@ -137,7 +134,12 @@ class BoxincomeController extends CommonController{
             'interact_num'=>$user_task_info['interact_num']+$interact_num,
             'comment_num'=>$user_task_info['comment_num']+$comment_num,'get_money'=>$get_money
         );
-        if($get_money>=$user_task_info['money']){
+        $task_num_eq = 0;
+        if($up_usertask_data['meal_num']==$res_hoteltask['meal_num'] && $up_usertask_data['interact_num']==$res_hoteltask['interact_num']
+            && $up_usertask_data['comment_num']==$res_hoteltask['comment_num']){
+            $task_num_eq = 1;
+        }
+        if($get_money>=$user_task_info['money'] || $task_num_eq==1){
             $up_usertask_data['get_money'] = $user_task_info['money'];
             $up_usertask_data['finish_time'] = date('Y-m-d H:i:s');
             $up_usertask_data['status'] = 2;

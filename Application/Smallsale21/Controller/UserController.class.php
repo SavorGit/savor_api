@@ -171,6 +171,7 @@ class UserController extends CommonController{
         $userinfo['hotel_type'] = $hotel_type;
 
         $subscribe_status = 0;//1无openID 2未关注公众号 3已关注公众号
+
         if($openid){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
@@ -194,6 +195,7 @@ class UserController extends CommonController{
                 }
             }
         }
+
         if($hotel_id==791){
             $subscribe_status = 3;
         }

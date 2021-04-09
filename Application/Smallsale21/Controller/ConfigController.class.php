@@ -10,7 +10,7 @@ class ConfigController extends CommonController{
         switch(ACTION_NAME) {
             case 'getConfig':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1002);
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1002,'action'=>1002);
                 break;
         }
         parent::_init_();
@@ -19,7 +19,9 @@ class ConfigController extends CommonController{
     public function getConfig(){
         $hotel_id = intval($this->params['hotel_id']);
         $openid = $this->params['openid'];
+        $action = $this->params['action'];
         $subscribe_status = 0;//1无openID 2未关注公众号 3已关注公众号
+
         if($openid){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
@@ -66,7 +68,7 @@ class ConfigController extends CommonController{
         $cache_key = C('SAPP_SALE').'openmoneytask:'.date('Ymd').':'.$openid;
         $res_cache = $redis->get($cache_key);
         $is_open_money_task = 0;
-        $money_task_img_path = 'http://'.C('OSS_HOST').'/media/resource/1617100691760.jpg';
+        $money_task_img_path = 'http://'.C('OSS_HOST').'/media/resource/EMa5QMdzEW.png';
         $money_task_img = '';
         if(!empty($res_cache)){
             $is_open_money_task = intval($res_cache);
@@ -75,28 +77,29 @@ class ConfigController extends CommonController{
                 $is_open_money_task = 0;
             }
         }else{
-            $m_staff = new \Common\Model\Integral\StaffModel();
-            $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-            $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
-            if($res_staff[0]['type']==2){
-                $m_task = new \Common\Model\Integral\TaskHotelModel();
-                $where = array('a.hotel_id'=>$hotel_id,'task.type'=>2,'task.task_type'=>21,'task.status'=>1,'task.flag'=>1);
-                $res_task = $m_task->getHotelTasks('a.id',$where);
-                if(!empty($res_task)){
-                    $is_open_money_task = 1;
+            if(!empty($action)){
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+                $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
+                if($res_staff[0]['type']==2){
+                    $m_task = new \Common\Model\Integral\TaskHotelModel();
+                    $where = array('a.hotel_id'=>$hotel_id,'task.type'=>2,'task.task_type'=>21,'task.status'=>1,'task.flag'=>1);
+                    $where['task.end_time'] = array('egt',date('Y-m-d H:i:s'));
+                    $res_task = $m_task->getHotelTasks('a.id',$where);
+                    if(!empty($res_task)){
+                        $is_open_money_task = 1;
+                    }else{
+                        $is_open_money_task = 0;
+                    }
                 }else{
                     $is_open_money_task = 0;
                 }
-            }else{
-                $is_open_money_task = 0;
-            }
-            $redis->set($cache_key,$is_open_money_task,86400);
-            if($is_open_money_task==1){
-                $money_task_img = $money_task_img_path;
+                $redis->set($cache_key,$is_open_money_task,86400);
+                if($is_open_money_task==1){
+                    $money_task_img = $money_task_img_path;
+                }
             }
         }
-
-
 
         $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status,
             'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time,

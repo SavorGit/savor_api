@@ -189,14 +189,19 @@ class TaskController extends CommonController{
         $datalist = array();
         if(!empty($res_task)){
             $m_media = new \Common\Model\MediaModel();
+            $send_num_key = C('SAPP_SALE_TASK_SENDNUM');
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(14);
             foreach ($res_task as $v){
-                $send_num = 0;
-                $where = array('task_id'=>$v['task_id'],'status'=>array('in',array(4,5)));
-                $fields = 'count(id) as num';
-                $res_task_num = $m_usertask->getDataList($fields,$where,'id desc');
-                if(!empty($res_task_num)){
-                    $send_num = intval($res_task_num['num']);
+                $send_num_cache_key = $send_num_key.$v['task_id'];
+                $res_send_num = $redis->get($send_num_cache_key);
+                if(!empty($res_send_num)){
+                    $send_num = $res_send_num + rand(10,20);
+                }else{
+                    $send_num = 500 + rand(10,20);
                 }
+                $redis->set($send_num_cache_key,$send_num,86400*30);
+
                 $status = 1;
                 if($is_has_task){
                     $status = 2;
@@ -330,11 +335,13 @@ class TaskController extends CommonController{
                 $percent = 100;
             }
             if($task_id){
-                $where = array('task_id'=>$res_usertask['task_id'],'status'=>array('in',array(4,5)));
-                $fields = 'count(id) as num';
-                $res_task_num = $m_usertask->getDataList($fields,$where,'id desc');
-                if(!empty($res_task_num)){
-                    $send_num = intval($res_task_num['num']);
+                $send_num_key = C('SAPP_SALE_TASK_SENDNUM');
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(14);
+                $send_num_cache_key = $send_num_key.$res_usertask['task_id'];
+                $res_send_num = $redis->get($send_num_cache_key);
+                if(!empty($res_send_num)){
+                    $send_num = $res_send_num;
                 }
 
                 $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();

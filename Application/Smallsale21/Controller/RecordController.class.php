@@ -10,15 +10,11 @@ class RecordController extends CommonController{
         switch(ACTION_NAME) {
             case 'taskprocess':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'task_id'=>1001,'openid'=>1001);
                 break;
             case 'taskclaim':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001);
-                break;
-            case 'taskfinish':
-                $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001,'page'=>1);
+                $this->valid_fields = array('hotel_id'=>1001,'task_id'=>1001,'openid'=>1001);
                 break;
             case 'taskfinish':
                 $this->is_verify = 1;
@@ -36,6 +32,7 @@ class RecordController extends CommonController{
 
     public function taskprocess(){
         $hotel_id = intval($this->params['hotel_id']);
+        $task_id = intval($this->params['task_id']);
         $openid = $this->params['openid'];
         $page = $this->params['page']?$this->params['page']:1;
         $pagesize = 10;
@@ -49,7 +46,7 @@ class RecordController extends CommonController{
         }
 
         $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
-        $where = array('openid'=>$openid,'type'=>1);
+        $where = array('openid'=>$openid,'task_id'=>$task_id,'type'=>1);
         $all_nums = $page * $pagesize;
         $count_fields = 'COUNT(DISTINCT(DATE(add_time))) AS tp_count';
         $fields = 'DATE(add_time) add_date';
@@ -75,6 +72,7 @@ class RecordController extends CommonController{
 
     public function taskclaim(){
         $hotel_id = intval($this->params['hotel_id']);
+        $task_id = intval($this->params['task_id']);
         $openid = $this->params['openid'];
         $page = $this->params['page']?$this->params['page']:1;
         $pagesize = 10;
@@ -88,7 +86,7 @@ class RecordController extends CommonController{
         }
 
         $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
-        $where = array('openid'=>$openid,'type'=>2);
+        $where = array('openid'=>$openid,'usertask_id'=>$task_id,'type'=>2);
         $all_nums = $page * $pagesize;
         $count_fields = 'COUNT(DISTINCT(DATE(add_time))) AS tp_count';
         $fields = 'DATE(add_time) add_date';
@@ -159,7 +157,7 @@ class RecordController extends CommonController{
         }
         $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
         $fileds = 'a.openid,a.money,user.avatarUrl as avatar_url,user.nickName as name';
-        $where = array('a.hotel_id'=>$hotel_id,'a.type'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'a.type'=>3);
         $res_hotelrecord = $m_usertaskrecord->getFinishRecordlist($fileds,$where,'a.id desc',0,50);
         $exchange_list = array();
         $total = 50;

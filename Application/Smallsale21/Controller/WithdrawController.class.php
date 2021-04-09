@@ -447,10 +447,11 @@ class WithdrawController extends CommonController{
 
             $record_data = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['name'],
                 'task_hotel_id'=>$res_usertask['task_hotel_id'],'meal_num'=>$res_usertask['meal_num'],
-                'interact_num'=>$res_usertask['interact_num'],'comment_num'=>$res_usertask['comment_num'],
-                'type'=>1
+                'interact_num'=>$res_usertask['interact_num'],'comment_num'=>$res_usertask['comment_num'],'money'=>$total_fee,
+                'type'=>3
             );
             $m_usertaskrecord->add($record_data);
+
             $message = '您已提现成功，请注意查收。';
             $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
             $data = array('message'=>$message,'tips'=>$tips);

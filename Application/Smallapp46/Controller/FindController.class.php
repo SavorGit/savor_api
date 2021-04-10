@@ -104,7 +104,13 @@ class FindController extends CommonController{
             $demand_list = array();
             $m_media = new \Common\Model\MediaModel();
             foreach($res_demand as $v){
-                $create_time = viewTimes(strtotime($v['create_time']));
+                $now = time();
+                $diff_time =  $now - strtotime($v['create_time']);
+                if($diff_time<=86400){
+                    $create_time = viewTimes(strtotime($v['create_time']));
+                }else{
+                    $create_time = '';
+                }
                 $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,
                     'hotel_name'=>'','avatarUrl'=>$default_avatar,'nickName'=>'小热点');
                 if(!empty($v['content'])){

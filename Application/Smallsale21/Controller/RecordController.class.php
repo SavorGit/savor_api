@@ -46,7 +46,7 @@ class RecordController extends CommonController{
         }
 
         $m_usertaskrecord = new \Common\Model\Smallapp\UserTaskRecordModel();
-        $where = array('openid'=>$openid,'task_id'=>$task_id,'type'=>1);
+        $where = array('openid'=>$openid,'usertask_id'=>$task_id,'type'=>1);
         $all_nums = $page * $pagesize;
         $count_fields = 'COUNT(DISTINCT(DATE(add_time))) AS tp_count';
         $fields = 'DATE(add_time) add_date';

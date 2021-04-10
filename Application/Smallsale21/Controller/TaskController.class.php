@@ -201,7 +201,9 @@ class TaskController extends CommonController{
                     $send_num = 500 + rand(10,20);
                 }
                 $redis->set($send_num_cache_key,$send_num,86400*30);
-
+                if($send_num>9999){
+                    $send_num = '9999+';
+                }
                 $status = 1;
                 if($is_has_task){
                     $status = 2;
@@ -247,7 +249,7 @@ class TaskController extends CommonController{
                 $now_time = date('Y-m-d H:i:s');
                 $m_task = new \Common\Model\Integral\TaskModel();
                 $res_otask = $m_task->getInfo(array('id'=>$res_usertask['list'][0]['task_id']));
-                if($res_otask['end_time']<$now_time){
+                if($res_otask['end_time']<$now_time || $res_otask['status']==0 || $res_otask['flag']==0){
                     $m_usertask->updateData(array('id'=>$res_usertask['list'][0]['id']),array('status'=>3));
                     $task_id = 0;
                     $status = 0;
@@ -320,7 +322,7 @@ class TaskController extends CommonController{
                 $now_time = date('Y-m-d H:i:s');
                 $m_task = new \Common\Model\Integral\TaskModel();
                 $res_otask = $m_task->getInfo(array('id'=>$res_usertask['task_id']));
-                if($res_otask['end_time']<$now_time){
+                if($res_otask['end_time']<$now_time || $res_otask['status']==0 || $res_otask['flag']==0){
                     $m_usertask->updateData(array('id'=>$res_usertask['id']),array('status'=>3));
                     $task_id = 0;
                     $status = 0;
@@ -342,6 +344,9 @@ class TaskController extends CommonController{
                 $res_send_num = $redis->get($send_num_cache_key);
                 if(!empty($res_send_num)){
                     $send_num = $res_send_num;
+                    if($send_num>9999){
+                        $send_num = '9999+';
+                    }
                 }
 
                 $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();

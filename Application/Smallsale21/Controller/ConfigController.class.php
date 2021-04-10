@@ -100,6 +100,14 @@ class ConfigController extends CommonController{
                 }
             }
         }
+        if(empty($money_task_img)){
+            $m_usertask = new \Common\Model\Smallapp\UserTaskModel();
+            $where = array('openid'=>$openid,'status'=>2);
+            $res_usertask = $m_usertask->getDataList('*',$where,'id desc',0,1);
+            if($res_usertask['total']>0){
+                $money_task_img = $money_task_img_path;
+            }
+        }
 
         $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status,
             'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time,

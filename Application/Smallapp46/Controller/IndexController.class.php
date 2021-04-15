@@ -309,11 +309,11 @@ class IndexController extends CommonController{
                 $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],
                     'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],'wifi_password'=>$box_info['wifi_password'],
                     'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id'],
-                    'is_interact'=>$box_info['is_interact']);
+                    'is_interact'=>$box_info['is_interact'],'is_4g'=>$box_info['is_4g'],'is_open_simple'=>$box_info['is_open_simple']);
             }
             if(empty($hotel_info['hotel_name']) || empty($hotel_info['room_name'])){
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
 
@@ -323,6 +323,10 @@ class IndexController extends CommonController{
                 $is_compress = 1;
             }
             $is_compress = 0;
+            $tv_forscreen_type = 1;//1正常 2极简投屏
+            if($hotel_info['box_type']==7 && $hotel_info['is_open_simple']==1 && $hotel_info['is_4g']==0){
+                $tv_forscreen_type = 2;
+            }
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
@@ -338,6 +342,7 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
+            $data['tv_forscreen_type'] = $tv_forscreen_type;
         }else{
             $data = array('is_have'=>0);
         }

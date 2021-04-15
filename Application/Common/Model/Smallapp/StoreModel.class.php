@@ -24,13 +24,13 @@ class StoreModel extends BaseModel {
     }
 
     public function buildHotelSql($area_id,$county_id=0,$food_style_id=0,$avg_id=0){
-        $sql_hotel = "select hotel.id as hotel_id,ext.hotel_cover_media_id as media_id,hotel.name,hotel.addr,hotel.tel,hotel.gps,ext.avg_expense,food.name tag_name,'120' as cate_id
+        $sql_hotel = "select hotel.id as hotel_id,ext.hotel_cover_media_id as media_id,hotel.name,hotel.addr,hotel.tel,hotel.mobile,hotel.gps,ext.avg_expense,food.name tag_name,'120' as cate_id
             from savor_hotel as hotel left join savor_hotel_ext as ext on hotel.id=ext.hotel_id left join savor_hotel_food_style as food on ext.food_style_id=food.id
             where hotel.area_id={$area_id} and hotel.state=1 and hotel.flag=0";
         $hotel_box_types = C('HEART_HOTEL_BOX_TYPE');
         $hotel_box_type_str = join(',',array_keys($hotel_box_types));
         $sql_hotel.= " and hotel.hotel_box_type in ($hotel_box_type_str)";
-        $sql_hotel.= " and hotel.id not in (7,482,504,791,508,844,845,597,201,493,883,53)";
+        $sql_hotel.= " and hotel.id not in (7,482,504,791,508,844,845,597,201,493,883,53,598)";
 
         if($county_id){
             $sql_hotel.=" and hotel.county_id={$county_id}";
@@ -48,7 +48,7 @@ class StoreModel extends BaseModel {
     }
 
     public function buildStoreSql($area_id,$county_id=0,$cate_id=0,$avg_id=0){
-        $sql_store = "select store.id as hotel_id,store.cover_media_id as media_id,store.name,store.addr,store.tel,store.gps,store.avg_expense,category.name as tag_name,store.category_id as cate_id
+        $sql_store = "select store.id as hotel_id,store.cover_media_id as media_id,store.name,store.addr,store.tel,store.mobile,store.gps,store.avg_expense,category.name as tag_name,store.category_id as cate_id
             from savor_smallapp_store as store left join savor_category as category on store.category_id=category.id 
             where store.area_id={$area_id} and store.status=1";
         if($county_id){

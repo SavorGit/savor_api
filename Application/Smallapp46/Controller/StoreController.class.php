@@ -89,7 +89,11 @@ class StoreController extends CommonController{
             if(empty($dis)){
                 $dis = '';
             }
-            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$v['tel'],'avg_expense'=>$v['avg_expense'],
+            $tel = $v['tel'];
+            if(empty($tel)){
+                $tel = $v['mobile'];
+            }
+            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$tel,'avg_expense'=>$v['avg_expense'],
                 'dis'=>$dis,'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url
             );
 

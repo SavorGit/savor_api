@@ -235,6 +235,16 @@ class DemandController extends CommonController{
             $type = 5;
         }
         $data = $this->getPubShareInfo($openid, $res_id, $type);
+        if($res_ads[0]['type']==2){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(5);
+            $hot_cache_key = C('SAPP_HOTPLAY_PRONUM');
+            $all_pro_nums = $redis->get($hot_cache_key);
+            $all_pro_nums = json_decode($all_pro_nums,true);
+            if(isset($all_pro_nums[$res_ads[0]['media_id']])){
+                $data['play_num'] = $data['play_num'] + $all_pro_nums[$res_ads[0]['media_id']];
+            }
+        }
         $data['res_type'] = $type;
         $this->to_back($data);
     }

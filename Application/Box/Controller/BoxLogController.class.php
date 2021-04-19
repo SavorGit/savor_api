@@ -87,7 +87,7 @@ class BoxLogController extends CommonController{
                 $data = array('res_id'=>$ads_id,'type'=>3,'nums'=>1);
                 $m_play_log->addInfo($data);
             }else{
-                $m_play_log->where(array('id'=>$res_play[0]['id']))->setInc('nums',1);
+                $m_play_log->where(array('id'=>$res_play['id']))->setInc('nums',1);
             }
         }
         $this->to_back(array());

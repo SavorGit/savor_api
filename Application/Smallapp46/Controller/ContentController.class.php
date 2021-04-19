@@ -167,6 +167,10 @@ class ContentController extends CommonController{
                     }else{
                         $all_ads = $res_pro_ads;
                     }
+                    $hot_cache_key = C('SAPP_HOTPLAY_PRONUM');
+                    $redis->select(5);
+                    $all_pro_nums = $redis->get($hot_cache_key);
+                    $all_pro_nums = json_decode($all_pro_nums,true);
                     $m_media = new \Common\Model\MediaModel();
                     $pro_ads = $life_ads = array();
                     foreach($all_ads as $v){
@@ -181,9 +185,11 @@ class ContentController extends CommonController{
                         if(!empty($play_info)){
                             $play_nums = intval($play_info['nums']);
                         }
-                        if($v['ads_type']!=8 && $play_nums<10000){
-                            $play_nums = $play_nums + rand(10000,100000);
-                            $m_play_log->updateInfo(array('id'=>$play_info['id']),array('nums'=>$play_nums));
+                        if($v['ads_type']!=8 && isset($all_pro_nums[$v['media_id']])){
+                            $play_nums = $play_nums + $all_pro_nums[$v['media_id']];
+                        }
+                        if($play_nums>100000){
+                            $play_nums = floor($play_nums/10000).'w';
                         }
 
                         $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,

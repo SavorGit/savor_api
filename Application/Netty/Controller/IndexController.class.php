@@ -77,6 +77,7 @@ class IndexController extends CommonController{
             case 5://点播官方视频
             case 6://生日歌点播
             case 12://发现点播视频
+            case 15://发现点播广告视频
             case 13://点播商城商品
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id'],$message['url']);
                 break;
@@ -97,6 +98,7 @@ class IndexController extends CommonController{
             case 9://呼码
             case 10://投照片图集
             case 11://发现点播图片
+            case 14://发现点播广告图片
                 $req_id = forscreen_serial($message['openid'],$message['forscreen_id']);
                 break;
             default:

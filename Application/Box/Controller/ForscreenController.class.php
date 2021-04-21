@@ -92,8 +92,13 @@ class ForscreenController extends CommonController{
                 $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
                 $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
                 $meal_type = '';
-                if($now_time>=$lunch_stime && $now_time<$lunch_etime){
+                $now_day_time = date('Y-m-d 00:00:00');
+                if($now_time>$now_day_time && $now_time<$lunch_stime){
+                    $meal_type = 'before_lunch';
+                }elseif($now_time>=$lunch_stime && $now_time<=$lunch_etime){
                     $meal_type = 'lunch';
+                }elseif($now_time>$lunch_etime && $now_time<$dinner_stime){
+                    $meal_type = 'after_lunch';
                 }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
                     $meal_type = 'dinner';
                 }

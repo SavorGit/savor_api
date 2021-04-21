@@ -68,10 +68,28 @@ class BuriedPointController extends CommonController{
         $redis->select(5);
         $cache_key = C('SAPP_FORSCREENTRACK').$req_id;
         $res_cache = $redis->get($cache_key);
+        $action = 0;
         if(!empty($res_cache)){
             $cache_data = json_decode($res_cache,true);
+            if(!empty($cache_data['action'])){
+                $action = $cache_data['action'];
+            }
         }else{
             $cache_data = array();
+        }
+        if($resource_id>0 && ($action==4 || $action==10)){
+            $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
+            if($version>'2.2.6'){
+                $req_id = $req_id.'subdata:'.$forscreen_id.'-'.$resource_id;
+                $cache_key = C('SAPP_FORSCREENTRACK').$req_id;
+                $res_cache = $redis->get($cache_key);
+
+                if(!empty($res_cache)){
+                    $cache_data = json_decode($res_cache,true);
+                }else{
+                    $cache_data = array();
+                }
+            }
         }
 
         if(!empty($used_time) && !empty($receive_nettytime)){
@@ -102,8 +120,7 @@ class BuriedPointController extends CommonController{
                 $used_time = $box_res_edown_time - $box_res_sdown_time;
             }
         }
-
-        if(!empty($cache_data['action']) && $cache_data['action']==4){
+        if($action==4){
             $is_exist = 0;
         }
         if($is_exit){

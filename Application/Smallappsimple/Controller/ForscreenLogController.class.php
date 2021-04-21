@@ -57,7 +57,7 @@ class ForscreenLogController extends CommonController{
         $data['box_mac']= $box_mac;
         $data['action'] = $action;
         $data['resource_type'] = $resource_type;
-        $data['resource_id']   = $resource_id;
+        $data['resource_id']   = intval($resource_id);
         $data['mobile_brand'] = $mobile_brand;
         $data['mobile_model'] = $mobile_model;
         $data['imgs']   = $imgs ? $imgs :'[]';
@@ -104,7 +104,7 @@ class ForscreenLogController extends CommonController{
         $data['box_mac']      = $box_mac;
         $data['forscreen_id'] = $forscreen_id;
         $data['imgs']         = $imgs;
-        $data['resource_id']  = $resource_id;
+        $data['resource_id']  = intval($resource_id);
         
         $redis = SavorRedis::getInstance();
         $redis->select(5);

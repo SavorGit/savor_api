@@ -316,6 +316,12 @@ class IndexController extends CommonController{
                 $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
+            $m_heartlog = new \Common\Model\HeartLogModel();
+            $res_heartlog = $m_heartlog->getInfo('apk_version',array('box_id'=>$hotel_info['box_id'],'type'=>2),'');
+            $apk_version = '';
+            if(!empty($res_heartlog)){
+                $apk_version = $res_heartlog['apk_version'];
+            }
 
             if($hotel_info['box_type']==6){
                 $is_compress = 0;
@@ -331,6 +337,8 @@ class IndexController extends CommonController{
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
             $data['room_name'] = $hotel_info['room_name'];
+            $data['box_type'] = $hotel_info['box_type'];
+            $data['apk_version'] = $apk_version;
             $data['is_interact'] = 0;
             $data['wifi_name'] = $hotel_info['wifi_name'];
             $data['wifi_password'] = $hotel_info['wifi_password'];
@@ -342,6 +350,8 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
+            $data['image_quality'] = 10;
+            $data['image_compress'] = 1024*1024*50;
             $data['tv_forscreen_type'] = $tv_forscreen_type;
         }else{
             $data = array('is_have'=>0);
@@ -879,8 +889,13 @@ class IndexController extends CommonController{
             $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
             $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
             $meal_type = '';
-            if($now_time>=$lunch_stime && $now_time<$lunch_etime){
+            $now_day_time = date('Y-m-d 00:00:00');
+            if($now_time>$now_day_time && $now_time<$lunch_stime){
+                $meal_type = 'before_lunch';
+            }elseif($now_time>=$lunch_stime && $now_time<=$lunch_etime){
                 $meal_type = 'lunch';
+            }elseif($now_time>$lunch_etime && $now_time<$dinner_stime){
+                $meal_type = 'after_lunch';
             }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
                 $meal_type = 'dinner';
             }

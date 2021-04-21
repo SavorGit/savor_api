@@ -851,7 +851,12 @@ class FindController extends CommonController{
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $where = array('forscreen_id'=>$forscreen_id);
         $res_forscreen = $m_forscreen->getWheredata('hotel_name',$where,'id asc');
-        $pub_info['hotel_name'] = $res_forscreen[0]['hotel_name'];
+        if(!empty($res_forscreen)){
+            $hotel_name = $res_forscreen[0]['hotel_name'];
+        }else{
+            $hotel_name = '';
+        }
+        $pub_info['hotel_name'] = $hotel_name;
 
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $where = array('forscreen_id'=>$forscreen_id);

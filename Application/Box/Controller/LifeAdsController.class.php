@@ -24,6 +24,7 @@ class LifeAdsController extends CommonController{
             $this->to_back(70001);
         }
         $hotel_id = $box_info[0]['hotel_id'];
+        $box_id = $box_info[0]['box_id'];
 
         $cache_key = C('SMALLAPP_LIFE_ADS').$hotel_id;
         $redis = new \Common\Lib\SavorRedis();
@@ -46,10 +47,21 @@ class LifeAdsController extends CommonController{
         $order = "lads.id asc";
         $res_data = $m_life_adshotel->getList($fields, $where, $order);
         if(!empty($res_data)){
+            $host_name = C('HOST_NAME');
+            $m_store = new \Common\Model\Smallapp\StoreModel();
             foreach ($res_data as $k=>$v){
                 $res_data[$k]['type'] = 'life';
                 $name_info = pathinfo($v['oss_path']);
                 $res_data[$k]['name'] = $name_info['basename'];
+                $qrcode_url = '';
+                if($v['ads_id']){
+                    $res_store = $m_store->getInfo(array('ads_id'=>$v['ads_id']));
+                    if(!empty($res_store)){
+                        $data_id = $res_store['id'];
+                        $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=28";
+                    }
+                }
+                $res_data[$k]['qrcode_url'] = $qrcode_url;
             }
         }
         $data = array('period'=>$period,'media_list'=>$res_data);

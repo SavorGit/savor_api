@@ -339,8 +339,8 @@ class ProgramController extends CommonController{
                     $info['md5'] = $media_info['md5'];
                     $info['duration'] = intval($v['duration']);
 
-//                    $qrcode_url = $host_name."/smallsale19/qrcode/dishQrcode?box_id=$box_id&data_id={$info['goods_id']}&type=28";
-                    $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$info['goods_id']}&type=28";
+                    $qrcode_url = $host_name."/smallsale19/qrcode/dishQrcode?box_id=$box_id&data_id={$info['goods_id']}&type=28";
+//                    $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$info['goods_id']}&type=28";
                     $info['qrcode_url'] = $qrcode_url;
                     $program_list[] = $info;
                 }

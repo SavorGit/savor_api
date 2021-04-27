@@ -24,7 +24,7 @@ class CollectController extends CommonController{
     public function recLogs(){
         $openid = $this->params['openid'];
         $res_id  = $this->params['res_id'];
-        $type    = $this->params['type'];
+        $type    = $this->params['type'];//1:点播2:投屏3:节目单资源4:商品 5本地生活广告收藏 6店铺收藏
         $status  = $this->params['status'];
         $only_co = $this->params['only_co'] ? $this->params['only_co']:0;
         

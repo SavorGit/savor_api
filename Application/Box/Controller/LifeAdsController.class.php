@@ -58,7 +58,7 @@ class LifeAdsController extends CommonController{
                     $res_store = $m_store->getInfo(array('ads_id'=>$v['ads_id']));
                     if(!empty($res_store)){
                         $data_id = $res_store['id'];
-                        $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=28";
+                        $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=37";
                     }
                 }
                 $res_data[$k]['qrcode_url'] = $qrcode_url;

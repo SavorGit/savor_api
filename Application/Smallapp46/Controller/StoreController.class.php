@@ -15,6 +15,14 @@ class StoreController extends CommonController{
                     'food_style_id'=>1002,'avg_exp_id'=>1002
                 );
                 break;
+            case 'detail':
+                $this->is_verify =1;
+                $this->valid_fields = array('store_id'=>1001,'openid'=>1001);
+                break;
+            case 'collectList':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -67,11 +75,11 @@ class StoreController extends CommonController{
             }
             sortArrByOneField($res_store,'dis_com');
         }
-
         $offset = $page * $pagesize;
         $hotel_list = array_slice($res_store,0,$offset);
         $m_meida = new \Common\Model\MediaModel();
         $datalist = array();
+
         foreach ($hotel_list as $k=>$v){
             $tag_name = $v['tag_name'];
             if(empty($tag_name)){
@@ -93,12 +101,120 @@ class StoreController extends CommonController{
             if(empty($tel)){
                 $tel = $v['mobile'];
             }
+            $is_detail = 0;
+            if($v['hotel_id']>=10000000){
+                $res_store_data = $m_store->getInfo(array('id'=>$v['hotel_id']));
+                if(!empty($res_store_data['ads_id']) && !empty($res_store_data['detail_imgs'])){
+                    $is_detail = 1;
+                }
+            }
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$tel,'avg_expense'=>$v['avg_expense'],
-                'dis'=>$dis,'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url
+                'dis'=>$dis,'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url,'is_detail'=>$is_detail
             );
 
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function detail(){
+        $store_id = intval($this->params['store_id']);
+        $openid = $this->params['openid'];
+
+        $m_store = new \Common\Model\Smallapp\StoreModel();
+        $res_store = $m_store->getInfo(array('id'=>$store_id));
+        $tel = $res_store['tel'];
+        if(empty($tel)){
+            $tel = $res_store['mobile'];
+        }
+        $oss_host = "https://".C('OSS_HOST').'/';
+        $detail_imgs =array();
+        if(!empty($res_store['detail_imgs'])){
+            $detail_imgs_info = explode(',',$res_store['detail_imgs']);
+            if(!empty($detail_imgs_info)){
+                foreach ($detail_imgs_info as $v){
+                    if(!empty($v)){
+                        $img_url = $oss_host.$v."?x-oss-process=image/quality,Q_60";
+                        $detail_imgs[] = $img_url;
+                    }
+                }
+            }
+        }
+        $m_media = new \Common\Model\MediaModel();
+        $coupon_img = '';
+        if(!empty($res_store['coupon_media_id'])){
+            $res_coupon = $m_media->getMediaInfoById($res_store['coupon_media_id']);
+            $coupon_img = $res_coupon['oss_addr'];
+        }
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $where = array('openid'=>$openid,'res_id'=>$store_id,'type'=>6,'status'=>1);
+        $res_collect = $m_collect->getOne('*', $where);
+        $is_collect = 0;
+        if(!empty($res_collect)){
+            $is_collect = 1;
+        }
+        $data = array('id'=>$store_id,'name'=>$res_store['name'],'addr'=>$res_store['addr'],'tel'=>$tel,'is_collect'=>$is_collect,
+            'detail_imgs'=>$detail_imgs, 'coupon_img'=>$coupon_img,
+        );
+        $m_ads = new \Common\Model\AdsModel();
+        $res_ads = $m_ads->getWhere(array('id'=>$res_store['ads_id']), "*");
+
+        $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
+        $oss_path = $media_info['oss_path'];
+        $oss_path_info = pathinfo($oss_path);
+        $data['duration'] = $media_info['duration'];
+        $data['tx_url'] = $media_info['oss_addr'];
+        $data['filename'] = $oss_path_info['basename'];
+        $data['forscreen_url'] = $oss_path;
+        $data['resource_size'] = $media_info['oss_filesize'];
+        $this->to_back($data);
+    }
+
+    public function collectList(){
+        $openid = $this->params['openid'];
+        $page = $this->params['page'];
+        $pagesize = 10;
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
+        $offset = $page * $pagesize;
+        $limit = "0,$offset";
+        $field = 'store.id as store_id,store.cover_media_id as media_id,store.name,store.addr,store.tel,store.mobile,store.gps,store.avg_expense,category.name as tag_name,store.category_id as cate_id';
+        $where = array('a.openid'=>$openid,'a.type'=>6,'a.status'=>1,'store.status'=>1);
+        $res_collect = $m_collect->getStore($field,$where,'a.id desc',$limit);
+        $datalist = array();
+        $total = 0;
+        if(!empty($res_collect)){
+            $m_meida = new \Common\Model\MediaModel();
+            foreach ($res_collect as $v){
+                $tag_name = $v['tag_name'];
+                if(empty($tag_name)){
+                    $tag_name = '';
+                }
+                if($v['media_id']){
+                    $res_media = $m_meida->getMediaInfoById($v['media_id']);
+                    $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                    $ori_img_url = $res_media['oss_addr'];
+                }else{
+                    $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                    $ori_img_url = $img_url;
+                }
+                $tel = $v['tel'];
+                if(empty($tel)){
+                    $tel = $v['mobile'];
+                }
+                $datalist[]=array('store_id'=>$v['store_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$tel,'avg_expense'=>$v['avg_expense'],
+                    'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url
+                );
+            }
+            $total = count($datalist);
+        }
+        $res_data = array('total'=>$total,'datalist'=>$datalist);
+        $this->to_back($res_data);
     }
 
 

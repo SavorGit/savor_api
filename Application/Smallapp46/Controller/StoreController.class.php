@@ -142,7 +142,7 @@ class StoreController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $coupon_img = '';
         if(!empty($res_store['coupon_media_id'])){
-            $res_coupon = $m_media->getMediaInfoById($res_store['coupon_media_id']);
+            $res_coupon = $m_media->getMediaInfoById($res_store['coupon_media_id'],'https');
             $coupon_img = $res_coupon['oss_addr'];
         }
         $m_collect = new \Common\Model\Smallapp\CollectModel();
@@ -157,10 +157,15 @@ class StoreController extends CommonController{
         );
         $m_ads = new \Common\Model\AdsModel();
         $res_ads = $m_ads->getWhere(array('id'=>$res_store['ads_id']), "*");
-
+        $video_img_url = '';
+        if(!empty($res_ads)){
+            $video_img_url = $oss_host.$res_ads[0]['img_url'];
+        }
+        $data['video_img_url'] = $video_img_url;
         $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
         $oss_path = $media_info['oss_path'];
         $oss_path_info = pathinfo($oss_path);
+        $data['ads_id'] = $res_store['ads_id'];
         $data['duration'] = $media_info['duration'];
         $data['tx_url'] = $media_info['oss_addr'];
         $data['filename'] = $oss_path_info['basename'];

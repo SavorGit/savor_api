@@ -52,8 +52,8 @@ class DatalogController extends CommonController{
     public function recordlog(){
         $openid = $this->params['openid'];
         $data_id = intval($this->params['data_id']);
-        $type = $this->params['type'];//1广告 2商品
-        $action_type = $this->params['action_type'];//动作类型1点击,2查看,3点击购买
+        $type = $this->params['type'];//类型 1广告,2商品,3发现-官方,4发现-精选,5发现-公开 6本地生活店铺-领取优惠券
+        $action_type = $this->params['action_type'];//动作类型1点击,2查看,3点击购买(如type是6则:1领取 2允许领取成功 3拒绝领取失败)
         $ip = get_client_ip();
 
         switch ($type){
@@ -66,6 +66,11 @@ class DatalogController extends CommonController{
                 $m_goods = new \Common\Model\Smallapp\GoodsModel();
                 $res_goods = $m_goods->getInfo(array('id'=>$data_id));
                 $name = $res_goods['name'];
+                break;
+            case 6:
+                $m_store = new \Common\Model\Smallapp\StoreModel();
+                $res_store = $m_store->getInfo(array('id'=>$data_id));
+                $name = $res_store['name'];
                 break;
             default:
                 $name = '';

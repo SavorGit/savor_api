@@ -244,7 +244,7 @@ class DiscoveryController extends CommonController{
         $fields= 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,
                     a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
         $order = 'a.res_type desc,a.create_time desc';
-        $rec_pub_list = $m_public->getList($fields, array('forscreen_id'=>$forscreen_id));
+        $rec_pub_list = $m_public->getList($fields, array('a.forscreen_id'=>$forscreen_id,'box.state'=>1,'box.flag'=>0));
         $pub_info = $rec_pub_list[0];
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $field = "forscreen_id,resource_id,openid,box_mac,resource_type,imgs";

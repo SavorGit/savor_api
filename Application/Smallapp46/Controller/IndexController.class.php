@@ -53,7 +53,7 @@ class IndexController extends CommonController{
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002);
+                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002,'action'=>1002);
                 break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
@@ -267,6 +267,7 @@ class IndexController extends CommonController{
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
         $pop_eval = $this->params['pop_eval'];
+        $action = $this->params['action'];
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
@@ -360,7 +361,7 @@ class IndexController extends CommonController{
         $redis->select(5);
         $res_audit = $redis->get($audit_key);
         $audit_tips = '';
-        if(!empty($res_audit) && $res_audit>0){
+        if(!empty($action) && $action=='index' && !empty($res_audit) && $res_audit>0){
             $audit_tips = '您的内容已经通过审核，在小程序发现页面可以看到';
             $redis->remove($audit_key);
         }
@@ -828,6 +829,14 @@ class IndexController extends CommonController{
                 }
                 $public_data['status'] =1;
                 $m_public->add($public_data);
+
+                $sms_config = C('ALIYUN_SMS_CONFIG');
+                $alisms = new \Common\Lib\AliyunSms();
+                $template_code = $sms_config['public_audit_templateid'];
+                $send_mobiles = C('PUBLIC_AUDIT_MOBILE');
+                foreach ($send_mobiles as $v){
+                    $alisms::sendSms($v,'',$template_code);
+                }
             }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,
                 'res_url'=>$oss_addr,'duration'=>$duration,'resource_size'=>$resource_size);

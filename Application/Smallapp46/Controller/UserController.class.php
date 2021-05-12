@@ -772,7 +772,16 @@ class UserController extends CommonController{
                     }
                 }
             }
-
+            $where = array('openid'=>$openid,'forscreen_id'=>$forscreen_id);
+            $res_public = $m_public->getOne('*',$where,'');
+            if(!empty($res_public)){
+                $m_publicplay = new \Common\Model\Smallapp\PublicplayModel();
+                $res_public_play = $m_publicplay->getInfo(array('public_id'=>$res_public['id']));
+                if(!empty($res_public_play)){
+                    $add_data = array('status'=>2,'update_time'=>date('Y-m-d H:i:s'));
+                    $m_publicplay->updateData(array('id'=>$res_public_play['id']),$add_data);
+                }
+            }
             $this->to_back(10000);
         }else {
             $this->to_back(90107);

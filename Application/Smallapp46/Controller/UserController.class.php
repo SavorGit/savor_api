@@ -37,6 +37,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1000);
                 break;
+            case 'delMyPublic':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'forscreen_id'=>1001);
+                break;
             case 'registerCom':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'avatarUrl'=>1000,
@@ -362,17 +366,18 @@ class UserController extends CommonController{
         $user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
         $data['user_info'] = $user_info;
         //获取我的公开
-
+        $all_status = C('PUBLIC_AUDIT_STATUS');
+        unset($all_status['0']);
         $page_size = 6;
         $limit = "limit 0,".$page_size;
-        $fields = 'a.forscreen_id,a.res_type';
+        $fields = 'a.forscreen_id,a.res_type,a.status';
         $where = array();
         $where['a.openid']     = $openid;
         $where['box.flag']   = 0;
         $where['box.state']  = 1;
         $where['hotel.flag'] = 0;
         $where['hotel.state']= 1;
-        $where['a.status']   = 2;
+        $where['a.status']   = array('in',array_keys($all_status));
         $order = "a.create_time desc";
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
@@ -392,6 +397,7 @@ class UserController extends CommonController{
             }else {
                 $pubdetail_info[0]['vide_img'] = $pubdetail_info[0]['res_url'];
             }
+            $public_list[$key]['status_str'] = $all_status[$v['status']];
             $public_list[$key]['res_url'] = $pubdetail_info[0]['res_url'];
             $public_list[$key]['imgurl']  = $pubdetail_info[0]['vide_img'] ;
             //收藏个数
@@ -546,14 +552,16 @@ class UserController extends CommonController{
     
         $page_size = 10;
         $limit = "limit 0,".$page*$page_size;
-        $fields = 'a.forscreen_id,a.res_type,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name';
+        $fields = 'a.forscreen_id,a.res_type,a.status,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name';
+        $all_status = C('PUBLIC_AUDIT_STATUS');
+        unset($all_status['0']);
         $where = array();
         $where['a.openid']     = $openid;
         $where['box.flag']   = 0;
         $where['box.state']  = 1;
         $where['hotel.flag'] = 0;
         $where['hotel.state']= 1;
-        $where['a.status']   = 2;
+        $where['a.status']   = array('in',array_keys($all_status));
         $order = "a.create_time desc";
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
@@ -585,6 +593,7 @@ class UserController extends CommonController{
                     $pubdetail_info[$kk]['res_id']   = $tmp_arr[0];
                 }
             }
+            $public_list[$key]['status_str'] = $all_status[$v['status']];
             $public_list[$key]['pubdetail'] = $pubdetail_info;
             $public_list[$key]['create_time'] = date('n月j日',strtotime($v['create_time']));
             //收藏个数
@@ -720,6 +729,54 @@ class UserController extends CommonController{
         }
         $ars = array('is_forscreen'=>$is_forscreen);
         $this->to_back($ars);
+    }
+
+    public function delMyPublic(){
+        $openid = $this->params['openid'];
+        $forscreen_id = $this->params['forscreen_id'];
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $where = array();
+        $where['openid']= $openid;
+        $where['forscreen_id'] = $forscreen_id;
+        $ret = $m_public->updateInfo($where, array('status'=>0));
+        if($ret){
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $res_forscreen = $m_forscreen->getWhere('id',$where,'id asc','0,1','');
+            $forscreen_record_id = $res_forscreen[0]['id'];
+
+            $m_help = new \Common\Model\Smallapp\ForscreenHelpModel();
+            $res_help = $m_help->getInfo(array('openid'=>$openid,'forscreen_record_id'=>$forscreen_record_id));
+            if(!empty($res_help)){
+                $help_id = $res_help['id'];
+                $m_help->updateData(array('id'=>$help_id),array('status'=>4));
+
+                $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
+                $m_playlog->updateInfo(array('res_id'=>$help_id,'type'=>4),array('nums'=>0,'update_time'=>date('Y-m-d H:i:s')));
+
+                $content_key = C('SAPP_SELECTCONTENT_CONTENT');
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $res_cache = $redis->get($content_key);
+                if(!empty($res_cache)) {
+                    $content_data = json_decode($res_cache, true);
+                    if(isset($content_data[$help_id])){
+                        unset($content_data[$help_id]);
+                        $redis->set($content_key,json_encode($content_data));
+
+                        $redis->select(5);
+                        $allkeys  = $redis->keys('smallapp:selectcontent:program:*');
+                        foreach ($allkeys as $program_key){
+                            $period = getMillisecond();
+                            $redis->set($program_key,$period);
+                        }
+                    }
+                }
+            }
+
+            $this->to_back(10000);
+        }else {
+            $this->to_back(90107);
+        }
     }
 
     /**

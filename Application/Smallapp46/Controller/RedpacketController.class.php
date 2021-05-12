@@ -391,7 +391,27 @@ class RedpacketController extends CommonController{
             }
         }
         //end
-
+        $op_type = 1;
+        $op_uid = C('REDPACKET_OPERATIONERID');
+        if($res_order['user_id']==$op_uid){
+            $op_type = 2;
+            $res_data['bless'] = '';
+            $m_box = new \Common\Model\BoxModel();
+            $fileds = 'd.id as hotel_id';
+            $where = array('a.mac'=>$res_order['mac'],'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
+            $res_box = $m_box->getBoxInfo($fileds,$where);
+            $hotel_id = $res_box[0]['hotel_id'];
+            $rd_test_hotels = C('RD_TEST_HOTEL');
+            if(isset($rd_test_hotels[$hotel_id])){
+                $res_data['nickName'] = $rd_test_hotels[$hotel_id]['short_name'];
+                $m_hotelext = new \Common\Model\HotelExtModel();
+                $res_hotel_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+                $m_media = new \Common\Model\MediaModel();
+                $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
+                $res_data['avatarUrl'] = $res_media['oss_addr'];
+            }
+        }
+        $res_data['op_type'] = $op_type;
         $this->to_back($res_data);
     }
 
@@ -680,6 +700,27 @@ class RedpacketController extends CommonController{
                 $res_data['money'] = 0;
                 break;
         }
+        $op_type = 1;
+        $op_uid = C('REDPACKET_OPERATIONERID');
+        if($res_order['user_id']==$op_uid){
+            $res_data['bless'] = '';
+            $op_type = 2;
+            $m_box = new \Common\Model\BoxModel();
+            $fileds = 'd.id as hotel_id';
+            $where = array('a.mac'=>$res_order['mac'],'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
+            $res_box = $m_box->getBoxInfo($fileds,$where);
+            $hotel_id = $res_box[0]['hotel_id'];
+            $rd_test_hotels = C('RD_TEST_HOTEL');
+            if(isset($rd_test_hotels[$hotel_id])){
+                $res_data['nickName'] = $rd_test_hotels[$hotel_id]['short_name'];
+                $m_hotelext = new \Common\Model\HotelExtModel();
+                $res_hotel_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+                $m_media = new \Common\Model\MediaModel();
+                $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
+                $res_data['avatarUrl'] = $res_media['oss_addr'];
+            }
+        }
+        $res_data['op_type'] = $op_type;
         $this->to_back($res_data);
     }
 

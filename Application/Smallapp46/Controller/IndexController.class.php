@@ -356,12 +356,21 @@ class IndexController extends CommonController{
         }else{
             $data = array('is_have'=>0);
         }
+        $audit_key = C('SAPP_PUBLIC_AUDITNUM').$openid;
+        $redis->select(5);
+        $res_audit = $redis->get($audit_key);
+        $audit_tips = '';
+        if(!empty($res_audit) && $res_audit>0){
+            $audit_tips = '您的内容已经通过审核，在小程序发现页面可以看到';
+            $redis->remove($audit_key);
+        }
         $forscreen_openids = C('COLLECT_FORSCREEN_OPENIDS');
         $is_test = 0;
         if(array_key_exists($openid,$forscreen_openids)){
             $is_test = 1;
         }
         $data['is_test'] = $is_test;
+        $data['audit_tips'] = $audit_tips;
         $this->to_back($data);
     }
 

@@ -115,6 +115,13 @@ class ContentController extends CommonController{
             $cache_key = 'box:play:'.$box_mac;
             $res_boxplays = $redis->get($cache_key);
             if(!empty($res_boxplays)){
+                $m_box = new \Common\Model\BoxModel();
+                $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+                $fields = "box.id as box_id,hotel.id as hotel_id";
+                $box_info = $m_box->getBoxByCondition($fields,$where);
+                $box_id = $box_info[0]['box_id'];
+                $host_name = C('HOST_NAME');
+                $m_store = new \Common\Model\Smallapp\StoreModel();
                 $box_resources = json_decode($res_boxplays,true);
                 $user_datalist = array();
                 if(!empty($box_resources['hotplay'])){
@@ -123,6 +130,7 @@ class ContentController extends CommonController{
                         if(in_array($v['res_id'],$play_ids)){
                             $v['type'] = 1;
                             $v['title'] = '';
+                            $v['qrcode_url'] = '';
                             $user_datalist[]=$v;
                         }
                     }
@@ -158,9 +166,11 @@ class ContentController extends CommonController{
                         $box_fields = "box.id as box_id,hotel.id as hotel_id";
                         $box_info = $m_box->getBoxByCondition($box_fields,$where);
                         $hotel_id = $box_info[0]['hotel_id'];
-
+                        $now_date = date('Y-m-d H:i:s');
                         $m_life_ads_hotel = new \Common\Model\Smallapp\LifeAdsHotelModel();
                         $where = array('a.hotel_id'=>$hotel_id,'lads.state'=>1);
+                        $where['lads.start_date'] = array('ELT',$now_date);
+                        $where['lads.end_date'] = array('EGT',$now_date);
                         $where['media.id']  = array('in',array_values($tmp_life_ids));
                         $res_life_ads = $m_life_ads_hotel->getList($fields,$where,'lads.id desc','0,2');
                         $all_ads = array_merge($res_pro_ads,$res_life_ads);
@@ -220,11 +230,18 @@ class ContentController extends CommonController{
                         }
                         $pdetail['img_url'] = $img_url;
                         $dinfo['pubdetail'] = array($pdetail);
+                        $qrcode_url = '';
                         if($v['ads_type']==8){
+                            $res_store = $m_store->getInfo(array('ads_id'=>$v['ads_id']));
+                            if(!empty($res_store)){
+                                $data_id = $res_store['id'];
+                                $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=37";
+                            }
                             $dinfo['type'] = 3;
                         }else{
                             $dinfo['type'] = 2;
                         }
+                        $dinfo['qrcode_url'] = $qrcode_url;
 
                         if($v['ads_type']==2){
                             $pro_ads[]=$dinfo;

@@ -17,7 +17,7 @@ class StoreController extends CommonController{
                 break;
             case 'detail':
                 $this->is_verify =1;
-                $this->valid_fields = array('store_id'=>1001,'openid'=>1001);
+                $this->valid_fields = array('store_id'=>1001,'openid'=>1001,'box_mac'=>1002);
                 break;
             case 'collectList':
                 $this->is_verify =1;
@@ -87,7 +87,7 @@ class StoreController extends CommonController{
             }
             if($v['media_id']){
                 $res_media = $m_meida->getMediaInfoById($v['media_id']);
-                $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
+                $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
                 $ori_img_url = $res_media['oss_addr'];
             }else{
                 $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
@@ -119,6 +119,7 @@ class StoreController extends CommonController{
     public function detail(){
         $store_id = intval($this->params['store_id']);
         $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
 
         $m_store = new \Common\Model\Smallapp\StoreModel();
         $res_store = $m_store->getInfo(array('id'=>$store_id));
@@ -161,6 +162,18 @@ class StoreController extends CommonController{
         if(!empty($res_ads)){
             $video_img_url = $oss_host.$res_ads[0]['img_url'];
         }
+        $qrcode_url = '';
+        if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $fields = "box.id as box_id,hotel.id as hotel_id";
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+            $box_id = $box_info[0]['box_id'];
+            $host_name = C('HOST_NAME');
+            $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$store_id}&type=37";
+        }
+
+        $data['qrcode_url'] = $qrcode_url;
         $data['video_img_url'] = $video_img_url;
         $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
         $oss_path = $media_info['oss_path'];

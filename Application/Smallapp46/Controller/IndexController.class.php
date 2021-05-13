@@ -829,13 +829,16 @@ class IndexController extends CommonController{
                 }
                 $public_data['status'] =1;
                 $m_public->add($public_data);
-
-                $sms_config = C('ALIYUN_SMS_CONFIG');
-                $alisms = new \Common\Lib\AliyunSms();
-                $template_code = $sms_config['public_audit_templateid'];
-                $send_mobiles = C('PUBLIC_AUDIT_MOBILE');
-                foreach ($send_mobiles as $v){
-                    $alisms::sendSms($v,'',$template_code);
+                $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+                $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+                if(empty($res_invalid)){
+                    $sms_config = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $template_code = $sms_config['public_audit_templateid'];
+                    $send_mobiles = C('PUBLIC_AUDIT_MOBILE');
+                    foreach ($send_mobiles as $v){
+                        $alisms::sendSms($v,'',$template_code);
+                    }
                 }
             }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,

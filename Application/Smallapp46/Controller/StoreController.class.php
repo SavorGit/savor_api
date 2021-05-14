@@ -102,7 +102,7 @@ class StoreController extends CommonController{
                 $tel = $v['mobile'];
             }
             $is_detail = 0;
-            if($v['hotel_id']>=10000000){
+            if($v['hotel_id']>=10000){
                 $res_store_data = $m_store->getInfo(array('id'=>$v['hotel_id']));
                 if(!empty($res_store_data['ads_id']) && !empty($res_store_data['detail_imgs'])){
                     $is_detail = 1;

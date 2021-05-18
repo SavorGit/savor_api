@@ -413,6 +413,9 @@ return array(
     'smallappsale_claim_income_error'=>'收益已被其他人领取，请选取其他包间',
     'smallappsale_notcash_task_claim_error'=>'请先领取现金红包任务',
     'smallappsale_cash_task_not_finish'=>'请先完成现金红包任务',
+    'smallapp_lottery_has_expire'=>'抽奖活动已过期',
+    'smallapp_lottery_prize_not_exist'=>'抽奖活动奖品不存在，请重新进行抽奖',
+    'smallapp_lottery_prize_task_not_finish'=>'请先完成抽奖活动奖品任务',
 
 
 );

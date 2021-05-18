@@ -661,6 +661,34 @@ class IndexController extends CommonController{
                 $is_open_simplehistory = 1;
             }
         }
+        $syslottery_activity_id = 0;
+        if(!empty($openid)){
+            $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,a.status';
+            $where = array('a.openid'=>$openid,'activity.type'=>3);
+            $order = 'a.id desc';
+            $limit = '0,1';
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $res_activity_apply = $m_activityapply->getApplyDatas($fields,$where,$order,$limit,'');
+            $now_time = date('Y-m-d H:i:s');
+            if(!empty($res_activity_apply)){
+                switch ($res_activity_apply[0]['status']){
+                    case 4:
+                        if($now_time>=$res_activity_apply[0]['start_time'] && $now_time<=$res_activity_apply[0]['end_time']){
+                            $syslottery_activity_id = $res_activity_apply[0]['activity_id'];
+                        }else{
+                            $syslottery_activity_id = 0;
+                        }
+                        break;
+                    case 5:
+                        $syslottery_activity_id = $res_activity_apply[0]['activity_id'];
+                        break;
+                    default:
+                        $syslottery_activity_id = 0;
+                }
+            }
+        }
+        $data['syslottery_activity_id'] = $syslottery_activity_id;
+
         $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;
@@ -789,7 +817,6 @@ class IndexController extends CommonController{
                 $data['duration'] = 0;
             }
             $m_box = new \Common\Model\BoxModel();
-            $m_box = new \Common\Model\BoxModel();
             $box_info = $m_box->getHotelInfoByBoxMacNew($box_mac);
             $data['area_id']    = $box_info['area_id'];
             $data['area_name']  = $box_info['area_name'];
@@ -803,8 +830,7 @@ class IndexController extends CommonController{
             $data['hotel_box_type'] = $box_info['hotel_box_type'];
             $data['hotel_is_4g']= $box_info['hotel_is_4g'];
             $data['box_name']   = $box_info['box_name'];
-            
-            
+
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
     
@@ -852,9 +878,11 @@ class IndexController extends CommonController{
                 $cache_key = C('SAPP_SCRREN').":".$box_mac;
                 $redis->rpush($cache_key, json_encode($data));
             }
-            
         }
         $res = array('forscreen_id'=>$forscreen_id);
+        //完成系统用户抽奖任务
+        $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $m_activity_apply->finishPrizeTask($openid,$action);
         $this->to_back($res);
     }
 

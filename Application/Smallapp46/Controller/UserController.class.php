@@ -62,10 +62,14 @@ class UserController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'res_id'=>1000);
                 break;
 			case 'editCard':
-			$this->is_verify = 1;
-			$this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
-				'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
-			break;
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
+                    'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
+			    break;
+            case 'lotterylist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1000);
+                break;
         }
         parent::_init_();
     }
@@ -802,5 +806,57 @@ class UserController extends CommonController{
         $this->to_back(10000);
 
     }
+
+    public function lotterylist(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $page_size = 10;
+        $all_nums = $page*$page_size;
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,avatarUrl,nickName,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90157);
+        }
+        $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,a.id,a.prize_id,a.status,a.add_time';
+        $where = array('a.openid'=>$openid,'activity.type'=>3,'a.status'=>array('in',array(2,4,5)));
+        $order = 'a.id desc';
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $limit = "0,$all_nums";
+        $res_activity_apply = $m_activityapply->getApplyDatas($fields,$where,$order,$limit,'');
+        $datalist = array();
+        if(!empty($res_activity_apply)){
+            $now_time = date('Y-m-d H:i:s');
+            $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
+            foreach ($res_activity_apply as $v){
+                $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
+                $name = $res_prize['name'];
+                $lottery_time = date('Y-m-d-H:i',strtotime($v['add_time']));
+                switch ($v['status']){
+                    case 2:
+                        $status = 2;//1待领取 2已领取 3已过期
+                        break;
+                    case 4:
+                        if($now_time>=$v['start_time'] && $now_time<=$v['end_time']){
+                            $status = 1;
+                        }else{
+                            $status = 3;
+                        }
+                        break;
+                    case 5:
+                        $status = 1;
+                        break;
+                    default:
+                        $status = 3;
+                }
+                $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id']);
+                $datalist[]=$info;
+            }
+        }
+        $res_data = array('datalist'=>$datalist);
+        $this->to_back($res_data);
+    }
+
 
 }

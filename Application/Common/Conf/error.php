@@ -298,6 +298,10 @@ return array(
         '90168'=>'smallapp_lottery_join_people_num_error',
         '90169'=>'smallapp_lottery_timeout_error',
         '90170'=>'smallapp_turntable_game_has_exist',
+        '90171'=>'smallapp_lottery_not_exist',
+        '90172'=>'smallapp_lottery_has_expire',
+        '90173'=>'smallapp_lottery_prize_not_exist',
+        '90174'=>'smallapp_lottery_prize_task_not_finish',
 
 
         '91015'=>'smallapp_user_add_failed',

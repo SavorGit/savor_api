@@ -660,8 +660,7 @@ function getRandNums($min=0,$max=100,$num=10){
     return $result;
 }
 
-function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true)
-{
+function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true){
  $pi80 = M_PI / 180;
  $lat1 *= $pi80;
  $lng1 *= $pi80;
@@ -680,4 +679,10 @@ function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true)
  } else {
      return $dis.'km';
  }
+}
+
+function formatBytes($size) {
+    $units = array(' B', ' KB', ' MB', ' GB', ' TB');
+    for ($i = 0; $size >= 1024 && $i < 4; $i++) $size /= 1024;
+    return round($size, 2).$units[$i];
 }

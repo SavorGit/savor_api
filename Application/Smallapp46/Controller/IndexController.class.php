@@ -853,8 +853,7 @@ class IndexController extends CommonController{
                 if($res_nums){
                     $public_data['res_nums'] = $res_nums;
                 }
-                $public_data['status'] =1;
-                $m_public->add($public_data);
+
                 $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
                 $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
                 if(empty($res_invalid)){
@@ -865,7 +864,12 @@ class IndexController extends CommonController{
                     foreach ($send_mobiles as $v){
                         $alisms::sendSms($v,'',$template_code);
                     }
+                    $public_data['status'] =1;
+                }else{
+                    $public_data['status'] =0;
                 }
+
+                $m_public->add($public_data);
             }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,
                 'res_url'=>$oss_addr,'duration'=>$duration,'resource_size'=>$resource_size);

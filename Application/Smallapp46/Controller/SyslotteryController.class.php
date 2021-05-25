@@ -35,7 +35,7 @@ class SyslotteryController extends CommonController{
             $this->to_back(90171);
         }
         $now_time = date('Y-m-d H:i:s');
-        if($res_activity['type']!=3 || $now_time>$res_activity['end_time']){
+        if($res_activity['type']!=3){
             $this->to_back(90172);
         }
         $res_data = array('activity_id'=>$activity_id);
@@ -66,8 +66,8 @@ class SyslotteryController extends CommonController{
                     break;
             }
         }else{
-            $colors = array('1'=>'#f5c287','2'=>'#ffe6b1','3'=>'#ffffff','4'=>'#f5c287','5'=>'#ffe6b1','6'=>'#ffffff',
-                '7'=>'#f5c287','8'=>'#ffe6b1','9'=>'#ffffff');
+            $colors = array('1'=>'#f5c287','2'=>'#ffe6b1','3'=>'#f7896c','4'=>'#f5c287','5'=>'#ffe6b1','6'=>'#f7896c',
+                '7'=>'#f5c287','8'=>'#ffe6b1','9'=>'#f7896c');
             $lottery_status=1;
             $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
             $res_prize = $m_prize->getDataList('*',array('activity_id'=>$activity_id),'id asc');
@@ -189,9 +189,8 @@ class SyslotteryController extends CommonController{
             $order_id = $m_order->add($add_data);
 
             $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
-//            $m_wxpay = new \Payment\Model\WxpayModel();
-//            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-            $res = array('code'=>10000);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
             if($res['code']==10000){
                 $m_order->updateData(array('id'=>$order_id),array('status'=>21));
                 $m_activity_apply->updateData(array('id'=>$res_activity_apply['id']),array('status'=>2));

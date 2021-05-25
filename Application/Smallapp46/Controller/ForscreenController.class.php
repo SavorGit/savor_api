@@ -90,7 +90,39 @@ class ForscreenController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-        $is_show = C('FORSCREEN_GUIDE_IMAGE_SWITCH');
+        $now_time = date('Y-m-d H:i:s');
+        $meal_time = C('MEAL_TIME');
+        $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
+        $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
+        $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
+        $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
+        $meal_type = '';
+        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
+            $meal_type = 'lunch';
+        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+            $meal_type = 'dinner';
+        }
+        $is_show = 1;
+        if(!empty($meal_type)){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(1);
+            $key = C('SAPP_HELPIMAGE');
+            $cache_key = $key.':'.$box_mac.':'.date('Ymd');
+            $res_redis = $redis->get($cache_key);
+            if(!empty($res_redis)){
+                $help_data = json_decode($res_redis,true);
+                if(isset($help_data[$meal_type])){
+                    $is_show = 0;
+                }else{
+                    $help_data[$meal_type] = date('Y-m-d H:i:s');
+                    $redis->set($cache_key,json_encode($help_data),86400);
+                }
+            }else{
+                $help_data = array("$meal_type"=>date('Y-m-d H:i:s'));
+                $redis->set($cache_key,json_encode($help_data),86400);
+            }
+        }
+
         if($is_show==1){
             $headPic = $nickName = '';
             if(!empty($user_info['avatarUrl'])){

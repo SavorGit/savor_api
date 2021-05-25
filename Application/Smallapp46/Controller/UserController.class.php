@@ -819,8 +819,8 @@ class UserController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90157);
         }
-        $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,a.id,a.prize_id,a.status,a.add_time';
-        $where = array('a.openid'=>$openid,'activity.type'=>3,'a.status'=>array('in',array(2,4,5)));
+        $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,activity.type,activity.prize,a.id,a.prize_id,a.status,a.add_time';
+        $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3)),'a.status'=>array('in',array(1,2,4,5)));
         $order = 'a.id desc';
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $limit = "0,$all_nums";
@@ -830,10 +830,17 @@ class UserController extends CommonController{
             $now_time = date('Y-m-d H:i:s');
             $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
             foreach ($res_activity_apply as $v){
-                $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
-                $name = $res_prize['name'];
+                if($v['type']==1){
+                    $name = $v['prize'];
+                }else{
+                    $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
+                    $name = $res_prize['name'];
+                }
                 $lottery_time = date('Y-m-d-H:i',strtotime($v['add_time']));
                 switch ($v['status']){
+                    case 1:
+                        $status = 1;
+                        break;
                     case 2:
                         $status = 2;//1待领取 2已领取 3已过期
                         break;
@@ -850,7 +857,7 @@ class UserController extends CommonController{
                     default:
                         $status = 3;
                 }
-                $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id']);
+                $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id'],'type'=>$v['type']);
                 $datalist[]=$info;
             }
         }

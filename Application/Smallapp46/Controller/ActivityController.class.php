@@ -60,7 +60,7 @@ class ActivityController extends CommonController{
                 break;
             case 'lottery':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1002);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1002,'activity_id'=>1002,'version'=>1002);
                 break;
             case 'joinLottery':
                 $this->is_verify = 1;
@@ -804,28 +804,30 @@ class ActivityController extends CommonController{
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $activity_id = intval($this->params['activity_id']);
-        $m_box = new \Common\Model\BoxModel();
-        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
-        if(isset($forscreen_info['box_id'])){
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(15);
-            $cache_key = 'savor_box_'.$forscreen_info['box_id'];
-            $redis_box_info = $redis->get($cache_key);
-            $box_info = json_decode($redis_box_info,true);
-            $cache_key = 'savor_room_' . $box_info['room_id'];
-            $redis_room_info = $redis->get($cache_key);
-            $room_info = json_decode($redis_room_info, true);
-            $hotel_id = $room_info['hotel_id'];
-        }else{
-            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-            $rets = $m_box->getBoxInfo('d.id as hotel_id,',$where);
-            $hotel_id = $rets[0]['hotel_id'];
-        }
+        $version = $this->params['version'];
 
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         if($activity_id>0){
-            $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'hotel_id'=>$hotel_id));
+            $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
         }else{
+            $m_box = new \Common\Model\BoxModel();
+            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+            if(isset($forscreen_info['box_id'])){
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(15);
+                $cache_key = 'savor_box_'.$forscreen_info['box_id'];
+                $redis_box_info = $redis->get($cache_key);
+                $box_info = json_decode($redis_box_info,true);
+                $cache_key = 'savor_room_' . $box_info['room_id'];
+                $redis_room_info = $redis->get($cache_key);
+                $room_info = json_decode($redis_room_info, true);
+                $hotel_id = $room_info['hotel_id'];
+            }else{
+                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $rets = $m_box->getBoxInfo('d.id as hotel_id,',$where);
+                $hotel_id = $rets[0]['hotel_id'];
+            }
+
             $where = array('hotel_id'=>$hotel_id,'status'=>1);
             $start_time = date('Y-m-d 00:00:00');
             $end_time = date('Y-m-d 23:59:59');
@@ -840,7 +842,7 @@ class ActivityController extends CommonController{
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid',$where,'');
         if(empty($user_info)){
             $this->to_back(90116);
         }
@@ -888,32 +890,57 @@ class ActivityController extends CommonController{
                 $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
                 $status = 1;
             }
-
         }
+        $is_hotplay = 1;
         switch ($status){
             case 1:
-                $tips = '恭喜您，报名成功';
-                $message = "开奖时间为{$activity_date}（今天）{$lottery_hour}，请及时关注中奖结果。详细奖项请看奖品列表";
+                if(!empty($version)){
+                    $lottery_stime = strtotime($res_activity['lottery_time']);
+                    $countdown_time = $lottery_stime-time()>0?$lottery_stime-time():0;
+                    $countdown_time = intval($countdown_time/60);
+                    if($countdown_time>0){
+                        $tips = $countdown_time.'分钟后开始抽奖';
+                    }else{
+                        $tips = '';
+                    }
+                    $m_config = new \Common\Model\SysConfigModel();
+                    $all_config = $m_config->getAllconfig();
+                    $hotellottery_people_num = $all_config['hotellottery_people_num'];
+                    $message = "本轮参与人数在{$hotellottery_people_num}人以上才可开始抽奖哦，否则无法开奖";
+                }else{
+                    $tips = '恭喜您，报名成功';
+                    $message = "开奖时间为{$activity_date}（今天）{$lottery_hour}，请及时关注中奖结果。详细奖项请看奖品列表";
+                }
                 break;
             case 2:
                 $tips = '已过本轮抽奖时间，请等待下一轮抽奖';
                 $message = "本轮报名时间为{$activity_date} {$start_hour}-{$end_hour}。现已超时，请等待新一轮抽奖";
                 break;
             case 3:
-                $tips = "恭喜您，获得{$res_activity['prize']}";
-                $expire_time = date('Y-m-d H:00',strtotime($res_apply['list'][0]['expire_time']));
-                $message = "请及时联系餐厅服务人员进行兑换，过期无效。有效时间至：{$expire_time}";
+                if(!empty($version)){
+                    $tips = "恭喜您中奖了";
+                    $message = '';
+                }else{
+                    $tips = "恭喜您，获得{$res_activity['prize']}";
+                    $expire_time = date('Y-m-d H:00',strtotime($res_apply['list'][0]['expire_time']));
+                    $message = "请及时联系餐厅服务人员进行兑换，过期无效。有效时间至：{$expire_time}";
+                }
                 break;
             case 4:
-                $tips = "很遗憾，没有中奖哦，下一轮继续吧～";
+                $no_lottery_tips = array('很遗憾，没有中奖哦～','太可惜了，竟与奖品擦肩而过！','据说换个姿势能提高中奖几率哦～','谢谢参与');
+                shuffle($no_lottery_tips);
+                $tips = $no_lottery_tips[0];
                 $message = '';
                 break;
             default:
                 $tips = $message = '';
         }
+        $lottery_time = date('Y-m-d H:i:s',strtotime($res_activity['lottery_time']));
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $data = array('activity_num'=>$activity_id,'status'=>$status,'tips'=>$tips,'message'=>$message,
-            'prize_name'=>$res_activity['prize'],'img_url'=>$oss_host.$res_activity['image_url']);
+            'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$oss_host.$res_activity['image_url'],
+            'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
+            'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time);
         $this->to_back($data);
     }
 

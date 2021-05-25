@@ -416,6 +416,7 @@ return array(
     'smallapp_lottery_has_expire'=>'抽奖活动已过期',
     'smallapp_lottery_prize_not_exist'=>'抽奖活动奖品不存在，请重新进行抽奖',
     'smallapp_lottery_prize_task_not_finish'=>'请先完成抽奖活动奖品任务',
+    'smallappsale_initiatelottery_time_error'=>'请选择正确的发起时间',
 
 
 );

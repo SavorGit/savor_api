@@ -21,7 +21,6 @@ class ConfigController extends CommonController{
         $openid = $this->params['openid'];
         $action = $this->params['action'];
         $subscribe_status = 0;//1无openID 2未关注公众号 3已关注公众号
-
         if($openid){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
@@ -62,6 +61,13 @@ class ConfigController extends CommonController{
         $day = 0;
         $hour = date('G',$activity_next_time);
         $activity_lottery_time = array($day,intval($hour));
+
+        $minute = intval(date('i'));
+        $last_m = 10 - $minute%10;
+        $now_time = time()+($last_m*60);
+        $initiate_hour = date('G',$now_time);
+        $initiate_minute = date('i',$now_time);
+        $activity_initiate_time = array($day,intval($initiate_hour),intval($initiate_minute/10));
 
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
@@ -108,10 +114,20 @@ class ConfigController extends CommonController{
                 $money_task_img = $money_task_img_path;
             }
         }
+        $activity_wait_time = array();
+        for ($i=1;$i<7;$i++){
+            $i_time = $i*10;
+            $is_select = false;
+            if($i==3){
+                $is_select = true;
+            }
+            $activity_wait_time[]=array('name'=>"{$i_time}分钟",'value'=>$i_time,'is_select'=>$is_select);
+        }
 
         $res_data = array('is_have_adv'=>$is_have_adv,'subscribe_status'=>$subscribe_status,
             'is_activity'=>$is_activity,'activity_lottery_time'=>$activity_lottery_time,
-            'is_open_money_task'=>$is_open_money_task,'money_task_img'=>$money_task_img);
+            'is_open_money_task'=>$is_open_money_task,'money_task_img'=>$money_task_img,
+            'activity_initiate_time'=>$activity_initiate_time,'activity_wait_time'=>$activity_wait_time);
         $this->to_back($res_data);
     }
 

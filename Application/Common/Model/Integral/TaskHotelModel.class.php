@@ -29,7 +29,7 @@ class TaskHotelModel extends BaseModel{
     public function getTaskinfo($task,$utask=array()){
         $content = array();
         if($task['meal_num']>0){
-            $info = array('name'=>'互动饭局数','num'=>$task['meal_num']);
+            $info = array('name'=>'互动饭局数','num'=>$task['meal_num'],'type'=>'meal');
             if(!empty($utask)){
                 $finish_num = $utask['meal_num']>$task['meal_num']?$task['meal_num']:$utask['meal_num'];
                 $info['finish_num'] = $finish_num;
@@ -37,7 +37,7 @@ class TaskHotelModel extends BaseModel{
             $content[] = $info;
         }
         if($task['comment_num']>0){
-            $info = array('name'=>'邀请客人对您进行评价','num'=>$task['comment_num']);
+            $info = array('name'=>'邀请客人对您进行评价','num'=>$task['comment_num'],'type'=>'comment');
             if(!empty($utask)){
                 $finish_num = $utask['comment_num']>$task['comment_num']?$task['comment_num']:$utask['comment_num'];
                 $info['finish_num'] = $finish_num;
@@ -45,9 +45,17 @@ class TaskHotelModel extends BaseModel{
             $content[] = $info;
         }
         if($task['interact_num']>0){
-            $info = array('name'=>'邀请客人扫码进行投屏','num'=>$task['interact_num']);
+            $info = array('name'=>'邀请客人扫码进行投屏','num'=>$task['interact_num'],'type'=>'interact');
             if(!empty($utask)){
                 $finish_num = $utask['interact_num']>$task['interact_num']?$task['interact_num']:$utask['interact_num'];
+                $info['finish_num'] = $finish_num;
+            }
+            $content[] = $info;
+        }
+        if($task['lottery_num']>0){
+            $info = array('name'=>'邀请客人抽奖','num'=>$task['lottery_num'],'type'=>'lottery');
+            if(!empty($utask)){
+                $finish_num = $utask['lottery_num']>$task['lottery_num']?$task['lottery_num']:$utask['lottery_num'];
                 $info['finish_num'] = $finish_num;
             }
             $content[] = $info;

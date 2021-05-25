@@ -19,7 +19,8 @@ class ActivityController extends CommonController{
                 break;
             case 'addActivity':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'activity_name'=>1001,'prize'=>1001,'image'=>1001,'lottery_day'=>1001,'lottery_hour'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'activity_name'=>1001,'prize'=>1001,'image'=>1001,'lottery_day'=>1001,'lottery_hour'=>1001,
+                    'lottery_minute'=>1002,'wait_time'=>1002);
                 break;
         }
         parent::_init_();
@@ -32,7 +33,7 @@ class ActivityController extends CommonController{
         $all_nums = $page * $pagesize;
 
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
-        $where = array('hotel_id'=>$hotel_id);
+        $where = array('hotel_id'=>$hotel_id,'type'=>1);
         $fields = 'id,name,image_url,status';
         $res_activity = $m_activity->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
@@ -99,6 +100,11 @@ class ActivityController extends CommonController{
         $image_url = $this->params['image'];
         $lottery_day = intval($this->params['lottery_day']);
         $lottery_hour = $this->params['lottery_hour'];
+        $lottery_minute = intval($this->params['lottery_minute']);
+        $wait_time = intval($this->params['wait_time']);
+        if($lottery_minute>0){
+            $lottery_hour = "$lottery_hour:$lottery_minute";
+        }
         if($lottery_day==0){
             $lottery_time = date("Y-m-d $lottery_hour:00");
         }else{
@@ -110,22 +116,28 @@ class ActivityController extends CommonController{
         $now_time = time();
         $now_date = date('Ymd');
         $lottery_date = date('Ymd',$lottery_stime);
-
-        if($now_time>$lottery_stime || $lottery_date<$now_date){
-            $this->to_back(93053);
-        }
-
-        if($lottery_date==$now_date){
-            $tmp_lottery_time = $now_time + 7200;
-            $tmp_lottery_hour = date('G',$tmp_lottery_time);
-            $lottery_hour = date('G',$lottery_stime);
-            if($lottery_hour<$tmp_lottery_hour){
+        if($wait_time>0){
+            if($now_time>$lottery_stime || $lottery_date<$now_date){
+                $this->to_back(93067);
+            }
+            $start_time = $lottery_time;
+            $end_time = date('Y-m-d H:i:s',$lottery_stime+($wait_time*60)-300);
+            $lottery_time = date('Y-m-d H:i:s',$lottery_stime+($wait_time*60));
+        }else{
+            if($now_time>$lottery_stime || $lottery_date<$now_date){
                 $this->to_back(93053);
             }
+            if($lottery_date==$now_date){
+                $tmp_lottery_time = $now_time + 7200;
+                $tmp_lottery_hour = date('G',$tmp_lottery_time);
+                $lottery_hour = date('G',$lottery_stime);
+                if($lottery_hour<$tmp_lottery_hour){
+                    $this->to_back(93053);
+                }
+            }
+            $start_time = date('Y-m-d H:i:s',$lottery_stime-3600);
+            $end_time = date('Y-m-d H:i:s',$lottery_stime-300);
         }
-
-        $start_time = date('Y-m-d H:i:s',$lottery_stime-3600);
-        $end_time = date('Y-m-d H:i:s',$lottery_stime-300);
 
         $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('0','1')));
         $m_activity = new \Common\Model\Smallapp\ActivityModel();

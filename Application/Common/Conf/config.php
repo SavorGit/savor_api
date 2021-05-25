@@ -320,6 +320,7 @@ return array(
     'SAPP_HOTPLAY_PRONUM'=>'smallapp:hotplaypronum',
     'SAPP_PUBLIC_AUDITNUM'=>'smallapp:public:auditnum:',
     'SAPP_LOTTERY_TASK'=>'smallapp:lotterytask:',
+    'SAPP_HELPIMAGE'=>'smallapp:helpimage:',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(
@@ -431,7 +432,8 @@ return array(
     ),
 
     'SMALLAPP_REDPACKET_SEND_RANGE'=>array(
-       1=>'全网餐厅电视',2=>'当前餐厅所有电视',3=>'当前包间电视',
+//       1=>'全网餐厅电视',
+       2=>'当前餐厅所有电视',3=>'当前包间电视',
      ),
     'VIRTUAL_SMALL_SEND_MESSAGE_TYPE'=>array('1'=>'hotel','2'=>'room','3'=>'box','4'=>'tv','5'=>'volume','6'=>'programmenu',
         '7'=>'promotionalvideo','8'=>'adsa','9'=>'adsb','10'=>'adsc','11'=>'demand','12'=>'recommendation',
@@ -557,7 +559,7 @@ return array(
         'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿','ofYZG4zTOtj9RCaLmDXI0qfY-I34'=>'熊静怡','ofYZG45GWNg7k9CLVHoRdUqQVPJ4'=>'黎晓欣',
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
-    'FORSCREEN_GUIDE_IMAGE_SWITCH'=>1,
+    'FORSCREEN_GUIDE_IMAGE_SWITCH'=>0,
     'LOTTERY_TIMEOUT'=>300,
     'MEAL_TIME'=>array('lunch'=>array('10:00','15:00'),'dinner'=>array('17:00','23:59')),
     'PERSON_PRICE'=>array(

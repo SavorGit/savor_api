@@ -351,7 +351,7 @@ class TaskController extends CommonController{
 
                 $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
                 $where = array('a.id'=>$res_usertask['task_hotel_id']);
-                $fileds = 'a.meal_num,a.interact_num,a.comment_num,a.finish_num,task.name,task.media_id,task.end_time';
+                $fileds = 'a.meal_num,a.interact_num,a.comment_num,a.lottery_num,a.finish_num,task.name,task.media_id,task.end_time';
                 $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
                 $name = $res_task[0]['name'];
                 $end_time = $res_task[0]['end_time'];

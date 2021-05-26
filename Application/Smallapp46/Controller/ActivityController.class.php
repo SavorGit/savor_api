@@ -828,7 +828,7 @@ class ActivityController extends CommonController{
                 $hotel_id = $rets[0]['hotel_id'];
             }
 
-            $where = array('hotel_id'=>$hotel_id,'status'=>1);
+            $where = array('hotel_id'=>$hotel_id);
             $start_time = date('Y-m-d 00:00:00');
             $end_time = date('Y-m-d 23:59:59');
             $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
@@ -861,10 +861,20 @@ class ActivityController extends CommonController{
         if($res_activity['status']==2){
             $where = array('openid'=>$openid,'activity_id'=>$activity_id);
             $res_apply = $m_activityapply->getDataList('*',$where,'id desc',0,1);
-            if($res_apply['total'] && $res_apply['list'][0]['status']==2){
-                $status = 3;
+            if($res_apply['total']){
+                if($res_apply['list'][0]['status']==2){
+                    $status = 3;
+                }elseif($res_apply['list'][0]['status']==3){
+                    $status = 4;
+                }else{
+                    $status = 1;
+                }
             }else{
-                $status = 4;
+                $end_time = strtotime($res_activity['end_time']);
+                $now_time = time();
+                if($status==0 && $now_time>$end_time){
+                    $status = 2;
+                }
             }
         }else{
             $res_cache = $redis->get($cache_key);
@@ -895,18 +905,26 @@ class ActivityController extends CommonController{
         switch ($status){
             case 1:
                 if(!empty($version)){
-                    $lottery_stime = strtotime($res_activity['lottery_time']);
-                    $countdown_time = $lottery_stime-time()>0?$lottery_stime-time():0;
-                    $countdown_time = intval($countdown_time/60);
-                    if($countdown_time>0){
-                        $tips = $countdown_time.'分钟后开始抽奖';
-                    }else{
-                        $tips = '';
-                    }
                     $m_config = new \Common\Model\SysConfigModel();
                     $all_config = $m_config->getAllconfig();
                     $hotellottery_people_num = $all_config['hotellottery_people_num'];
-                    $message = "本轮参与人数在{$hotellottery_people_num}人以上才可开始抽奖哦，否则无法开奖";
+
+                    $lottery_stime = strtotime($res_activity['lottery_time']);
+                    $countdown_time = $lottery_stime-time()>0?$lottery_stime-time():0;
+                    $countdown_mtime = round($countdown_time/60);
+                    if($countdown_mtime>0){
+                        $tips = $countdown_mtime.'分钟后开始抽奖';
+                    }else{
+                        $tips = '即将开始抽奖';
+                        if(time()>$lottery_stime){
+                            $awhere = array('activity_id'=>$activity_id);
+                            $res_apply = $m_activityapply->getDataList('*',$awhere,'id desc',0,1);
+                            if($res_apply['total']<$hotellottery_people_num){
+                                $tips = '参与人数不足，无法开奖';
+                            }
+                        }
+                    }
+                    $message = "本轮参与人数在{$hotellottery_people_num}人以上才可开始抽奖";
                 }else{
                     $tips = '恭喜您，报名成功';
                     $message = "开奖时间为{$activity_date}（今天）{$lottery_hour}，请及时关注中奖结果。详细奖项请看奖品列表";

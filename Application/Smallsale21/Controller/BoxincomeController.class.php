@@ -43,7 +43,7 @@ class BoxincomeController extends CommonController{
         if(!empty($res_data)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             foreach ($res_data as $v){
-                $num = $v['meal_num'] + $v['comment_num'] + $v['interact_num'];
+                $num = $v['meal_num'] + $v['comment_num'] + $v['interact_num'] + $v['lottery_num'];
                 $info = array('id'=>$v['id'],'box_name'=>$v['box_name'],'num'=>$num,'avatar_url'=>'','is_claim'=>$v['is_claim']);
                 if($v['is_claim']==1){
                     $claim_total++;
@@ -95,7 +95,7 @@ class BoxincomeController extends CommonController{
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
         $res_hoteltask = $m_hoteltask->getInfo(array('id'=>$user_task_info['task_hotel_id']));
         $task_num = 0;
-        $meal_num = $interact_num = $comment_num = 0;
+        $meal_num = $interact_num = $comment_num = $lottery_num = 0;
         if($res_hoteltask['meal_num']>0){
             $meal_num = $res_income['meal_num'];
             $task_num++;
@@ -108,7 +108,14 @@ class BoxincomeController extends CommonController{
             $comment_num = $res_income['comment_num'];
             $task_num++;
         }
-        $meal_money = $interact_money = $comment_money = 0;
+
+        if($res_hoteltask['lottery_num']>0){
+            $lottery_num = $res_income['lottery_num'];
+            $task_num++;
+        }
+
+
+        $meal_money = $interact_money = $comment_money = $lottery_money = 0;
         $last_money = 0.3*$user_task_info['money'];
         if($res_hoteltask['meal_num']>0 && $meal_num>0){
             if($user_task_info['meal_num']+$meal_num>$res_hoteltask['meal_num']){
@@ -128,15 +135,24 @@ class BoxincomeController extends CommonController{
             }
             $comment_money = $last_money/$task_num/$res_hoteltask['comment_num'] * $comment_num;
         }
-        $get_money = $user_task_info['get_money'] + $meal_money + $interact_money + $comment_money;
+        if($res_hoteltask['lottery_num']>0 && $lottery_num>0){
+            if($user_task_info['lottery_num']+$lottery_num>$res_hoteltask['lottery_num']){
+                $lottery_num = $res_hoteltask['lottery_num']-$user_task_info['lottery_num'];
+            }
+            $lottery_money = $last_money/$task_num/$res_hoteltask['lottery_num'] * $lottery_num;
+        }
+
+        $get_money = $user_task_info['get_money'] + $meal_money + $interact_money + $comment_money + $lottery_money;
         $get_money = sprintf("%.2f",$get_money);
         $up_usertask_data = array('meal_num'=>$user_task_info['meal_num']+$meal_num,
             'interact_num'=>$user_task_info['interact_num']+$interact_num,
-            'comment_num'=>$user_task_info['comment_num']+$comment_num,'get_money'=>$get_money
+            'comment_num'=>$user_task_info['comment_num']+$comment_num,
+            'lottery_num'=>$user_task_info['lottery_num']+$lottery_num,
+            'get_money'=>$get_money
         );
         $task_num_eq = 0;
         if($up_usertask_data['meal_num']==$res_hoteltask['meal_num'] && $up_usertask_data['interact_num']==$res_hoteltask['interact_num']
-            && $up_usertask_data['comment_num']==$res_hoteltask['comment_num']){
+            && $up_usertask_data['comment_num']==$res_hoteltask['comment_num'] && $up_usertask_data['lottery_num']==$res_hoteltask['lottery_num']){
             $task_num_eq = 1;
         }
         if($get_money>=$user_task_info['money'] || $task_num_eq==1){
@@ -149,7 +165,9 @@ class BoxincomeController extends CommonController{
         $usertask_record = array('openid'=>$openid,'hotel_id'=>$res_income['hotel_id'],'hotel_name'=>$res_income['hotel_name'],
             'room_id'=>$res_income['room_id'],'room_name'=>$res_income['room_name'],'box_id'=>$res_income['box_id'],
             'box_name'=>$res_income['box_name'],'box_mac'=>$res_income['box_mac'],'task_hotel_id'=>$user_task_info['task_hotel_id'],
-            'usertask_id'=>$user_task_info['id'],'boxincome_id'=>$claim_id,'meal_num'=>$meal_num,'interact_num'=>$interact_num,'comment_num'=>$comment_num,'type'=>2
+            'usertask_id'=>$user_task_info['id'],'boxincome_id'=>$claim_id,'meal_num'=>$meal_num,'interact_num'=>$interact_num,'comment_num'=>$comment_num,
+            'lottery_num'=>$lottery_num,
+            'type'=>2
         );
         $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
         $m_usertask_record->add($usertask_record);

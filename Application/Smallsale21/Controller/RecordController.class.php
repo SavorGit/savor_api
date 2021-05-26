@@ -59,7 +59,7 @@ class RecordController extends CommonController{
             foreach ($res_usertask['list'] as $k=>$v){
                 $date = $v['add_date'];
                 $where['DATE(add_time)'] = $date;
-                $ut_fields = 'sum(meal_num) as meal_num,sum(comment_num) as comment_num,sum(interact_num) as interact_num';
+                $ut_fields = 'sum(meal_num) as meal_num,sum(comment_num) as comment_num,sum(interact_num) as interact_num,sum(lottery_num) as lottery_num';
                 $res_list = $m_usertaskrecord->getDataList($ut_fields,$where,'id desc');
                 $content = $m_hoteltask->getTaskinfo($res_list[0]);
                 $info = array('date_str'=>date("n月d日",strtotime($date)),'content'=>$content);

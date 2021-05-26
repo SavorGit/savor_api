@@ -861,8 +861,10 @@ class IndexController extends CommonController{
                     $alisms = new \Common\Lib\AliyunSms();
                     $template_code = $sms_config['public_audit_templateid'];
                     $send_mobiles = C('PUBLIC_AUDIT_MOBILE');
-                    foreach ($send_mobiles as $v){
-                        $alisms::sendSms($v,'',$template_code);
+                    if(!empty($send_mobiles)){
+                        foreach ($send_mobiles as $v){
+                            $alisms::sendSms($v,'',$template_code);
+                        }
                     }
                     $public_data['status'] =1;
                 }else{

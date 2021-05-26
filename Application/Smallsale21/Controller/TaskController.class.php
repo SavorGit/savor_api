@@ -65,7 +65,7 @@ class TaskController extends CommonController{
         $m_task_hotel = new \Common\Model\Integral\TaskHotelModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $fields = "task.id task_id,task.name task_name ,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit";
-        $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'task.type'=>1,'task.status'=>1,'task.flag'=>1);
         $order = 'task.id asc';
         $size = ($page-1) * $pagesize;
         $task_list = $m_task_hotel->getHotelTaskList($fields,$where,$order,0,$size);

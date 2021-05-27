@@ -24,6 +24,10 @@ class FileforscreenController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('forscreen_id'=>1001);
                 break;
+            case 'getFilelist':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -144,8 +148,10 @@ class FileforscreenController extends CommonController{
             'box_downetime'=>$box_downetime,
         );
         $m_forscreen->recordTrackLog($forscreen_id,$params);
-
         $result['forscreen_id'] = $forscreen_id;
+        //完成系统用户抽奖任务
+        $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $m_activity_apply->finishPrizeTask($openid,$action);
         $this->to_back($result);
     }
 
@@ -199,6 +205,48 @@ class FileforscreenController extends CommonController{
             }
         }
         $this->to_back($result);
+    }
+
+    public function getFilelist(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
+
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $fields = 'id,imgs,resource_name,resource_size,md5_file';
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
+        $where['md5_file'] = array('neq','');
+        $order = 'id desc';
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');
+        $datalist = array();
+        if(!empty($res_latest)){
+            $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
+            $file_ext_images = C('SAPP_FILE_FORSCREEN_IMAGES');
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SAPP_FILE_FORSCREEN');
+            foreach ($res_latest as $v){
+                $imgs = json_decode($v['imgs'],true);
+                $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
+                $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
+                $page_num = 0;
+                if(!empty($res_cache)) {
+                    $imgs = json_decode($res_cache, true);
+                    $page_num = count($imgs);
+                }
+                $file_size = formatBytes($v['resource_size']);
+                $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'],
+                    'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img);
+                $datalist[] = $info;
+            }
+        }
+        $total = count($datalist);
+        $res_data = array('total'=>$total,'datalist'=>$datalist);
+        $this->to_back($res_data);
     }
 
     public function getforscreenbyid(){

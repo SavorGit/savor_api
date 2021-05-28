@@ -163,7 +163,7 @@ class RecordController extends CommonController{
         $total = 50;
         if(count($res_hotelrecord)<50){
             $hotel_num = $total - count($res_hotelrecord);
-            $where = array('a.hotel_id'=>array('neq',$hotel_id),'a.type'=>1);
+            $where = array('a.hotel_id'=>array('neq',$hotel_id),'a.type'=>3);
             $res_other_hotelrecord = $m_usertaskrecord->getFinishRecordlist($fileds,$where,'a.id desc',0,$hotel_num);
             $other_hotel_num = count($res_other_hotelrecord);
             $last_num = $hotel_num - $other_hotel_num;

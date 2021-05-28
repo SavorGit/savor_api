@@ -117,7 +117,7 @@ class ActivityController extends CommonController{
         $now_date = date('Ymd');
         $lottery_date = date('Ymd',$lottery_stime);
         if($wait_time>0){
-            if($now_time>$lottery_stime || $lottery_date<$now_date){
+            if($now_time+60>$lottery_stime || $lottery_date<$now_date){
                 $this->to_back(93067);
             }
             $start_time = $lottery_time;

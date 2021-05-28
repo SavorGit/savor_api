@@ -41,9 +41,9 @@ class AdspositionController extends CommonController{
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
             $start_time = date('Y-m-d 00:00:00');
             $end_time = date('Y-m-d 23:59:59');
-            $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('1','0')),'type'=>1);
+            $where = array('hotel_id'=>$hotel_id,'status'=>array('in',array('1','0')),'type'=>array('in',array(1,4)));
             $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
-            $res_activity = $m_activity->getDataList('*',$where,'id asc');
+            $res_activity = $m_activity->getDataList('*',$where,'id desc');
             $is_act_time = 0;
             if(!empty($res_activity)){
                 $now_time = date('Y-m-d H:i:s');

@@ -388,7 +388,7 @@ class WelcomeController extends CommonController{
         if(isset($resource_info[$backgroundimg_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$backgroundimg_id]['media_id']);
             $message['img_id'] = intval($backgroundimg_id);
-            $message['img_oss_addr'] = $res_media['oss_addr'];
+            $message['img_oss_addr'] = $res_media['oss_path'];
         }else{
             $message['img_id'] = 0;
             $img_oss_addr = $res_welcome['image'];
@@ -400,7 +400,7 @@ class WelcomeController extends CommonController{
         if(isset($resource_info[$music_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['media_id']);
             $message['music_id'] = intval($music_id);
-            $message['music_oss_addr'] = $res_media['oss_addr'];
+            $message['music_oss_addr'] = $res_media['oss_path'];
         }else{
             $message['music_id'] = 0;
             $message['music_oss_addr'] = '';

@@ -22,6 +22,18 @@ class ActivityController extends CommonController{
                 $this->valid_fields = array('hotel_id'=>1001,'activity_name'=>1001,'prize'=>1001,'image'=>1001,'lottery_day'=>1001,'lottery_hour'=>1001,
                     'lottery_minute'=>1002,'wait_time'=>1002);
                 break;
+            case 'addJuactivity':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1001,'activity_name'=>1001,'prize1'=>1001,'prize2'=>1001,'rcontent'=>1001);
+                break;
+            case 'getJuactivityList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'page'=>1001);
+                break;
+            case 'startJuactivity':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'activity_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -161,6 +173,112 @@ class ActivityController extends CommonController{
             'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'status'=>0,'type'=>1);
         $m_activity->add($data);
         $this->to_back(array());
+    }
+
+    public function addJuactivity(){
+        $hotel_id = intval($this->params['hotel_id']);
+        $activity_name = trim($this->params['activity_name']);
+        $prize = trim($this->params['prize1']);
+        $attach_prize = trim($this->params['prize2']);
+        $rule_content = trim($this->params['rcontent']);
+        $box_mac = $this->params['box_mac'];
+
+        $data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'name'=>$activity_name,'prize'=>$prize,'attach_prize'=>$attach_prize,
+            'rule_content'=>$rule_content,'status'=>0,'type'=>5);
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $m_activity->add($data);
+        $this->to_back(array());
+    }
+
+    public function getJuactivityList(){
+        $hotel_id = intval($this->params['hotel_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+        $all_nums = $page * $pagesize;
+
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $where = array('hotel_id'=>$hotel_id,'type'=>5);
+        $fields = 'id,name,box_mac,status';
+        $res_activity = $m_activity->getDataList($fields,$where,'id desc',0,$all_nums);
+        $datalist = array();
+        if($res_activity['total']>0){
+            $all_status_str = C('ACTIVITY_STATUS');
+            $m_box = new \Common\Model\BoxModel();
+            foreach ($res_activity['list'] as $v){
+                $box_mac = $v['box_mac'];
+                $res_box = $m_box->getHotelInfoByBoxMacNew($box_mac);
+                $room_name = '';
+                if(!empty($res_box)){
+                    $room_name = $res_box['box_name'];
+                }
+                $status_str = $all_status_str[$v['status']];
+                $info = array('activity_id'=>$v['id'],'name'=>$v['name'],'room_name'=>$room_name,'status'=>$v['status'],'status_str'=>$status_str);
+                $datalist[]=$info;
+            }
+        }
+        $res_data = array('datalist'=>$datalist);
+        $this->to_back($res_data);
+    }
+
+    public function startJuactivity(){
+        $openid = $this->params['openid'];
+        $activity_id = intval($this->params['activity_id']);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $res_user = $m_user->getOne('id', $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
+        if($res_activity['status']==0){
+            $m_hotel = new \Common\Model\HotelModel();
+            $hfield = 'hotel.name as hotel_name,ext.hotel_cover_media_id';
+            $res_hotel_ext = $m_hotel->getHotelById($hfield,array('hotel.id'=>$res_activity['hotel_id']));
+            $m_media = new \Common\Model\MediaModel();
+            $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
+            $headPic = base64_encode($res_media['oss_addr']);
+
+            $m_box = new \Common\Model\BoxModel();
+            $res_box = $m_box->getHotelInfoByBoxMacNew($res_activity['box_mac']);
+            $host_name = C('HOST_NAME');
+            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$res_box['box_id']}&box_mac={$res_activity['box_mac']}&data_id={$activity_id}&type=39";
+            $message = array('action'=>151,'nickName'=>$res_hotel_ext['hotel_name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_netty = $m_netty->pushBox($res_activity['box_mac'],json_encode($message));
+            if(isset($res_netty['error_code'])){
+                $this->to_back($res_netty['error_code']);
+            }
+            $m_activity->updateData(array('id'=>$activity_id),array('status'=>1));
+        }
+        $this->to_back(array());
+    }
+
+    public function judetail(){
+        $activity_id = intval($this->params['activity_id']);
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
+        $lottery_time = '';
+        if($res_activity['status']==2){
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $res_lottery = $m_activityapply->getApplylist('*',array('activity_id'=>$activity_id,'status'=>2),'id asc','');
+            if(!empty($res_lottery)){
+                $lottery_time = $res_lottery[0]['add_time'];
+            }
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $res_box = $m_box->getHotelInfoByBoxMacNew($res_activity['box_mac']);
+        $box_name = '';
+        if(!empty($res_box)){
+            $box_name = $res_box['box_name'];
+        }
+        $all_status_str = C('ACTIVITY_STATUS');
+        $status_str = $all_status_str[$res_activity['status']];
+
+        $data = array('activity_id'=>$res_activity['id'],'name'=>$res_activity['name'],'prize1'=>$res_activity['prize'],
+            'prize2'=>$res_activity['attach_prize'],'status'=>$res_activity['status'],'status_str'=>$status_str,
+            'lottery_time'=>$lottery_time,'box_name'=>$box_name);
+        $this->to_back($data);
     }
 
 

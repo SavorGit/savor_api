@@ -53,7 +53,7 @@ class IndexController extends CommonController{
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002,'action'=>1002);
+                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002,'action'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
                 break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
@@ -268,6 +268,9 @@ class IndexController extends CommonController{
         $openid = $this->params['openid'];
         $pop_eval = $this->params['pop_eval'];
         $action = $this->params['action'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $key = C('SMALLAPP_CHECK_CODE')."*".$openid;
@@ -349,6 +352,8 @@ class IndexController extends CommonController{
             $data['tail_lenth']   = 1024*1024;
             $data['max_video_size'] = 1024*1024*300;
             $data['max_user_forvideo_size'] = 1024*1024*5;
+            $data['max_user_forimage_size'] = 1024*1024*2;
+            $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
             $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
             $data['image_quality'] = 10;

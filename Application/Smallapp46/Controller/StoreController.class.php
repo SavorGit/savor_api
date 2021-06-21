@@ -86,11 +86,11 @@ class StoreController extends CommonController{
                 $tag_name = '';
             }
             if($v['media_id']){
-                $res_media = $m_meida->getMediaInfoById($v['media_id']);
+                $res_media = $m_meida->getMediaInfoById($v['media_id'],'https');
                 $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
                 $ori_img_url = $res_media['oss_addr'];
             }else{
-                $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                $img_url = 'https://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
                 $ori_img_url = $img_url;
             }
             $dis = $v['dis'];

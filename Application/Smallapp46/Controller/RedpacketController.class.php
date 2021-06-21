@@ -106,7 +106,13 @@ class RedpacketController extends CommonController{
         if($total_money>500){
             $this->to_back(90123);
         }
-        if($total_money<$amount*0.3){
+        $m_config = new \Common\Model\SysConfigModel();
+        $all_config = $m_config->getAllconfig();
+        $red_packet_rate = $all_config['red_packet_rate'];
+        $rate_fee = sprintf("%01.2f",$total_money*$red_packet_rate);
+        $tmp_money = $total_money - $rate_fee;
+        $redpacket_money = sprintf("%01.2f",$tmp_money);
+        if($redpacket_money<$amount*0.3){
             $this->to_back(90117);
         }
         $surname_c = new \Common\Lib\Surname();

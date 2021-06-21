@@ -14,10 +14,13 @@ class ForscreenController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
                 break;
+            case 'cancelforscreen':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'forscreen_id'=>1001,'is_share'=>1001);
+                break;
         }
         parent::_init_();
     }
-
 
     public function collectforscreen(){
         $openid = $this->params['openid'];
@@ -139,6 +142,35 @@ class ForscreenController extends CommonController{
             $this->to_back(array());
         }
 
+    }
+
+    public function cancelforscreen(){
+        $openid = $this->params['openid'];
+        $forscreen_id = $this->params['forscreen_id'];
+        $is_share = intval($this->params['is_share']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid,avatarUrl,nickName',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        if($is_share) {
+            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+            $where = array('openid'=>$openid,'forscreen_id'=>$forscreen_id);
+            $res_forscreen = $m_forscreen->getWhere('*',$where,'id desc','0,1','');
+            if(!empty($res_forscreen)){
+                $id = $res_forscreen[0]['id'];
+                $m_forscreen->updateInfo(array('id'=>$id),array('is_cancel_forscreen'=>1));
+            }
+        }else{
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $key = C('SAPP_CANCEL_FORSCREEN');
+            $cache_key = $key.$openid.'-'.$forscreen_id;
+            $redis->set($cache_key,date('Y-m-d H:i:s'),86400);
+        }
+        $this->to_back(array());
     }
 
 }

@@ -32,6 +32,7 @@ class QrcodeController extends CommonController{
             case 28:
             case 37:
             case 38:
+            case 39:
                 $now_time = date('zH');
                 $encode_key = "$type{$box_id}$now_time{$data_id}";
                 $redis  =  \Common\Lib\SavorRedis::getInstance();

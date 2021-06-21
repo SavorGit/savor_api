@@ -34,6 +34,10 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'activity_id'=>1001);
                 break;
+            case 'judetail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('activity_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -204,7 +208,15 @@ class ActivityController extends CommonController{
         if($res_activity['total']>0){
             $all_status_str = C('ACTIVITY_STATUS');
             $m_box = new \Common\Model\BoxModel();
+            $now_time = time();
             foreach ($res_activity['list'] as $v){
+                if($v['status']==1){
+                    $expire_time = strtotime($v['add_time']) + 3600;
+                    if($expire_time>$now_time){
+                        $v['status'] = 2;
+                        $m_activity->updateData(array('id'=>$v['id']),array('status'=>2));
+                    }
+                }
                 $box_mac = $v['box_mac'];
                 $res_box = $m_box->getHotelInfoByBoxMacNew($box_mac);
                 $room_name = '';
@@ -243,7 +255,7 @@ class ActivityController extends CommonController{
             $res_box = $m_box->getHotelInfoByBoxMacNew($res_activity['box_mac']);
             $host_name = C('HOST_NAME');
             $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$res_box['box_id']}&box_mac={$res_activity['box_mac']}&data_id={$activity_id}&type=39";
-            $message = array('action'=>151,'nickName'=>$res_hotel_ext['hotel_name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
+            $message = array('action'=>151,'countdown'=>120,'nickName'=>$res_hotel_ext['hotel_name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
             $m_netty = new \Common\Model\NettyModel();
             $res_netty = $m_netty->pushBox($res_activity['box_mac'],json_encode($message));
             if(isset($res_netty['error_code'])){
@@ -276,7 +288,7 @@ class ActivityController extends CommonController{
         $status_str = $all_status_str[$res_activity['status']];
 
         $data = array('activity_id'=>$res_activity['id'],'name'=>$res_activity['name'],'prize1'=>$res_activity['prize'],
-            'prize2'=>$res_activity['attach_prize'],'status'=>$res_activity['status'],'status_str'=>$status_str,
+            'prize2'=>$res_activity['attach_prize'],'rule_content'=>$res_activity['rule_content'],'status'=>$res_activity['status'],'status_str'=>$status_str,
             'lottery_time'=>$lottery_time,'box_name'=>$box_name);
         $this->to_back($data);
     }

@@ -1010,17 +1010,17 @@ class ActivityController extends CommonController{
                 }
             }
         }
+        $jd_page_url = 'pages/item/detail/detail?sku=30642076102';
+        $jd_price = '988';
+        $price = '854';
         if($status==0){
             $adata = array('activity_id'=>$activity_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>2);
             $m_activityapply->add($adata);
             $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
             $status = 3;
             $lottery_time = date('Y-m-d H:i:s');
-
-            $m_activity->updateData(array('id'=>$activity_id),array('status'=>2));
+//            $m_activity->updateData(array('id'=>$activity_id),array('status'=>2));
             $prize_list = array('1.'.$res_activity['prize'],'2.'.$res_activity['attach_prize']);
-            $price = '854';
-            $jd_price = '898';
             $message = array('action'=>152,'countdown'=>120,'prize_list'=>$prize_list,'price'=>$price,'jd_price'=>$jd_price);
             $m_netty = new \Common\Model\NettyModel();
             $m_netty->pushBox($res_activity['box_mac'],json_encode($message));
@@ -1035,7 +1035,8 @@ class ActivityController extends CommonController{
         $data = array('activity_num'=>$activity_id,'status'=>$status,'tips'=>$tips,
             'activity_name'=>$res_activity['name'],'prize1'=>$res_activity['prize'],'prize2'=>$res_activity['attach_prize'],
             'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
-            'lottery_time'=>$lottery_time,'box_name'=>$box_name);
+            'lottery_time'=>$lottery_time,'box_name'=>$box_name,'is_compareprice'=>$res_activity['is_compareprice'],
+            'price'=>$price,'jd_price'=>$jd_price,'jd_page_url'=>$jd_page_url);
         $this->to_back($data);
     }
 

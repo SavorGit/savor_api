@@ -24,7 +24,7 @@ class ActivityController extends CommonController{
                 break;
             case 'addJuactivity':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1001,'activity_name'=>1001,'prize1'=>1001,'prize2'=>1001,'rcontent'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1001,'activity_name'=>1001,'prize1'=>1001,'prize2'=>1001,'rcontent'=>1001,'is_compareprice'=>1002);
                 break;
             case 'getJuactivityList':
                 $this->is_verify = 1;
@@ -186,9 +186,14 @@ class ActivityController extends CommonController{
         $attach_prize = trim($this->params['prize2']);
         $rule_content = trim($this->params['rcontent']);
         $box_mac = $this->params['box_mac'];
-
+        $is_compareprice = $this->params['is_compareprice'];
+        if(!empty($is_compareprice)){
+            $is_compareprice = intval($is_compareprice);
+        }else{
+            $is_compareprice = 0;
+        }
         $data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'name'=>$activity_name,'prize'=>$prize,'attach_prize'=>$attach_prize,
-            'rule_content'=>$rule_content,'status'=>0,'type'=>5);
+            'rule_content'=>$rule_content,'status'=>0,'is_compareprice'=>$is_compareprice,'type'=>5);
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $m_activity->add($data);
         $this->to_back(array());
@@ -202,7 +207,7 @@ class ActivityController extends CommonController{
 
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $where = array('hotel_id'=>$hotel_id,'type'=>5);
-        $fields = 'id,name,box_mac,status';
+        $fields = 'id,name,box_mac,status,add_time';
         $res_activity = $m_activity->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_activity['total']>0){
@@ -212,7 +217,7 @@ class ActivityController extends CommonController{
             foreach ($res_activity['list'] as $v){
                 if($v['status']==1){
                     $expire_time = strtotime($v['add_time']) + 3600;
-                    if($expire_time>$now_time){
+                    if($now_time>$expire_time){
                         $v['status'] = 2;
                         $m_activity->updateData(array('id'=>$v['id']),array('status'=>2));
                     }
@@ -261,7 +266,7 @@ class ActivityController extends CommonController{
             if(isset($res_netty['error_code'])){
                 $this->to_back($res_netty['error_code']);
             }
-            $m_activity->updateData(array('id'=>$activity_id),array('status'=>1));
+//            $m_activity->updateData(array('id'=>$activity_id),array('status'=>1));
         }
         $this->to_back(array());
     }

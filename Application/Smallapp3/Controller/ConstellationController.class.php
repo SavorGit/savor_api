@@ -82,7 +82,7 @@ class ConstellationController extends CommonController{
             $url = 'https://'.$_SERVER['HTTP_HOST']."/h5/constellation/detail/id/$constellation_id";
             $result['detail_url'] = $url;
             $result['date'] = $result['start_month'].'.'.$result['start_day'].'-'.$result['end_month'].'.'.$result['end_day'];
-            unset($result['content'],$result['media_id'],$result['status'],$result['create_time']);
+            unset($result['media_id'],$result['status'],$result['create_time']);
         }
         $this->to_back($result);
     }

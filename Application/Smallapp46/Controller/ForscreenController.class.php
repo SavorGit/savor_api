@@ -106,6 +106,20 @@ class ForscreenController extends CommonController{
             $meal_type = 'dinner';
         }
         $is_show = 1;
+        $m_box = new \Common\Model\BoxModel();
+        $fields = 'box.id as box_id,hotel.id as hotel_id';
+        $bwhere = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $res_box = $m_box->getBoxByCondition($fields,$bwhere);
+        $hotel_id = $res_box[0]['hotel_id'];
+        $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
+        $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
+        $is_laimao_seckill = 0;
+        if(!empty($res_hgoods)){
+            $meal_type = '';
+            $is_laimao_seckill = 1;
+        }
+
         if(!empty($meal_type)){
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(1);
@@ -134,7 +148,13 @@ class ForscreenController extends CommonController{
             if(!empty($user_info['nickName'])){
                 $nickName = $user_info['nickName'];
             }
-            $netty_data = array('action'=>150,'headPic'=>$headPic,'nickName'=>$nickName);
+            if($is_laimao_seckill==1){
+                $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+                $code_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$res_box[0]['box_id']}&data_id=$seckill_goods_id&type=24";
+                $netty_data = array('action'=>40,'goods_id'=>$seckill_goods_id,'qrcode_url'=>$code_url);
+            }else{
+                $netty_data = array('action'=>150,'headPic'=>$headPic,'nickName'=>$nickName);
+            }
             $m_netty = new \Common\Model\NettyModel();
             $res = $m_netty->pushBox($box_mac,json_encode($netty_data));
             $this->to_back($res);

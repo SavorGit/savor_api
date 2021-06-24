@@ -142,7 +142,7 @@ class ProgramController extends CommonController{
         $orderby = 'id desc';
         $optimize_goods = $m_goods->getDataList($fields,$where,$orderby);
 
-        $fields = 'g.id as goods_id,g.media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url,g.duration';
+        $fields = 'g.id as goods_id,g.media_id,g.salemedia_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url,g.duration';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $types = array(20,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $where['g.type'] = array('in',$types);
@@ -167,9 +167,15 @@ class ProgramController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $goods_ids = array();
         $program_list = array();
+        $all_laimao_sale_hotels = C('LAIMAO_SALE_HOTELS');
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
                 'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>intval($v['type']));
+            if($info['goods_id']==C('LAIMAO_SECKILL_GOODS_ID')){
+                if(isset($all_laimao_sale_hotels[$hotel_id])){
+                    $v['media_id'] = $v['salemedia_id'];
+                }
+            }
             $media_info = $m_media->getMediaInfoById($v['media_id']);
             $info['oss_path'] = $media_info['oss_path'];
             $name_info = pathinfo($info['oss_path']);
@@ -187,8 +193,11 @@ class ProgramController extends CommonController{
                 }
             }elseif($v['type']==40){
                 $is_storebuy = intval($v['is_storebuy']);
-                $content = urlencode($v['jd_url'].'?mac='.$box_mac);
-                $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&content=$content&type=24";
+//                $content = urlencode($v['jd_url'].'?mac='.$box_mac);
+                if($info['goods_id']==C('LAIMAO_SECKILL_GOODS_ID')){
+                    $info['price'] = '';
+                }
+                $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac=$box_mac&box_id={$box_info[0]['box_id']}&data_id={$v['goods_id']}&type=24";
                 if(empty($info['duration'])){
                     $info['duration'] = 15;
                 }

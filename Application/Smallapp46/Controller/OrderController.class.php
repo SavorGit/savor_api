@@ -41,8 +41,9 @@ class OrderController extends CommonController{
                 break;
             case 'addShoporder':
                 $this->is_verify = 1;
-                $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,'address_id'=>1001,
-                    'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,'email'=>1002,'box_id'=>1002);
+                $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
+                    'address_id'=>1002,'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,
+                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002);
                 break;
             case 'addGiftorder':
                 $this->is_verify = 1;
@@ -367,6 +368,7 @@ class OrderController extends CommonController{
         $email = $this->params['email'];
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
         $box_id = $this->params['box_id'];
+        $box_mac = $this->params['box_mac'];
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -381,7 +383,6 @@ class OrderController extends CommonController{
                 $sale_uid = $decode_info[0];
             }
         }
-
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -392,12 +393,18 @@ class OrderController extends CommonController{
         }
 
         $sale_key = C('SAPP_SALE');
-        $cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
+        $order_cache_key = $sale_key.'dishorder:'.date('Ymd').':'.$openid;
         $order_space_key = $sale_key.'dishorder:spacetime'.$openid.$goods_id;
 
         $redis = \Common\Lib\SavorRedis::getInstance();
         $order_location = array();
         $m_area = new \Common\Model\AreaModel();
+        if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $bwhere = array('mac'=>$box_mac,'state'=>1,'flag'=>0);
+            $res_box = $m_box->getOnerow($bwhere);
+            $box_id = $res_box['id'];
+        }
         if(!empty($box_id)){
             $box_id = intval($box_id);
             $redis->select(15);
@@ -424,7 +431,7 @@ class OrderController extends CommonController{
         if(!empty($res_ordercache)){
             $this->to_back(92024);
         }
-        $res_cache = $redis->get($cache_key);
+        $res_cache = $redis->get($order_cache_key);
         if(!empty($res_cache)){
             $user_order = json_decode($res_cache,true);
             if(count($user_order)>=$addorder_num){
@@ -433,15 +440,28 @@ class OrderController extends CommonController{
         }else{
             $user_order = array();
         }
-
-        $m_address = new \Common\Model\Smallapp\AddressModel();
-        $res_address = $m_address->getInfo(array('id'=>$address_id));
-        $res_area = $m_area->find($res_address['area_id']);
-        $res_county = $m_area->find($res_address['county_id']);
-        $contact = $res_address['consignee'];
-        $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
-        $phone = $res_address['phone'];
-
+        $contact = '';
+        $address = '';
+        $phone = '';
+        if($goods_id==C('LAIMAO_SECKILL_GOODS_ID')){
+            if($pay_type==10 && empty($address_id)){
+                $this->to_back(1001);
+            }
+        }else{
+            if(empty($address_id)){
+                $this->to_back(1001);
+            }
+        }
+        if(!empty($address_id)){
+            $m_address = new \Common\Model\Smallapp\AddressModel();
+            $res_address = $m_address->getInfo(array('id'=>$address_id));
+            $res_area = $m_area->find($res_address['area_id']);
+            $res_county = $m_area->find($res_address['county_id']);
+            $contact = $res_address['consignee'];
+            $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+            $phone = $res_address['phone'];
+        }
+        $otype = 5;
         $goods = array();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         if($goods_id){
@@ -565,7 +585,7 @@ class OrderController extends CommonController{
                 $amount = $amount+$gv['amount'];
             }
             $add_data = array('openid'=>$openid,'merchant_id'=>$merchant_id,'amount'=>$amount,'total_fee'=>$total_money,
-                'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>5,'pay_type'=>$pay_type);
+                'status'=>10,'contact'=>$contact,'phone'=>$phone,'address'=>$address,'otype'=>$otype,'pay_type'=>$pay_type);
             if(!empty($remark)){
                 $add_data['remark'] = $remark;
             }
@@ -587,7 +607,7 @@ class OrderController extends CommonController{
 
 //            $redis->set($order_space_key,$order_id,60);
             $user_order[] = $order_id;
-            $redis->set($cache_key,json_encode($user_order),86400);
+            $redis->set($order_cache_key,json_encode($user_order),86400);
             $order_goods = $gifts = array();
             foreach ($v as $ov){
                 $order_goods[]=array('order_id'=>$order_id,'goods_id'=>$ov['goods_id'],'price'=>$ov['price'],'amount'=>$ov['amount']);
@@ -616,22 +636,36 @@ class OrderController extends CommonController{
         }else{
             $oid = $order_id;
         }
-        $trade_name = text_substr($trade_name,10);
-        $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
-        $trade_no = $m_ordermap->add(array('order_id'=>$oid,'pay_type'=>10));
-        $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
-            'wx_openid'=>$openid,'redirect_url'=>'','attach'=>40);
-        $smallapp_config = C('SMALLAPP_CONFIG');
-        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
-        $payconfig = array(
-            'appid'=>$smallapp_config['appid'],
-            'partner'=>$pay_wx_config['partner'],
-            'key'=>$pay_wx_config['key']
-        );
-        $m_payment = new \Payment\Model\WxpayModel(3);
-        $wxpay = $m_payment->pay($trade_info,$payconfig);
-        $payinfo = json_decode($wxpay,true);
-
+        if($goods_id==C('LAIMAO_SECKILL_GOODS_ID')){
+            $now_pay_type = $pay_type;
+            if($now_pay_type==20){
+                $ucconfig = C('ALIYUN_SMS_CONFIG');
+                $alisms = new \Common\Lib\AliyunSms();
+                $template_code = $ucconfig['send_laimao_order_templateid'];
+                $params = array('hotel_name'=>$order_location['hotel_name'],'room_name'=>$order_location['room_name'],'amount'=>1,'order_id'=>$oid);
+                $alisms::sendSms(13811966726,$params,$template_code);
+            }
+        }else{
+            $now_pay_type = 10;
+        }
+        $payinfo = array();
+        if($now_pay_type==10){
+            $trade_name = text_substr($trade_name,10);
+            $m_ordermap = new \Common\Model\Smallapp\OrdermapModel();
+            $trade_no = $m_ordermap->add(array('order_id'=>$oid,'pay_type'=>10));
+            $trade_info = array('trade_no'=>$trade_no,'total_fee'=>$total_fee,'trade_name'=>$trade_name,
+                'wx_openid'=>$openid,'redirect_url'=>'','attach'=>40);
+            $smallapp_config = C('SMALLAPP_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key']
+            );
+            $m_payment = new \Payment\Model\WxpayModel(3);
+            $wxpay = $m_payment->pay($trade_info,$payconfig);
+            $payinfo = json_decode($wxpay,true);
+        }
         $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type);
         $this->to_back($resp_data);
     }

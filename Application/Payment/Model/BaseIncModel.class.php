@@ -423,6 +423,8 @@ class BaseIncModel extends Model{
                 $res_config = $m_config->getAllconfig();
                 $profit = $res_config['distribution_profit'];
                 $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+                $laimao_seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
+                $is_laimao = 0;
                 foreach ($order_ids as $v){
                     $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit';
                     $where = array('og.order_id'=>$v['id']);
@@ -430,6 +432,9 @@ class BaseIncModel extends Model{
                     $income_data = array();
                     foreach ($res_goods as $gv){
                         $goods_id = $gv['goods_id'];
+                        if($goods_id==$laimao_seckill_goods_id){
+                            $is_laimao = 1;
+                        }
                         $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
                         $upsql = "update savor_smallapp_dishgoods set amount=$amount";
                         if($amount==0){
@@ -472,6 +477,17 @@ class BaseIncModel extends Model{
                     $m_order->updateData(array('id'=>$trade_no),array('status'=>51));
                     $sql_uporder = $m_order->getLastSql();
                     $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+                }
+                if($is_laimao==1){
+                    $ucconfig = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $template_code = $ucconfig['send_laimao_orderpay_templateid'];
+                    $sql_orderlocaltion = "select * from savor_smallapp_orderlocation where order_id='$trade_no'";
+                    $this->paynotify_log($paylog_type, $serial_no, $sql_orderlocaltion);
+                    $result_order = $this->query($sql_order);
+                    $order_location = $result_order[0];
+                    $params = array('hotel_name'=>$order_location['hotel_name'],'room_name'=>$order_location['room_name'],'amount'=>$result_order[0]['amount'],'order_id'=>$trade_no);
+                    $alisms::sendSms(13811966726,$params,$template_code);
                 }
             }
         }else{

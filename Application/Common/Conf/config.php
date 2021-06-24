@@ -221,6 +221,8 @@ return array(
         'send_register_merchant'=>'SMS_183762008',
         'send_login_merchant'=>'SMS_194920254',
         'public_audit_templateid'=>'SMS_216374893',
+        'send_laimao_order_templateid'=>'SMS_218284968',
+        'send_laimao_orderpay_templateid'=>'SMS_218725485',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
@@ -578,6 +580,8 @@ return array(
     'PUBLIC_AUDIT_MOBILE'=>array(
 
     ),
+    'LAIMAO_SALE_HOTELS'=>array('7'=>'永峰写字楼(正式)'),
+    'LAIMAO_SECKILL_GOODS_ID'=>622,
     'RD_TEST_HOTEL' =>
         array (
             1064 =>

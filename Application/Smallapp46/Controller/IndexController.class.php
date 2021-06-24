@@ -536,6 +536,7 @@ class IndexController extends CommonController{
         $is_comment = 0;
         $is_open_reward = 1;
         $is_open_simplehistory = 0;
+        $seckill_goods_id = 0;
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -649,6 +650,13 @@ class IndexController extends CommonController{
                 if($res_ext['is_reward']==0){
                     $is_open_reward = 0;
                 }
+
+                $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
+                $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
+                $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
+                if(empty($res_hgoods)){
+                    $seckill_goods_id = 0;
+                }
             }
 
             $data['is_open_popcomment'] = 0;
@@ -693,7 +701,8 @@ class IndexController extends CommonController{
             }
         }
         $data['syslottery_activity_id'] = $syslottery_activity_id;
-
+        $data['seckill_goods_id'] = $seckill_goods_id;
+        $data['seckill_banner'] = 'http://'.C('OSS_HOST').'/WeChat/MiniProgram/pages/index/index/flash_sale_banner.png';
         $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;

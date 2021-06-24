@@ -108,6 +108,27 @@ class ForscreenController extends CommonController{
                 }
             }
             $data['isShowAnimQRcode'] = $isShowAnimQRcode;
+
+            $redis->select(15);
+            $cache_key = 'savor_box_'.$box_info['id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info,true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            if(!empty($room_info)){
+                $hotel_id = $room_info['hotel_id'];
+                $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
+                $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
+                $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
+                if(!empty($res_hgoods)){
+                    $data['qrcode_gif']                = $oss_host.'/media/resource/TkaSXaQnRG.gif';
+                    $data['qrcode_gif_filename']       = 'TkaSXaQnRG.gif';
+                    $data['qrcode_gif_md5']            = '94bc69e502d8badfdbb725badcea7c49';
+                    $data['isShowAnimQRcode'] = true;
+                }
+            }
+
             $this->to_back($data);
         }
     }

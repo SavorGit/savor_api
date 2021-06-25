@@ -199,7 +199,7 @@ class ProgramController extends CommonController{
                 }
                 $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac=$box_mac&box_id={$box_info[0]['box_id']}&data_id={$v['goods_id']}&type=24";
                 if(empty($info['duration'])){
-                    $info['duration'] = 15;
+                    $info['duration'] = 30;
                 }
             }else{
                 if(in_array($v['goods_id'],$hotel_goods_ids)){

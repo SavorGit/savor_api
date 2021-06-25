@@ -122,9 +122,9 @@ class ForscreenController extends CommonController{
                 $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
                 $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
                 if(!empty($res_hgoods)){
-                    $data['qrcode_gif']                = $oss_host.'/media/resource/TkaSXaQnRG.gif';
-                    $data['qrcode_gif_filename']       = 'TkaSXaQnRG.gif';
-                    $data['qrcode_gif_md5']            = '94bc69e502d8badfdbb725badcea7c49';
+                    $data['qrcode_gif']                = $oss_host.'/media/resource/sYW7bjRH2a.gif';
+                    $data['qrcode_gif_filename']       = 'sYW7bjRH2a.gif';
+                    $data['qrcode_gif_md5']            = 'd855c118c82d60ab5788e98fefce4197';
                     $data['isShowAnimQRcode'] = true;
                 }
             }

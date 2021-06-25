@@ -667,6 +667,10 @@ class OrderController extends CommonController{
             $payinfo = json_decode($wxpay,true);
         }
         $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type);
+        if($goods_id==C('LAIMAO_SECKILL_GOODS_ID') && $now_pay_type==20){
+            $resp_data['tips'] = '已获得秒杀资格';
+            $resp_data['message'] = '请凭此页面直接向餐厅服务员购买！截图也有效哦~';
+        }
         $this->to_back($resp_data);
     }
 

@@ -578,9 +578,9 @@ return array(
         '3'=>'审核不通过',
     ),
     'PUBLIC_AUDIT_MOBILE'=>array(
-
+        18910538751
     ),
-    'LAIMAO_SALE_HOTELS'=>array('7'=>'永峰写字楼(正式)'),
+    'LAIMAO_SALE_HOTELS'=>array('7'=>'永峰写字楼(正式)','28'=>'经易家肴(西单店)','81'=>'海棠居(长椿街店)','787'=>'湘江宴','1007'=>'峨嵋酒家广渠路店'),
     'LAIMAO_SECKILL_GOODS_ID'=>622,
     'RD_TEST_HOTEL' =>
         array (

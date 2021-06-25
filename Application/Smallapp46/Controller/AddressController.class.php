@@ -267,7 +267,11 @@ class AddressController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90116);
+            $data['openid'] = $openid;
+            $data['status'] = 1;
+            $data['unionId'] = '';
+            $m_user->addInfo($data);
+            //$this->to_back(90116);
         }
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $where = array('openid'=>$openid,'status'=>1,'is_default'=>1);

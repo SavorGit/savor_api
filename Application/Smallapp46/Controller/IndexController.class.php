@@ -702,7 +702,7 @@ class IndexController extends CommonController{
         }
         $data['syslottery_activity_id'] = $syslottery_activity_id;
         $data['seckill_goods_id'] = $seckill_goods_id;
-        $data['seckill_banner'] = 'http://'.C('OSS_HOST').'/WeChat/MiniProgram/pages/index/index/flash_sale_banner.png';
+        $data['seckill_banner'] = 'http://'.C('OSS_HOST').'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
         $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;

@@ -41,7 +41,12 @@ class QrcodeController extends CommonController{
                 $times = getMillisecond();
                 $scene = $box_mac.'_'.$type.'_'.$times.'_'.$data_id;
                 $cache_key = C('SAPP_QRCODE').$encode_key;
-                $redis->set($cache_key,$scene,3600*3);
+                if($type==24){
+                    $expire_time = 3600*25;
+                }else{
+                    $expire_time = 3600*3;
+                }
+                $redis->set($cache_key,$scene,$expire_time);
 
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);

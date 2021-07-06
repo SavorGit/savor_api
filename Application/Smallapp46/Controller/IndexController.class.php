@@ -68,7 +68,7 @@ class IndexController extends CommonController{
                     'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                     'forscreen_id'=>1000,'public_text'=>1000,'res_nums'=>1000,
                     'serial_number'=>1000,'quality_type'=>1000,'create_time'=>1000,
-                    'is_speed'=>1000,
+                    'is_speed'=>1000,'music_id'=>1000
                 );
                 break;
             case 'happylist':
@@ -762,6 +762,7 @@ class IndexController extends CommonController{
         $quality_type = !empty($this->params['quality_type']) ? $this->params['quality_type'] : 0;
         $create_time = !empty($this->params['create_time']) ? $this->params['create_time'] : '';
         $is_speed    = !empty($this->params['is_speed']) ? $this->params['is_speed'] : 0;
+        $music_id    = !empty($this->params['music_id']) ? $this->params['music_id'] : 0;
 
         $data = array();
         $data['openid'] = $openid;
@@ -787,6 +788,7 @@ class IndexController extends CommonController{
         $data['quality_type'] = $quality_type;
         if($serial_number) $data['serial_number'] = $serial_number;
         if($forscreen_id)  $data['forscreen_id'] = $forscreen_id;
+        $data['music_id'] = $music_id;
 
     
         $redis = SavorRedis::getInstance();

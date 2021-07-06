@@ -43,6 +43,10 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('content'=>1001);
                 break;
+            case 'tzyt':
+                $this->is_verify = 1;
+                $this->valid_fields = array('content'=>1001);
+                break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 1;
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002,'box_mac'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
@@ -263,7 +267,17 @@ class IndexController extends CommonController{
         $content = array('content'=>$res);
         $this->to_back($content);
     }
-
+    public function tzyt(){
+        $content = $this->params['content'];
+        $hash_ids_key = C('HASH_IDS_KEY');
+        $hashids = new \Common\Lib\Hashids($hash_ids_key);
+        $decode_info = $hashids->decode($content);
+        if(empty($decode_info)){
+            $this->to_back(90101);
+        }
+        $cache_key = C('SAPP_QRCODE').$decode_info[0];
+        echo $cache_key;exit;
+    }
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
         $pop_eval = $this->params['pop_eval'];
@@ -514,7 +528,8 @@ class IndexController extends CommonController{
         $sys_time = (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
         $file_exts = C('SAPP_FILE_FORSCREEN_TYPES');
         $share_file_exts = C('SHARE_FILE_TYPES');
-        $exp_time   = 7200000;//扫码失效时间
+        //$exp_time   = 7200000;//扫码失效时间
+        $exp_time     = 3600000 *25;
         $redpacket_exp_time = 1800000;
         $data = array('sys_time'=>$sys_time,'exp_time'=>$exp_time,'redpacket_exp_time'=>$redpacket_exp_time,
             'file_exts'=>array_keys($file_exts),'share_file_exts'=>$share_file_exts);
@@ -781,6 +796,17 @@ class IndexController extends CommonController{
             $history_arr = $data;
             $history_arr['is_speed'] = $is_speed;
             $redis->rpush($history_cache_key, json_encode($history_arr));
+            
+            
+            
+            
+            $tmps = [];
+            $tmps = array('forscreen_id'=>$data['forscreen_id']);
+            
+            $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
+            
+            $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
+            
         }
     
         if($is_share){

@@ -82,7 +82,7 @@ class UserController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid,use_time', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid,use_time,is_interact', $where);
         $data = array();
         
         $redis = SavorRedis::getInstance();
@@ -144,6 +144,20 @@ class UserController extends CommonController{
                 $now_time = time();
                 $diff_time = $end_time - $now_time;
                 $redis->set($cache_key, 1,$diff_time);
+                $redis->select(5);
+                $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
+                $forscreen_nums_list = $redis->lgetrange($forscreen_nums_cache_key,0,-1);
+                $nums_data = array();
+                foreach($forscreen_nums_list as $key=>$v){
+                    $v = json_decode($v,true);
+                    $nums_data[$v['forscreen_id']] = $v;
+                }
+                $forscreen_nums = count($nums_data);
+                if(!empty($forscreen_nums) && $forscreen_nums>=5 && $userinfo['is_interact']==0){
+                    
+                    $data['userinfo']['is_interact'] = 1;
+                    $m_user->updateInfo(array('openid'=>$openid), array('is_interact'=>1));
+                }
             }
         }
         $guide_prompt = array();

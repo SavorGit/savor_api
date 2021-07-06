@@ -277,6 +277,7 @@ return array(
     'SAPP_SUNCODE_LOG'    =>'smallapp:suncodelog:', //电视显示小程序码时长日志
     'SAPP_SCRREN_SHARE'   =>'smallapp:public:forscreen:',
     'SAPP_HISTORY_SCREEN' =>'smallapp:history:forscreen:',
+    'SAPP_FORSCREEN_NUMS' =>'smallapp:interact:nums:',
     'SAPP_PAGEVIEW_LOG'   =>'smallap:pageview:log:',
     'SAPP_CALL_NETY_CMD'=>'call-mini-program',
     'SAPP_BOX_FORSCREEN_NET'=>'smallapp:net:forscreen:',

@@ -109,6 +109,7 @@ class ForscreenController extends CommonController{
             }
             $data['isShowAnimQRcode'] = $isShowAnimQRcode;
 
+            /*
             $redis->select(15);
             $cache_key = 'savor_box_'.$box_info['id'];
             $redis_box_info = $redis->get($cache_key);
@@ -128,6 +129,7 @@ class ForscreenController extends CommonController{
                     $data['isShowAnimQRcode'] = true;
                 }
             }
+            */
 
             $this->to_back($data);
         }

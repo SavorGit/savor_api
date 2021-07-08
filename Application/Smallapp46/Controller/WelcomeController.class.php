@@ -52,12 +52,12 @@ class WelcomeController extends CommonController{
                     case 3:
                         $res_media = $m_media->getMediaInfoById($v['media_id']);
                         $oss_addr = $res_media['oss_addr'];
-                        $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr);
+                        $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
                         break;
                     case 5:
                         $res_media = $m_media->getMediaInfoById($v['media_id'],'https');
                         $oss_addr = $res_media['oss_addr'];
-                        $font[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr);
+                        $font[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
                         break;
                 }
             }
@@ -257,7 +257,7 @@ class WelcomeController extends CommonController{
         if(isset($resource_info[$font_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$font_id]['media_id']);
             $message['font_id'] = intval($font_id);
-            $message['font_oss_addr'] = $res_media['oss_addr'];
+            $message['font_oss_addr'] = $res_media['oss_path'];
         }else{
             $message['font_id'] = 0;
             $message['font_oss_addr'] = '';
@@ -265,7 +265,7 @@ class WelcomeController extends CommonController{
         if(isset($resource_info[$music_id])){
             $res_media = $m_media->getMediaInfoById($resource_info[$music_id]['media_id']);
             $message['music_id'] = intval($music_id);
-            $message['music_oss_addr'] = $res_media['oss_addr'];
+            $message['music_oss_addr'] = $res_media['oss_path'];
         }else{
             $message['music_id'] = 0;
             $message['music_oss_addr'] = '';

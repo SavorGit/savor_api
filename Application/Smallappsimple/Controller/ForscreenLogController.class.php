@@ -28,6 +28,11 @@ class ForscreenLogController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,
                                             'resource_addr'=>1001);
                break;
+            case 'updateForscreenPlaytime':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,
+                    'box_playstime'=>1002,'box_playetime'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -113,5 +118,26 @@ class ForscreenLogController extends CommonController{
         
         $this->to_back(10000);
         
+    }
+
+    public function updateForscreenPlaytime(){
+        $box_mac = $this->params['box_mac'];
+        $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
+        $resource_id   = $this->params['resource_id'] ? $this->params['resource_id'] : 0;
+        $box_playstime = $this->params['box_playstime'];
+        $box_playetime = $this->params['box_playetime'];
+        if(empty($box_playstime) && empty($box_playetime)){
+            $this->to_back(1001);
+        }
+        $data = array('box_mac'=>$box_mac,'forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id));
+        if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
+        if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $cache_key = C('SAPP_SIMPLE_UPLOAD_PLAYTIME').$box_mac;
+        $redis->rpush($cache_key, json_encode($data));
+
+        $this->to_back(10000);
+
     }
 }

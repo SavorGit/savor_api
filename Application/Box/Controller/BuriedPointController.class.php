@@ -10,7 +10,8 @@ class BuriedPointController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('req_id'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,'box_mac'=>1001,
                     'openid'=>1001,'used_time'=>1002,'is_exist'=>1002,'is_exit'=>1002,'is_break'=>1002,
-                    'receive_nettytime'=>1002,'is_download'=>1002,'box_downstime'=>1002,'box_downetime'=>1002);
+                    'receive_nettytime'=>1002,'is_download'=>1002,'box_downstime'=>1002,'box_downetime'=>1002,
+                    'box_playstime'=>1002,'box_playetime'=>1002);
                 break;
             case 'boxReceiveNetty':
                 $this->is_verify = 1;
@@ -63,6 +64,8 @@ class BuriedPointController extends CommonController{
         $receive_nettytime = $this->params['receive_nettytime'];
         $box_downstime = $this->params['box_downstime'];
         $box_downetime = $this->params['box_downetime'];
+        $box_playstime = $this->params['box_playstime'];
+        $box_playetime = $this->params['box_playetime'];
 
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);
@@ -130,6 +133,8 @@ class BuriedPointController extends CommonController{
             $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
         }
+        if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
+        if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
 
         $log_content = date("Y-m-d H:i:s").'|req_id|'.$req_id.'|end_report|params|'.json_encode($this->params)."\n";
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
@@ -143,6 +148,8 @@ class BuriedPointController extends CommonController{
             $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
             $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'box_play_time'=>$box_play_time);
+            if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
+            if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
             $redis->rpush($cache_key, json_encode($data));
 
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
@@ -161,6 +168,8 @@ class BuriedPointController extends CommonController{
             $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
             $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'box_finish_downtime'=>$box_finish_downtime);
+            if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
+            if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
             $redis->rpush($cache_key, json_encode($data));
             
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
@@ -186,6 +195,8 @@ class BuriedPointController extends CommonController{
                     break;
             }
         }
+        if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
+        if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
 
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);

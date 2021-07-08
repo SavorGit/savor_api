@@ -316,6 +316,7 @@ return array(
     'SAPP_OPTIMIZE_PROGRAM'=>'smallapp:optimize:program',
     'SAPP_FIND_PROGRAM'=>'smallapp:findprogram',
     'SAPP_SIMPLE_UPLOAD_RESOUCE'=>'smallapp:simple:upload:',
+    'SAPP_SIMPLE_UPLOAD_PLAYTIME'=>'smallapp:simple:uploadplaytime:',
     'SMALLAPP_DAY_QRCDE'     =>'smallapp:day:qrcode:',
     'SMALLAPP_LOTTERY'     =>'smallapp:activity:lottery',
     'SAPP_HOTPLAYDEMAND'=>'smallapp:hotplaydemand',

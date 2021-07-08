@@ -945,7 +945,7 @@ class IndexController extends CommonController{
         $where['a.id'] = array('in','8855,5246,5245,5244');
 
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,
-                    CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name";
+                    CONCAT('".$oss_host."',media.oss_addr) res_url,substring(media.oss_addr,16) as file_name,media.duration";
 
         $data = $m_ads->alias('a')
             ->join('savor_media media on a.media_id = media.id','left')

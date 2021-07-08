@@ -808,7 +808,10 @@ class IndexController extends CommonController{
             
         }
        
-        if(($action==5 && $forscreen_char =='Happy Birthday') || $action==31){
+        if($action==5 && $forscreen_char =='Happy Birthday'){
+            $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
+        }else if($action==31){
+            $tmps = array('forscreen_id'=>$data['forscreen_id'].'_'.$data['resource_id']);
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }
     

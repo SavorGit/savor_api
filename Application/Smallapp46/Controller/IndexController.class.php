@@ -794,21 +794,22 @@ class IndexController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
+        
+        $tmps = [];
+        $tmps = array('forscreen_id'=>$data['forscreen_id']);
+        $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
+        
         if($action==4 || ($action==2 && $resource_type==2)) {
             $history_arr = $data;
             $history_arr['is_speed'] = $is_speed;
             $redis->rpush($history_cache_key, json_encode($history_arr));
             
-            
-            
-            
-            $tmps = [];
-            $tmps = array('forscreen_id'=>$data['forscreen_id']);
-            
-            $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
-            
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
             
+        }
+       
+        if(($action==5 && $forscreen_char =='Happy Birthday') || $action==31){
+            $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }
     
         if($is_share){

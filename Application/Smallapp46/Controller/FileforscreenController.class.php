@@ -216,11 +216,11 @@ class FileforscreenController extends CommonController{
         }
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        $fields = 'id,imgs,resource_name,resource_size,md5_file';
+        $fields = 'id,imgs,resource_name,resource_size,md5_file,file_imgnum,small_app_id';
         $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,'0,100','md5_file');
         $datalist = array();
         if(!empty($res_latest)){
             $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
@@ -230,17 +230,23 @@ class FileforscreenController extends CommonController{
             $cache_key = C('SAPP_FILE_FORSCREEN');
             foreach ($res_latest as $v){
                 $imgs = json_decode($v['imgs'],true);
-                $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
-                $page_num = 0;
-                if(!empty($res_cache)) {
-                    $imgs = json_decode($res_cache, true);
-                    $page_num = count($imgs);
+                $file_info = pathinfo($imgs[0]);
+                $file_type = $file_info['extension'];
+                if($v['small_app_id']==1){
+                    $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
+                    $page_num = 0;
+                    if(!empty($res_cache)) {
+                        $imgs = json_decode($res_cache, true);
+                        $page_num = count($imgs);
+                    }
+                }else{
+                    $page_num = intval($v['file_imgnum']);
                 }
+
                 $file_size = formatBytes($v['resource_size']);
                 $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'],
-                    'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img);
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'resource_name'=>$v['resource_name'],
+                    'file_name'=>$file_info['basename'],'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img,'small_app_id'=>$v['small_app_id']);
                 $datalist[] = $info;
             }
         }

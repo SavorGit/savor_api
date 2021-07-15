@@ -52,7 +52,7 @@ class BuriedPointController extends CommonController{
     public function boxNetLogs(){
         $req_id = $this->params['req_id'];
         $forscreen_id = $this->params['forscreen_id'];
-        $resource_id  = $this->params['resource_id'];
+        $resource_id  = intval($this->params['resource_id']);
         $openid       = $this->params['openid'];
         $box_mac      = $this->params['box_mac'];
         $used_time    = abs($this->params['used_time']);//用时

@@ -710,48 +710,65 @@ class ProgramController extends CommonController{
         $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
         $program_list = array();
 
-        $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
-        $res_playlog = $m_playlog->getWhere('res_id',array('type'=>4),'nums desc','0,8','');
+        $where = array('status'=>1);
+        $orderby = 'sort desc';
+        $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
+        $res_playlog = $m_hotplay->getDataList('*',$where,$orderby,0,8);
+
+        $m_ads = new \Common\Model\AdsModel();
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        foreach ($res_playlog as $v){
-            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));
-            $resource_type = $res_forscreen['resource_type'];//1图片 2视频
-            if($resource_type==2){
-                $media_type = 1;
+        foreach ($res_playlog['list'] as $v){
+            if($v['type']==1){
+                $res_id = $v['forscreen_record_id'];
+                $res_pinfo = $m_forscreen->getInfo(array('id'=>$res_id));
+                $resource_type = $res_pinfo['resource_type'];//1图片 2视频
+                if($resource_type==2){
+                    $media_type = 1;//1视频 2图片
+                }else{
+                    $media_type = 2;
+                }
+                $info = array('id'=>$res_id,'media_type'=>$media_type);
+                $subdata = array();
+                switch ($info['media_type']){
+                    case 1:
+                        $info['duration'] = floor($res_pinfo['duration']);
+                        $imgs_info = json_decode($res_pinfo['imgs'],true);
+                        $oss_path = $imgs_info[0];
+                        $name_info = pathinfo($oss_path);
+                        $subdata[] = array('vid'=>$res_pinfo['resource_id'],'md5'=>$res_pinfo['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
+                        break;
+                    case 2:
+                        $info['media_type']= 21;
+                        $fields = 'resource_id,imgs,md5_file';
+                        $where = array('forscreen_id'=>$res_pinfo['forscreen_id']);
+                        $res_allforscreen = $m_forscreen->getWheredata($fields,$where,'id asc');
+                        foreach ($res_allforscreen as $fv){
+                            $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
+                            $tmp_imgs_info = json_decode($fv['imgs'],true);
+                            $sinfo['oss_path'] = $tmp_imgs_info[0];
+                            $sname_info = pathinfo($sinfo['oss_path']);
+                            $sinfo['name'] = $sname_info['basename'];
+                            $subdata[]=$sinfo;
+                        }
+                        if(count($subdata)>1){
+                            $info['duration']=3;
+                        }else{
+                            $info['duration']=15;
+                        }
+                        break;
+                }
+                $info['subdata'] = $subdata;
             }else{
-                $media_type = 2;
+                $res_id = $v['data_id'];
+                $fields = 'a.id as ads_id,a.name title,a.type as ads_type,a.duration,b.id as media_id,b.type as media_type,b.oss_addr,b.md5 as md5_file';
+                $res_ads = $m_ads->getAdsList($fields,array('a.id'=>$res_id),'a.id desc','0,1');
+                $ads_info = $res_ads[0];
+                $oss_path = $ads_info['oss_addr'];
+                $name_info = pathinfo($oss_path);
+                $subdata = array();
+                $subdata[] = array('vid'=>$res_id,'md5'=>$ads_info['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
+                $info = array('id'=>$res_id,'media_type'=>1,'duration'=>floor($ads_info['duration']),'subdata'=>$subdata);
             }
-            $info = array('id'=>$v['res_id'],'media_type'=>$media_type);
-            $subdata = array();
-            switch ($info['media_type']){
-                case 1:
-                    $info['duration'] = floor($res_forscreen['duration']);
-                    $imgs_info = json_decode($res_forscreen['imgs'],true);
-                    $oss_path = $imgs_info[0];
-                    $name_info = pathinfo($oss_path);
-                    $subdata[] = array('vid'=>$res_forscreen['resource_id'],'md5'=>$res_forscreen['md5_file'],'oss_path'=>$oss_path,'name'=>$name_info['basename']);
-                    break;
-                case 2:
-                    $info['media_type']= 21;
-                    $fields = 'resource_id,imgs,md5_file';
-                    $where = array('forscreen_id'=>$res_forscreen['forscreen_id']);
-                    $res_allforscreen = $m_forscreen->getWheredata($fields,$where,'id asc');
-                    foreach ($res_allforscreen as $fv){
-                        $sinfo = array('vid'=>$fv['resource_id'],'md5'=>$fv['md5_file']);
-                        $tmp_imgs_info = json_decode($fv['imgs'],true);
-                        $sinfo['oss_path'] = $tmp_imgs_info[0];
-                        $sname_info = pathinfo($sinfo['oss_path']);
-                        $sinfo['name'] = $sname_info['basename'];
-                        $subdata[]=$sinfo;
-                    }
-                    if(count($subdata)>1){
-                        $info['duration']=3;
-                    }else{
-                        $info['duration']=15;
-                    }
-                    break;
-            }
-            $info['subdata'] = $subdata;
             $program_list[] = $info;
         }
 

@@ -58,56 +58,114 @@ class ContentController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $total_num = 10;
         $all_hot_nums = 8;
-        $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
-        $where = array('type'=>4);
 
-        $orderby = 'nums desc';
-        $limit = "0,$all_hot_nums";
-        $fields = 'res_id,nums as play_nums';
-        $res_play = $m_playlog->getWhere($fields,$where,$orderby,$limit,'');
+        $where = array('status'=>1);
+        $orderby = 'sort desc';
+        $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
+        $res_play = $m_hotplay->getDataList('*',$where,$orderby,0,$all_hot_nums);
 
-        $datalist = array();
         $oss_host = 'http://'.C('OSS_HOST').'/';
+        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $m_user = new \Common\Model\Smallapp\UserModel();
+        $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+        $m_ads = new \Common\Model\AdsModel();
+        $m_media = new \Common\Model\MediaModel();
 
-        foreach ($res_play as $v){
-            if($v['play_nums']>100000){
-                $v['play_nums'] = floor($v['play_nums']/10000).'w';
+        $datalist = array();
+        foreach ($res_play['list'] as $v){
+            if($v['type']==1){
+                $res_id = $v['forscreen_record_id'];
+                $pwhere = array('res_id'=>$res_id,'type'=>4);
+            }else{
+                $res_id = $v['data_id'];
+                $pwhere = array('res_id'=>$res_id,'type'=>3);
             }
+            $res_play_nums = $m_play_log->getOne('*',$pwhere,'id desc');
+            if(!empty($res_play_nums)){
+                $play_nums = $res_play_nums['nums'];
+            }else{
+                $play_nums = 0;
+            }
+            $play_nums = $play_nums+$v['init_playnum'];
 
-            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));
-            $v['forscreen_id'] = $res_forscreen['forscreen_id'];
-            $v['res_type'] = $res_forscreen['resource_type'];
-            $where = array('openid'=>$res_forscreen['openid']);
-            $fields = 'id user_id,avatarUrl,nickName';
-            $res_user = $m_user->getOne($fields, $where);
-            $v['nickName'] = $res_user['nickName'];
-            $v['avatarUrl'] = $res_user['avatarUrl'];
-            $fields_forscreen = 'imgs,duration,resource_size,resource_id';
-            $all_forscreen = $m_forscreen->getWheredata($fields_forscreen,array('forscreen_id'=>$res_forscreen['forscreen_id']),'id asc');
-            $v['res_nums'] = count($all_forscreen);
-            $pubdetails = array();
-            foreach ($all_forscreen as $dv){
-                $imgs_info = json_decode($dv['imgs'],true);
-                $forscreen_url = $imgs_info[0];
-                $res_url = $oss_host.$forscreen_url;
-                if($v['res_type']==1){
-                    $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                }else{
-                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
+            if($play_nums>100000){
+                $play_nums = floor($play_nums/10000).'w';
+            }
+            if($v['type']==1){
+                $dinfo = array('res_id'=>$res_id,'play_nums'=>$play_nums,'is_show'=>1,'type'=>1,'title'=>'');
+                $res_forscreen = $m_forscreen->getInfo(array('id'=>$res_id));
+                $dinfo['forscreen_id'] = $res_forscreen['forscreen_id'];
+                $dinfo['res_type'] = $res_forscreen['resource_type'];
+                $where = array('openid'=>$res_forscreen['openid']);
+                $fields = 'id user_id,avatarUrl,nickName';
+                $res_user = $m_user->getOne($fields, $where);
+                $dinfo['nickName'] = $res_user['nickName'];
+                $dinfo['avatarUrl'] = $res_user['avatarUrl'];
+                $fields_forscreen = 'imgs,duration,resource_size,resource_id';
+                $all_forscreen = $m_forscreen->getWheredata($fields_forscreen,array('forscreen_id'=>$res_forscreen['forscreen_id']),'id asc');
+                $dinfo['res_nums'] = count($all_forscreen);
+                $pubdetails = array();
+                foreach ($all_forscreen as $dv){
+                    $imgs_info = json_decode($dv['imgs'],true);
+                    $forscreen_url = $imgs_info[0];
+                    $res_url = $oss_host.$forscreen_url;
+                    if($dinfo['res_type']==1){
+                        $img_url = $res_url."?x-oss-process=image/quality,Q_50";
+                    }else{
+                        $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
+                    }
+                    $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
+                        'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
+                    $addr_info = pathinfo($forscreen_url);
+                    $pubdetail['filename'] = $addr_info['basename'];
+                    $pubdetails[]=$pubdetail;
                 }
-                $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
-                    'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
-                $addr_info = pathinfo($forscreen_url);
-                $pubdetail['filename'] = $addr_info['basename'];
-                $pubdetails[]=$pubdetail;
+            }else{
+                $fields = 'a.id as ads_id,a.name title,a.type as ads_type,a.description as content,a.img_url,a.portraitmedia_id,a.duration,a.create_time,b.id as media_id,b.type as media_type,b.oss_addr,b.oss_filesize as resource_size';
+                $res_ads = $m_ads->getAdsList($fields,array('a.id'=>$res_id),'a.id desc','0,1');
+                $ads_info = $res_ads[0];
+                if($ads_info['media_type']==1){
+                    $res_type = 2;
+                }else{
+                    $res_type = 1;
+                }
+                $dinfo = array('ads_id'=>$ads_info['ads_id'],'res_id'=>$ads_info['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
+                    'title'=>$ads_info['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1,'type'=>2);
+                $res_url = $oss_host.$ads_info['oss_addr'];
+                $forscreen_url = $ads_info['oss_addr'];
+                $duration = intval($ads_info['duration']);
+                $resource_size = $ads_info['resource_size'];
+                $res_id = $ads_info['media_id'];
+
+                if($ads_info['portraitmedia_id']){
+                    $res_media = $m_media->getMediaInfoById($ads_info['portraitmedia_id']);
+                    $res_url = $res_media['oss_addr'];
+                }
+
+                $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
+                    'resource_size'=>$resource_size,'res_id'=>$res_id);
+                $oss_info = pathinfo($forscreen_url);
+                $pdetail['filename'] = $oss_info['basename'];
+                if(!empty($v['img_url'])){
+                    $img_url = $oss_host.$v['img_url'];
+                }else{
+                    if($res_type==1){
+                        $img_url = $res_url."?x-oss-process=image/quality,Q_50";
+                    }else{
+                        $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
+                    }
+                }
+                $pdetail['img_url'] = $img_url;
+                $pubdetails = array($pdetail);
             }
-            $v['is_show'] = 1;
-            $v['pubdetail'] = $pubdetails;
-            $v['type'] = 1;
-            $v['title'] = '';
-            $datalist[] = $v;
+            if($v['media_id']>0){
+                $res_media = $m_media->getMediaInfoById($v['media_id']);
+                $cover_img_url = $res_media['oss_addr']."?x-oss-process=image/quality,Q_50";
+                $pubdetails[0]['img_url'] = $cover_img_url;
+            }
+            $dinfo['pubdetail'] = $pubdetails;
+            $datalist[] = $dinfo;
         }
         if(!empty($box_mac)){
             $redis = new \Common\Lib\SavorRedis();
@@ -136,8 +194,6 @@ class ContentController extends CommonController{
                     }
                 }
                 if(!empty($box_resources['list'])){
-                    $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
-                    $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
                     $tmp_pro_ids = array();
                     $tmp_life_ids = array();
                     foreach ($box_resources['list'] as $v){
@@ -181,7 +237,6 @@ class ContentController extends CommonController{
                     $redis->select(5);
                     $all_pro_nums = $redis->get($hot_cache_key);
                     $all_pro_nums = json_decode($all_pro_nums,true);
-                    $m_media = new \Common\Model\MediaModel();
                     $pro_ads = $life_ads = array();
                     foreach($all_ads as $v){
                         if($v['media_type']==1){

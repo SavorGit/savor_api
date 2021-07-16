@@ -52,7 +52,7 @@ class BuriedPointController extends CommonController{
     public function boxNetLogs(){
         $req_id = $this->params['req_id'];
         $forscreen_id = $this->params['forscreen_id'];
-        $resource_id  = intval($this->params['resource_id']);
+        $resource_id  = $this->params['resource_id'];
         $openid       = $this->params['openid'];
         $box_mac      = $this->params['box_mac'];
         $used_time    = abs($this->params['used_time']);//用时
@@ -80,6 +80,14 @@ class BuriedPointController extends CommonController{
         }else{
             $cache_data = array();
         }
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $res_forscreen = $m_forscreen->getInfo(array('id'=>$forscreen_id));
+        $file_img = '';
+        if(!empty($res_forscreen) && $res_forscreen['action']==30){
+            $file_img = $resource_id;
+            $resource_id = 0;
+        }
+        $resource_id = intval($resource_id);
         if($resource_id>0 && ($action==4 || $action==10)){
             $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
             if($version>'2.2.6'){
@@ -135,6 +143,7 @@ class BuriedPointController extends CommonController{
         }
         if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
         if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
+        if(!empty($file_img))  $data['file_img'] = $file_img;
 
         $log_content = date("Y-m-d H:i:s").'|req_id|'.$req_id.'|end_report|params|'.json_encode($this->params)."\n";
         $log_file_name = APP_PATH.'Runtime/Logs/'.'boxlog_'.date("Ymd").".log";
@@ -150,9 +159,9 @@ class BuriedPointController extends CommonController{
                 'box_mac'=>$box_mac,'box_play_time'=>$box_play_time);
             if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
             if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
+            if(!empty($file_img))  $data['file_img'] = $file_img;
             $redis->rpush($cache_key, json_encode($data));
 
-            $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $params = array(
                 'box_play_time'=>$box_play_time,
             );
@@ -170,6 +179,7 @@ class BuriedPointController extends CommonController{
                 'box_mac'=>$box_mac,'box_finish_downtime'=>$box_finish_downtime);
             if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
             if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
+            if(!empty($file_img))  $data['file_img'] = $file_img;
             $redis->rpush($cache_key, json_encode($data));
             
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
@@ -197,6 +207,7 @@ class BuriedPointController extends CommonController{
         }
         if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
         if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
+        if(!empty($file_img))  $data['file_img'] = $file_img;
 
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);

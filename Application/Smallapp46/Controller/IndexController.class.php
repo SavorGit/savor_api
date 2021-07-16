@@ -789,7 +789,13 @@ class IndexController extends CommonController{
         if($serial_number) $data['serial_number'] = $serial_number;
         if($forscreen_id)  $data['forscreen_id'] = $forscreen_id;
         $data['music_id'] = $music_id;
-
+        if($action==31){
+            $forscreen_res = json_decode($imgs,true);
+            $oss_addr = $forscreen_res[0];
+            $img_name = str_replace('forscreen/resource/','',$oss_addr);
+            $file_img = str_replace('/','_',$img_name);
+            $data['file_img'] = $file_img;
+        }
     
         $redis = SavorRedis::getInstance();
         $redis->select(5);

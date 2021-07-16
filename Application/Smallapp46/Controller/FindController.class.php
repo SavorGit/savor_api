@@ -839,6 +839,8 @@ class FindController extends CommonController{
             $m_play_log->addInfo($data);
             $play_num = 1;
         }
+        $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
+        $play_num = $m_hotplay->getHotplayNum($res_id,1,$play_num);
         if($play_num>100000){
             $play_num = floor($play_num/10000).'w';
         }

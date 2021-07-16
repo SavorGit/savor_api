@@ -235,7 +235,7 @@ class DemandController extends CommonController{
             $type = 5;
         }
         $data = $this->getPubShareInfo($openid, $res_id, $type);
-        if($res_ads[0]['type']==2){
+        if($res_ads[0]['type']==1 || $res_ads[0]['type']==2){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(5);
             $hot_cache_key = C('SAPP_HOTPLAY_PRONUM');
@@ -244,6 +244,13 @@ class DemandController extends CommonController{
             if(isset($all_pro_nums[$res_ads[0]['media_id']])){
                 $data['play_num'] = $data['play_num'] + $all_pro_nums[$res_ads[0]['media_id']];
             }
+            if($res_ads[0]['type']==2){
+                $hot_type = 3;
+            }else{
+                $hot_type = 2;
+            }
+            $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
+            $data['play_num'] = $m_hotplay->getHotplayNum($res_id,$hot_type,$data['play_num']);
         }
         $data['res_type'] = $type;
         $this->to_back($data);

@@ -15,7 +15,7 @@ class FileforscreenController extends Controller {
             die('Parameter error');
         }
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        $fields = 'id,imgs,resource_name,md5_file';
+        $fields = 'id,imgs,resource_name,resource_size,md5_file';
         $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
@@ -23,12 +23,26 @@ class FileforscreenController extends Controller {
         $latest_screen = array();
         $frequent_screen = array();
         if(!empty($res_latest)){
+            $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
+            $file_ext_images = C('SAPP_FILE_FORSCREEN_IMAGES');
             $latest_md5_file = array();
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = C('SAPP_FILE_FORSCREEN');
             foreach ($res_latest as $v){
                 $latest_md5_file[] = $v['md5_file'];
                 $imgs = json_decode($v['imgs'],true);
                 $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name']);
+                $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
+                $page_num = 0;
+                if(!empty($res_cache)) {
+                    $imgs = json_decode($res_cache, true);
+                    $page_num = count($imgs);
+                }
+                $file_size = formatBytes($v['resource_size']);
+                $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'],
+                    'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img);
                 $latest_screen[] = $info;
             }
             $fields.=',count(id) as num';
@@ -41,14 +55,26 @@ class FileforscreenController extends Controller {
                 if(count($frequent_screen)>=4){
                     break;
                 }
+                $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
+                $page_num = 0;
+                if(!empty($res_cache)) {
+                    $imgs = json_decode($res_cache, true);
+                    $page_num = count($imgs);
+                }
                 $imgs = json_decode($v['imgs'],true);
                 $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name']);
+
+                $file_size = formatBytes($v['resource_size']);
+                $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'],
+                    'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img);
                 $frequent_screen[] = $info;
             }
         }
         if($source=='sale'){
             $display_html = 'sale';
+        }elseif($source=='new'){
+            $display_html = 'indexnew';
         }else{
             $display_html = 'index';
         }

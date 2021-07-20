@@ -259,17 +259,29 @@ class FileforscreenController extends CommonController{
         $forscreen_id = $this->params['forscreen_id'];
         $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         $res_forscreen = $m_forscreenrecord->getInfo(array('id'=>$forscreen_id));
-
-        $md5_file = $res_forscreen['md5_file'];
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
-        $key = C('SAPP_FILE_FORSCREEN');
-        $cache_key = $key.':'.$md5_file;
-        $res_cache = $redis->get($cache_key);
-        if(empty($res_cache)) {
-            $imgs = array();
+        if($res_forscreen['small_app_id']==1){
+            $md5_file = $res_forscreen['md5_file'];
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $key = C('SAPP_FILE_FORSCREEN');
+            $cache_key = $key.':'.$md5_file;
+            $res_cache = $redis->get($cache_key);
+            if(empty($res_cache)) {
+                $imgs = array();
+            }else{
+                $imgs = json_decode($res_cache, true);
+            }
         }else{
-            $imgs = json_decode($res_cache, true);
+            $imgs = array();
+            if($res_forscreen['file_conversion_status']==1 && $res_forscreen['file_imgnum']>0){
+                $res_imgs = json_decode($res_forscreen['imgs'],true);
+                $img_info = pathinfo($res_imgs[0]);
+                $file_name = $img_info['filename'];
+                $file_dir = "forscreen/resource/file/$file_name/";
+                for($i=1;$i<=$res_forscreen['file_imgnum'];$i++){
+                    $imgs[]=$file_dir."$i.jpg";
+                }
+            }
         }
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');

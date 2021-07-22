@@ -87,7 +87,16 @@ class BuriedPointController extends CommonController{
             $file_img = $resource_id;
             $resource_id = 0;
         }
-        $resource_id = intval($resource_id);
+        $resource_idinfo = pathinfo($resource_id);
+        if(isset($resource_idinfo['extension'])){
+            $resource_id = $resource_idinfo['filename'];
+        }
+        if(is_numeric($resource_id)){
+            $resource_id = intval($resource_id);
+        }else{
+            $resource_id = 0;
+        }
+
         if($resource_id>0 && ($action==4 || $action==10)){
             $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
             if($version>'2.2.6'){

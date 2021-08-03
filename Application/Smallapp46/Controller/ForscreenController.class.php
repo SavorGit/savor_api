@@ -18,6 +18,14 @@ class ForscreenController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'forscreen_id'=>1001,'is_share'=>1001);
                 break;
+            case 'recordDisplaynum':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'id'=>1001,'type'=>1001);
+                break;
+            case 'musiclist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -193,4 +201,69 @@ class ForscreenController extends CommonController{
         $this->to_back(array());
     }
 
+    public function recordDisplaynum(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $id = intval($this->params['id']);
+        $type = intval($this->params['type']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid,avatarUrl,nickName',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        if($type==1){
+            $m_box = new \Common\Model\BoxModel();
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+
+            $ads_id = $id;
+            $area_id = $box_info[0]['area_id'];
+            $add_date = date('Y-m-d');
+            $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
+            $res_record = $m_datadisplay->getInfo(array('ads_id'=>$ads_id,'type'=>3,'area_id'=>$area_id,'add_date'=>$add_date));
+            if(!empty($res_record)){
+                $m_datadisplay->where(array('id'=>$res_record['id']))->setInc('display_num',1);
+            }else{
+                $field = 'a.media_id,b.name,b.oss_addr';
+                $m_ads = new \Common\Model\AdsModel();
+                $res_adsinfo = $m_ads->getAdsList($field,array('a.id'=>$ads_id),'b.id desc','0,1');
+                $data = array('ads_id'=>$ads_id,'media_id'=>$res_adsinfo[0]['media_id'],'resource_name'=>$res_adsinfo[0]['name'],'oss_addr'=>$res_adsinfo[0]['oss_addr'],
+                    'area_id'=>$area_id,'display_num'=>1,'type'=>3,'add_date'=>$add_date);
+                $m_datadisplay->add($data);
+            }
+        }
+        $this->to_back(array());
+    }
+
+    public function musiclist(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid,avatarUrl,nickName',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
+        $fields = 'id,forscreen_music_name as name,media_id,color,small_wordsize,type';
+        $where = array('status'=>1,'type'=>3,'music_type'=>array('in',array(2,3)));
+        $res_resource = $m_welcomeresource->getDataList($fields,$where,'sort asc');
+        $music = array();
+        if(!empty($res_resource)){
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_resource as $v){
+                $res_media = $m_media->getMediaInfoById($v['media_id']);
+                $oss_addr = $res_media['oss_addr'];
+                $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
+            }
+        }
+
+        $res_data = array('music'=>$music);
+        $this->to_back($res_data);
+
+    }
 }

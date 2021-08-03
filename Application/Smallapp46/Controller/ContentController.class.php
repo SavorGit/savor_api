@@ -7,13 +7,13 @@ class ContentController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            case 'getHotplaylist':
-                $this->is_verify = 1;
-                $this->valid_fields = array('page'=>1001,'pagesize'=>1002,'box_mac'=>1002);
-                break;
             case 'hotplay':
                 $this->is_verify = 1;
                 $this->valid_fields = array('page'=>1001,'pagesize'=>1002,'box_mac'=>1002);
+                break;
+            case 'nearhotel':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
                 break;
             case 'addFormid':
                 $this->is_verify = 1;
@@ -168,16 +168,19 @@ class ContentController extends CommonController{
             $datalist[] = $dinfo;
         }
         if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+            $box_id = $box_info[0]['box_id'];
+            $area_id = $box_info[0]['area_id'];
+            $hotel_id = $box_info[0]['hotel_id'];
+
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(14);
             $cache_key = 'box:play:'.$box_mac;
             $res_boxplays = $redis->get($cache_key);
             if(!empty($res_boxplays)){
-                $m_box = new \Common\Model\BoxModel();
-                $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-                $fields = "box.id as box_id,hotel.id as hotel_id";
-                $box_info = $m_box->getBoxByCondition($fields,$where);
-                $box_id = $box_info[0]['box_id'];
                 $host_name = C('HOST_NAME');
                 $m_store = new \Common\Model\Smallapp\StoreModel();
                 $box_resources = json_decode($res_boxplays,true);
@@ -196,8 +199,9 @@ class ContentController extends CommonController{
                 if(!empty($box_resources['list'])){
                     $tmp_pro_ids = array();
                     $tmp_life_ids = array();
+                    $exclude_videos = C('EXCLUDE_VIDEOS');
                     foreach ($box_resources['list'] as $v){
-                        if($v['type']=='pro'){
+                        if($v['type']=='pro' && !in_array($v['media_id'],$exclude_videos)){
                             $tmp_pro_ids[$v['media_id']] = $v['media_id'];
                         }
                         if($v['type']=='life'){
@@ -217,11 +221,6 @@ class ContentController extends CommonController{
                     $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,10",'media.id');
 
                     if(!empty($tmp_life_ids)){
-                        $m_box = new \Common\Model\BoxModel();
-                        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-                        $box_fields = "box.id as box_id,hotel.id as hotel_id";
-                        $box_info = $m_box->getBoxByCondition($box_fields,$where);
-                        $hotel_id = $box_info[0]['hotel_id'];
                         $now_date = date('Y-m-d H:i:s');
                         $m_life_ads_hotel = new \Common\Model\Smallapp\LifeAdsHotelModel();
                         $where = array('a.hotel_id'=>$hotel_id,'lads.state'=>1);
@@ -343,157 +342,8 @@ class ContentController extends CommonController{
                     $datalist = array_merge($first_data,$user_datas,$life_datas,$last_data);
                 }
             }
-        }
-        $data = array('datalist'=>$datalist);
-        $this->to_back($data);
-    }
-
-    public function getHotplaylist(){
-        $page = intval($this->params['page']);
-        $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):6;
-        $box_mac = $this->params['box_mac'];
-        $total_num = 10;
-        $all_hot_nums = 8;
-        $m_playlog = new \Common\Model\Smallapp\PlayLogModel();
-        $where = array('type'=>4);
-
-        $orderby = 'nums desc';
-        $limit = "0,$all_hot_nums";
-        $fields = 'res_id,nums as play_nums';
-        $res_play = $m_playlog->getWhere($fields,$where,$orderby,$limit,'');
-
-        $datalist = array();
-        $oss_host = 'http://'.C('OSS_HOST').'/';
-        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        $m_user = new \Common\Model\Smallapp\UserModel();
-
-        foreach ($res_play as $v){
-            if($v['play_nums']>100000){
-                $v['play_nums'] = floor($v['play_nums']/10000).'w';
-            }
-
-            $res_forscreen = $m_forscreen->getInfo(array('id'=>$v['res_id']));
-            $v['forscreen_id'] = $res_forscreen['forscreen_id'];
-            $v['res_type'] = $res_forscreen['resource_type'];
-            $where = array('openid'=>$res_forscreen['openid']);
-            $fields = 'id user_id,avatarUrl,nickName';
-            $res_user = $m_user->getOne($fields, $where);
-            $v['nickName'] = $res_user['nickName'];
-            $v['avatarUrl'] = $res_user['avatarUrl'];
-            $fields_forscreen = 'imgs,duration,resource_size,resource_id';
-            $all_forscreen = $m_forscreen->getWheredata($fields_forscreen,array('forscreen_id'=>$res_forscreen['forscreen_id']),'id asc');
-            $v['res_nums'] = count($all_forscreen);
-            $pubdetails = array();
-            foreach ($all_forscreen as $dv){
-                $imgs_info = json_decode($dv['imgs'],true);
-                $forscreen_url = $imgs_info[0];
-                $res_url = $oss_host.$forscreen_url;
-                if($v['res_type']==1){
-                    $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                }else{
-                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
-                }
-                $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
-                    'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
-                $addr_info = pathinfo($forscreen_url);
-                $pubdetail['filename'] = $addr_info['basename'];
-                $pubdetails[]=$pubdetail;
-            }
-            $v['is_show'] = 1;
-            $v['pubdetail'] = $pubdetails;
-            $v['type'] = 1;
-            $v['title'] = '';
-            $datalist[] = $v;
-        }
-        if(!empty($box_mac)){
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(14);
-            $cache_key = 'box:play:'.$box_mac;
-            $res_boxplays = $redis->get($cache_key);
-            if(!empty($res_boxplays)){
-                $box_resources = json_decode($res_boxplays,true);
-                $all_datalist = array();
-                if(!empty($box_resources['hotplay'])){
-                    $play_ids = array_unique($box_resources['hotplay']);
-                    foreach ($datalist as $v){
-                        if(in_array($v['res_id'],$play_ids)){
-                            $v['type'] = 1;
-                            $v['title'] = '';
-                            $all_datalist[]=$v;
-                        }
-                    }
-                }
-                $last_num = $total_num - count($all_datalist);
-                $tmp_pro_ids = array();
-                if(!empty($box_resources['list'])){
-                    $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
-                    $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
-                    foreach ($box_resources['list'] as $v){
-                        if($v['type']=='pro'){
-                            $tmp_pro_ids[$v['media_id']] = $v['media_id'];
-                        }
-                    }
-                    $media_ids = array_values($tmp_pro_ids);
-
-                    $m_program_list =  new \Common\Model\ProgramMenuListModel();
-                    $where  = array('menu_num'=>$box_resources['menu_num']);
-                    $order = "id desc";
-                    $program_info = $m_program_list->getInfo('id', $where, $order);
-
-                    $fields = 'ads.id as ads_id,ads.name title,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
-                    $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
-                    $where['media.id']  = array('in',$media_ids);
-                    $order = 'a.sort_num asc';
-                    $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-                    $res_demand = $m_program_menu_item->getList($fields,$where,$order,"0,$last_num",'media.id');
-                    $m_media = new \Common\Model\MediaModel();
-                    foreach($res_demand as $v){
-                        if($v['media_type']==1){
-                            $res_type = 2;
-                        }else{
-                            $res_type = 1;
-                        }
-                        $play_where = array('res_id'=>$v['ads_id'],'type'=>3);
-                        $play_info = $m_play_log->getOne('nums',$play_where);
-                        $play_nums = 0;
-                        if(!empty($play_info)){
-                            $play_nums = intval($play_info['nums']);
-                        }
-
-                        $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
-                            'title'=>$v['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1);
-                        $res_url = $oss_host.$v['oss_addr'];
-                        $forscreen_url = $v['oss_addr'];
-                        $duration = intval($v['duration']);
-                        $resource_size = $v['resource_size'];
-                        $res_id = $v['media_id'];
-
-                        if($v['portraitmedia_id']){
-                            $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
-                            $res_url = $res_media['oss_addr'];
-                        }
-
-                        $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
-                            'resource_size'=>$resource_size,'res_id'=>$res_id);
-                        $oss_info = pathinfo($forscreen_url);
-                        $pdetail['filename'] = $oss_info['basename'];
-                        if(!empty($v['img_url'])){
-                            $img_url = $oss_host.$v['img_url'];
-                        }else{
-                            if($v['res_type']==1){
-                                $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                            }else{
-                                $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
-                            }
-                        }
-                        $pdetail['img_url'] = $img_url;
-                        $dinfo['pubdetail'] = array($pdetail);
-                        $dinfo['type'] = 2;
-                        $all_datalist[] = $dinfo;
-                    }
-                }
-                $datalist = $all_datalist;
-            }
+            $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
+            $m_datadisplay->recordDisplaynum($datalist,$area_id);
         }
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
@@ -854,6 +704,99 @@ class ContentController extends CommonController{
             $redis->set($user_key,json_encode($user_data),3600*4);
         }
         return $user_data;
+    }
+
+    public function nearhotel(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
+
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id,hotel.gps";
+        $box_info = $m_box->getBoxByCondition($fields,$where);
+        $gps = $box_info[0]['gps'];
+        $hotel_id = $box_info[0]['hotel_id'];
+        $cache_key = C('SAPP_NEARBYHOTEL').$hotel_id;
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(10);
+        $res_cache = $redis->get($cache_key);
+        $res_cache = '';
+        if(!empty($res_cache)){
+            $datalist = json_decode($res_cache,true);
+        }else{
+            $gps_arr = explode(',',$box_info[0]['gps']);
+            $latitude = $gps_arr[1];
+            $longitude = $gps_arr[0];
+            $datalist = array();
+
+            if(count($gps_arr)==2 && $longitude>0 && $latitude>0){
+                $m_store = new \Common\Model\Smallapp\StoreModel();
+                $res_store = $m_store->getHotelStore($box_info[0]['area_id']);
+
+                $all_hotel = array();
+                foreach($res_store as $key=>$v){
+                    if($v['hotel_id']==$box_info[0]['hotel_id']){
+                        continue;
+                    }
+                    $v['dis'] = '';
+                    if($v['gps']!=''){
+                        $now_gps_arr = explode(',',$v['gps']);
+                        $dis = geo_distance($latitude,$longitude,$now_gps_arr[1],$now_gps_arr[0]);
+                        $v['dis_com'] = $dis;
+                        if($dis>1000){
+                            $tmp_dis = $dis/1000;
+                            $dis = sprintf('%0.2f',$tmp_dis);
+                            $dis = $dis.'km';
+                        }else{
+                            $dis = intval($dis);
+                            $dis = $dis.'m';
+                        }
+                        $v['dis'] = $dis;
+                    }else {
+                        $v['dis'] = '';
+                    }
+                    $all_hotel[]=$v;
+                }
+                sortArrByOneField($all_hotel,'dis_com');
+                $near_hotels = array_slice($all_hotel,0,3);
+
+                $m_meida = new \Common\Model\MediaModel();
+                foreach ($near_hotels as $k=>$v){
+                    $tag_name = $v['tag_name'];
+                    if(empty($tag_name)){
+                        $tag_name = '';
+                    }
+                    if($v['media_id']){
+                        $res_media = $m_meida->getMediaInfoById($v['media_id'],'https');
+                        $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
+                        $ori_img_url = $res_media['oss_addr'];
+                    }else{
+                        $img_url = 'https://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                        $ori_img_url = $img_url;
+                    }
+                    $dis = $v['dis'];
+                    if(empty($dis)){
+                        $dis = '';
+                    }
+                    $tel = $v['tel'];
+                    if(empty($tel)){
+                        $tel = $v['mobile'];
+                    }
+                    $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$tel,'avg_expense'=>$v['avg_expense'],
+                        'dis'=>$dis,'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url
+                    );
+                }
+                $redis->set($cache_key,json_encode($datalist),3600*5);
+            }
+        }
+        $total = count($datalist);
+        $res_data = array('total'=>$total,'datalist'=>$datalist);
+        $this->to_back($res_data);
     }
 
     public function feedback(){

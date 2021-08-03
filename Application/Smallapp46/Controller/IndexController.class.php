@@ -690,6 +690,7 @@ class IndexController extends CommonController{
             }
         }
         $syslottery_activity_id = 0;
+        $is_sale_page = 0;
         if(!empty($openid)){
             $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,a.status';
             $where = array('a.openid'=>$openid,'activity.type'=>3);
@@ -714,7 +715,13 @@ class IndexController extends CommonController{
                         $syslottery_activity_id = 0;
                 }
             }
+            $m_userforscreen = new \Common\Model\Smallapp\UserForscreenModel();
+            $res_user = $m_userforscreen->getUserinfo('a.*',array('user.openid'=>$openid,'user.status'=>1),'user.id desc');
+            if($res_user[0]['sale_user']==1){
+                $is_sale_page = 1;
+            }
         }
+        $data['is_sale_page'] = $is_sale_page;
         $data['syslottery_activity_id'] = $syslottery_activity_id;
         $data['seckill_goods_id'] = $seckill_goods_id;
         $data['seckill_banner'] = 'http://'.C('OSS_HOST').'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
@@ -722,6 +729,7 @@ class IndexController extends CommonController{
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;
         $data['redpacket_content'] = '即刻分享视频照片，一键投屏，让饭局分享爽不停';
+        $data['file_play_times'] = C('SAPP_FILE_FORSCREEN_PLAY_TIMES');
         $this->to_back($data);
     }
 

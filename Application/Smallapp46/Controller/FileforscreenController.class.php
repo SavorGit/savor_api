@@ -26,7 +26,7 @@ class FileforscreenController extends CommonController{
                 break;
             case 'getFilelist':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -209,6 +209,7 @@ class FileforscreenController extends CommonController{
 
     public function getFilelist(){
         $openid = $this->params['openid'];
+        $pagesize = $this->params['pagesize'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
         if(empty($res)){
@@ -217,10 +218,14 @@ class FileforscreenController extends CommonController{
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $fields = 'id,imgs,resource_name,resource_size,md5_file,file_imgnum,small_app_id';
-        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        $res_latest = $m_forscreen->getWhere($fields,$where,$order,'0,100','md5_file');
+        if(empty($pagesize)){
+            $pagesize=100;
+        }
+        $limit = "0,$pagesize";
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,$limit,'md5_file');
         $datalist = array();
         if(!empty($res_latest)){
             $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
@@ -253,6 +258,24 @@ class FileforscreenController extends CommonController{
         $total = count($datalist);
         $res_data = array('total'=>$total,'datalist'=>$datalist);
         $this->to_back($res_data);
+    }
+
+    public function delFile(){
+        $openid = $this->params['openid'];
+        $forscreen_id = $this->params['forscreen_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
+        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $res_forscreen = $m_forscreenrecord->getInfo(array('id'=>$forscreen_id));
+        if(!empty($res_forscreen)){
+            $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('del_status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+            $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'md5_file'=>$res_forscreen['md5_file']);
+            $m_forscreenrecord->updateInfo($where,array('del_status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+        }
+        $this->to_back(array());
     }
 
     public function getforscreenbyid(){

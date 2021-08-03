@@ -56,7 +56,7 @@ class BuriedPointController extends CommonController{
         $openid       = $this->params['openid'];
         $box_mac      = $this->params['box_mac'];
         $used_time    = abs($this->params['used_time']);//用时
-        $is_exist     = intval($this->params['is_exist']);//是否存在
+        $is_exist     = $this->params['is_exist'];//是否存在
         $is_exit      = intval($this->params['is_exit']);//是否退出
         $is_download  = intval($this->params['is_download']);//是否下载完成
         $is_play  = intval($this->params['is_play']);//是否播放
@@ -85,6 +85,7 @@ class BuriedPointController extends CommonController{
         $file_img = '';
         if(!empty($res_forscreen) && $res_forscreen['action']==30){
             $file_img = $resource_id;
+            $file_img = str_replace('resource_','',$file_img);
             $resource_id = 0;
         }
         $resource_idinfo = pathinfo($resource_id);
@@ -145,7 +146,15 @@ class BuriedPointController extends CommonController{
                 'box_mac'=>$box_mac,'is_exit'=>$is_exit,'is_exist'=>2);
         }else{
             $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
-                'box_mac'=>$box_mac,'is_exist'=>$is_exist,'is_break'=>$is_break);
+                'box_mac'=>$box_mac);
+            if(is_numeric($is_exist)){
+                $data['is_exist'] = intval($is_exist);
+            }else{
+                $is_exist = 0;
+            }
+            if(is_numeric($is_break)){
+                $data['is_break'] = $is_break;
+            }
         }
         if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
         if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
@@ -219,14 +228,6 @@ class BuriedPointController extends CommonController{
         $redis->select(5);
         $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
         $redis->rpush($cache_key, json_encode($data));
-
-        if(isset($data['box_res_sdown_time']) && isset($data['box_res_edown_time'])){
-            $box_res_sdown_time = $data['box_res_sdown_time'];
-            $box_res_edown_time = $data['box_res_edown_time'];
-        }else{
-            $box_res_sdown_time = 0;
-            $box_res_edown_time = 0;
-        }
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $params = array(

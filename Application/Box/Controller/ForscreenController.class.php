@@ -78,6 +78,7 @@ class ForscreenController extends CommonController{
                 'md5'=>'b7c1c5fd2962c2f49af36ffabb4c3fd7',
             );
             $data['forscreen_call_code'] = $forscreen_call_code;
+            /*
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(1);
             $key = C('SAPP_SCAN_BOX_CODE');
@@ -107,7 +108,8 @@ class ForscreenController extends CommonController{
                     $isShowAnimQRcode = false;
                 }
             }
-            $data['isShowAnimQRcode'] = $isShowAnimQRcode;
+            */
+            $data['isShowAnimQRcode'] = false;
 
             /*
             $redis->select(15);

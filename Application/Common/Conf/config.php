@@ -326,6 +326,7 @@ return array(
     'SAPP_LOTTERY_TASK'=>'smallapp:lotterytask:',
     'SAPP_HELPIMAGE'=>'smallapp:helpimage:',
     'SAPP_CANCEL_FORSCREEN'=>'smallapp:cancelforscreen:',
+    'SAPP_NEARBYHOTEL'=>'smallapp:nearbyhotel:',
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(
@@ -457,6 +458,11 @@ return array(
         'doc'=>2,'wps'=>2,'docx'=>2,
         'pdf'=>2,'rtf'=>2,'txt'=>2
     ),
+    'SAPP_FILE_FORSCREEN_PLAY_TIMES'=>array(
+        array('id'=>1,'name'=>'1分钟','value'=>60,'is_select'=>1),
+        array('id'=>3,'name'=>'3分钟','value'=>180,'is_select'=>0),
+        array('id'=>5,'name'=>'5分钟','value'=>300,'is_select'=>0),
+    ),
     'SAPP_FILE_FORSCREEN_IMAGES'=>array(
         'xls'=>'excel.png','xlsx'=>'excel.png','csv'=>'excel.png',
         'pptx'=>'ppt.png','ppt'=>'ppt.png',
@@ -582,6 +588,7 @@ return array(
     'PUBLIC_AUDIT_MOBILE'=>array(
         18910538751
     ),
+    'EXCLUDE_VIDEOS'=>array(17614,19533,26965),
     'LAIMAO_SALE_HOTELS'=>array('7'=>'永峰写字楼(正式)','28'=>'经易家肴(西单店)','81'=>'海棠居(长椿街店)','787'=>'湘江宴','1007'=>'峨嵋酒家广渠路店'),
     'LAIMAO_SECKILL_GOODS_ID'=>622,
     'RD_TEST_HOTEL' =>

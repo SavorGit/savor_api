@@ -10,7 +10,6 @@ class ForscreenLogController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            
             case 'recordForScreen':
                $this->is_verify = 1;
                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,
@@ -20,13 +19,14 @@ class ForscreenLogController extends CommonController{
                    'is_pub_hotelinfo'=>1000,'is_share'=>1000,
                    'forscreen_id'=>1000,'small_app_id'=>1000,
                    'small_app_id'=>1001,'create_time'=>1000,
-                   'res_sup_time'=>1002,'res_eup_time'=>1002
+                   'res_sup_time'=>1002,'res_eup_time'=>1002,
+                   'md5'=>1002,'file_imgnum'=>1002,'save_type'=>1002,
                );
                break;
             case 'updateForscreen':
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001,'forscreen_id'=>1001,'resource_id'=>1001,
-                                            'resource_addr'=>1001);
+                                            'resource_addr'=>1001,'create_time'=>1002,'action'=>1002);
                break;
             case 'updateForscreenPlaytime':
                 $this->is_verify = 1;
@@ -56,6 +56,11 @@ class ForscreenLogController extends CommonController{
         $small_app_id  = $this->params['small_app_id'] ? $this->params['small_app_id'] :1;
         $create_time   = $this->params['create_time'] ? date('Y-m-d H:i:s',$this->params['create_time']/1000) :  date('Y-m-d H:i:s');
         $serial_number = $this->params['serial_number'] ? $this->params['serial_number'] :'';
+        $resource_name = $this->params['resource_name'] ? $this->params['resource_name'] :'';
+        $md5_file = $this->params['md5'] ? $this->params['md5'] :'';
+        $file_imgnum = $this->params['file_imgnum']?$this->params['file_imgnum']:0;
+        $save_type = $this->params['save_type']?$this->params['save_type']:0;
+
         $data = array();
         $data['forscreen_id'] = $forscreen_id;
         $data['openid'] = $openid;
@@ -74,7 +79,23 @@ class ForscreenLogController extends CommonController{
         $data['is_pub_hotelinfo'] = $is_pub_hotelinfo;
         $data['is_share']    = $is_share;
         $data['duration']    = $duration;
-        $data['small_app_id']= $small_app_id;
+        $data['small_app_id']= 2;
+        if($action==30){
+            $tmp_imgs = array('forscreen/resource/'.$resource_id);
+            $data['imgs'] = json_encode($tmp_imgs);
+            $data['save_type'] = $save_type;
+            $data['file_imgnum'] = $file_imgnum;
+            if(!empty($md5_file))   $data['md5_file'] = strtolower($md5_file);
+            if(!empty($md5_file) && $save_type>0 && $file_imgnum>0){
+                $data['file_conversion_status'] = 1;
+            }
+            if(!empty($resource_name)){
+                $data['resource_name'] = $resource_name;
+            }
+        }
+        if($action==31 && $this->params['create_time']>0){
+            $data['resource_id'] = $this->params['create_time'].intval($resource_id);
+        }
         if(!empty($serial_number)) $data['serial_number'] = $serial_number;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
@@ -105,11 +126,16 @@ class ForscreenLogController extends CommonController{
         $forscreen_id = $this->params['forscreen_id'] ? $this->params['forscreen_id'] :0;
         $imgs    = str_replace("\\", '', $this->params['resource_addr']);
         $resource_id   = $this->params['resource_id'] ? $this->params['resource_id'] : 0;
-        
+        $action   = $this->params['action'] ? $this->params['action'] : 0;
+        $create_time   = $this->params['create_time'] ? $this->params['create_time'] : 0;
+
         $data['box_mac']      = $box_mac;
         $data['forscreen_id'] = $forscreen_id;
         $data['imgs']         = $imgs;
         $data['resource_id']  = intval($resource_id);
+        if($action==31 && $create_time>0){
+            $data['resource_id'] = $create_time.intval($resource_id);
+        }
         
         $redis = SavorRedis::getInstance();
         $redis->select(5);

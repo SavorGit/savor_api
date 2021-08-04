@@ -42,9 +42,7 @@ class StoreController extends CommonController{
         $pagesize = 10;
 
         $m_store = new \Common\Model\Smallapp\StoreModel();
-        if($cate_id==0){
-            $res_store = $m_store->getAllStores($area_id);
-        }elseif($cate_id==120){
+        if($cate_id==0 || $cate_id==120){
             $res_store = $m_store->getHotelStore($area_id,$county_id,$food_style_id,$avg_id);
         }else{
             $res_store = $m_store->getLifeStore($area_id,$county_id,$cate_id,$avg_id);

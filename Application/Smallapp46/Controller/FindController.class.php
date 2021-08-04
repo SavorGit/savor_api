@@ -95,7 +95,8 @@ class FindController extends CommonController{
             $menu_id = $program_info['id'];
             $fields = 'ads.id,ads.name title,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.oss_addr,media.oss_filesize as resource_size';
             $where = array('a.menu_id'=>$menu_id,'a.type'=>2);
-            $where['media.id']  = array('not in',array('17614','19533'));
+            $exclude_videos = C('EXCLUDE_VIDEOS');
+            $where['media.id']  = array('not in',$exclude_videos);
             $where['media.type'] = 1;
             $where['ads.is_sapp_show'] = 1;
             $order = 'a.sort_num asc';
@@ -839,6 +840,8 @@ class FindController extends CommonController{
             $m_play_log->addInfo($data);
             $play_num = 1;
         }
+        $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
+        $play_num = $m_hotplay->getHotplayNum($res_id,1,$play_num);
         if($play_num>100000){
             $play_num = floor($play_num/10000).'w';
         }

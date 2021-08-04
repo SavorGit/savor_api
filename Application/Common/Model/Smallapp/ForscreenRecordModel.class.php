@@ -83,7 +83,7 @@ class ForscreenRecordModel extends Model{
             $data = array();
         }
         foreach ($all_data as $k=>$v){
-            if(isset($params[$k])){
+            if(isset($params[$k]) && empty($data[$k])){
                 $data[$k]=$params[$k];
             }
         }

@@ -26,7 +26,7 @@ class FileforscreenController extends CommonController{
                 break;
             case 'getFilelist':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -209,6 +209,7 @@ class FileforscreenController extends CommonController{
 
     public function getFilelist(){
         $openid = $this->params['openid'];
+        $pagesize = $this->params['pagesize'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
         if(empty($res)){
@@ -216,11 +217,15 @@ class FileforscreenController extends CommonController{
         }
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
-        $fields = 'id,imgs,resource_name,resource_size,md5_file';
-        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
+        $fields = 'id,imgs,resource_name,resource_size,md5_file,file_imgnum,small_app_id';
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');
+        if(empty($pagesize)){
+            $pagesize=100;
+        }
+        $limit = "0,$pagesize";
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,$limit,'md5_file');
         $datalist = array();
         if(!empty($res_latest)){
             $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
@@ -230,17 +235,23 @@ class FileforscreenController extends CommonController{
             $cache_key = C('SAPP_FILE_FORSCREEN');
             foreach ($res_latest as $v){
                 $imgs = json_decode($v['imgs'],true);
-                $file_type = pathinfo($imgs[0],PATHINFO_EXTENSION);
-                $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
-                $page_num = 0;
-                if(!empty($res_cache)) {
-                    $imgs = json_decode($res_cache, true);
-                    $page_num = count($imgs);
+                $file_info = pathinfo($imgs[0]);
+                $file_type = $file_info['extension'];
+                if($v['small_app_id']==1){
+                    $res_cache = $redis->get($cache_key.':'.$v['md5_file']);
+                    $page_num = 0;
+                    if(!empty($res_cache)) {
+                        $imgs = json_decode($res_cache, true);
+                        $page_num = count($imgs);
+                    }
+                }else{
+                    $page_num = intval($v['file_imgnum']);
                 }
+
                 $file_size = formatBytes($v['resource_size']);
                 $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
-                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'file_name'=>$v['resource_name'],
-                    'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img);
+                $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'resource_name'=>$v['resource_name'],
+                    'file_name'=>$file_info['basename'],'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img,'small_app_id'=>$v['small_app_id']);
                 $datalist[] = $info;
             }
         }
@@ -249,21 +260,51 @@ class FileforscreenController extends CommonController{
         $this->to_back($res_data);
     }
 
+    public function delFile(){
+        $openid = $this->params['openid'];
+        $forscreen_id = $this->params['forscreen_id'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
+        $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $res_forscreen = $m_forscreenrecord->getInfo(array('id'=>$forscreen_id));
+        if(!empty($res_forscreen)){
+            $m_forscreenrecord->updateInfo(array('id'=>$forscreen_id),array('del_status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+            $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'md5_file'=>$res_forscreen['md5_file']);
+            $m_forscreenrecord->updateInfo($where,array('del_status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+        }
+        $this->to_back(array());
+    }
+
     public function getforscreenbyid(){
         $forscreen_id = $this->params['forscreen_id'];
         $m_forscreenrecord = new \Common\Model\Smallapp\ForscreenRecordModel();
         $res_forscreen = $m_forscreenrecord->getInfo(array('id'=>$forscreen_id));
-
-        $md5_file = $res_forscreen['md5_file'];
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(5);
-        $key = C('SAPP_FILE_FORSCREEN');
-        $cache_key = $key.':'.$md5_file;
-        $res_cache = $redis->get($cache_key);
-        if(empty($res_cache)) {
-            $imgs = array();
+        if($res_forscreen['small_app_id']==1){
+            $md5_file = $res_forscreen['md5_file'];
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $key = C('SAPP_FILE_FORSCREEN');
+            $cache_key = $key.':'.$md5_file;
+            $res_cache = $redis->get($cache_key);
+            if(empty($res_cache)) {
+                $imgs = array();
+            }else{
+                $imgs = json_decode($res_cache, true);
+            }
         }else{
-            $imgs = json_decode($res_cache, true);
+            $imgs = array();
+            if($res_forscreen['file_conversion_status']==1 && $res_forscreen['file_imgnum']>0){
+                $res_imgs = json_decode($res_forscreen['imgs'],true);
+                $img_info = pathinfo($res_imgs[0]);
+                $file_name = $img_info['filename'];
+                $file_dir = "forscreen/resource/file/$file_name/";
+                for($i=1;$i<=$res_forscreen['file_imgnum'];$i++){
+                    $imgs[]=$file_dir."$i.jpg";
+                }
+            }
         }
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');

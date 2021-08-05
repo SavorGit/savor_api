@@ -90,6 +90,8 @@ class ForscreenHistoryController extends CommonController{
                     ///$data[$v['forscreen_id']]['res_nums'] = $key;
                     $data[$v['forscreen_id']]['list'][] = $tmp;
                     $data[$v['forscreen_id']]['create_time'] = viewTimes(intval($v['forscreen_id']/1000));
+                    $data[$v['forscreen_id']]['music_id'] = intval($v['music_id']);
+                    $data[$v['forscreen_id']]['music_oss_addr'] = !empty($v['music_oss_addr']) ? $v['music_oss_addr'] :'';
                 }  
             }
             foreach($data as $key=>$v){

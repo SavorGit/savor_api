@@ -16,10 +16,16 @@ class FileforscreenController extends Controller {
         }
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $fields = 'id,imgs,resource_name,resource_size,md5_file';
-        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');
+        if($source=='new'){
+            $limit = '0,100';
+        }else{
+            $limit = '0,4';
+        }
+
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,$limit,'md5_file');
         $latest_screen = array();
         $frequent_screen = array();
         if(!empty($res_latest)){
@@ -73,8 +79,8 @@ class FileforscreenController extends Controller {
         }
         if($source=='sale'){
             $display_html = 'sale';
-        }elseif($source=='new'){
-            $display_html = 'indexnew';
+        }elseif($source=='forscreen'){
+            $display_html = 'forscreen';
         }else{
             $display_html = 'index';
         }
@@ -82,6 +88,7 @@ class FileforscreenController extends Controller {
         $this->assign('file_ext',join(',',array_keys($file_ext)));
         $this->assign('latest_screen',$latest_screen);
         $this->assign('frequent_screen',$frequent_screen);
+        $this->assign('openid',$openid);
         $this->display($display_html);
     }
 

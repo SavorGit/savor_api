@@ -218,7 +218,7 @@ class ContentController extends CommonController{
                     $where['media.id']  = array('in',array_values($tmp_pro_ids));
                     $order = 'a.sort_num asc';
                     $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-                    $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,10",'media.id');
+                    $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,$total_num",'media.id');
 
                     if(!empty($tmp_life_ids)){
                         $now_date = date('Y-m-d H:i:s');
@@ -305,29 +305,27 @@ class ContentController extends CommonController{
                     }
 
                     shuffle($pro_ads);
-                    $first_data = array_slice($pro_ads,0,1);
-                    $last_data = array_slice($pro_ads,1,1);
-                    $pro_index = 1;
+                    $first_data = array_slice($pro_ads,0,2);
+                    $last_data = array_slice($pro_ads,2,2);
 
                     $user_num = count($user_datalist);
                     $pro_num = count($pro_ads);
                     $life_num = count($life_ads);
                     if($user_num>6){
-                        $user_datas = array_slice($user_datalist,0,6);
+                        $user_datas = array_slice($user_datalist,0,4);
                         if($life_num>=2){
                             $life_datas = $life_ads;
                         }else{
-                            $life_datas_user = array_slice($user_datalist,6,2-$life_num);
+                            $life_datas_user = array_slice($user_datalist,4,2-$life_num);
                             $life_datas = array_merge($life_ads,$life_datas_user);
                             $tmp_life_num = count($life_datas);
                             if($tmp_life_num<2){
-                                $pro_index = 2;
+                                $pro_index = 4;
                                 $life_datas_pro = array_slice($pro_ads,$pro_index,2-$tmp_life_num);
-                                $pro_index = $pro_index + (2-$tmp_life_num);
                             }
                         }
                     }else{
-                        $pro_index = 2;
+                        $pro_index = 4;
                         $user_datas_pro = array_slice($pro_ads,$pro_index,6-$user_num);
                         $pro_index = $pro_index + (6-$user_num);
                         $user_datas = array_merge($user_datalist,$user_datas_pro);
@@ -336,7 +334,6 @@ class ContentController extends CommonController{
                         }else{
                             $life_datas_pro = array_slice($pro_ads,$pro_index,2-$life_num);
                             $life_datas = array_merge($life_ads,$life_datas_pro);
-                            $pro_index = $pro_index + (2-$life_num);
                         }
                     }
                     $datalist = array_merge($first_data,$user_datas,$life_datas,$last_data);

@@ -251,7 +251,7 @@ class ForscreenController extends CommonController{
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
         $fields = 'id,forscreen_music_name as name,media_id,color,small_wordsize,type';
         $where = array('status'=>1,'type'=>3,'music_type'=>array('in',array(2,3)));
-        $res_resource = $m_welcomeresource->getDataList($fields,$where,'sort asc');
+        $res_resource = $m_welcomeresource->getDataList($fields,$where,'sort desc');
         $music = array();
         if(!empty($res_resource)){
             $m_media = new \Common\Model\MediaModel();

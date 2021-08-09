@@ -30,9 +30,6 @@ class ReportController extends CommonController{
     }
     
     public function index(){
-        
-        //https://mb.rerdian.com/survival/api/2/survival
-        //?hotelId=10000000&period=454&mac=111&demand=555&apk=666&war=888&logo=ppp&ip=89.3143.1
         $data = array();
         $data['clientid'] = I('get.clientid','0','intval');     //上报客户端类型 1:小平台 2:机顶盒
         $data['hotelId']  = I('get.hotelId','0','intval');
@@ -51,12 +48,16 @@ class ReportController extends CommonController{
         $data['adv_period'] = I('get.adv_period','','trim');  //当前宣传片期号
         $data['pro_download_period'] = I('get.pro_download_period','','trim'); //下载节目期号
         $data['ads_download_period'] = I('get.ads_download_period','','trim');  //下载广告期号
-        
         //20180531新增
         $data['net_speed']  = I('get.net_speed','','trim');   //机顶盒下载速度
-
         $data['apk_time'] = I('get.apk_time','','trim');
-                
+
+        $all_params = array_merge($_GET,$_POST);
+        $log_content = date("Y-m-d H:i:s").'|box_mac|'.$all_params['mac'].'|serial_no|'.$all_params['serial_no'].'|params|'.json_encode($all_params)."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'heartlog_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+
         if(empty($data['mac'])){
             $this->to_back(10004);
         }

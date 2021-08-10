@@ -19,7 +19,7 @@ class FileforscreenController extends Controller {
         $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        if($source=='new'){
+        if($source=='forscreen'){
             $limit = '0,100';
         }else{
             $limit = '0,4';

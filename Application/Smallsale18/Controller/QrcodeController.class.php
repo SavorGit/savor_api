@@ -71,20 +71,46 @@ class QrcodeController extends CommonController{
 
     public function dishQrcode(){
         $data_id = $this->params['data_id'];
-        $type = $this->params['type'];//24菜品商家 25单个菜品
-
+        $suid = $this->params['suid'];
+        $box_id = $this->params['box_id'];
+        $type = $this->params['type'];//24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
+        if(empty($suid)){
+            $suid = 0;
+        }
         $short_urls = C('SHORT_URLS');
         switch ($type){
             case 24:
                 $code_url = $short_urls['SALE_DISHMERCHANT_QR'];
+                $content = $code_url.'dish_'.$data_id.'_'.$type;
                 break;
             case 25:
                 $code_url = $short_urls['SALE_DISH_QR'];
+                $content = $code_url.'dish_'.$data_id.'_'.$type;
+                break;
+            case 26:
+            case 32:
+                $code_url = $short_urls['SALE_SHOP_GOODS_QR'];
+                $content = $code_url.'shop_'.$data_id.'_'.$type;
+                if(!empty($suid)){
+                    $content.='_'.$suid;
+                }
+                break;
+            case 27:
+                $code_url = $short_urls['SALE_SHOP_MERCHANT_QR'];
+                $content = $code_url.'shop_'.$data_id.'_'.$type;
+                if(!empty($suid)){
+                    $content.='_'.$suid;
+                }
+                break;
+            case 28:
+                $code_url = $short_urls['SALE_SHOP_GOODS_QR'];
+                $content = $code_url.'shop_'.$data_id.'_'.$type.'_'.$suid.'_'.$box_id;
                 break;
             default:
                 $code_url = $short_urls['SALE_DISH_QR'];
+                $content = $code_url.'shop_'.$data_id.'_'.$type;
         }
-        $content = $code_url.'dish_'.$data_id.'_'.$type;
+
         $errorCorrectionLevel = 'L';//容错级别
         $matrixPointSize = 5;//生成图片大小
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);

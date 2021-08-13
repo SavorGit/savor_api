@@ -368,7 +368,7 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['max_user_forimage_size'] = 1024*1024*2;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
-            $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
+            $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
             $data['image_quality'] = 10;
             $data['image_compress'] = 1024*1024*50;

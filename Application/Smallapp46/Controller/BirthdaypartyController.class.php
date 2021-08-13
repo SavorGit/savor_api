@@ -11,6 +11,9 @@ class BirthdaypartyController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
                 break;
+            case 'musiclist':
+                $this->is_verify = 0;
+                break;
         }
         parent::_init_();
 
@@ -79,6 +82,24 @@ class BirthdaypartyController extends CommonController{
         $resp_data = array('welcome'=>$welcome,'videos'=>$videos,'videos_num'=>$videos_num,
             'images'=>$images,'images_num'=>$images_num);
         $this->to_back($resp_data);
+    }
+
+    public function musiclist(){
+        $datalist = array();
+        $m_birthday = new \Common\Model\Smallapp\BirthdayModel();
+        $res_birthday = $m_birthday->getDataList('*','','id desc');
+        $m_media = new \Common\Model\MediaModel();
+        $oss_host = "http://".C('OSS_HOST').'/';
+        foreach ($res_birthday as $v){
+            $name_arr = explode('-',$v['name']);
+            $res_media = $m_media->getMediaInfoById($v['media_id']);
+            $file_info = pathinfo($res_media['oss_addr']);
+            $info = array('name'=>$v['name'],'res_url'=>$oss_host.$res_media['oss_addr'],'file_name'=>$file_info['basename'],
+                'title'=>$name_arr[0],'sub_title'=>$name_arr[1],'duration'=>$res_media['duration']
+            );
+            $datalist[] = $info;
+        }
+        $this->to_back($datalist);
     }
 
 }

@@ -50,9 +50,11 @@ class WelcomeController extends CommonController{
                         $color[]=array('id'=>$v['id'],'color'=>$v['color']);
                         break;
                     case 3:
-                        $res_media = $m_media->getMediaInfoById($v['media_id']);
-                        $oss_addr = $res_media['oss_addr'];
-                        $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
+                        if(in_array($v['music_type'],array(1,3))){
+                            $res_media = $m_media->getMediaInfoById($v['media_id']);
+                            $oss_addr = $res_media['oss_addr'];
+                            $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
+                        }
                         break;
                     case 5:
                         $res_media = $m_media->getMediaInfoById($v['media_id'],'https');

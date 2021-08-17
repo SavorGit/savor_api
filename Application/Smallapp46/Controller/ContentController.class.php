@@ -979,6 +979,9 @@ class ContentController extends CommonController{
     }
 
     public function nearhotel(){
+        $res_data = array('total'=>0,'datalist'=>array());
+        $this->to_back($res_data);
+
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();

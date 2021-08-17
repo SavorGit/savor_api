@@ -43,10 +43,6 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('content'=>1001);
                 break;
-            case 'tzyt':
-                $this->is_verify = 1;
-                $this->valid_fields = array('content'=>1001);
-                break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 1;
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002,'box_mac'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
@@ -267,17 +263,7 @@ class IndexController extends CommonController{
         $content = array('content'=>$res);
         $this->to_back($content);
     }
-    public function tzyt(){
-        $content = $this->params['content'];
-        $hash_ids_key = C('HASH_IDS_KEY');
-        $hashids = new \Common\Lib\Hashids($hash_ids_key);
-        $decode_info = $hashids->decode($content);
-        if(empty($decode_info)){
-            $this->to_back(90101);
-        }
-        $cache_key = C('SAPP_QRCODE').$decode_info[0];
-        echo $cache_key;exit;
-    }
+
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
         $pop_eval = $this->params['pop_eval'];
@@ -368,6 +354,8 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['max_user_forimage_size'] = 1024*1024*2;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
+            $data['simple_forscreen_public_videosize'] = 1024*1024*500;//极简投屏公开资源大小
+
             $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
             $data['image_quality'] = 10;
@@ -893,13 +881,16 @@ class IndexController extends CommonController{
             $data['hotel_box_type'] = $box_info['hotel_box_type'];
             $data['hotel_is_4g']= $box_info['hotel_is_4g'];
             $data['box_name']   = $box_info['box_name'];
-
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
-    
-            $m_public = new \Common\Model\Smallapp\PublicModel();
-            $res_public = $m_public->getOne('id',array('forscreen_id'=>$forscreen_id,'openid'=>$openid),'id desc');
-            if(empty($res_public)){
+
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_public_data_key = C('SAPP_SCRREN_PUBLICDATA').$openid.'--'.$forscreen_id;
+            $res_pcache = $redis->get($cache_public_data_key);
+            if(empty($res_pcache)){
+                $redis->set($cache_public_data_key,date('Y-m-d H:i:s'),600);
+
                 $public_data = array();
                 $public_data['forscreen_id'] = $forscreen_id;
                 $public_data['openid'] = $openid;
@@ -933,7 +924,7 @@ class IndexController extends CommonController{
                 }else{
                     $public_data['status'] =0;
                 }
-
+                $m_public = new \Common\Model\Smallapp\PublicModel();
                 $m_public->add($public_data);
             }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,

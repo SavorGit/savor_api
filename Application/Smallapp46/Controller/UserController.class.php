@@ -291,7 +291,7 @@ class UserController extends CommonController{
                 $info['res_url'] = $res_url;
                 $collect_info[$key]['list'] = $info;
             }else if($v['type'] ==2){ //投屏
-                $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id'],'status'=>2));
+                $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id']));
                 $collect_info[$key]['res_type'] = $pub_info['res_type'];
                 $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
                 if(!empty($pub_info)){
@@ -476,11 +476,10 @@ class UserController extends CommonController{
                     $collect_info[$key]['imgurl']  = $info['imgurl'];
                     break;
                 case 2:
-                    $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id'],'status'=>2));
-                    $collect_info[$key]['res_type'] = $pub_info['res_type'];
-                    $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
+                    $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id']));
                     if(!empty($pub_info)){
-
+                        $collect_info[$key]['res_type'] = $pub_info['res_type'];
+                        $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
                         $fields = "resource_id,concat('".$oss_host."',`res_url`) res_url";
                         $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
                         if($v['res_type']==2){

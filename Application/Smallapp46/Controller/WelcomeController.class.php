@@ -35,7 +35,7 @@ class WelcomeController extends CommonController{
 
     public function config(){
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
-        $fields = 'id,name,media_id,color,small_wordsize,type';
+        $fields = 'id,name,media_id,color,small_wordsize,type,music_type';
         $where = array('status'=>1);
         $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
         $wordsize = $color = $music = $font = array();

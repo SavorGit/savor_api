@@ -108,6 +108,23 @@ class ReportController extends CommonController{
         $info = $m_box->field('is_4g')->where(array('state'=>1,'flag'=>0,'mac'=>$data['mac']))->find();
         
         $ret['is_4g'] = intval($info['is_4g']);
+
+        $redis = SavorRedis::getInstance();
+        $redis->select(20);
+        $params_cache_key = $all_params['mac'].':'.date('Ymd');
+        if(!empty($all_params['serial_no'])){
+            $params_data = array('serial_no'=>$all_params['serial_no'],'time'=>date("Y-m-d H:i:s"),'apk'=>$all_params['apk']);
+            $res_credis = $redis->get($params_cache_key);
+            if(!empty($res_credis)){
+                $p_data = json_decode($res_credis,true);
+                $p_data[]=$params_data;
+            }else{
+                $p_data = array();
+                $p_data[]=$params_data;
+            }
+            $redis->set($params_cache_key,json_encode($p_data),86400*5);
+        }
+
         $this->to_back($ret);
     }
     /**

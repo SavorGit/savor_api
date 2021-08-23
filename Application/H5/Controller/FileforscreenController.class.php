@@ -84,6 +84,12 @@ class FileforscreenController extends Controller {
         }else{
             $display_html = 'index';
         }
+
+        $ip = get_client_ip();
+        $data = array('openid'=>$openid,'action_type'=>7,'type'=>1,'ip'=>$ip);
+        $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+        $m_datalog->add($data);
+
         $file_ext = C('SAPP_FILE_FORSCREEN_TYPES');
         $this->assign('file_ext',join(',',array_keys($file_ext)));
         $this->assign('latest_screen',$latest_screen);

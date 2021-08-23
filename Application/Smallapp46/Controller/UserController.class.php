@@ -154,7 +154,6 @@ class UserController extends CommonController{
                 }
                 $forscreen_nums = count($nums_data);
                 if(!empty($forscreen_nums) && $forscreen_nums>=5 && $userinfo['is_interact']==0){
-                    
                     $data['userinfo']['is_interact'] = 1;
                     $m_user->updateInfo(array('openid'=>$openid), array('is_interact'=>1));
                 }
@@ -169,6 +168,9 @@ class UserController extends CommonController{
             $guide_prompt = array_keys($res_data);
         }
         $data['userinfo']['guide_prompt'] = $guide_prompt;
+        if($openid=='ofYZG42V8dkUo1A0g7b_Mff2ZYA4'){
+            $data['userinfo']['is_interact'] = 0;
+        }
         $this->to_back($data);
     }
     

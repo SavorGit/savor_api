@@ -27,7 +27,7 @@ class UserController extends CommonController{
                 break;
             case 'getMyCollect':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1000);
+                $this->valid_fields = array('openid'=>1001,'page'=>1002,'pagesize'=>1002);
                 break;
             case 'isForscreenIng':
                 $this->is_verify = 1;
@@ -35,7 +35,7 @@ class UserController extends CommonController{
                 break;
             case 'getMyPublic':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1000);
+                $this->valid_fields = array('openid'=>1001,'page'=>1002,'pagesize'=>1002);
                 break;
             case 'delMyPublic':
                 $this->is_verify = 1;
@@ -260,18 +260,14 @@ class UserController extends CommonController{
     public function getMyCollect(){
         $openid = $this->params['openid'];
         $page   = $this->params['page'] ? intval($this->params['page']) : 1;
-        //获取用户信息
-        $m_collect = new \Common\Model\Smallapp\CollectModel();
-        $page_size = 10;
-        $limit = "limit 0,".$page*$page_size;
-    
+        $pagesize = isset($this->params['pagesize'])?$this->params['pagesize']:10;
+
         $fields = "a.res_id,a.type,a.create_time,b.res_type,c.avatarUrl,c.nickName";
-        $where = array();
-        $where['a.openid'] = $openid;
-        $where['a.status'] = 1;
+        $where = array('a.openid'=>$openid,'a.status'=>1);
         $where['a.type'] = array('in',array(1,2,3,5));
-    
         $order="create_time desc";
+        $limit = "limit 0,".$page*$pagesize;
+        $m_collect = new \Common\Model\Smallapp\CollectModel();
         $collect_info = $m_collect->getList($fields, $where, $order, $limit);
 
         $m_content  = new \Common\Model\ContentModel();
@@ -281,102 +277,95 @@ class UserController extends CommonController{
         $m_ads      = new \Common\Model\AdsModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         foreach($collect_info as $key=>$v){
-            if($v['type'] ==1){ //点播
-                $collect_info[$key]['res_type'] = 2;
-                $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
-                ->where(array('id'=>$v['res_id']))
-                ->find();
-                $res_url = strstr($info['res_url'], '?',-1);
-                $collect_info[$key]['res_nums'] = 1;
-                $info['res_url'] = $res_url;
-                $collect_info[$key]['list'] = $info;
-            }else if($v['type'] ==2){ //投屏
-                $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id']));
-                $collect_info[$key]['res_type'] = $pub_info['res_type'];
-                $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
-                if(!empty($pub_info)){
-                    $fields = "resource_id res_id,concat('".$oss_host."',`res_url`) res_url,`res_url` forscreen_url,substring(`res_url`,20) filename,resource_size";
-                    $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
-                    
-                    if($v['res_type']==2){
-                        $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
-                        $collect_info[$key]['list'] = array($pubdetails[0]);
+            switch ($v['type']){
+                case 1://点播
+                    $collect_info[$key]['res_type'] = 2;
+                    $info = $m_content->field("`title`,`tx_url` res_url, concat('".$oss_host."',`img_url`) imgurl, '2' as  res_type , '1' as res_nums")
+                        ->where(array('id'=>$v['res_id']))
+                        ->find();
+                    $res_url = strstr($info['res_url'], '?',-1);
+                    $collect_info[$key]['res_nums'] = 1;
+                    $info['res_url'] = $res_url;
+                    $collect_info[$key]['list'] = $info;
+                    break;
+                case 2://投屏
+                    $pub_info = $m_public->getOne('res_type,res_nums', array('forscreen_id'=>$v['res_id']));
+                    $collect_info[$key]['res_type'] = $pub_info['res_type'];
+                    $collect_info[$key]['res_nums'] = $pub_info['res_nums'];
+                    if(!empty($pub_info)){
+                        $fields = "resource_id res_id,concat('".$oss_host."',`res_url`) res_url,`res_url` forscreen_url,substring(`res_url`,20) filename,resource_size";
+                        $pubdetails = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['res_id']));
+                        if($v['res_type']==2){
+                            $pubdetails[0]['imgurl'] = $pubdetails['0']['res_url'].'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
+                            $collect_info[$key]['list'] = array($pubdetails[0]);
+                        }else {
+                            $collect_info[$key]['list'] = $pubdetails;
+                        }
+                        $collect_info[$key]['res_num'] = count($pubdetails);
+                    }
+                    break;
+                case 3:
+                case 5:
+                    $collect_info[$key]['res_type'] = $v['type'];
+                    if(empty($v['avatarUrl']) || empty($v['nickName'])){
+                        $collect_info[$key]['nickName'] = '小热点';
+                        $collect_info[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                    }
+                    $info = $m_ads->alias('a')
+                        ->field("a.id,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
+                        ->join('savor_media media on a.media_id=media.id')
+                        ->where(array('a.id'=>$v['res_id']))
+                        ->find();
+                    $collect_info[$key]['media_type'] = $info['media_type'];
+                    if(empty($info['imgurl'])){
+                        if($info['media_type']==1){
+                            $imgurl = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
+                        }else{
+                            $imgurl = $info['res_url'];
+                        }
+                        $info['imgurl'] = $imgurl;
                     }else {
-                        $collect_info[$key]['list'] = $pubdetails;
+                        $info['imgurl']  = $info['imgurl'];
                     }
-                    $collect_info[$key]['res_num'] = count($pubdetails);
-                }
-            }else if($v['type']==3 || $v['type']==5){
-                $collect_info[$key]['res_type'] = $v['type'];
-                if(empty($v['avatarUrl']) || empty($v['nickName'])){
-                    $collect_info[$key]['nickName'] = '小热点';
-                    $collect_info[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
-                }
-                $info = $m_ads->alias('a')
-                ->field("a.id,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
-                ->join('savor_media media on a.media_id=media.id')
-                ->where(array('a.id'=>$v['res_id']))
-                ->find();
-                $collect_info[$key]['media_type'] = $info['media_type'];
-                if(empty($info['imgurl'])){
-                    if($info['media_type']==1){
-                        $imgurl = $info['res_url'] .'?x-oss-process=video/snapshot,t_3000,f_jpg,w_220,m_fast';
-                    }else{
-                        $imgurl = $info['res_url'];
+                    if(empty($info['avatarUrl']) || empty($info['nickName'])){
+                        $info['nickName'] = '小热点';
+                        $info['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
                     }
-                    $info['imgurl'] = $imgurl;
-                }else {
-                    $info['imgurl']  = $info['imgurl'];
-                }
-                if(empty($info['avatarUrl']) || empty($info['nickName'])){
-                    $info['nickName'] = '小热点';
-                    $info['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
-                }
-
-                $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
-                $collect_info[$key]['list'] = $info;
+                    $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
+                    $collect_info[$key]['list'] = $info;
+                    break;
             }
             $collect_info[$key]['create_time'] = date('n月j日',strtotime($v['create_time']));
-    
             //收藏数量
-            $map = array();
-            $map['res_id'] =$v['res_id'];
-            $map['type']   = $v['type'];
-            $map['status'] = 1;
+            $map = array('res_id'=>$v['res_id'],'type'=>$v['type'],'status'=>1);
             $collect_num = $m_collect->countNum($map);
-    
             $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
             $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['res_id']))->find();
             $collect_info[$key]['collect_num'] = $collect_num+$ret['nums'];
+
             //分享个数
             $m_share = new \Common\Model\Smallapp\ShareModel();
-            $map = array();
-            $map['res_id'] =$v['res_id'];
-            $map['type']   = $v['type'];
-            $map['status'] = 1;
+            $map = array('res_id'=>$v['res_id'],'type'=>$v['type'],'status'=>1);
             $share_num = $m_share->countNum($map);
             $collect_info[$key]['share_num'] = $share_num;
-            
-            
+
             //播放次数
-            $map = array();
-            $map['res_id'] = $v['res_id'];
             if($v['type']==5){
                 $play_type = 3;
             }else{
                 $play_type = $v['type'];
             }
-            $map['type'] = $play_type;
+            $map = array('res_id'=>$v['res_id'],'type'=>$play_type);
             $play_info = $m_play_log->getOne('nums',$map); 
             $play_num  = intval($play_info['nums']);
             $collect_info[$key]['play_num'] =$play_num;
             $collect_info[$key]['is_collect'] = 1;
         }
         $data = array();
-        //$data['user_info'] = $user_info;
         $data['list'] = $collect_info;
         $this->to_back($data);
     }
+
     public function index(){
         $openid = $this->params['openid'];
         //获取用户信息
@@ -561,23 +550,14 @@ class UserController extends CommonController{
      */
     public function getMyPublic(){
         $openid = $this->params['openid'];
-        $page   = $this->params['page'] ? intval($this->params['page']) : 1;
-    
-        //获取用户信息
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
-    
-        $page_size = 10;
-        $limit = "limit 0,".$page*$page_size;
+        $page = $this->params['page']?intval($this->params['page']):1;
+        $pagesize = isset($this->params['pagesize'])?$this->params['pagesize']:10;
+
+        $limit = "limit 0,".$page*$pagesize;
         $fields = 'a.forscreen_id,a.res_type,a.status,a.res_nums,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name';
         $all_status = C('PUBLIC_AUDIT_STATUS');
         unset($all_status['0']);
-        $where = array();
-        $where['a.openid']     = $openid;
-        $where['box.flag']   = 0;
-        $where['box.state']  = 1;
-        $where['hotel.flag'] = 0;
-        $where['hotel.state']= 1;
+        $where = array('a.openid'=>$openid,'box.state'=>1,'box.flag'=>0,'hotel.state'=>1,'hotel.flag'=>0);
         $where['a.status']   = array('in',array_keys($all_status));
         $order = "a.create_time desc";
         $m_public = new \Common\Model\Smallapp\PublicModel();
@@ -595,7 +575,6 @@ class UserController extends CommonController{
             $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
             if($v['res_type']==2){
                 $filename = explode('/', $pubdetail_info[0]['forscreen_url']);
-                
                 $pubdetail_info[0]['filename'] = $filename[2];
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[0]['res_id']   = $tmp_arr[0];
@@ -604,7 +583,6 @@ class UserController extends CommonController{
             }else {
                 foreach($pubdetail_info as $kk=>$vv){
                     $filename = explode('/', $vv['forscreen_url']);
-                    
                     $pubdetail_info[$kk]['filename'] = $filename[2];
                     $tmp_arr = explode('.', $filename[2]);
                     $pubdetail_info[$kk]['res_id']   = $tmp_arr[0];
@@ -614,36 +592,23 @@ class UserController extends CommonController{
             $public_list[$key]['pubdetail'] = $pubdetail_info;
             $public_list[$key]['create_time'] = date('n月j日',strtotime($v['create_time']));
             //收藏个数
-            $map = array();
-            $map['res_id'] =$v['forscreen_id'];
-            $map['type']   = 2;
-            $map['status'] = 1;
+            $map = array('res_id'=>$v['forscreen_id'],'type'=>2,'status'=>1);
             $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
             $ret = $m_collect_count->field('nums')->where(array('res_id'=>$v['forscreen_id']))->find();
             $collect_num = $m_collect->countNum($map);
             $public_list[$key]['collect_num'] = $collect_num + $ret['nums'];
             //分享个数
-            $map = array();
-            $map['res_id'] =$v['forscreen_id'];
-            $map['type']   = 2;
-            $map['status'] = 1;
+            $map = array('res_id'=>$v['forscreen_id'],'type'=>2,'status'=>1);
             $share_num = $m_share->countNum($map);
             $public_list[$key]['share_num'] = $share_num;
             
             //播放次数
-            $map = array();
-            $map['res_id'] = $v['forscreen_id'];
-            $map['type']   = 2;
+            $map = array('res_id'=>$v['forscreen_id'],'type'=>2);
             $play_info = $m_play_log->getOne('nums',$map);
             $play_num  = intval($play_info['nums']);
             $public_list[$key]['play_num'] = $play_num;
-            
-            
-            $map = array();
-            $map['openid']=$openid;
-            $map['res_id'] =$v['forscreen_id'];
-            
-            $map['status'] = 1;
+
+            $map = array('openid'=>$openid,'res_id'=>$v['forscreen_id'],'status'=>1);
             $is_collect = $m_collect->countNum($map);
             if(empty($is_collect)){
                 $public_list[$key]['is_collect'] = 0;
@@ -652,6 +617,8 @@ class UserController extends CommonController{
             }
         }
         $data = array();
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
         $data['user_info'] = $user_info;
         $data['list'] = $public_list;
         $this->to_back($data);

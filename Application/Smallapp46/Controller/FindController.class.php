@@ -29,6 +29,10 @@ class FindController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'find_ids'=>1002);
                 break;
+            case 'datalist':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                break;
             case 'recordViewfind':  //记录查看发现
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001,'id'=>1001,'type'=>1001);
@@ -305,6 +309,132 @@ class FindController extends CommonController{
         $limit = "$offset,$pagesize";
         $res_public = $m_public->getList($fields, $where, $order,$limit);
         $res_data = $this->handleFindlist($res_public,$openid);
+        $this->to_back($res_data);
+    }
+
+    public function datalist(){
+        $openid = $this->params['openid'];
+        $page   = $this->params['page'];
+        $pagesize = 10;
+
+        //内容选择 1推荐30 2最近公开20
+        $content_recommend_num = 30;
+        $content_public_num = 20;
+
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $redis = SavorRedis::getInstance();
+        $redis->select(5);
+        $key_findtop = C('SAPP_FIND_TOP');
+        $res_findtop = $redis->get($key_findtop);
+        $find_topids = array();
+        if(!empty($res_findtop)) {
+            $find_topids = json_decode($res_findtop, true);
+        }
+        if($page==1 && !empty($find_topids)){
+            $top_list = array();
+            $where = array('a.id'=>array('in',$find_topids));
+            $where['box.flag'] = 0;
+            $where['box.state'] = 1;
+            $where['hotel.flag'] = 0;
+            $where['hotel.state'] = 1;
+            $where['user.status'] = 1;
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $res_top = $m_public->getList($fields, $where,'a.id desc','');
+            if(!empty($res_top)){
+                $top_list = $this->handleFindlist($res_top,$openid,2);
+            }
+        }
+
+        $find_key = C('SAPP_FIND_CONTENT');
+        $res_cache = $redis->get($find_key);
+        if(!empty($res_cache)){
+            $is_expire = 0;
+            $find_data = json_decode($res_cache,true);
+        }else{
+            $is_expire = 1;
+
+            //推荐内容
+            $where = array('a.status'=>2,'a.is_recommend'=>1);
+            if(!empty($find_topids)){
+                $where['a.id'] = array('not in',$find_topids);
+            }
+            $where['box.state'] = 1;
+            $where['box.flag'] = 0;
+            $where['hotel.state'] = 1;
+            $where['hotel.flag'] = 0;
+            $offset = rand(0,40);
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $res_recommend = $m_public->getList($fields, $where,'id desc',"$offset,$content_recommend_num");
+
+            $recommend_list = array();
+            $recommend_ids = array();
+            foreach ($res_recommend as $v){
+                $recommend_ids[] = $v['id'];
+                $recommend_list[] = $v;
+            }
+
+            //公开内容
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $where = array('a.status'=>2);
+            $not_ids = array_merge($recommend_ids,$find_topids);
+            if(!empty($not_ids)){
+                $where['a.id'] = array('not in',$not_ids);
+            }
+            $where['box.state']  = 1;
+            $where['box.flag']   = 0;
+            $where['hotel.state']= 1;
+            $where['hotel.flag'] = 0;
+            $order = 'a.id desc';
+            $res_public = $m_public->getList($fields, $where, $order, "0,$content_public_num");
+            $public_list = array();
+            foreach ($res_public as $v){
+                $public_list[] = $v;
+            }
+            $all_public = array_merge($recommend_list,$public_list);
+            $find_data = $this->handleFindlist($all_public,$openid);
+            shuffle($find_data);
+            $redis->set($find_key,json_encode($find_data),7200);
+        }
+
+        $res_data = $find_data;
+        $all_res_datanum = count($res_data);
+        $all_page = ceil($all_res_datanum/$pagesize);
+        if($page<=$all_page){
+            $offset = ($page-1)*$pagesize;
+            $res_data = array_slice($res_data,$offset,$pagesize);
+            if($is_expire==0){
+                foreach ($res_data as $k=>$v){
+                    $rets = $m_public->getFindnums($openid,$v['forscreen_id'],2);
+                    $res_data[$k]['is_collect'] = $rets['is_collect'];
+                    $res_data[$k]['collect_num'] = $rets['collect_num'];
+                    $res_data[$k]['share_num']  = $rets['share_num'];
+                }
+            }
+        }else{
+            $nowpage = $page-$all_page;
+            $offset = ($nowpage-1)*$pagesize;
+            $not_ids = $find_topids;
+            foreach ($res_data as $v){
+                $not_ids[]=$v['id'];
+            }
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $where = array('a.status'=>2);
+            if(!empty($not_ids)){
+                $public_ids = array_unique($not_ids);
+                $where['a.id'] = array('not in',$public_ids);
+            }
+            $where['box.state']  = 1;
+            $where['box.flag']   = 0;
+            $where['hotel.state']= 1;
+            $where['hotel.flag'] = 0;
+            $order = 'a.id desc';
+            $limit = "$offset,$pagesize";
+            $res_public = $m_public->getList($fields, $where, $order,$limit);
+            $res_data = $this->handleFindlist($res_public,$openid);
+        }
+        if($page==1 && !empty($top_list)){
+            $res_data = array_merge($top_list,$res_data);
+        }
         $this->to_back($res_data);
     }
 
@@ -715,7 +845,7 @@ class FindController extends CommonController{
                 $pubdetail_info[0]['filename'] = $filename[2];
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[0]['res_id']   = $tmp_arr[0];
-                $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast";
+                $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_5000,f_jpg,w_450,m_fast";
                 $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
             }else {
                 foreach($pubdetail_info as $kk=>$vv){

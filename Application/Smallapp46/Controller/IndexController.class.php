@@ -313,11 +313,12 @@ class IndexController extends CommonController{
                 $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],
                     'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],'wifi_password'=>$box_info['wifi_password'],
                     'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id'],
-                    'is_interact'=>$box_info['is_interact'],'is_4g'=>$box_info['is_4g'],'is_open_simple'=>$box_info['is_open_simple']);
+                    'is_interact'=>$box_info['is_interact'],'is_4g'=>$box_info['is_4g'],'is_open_simple'=>$box_info['is_open_simple'],
+                    'is_5g'=>$res_hotel['is_5g']);
             }
             if(empty($hotel_info['hotel_name']) || empty($hotel_info['room_name'])){
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,d.is_5g,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
             $m_heartlog = new \Common\Model\HeartLogModel();
@@ -337,6 +338,11 @@ class IndexController extends CommonController{
             if($hotel_info['box_type']==7 && $hotel_info['is_open_simple']==1 && $hotel_info['is_4g']==0){
                 $tv_forscreen_type = 2;
             }
+            if($hotel_info['is_5g']){
+                $simple_forscreen_public_videosize = 1024*1024*500;
+            }else{
+                $simple_forscreen_public_videosize = 1024*1024*100;
+            }
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
@@ -354,8 +360,7 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['max_user_forimage_size'] = 1024*1024*2;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
-            $data['simple_forscreen_public_videosize'] = 1024*1024*500;//极简投屏公开资源大小
-
+            $data['simple_forscreen_public_videosize'] = $simple_forscreen_public_videosize;//极简投屏公开资源大小
             $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
             $data['image_quality'] = 10;
@@ -798,11 +803,9 @@ class IndexController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
-        
-        $tmps = [];
+
         $tmps = array('forscreen_id'=>$data['forscreen_id']);
         $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
-        
         if($action==4 || ($action==2 && $resource_type==2)) {
             $history_arr = $data;
             $history_arr['is_speed'] = $is_speed;
@@ -810,16 +813,13 @@ class IndexController extends CommonController{
             $redis->rpush($history_cache_key, json_encode($history_arr));
             
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
-            
         }
-       
         if($action==5 && $forscreen_char =='Happy Birthday'){
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }else if($action==31){
             $tmps = array('forscreen_id'=>$data['forscreen_id'].'_'.$data['resource_id']);
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }
-    
         if($is_share){
             $forscreen_res = json_decode($imgs,true);
             $oss_addr = $forscreen_res[0];

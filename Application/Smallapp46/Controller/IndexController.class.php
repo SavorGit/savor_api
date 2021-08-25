@@ -338,7 +338,7 @@ class IndexController extends CommonController{
             if($hotel_info['box_type']==7 && $hotel_info['is_open_simple']==1 && $hotel_info['is_4g']==0){
                 $tv_forscreen_type = 2;
             }
-            if($hotel_info['is_5g']){
+            if($hotel_info['is_5g']==1){
                 $simple_forscreen_public_videosize = 1024*1024*500;
             }else{
                 $simple_forscreen_public_videosize = 1024*1024*100;

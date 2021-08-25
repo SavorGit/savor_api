@@ -251,7 +251,8 @@ class FileforscreenController extends CommonController{
                 $file_size = formatBytes($v['resource_size']);
                 $ext_img = $img_host.$file_ext_images[strtolower($file_type)];
                 $info = array('forscreen_id'=>$v['id'],'file_type'=>strtoupper($file_type),'resource_name'=>$v['resource_name'],
-                    'file_name'=>$file_info['basename'],'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img,'small_app_id'=>$v['small_app_id']);
+                    'file_name'=>$file_info['basename'],'page_num'=>$page_num,'file_size'=>$file_size,'ext_img'=>$ext_img,
+                    'small_app_id'=>$v['small_app_id'],'ctype'=>3);
                 $datalist[] = $info;
             }
         }

@@ -158,7 +158,15 @@ class ForscreenHistoryController extends CommonController{
                     $data[$forscreen_id]['nickName'] = $nickName;
                     $data[$forscreen_id]['hotel_name'] = $hotel_name;
                     $data[$forscreen_id]['ctype'] = 1;
-                    $data[$forscreen_id]['whtype'] = 0;
+                    $whtype = 0;//0默认 1横版 2竖版
+                    if(!empty($v['width']) && !empty($v['height'])){
+                        if($v['width']>$v['height']){
+                            $whtype = 1;
+                        }else{
+                            $whtype = 2;
+                        }
+                    }
+                    $data[$forscreen_id]['whtype'] = $whtype;
                     $data[$forscreen_id]['res_type'] = 2;
                     $data[$forscreen_id]['list'][] = $list_info;
                 }elseif($v['action']==4){
@@ -240,11 +248,7 @@ class ForscreenHistoryController extends CommonController{
         $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1,'small_app_id'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        if(empty($pagesize)){
-            $pagesize=100;
-        }
-        $limit = "0,$pagesize";
-        $res_file = $m_forscreen->getWhere($fields,$where,$order,$limit,'md5_file');
+        $res_file = $m_forscreen->getForscreenFileList($fields,$where,$order);
         $file_data = array();
         if(!empty($res_file)){
             $img_host = 'https://'.C('OSS_HOST').'/Html5/images/mini-push/pages/forscreen/forfile/';
@@ -279,6 +283,9 @@ class ForscreenHistoryController extends CommonController{
         sortArrByOneField($all_data, 'create_time',true);
         $offset = ($page-1)*$pagesize;
         $data = array_slice($all_data, $offset,$pagesize);
+        foreach ($data as $k=>$v){
+            $data[$k]['create_time'] = viewTimes($v['create_time']);
+        }
         $this->to_back($data);
     }
 

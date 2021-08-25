@@ -59,6 +59,7 @@ class ForscreenLogController extends CommonController{
         $resource_name = $this->params['resource_name'] ? $this->params['resource_name'] :'';
         $md5_file = $this->params['md5'] ? $this->params['md5'] :'';
         $file_imgnum = $this->params['file_imgnum']?$this->params['file_imgnum']:0;
+        $forscreen_nums = $this->params['forscreen_nums']?$this->params['forscreen_nums']:0;
         $save_type = $this->params['save_type']?$this->params['save_type']:0;
 
         $data = array();
@@ -99,10 +100,60 @@ class ForscreenLogController extends CommonController{
         if(!empty($serial_number)) $data['serial_number'] = $serial_number;
         $redis = SavorRedis::getInstance();
         $redis->select(5);
-        $cache_key = C('SAPP_SCRREN').":".$box_mac;
-        $redis->rpush($cache_key, json_encode($data));
-        
-        
+
+        if($is_share){
+            $cache_public_data_key = C('SAPP_SCRREN_PUBLICDATA').$openid.'--'.$forscreen_id;
+            $res_pcache = $redis->get($cache_public_data_key);
+            if(empty($res_pcache)){
+                $redis->set($cache_public_data_key,date('Y-m-d H:i:s'),6000);
+
+                $public_data = array();
+                $public_data['forscreen_id'] = $forscreen_id;
+                $public_data['openid'] = $openid;
+                $public_data['box_mac']= $box_mac;
+                $public_data['public_text'] = $data['forscreen_char'];
+                $res_nums = 0;
+                if($action==4){
+                    $public_data['res_type'] = 1;
+                    if($forscreen_nums){
+                        $res_nums = $forscreen_nums;
+                    }
+                }else if($action==2 && $resource_type==2){
+                    $public_data['res_type'] = 2;
+                    $public_data['duration'] = $duration;
+                    $res_nums = 1;
+                }
+                if($res_nums){
+                    $public_data['res_nums'] = $res_nums;
+                }
+
+                $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+                $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+                if(empty($res_invalid)){
+                    $sms_config = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $template_code = $sms_config['public_audit_templateid'];
+                    $send_mobiles = C('PUBLIC_AUDIT_MOBILE');
+                    if(!empty($send_mobiles)){
+                        foreach ($send_mobiles as $v){
+                            $alisms::sendSms($v,'',$template_code);
+                        }
+                    }
+                    $public_data['status'] =1;
+                }else{
+                    $public_data['status'] =0;
+                }
+                $m_public = new \Common\Model\Smallapp\PublicModel();
+                $m_public->add($public_data);
+            }
+            $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,
+                'duration'=>$duration,'resource_size'=>$resource_size);
+            $m_publicdetail = new \Common\Model\Smallapp\PubdetailModel();
+            $m_publicdetail->add($pubdetail_data);
+        }else{
+            $cache_key = C('SAPP_SCRREN').":".$box_mac;
+            $redis->rpush($cache_key, json_encode($data));
+        }
         //模拟机顶盒上报下载数据  防止小程序提示打断
         $map = array();
         $map['forscreen_id'] = $forscreen_id;

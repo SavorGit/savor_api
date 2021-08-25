@@ -845,7 +845,7 @@ class FindController extends CommonController{
                 $pubdetail_info[0]['filename'] = $filename[2];
                 $tmp_arr = explode('.', $filename[2]);
                 $pubdetail_info[0]['res_id']   = $tmp_arr[0];
-                $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_5000,f_jpg,w_450,m_fast";
+                $pubdetail_info[0]['img_url'] = $pubdetail_info[0]['res_url']."?x-oss-process=video/snapshot,t_5000,f_jpg,ar_auto";
                 $pubdetail_info[0]['duration'] = intval($pubdetail_info[0]['duration']);
             }else {
                 foreach($pubdetail_info as $kk=>$vv){

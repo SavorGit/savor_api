@@ -810,6 +810,30 @@ class IndexController extends CommonController{
             $history_arr = $data;
             $history_arr['is_speed'] = $is_speed;
             $history_arr['music_oss_addr'] = $music_oss_addr;
+            if($action==2 && $resource_type==2){
+                $forscreen_res = json_decode($imgs,true);
+                $file_path = $forscreen_res[0];
+                $host_name = C('OSS_HOST');
+                $url = "http://$host_name/$file_path?x-oss-process=video/snapshot,t_1000,f_jpg,m_fast,ar_auto";
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $url);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                $info = curl_exec($curl);
+                curl_close($curl);
+                $file_info = pathinfo($file_path);
+                $newFileName = SAVOR_M_TP_PATH.'/Public/content/img/'.$file_info['filename'].'.jpg';
+                $fp2 = @fopen($newFileName, "a");
+                fwrite($fp2, $info);
+                fclose($fp2);
+                $res_imgsize = getimagesize($newFileName);
+                $width = $res_imgsize[0];
+                $height = $res_imgsize[1];
+                $history_arr['width'] = $width;
+                $history_arr['height'] = $height;
+            }
             $redis->rpush($history_cache_key, json_encode($history_arr));
             
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));

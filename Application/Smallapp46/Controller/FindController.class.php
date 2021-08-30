@@ -413,7 +413,7 @@ class FindController extends CommonController{
             }
             $order = 'a.id desc';
             $limit = "$offset,$pagesize";
-            $res_public = $m_public->getList($fields, $where, $order,$limit);
+            $res_public = $m_public->getPublicList($fields, $where, $order,$limit);
             $res_data = $this->handleFindlist($res_public,$openid);
         }
         if($page==1 && !empty($top_list)){

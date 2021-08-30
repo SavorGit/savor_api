@@ -21,6 +21,7 @@ class ForscreenLogController extends CommonController{
                    'small_app_id'=>1001,'create_time'=>1000,
                    'res_sup_time'=>1002,'res_eup_time'=>1002,
                    'md5'=>1002,'file_imgnum'=>1002,'save_type'=>1002,
+                   'forscreen_nums'=>1002
                );
                break;
             case 'updateForscreen':
@@ -118,7 +119,7 @@ class ForscreenLogController extends CommonController{
                     if($forscreen_nums){
                         $res_nums = $forscreen_nums;
                     }
-                }else if($action==2 && $resource_type==2){
+                }else if($resource_type==2){
                     $public_data['res_type'] = 2;
                     $public_data['duration'] = $duration;
                     $res_nums = 1;
@@ -150,10 +151,9 @@ class ForscreenLogController extends CommonController{
                 'duration'=>$duration,'resource_size'=>$resource_size);
             $m_publicdetail = new \Common\Model\Smallapp\PubdetailModel();
             $m_publicdetail->add($pubdetail_data);
-        }else{
-            $cache_key = C('SAPP_SCRREN').":".$box_mac;
-            $redis->rpush($cache_key, json_encode($data));
         }
+        $cache_key = C('SAPP_SCRREN').":".$box_mac;
+        $redis->rpush($cache_key, json_encode($data));
         //模拟机顶盒上报下载数据  防止小程序提示打断
         $map = array();
         $map['forscreen_id'] = $forscreen_id;

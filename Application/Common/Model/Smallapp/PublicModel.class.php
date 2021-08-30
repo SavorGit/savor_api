@@ -23,6 +23,17 @@ class PublicModel extends Model
 	    return $data;
 	}
 
+    public function getPublicList($fields,$where,$order,$limit){
+        $data = $this->alias('a')
+            ->join('savor_smallapp_user user on a.openid=user.openid','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($limit)
+            ->select();
+        return $data;
+    }
+
     public function getPublicinfo($fields,$where){
         $data = $this->alias('a')
             ->join('savor_smallapp_user user on a.openid=user.openid','left')

@@ -333,13 +333,9 @@ class FindController extends CommonController{
         if($page==1 && !empty($find_topids)){
             $top_list = array();
             $where = array('a.id'=>array('in',$find_topids));
-            $where['box.flag'] = 0;
-            $where['box.state'] = 1;
-            $where['hotel.flag'] = 0;
-            $where['hotel.state'] = 1;
             $where['user.status'] = 1;
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-            $res_top = $m_public->getList($fields, $where,'a.id desc','');
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,user.avatarUrl,user.nickName';
+            $res_top = $m_public->getPublicList($fields, $where,'a.id desc','');
             if(!empty($res_top)){
                 $top_list = $this->handleFindlist($res_top,$openid,2);
             }
@@ -358,13 +354,9 @@ class FindController extends CommonController{
             if(!empty($find_topids)){
                 $where['a.id'] = array('not in',$find_topids);
             }
-            $where['box.state'] = 1;
-            $where['box.flag'] = 0;
-            $where['hotel.state'] = 1;
-            $where['hotel.flag'] = 0;
             $offset = rand(0,40);
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
-            $res_recommend = $m_public->getList($fields, $where,'id desc',"$offset,$content_recommend_num");
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,user.avatarUrl,user.nickName';
+            $res_recommend = $m_public->getPublicList($fields, $where,'id desc',"$offset,$content_recommend_num");
 
             $recommend_list = array();
             $recommend_ids = array();
@@ -374,18 +366,14 @@ class FindController extends CommonController{
             }
 
             //公开内容
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
             $not_ids = array_merge($recommend_ids,$find_topids);
             if(!empty($not_ids)){
                 $where['a.id'] = array('not in',$not_ids);
             }
-            $where['box.state']  = 1;
-            $where['box.flag']   = 0;
-            $where['hotel.state']= 1;
-            $where['hotel.flag'] = 0;
             $order = 'a.id desc';
-            $res_public = $m_public->getList($fields, $where, $order, "0,$content_public_num");
+            $res_public = $m_public->getPublicList($fields, $where, $order, "0,$content_public_num");
             $public_list = array();
             foreach ($res_public as $v){
                 $public_list[] = $v;
@@ -417,16 +405,12 @@ class FindController extends CommonController{
             foreach ($res_data as $v){
                 $not_ids[]=$v['id'];
             }
-            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,hotel.name hotel_name,user.avatarUrl,user.nickName';
+            $fields= 'a.id,a.forscreen_id,a.res_type,a.res_nums,a.public_text as content,a.is_pub_hotelinfo,a.create_time,user.avatarUrl,user.nickName';
             $where = array('a.status'=>2);
             if(!empty($not_ids)){
                 $public_ids = array_unique($not_ids);
                 $where['a.id'] = array('not in',$public_ids);
             }
-            $where['box.state']  = 1;
-            $where['box.flag']   = 0;
-            $where['hotel.state']= 1;
-            $where['hotel.flag'] = 0;
             $order = 'a.id desc';
             $limit = "$offset,$pagesize";
             $res_public = $m_public->getList($fields, $where, $order,$limit);
@@ -434,6 +418,16 @@ class FindController extends CommonController{
         }
         if($page==1 && !empty($top_list)){
             $res_data = array_merge($top_list,$res_data);
+        }
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        foreach ($res_data as $k=>$v){
+            $fwhere = array('forscreen_id'=>$v['forscreen_id']);
+            $res_forscreen = $m_forscreen->getWhere('hotel_name',$fwhere,'id desc','0,1','');
+            $hotel_name = '';
+            if(!empty($res_forscreen)){
+                $hotel_name = $res_forscreen[0]['hotel_name'];
+            }
+            $res_data[$k]['hotel_name'] = $hotel_name;
         }
         $this->to_back($res_data);
     }

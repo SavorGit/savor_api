@@ -51,6 +51,7 @@ class ReportController extends CommonController{
         //20180531新增
         $data['net_speed']  = I('get.net_speed','','trim');   //机顶盒下载速度
         $data['apk_time'] = I('get.apk_time','','trim');
+        $is_normaluse_wechat = I('get.is_normaluse_wechat',1,'intval');
 
         $all_params = array_merge($_GET,$_POST);
         $log_content = date("Y-m-d H:i:s").'|box_mac|'.$all_params['mac'].'|serial_no|'.$all_params['serial_no'].'|params|'.json_encode($all_params)."\n";
@@ -123,6 +124,24 @@ class ReportController extends CommonController{
                 $p_data[]=$params_data;
             }
             $redis->set($params_cache_key,json_encode($p_data),86400*5);
+        }
+
+        if($info['is_4g']==1){
+            $cache_wechat_key = 'box_use_wechat';
+            $res_wdata = $redis->get($cache_wechat_key);
+            if(!empty($res_wdata)){
+                $wdata = json_decode($res_wdata,true);
+            }else{
+                $wdata = array();
+            }
+            if($is_normaluse_wechat==0){
+                $wdata[$data['mac']] = array('hotel_id'=>$data['hotelId'],'apk_version'=>$data['apk'],'add_time'=>date('Y-m-d H:i:s'));
+            }else{
+                if(isset($wdata[$data['mac']])){
+                    unset($wdata[$data['mac']]);
+                }
+            }
+            $redis->set($cache_wechat_key,json_encode($wdata));
         }
 
         $this->to_back($ret);
@@ -368,7 +387,7 @@ class ReportController extends CommonController{
                                 $map['apk_time']  = $ret_arr['apk_time'];
                             }
                             $m_heart_log->where(array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid))->save($map);
-                                    
+
                         }
                     }
                 }//酒楼判断存在完毕

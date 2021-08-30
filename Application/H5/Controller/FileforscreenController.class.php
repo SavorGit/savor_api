@@ -86,7 +86,7 @@ class FileforscreenController extends Controller {
         }
 
         $ip = get_client_ip();
-        $data = array('openid'=>$openid,'action_type'=>7,'type'=>1,'ip'=>$ip);
+        $data = array('openid'=>$openid,'action_type'=>1,'type'=>7,'ip'=>$ip);
         $m_datalog = new \Common\Model\Smallapp\DatalogModel();
         $m_datalog->add($data);
 

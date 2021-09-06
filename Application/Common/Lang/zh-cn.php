@@ -417,6 +417,10 @@ return array(
     'smallapp_lottery_prize_not_exist'=>'抽奖活动奖品不存在，请重新进行抽奖',
     'smallapp_lottery_prize_task_not_finish'=>'请先完成抽奖活动奖品任务',
     'smallappsale_initiatelottery_time_error'=>'请选择正确的发起时间',
+    'box_not_5g_network'=>'当前酒楼非5G网络环境',
+    'box_download_in_progress'=>'当前盒子正在下载中',
+    'box_download_finish'=>'当前盒子已下载完成',
+    'box_otherdownload_wait'=>'当前无空闲局域网机顶盒,请等待',
 
 
 );

@@ -36,7 +36,7 @@ class ShareController extends CommonController{
         $m_share = new \Common\Model\Smallapp\ShareModel();
         $m_share->addInfo($data,1);
 
-        $nums = $m_share->countNum(array('res_id'=>$res_id,'status'=>1));
+        $nums = $m_share->countNum(array('res_id'=>$res_id,'type'=>$type,'status'=>1));
         $this->to_back(array('share_nums'=>$nums));
     }
     public function showVideo(){

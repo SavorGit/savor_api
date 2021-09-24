@@ -205,7 +205,7 @@ class ForscreenController extends CommonController{
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $id = intval($this->params['id']);
-        $type = intval($this->params['type']);
+        $type = intval($this->params['type']);//类型1节目,2内容
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
@@ -213,27 +213,45 @@ class ForscreenController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-        if($type==1){
-            $m_box = new \Common\Model\BoxModel();
-            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-            $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
-            $box_info = $m_box->getBoxByCondition($fields,$where);
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+        $box_info = $m_box->getBoxByCondition($fields,$where);
+        $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
 
-            $ads_id = $id;
-            $area_id = $box_info[0]['area_id'];
-            $add_date = date('Y-m-d');
-            $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
-            $res_record = $m_datadisplay->getInfo(array('ads_id'=>$ads_id,'type'=>3,'area_id'=>$area_id,'add_date'=>$add_date));
-            if(!empty($res_record)){
-                $m_datadisplay->where(array('id'=>$res_record['id']))->setInc('display_num',1);
-            }else{
-                $field = 'a.media_id,b.name,b.oss_addr';
-                $m_ads = new \Common\Model\AdsModel();
-                $res_adsinfo = $m_ads->getAdsList($field,array('a.id'=>$ads_id),'b.id desc','0,1');
-                $data = array('ads_id'=>$ads_id,'media_id'=>$res_adsinfo[0]['media_id'],'resource_name'=>$res_adsinfo[0]['name'],'oss_addr'=>$res_adsinfo[0]['oss_addr'],
-                    'area_id'=>$area_id,'display_num'=>1,'type'=>3,'add_date'=>$add_date);
-                $m_datadisplay->add($data);
-            }
+        $area_id = $box_info[0]['area_id'];
+        $add_date = date('Y-m-d');
+        switch ($type){
+            case 1:
+                $ads_id = $id;
+                $res_record = $m_datadisplay->getInfo(array('ads_id'=>$ads_id,'type'=>3,'area_id'=>$area_id,'add_date'=>$add_date));
+                if(!empty($res_record)){
+                    $m_datadisplay->where(array('id'=>$res_record['id']))->setInc('display_num',1);
+                }else{
+                    $field = 'a.media_id,b.name,b.oss_addr';
+                    $m_ads = new \Common\Model\AdsModel();
+                    $res_adsinfo = $m_ads->getAdsList($field,array('a.id'=>$ads_id),'b.id desc','0,1');
+                    $data = array('ads_id'=>$ads_id,'media_id'=>$res_adsinfo[0]['media_id'],'resource_name'=>$res_adsinfo[0]['name'],'oss_addr'=>$res_adsinfo[0]['oss_addr'],
+                        'area_id'=>$area_id,'display_num'=>1,'type'=>3,'add_date'=>$add_date);
+                    $m_datadisplay->add($data);
+                }
+                break;
+            case 2:
+                $forscreen_id = $id;
+                $res_record = $m_datadisplay->getInfo(array('forscreen_id'=>$forscreen_id,'area_id'=>$area_id,'add_date'=>$add_date));
+                if(!empty($res_record)){
+                    $m_datadisplay->where(array('id'=>$res_record['id']))->setInc('display_num',1);
+                }else{
+                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $fwhere = array('openid'=>$openid,'forscreen_id'=>$forscreen_id);
+                    $res_info = $m_forscreen->getWhere('*',$fwhere,'id asc','0,1','');
+                    $imgs = json_decode($res_info[0]['imgs'],true);
+                    $oss_addr = $imgs[0];
+                    $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$res_info[0]['resource_id'],'area_id'=>$area_id,
+                        'oss_addr'=>$oss_addr,'display_num'=>1,'type'=>2,'add_date'=>$add_date);
+                    $this->add($data);
+                }
+                break;
         }
         $this->to_back(array());
     }
@@ -251,7 +269,7 @@ class ForscreenController extends CommonController{
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
         $fields = 'id,forscreen_music_name as name,media_id,color,small_wordsize,type';
         $where = array('status'=>1,'type'=>3,'music_type'=>array('in',array(2,3)));
-        $res_resource = $m_welcomeresource->getDataList($fields,$where,'sort asc');
+        $res_resource = $m_welcomeresource->getDataList($fields,$where,'sort desc');
         $music = array();
         if(!empty($res_resource)){
             $m_media = new \Common\Model\MediaModel();

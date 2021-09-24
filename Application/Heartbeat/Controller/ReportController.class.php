@@ -30,9 +30,6 @@ class ReportController extends CommonController{
     }
     
     public function index(){
-        
-        //https://mb.rerdian.com/survival/api/2/survival
-        //?hotelId=10000000&period=454&mac=111&demand=555&apk=666&war=888&logo=ppp&ip=89.3143.1
         $data = array();
         $data['clientid'] = I('get.clientid','0','intval');     //上报客户端类型 1:小平台 2:机顶盒
         $data['hotelId']  = I('get.hotelId','0','intval');
@@ -51,12 +48,17 @@ class ReportController extends CommonController{
         $data['adv_period'] = I('get.adv_period','','trim');  //当前宣传片期号
         $data['pro_download_period'] = I('get.pro_download_period','','trim'); //下载节目期号
         $data['ads_download_period'] = I('get.ads_download_period','','trim');  //下载广告期号
-        
         //20180531新增
         $data['net_speed']  = I('get.net_speed','','trim');   //机顶盒下载速度
-
         $data['apk_time'] = I('get.apk_time','','trim');
-                
+        $is_normaluse_wechat = I('get.is_normaluse_wechat',1,'intval');
+
+        $all_params = array_merge($_GET,$_POST);
+        $log_content = date("Y-m-d H:i:s").'|box_mac|'.$all_params['mac'].'|serial_no|'.$all_params['serial_no'].'|params|'.json_encode($all_params)."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'heartlog_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+
         if(empty($data['mac'])){
             $this->to_back(10004);
         }
@@ -107,6 +109,41 @@ class ReportController extends CommonController{
         $info = $m_box->field('is_4g')->where(array('state'=>1,'flag'=>0,'mac'=>$data['mac']))->find();
         
         $ret['is_4g'] = intval($info['is_4g']);
+
+        $redis = SavorRedis::getInstance();
+        $redis->select(20);
+        $params_cache_key = $all_params['mac'].':'.date('Ymd');
+        if(!empty($all_params['serial_no'])){
+            $params_data = array('serial_no'=>$all_params['serial_no'],'time'=>date("Y-m-d H:i:s"),'apk'=>$all_params['apk']);
+            $res_credis = $redis->get($params_cache_key);
+            if(!empty($res_credis)){
+                $p_data = json_decode($res_credis,true);
+                $p_data[]=$params_data;
+            }else{
+                $p_data = array();
+                $p_data[]=$params_data;
+            }
+            $redis->set($params_cache_key,json_encode($p_data),86400*5);
+        }
+
+        if($info['is_4g']==1){
+            $cache_wechat_key = 'box_use_wechat';
+            $res_wdata = $redis->get($cache_wechat_key);
+            if(!empty($res_wdata)){
+                $wdata = json_decode($res_wdata,true);
+            }else{
+                $wdata = array();
+            }
+            if($is_normaluse_wechat==0){
+                $wdata[$data['mac']] = array('hotel_id'=>$data['hotelId'],'apk_version'=>$data['apk'],'add_time'=>date('Y-m-d H:i:s'));
+            }else{
+                if(isset($wdata[$data['mac']])){
+                    unset($wdata[$data['mac']]);
+                }
+            }
+            $redis->set($cache_wechat_key,json_encode($wdata));
+        }
+
         $this->to_back($ret);
     }
     /**
@@ -350,7 +387,7 @@ class ReportController extends CommonController{
                                 $map['apk_time']  = $ret_arr['apk_time'];
                             }
                             $m_heart_log->where(array('hotel_id'=>$hotelInfo['hotel_id'],'box_id'=>$hotelInfo['box_id'],'type'=>$clientid))->save($map);
-                                    
+
                         }
                     }
                 }//酒楼判断存在完毕

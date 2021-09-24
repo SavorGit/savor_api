@@ -100,7 +100,7 @@ class AdspositionController extends CommonController{
                                     $result[$k][$kv]['filename'] = $oss_path_info['basename'];
                                     $result[$k][$kv]['forscreen_url'] = $oss_path;
                                     $result[$k][$kv]['resource_size'] = $media_info['oss_filesize'];
-                                    $result[$k][$kv]['qrcode_url'] = $host_name."/smallsale18/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
+                                    $result[$k][$kv]['qrcode_url'] = $host_name."/smallsale21/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
                                 }
                             }
                         }

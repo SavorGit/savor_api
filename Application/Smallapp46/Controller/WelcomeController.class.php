@@ -35,7 +35,7 @@ class WelcomeController extends CommonController{
 
     public function config(){
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
-        $fields = 'id,name,media_id,color,small_wordsize,type';
+        $fields = 'id,name,media_id,color,small_wordsize,type,music_type';
         $where = array('status'=>1);
         $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
         $wordsize = $color = $music = $font = array();
@@ -50,9 +50,11 @@ class WelcomeController extends CommonController{
                         $color[]=array('id'=>$v['id'],'color'=>$v['color']);
                         break;
                     case 3:
-                        $res_media = $m_media->getMediaInfoById($v['media_id']);
-                        $oss_addr = $res_media['oss_addr'];
-                        $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
+                        if(in_array($v['music_type'],array(1,3))){
+                            $res_media = $m_media->getMediaInfoById($v['media_id']);
+                            $oss_addr = $res_media['oss_addr'];
+                            $music[]=array('id'=>$v['id'],'name'=>$v['name'],'oss_addr'=>$oss_addr,'oss_path'=>$res_media['oss_path']);
+                        }
                         break;
                     case 5:
                         $res_media = $m_media->getMediaInfoById($v['media_id'],'https');

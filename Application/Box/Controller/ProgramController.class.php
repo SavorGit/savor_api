@@ -271,7 +271,6 @@ class ProgramController extends CommonController{
         }
         $hotel_id = $box_info[0]['hotel_id'];
         $box_id = $box_info[0]['box_id'];
-
         $m_programmenu = new \Common\Model\ProgramMenuHotelModel();
         $res_menu = $m_programmenu->getLatestMenuid($hotel_id);
         $menu_id = $res_menu['menu_id'];
@@ -384,7 +383,7 @@ class ProgramController extends CommonController{
         $this->to_back($res);
     }
 
-    public function getActivitygoodsProgramList(){
+    public function getActivitygoodsProgramList(){//已废弃
         $box_mac = $this->params['box_mac'];
         $m_box = new \Common\Model\BoxModel();
         $map = array();
@@ -495,7 +494,7 @@ class ProgramController extends CommonController{
         $this->to_back($res);
     }
 
-    public function getOptimizeProgramList(){
+    public function getOptimizeProgramList(){//已废弃
         $box_mac = $this->params['box_mac'];
 
         $redis = \Common\Lib\SavorRedis::getInstance();
@@ -593,7 +592,7 @@ class ProgramController extends CommonController{
     }
 
 
-    public function getSelectcontentProgramList(){
+    public function getSelectcontentProgramList(){//废弃
         $box_mac = $this->params['box_mac'];
 
         $m_box = new \Common\Model\BoxModel();

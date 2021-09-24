@@ -43,10 +43,6 @@ class IndexController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('content'=>1001);
                 break;
-            case 'tzyt':
-                $this->is_verify = 1;
-                $this->valid_fields = array('content'=>1001);
-                break;
             case 'recodeQrcodeLog':
                 $this->is_verify= 1;
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'data_id'=>1002,'box_id'=>1002,'box_mac'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
@@ -267,17 +263,7 @@ class IndexController extends CommonController{
         $content = array('content'=>$res);
         $this->to_back($content);
     }
-    public function tzyt(){
-        $content = $this->params['content'];
-        $hash_ids_key = C('HASH_IDS_KEY');
-        $hashids = new \Common\Lib\Hashids($hash_ids_key);
-        $decode_info = $hashids->decode($content);
-        if(empty($decode_info)){
-            $this->to_back(90101);
-        }
-        $cache_key = C('SAPP_QRCODE').$decode_info[0];
-        echo $cache_key;exit;
-    }
+
     public function isHaveCallBox(){
         $openid = $this->params['openid'];
         $pop_eval = $this->params['pop_eval'];
@@ -327,11 +313,12 @@ class IndexController extends CommonController{
                 $hotel_info = array('box_id'=>$forscreen_info['box_id'],'box_type'=>$box_info['box_type'],'room_name'=>$room_info['name'],
                     'hotel_name'=>$res_hotel['name'],'wifi_name'=>$box_info['wifi_name'],'wifi_password'=>$box_info['wifi_password'],
                     'wifi_mac'=>$box_info['wifi_mac'],'hotel_id'=>$room_info['hotel_id'],'room_id'=>$box_info['room_id'],
-                    'is_interact'=>$box_info['is_interact'],'is_4g'=>$box_info['is_4g'],'is_open_simple'=>$box_info['is_open_simple']);
+                    'is_interact'=>$box_info['is_interact'],'is_4g'=>$box_info['is_4g'],'is_open_simple'=>$box_info['is_open_simple'],
+                    'is_5g'=>$res_hotel['is_5g']);
             }
             if(empty($hotel_info['hotel_name']) || empty($hotel_info['room_name'])){
                 $map = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
+                $rets = $m_box->getBoxInfo('d.id hotel_id,c.id room_id,a.id box_id,a.box_type,a.is_interact,a.is_4g,a.is_open_simple,c.name room_name,d.name hotel_name,d.is_5g,a.wifi_name,a.wifi_password,a.wifi_mac',$map);
                 $hotel_info = $rets[0];
             }
             $m_heartlog = new \Common\Model\HeartLogModel();
@@ -351,6 +338,11 @@ class IndexController extends CommonController{
             if($hotel_info['box_type']==7 && $hotel_info['is_open_simple']==1 && $hotel_info['is_4g']==0){
                 $tv_forscreen_type = 2;
             }
+            if($hotel_info['is_5g']==1){
+                $simple_forscreen_public_videosize = 1024*1024*500;
+            }else{
+                $simple_forscreen_public_videosize = 1024*1024*100;
+            }
             $data['box_id'] = $hotel_info['box_id'];
             $data['is_compress'] = $is_compress;
             $data['hotel_name'] = $hotel_info['hotel_name'];
@@ -368,7 +360,8 @@ class IndexController extends CommonController{
             $data['max_user_forvideo_size'] = 1024*1024*5;
             $data['max_user_forimage_size'] = 1024*1024*2;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
-            $data['wifi_timeout_time'] = 20000;   //链接wifi超时时间
+            $data['simple_forscreen_public_videosize'] = $simple_forscreen_public_videosize;//极简投屏公开资源大小
+            $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
             $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
             $data['image_quality'] = 10;
             $data['image_compress'] = 1024*1024*50;
@@ -730,6 +723,7 @@ class IndexController extends CommonController{
         $data['is_open_simplehistory'] = $is_open_simplehistory;
         $data['redpacket_content'] = '即刻分享视频照片，一键投屏，让饭局分享爽不停';
         $data['file_play_times'] = C('SAPP_FILE_FORSCREEN_PLAY_TIMES');
+        $data['defaultpage_showtime'] = C('DEFAULT_PAGE_SHOW_TIME');
         $this->to_back($data);
     }
 
@@ -809,28 +803,47 @@ class IndexController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select(5);
         $history_cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
-        
-        $tmps = [];
+
         $tmps = array('forscreen_id'=>$data['forscreen_id']);
         $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
-        
         if($action==4 || ($action==2 && $resource_type==2)) {
             $history_arr = $data;
             $history_arr['is_speed'] = $is_speed;
             $history_arr['music_oss_addr'] = $music_oss_addr;
+            if($action==2 && $resource_type==2){
+                $forscreen_res = json_decode($imgs,true);
+                $file_path = $forscreen_res[0];
+                $host_name = C('OSS_HOST');
+                $url = "http://$host_name/$file_path?x-oss-process=video/snapshot,t_1000,f_jpg,m_fast,ar_auto";
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $url);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                $info = curl_exec($curl);
+                curl_close($curl);
+                $file_info = pathinfo($file_path);
+                $newFileName = SAVOR_M_TP_PATH.'/Public/content/img/'.$file_info['filename'].'.jpg';
+                $fp2 = @fopen($newFileName, "a");
+                fwrite($fp2, $info);
+                fclose($fp2);
+                $res_imgsize = getimagesize($newFileName);
+                $width = $res_imgsize[0];
+                $height = $res_imgsize[1];
+                $history_arr['width'] = $width;
+                $history_arr['height'] = $height;
+            }
             $redis->rpush($history_cache_key, json_encode($history_arr));
             
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
-            
         }
-       
         if($action==5 && $forscreen_char =='Happy Birthday'){
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }else if($action==31){
             $tmps = array('forscreen_id'=>$data['forscreen_id'].'_'.$data['resource_id']);
             $redis->rpush($forscreen_nums_cache_key, json_encode($tmps));
         }
-    
         if($is_share){
             $forscreen_res = json_decode($imgs,true);
             $oss_addr = $forscreen_res[0];
@@ -892,13 +905,16 @@ class IndexController extends CommonController{
             $data['hotel_box_type'] = $box_info['hotel_box_type'];
             $data['hotel_is_4g']= $box_info['hotel_is_4g'];
             $data['box_name']   = $box_info['box_name'];
-
             $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
             $m_forscreen->add($data);
-    
-            $m_public = new \Common\Model\Smallapp\PublicModel();
-            $res_public = $m_public->getOne('id',array('forscreen_id'=>$forscreen_id,'openid'=>$openid),'id desc');
-            if(empty($res_public)){
+
+            $redis = SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_public_data_key = C('SAPP_SCRREN_PUBLICDATA').$openid.'--'.$forscreen_id;
+            $res_pcache = $redis->get($cache_public_data_key);
+            if(empty($res_pcache)){
+                $redis->set($cache_public_data_key,date('Y-m-d H:i:s'),600);
+
                 $public_data = array();
                 $public_data['forscreen_id'] = $forscreen_id;
                 $public_data['openid'] = $openid;
@@ -932,7 +948,7 @@ class IndexController extends CommonController{
                 }else{
                     $public_data['status'] =0;
                 }
-
+                $m_public = new \Common\Model\Smallapp\PublicModel();
                 $m_public->add($public_data);
             }
             $pubdetail_data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$resource_id,

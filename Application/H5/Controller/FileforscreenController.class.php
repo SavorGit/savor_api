@@ -16,10 +16,16 @@ class FileforscreenController extends Controller {
         }
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $fields = 'id,imgs,resource_name,resource_size,md5_file';
-        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1);
+        $where = array('openid'=>$openid,'action'=>30,'save_type'=>2,'file_conversion_status'=>1,'del_status'=>1);
         $where['md5_file'] = array('neq','');
         $order = 'id desc';
-        $res_latest = $m_forscreen->getWhere($fields,$where,$order,4,'md5_file');
+        if($source=='forscreen'){
+            $limit = '0,100';
+        }else{
+            $limit = '0,4';
+        }
+
+        $res_latest = $m_forscreen->getWhere($fields,$where,$order,$limit,'md5_file');
         $latest_screen = array();
         $frequent_screen = array();
         if(!empty($res_latest)){
@@ -73,15 +79,22 @@ class FileforscreenController extends Controller {
         }
         if($source=='sale'){
             $display_html = 'sale';
-        }elseif($source=='new'){
-            $display_html = 'indexnew';
+        }elseif($source=='forscreen'){
+            $display_html = 'forscreen';
         }else{
             $display_html = 'index';
         }
+
+        $ip = get_client_ip();
+        $data = array('openid'=>$openid,'action_type'=>1,'type'=>7,'ip'=>$ip);
+        $m_datalog = new \Common\Model\Smallapp\DatalogModel();
+        $m_datalog->add($data);
+
         $file_ext = C('SAPP_FILE_FORSCREEN_TYPES');
         $this->assign('file_ext',join(',',array_keys($file_ext)));
         $this->assign('latest_screen',$latest_screen);
         $this->assign('frequent_screen',$frequent_screen);
+        $this->assign('openid',$openid);
         $this->display($display_html);
     }
 

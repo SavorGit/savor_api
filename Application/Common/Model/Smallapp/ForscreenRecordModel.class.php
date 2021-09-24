@@ -14,6 +14,13 @@ class ForscreenRecordModel extends Model{
         return $data;
     }
 
+    public function getForscreenFileList($fields,$where,$order){
+        $res_sql = $this->field($fields)->where($where)->order($order)->buildSql();
+        $sql = "select * from ({$res_sql}) as rf group by rf.md5_file";
+        $data = $this->query($sql);
+        return $data;
+    }
+
     public function getWheredata($fields,$where,$order){
         $data = $this->field($fields)->where($where)->order($order)->select();
         return $data;

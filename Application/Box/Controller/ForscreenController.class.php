@@ -78,8 +78,14 @@ class ForscreenController extends CommonController{
                 'md5'=>'b7c1c5fd2962c2f49af36ffabb4c3fd7',
             );
             $data['forscreen_call_code'] = $forscreen_call_code;
-            /*
+            $test_wechat = '';
+            if($box_info['is_4g']==1){
+                $test_wechat = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=820';
+            }
+            $data['test_wechat'] = $test_wechat;
+
             $redis = \Common\Lib\SavorRedis::getInstance();
+            /*
             $redis->select(1);
             $key = C('SAPP_SCAN_BOX_CODE');
             $cache_key = $key.':'.$box_mac.':'.date('Ymd');
@@ -111,7 +117,7 @@ class ForscreenController extends CommonController{
             */
             $data['isShowAnimQRcode'] = false;
 
-            /*
+            $data['is_wifi_hotel'] = 0;
             $redis->select(15);
             $cache_key = 'savor_box_'.$box_info['id'];
             $redis_box_info = $redis->get($cache_key);
@@ -121,6 +127,16 @@ class ForscreenController extends CommonController{
             $room_info = json_decode($redis_room_info, true);
             if(!empty($room_info)){
                 $hotel_id = $room_info['hotel_id'];
+                $wifi_hotel = C('RD_WIFI_HOTEL');
+                if(isset($wifi_hotel[$hotel_id])){
+                    $data['is_wifi_hotel'] = 1;
+                    $data['qrcode_name']                = '扫码上网';
+                    $data['qrcode_gif']                = $oss_host.'/media/resource/hAeFm2cKyx.gif';
+                    $data['qrcode_gif_filename']       = 'hAeFm2cKyx.gif';
+                    $data['qrcode_gif_md5']            = '56b18556d2d79e111f4bffcbc7d4defa';
+                    $data['isShowAnimQRcode'] = true;
+                }
+                /*
                 $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
                 $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
                 $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
@@ -130,8 +146,9 @@ class ForscreenController extends CommonController{
                     $data['qrcode_gif_md5']            = '04c10c5c6076569e62761ced8d570353';
                     $data['isShowAnimQRcode'] = true;
                 }
+                */
             }
-            */
+
 
             $this->to_back($data);
         }

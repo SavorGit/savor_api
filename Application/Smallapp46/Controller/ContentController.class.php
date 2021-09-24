@@ -11,6 +11,14 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('page'=>1001,'pagesize'=>1002,'box_mac'=>1002);
                 break;
+            case 'hotplaylist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'pagesize'=>1002,'box_mac'=>1002);
+                break;
+            case 'programlist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001,'pagesize'=>1001,'box_mac'=>1001);
+                break;
             case 'nearhotel':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
@@ -52,11 +60,11 @@ class ContentController extends CommonController{
         $this->to_back($data);
     }
 
-    public function hotplay(){
+    public function hotplaylist(){
+        $openid = $this->params['openid'];
         $page = intval($this->params['page']);
         $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):6;
         $box_mac = $this->params['box_mac'];
-        $total_num = 10;
         $all_hot_nums = 8;
 
         $where = array('status'=>1);
@@ -67,6 +75,8 @@ class ContentController extends CommonController{
         $oss_host = 'http://'.C('OSS_HOST').'/';
         $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
         $m_user = new \Common\Model\Smallapp\UserModel();
         $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
         $m_ads = new \Common\Model\AdsModel();
@@ -74,90 +84,68 @@ class ContentController extends CommonController{
 
         $datalist = array();
         foreach ($res_play['list'] as $v){
-            if($v['type']==1){
-                $res_id = $v['forscreen_record_id'];
-                $pwhere = array('res_id'=>$res_id,'type'=>4);
-            }else{
-                $res_id = $v['data_id'];
-                $pwhere = array('res_id'=>$res_id,'type'=>3);
-            }
-            $res_play_nums = $m_play_log->getOne('*',$pwhere,'id desc');
+            $res_id = $v['forscreen_record_id'];
+            $res_play_nums = $m_play_log->getOne('*',array('res_id'=>$res_id,'type'=>4),'id desc');
             if(!empty($res_play_nums)){
                 $play_nums = $res_play_nums['nums'];
             }else{
                 $play_nums = 0;
             }
             $play_nums = $play_nums+$v['init_playnum'];
-
             if($play_nums>100000){
                 $play_nums = floor($play_nums/10000).'w';
             }
-            if($v['type']==1){
-                $dinfo = array('res_id'=>$res_id,'play_nums'=>$play_nums,'is_show'=>1,'type'=>1,'title'=>'');
-                $res_forscreen = $m_forscreen->getInfo(array('id'=>$res_id));
-                $dinfo['forscreen_id'] = $res_forscreen['forscreen_id'];
-                $dinfo['res_type'] = $res_forscreen['resource_type'];
-                $where = array('openid'=>$res_forscreen['openid']);
-                $fields = 'id user_id,avatarUrl,nickName';
-                $res_user = $m_user->getOne($fields, $where);
-                $dinfo['nickName'] = $res_user['nickName'];
-                $dinfo['avatarUrl'] = $res_user['avatarUrl'];
-                $fields_forscreen = 'imgs,duration,resource_size,resource_id';
-                $all_forscreen = $m_forscreen->getWheredata($fields_forscreen,array('forscreen_id'=>$res_forscreen['forscreen_id']),'id asc');
-                $dinfo['res_nums'] = count($all_forscreen);
-                $pubdetails = array();
-                foreach ($all_forscreen as $dv){
-                    $imgs_info = json_decode($dv['imgs'],true);
-                    $forscreen_url = $imgs_info[0];
-                    $res_url = $oss_host.$forscreen_url;
-                    if($dinfo['res_type']==1){
-                        $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                    }else{
-                        $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
-                    }
-                    $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
-                        'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
-                    $addr_info = pathinfo($forscreen_url);
-                    $pubdetail['filename'] = $addr_info['basename'];
-                    $pubdetails[]=$pubdetail;
+
+            $dinfo = array('res_id'=>$res_id,'play_nums'=>$play_nums,'is_show'=>1,'type'=>1,'title'=>'');
+            $res_public = $m_public->getOne('*',array('id'=>$v['data_id']),'');
+            $dinfo['forscreen_id'] = $res_public['forscreen_id'];
+            $dinfo['res_type'] = $res_public['res_type'];
+            $where = array('openid'=>$res_public['openid']);
+            $fields = 'id user_id,avatarUrl,nickName';
+            $res_user = $m_user->getOne($fields, $where);
+            $dinfo['nickName'] = $res_user['nickName'];
+            $dinfo['avatarUrl'] = $res_user['avatarUrl'];
+            $fields_forscreen = 'res_url,duration,resource_size,resource_id,width,height';
+            $all_forscreen = $m_pubdetail->getWhere($fields_forscreen,array('forscreen_id'=>$res_public['forscreen_id']),'id asc','','');
+            $dinfo['res_nums'] = count($all_forscreen);
+            $whtype = 0;//0默认 1横版 2竖版
+            if($dinfo['res_type']==2){
+                if($all_forscreen[0]['width']>$all_forscreen[0]['height']){
+                    $whtype = 1;
+                }else{
+                    $whtype = 2;
                 }
+            }
+            $dinfo['whtype'] = $whtype;
+            $now = time();
+            $diff_time =  $now - strtotime($res_public['create_time']);
+            if($diff_time<=86400){
+                $create_time = viewTimes(strtotime($res_public['create_time']));
             }else{
-                $fields = 'a.id as ads_id,a.name title,a.type as ads_type,a.description as content,a.img_url,a.portraitmedia_id,a.duration,a.create_time,b.id as media_id,b.type as media_type,b.oss_addr,b.oss_filesize as resource_size';
-                $res_ads = $m_ads->getAdsList($fields,array('a.id'=>$res_id),'a.id desc','0,1');
-                $ads_info = $res_ads[0];
-                if($ads_info['media_type']==1){
-                    $res_type = 2;
-                }else{
-                    $res_type = 1;
-                }
-                $dinfo = array('ads_id'=>$ads_info['ads_id'],'res_id'=>$ads_info['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
-                    'title'=>$ads_info['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1,'type'=>2);
-                $res_url = $oss_host.$ads_info['oss_addr'];
-                $forscreen_url = $ads_info['oss_addr'];
-                $duration = intval($ads_info['duration']);
-                $resource_size = $ads_info['resource_size'];
-                $res_id = $ads_info['media_id'];
+                $create_time = '';
+            }
+            $hotel_name = '';
+            $res_forscreen = $m_forscreen->getInfo(array('id'=>$res_id));
+            if(!empty($res_forscreen)){
+                $hotel_name = $res_forscreen['hotel_name'];
+            }
+            $dinfo['create_time'] = $create_time;
+            $dinfo['hotel_name'] = $hotel_name;
 
-                if($ads_info['portraitmedia_id']){
-                    $res_media = $m_media->getMediaInfoById($ads_info['portraitmedia_id']);
-                    $res_url = $res_media['oss_addr'];
-                }
-
-                $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
-                    'resource_size'=>$resource_size,'res_id'=>$res_id);
-                $oss_info = pathinfo($forscreen_url);
-                $pdetail['filename'] = $oss_info['basename'];
-                if(!empty($v['img_url'])){
-                    $img_url = $oss_host.$v['img_url'];
+            $pubdetails = array();
+            foreach ($all_forscreen as $dv){
+                $forscreen_url = $dv['res_url'];
+                $res_url = $oss_host.$forscreen_url;
+                if($dinfo['res_type']==1){
+                    $img_url = $res_url."?x-oss-process=image/quality,Q_50";
                 }else{
-                    if($res_type==1){
-                        $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                    }else{
-                        $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
-                    }
+                    $img_url = $oss_host.$forscreen_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';
                 }
-                $pdetail['img_url'] = $img_url;
-                $pubdetails = array($pdetail);
+                $pubdetail = array('res_url'=>$res_url,'img_url'=>$img_url,'forscreen_url'=>$forscreen_url,'duration'=>$dv['duration'],
+                    'resource_size'=>$dv['resource_size'],'res_id'=>$dv['resource_id']);
+                $addr_info = pathinfo($forscreen_url);
+                $pubdetail['filename'] = $addr_info['basename'];
+                $pubdetails[]=$pubdetail;
             }
             if($v['media_id']>0){
                 $res_media = $m_media->getMediaInfoById($v['media_id']);
@@ -165,6 +153,11 @@ class ContentController extends CommonController{
                 $pubdetails[0]['img_url'] = $cover_img_url;
             }
             $dinfo['pubdetail'] = $pubdetails;
+
+            $rets = $m_public->getFindnums($openid,$dinfo['forscreen_id'],2);
+            $dinfo['is_collect'] = $rets['is_collect'];
+            $dinfo['collect_num'] = $rets['collect_num'];
+            $dinfo['share_num']  = $rets['share_num'];
             $datalist[] = $dinfo;
         }
         if(!empty($box_mac)){
@@ -196,156 +189,162 @@ class ContentController extends CommonController{
                         }
                     }
                 }
-                if(!empty($box_resources['list'])){
-                    $tmp_pro_ids = array();
-                    $tmp_life_ids = array();
-                    $exclude_videos = C('EXCLUDE_VIDEOS');
-                    foreach ($box_resources['list'] as $v){
-                        if($v['type']=='pro' && !in_array($v['media_id'],$exclude_videos)){
-                            $tmp_pro_ids[$v['media_id']] = $v['media_id'];
-                        }
-                        if($v['type']=='life'){
-                            $tmp_life_ids[$v['media_id']] = $v['media_id'];
-                        }
-                    }
-
-                    $m_program_list =  new \Common\Model\ProgramMenuListModel();
-                    $where  = array('menu_num'=>$box_resources['menu_num']);
-                    $order = "id desc";
-                    $program_info = $m_program_list->getInfo('id', $where, $order);
-                    $fields = 'ads.id as ads_id,ads.name title,ads.type as ads_type,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
-                    $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
-                    $where['media.id']  = array('in',array_values($tmp_pro_ids));
-                    $order = 'a.sort_num asc';
-                    $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-                    $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,10",'media.id');
-
-                    if(!empty($tmp_life_ids)){
-                        $now_date = date('Y-m-d H:i:s');
-                        $m_life_ads_hotel = new \Common\Model\Smallapp\LifeAdsHotelModel();
-                        $where = array('a.hotel_id'=>$hotel_id,'lads.state'=>1);
-                        $where['lads.start_date'] = array('ELT',$now_date);
-                        $where['lads.end_date'] = array('EGT',$now_date);
-                        $where['media.id']  = array('in',array_values($tmp_life_ids));
-                        $res_life_ads = $m_life_ads_hotel->getList($fields,$where,'lads.id desc','0,2');
-                        $all_ads = array_merge($res_pro_ads,$res_life_ads);
-                    }else{
-                        $all_ads = $res_pro_ads;
-                    }
-                    $hot_cache_key = C('SAPP_HOTPLAY_PRONUM');
-                    $redis->select(5);
-                    $all_pro_nums = $redis->get($hot_cache_key);
-                    $all_pro_nums = json_decode($all_pro_nums,true);
-                    $pro_ads = $life_ads = array();
-                    foreach($all_ads as $v){
-                        if($v['media_type']==1){
-                            $res_type = 2;
-                        }else{
-                            $res_type = 1;
-                        }
-                        $play_where = array('res_id'=>$v['ads_id'],'type'=>3);
-                        $play_info = $m_play_log->getOne('nums',$play_where);
-                        $play_nums = 0;
-                        if(!empty($play_info)){
-                            $play_nums = intval($play_info['nums']);
-                        }
-                        if($v['ads_type']!=8 && isset($all_pro_nums[$v['media_id']])){
-                            $play_nums = $play_nums + $all_pro_nums[$v['media_id']];
-                        }
-                        if($play_nums>100000){
-                            $play_nums = floor($play_nums/10000).'w';
-                        }
-
-                        $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
-                            'title'=>$v['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1);
-                        $res_url = $oss_host.$v['oss_addr'];
-                        $forscreen_url = $v['oss_addr'];
-                        $duration = intval($v['duration']);
-                        $resource_size = $v['resource_size'];
-                        $res_id = $v['media_id'];
-
-                        if($v['portraitmedia_id']){
-                            $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
-                            $res_url = $res_media['oss_addr'];
-                        }
-
-                        $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
-                            'resource_size'=>$resource_size,'res_id'=>$res_id);
-                        $oss_info = pathinfo($forscreen_url);
-                        $pdetail['filename'] = $oss_info['basename'];
-                        if(!empty($v['img_url'])){
-                            $img_url = $oss_host.$v['img_url'];
-                        }else{
-                            if($res_type==1){
-                                $img_url = $res_url."?x-oss-process=image/quality,Q_50";
-                            }else{
-                                $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
-                            }
-                        }
-                        $pdetail['img_url'] = $img_url;
-                        $dinfo['pubdetail'] = array($pdetail);
-                        $qrcode_url = '';
-                        if($v['ads_type']==8){
-                            $res_store = $m_store->getInfo(array('ads_id'=>$v['ads_id']));
-                            if(!empty($res_store)){
-                                $data_id = $res_store['id'];
-                                $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=37";
-                            }
-                            $dinfo['type'] = 3;
-                        }else{
-                            $dinfo['type'] = 2;
-                        }
-                        $dinfo['qrcode_url'] = $qrcode_url;
-
-                        if($v['ads_type']==2){
-                            $pro_ads[]=$dinfo;
-                        }else{
-                            $life_ads[]=$dinfo;
-                        }
-                    }
-
-                    shuffle($pro_ads);
-                    $first_data = array_slice($pro_ads,0,1);
-                    $last_data = array_slice($pro_ads,1,1);
-                    $pro_index = 1;
-
-                    $user_num = count($user_datalist);
-                    $pro_num = count($pro_ads);
-                    $life_num = count($life_ads);
-                    if($user_num>6){
-                        $user_datas = array_slice($user_datalist,0,6);
-                        if($life_num>=2){
-                            $life_datas = $life_ads;
-                        }else{
-                            $life_datas_user = array_slice($user_datalist,6,2-$life_num);
-                            $life_datas = array_merge($life_ads,$life_datas_user);
-                            $tmp_life_num = count($life_datas);
-                            if($tmp_life_num<2){
-                                $pro_index = 2;
-                                $life_datas_pro = array_slice($pro_ads,$pro_index,2-$tmp_life_num);
-                                $pro_index = $pro_index + (2-$tmp_life_num);
-                            }
-                        }
-                    }else{
-                        $pro_index = 2;
-                        $user_datas_pro = array_slice($pro_ads,$pro_index,6-$user_num);
-                        $pro_index = $pro_index + (6-$user_num);
-                        $user_datas = array_merge($user_datalist,$user_datas_pro);
-                        if($life_num>=2){
-                            $life_datas = $life_ads;
-                        }else{
-                            $life_datas_pro = array_slice($pro_ads,$pro_index,2-$life_num);
-                            $life_datas = array_merge($life_ads,$life_datas_pro);
-                            $pro_index = $pro_index + (2-$life_num);
-                        }
-                    }
-                    $datalist = array_merge($first_data,$user_datas,$life_datas,$last_data);
-                }
+                $datalist = $user_datalist;
             }
             $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
-            $m_datadisplay->recordDisplaynum($datalist,$area_id);
+            $m_datadisplay->recordDisplaynum($datalist,$area_id,2);
         }
-        $data = array('datalist'=>$datalist);
+        $total = count($datalist);
+        $data = array('total'=>$total,'datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function programlist(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):10;
+        $box_mac = $this->params['box_mac'];
+
+        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $m_public = new \Common\Model\Smallapp\PublicModel();
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+        $m_ads = new \Common\Model\AdsModel();
+        $m_media = new \Common\Model\MediaModel();
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+        $box_info = $m_box->getBoxByCondition($fields,$where);
+        $box_id = $box_info[0]['box_id'];
+        $area_id = $box_info[0]['area_id'];
+        $hotel_id = $box_info[0]['hotel_id'];
+
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(14);
+        $cache_key = 'box:play:'.$box_mac;
+        $res_boxplays = $redis->get($cache_key);
+        $total = 0;
+        $datalist = array();
+        if(!empty($res_boxplays)){
+            $host_name = C('HOST_NAME');
+            $m_store = new \Common\Model\Smallapp\StoreModel();
+            $box_resources = json_decode($res_boxplays,true);
+
+            if(!empty($box_resources['list'])){
+                $tmp_pro_ids = array();
+                $tmp_life_ids = array();
+                $exclude_videos = C('EXCLUDE_VIDEOS');
+                foreach ($box_resources['list'] as $v){
+                    if($v['type']=='pro' && !in_array($v['media_id'],$exclude_videos)){
+                        $tmp_pro_ids[$v['media_id']] = $v['media_id'];
+                    }
+                    if($v['type']=='life'){
+                        $tmp_life_ids[$v['media_id']] = $v['media_id'];
+                    }
+                }
+                $m_program_list =  new \Common\Model\ProgramMenuListModel();
+                $where  = array('menu_num'=>$box_resources['menu_num']);
+                $order = "id desc";
+                $program_info = $m_program_list->getInfo('id', $where, $order);
+                $fields = 'ads.id as ads_id,ads.name title,ads.type as ads_type,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
+                $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
+                $where['media.id']  = array('in',array_values($tmp_pro_ids));
+                $order = 'a.sort_num asc';
+                $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+                $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,500",'media.id');
+                if(!empty($tmp_life_ids)){
+                    $now_date = date('Y-m-d H:i:s');
+                    $m_life_ads_hotel = new \Common\Model\Smallapp\LifeAdsHotelModel();
+                    $where = array('a.hotel_id'=>$hotel_id,'lads.state'=>1);
+                    $where['lads.start_date'] = array('ELT',$now_date);
+                    $where['lads.end_date'] = array('EGT',$now_date);
+                    $where['media.id']  = array('in',array_values($tmp_life_ids));
+                    $res_life_ads = $m_life_ads_hotel->getList($fields,$where,'lads.id desc','0,2');
+                    $all_ads = array_merge($res_life_ads,$res_pro_ads);
+                }else{
+                    $all_ads = $res_pro_ads;
+                }
+                $total = count($all_ads);
+                $offset = ($page-1)*$pagesize;
+                $all_page_ads = array_slice($all_ads,$offset,$pagesize);
+
+                $hot_cache_key = C('SAPP_HOTPLAY_PRONUM');
+                $redis->select(5);
+                $all_pro_nums = $redis->get($hot_cache_key);
+                $all_pro_nums = json_decode($all_pro_nums,true);
+                foreach($all_page_ads as $v){
+                    if($v['media_type']==1){
+                        $res_type = 2;
+                    }else{
+                        $res_type = 1;
+                    }
+                    $play_where = array('res_id'=>$v['ads_id'],'type'=>3);
+                    $play_info = $m_play_log->getOne('nums',$play_where);
+                    $play_nums = 0;
+                    if(!empty($play_info)){
+                        $play_nums = intval($play_info['nums']);
+                    }
+                    if($v['ads_type']!=8 && isset($all_pro_nums[$v['media_id']])){
+                        $play_nums = $play_nums + $all_pro_nums[$v['media_id']];
+                    }
+                    if($play_nums>100000){
+                        $play_nums = floor($play_nums/10000).'w';
+                    }
+
+                    $dinfo = array('ads_id'=>$v['ads_id'],'res_id'=>$v['media_id'],'play_nums'=>$play_nums,'forscreen_id'=>0,'res_type'=>$res_type,
+                        'title'=>$v['title'],'nickName'=>'小热点','avatarUrl'=>$default_avatar,'res_nums'=>1,'is_show'=>1);
+                    $res_url = $oss_host.$v['oss_addr'];
+                    $forscreen_url = $v['oss_addr'];
+                    $duration = intval($v['duration']);
+                    $resource_size = $v['resource_size'];
+                    $res_id = $v['media_id'];
+                    if($v['portraitmedia_id']){
+                        $res_media = $m_media->getMediaInfoById($v['portraitmedia_id']);
+                        $res_url = $res_media['oss_addr'];
+                    }
+                    $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
+                        'resource_size'=>$resource_size,'res_id'=>$res_id);
+                    $oss_info = pathinfo($forscreen_url);
+                    $pdetail['filename'] = $oss_info['basename'];
+                    if(!empty($v['img_url'])){
+                        $img_url = $oss_host.$v['img_url'];
+                    }else{
+                        if($res_type==1){
+                            $img_url = $res_url."?x-oss-process=image/quality,Q_50";
+                        }else{
+                            $img_url = $res_url.'?x-oss-process=video/snapshot,t_10000,f_jpg,w_450,m_fast';
+                        }
+                    }
+                    $pdetail['img_url'] = $img_url;
+                    $dinfo['pubdetail'] = array($pdetail);
+                    $qrcode_url = '';
+                    if($v['ads_type']==8){
+                        $res_store = $m_store->getInfo(array('ads_id'=>$v['ads_id']));
+                        if(!empty($res_store)){
+                            $data_id = $res_store['id'];
+                            $qrcode_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&box_id={$box_id}&data_id={$data_id}&type=37";
+                        }
+                        $dinfo['type'] = 3;
+                    }else{
+                        $dinfo['type'] = 2;
+                    }
+                    $dinfo['qrcode_url'] = $qrcode_url;
+
+                    //获取是否收藏、分享个数、收藏个数、获取播放次数
+                    $rets = $m_public->getFindnums($openid,$v['ads_id'],3);
+                    $dinfo['is_collect'] = $rets['is_collect'];
+                    $dinfo['collect_num'] = $rets['collect_num'];
+                    $dinfo['share_num']  = $rets['share_num'];
+
+                    $datalist[]=$dinfo;
+                }
+                $m_datadisplay = new \Common\Model\Smallapp\DatadisplayModel();
+                $m_datadisplay->recordDisplaynum($datalist,$area_id,3);
+            }
+        }
+        $data = array('total'=>$total,'datalist'=>$datalist);
         $this->to_back($data);
     }
 
@@ -448,28 +447,6 @@ class ContentController extends CommonController{
         $this->to_back($res);
     }
 
-    private function getFindnums($openid,$res_id,$type){
-        $m_collect = new \Common\Model\Smallapp\CollectModel();
-        $m_share   = new \Common\Model\Smallapp\ShareModel();
-        $map = array('openid'=>$openid,'res_id'=>$res_id,'type'=>$type,'status'=>1);
-        $is_collect = $m_collect->countNum($map);
-        if(empty($is_collect)){
-            $is_collect = 0;
-        }else {
-            $is_collect = 1;
-        }
-        $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
-        $collect_num = $m_collect->countNum($map);
-
-        //分享个数
-        $map = array('res_id'=>$res_id,'type'=>$type,'status'=>1);
-        $share_num = $m_share->countNum($map);
-
-        $data = array('is_collect'=>$is_collect,'collect_num'=>$collect_num,'share_num'=>$share_num);
-        return $data;
-    }
-
-
     private function init_hoteldata(){
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(5);
@@ -544,6 +521,7 @@ class ContentController extends CommonController{
             $res_goods = $m_goods->getDataList($fields,$where,$orderby,0,$all_nums);
             $m_media = new \Common\Model\MediaModel();
             $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
+            $m_public = new \Common\Model\Smallapp\PublicModel();
             $goods_list = array();
             foreach ($res_goods['list'] as $v){
                 $media_id = $v['media_id'];
@@ -579,7 +557,7 @@ class ContentController extends CommonController{
                     }
                 }
                 $dinfo['cover_imgs'] = $cover_imgs;
-                $rets = $this->getFindnums($openid,$v['id'],4);
+                $rets = $m_public->getFindnums($openid,$v['id'],4);
                 $dinfo['share_num']  = $rets['share_num'];
                 $resplay_nums = $m_play_log->getOne('nums',array('res_id'=>$v['id'],'type'=>5),'id desc');
                 $dinfo['play_num'] = intval($resplay_nums['nums']);
@@ -707,6 +685,9 @@ class ContentController extends CommonController{
     }
 
     public function nearhotel(){
+        $res_data = array('total'=>0,'datalist'=>array());
+        $this->to_back($res_data);
+
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();

@@ -221,6 +221,12 @@ return array(
 	    '70003'=>'box_device_token_report_error',
 	    '70004'=>'box_room_empty',
 	    '70005'=>'box_device_token_empty',
+	    '70006'=>'box_not_5g_network',
+	    '70007'=>'box_download_in_progress',
+	    '70008'=>'box_download_finish',
+	    '70009'=>'box_otherdownload_wait',
+
+
 	    //RTB广告错误码
 	    '80001'=>'hotel_attendant_empty',
 	    '80002'=>'not_in_rtb_ads_push_time',

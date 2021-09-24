@@ -97,7 +97,8 @@ class BuriedPointController extends CommonController{
         }else{
             $resource_id = 0;
         }
-
+        $box_action = $action;
+        $box_req_id = $req_id;
         if($resource_id>0 && ($action==4 || $action==10)){
             $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
             if($version>'2.2.6'){
@@ -142,10 +143,10 @@ class BuriedPointController extends CommonController{
             $is_exist = 0;
         }
         if($is_exit){
-            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+            $data = array('box_action'=>$box_action,'box_req_id'=>$box_req_id,'forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'is_exit'=>$is_exit,'is_exist'=>2);
         }else{
-            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+            $data = array('box_action'=>$box_action,'box_req_id'=>$box_req_id,'forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac);
             if(is_numeric($is_exist)){
                 $data['is_exist'] = intval($is_exist);
@@ -170,7 +171,7 @@ class BuriedPointController extends CommonController{
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(5);
             $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
-            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+            $data = array('box_action'=>$box_action,'box_req_id'=>$box_req_id,'forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'box_play_time'=>$box_play_time);
             if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
             if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;
@@ -190,7 +191,7 @@ class BuriedPointController extends CommonController{
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(5);
             $cache_key = C('SAPP_BOX_FORSCREEN_NET').$box_mac;
-            $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
+            $data = array('box_action'=>$box_action,'box_req_id'=>$box_req_id,'forscreen_id'=>$forscreen_id,'resource_id'=>intval($resource_id),'openid'=>$openid,
                 'box_mac'=>$box_mac,'box_finish_downtime'=>$box_finish_downtime);
             if(!empty($box_playstime))  $data['box_playstime'] = $box_playstime;
             if(!empty($box_playetime))  $data['box_playetime'] = $box_playetime;

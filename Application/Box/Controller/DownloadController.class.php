@@ -49,8 +49,7 @@ class DownloadController extends CommonController{
             $lan_ip = $rets[0]['lanip'];
         }
         if($is_5g!=1 || empty($lan_ip)){//非5G酒楼或机顶盒无WAN口IP 正常下载
-            $resp_data = array('type'=>1,'lan_ip'=>'','lan_mac'=>'');
-            $this->to_back($resp_data);
+            $this->to_back(70006);
         }
 
         $redis->select(21);
@@ -69,12 +68,23 @@ class DownloadController extends CommonController{
             $all_download = array();
         }
         if(isset($all_download[$box_mac])){
-            if($all_download[$box_mac]['status']==1){
-                $code = 70007;
+            if($all_download[$box_mac]['status']==2){
+                $this->to_back(70008);
             }else{
-                $code = 70008;
+                $code = 70007;
+                if(!empty($all_download[$box_mac]['from_box'])){
+                    $forscreen_info = $m_box->checkForscreenTypeByMac($all_download[$box_mac]['from_box']);
+                    $redis->select(15);
+                    $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+                    $redis_box_info = $redis->get($cache_key);
+                    $box_info = json_decode($redis_box_info, true);
+                    $lan_box_ip = $box_info['lanip'];
+                    $resp_data = array('type'=>2,'lan_ip'=>$lan_box_ip,'lan_mac'=>$all_download[$box_mac]['from_box']);
+                }else{
+                    $resp_data = array('type'=>1,'lan_ip'=>'','lan_mac'=>'');
+                }
+                $this->to_back($resp_data);
             }
-            $this->to_back($code);
         }else{
             $had_download_online_box = array();
             $downing_box = array();
@@ -93,6 +103,9 @@ class DownloadController extends CommonController{
                 }else{
                     $downing_box[]=$k;
                 }
+            }
+            if(!empty($downing_box)){
+                $this->to_back(70009);
             }
             $redis->select(21);
             if(!empty($had_download_online_box)){
@@ -113,6 +126,7 @@ class DownloadController extends CommonController{
                 if(!empty($usable_box)){
                     asort($usable_box);
                     $tmp_boxs = array_keys($usable_box);
+                    shuffle($tmp_boxs);
                     $lan_box = $tmp_boxs[0];
 
                     $download_queuecache_key = $queue_key."$hotel_id:$lan_box";
@@ -180,26 +194,31 @@ class DownloadController extends CommonController{
             $download_info = json_decode($res_download,true);
             if(isset($download_info[$box_mac])){
                 $queue_key = C('BOX_LANHOTEL_DOWNLOADQUEUE');
+                $lan_box = $download_info[$box_mac]['from_box'];
+                $download_queuecache_key = $queue_key."$hotel_id:$lan_box";
+                $redis->lrem($download_queuecache_key,$box_mac,0);
+
                 $fail_key = C('BOX_LANHOTEL_DOWNLOAD_FAIL');
+                $res_fail = $redis->get($fail_key.$hotel_id);
+                if(!empty($res_fail)){
+                    $fail_info = json_decode($res_fail,true);
+                }else{
+                    $fail_info = array();
+                }
                 switch ($status){//1下载成功 2下载超时 3下载失败
                     case 1:
                         $download_info[$box_mac]['status'] = 2;
                         $download_info[$box_mac]['end_time'] = date('Y-m-d H:i:s');
                         $redis->set($download_cache_key,json_encode($download_info),86400*14);
+                        if(isset($fail_info[$box_mac])){
+                            unset($fail_info[$box_mac]);
+                            $redis->set($fail_key.$hotel_id,json_encode($fail_info),86400*14);
+                        }
                         break;
                     case 2:
                     case 3:
-                        $lan_box = $download_info[$box_mac]['from_box'];
-                        $download_queuecache_key = $queue_key."$hotel_id:$lan_box";
-                        $redis->lrem($download_queuecache_key,$box_mac,0);
-
-                        $res_fail = $redis->get($fail_key.$hotel_id);
-                        if(!empty($res_fail)){
-                            $fail_info = json_decode($res_fail,true);
-                        }else{
-                            $fail_info = array();
-                        }
                         $download_info[$box_mac]['status'] = $status;
+                        $download_info[$box_mac]['end_time'] = date('Y-m-d H:i:s');
                         $fail_info[$box_mac] = $download_info[$box_mac];
                         $redis->set($fail_key.$hotel_id,json_encode($fail_info),86400*14);
 

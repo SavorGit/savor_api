@@ -10,7 +10,7 @@ class BoxMemController extends CommonController{
         switch(ACTION_NAME) {
             case 'boxMemoryInfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_id'=>1001);
+                $this->valid_fields = array('box_id'=>1001,'type'=>1000);
                 break;
                 
         }
@@ -18,6 +18,7 @@ class BoxMemController extends CommonController{
     }
     public function boxMemoryInfo(){
         $box_id = $this->params['box_id'];
+        $type   = $this->params['type'];
         /* $box_mac = $this->params['box_mac'];
         $box_mem_sta = empty($this->params['box_mem_state'])?1:$this->params['box_mem_state'];
         $box_memo = C('MEMORY_CONDITION');
@@ -45,7 +46,12 @@ class BoxMemController extends CommonController{
         if(empty($info)){
             $data = array();
             $data['box_id'] = $box_id;
-            $data['erro_count'] =1;
+            if($type==1){
+                $data['erro_count'] =1;
+            }else {
+                $data['full_count'] =1;
+            }
+            
             $data['last_report_date'] = date('Y-m-d H:i:s');
             $ret = $m_sdk_error->addInfo($data);
         }else {
@@ -59,7 +65,12 @@ class BoxMemController extends CommonController{
                 $where = array();
                 $where['box_id'] = $box_id;
                 $data = array();
-                $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
+                if($type==1){
+                    $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
+                }else {
+                    $sql ="update `savor_sdk_error` set `full_count`=`full_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
+                }
+                
                 $ret = $m_sdk_error->execute($sql);
             }else {
                 $ret = false;

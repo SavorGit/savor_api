@@ -48,11 +48,13 @@ class BoxMemController extends CommonController{
             $data['box_id'] = $box_id;
             if($type==1){
                 $data['erro_count'] =1;
+                $data['last_report_date'] = date('Y-m-d H:i:s');
             }else {
                 $data['full_count'] =1;
+                $data['full_report_date'] = date('Y-m-d H:i:s');
             }
             
-            $data['last_report_date'] = date('Y-m-d H:i:s');
+            
             $ret = $m_sdk_error->addInfo($data);
         }else {
             
@@ -68,7 +70,7 @@ class BoxMemController extends CommonController{
                 if($type==1){
                     $sql ="update `savor_sdk_error` set `erro_count`=`erro_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
                 }else {
-                    $sql ="update `savor_sdk_error` set `full_count`=`full_count`+1,last_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
+                    $sql ="update `savor_sdk_error` set `full_count`=`full_count`+1,full_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
                 }
                 
                 $ret = $m_sdk_error->execute($sql);

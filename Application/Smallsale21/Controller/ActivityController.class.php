@@ -327,7 +327,7 @@ class ActivityController extends CommonController{
                 $where = array('openid'=>$v['openid']);
                 $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
 
-                $add_time = date('Y-m-d H:i',strtotime($v['add_time']));
+                $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
                 $content = "成功领取了品鉴酒'{$v['prize']}'，请及时处理";
                 $info = array('id'=>$v['id'],'name'=>$v['name'],'content'=>$content,'nickName'=>$res_user['nickName'],
                 'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);

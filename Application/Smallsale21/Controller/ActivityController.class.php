@@ -38,6 +38,10 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('activity_id'=>1001);
                 break;
+            case 'tastewineGetlist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -296,6 +300,41 @@ class ActivityController extends CommonController{
             'prize2'=>$res_activity['attach_prize'],'rule_content'=>$res_activity['rule_content'],'status'=>$res_activity['status'],'status_str'=>$status_str,
             'lottery_time'=>$lottery_time,'box_name'=>$box_name);
         $this->to_back($data);
+    }
+
+    public function tastewineGetlist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 20;
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid);
+        $res_user = $m_user->getOne('id', $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $offset = ($page-1)*$pagesize;
+        $limit = "$offset,$pagesize";
+        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6);
+        $fields = 'activity.name,activity.prize,a.id,a.openid,a.box_mac,a.add_time';
+        $res_apply = $m_activityapply->getApplyDatas($fields,$where,'a.id desc',$limit,'');
+        $datalist = array();
+        if(!empty($res_apply)){
+            foreach ($res_apply as $v){
+                $where = array('openid'=>$v['openid']);
+                $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
+
+                $add_time = date('Y-m-d H:i',strtotime($v['add_time']));
+                $content = "成功领取了品鉴酒'{$v['prize']}'，请及时处理";
+                $info = array('id'=>$v['id'],'name'=>$v['name'],'content'=>$content,'nickName'=>$res_user['nickName'],
+                'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
+                $datalist[]=$info;
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
 

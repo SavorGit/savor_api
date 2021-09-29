@@ -65,30 +65,19 @@ class ActivityapplyModel extends BaseModel{
                     $where = array('activity_id'=>$taste_wine_activity_id,'openid'=>$openid);
                     $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
                     $res_activity_apply = $this->getApplylist('*',$where,'id desc','');
-                    if(empty($res_activity_apply)){
-                        $taste_wine['status'] = 1;
-                    }else{
-                        switch ($res_activity_apply[0]['status']){
-                            case 1:
-                                $taste_wine['status'] = 2;
+                    if(!empty($res_activity_apply) && $res_activity_apply[0]['status']==1){
+                        unset($where['openid']);
+                        $res_activity_apply = $this->getApplylist('openid',$where,'id asc','');
+                        $get_position = 0;
+                        foreach ($res_activity_apply as $k=>$v){
+                            if($v['openid']==$openid){
+                                $get_position = $k+1;
                                 break;
-                            case 2:
-                                $taste_wine['status'] = 3;
-                                unset($where['openid']);
-                                $res_activity_apply = $this->getApplylist('openid',$where,'id asc','');
-                                $get_position = 0;
-                                foreach ($res_activity_apply as $k=>$v){
-                                    if($v['openid']==$openid){
-                                        $get_position = $k+1;
-                                        break;
-                                    }
-                                }
-                                $taste_wine['message'] = "恭喜您领到本饭局第{$get_position}份品鉴酒";
-                                $taste_wine['tips'] = '请向服务员出示此页面领取';
-                                break;
-                            default:
-                                $taste_wine['status'] = 1;
+                            }
                         }
+                        $taste_wine['status'] = 2;
+                        $taste_wine['message'] = "恭喜您领到本饭局第{$get_position}份品鉴酒";
+                        $taste_wine['tips'] = '请向服务员出示此页面领取';
                     }
                 }
             }

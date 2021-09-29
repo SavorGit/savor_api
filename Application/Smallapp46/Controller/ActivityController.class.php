@@ -86,7 +86,7 @@ class ActivityController extends CommonController{
                 break;
             case 'joinTastewine':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1001,'step'=>1001,'mobile'=>1002);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1001,'mobile'=>1001);
                 break;
         }
         parent::_init_();
@@ -1048,7 +1048,6 @@ class ActivityController extends CommonController{
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
         $activity_id = intval($this->params['activity_id']);
-        $step = $this->params['step'];
         $mobile = $this->params['mobile'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -1135,46 +1134,26 @@ class ActivityController extends CommonController{
         }
         $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
         $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id desc','');
-        if($res_activity_apply[0]['status'] == 2){
+        if($res_activity_apply[0]['status']==1){
             $this->to_back(90179);
         }
         $data = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'room_id'=>$room_id,
-            'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,'add_time'=>date('Y-m-d H:i:s')
+            'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,'mobile'=>$mobile,
+            'add_time'=>date('Y-m-d H:i:s')
         );
-        $resp_data = array();
-        switch($step){
-            case 1:
-                if(empty($res_activity_apply)){
-                    $m_activityapply->addData($data);
-                }else{
-                    $m_activityapply->updateData(array('id'=>$res_activity_apply[0]['id']),$data);
-                }
-                break;
-            case 2:
-                if(empty($mobile)){
-                    $this->to_back(1001);
-                }
-                if(empty($res_activity_apply)){
-                    $this->to_back(90180);
-                }
-                $data['status'] = 2;
-                $data['mobile'] = $mobile;
-                $m_activityapply->updateData(array('id'=>$res_activity_apply[0]['id']),$data);
+        $m_activityapply->addData($data);
 
-                $where = array('activity_id'=>$activity_id);
-                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-                $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id asc','');
-                $get_position = 0;
-                foreach($res_activity_apply as $k=>$v){
-                    if($v['openid'] == $openid){
-                        $get_position = $k + 1;
-                        break;
-                    }
-                }
-                $resp_data['message'] = "恭喜您领到本饭局第{$get_position}份品鉴酒";
-                $resp_data['tips'] = '请向服务员出示此页面领取';
+        $where = array('activity_id'=>$activity_id);
+        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+        $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id asc','');
+        $get_position = 0;
+        foreach($res_activity_apply as $k=>$v){
+            if($v['openid'] == $openid){
+                $get_position = $k + 1;
                 break;
+            }
         }
+        $resp_data = array('message'=>"恭喜您领到本饭局第{$get_position}份品鉴酒",'tips'=>'请向服务员出示此页面领取');
         $this->to_back($resp_data);
     }
 }

@@ -308,6 +308,12 @@ return array(
         '90172'=>'smallapp_lottery_has_expire',
         '90173'=>'smallapp_lottery_prize_not_exist',
         '90174'=>'smallapp_lottery_prize_task_not_finish',
+        '90175'=>'smallapp_tastwine_not_exist',
+        '90176'=>'smallapp_tastwine_not_meal_time',
+        '90177'=>'smallapp_tastwine_room_join_uplimit',
+        '90178'=>'smallapp_tastwine_join_uplimit',
+        '90179'=>'smallapp_tastwine_had_join',
+        '90180'=>'smallapp_tastwine_join_first',
 
 
         '91015'=>'smallapp_user_add_failed',

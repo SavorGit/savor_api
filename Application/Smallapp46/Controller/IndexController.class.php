@@ -545,6 +545,8 @@ class IndexController extends CommonController{
         $is_open_reward = 1;
         $is_open_simplehistory = 0;
         $seckill_goods_id = 0;
+        $hotel_id = 0;
+        $oss_host = C('OSS_HOST');
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -634,7 +636,6 @@ class IndexController extends CommonController{
                 }
                 $reward_money_list = C('REWARD_MONEY_LIST');
                 $reward_money = array();
-                $oss_host = C('OSS_HOST');
                 foreach ($reward_money_list as $v){
                     $v['image'] = 'http://'.$oss_host.'/'.$v['image'];
                     $v['selected'] = false;
@@ -682,6 +683,7 @@ class IndexController extends CommonController{
                 $is_open_simplehistory = 1;
             }
         }
+        $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
         $syslottery_activity_id = 0;
         $is_sale_page = 0;
         if(!empty($openid)){
@@ -713,7 +715,11 @@ class IndexController extends CommonController{
             if($res_user[0]['sale_user']==1){
                 $is_sale_page = 1;
             }
+            if($hotel_id){
+                $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$openid);
+            }
         }
+        $data['taste_wine'] = $taste_wine;
         $data['is_sale_page'] = $is_sale_page;
         $data['syslottery_activity_id'] = $syslottery_activity_id;
         $data['seckill_goods_id'] = $seckill_goods_id;

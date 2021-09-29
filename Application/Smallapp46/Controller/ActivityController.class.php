@@ -84,6 +84,10 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1002,'activity_id'=>1001);
                 break;
+            case 'joinTastewine':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1001,'step'=>1001,'mobile'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -1040,4 +1044,137 @@ class ActivityController extends CommonController{
         $this->to_back($data);
     }
 
+    public function joinTastewine(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $activity_id = intval($this->params['activity_id']);
+        $step = $this->params['step'];
+        $mobile = $this->params['mobile'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid' => $openid, 'status' => 1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'status'=>1));
+        if(empty($res_activity)){
+            $this->to_back(90175);
+        }
+        $people_num = $res_activity['people_num'];
+        $now_time = date('Y-m-d H:i:s');
+        if($res_activity['start_time']>$now_time || $res_activity['end_time']<$now_time){
+            $this->to_back(90175);
+        }
+
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info, true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $hotel_info = json_decode($redis_hotel_info, true);
+            $hotel_id = $room_info['hotel_id'];
+            $hotel_name = $hotel_info['name'];
+            $room_id = $box_info['room_id'];
+            $box_id = $forscreen_info['box_id'];
+            $box_name = $box_info['name'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,d.id as hotel_id,d.name as hotel_name';
+            $rets = $m_box->getBoxInfo($fields, $where);
+            $hotel_id = $rets[0]['hotel_id'];
+            $hotel_name = $rets[0]['hotel_name'];
+            $room_id = $rets[0]['room_id'];
+            $box_id = $rets[0]['box_id'];
+            $box_name = $rets[0]['box_name'];
+        }
+        $m_activityhotel = new \Common\Model\Smallapp\ActivityhotelModel();
+        $res_ahotel = $m_activityhotel->getInfo(array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id));
+        if(empty($res_ahotel)){
+            $this->to_back(90175);
+        }
+
+        $meal_time = C('MEAL_TIME');
+        $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
+        $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
+        $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
+        $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
+        $meal_type = $meal_stime = $meal_etime = '';
+        if($now_time >= $lunch_stime && $now_time <= $lunch_etime){
+            $meal_type = 'lunch';
+            $meal_stime = $lunch_stime;
+            $meal_etime = $lunch_etime;
+        }elseif($now_time >= $dinner_stime && $now_time <= $dinner_etime){
+            $meal_type = 'dinner';
+            $meal_stime = $dinner_stime;
+            $meal_etime = $dinner_etime;
+        }
+        if(empty($meal_type)){
+            $this->to_back(90176);
+        }
+        $where = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        if($res_activity_apply[0]['num']>=$people_num){
+            $this->to_back(90177);
+        }
+        $where = array('activity_id'=>$activity_id,'openid'=>$openid);
+        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        if($res_activity_apply[0]['num']>3){
+            $this->to_back(90178);
+        }
+        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+        $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id desc','');
+        if($res_activity_apply[0]['status'] == 2){
+            $this->to_back(90179);
+        }
+        $data = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'room_id'=>$room_id,
+            'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,'add_time'=>date('Y-m-d H:i:s')
+        );
+        $resp_data = array();
+        switch($step){
+            case 1:
+                if(empty($res_activity_apply)){
+                    $m_activityapply->addData($data);
+                }else{
+                    $m_activityapply->updateData(array('id'=>$res_activity_apply[0]['id']),$data);
+                }
+                break;
+            case 2:
+                if(empty($mobile)){
+                    $this->to_back(1001);
+                }
+                if(empty($res_activity_apply)){
+                    $this->to_back(90180);
+                }
+                $data['status'] = 2;
+                $data['mobile'] = $mobile;
+                $m_activityapply->updateData(array('id'=>$res_activity_apply[0]['id']),$data);
+
+                $where = array('activity_id'=>$activity_id);
+                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+                $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id asc','');
+                $get_position = 0;
+                foreach($res_activity_apply as $k=>$v){
+                    if($v['openid'] == $openid){
+                        $get_position = $k + 1;
+                        break;
+                    }
+                }
+                $resp_data['message'] = "恭喜您领到本饭局第{$get_position}份品鉴酒";
+                $resp_data['tips'] = '请向服务员出示此页面领取';
+                break;
+        }
+        $this->to_back($resp_data);
+    }
 }

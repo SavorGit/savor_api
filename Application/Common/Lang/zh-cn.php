@@ -421,6 +421,12 @@ return array(
     'box_download_in_progress'=>'当前盒子正在下载中',
     'box_download_finish'=>'当前盒子已下载完成',
     'box_otherdownload_wait'=>'当前无空闲局域网机顶盒,请等待',
+    'smallapp_tastwine_not_exist'=>'品鉴酒活动正在维护中，请稍后再试。',
+    'smallapp_tastwine_not_meal_time'=>'请在饭局时间内参加品鉴酒活动',
+    'smallapp_tastwine_room_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
+    'smallapp_tastwine_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
+    'smallapp_tastwine_had_join'=>'当前饭局已参加过品鉴酒活动',
+    'smallapp_tastwine_join_first'=>'请先参加品鉴酒活动',
 
 
 );

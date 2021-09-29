@@ -90,13 +90,17 @@ class BirthdaypartyController extends CommonController{
         $res_birthday = $m_birthday->getDataList('*','','id desc');
         $m_media = new \Common\Model\MediaModel();
         $oss_host = "http://".C('OSS_HOST').'/';
+        $birthday_scence_adv = C('SCENCE_ADV_BIRTHDAY');
+
         foreach ($res_birthday as $v){
             $name_arr = explode('-',$v['name']);
             $res_media = $m_media->getMediaInfoById($v['media_id']);
             $file_info = pathinfo($res_media['oss_addr']);
             $info = array('name'=>$v['name'],'res_url'=>$oss_host.$res_media['oss_addr'],'file_name'=>$file_info['basename'],
-                'title'=>$name_arr[0],'sub_title'=>$name_arr[1],'duration'=>$res_media['duration']
+                'title'=>$name_arr[0],'sub_title'=>$name_arr[1],'duration'=>$res_media['duration'],
             );
+            $info['ads_img_url'] = $birthday_scence_adv[$v['id']]['ads_img_url'];
+            $info['countdown'] = $birthday_scence_adv[$v['id']]['countdown'];
             $datalist[] = $info;
         }
         $this->to_back($datalist);

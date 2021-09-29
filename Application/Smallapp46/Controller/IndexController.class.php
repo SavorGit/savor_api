@@ -730,6 +730,7 @@ class IndexController extends CommonController{
         $data['redpacket_content'] = '即刻分享视频照片，一键投屏，让饭局分享爽不停';
         $data['file_play_times'] = C('SAPP_FILE_FORSCREEN_PLAY_TIMES');
         $data['defaultpage_showtime'] = C('DEFAULT_PAGE_SHOW_TIME');
+        $data['fileforscreen_ads_num'] = C('SCENCE_ADV_FILEFORSCREEN_NUM');
         $this->to_back($data);
     }
 

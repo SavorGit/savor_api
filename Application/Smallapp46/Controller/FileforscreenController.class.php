@@ -139,6 +139,9 @@ class FileforscreenController extends CommonController{
                 'oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
                 'imgs'=>$imgs,'img_num'=>$img_num);
         }
+        $scence_adv = C('SCENCE_ADV_FILEFORSCREEN');
+        $result['ads_img_url'] = $scence_adv['ads_img_url'];
+        $result['countdown'] = $scence_adv['countdown'];
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $params = array(
@@ -309,7 +312,9 @@ class FileforscreenController extends CommonController{
         }
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');
-        $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
+        $scence_adv = C('SCENCE_ADV_FILEFORSCREEN');
+        $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
+            'imgs'=>$imgs,'img_num'=>$img_num,'ads_img_url'=>$scence_adv['ads_img_url'],'countdown'=>$scence_adv['countdown']);
         $this->to_back($result);
     }
 

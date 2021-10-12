@@ -743,6 +743,11 @@ class ActivityController extends CommonController{
         if(empty($res_activity)){
             $this->to_back(90162);
         }
+        $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+        $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+        if(!empty($res_invalid)){
+            $this->to_back(90162);
+        }
         if($res_activity['status']!=2){
             $this->to_back(90165);
         }
@@ -1122,16 +1127,19 @@ class ActivityController extends CommonController{
             $this->to_back(90176);
         }
         $where = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);
+        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
         if($res_activity_apply[0]['num']>=$people_num){
             $this->to_back(90177);
         }
-        $where = array('activity_id'=>$activity_id,'openid'=>$openid);
-        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        $u_fields = 'count(a.id) as num';
+        $u_where = array('a.openid'=>$openid,'activity.type'=>6);
+        $res_activity_apply = $m_activityapply->getApplyDatas($u_fields,$u_where,'a.id desc','','');
         if($res_activity_apply[0]['num']>3){
             $this->to_back(90178);
         }
+        $where = array('activity_id'=>$activity_id,'openid'=>$openid);
         $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
         $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id desc','');
         if($res_activity_apply[0]['status']==1){
@@ -1152,6 +1160,18 @@ class ActivityController extends CommonController{
                 $get_position = $k + 1;
                 break;
             }
+        }
+        $m_netty = new \Common\Model\NettyModel();
+        $message = array('action'=>153,'nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),
+            'url'=>$res_activity['image_url']);
+        $m_netty->pushBox($box_mac,json_encode($message));
+
+        $all_box = $m_netty->getPushBox(2,$box_mac);
+        $barrage = $box_name.'包间免费领取了一份品鉴酒';
+        foreach ($all_box as $box){
+            $user_barrages = array(array('nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),'barrage'=>$barrage));
+            $message = array('action'=>122,'userBarrages'=>$user_barrages);
+            $m_netty->pushBox($box,json_encode($message));
         }
         $resp_data = array('message'=>"恭喜您领到本饭局第{$get_position}份品鉴酒",'tips'=>'请向服务员出示此页面领取');
         $this->to_back($resp_data);

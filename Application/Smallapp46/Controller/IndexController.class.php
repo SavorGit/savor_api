@@ -546,6 +546,7 @@ class IndexController extends CommonController{
         $is_open_simplehistory = 0;
         $seckill_goods_id = 0;
         $hotel_id = 0;
+        $box_mac = '';
         $oss_host = C('OSS_HOST');
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
@@ -555,6 +556,7 @@ class IndexController extends CommonController{
             if(!empty($redis_box_info)){
                 $box_info = json_decode($redis_box_info,true);
                 $is_comment = intval($box_info['is_open_popcomment']);
+                $box_mac = $box_info['mac'];
 
                 $cache_key = 'savor_room_' . $box_info['room_id'];
                 $redis_room_info = $redis->get($cache_key);
@@ -716,7 +718,7 @@ class IndexController extends CommonController{
                 $is_sale_page = 1;
             }
             if($hotel_id){
-                $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$openid);
+                $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
             }
         }
         $data['taste_wine'] = $taste_wine;

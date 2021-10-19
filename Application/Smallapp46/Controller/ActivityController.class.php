@@ -1173,7 +1173,7 @@ class ActivityController extends CommonController{
             $message = array('action'=>122,'userBarrages'=>$user_barrages);
             $m_netty->pushBox($box,json_encode($message));
         }
-        $resp_data = array('message'=>"恭喜您领到本饭局第{$get_position}份品鉴酒",'tips'=>'请向服务员出示此页面领取');
+        $resp_data = array('message'=>"恭喜您领到本饭局第{$get_position}份(75mL)品鉴酒",'tips'=>'请向服务员出示此页面领取');
         $this->to_back($resp_data);
     }
 }

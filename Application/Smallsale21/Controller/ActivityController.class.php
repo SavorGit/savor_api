@@ -319,7 +319,7 @@ class ActivityController extends CommonController{
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
         $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6);
-        $fields = 'activity.name,activity.prize,a.id,a.openid,a.box_mac,a.add_time';
+        $fields = 'activity.name,activity.prize,a.id,a.openid,a.box_mac,a.box_name,a.add_time';
         $res_apply = $m_activityapply->getApplyDatas($fields,$where,'a.id desc',$limit,'');
         $datalist = array();
         if(!empty($res_apply)){
@@ -328,7 +328,7 @@ class ActivityController extends CommonController{
                 $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
 
                 $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
-                $content = "成功领取了品鉴酒'{$v['prize']}'，请及时处理";
+                $content = "[{$v['box_name']}包间]成功领取了品鉴酒'{$v['prize']}'，请及时处理";
                 $info = array('id'=>$v['id'],'name'=>$v['name'],'content'=>$content,'nickName'=>$res_user['nickName'],
                 'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
                 $datalist[]=$info;

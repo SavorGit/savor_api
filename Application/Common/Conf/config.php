@@ -578,6 +578,7 @@ return array(
     'LOTTERY_TIMEOUT'=>300,
     'DEFAULT_PAGE_SHOW_TIME'=>2*1000,
     'MEAL_TIME'=>array('lunch'=>array('10:00','15:00'),'dinner'=>array('17:00','23:59')),
+    'ACTIVITY_MEAL_TIME'=>array('lunch'=>array('10:00','15:59'),'dinner'=>array('16:00','23:59')),
     'PERSON_PRICE'=>array(
         '1'=>array('id'=>1,'name'=>'100以下','min'=>0,'max'=>100),
         '2'=>array('id'=>2,'name'=>'100-200','min'=>100,'max'=>200),

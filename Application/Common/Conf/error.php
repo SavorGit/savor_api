@@ -314,6 +314,7 @@ return array(
         '90178'=>'smallapp_tastwine_join_uplimit',
         '90179'=>'smallapp_tastwine_had_join',
         '90180'=>'smallapp_tastwine_join_first',
+        '90181'=>'smallapp_tastwine_invalid_user',
 
 
         '91015'=>'smallapp_user_add_failed',

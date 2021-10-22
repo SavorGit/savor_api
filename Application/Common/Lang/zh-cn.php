@@ -427,6 +427,7 @@ return array(
     'smallapp_tastwine_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
     'smallapp_tastwine_had_join'=>'当前饭局已参加过品鉴酒活动',
     'smallapp_tastwine_join_first'=>'请先参加品鉴酒活动',
+    'smallapp_tastwine_invalid_user'=>'无法领取，请联系管理人员',
 
 
 );

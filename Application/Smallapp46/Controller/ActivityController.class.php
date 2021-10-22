@@ -1061,7 +1061,12 @@ class ActivityController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
-
+        $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+        $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+        if(!empty($res_invalid)){
+            $resp_data = array('message'=>'无法领取','tips'=>'请联系管理员');
+            $this->to_back($resp_data);
+        }
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'status'=>1));
         if(empty($res_activity)){
@@ -1108,7 +1113,7 @@ class ActivityController extends CommonController{
             $this->to_back(90175);
         }
 
-        $meal_time = C('MEAL_TIME');
+        $meal_time = C('ACTIVITY_MEAL_TIME');
         $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
         $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
         $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
@@ -1151,7 +1156,7 @@ class ActivityController extends CommonController{
         );
         $m_activityapply->addData($data);
 
-        $where = array('activity_id'=>$activity_id);
+        $where = array('activity_id'=>$activity_id,'box_mac'=>$box_mac);
         $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
         $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id asc','');
         $get_position = 0;

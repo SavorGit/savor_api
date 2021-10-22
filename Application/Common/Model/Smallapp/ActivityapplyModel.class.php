@@ -26,31 +26,27 @@ class ActivityapplyModel extends BaseModel{
         $oss_host = C('OSS_HOST');
         $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
         $now_time = date('Y-m-d H:i:s');
-        $meal_time = C('MEAL_TIME');
+        $meal_time = C('ACTIVITY_MEAL_TIME');
         $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
         $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
         $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
         $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
         $meal_type = '';
         $meal_stime = $meal_etime = '';
-        $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
-        $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
-        if(empty($res_invalid)){
-            if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
-                $meal_type = 'lunch';
-                $meal_stime = $lunch_stime;
-                $meal_etime = $lunch_etime;
-            }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
-                $meal_type = 'dinner';
-                $meal_stime = $dinner_stime;
-                $meal_etime = $dinner_etime;
-            }
+        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
+            $meal_type = 'lunch';
+            $meal_stime = $lunch_stime;
+            $meal_etime = $lunch_etime;
+        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+            $meal_type = 'dinner';
+            $meal_stime = $dinner_stime;
+            $meal_etime = $dinner_etime;
         }
 
         if($meal_type){
             $m_activityhotel = new \Common\Model\Smallapp\ActivityhotelModel();
             $fields = 'a.activity_id,activity.image_url,activity.portrait_image_url';
-            $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6);
+            $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6,'activity.status'=>1);
             $where['activity.start_time'] = array('elt',date('Y-m-d H:i:s'));
             $where['activity.end_time'] = array('egt',date('Y-m-d H:i:s'));
             $res_activityhotel = $m_activityhotel->getActivityhotelDatas($fields,$where,'a.id desc','0,1','');
@@ -90,6 +86,7 @@ class ActivityapplyModel extends BaseModel{
                     $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_activityhotel[0]['portrait_image_url'];
 
                     unset($where['openid']);
+                    $where['box_mac'] = $box_mac;
                     $res_activity_apply = $this->getApplylist('openid',$where,'id asc','');
                     $get_position = 0;
                     foreach ($res_activity_apply as $k=>$v){
@@ -99,7 +96,7 @@ class ActivityapplyModel extends BaseModel{
                         }
                     }
                     $taste_wine['status'] = 2;
-                    $taste_wine['message'] = "恭喜您领到本饭局第{$get_position}份品鉴酒";
+                    $taste_wine['message'] = "恭喜您领到本饭局第{$get_position}份(75mL)品鉴酒";
                     $taste_wine['tips'] = '请向服务员出示此页面领取';
                 }
             }

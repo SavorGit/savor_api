@@ -42,8 +42,86 @@ class ActivityController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001);
                 break;
+            case 'startTastewine':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'task_user_id'=>1001,'send_num'=>1001,'box_mac'=>1001);
+                break;
         }
         parent::_init_();
+    }
+
+    public function startTastewine(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $task_user_id = $this->params['task_user_id'];
+        $send_num = $this->params['send_num'];
+        $box_mac = $this->params['box_mac'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_usertask = new \Common\Model\Integral\TaskuserModel();
+        $where = array('id'=>$task_user_id,'openid'=>$openid);
+        $res_usertask = $m_usertask->getInfo($where);
+        if(empty($res_usertask)){
+            $this->to_back(93073);
+        }
+        $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
+        $where = array('a.task_id'=>$res_usertask['task_id'],'task.status'=>1,'task.flag'=>1);
+        $fileds = 'task.id as task_id,task.name,task.goods_id,task.people_num,task.end_time';
+        $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $now_time = date('Y-m-d H:i:s');
+        if($res_task[0]['end_time']<$now_time){
+            $this->to_back(93071);
+        }
+        $m_stock = new \Common\Model\Smallapp\GoodsstockModel();
+        $res_stock = $m_stock->getInfo(array('goods_id'=>$res_task[0]['goods_id'],'hotel_id'=>$hotel_id));
+        $remain_drink_copies = intval($res_stock['drink_copies'])-intval($res_stock['consume_drink_copies']);
+        if($send_num>$remain_drink_copies){
+            $this->to_back(93072);
+        }
+        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_dishgoods->getInfo(array('id'=>$res_task[0]['goods_id']));
+        $start_time = date('Y-m-d H:i:s');
+        $countdown = 60*2;
+        $end_time = date('Y-m-d H:i:s',time()+$countdown);
+        $add_data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'openid'=>$openid,'name'=>$res_goods['name'],
+            'start_time'=>$start_time,'end_time'=>$end_time,'image_url'=>$res_goods['cover_imgs'],'portrait_image_url'=>$res_goods['detail_imgs'],
+            'people_num'=>$send_num,'task_user_id'=>$task_user_id,'status'=>1,'type'=>7
+        );
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $activity_id = $m_activity->add($add_data);
+
+        $m_media = new \Common\Model\MediaModel();
+        $media_info = $m_media->getMediaInfoById($res_goods['tv_media_id']);
+        $name_info = pathinfo($media_info['oss_path']);
+
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id'])){
+            $box_id = $forscreen_info['box_id'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $rets = $m_box->getBoxInfo('a.id as box_id',$where);
+            $box_id = $rets[0]['box_id'];
+        }
+
+        $host_name = C('HOST_NAME');
+        $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac=$box_mac&box_id=$box_id&data_id=$activity_id&type=41";
+        $message = array('action'=>154,'url'=>$media_info['oss_path'],'qrcode_url'=>$qrcode_url,'filename'=>$name_info['basename'],'countdown'=>$countdown);
+        $m_netty = new \Common\Model\NettyModel();
+        $res_push = $m_netty->pushBox($box_mac,json_encode($message));
+//        if($res_push['error_code']){
+//            $this->to_back($res_push['error_code']);
+//        }
+        $this->to_back(array('activity_id'=>$activity_id,'qrcode_url'=>$qrcode_url));
     }
 
     public function getActivityList(){

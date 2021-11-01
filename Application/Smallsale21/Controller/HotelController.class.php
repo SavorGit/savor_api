@@ -10,6 +10,9 @@ class HotelController extends CommonController{
             case 'getHotelList':
                 $this->is_verify = 0;
                 break;
+            case 'getMerchantHotelList':
+                $this->is_verify = 0;
+                break;
             case 'tvHelpvideos':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
@@ -60,6 +63,14 @@ class HotelController extends CommonController{
             $data[]=$dinfo;
         }
         $this->to_back($data);
+    }
+
+    public function getMerchantHotelList(){
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $fields = "hotel.id hotel_id,hotel.name as hotel_name,m.id as merchant_id";
+        $where = array('m.status'=>1,'m.type'=>2,'m.mtype'=>1,'hotel.state'=>1,'hotel.flag'=>0);
+        $res_data = $m_merchant->getMerchantInfo($fields,$where,'hotel.pinyin asc');
+        $this->to_back($res_data);
     }
 
     public function getExplist(){

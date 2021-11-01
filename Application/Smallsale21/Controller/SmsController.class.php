@@ -111,15 +111,9 @@ class SmsController extends CommonController{
         $code_array = array('1','2','3','4','5','6','7','8','9');
         $verify_code = array_rand($code_array,4);
         $verify_code = implode('', $verify_code);
-
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $sale_key = C('SAPP_SALE');
-        if($type==1){
-            $register_key = $sale_key.'register:'.$mobile;
-        }else{
-            $register_key = $sale_key.'purchaseregister:'.$mobile;
-        }
         $register_key = $sale_key.'register:'.$mobile;
 
         $repeat_key = $sale_key.'repeatsend:'.$mobile;
@@ -127,6 +121,7 @@ class SmsController extends CommonController{
         if(!empty($res_repeat)){
             $this->to_back(93039);
         }
+
         $ucconfig = C('ALIYUN_SMS_CONFIG');
         $alisms = new \Common\Lib\AliyunSms();
         $params = array('code'=>$verify_code);
@@ -137,6 +132,7 @@ class SmsController extends CommonController{
         );
         $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
         $m_account_sms_log->addData($data);
+
         if($res_data->Code == 'OK'){
             $redis->set($repeat_key,$mobile,60);
             $redis->set($register_key,$verify_code,1800);

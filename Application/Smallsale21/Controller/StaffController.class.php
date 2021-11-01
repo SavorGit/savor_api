@@ -36,8 +36,31 @@ class StaffController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'staff_id'=>1001,'money'=>1002,'integral'=>1002);
                 break;
+            case 'addRestaurantStaff':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'staff_openid'=>1001);
+                break;
         }
         parent::_init_();
+    }
+
+    public function addRestaurantStaff(){
+        $openid = $this->params['openid'];
+        $staff_openid = $this->params['staff_openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.merchant_id,merchant.type',$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $where = array('a.openid'=>$staff_openid,'a.merchant_id'=>$res_staff[0]['merchant_id'],'a.status'=>1);
+        $res_room_staff = $m_staff->getMerchantStaff('a.id,a.openid',$where);
+        if(empty($res_room_staff)){
+            $this->to_back(93030);
+        }
+        $data = array('level'=>2,'parent_id'=>$res_staff[0]['id'],'update_time'=>date('Y-m-d H:i:s'));
+        $m_staff->updateData(array('id'=>$res_room_staff[0]['id']),$data);
+        $this->to_back(array('staff_id'=>$res_room_staff[0]['id']));
     }
 
     public function stafflist(){

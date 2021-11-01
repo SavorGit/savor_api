@@ -169,9 +169,7 @@ class UserController extends CommonController{
             }
         }
         $userinfo['hotel_type'] = $hotel_type;
-
         $subscribe_status = 0;//1无openID 2未关注公众号 3已关注公众号
-
         if($openid){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
@@ -195,7 +193,6 @@ class UserController extends CommonController{
                 }
             }
         }
-
         if($hotel_id==791){
             $subscribe_status = 3;
         }
@@ -1032,7 +1029,7 @@ class UserController extends CommonController{
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $res_staff = $m_staff->getMerchantStaff('a.openid,a.merchant_id,merchant.type',$where);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,a.merchant_id,merchant.type',$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
             $this->to_back(93001);
         }
@@ -1048,6 +1045,21 @@ class UserController extends CommonController{
                 $res_user['invite_id'] = $v['parent_id'];
                 $res_user['level'] = $v['level'];
                 $datalist[] = $res_user;
+            }
+        }
+        if($page==1 && $res_staff[0]['level']==1){
+            $where = array('merchant_id'=>$res_staff[0]['merchant_id'],'status'=>1,'level'=>0);
+            $res_nolevel = $m_staff->getDataList('openid',$where,'id desc');
+            if(!empty($res_nolevel)){
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                foreach ($res_nolevel as $v){
+                    $where = array('openid'=>$v['openid']);
+                    $fields = 'openid,avatarUrl,nickName';
+                    $res_user = $m_user->getOne($fields, $where);
+                    $res_user['invite_id'] = 0;
+                    $res_user['level'] = 0;
+                    $datalist[] = $res_user;
+                }
             }
         }
         $data = array('datalist'=>$datalist);

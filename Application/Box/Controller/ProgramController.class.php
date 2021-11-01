@@ -83,6 +83,16 @@ class ProgramController extends CommonController{
 
         $play_info = $redis->get($cache_key);
         if(md5($resource_info)!== md5($play_info)){
+            $now_play_info = json_decode($resource_info,true);
+            if(!isset($now_play_info['hotplay']) || empty($now_play_info['hotplay'])){
+                if(!empty($play_info)){
+                    $old_play_info = json_decode($play_info,true);
+                    if(isset($old_play_info['hotplay']) && !empty($old_play_info['hotplay'])){
+                        $now_play_info['hotplay'] = $old_play_info['hotplay'];
+                        $resource_info = json_encode($now_play_info);
+                    }
+                }
+            }
             $redis->set($cache_key, $resource_info);
             $this->to_back(10000);
         }else {
@@ -132,6 +142,7 @@ class ProgramController extends CommonController{
             $redis->set($cache_key,json_encode($loopplay_data));
         }
         $nowtime = date('Y-m-d H:i:s');
+        /*
         $type = 10;//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
         $m_goods = new \Common\Model\Smallapp\GoodsModel();
         $fields = 'id as goods_id,media_id,name,price,start_time,end_time,type,scope,is_storebuy,jd_url,duration';
@@ -141,18 +152,21 @@ class ProgramController extends CommonController{
         $where['end_time'] = array('egt',$nowtime);
         $orderby = 'id desc';
         $optimize_goods = $m_goods->getDataList($fields,$where,$orderby);
+        */
 
         $fields = 'g.id as goods_id,g.media_id,g.salemedia_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy,g.jd_url,g.duration';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
-        $types = array(20,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
+//        $types = array(20,40);//10官方活动促销(统一为优选),20我的活动,30积分兑换现金 40秒杀商品
+        $types = array(40);
         $where['g.type'] = array('in',$types);
         $where['g.start_time'] = array('elt',$nowtime);
         $where['g.end_time'] = array('egt',$nowtime);
         $orderby = 'g.id desc';
         $limit = "";
         $my_hotelgoods = $m_hotelgoods->getList($fields,$where,$orderby,$limit,'g.id');
-        $res_goods = array_merge($optimize_goods,$my_hotelgoods);
-
+//        $res_goods = array_merge($optimize_goods,$my_hotelgoods);
+        $res_goods = $my_hotelgoods;
+        /*
         $fields = 'g.id as goods_id';
         $where = array('h.hotel_id'=>$hotel_id,'g.status'=>2,'h.type'=>1);
         $where['g.type']= 10;
@@ -162,8 +176,16 @@ class ProgramController extends CommonController{
         foreach ($all_hotel_goods as $gv){
             $hotel_goods_ids[]=$gv['goods_id'];
         }
-
+        */
         $host_name = C('HOST_NAME');
+        $m_task = new \Common\Model\Integral\TaskHotelModel();
+        $tfields = $fields = 'g.id as goods_id,g.video_intromedia_id as media_id,g.name,g.price,g.start_time,g.end_time,g.type,g.scope,g.is_storebuy';
+        $twhere = array('a.hotel_id'=>$hotel_id,'task.task_type'=>22,'task.status'=>1,'task.flag'=>1);
+        $res_taskgoods = $m_task->getHotelTaskGoodsList($tfields,$twhere,'goods.id asc');
+        if(!empty($res_taskgoods)){
+            $res_goods = array_merge($res_taskgoods,$res_goods);
+        }
+
         $m_media = new \Common\Model\MediaModel();
         $goods_ids = array();
         $program_list = array();
@@ -171,6 +193,9 @@ class ProgramController extends CommonController{
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
                 'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>intval($v['type']));
+            if($v['type']==41){
+                $info['price'] = '';
+            }
             if($info['goods_id']==C('LAIMAO_SECKILL_GOODS_ID')){
                 if(isset($all_laimao_sale_hotels[$hotel_id])){
                     $v['media_id'] = $v['salemedia_id'];
@@ -202,10 +227,12 @@ class ProgramController extends CommonController{
                     $info['duration'] = 30;
                 }
             }else{
+                /*
                 if(in_array($v['goods_id'],$hotel_goods_ids)){
                     $qrcode_url = $host_name."/smallsale/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22";
                     $is_storebuy = intval($v['is_storebuy']);
                 }
+                */
             }
             $info['qrcode_url'] = $qrcode_url;
             $info['is_storebuy'] = $is_storebuy;

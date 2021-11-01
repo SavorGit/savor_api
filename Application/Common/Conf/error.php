@@ -433,6 +433,12 @@ return array(
 	    '93065'=>'smallappsale_notcash_task_claim_error',
 	    '93066'=>'smallappsale_cash_task_not_finish',
 	    '93067'=>'smallappsale_initiatelottery_time_error',
+	    '93068'=>'smallappsale_login_had_register',
+        '93069'=>'smallappsale_task_had_recevie',
+        '93070'=>'smallappsale_not_has_task',
+        '93071'=>'smallappsale_task_had_expire',
+        '93072'=>'smallappsale_notenough_inventory_to_launch_event',
+        '93073'=>'smallappsale_please_get_task_first',
 
 
 	),

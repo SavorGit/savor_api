@@ -4,6 +4,17 @@ use Common\Model\BaseModel;
 class TaskuserModel extends BaseModel{
     protected $tableName = 'integral_task_user';
 
+    public function getUserTaskList($fields,$where,$order){
+        $task_list = $this->alias('a')
+            ->join('savor_integral_task task on a.task_id=task.id','left')
+            ->join('savor_media media on task.media_id=media.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->select();
+        return $task_list;
+    }
+
     public function getTask($openid,$hotel_id){
         $where = array('openid'=>$openid);
         $where["DATE_FORMAT(add_time,'%Y-%m-%d')"] = date('Y-m-d');

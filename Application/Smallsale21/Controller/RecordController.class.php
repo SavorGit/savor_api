@@ -24,6 +24,10 @@ class RecordController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'rolldata':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
 
 
         }
@@ -185,6 +189,45 @@ class RecordController extends CommonController{
         $this->to_back(array('datalist'=>$datalist));
     }
 
+    public function rolldata(){
+        $openid = $this->params['openid'];
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $fileds = 'a.openid,a.task_id,a.goods_id,a.hotel_name,a.type,user.avatarUrl as avatar_url,user.nickName as name';
+        $where = array('a.type'=>array('in',array(4,10,11)));//4兑换10领取品鉴酒活动任务,11完成品鉴酒活动任务
+        $m_usertaskrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $res_data = $m_usertaskrecord->getFinishRecordlist($fileds,$where,'a.id desc',0,50);
+
+        $m_goods = new \Common\Model\Smallapp\GoodsModel();
+        $m_task = new \Common\Model\Integral\TaskModel();
+        $datalist = array();
+        foreach ($res_data as $v){
+            $content = "{$v['hotel_name']}餐厅{$v['name']}";
+            switch ($v['type']){
+                case 4:
+                    $res_goods = $m_goods->getInfo(array('id'=>$v['goods_id']));
+                    $content.="兑换成功了{$res_goods['name']}";
+                    break;
+                case 10:
+                    $res_task = $m_task->getInfo(array('id'=>$v['task_id']));
+                    $content.="领取了{$res_task['name']}任务";
+                    break;
+                case 11:
+                    $res_task = $m_task->getInfo(array('id'=>$v['task_id']));
+                    $content.="完成了{$res_task['name']}任务";
+                    break;
+            }
+            $info = array('avatar_url'=>$v['avatar_url'],'content'=>$content);
+            $datalist[]=$info;
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
 
 
 }

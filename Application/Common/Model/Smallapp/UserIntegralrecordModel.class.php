@@ -5,6 +5,17 @@ use Common\Model\BaseModel;
 class UserIntegralrecordModel extends BaseModel{
 	protected $tableName='smallapp_user_integralrecord';
 
+    public function getFinishRecordlist($fileds,$where,$orderby,$start,$size){
+        $res = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_smallapp_user user on user.openid=a.openid','left')
+            ->where($where)
+            ->order($orderby)
+            ->limit($start,$size)
+            ->select();
+        return $res;
+    }
+
 	public function getIntegralBytime($openid,$type,$start_time,$end_time){
         $where = array('openid'=>$openid,'type'=>$type);
         $where['add_time'] = array(array('egt',$start_time), array('elt',$end_time));

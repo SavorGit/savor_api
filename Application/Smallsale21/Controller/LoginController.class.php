@@ -14,10 +14,64 @@ class LoginController extends CommonController{
             case 'scancodeLogin':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'qrcode'=>1001);
-
+                break;
+            case 'registerLogin':
+                $this->is_verify = 1;
+                $this->valid_fields = array('uname'=>1001,'mobile'=>1001,'verify_code'=>1001,'merchant_id'=>1001,
+                    'hotel_id'=>1001,'openid'=>1001,'avatarUrl'=>1001,'nickName'=>1001,'gender'=>1001,
+                    'session_key'=>1001,'iv'=>1001,'encryptedData'=>1001,);
+                break;
         }
         parent::_init_();
     }
+
+    public function registerLogin(){
+        $uname = $this->params['uname'];
+        $mobile = $this->params['mobile'];
+        $verify_code = trim($this->params['verify_code']);
+        $hotel_id = $this->params['hotel_id'];
+        $merchant_id = $this->params['merchant_id'];
+        $openid = $this->params['openid'];
+        $avatarUrl = $this->params['avatarUrl'];
+        $nickName = $this->params['nickName'];
+        $gender = $this->params['gender'];
+        $encryptedData = $this->params['encryptedData'];
+
+        if(!check_mobile($mobile)){//验证手机格式
+            $this->to_back(92001);
+        }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'register:'.$mobile;
+        $cache_verify_code = $redis->get($cache_key);
+        if($verify_code != $cache_verify_code){
+            $this->to_back(92006);
+        }
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid));
+        if(!empty($res_staff)){
+            $this->to_back(93068);
+        }
+        $staff_data = array('merchant_id'=>$merchant_id,'name'=>$uname,'openid'=>$openid,'status'=>1);
+        $m_staff->add($staff_data);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $userinfo = $m_user->getOne('id,openid,mobile,role_id', $where);
+        $data = array('openid'=>$openid,'avatarUrl'=>$avatarUrl,'nickName'=>$nickName,'gender'=>$gender,'mobile'=>$mobile,
+            'is_wx_auth'=>3,'small_app_id'=>5);
+        if(!empty($encryptedData['unionId'])){
+            $data['unionId'] = $encryptedData['unionId'];
+        }
+        if(empty($userinfo)){
+            $m_user->addInfo($data);
+        }else{
+            $m_user->updateInfo(array('id'=>$userinfo['id']), $data);
+        }
+        $data['hotel_id'] = $hotel_id;
+        $data['role_type'] = 0;
+        $this->to_back($data);
+    }
+
     public function login(){
         $mobile = $this->params['mobile'];
 
@@ -156,6 +210,7 @@ class LoginController extends CommonController{
 
         $this->to_back($userinfo);
     }
+
     public function scancodeLogin(){
         $openid = $this->params['openid'];
         $qrcode = $this->params['qrcode'];

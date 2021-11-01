@@ -195,6 +195,29 @@ class ActivityTastewineController extends CommonController{
         $m_userintegralrecord->add($integralrecord_data);
         //end
 
+        $ucconfig = C('ALIYUN_SMS_CONFIG');
+        $alisms = new \Common\Lib\AliyunSms();
+        $params = array('name'=>$res_activity['name']);
+        $template_code = $ucconfig['send_tastewine_user_templateid'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        $where = array('openid'=>$res_task[0]['openid'],'status'=>1);
+        $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
+        $tailnum = substr($staff_user_info['mobile'],-4);
+        $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_activity['name']);
+        $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
+        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
         $this->to_back($resp_data);
     }
 

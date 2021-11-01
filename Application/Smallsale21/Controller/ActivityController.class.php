@@ -118,9 +118,9 @@ class ActivityController extends CommonController{
         $message = array('action'=>154,'url'=>$media_info['oss_path'],'qrcode_url'=>$qrcode_url,'filename'=>$name_info['basename'],'countdown'=>$countdown);
         $m_netty = new \Common\Model\NettyModel();
         $res_push = $m_netty->pushBox($box_mac,json_encode($message));
-//        if($res_push['error_code']){
-//            $this->to_back($res_push['error_code']);
-//        }
+        if($res_push['error_code']){
+            $this->to_back($res_push['error_code']);
+        }
         $this->to_back(array('activity_id'=>$activity_id,'qrcode_url'=>$qrcode_url));
     }
 

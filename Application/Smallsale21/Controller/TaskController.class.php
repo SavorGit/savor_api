@@ -79,8 +79,8 @@ class TaskController extends CommonController{
         task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,a.people_num as join_peoplenum";
         $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>22);
         $m_media = new \Common\Model\MediaModel();
-        $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id asc');
-        $inprogress_task = $invalid_task = array();
+        $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+        $inprogress_task = $invalid_task = $finish_task = array();
         if(!empty($res_inprogress_task)){
             $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
             foreach ($res_inprogress_task as $k=>$v){
@@ -100,8 +100,17 @@ class TaskController extends CommonController{
                 if($v['status']==1 && $v['flag']==1){
                     if($tinfo['people_num']>0){
                         $inprogress_task[$v['task_id']]=$tinfo;
+                    }else{
+                        $finish_task[]=$v['task_id'];
+                        $tinfo['itype'] = 2;
+                        $invalid_task[]=$tinfo;
                     }
                 }else{
+                    if($tinfo['people_num']>0){
+                        $tinfo['itype'] = 1;
+                    }else{
+                        $tinfo['itype'] = 2;
+                    }
                     $invalid_task[]=$tinfo;
                 }
             }
@@ -126,8 +135,15 @@ class TaskController extends CommonController{
 
         $fields = "task.id task_id,task.name task_name,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit";
         $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>22,'task.status'=>1,'task.flag'=>1);
+        $no_task_ids = array();
         if(!empty($inprogress_task)){
-            $where['task.id'] = array('not in',array_keys($inprogress_task));
+            $no_task_ids = array_keys($inprogress_task);
+        }
+        if(!empty($finish_task)){
+            $no_task_ids = array_merge($no_task_ids,$finish_task);
+        }
+        if(!empty($no_task_ids)){
+            $where['task.id'] = array('not in',$no_task_ids);
         }
         $order = 'task.id asc';
         $canreceive_task = $m_task_hotel->getHotelTaskList($fields,$where,$order,0,1000);
@@ -262,15 +278,7 @@ class TaskController extends CommonController{
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
         }
-        $last_people_num = $res_task[0]['people_num'] - $res_usertask['people_num'];
-        $m_stock = new \Common\Model\Smallapp\GoodsstockModel();
-        $res_stock = $m_stock->getInfo(array('goods_id'=>$res_task[0]['goods_id'],'hotel_id'=>$hotel_id));
-        $remain_drink_copies = intval($res_stock['drink_copies'])-intval($res_stock['consume_drink_copies']);
-        if($remain_drink_copies<=0){
-            $this->to_back(93072);
-        }
-        $send_num = $last_people_num>$remain_drink_copies?$remain_drink_copies:$last_people_num;
-
+        $send_num = $res_task[0]['people_num'] - $res_usertask['people_num'];
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         $res_goods = $m_dishgoods->getInfo(array('id'=>$res_task[0]['goods_id']));
 

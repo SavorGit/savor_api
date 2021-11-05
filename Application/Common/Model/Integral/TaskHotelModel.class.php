@@ -26,13 +26,14 @@ class TaskHotelModel extends BaseModel{
         return $task_list;
     }
 
-    public function getHotelTaskGoodsList($fields,$where,$order){
+    public function getHotelTaskGoodsList($fields,$where,$order,$group){
         $task_list = $this->alias('a')
             ->join('savor_integral_task task on a.task_id=task.id','left')
             ->join('savor_smallapp_dishgoods g on task.goods_id=g.id','left')
             ->field($fields)
             ->where($where)
             ->order($order)
+            ->group($group)
             ->select();
         return $task_list;
     }

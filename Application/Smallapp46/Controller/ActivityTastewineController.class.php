@@ -52,7 +52,6 @@ class ActivityTastewineController extends CommonController{
         $oss_host = C('OSS_HOST');
         $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'http://'.$oss_host.'/'.$res_activity['portrait_image_url'],
             'width_img'=>'http://'.$oss_host.'/'.$res_activity['image_url'],'message'=>'','tips'=>'','qrcode_type'=>41);
-
         if($people_num>$taste_wine_apply_num && $taste_user_wine_apply_num<3){
             $taste_wine['activity_id'] = $activity_id;
             $taste_wine['is_pop_wind'] = true;
@@ -106,7 +105,7 @@ class ActivityTastewineController extends CommonController{
         $people_num = $res_activity['people_num'];
         $now_time = date('Y-m-d H:i:s');
         if($res_activity['start_time']>$now_time || $res_activity['end_time']<$now_time){
-            $this->to_back(90175);
+            $this->to_back(90182);
         }
         $m_box = new \Common\Model\BoxModel();
         $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
@@ -168,14 +167,20 @@ class ActivityTastewineController extends CommonController{
                 break;
             }
         }
+        if($get_position==0){
+            $get_position = count($res_activity_apply)+1;
+        }
         $resp_data = array('message'=>"恭喜您领到第{$get_position}份品鉴酒",'tips'=>'请向服务员出示此页面领取');
         //更新任务信息,更新积分
         $m_taskuser = new \Common\Model\Integral\TaskuserModel();
-        $fields = 'a.openid,a.task_id,a.integral as user_integral,a.people_num,task.integral';
+        $fields = 'a.openid,a.task_id,a.integral as user_integral,a.people_num,task.goods_id,task.integral';
         $where = array('a.id'=>$res_activity['task_user_id']);
         $res_task = $m_taskuser->getUserTaskList($fields,$where,'a.id desc');
         $tudata = array('people_num'=>$res_task[0]['people_num']+1,'integral'=>$res_task[0]['user_integral']+$res_task[0]['integral']);
         $m_taskuser->updateData(array('id'=>$res_activity['task_user_id']),$tudata);
+
+        $m_goodsstock = new \Common\Model\Smallapp\GoodsstockModel();
+        $m_goodsstock->where(array('goods_id'=>$res_task[0]['goods_id'],'hotel_id'=>$hotel_id))->setInc('consume_drink_copies',1);
 
         $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
         $res_integral = $m_userintegral->getInfo(array('openid'=>$res_task[0]['openid']));
@@ -190,10 +195,15 @@ class ActivityTastewineController extends CommonController{
         $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
         $integralrecord_data = array('openid'=>$res_task[0]['openid'],'area_id'=>$res_hotel['area_id'],'task_id'=>$res_task[0]['task_id'],'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'room_id'=>$room_id,'room_name'=>$box_name,'box_id'=>$box_id,'box_mac'=>$box_mac,
             'integral'=>$res_task[0]['integral'],'content'=>1,'type'=>11,'integral_time'=>date('Y-m-d H:i:s'));
         $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $m_userintegralrecord->add($integralrecord_data);
         //end
+
+
+
+
 
         $ucconfig = C('ALIYUN_SMS_CONFIG');
         $alisms = new \Common\Lib\AliyunSms();
@@ -208,12 +218,12 @@ class ActivityTastewineController extends CommonController{
 
         $where = array('openid'=>$res_task[0]['openid'],'status'=>1);
         $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
-        $tailnum = substr($staff_user_info['mobile'],-4);
+        $tailnum = substr($mobile,-4);
         $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_activity['name']);
         $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
-        $res_data = $alisms::sendSms($mobile,$params,$template_code);
+        $res_data = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
         $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+            'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_data->Code,'msg_type'=>3
         );
         $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
         $m_account_sms_log->addData($data);

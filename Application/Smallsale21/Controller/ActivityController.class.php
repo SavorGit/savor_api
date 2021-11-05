@@ -54,7 +54,7 @@ class ActivityController extends CommonController{
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
         $task_user_id = $this->params['task_user_id'];
-        $send_num = $this->params['send_num'];
+        $send_num = intval($this->params['send_num']);
         $box_mac = $this->params['box_mac'];
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
@@ -91,8 +91,9 @@ class ActivityController extends CommonController{
         $res_goods = $m_dishgoods->getInfo(array('id'=>$res_task[0]['goods_id']));
         $start_time = date('Y-m-d H:i:s');
         $countdown = 60*2;
-        $end_time = date('Y-m-d H:i:s',time()+$countdown);
-        $add_data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'openid'=>$openid,'name'=>$res_goods['name'],
+        $expire_timecountdown = 60*5;
+        $end_time = date('Y-m-d H:i:s',time()+$expire_timecountdown);
+        $add_data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'openid'=>$openid,'name'=>$res_task[0]['name'],'prize'=>$res_goods['name'],
             'start_time'=>$start_time,'end_time'=>$end_time,'image_url'=>$res_goods['cover_imgs'],'portrait_image_url'=>$res_goods['detail_imgs'],
             'people_num'=>$send_num,'task_user_id'=>$task_user_id,'status'=>1,'type'=>7
         );
@@ -396,7 +397,7 @@ class ActivityController extends CommonController{
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
-        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6);
+        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>array('in',array(6,7)));
         $fields = 'activity.name,activity.prize,a.id,a.openid,a.box_mac,a.box_name,a.add_time';
         $res_apply = $m_activityapply->getApplyDatas($fields,$where,'a.id desc',$limit,'');
         $datalist = array();

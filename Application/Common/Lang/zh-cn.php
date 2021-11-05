@@ -432,8 +432,9 @@ return array(
     'smallapp_tastwine_join_first'=>'请先参加品鉴酒活动',
     'smallapp_tastwine_invalid_user'=>'无法领取，请联系管理人员',
     'smallappsale_login_had_register'=>'请勿重复注册',
-    'smallappsale_notenough_inventory_to_launch_event'=>'库存不足，活动无法发起',
+    'smallappsale_notenough_inventory_to_launch_event'=>'库存不足，请联系管理员',
     'smallappsale_please_get_task_first'=>'请先领取任务',
+    'smallapp_tastwine_has_expire'=>'品鉴酒活动已过期',
 
 
 );

@@ -48,7 +48,7 @@ class LoginController extends CommonController{
             $this->to_back(92006);
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getInfo(array('openid'=>$openid));
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(!empty($res_staff)){
             $this->to_back(93068);
         }

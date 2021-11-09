@@ -802,7 +802,7 @@ class UserController extends CommonController{
             $this->to_back(90157);
         }
         $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
-        $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4)),'a.status'=>array('in',array(1,2,4,5)));
+        $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4,8)),'a.status'=>array('in',array(1,2,4,5)));
         $order = 'a.id desc';
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $limit = "0,$all_nums";

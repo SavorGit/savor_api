@@ -440,6 +440,8 @@ return array(
         '93071'=>'smallappsale_task_had_expire',
         '93072'=>'smallappsale_notenough_inventory_to_launch_event',
         '93073'=>'smallappsale_please_get_task_first',
+        '93074'=>'smallappsale_activity_boot_num_error',
+        '93075'=>'smallappsale_activity_lottery_time_error',
 
 
 	),

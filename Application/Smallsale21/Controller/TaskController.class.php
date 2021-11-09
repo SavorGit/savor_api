@@ -63,7 +63,7 @@ class TaskController extends CommonController{
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1,'merchant.type'=>3);
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $field_staff = 'a.openid,a.level,merchant.type';
+        $field_staff = 'a.openid,a.level,a.id as staff_id,merchant.type';
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
         if(empty($res_staff)){
             $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
@@ -77,42 +77,88 @@ class TaskController extends CommonController{
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,
         task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,a.people_num as join_peoplenum";
-        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>22);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',array(22,23)));
         $m_media = new \Common\Model\MediaModel();
         $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
         $inprogress_task = $invalid_task = $finish_task = array();
         if(!empty($res_inprogress_task)){
             $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+            $m_activity = new \Common\Model\Smallapp\ActivityModel();
             foreach ($res_inprogress_task as $k=>$v){
                 $tinfo = $v;
-                $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
-                $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
-                $oss_path = $media_info['oss_path'];
-                $oss_path_info = pathinfo($oss_path);
-                $tinfo['is_tvdemand'] = 1;
-                $tinfo['price'] = $res_goods['price'];
-                $tinfo['duration'] = $media_info['duration'];
-                $tinfo['tx_url'] = $media_info['oss_addr'];
-                $tinfo['filename'] = $oss_path_info['basename'];
-                $tinfo['forscreen_url'] = $oss_path;
-                $tinfo['resource_size'] = $media_info['oss_filesize'];
-                $tinfo['people_num'] = $v['people_num']-$v['join_peoplenum']>0?$v['people_num']-$v['join_peoplenum']:0;
-                if($v['status']==1 && $v['flag']==1){
-                    if($tinfo['people_num']>0){
-                        $inprogress_task[$v['task_id']]=$tinfo;
+                if($v['task_type']==22){
+                    $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
+                    $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
+                    $oss_path = $media_info['oss_path'];
+                    $oss_path_info = pathinfo($oss_path);
+                    $tinfo['is_tvdemand'] = 1;
+                    $tinfo['price'] = $res_goods['price'];
+                    $tinfo['duration'] = $media_info['duration'];
+                    $tinfo['tx_url'] = $media_info['oss_addr'];
+                    $tinfo['filename'] = $oss_path_info['basename'];
+                    $tinfo['forscreen_url'] = $oss_path;
+                    $tinfo['resource_size'] = $media_info['oss_filesize'];
+                    $tinfo['people_num'] = $v['people_num']-$v['join_peoplenum']>0?$v['people_num']-$v['join_peoplenum']:0;
+                    if($v['status']==1 && $v['flag']==1){
+                        if($tinfo['people_num']>0){
+                            $inprogress_task[$v['task_id']]=$tinfo;
+                        }else{
+                            $finish_task[]=$v['task_id'];
+                            $tinfo['itype'] = 2;
+                            $invalid_task[]=$tinfo;
+                        }
                     }else{
-                        $finish_task[]=$v['task_id'];
-                        $tinfo['itype'] = 2;
+                        if($tinfo['people_num']>0){
+                            $tinfo['itype'] = 1;
+                        }else{
+                            $tinfo['itype'] = 2;
+                        }
                         $invalid_task[]=$tinfo;
                     }
                 }else{
-                    if($tinfo['people_num']>0){
-                        $tinfo['itype'] = 1;
+                    $res_ainfo = $m_activity->getInfo(array('task_user_id'=>$v['task_user_id']));
+                    if($v['status']==1 && $v['flag']==1){
+                        if(!empty($res_ainfo) && $res_ainfo['status']==2){
+                            $finish_task[]=$v['task_id'];
+                            $tinfo['itype'] = 2;
+                            $invalid_task[]=$tinfo;
+                        }else{
+                            $activity_status = 0;//0待发起 1已发起未开始(可修改) 2进行中
+                            $activity_id = 0;
+                            if(!empty($res_ainfo)){
+                                $activity_id = $res_ainfo['id'];
+                                if($res_ainfo['status']==0){
+                                    $activity_status = 1;
+                                }else{
+                                    $activity_status = 2;
+                                }
+                                $start_hour = date('G',strtotime($res_ainfo['start_time']));
+                                $start_minute = date('i',strtotime($res_ainfo['start_time']));
+                                $activity_start_time = array(intval($start_hour),intval($start_minute/10));
+
+                                $lottery_start_hour = date('G',strtotime($res_ainfo['lottery_time']));
+                                $lottery_start_minute = date('i',strtotime($res_ainfo['lottery_time']));
+                                $activity_lottery_time = array(intval($lottery_start_hour),intval($lottery_start_minute/10));
+
+                                $tinfo['activity_start_time'] = $activity_start_time;
+                                $tinfo['activity_lottery_time'] = $activity_lottery_time;
+                                $tinfo['activity_scope'] = $res_ainfo['scope'];
+                                $tinfo['activity_time'] = date('Y.m.d-H:i',strtotime($res_ainfo['lottery_time']));
+                            }
+                            $tinfo['activity_id'] = $activity_id;
+                            $tinfo['activity_status'] = $activity_status;
+                            $inprogress_task[$v['task_id']]=$tinfo;
+                        }
                     }else{
-                        $tinfo['itype'] = 2;
+                        if($res_ainfo['status']==2){
+                            $tinfo['itype'] = 2;
+                        }else{
+                            $tinfo['itype'] = 1;
+                        }
+                        $invalid_task[]=$tinfo;
                     }
-                    $invalid_task[]=$tinfo;
                 }
+
             }
         }
         $m_task_hotel = new \Common\Model\Integral\TaskHotelModel();
@@ -133,8 +179,8 @@ class TaskController extends CommonController{
             $all_inprogress_task = array_merge(array_values($inprogress_task),$all_inprogress_task);
         }
 
-        $fields = "task.id task_id,task.name task_name,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit";
-        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>22,'task.status'=>1,'task.flag'=>1);
+        $fields = "task.id task_id,task.name task_name,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,a.staff_id";
+        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',array(22,23)),'task.status'=>1,'task.flag'=>1);
         $no_task_ids = array();
         if(!empty($inprogress_task)){
             $no_task_ids = array_keys($inprogress_task);
@@ -146,13 +192,16 @@ class TaskController extends CommonController{
             $where['task.id'] = array('not in',$no_task_ids);
         }
         $order = 'task.id asc';
-        $canreceive_task = $m_task_hotel->getHotelTaskList($fields,$where,$order,0,1000);
-        if(!empty($canreceive_task)){
+        $rescanreceive_task = $m_task_hotel->getHotelTaskList($fields,$where,$order,0,1000);
+        $canreceive_task = array();
+        $all_prizes = array('1'=>'一等奖','2'=>'二等奖','3'=>'三等奖');
+        if(!empty($rescanreceive_task)){
+            $m_taskprize = new \Common\Model\Integral\TaskPrizeModel();
             $send_num_key = C('SAPP_SALE_TASK_SENDNUM');
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(14);
             $all_people_num = 1000;
-            foreach ($canreceive_task as $k=>$v){
+            foreach ($rescanreceive_task as $k=>$v){
                 $send_num_cache_key = $send_num_key.$v['task_id'];
                 $res_send_num = $redis->get($send_num_cache_key);
                 if(!empty($res_send_num)){
@@ -164,10 +213,24 @@ class TaskController extends CommonController{
                     $send_num = 800 + rand(1,3);
                 }
                 $redis->set($send_num_cache_key,$send_num,86400*30);
-                $canreceive_task[$k]['get_num'] = $send_num;
-                $canreceive_task[$k]['remain_num'] = $all_people_num-$send_num;
-                $canreceive_task[$k]['percent'] = ($send_num/$all_people_num)*100;
-                $canreceive_task[$k]['remain_percent'] = 100-$canreceive_task[$k]['percent'];
+                $v['get_num'] = $send_num;
+                $v['remain_num'] = $all_people_num-$send_num;
+                $v['percent'] = ($send_num/$all_people_num)*100;
+                $v['remain_percent'] = 100-$canreceive_task[$k]['percent'];
+                if($v['task_type']==23){
+                    if($v['staff_id']==$res_staff[0]['staff_id']){
+                        $res_prizes = $m_taskprize->getDataList('*',array('task_id'=>$v['task_id'],'status'=>1),'level asc');
+                        $prize_list = array();
+                        foreach ($res_prizes as $pv){
+                            $name = $all_prizes[$pv['level']].$pv['amount'].'人';
+                            $prize_list[]=array('name'=>$name,'prize'=>$pv['name']);
+                        }
+                        $v['prize_list'] = $prize_list;
+                        $canreceive_task[]=$v;
+                    }
+                }else{
+                    $canreceive_task[]=$v;
+                }
             }
         }
         $res_data = array('inprogress'=>$all_inprogress_task,'canreceive'=>$canreceive_task,'invalid'=>$invalid_task);
@@ -195,7 +258,7 @@ class TaskController extends CommonController{
         }
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
         $where = array('a.task_id'=>$task_id,'task.status'=>1,'task.flag'=>1);
-        $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral';
+        $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral,task.task_type';
         $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
         if(empty($res_task)){
             $this->to_back(93070);
@@ -216,11 +279,15 @@ class TaskController extends CommonController{
             $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['task_integral']);
             $m_userintegral->add($uidata);
         }
+        $type = 10;
+        if($res_task[0]['task_type']==23){
+            $type = 12;
+        }
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
         $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-            'integral'=>$res_task[0]['task_integral'],'content'=>1,'type'=>10,'integral_time'=>date('Y-m-d H:i:s'));
+            'integral'=>$res_task[0]['task_integral'],'content'=>1,'type'=>$type,'integral_time'=>date('Y-m-d H:i:s'));
         $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $m_userintegralrecord->add($integralrecord_data);
         //end

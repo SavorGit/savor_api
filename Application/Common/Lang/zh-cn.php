@@ -435,6 +435,8 @@ return array(
     'smallappsale_notenough_inventory_to_launch_event'=>'库存不足，请联系管理员',
     'smallappsale_please_get_task_first'=>'请先领取任务',
     'smallapp_tastwine_has_expire'=>'品鉴酒活动已过期',
+    'smallappsale_activity_boot_num_error'=>'当前电视开机数不足%d个，无法发起抽奖活动',
+    'smallappsale_activity_lottery_time_error'=>'请选择正确的时间',
 
 
 );

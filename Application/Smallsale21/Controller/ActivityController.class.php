@@ -50,6 +50,178 @@ class ActivityController extends CommonController{
         parent::_init_();
     }
 
+    public function addhotelLottery(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $task_user_id = $this->params['task_user_id'];
+        $start_time = $this->params['start_time'];
+        $scope = intval($this->params['scope']);//抽奖范围1全餐厅,2所有包间
+        $lottery_time = $this->params['lottery_time'];
+
+        $start_time = strtotime(date('Y-m-d')." $start_time");
+        $lottery_time = strtotime(date('Y-m-d')." $lottery_time");
+        $n_time = time();
+        if($start_time<$n_time || $lottery_time<$n_time || ($start_time>$lottery_time)){
+            $this->to_back(93075);
+        }
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_usertask = new \Common\Model\Integral\TaskuserModel();
+        $where = array('id'=>$task_user_id,'openid'=>$openid);
+        $res_usertask = $m_usertask->getInfo($where);
+        if(empty($res_usertask)){
+            $this->to_back(93073);
+        }
+        $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
+        $where = array('a.task_id'=>$res_usertask['task_id'],'task.status'=>1,'task.flag'=>1);
+        $fileds = 'task.id as task_id,task.name,a.boot_num,task.people_num,task.end_time,task.image_url,task.portrait_image_url';
+        $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $now_time = date('Y-m-d H:i:s');
+        if($res_task[0]['end_time']<$now_time){
+            $this->to_back(93071);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+        if($scope==2){
+            $where['room.type']=1;
+        }
+        $res_box = $m_box->getBoxByCondition('box.mac',$where);
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(13);
+        $now_boot_num = 0;
+        foreach ($res_box as $v){
+            $heart_key = "heartbeat:2:{$v['mac']}";
+            $res_heart = $redis->get($heart_key);
+            if(!empty($res_heart)){
+                $heart_info = json_decode($res_heart,true);
+                $heart_diff_time = time() - strtotime($heart_info['date']);
+                if($heart_diff_time<1800){
+                    $now_boot_num++;
+                }
+            }
+        }
+        if($now_boot_num<$res_task[0]['boot_num']){
+            $code = 93074;
+            $errorinfo = C('errorinfo');
+            $resp_msg = $errorinfo[$code];
+            $msg = sprintf(L("$resp_msg"),$res_task[0]['boot_num']);
+            $data = array('code'=>$code,'msg'=>$msg);
+            $this->to_back($data);
+        }
+
+        $expire_time = 60;
+        $start_time = date('Y-m-d H:i:s',$start_time);
+        $end_time = date('Y-m-d H:i:s',$lottery_time-$expire_time);
+        $lottery_time = date('Y-m-d H:i:s',$lottery_time);
+        $add_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'name'=>$res_task[0]['name'],
+            'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'scope'=>$scope,
+            'image_url'=>$res_task[0]['image_url'],'portrait_image_url'=>$res_task[0]['portrait_image_url'],
+            'people_num'=>$res_task[0]['people_num'],'task_user_id'=>$task_user_id,'status'=>0,'type'=>8
+        );
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $activity_id = $m_activity->add($add_data);
+        $m_taskprize = new \Common\Model\Integral\TaskPrizeModel();
+        $res_prize = $m_taskprize->getDataList('*',array('task_id'=>$res_usertask['task_id'],'status'=>1));
+        $prize_datas = array();
+        foreach ($res_prize as $v){
+            $prize_datas[]=array('activity_id'=>$activity_id,'name'=>$v['name'],'image_url'=>$v['image_url'],'amount'=>$v['amount'],'level'=>$v['level']);
+        }
+        $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
+        $m_activityprize->addAll($prize_datas);
+        $this->to_back(array('activity_id'=>$activity_id));
+    }
+
+    public function edithotelLottery(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $activity_id = $this->params['activity_id'];
+        $start_time = $this->params['start_time'];
+        $scope = intval($this->params['scope']);//抽奖范围1全餐厅,2所有包间
+        $lottery_time = $this->params['lottery_time'];
+
+        $start_time = strtotime(date('Y-m-d')." $start_time");
+        $lottery_time = strtotime(date('Y-m-d')." $lottery_time");
+        $n_time = time();
+        if($start_time<$n_time || $lottery_time<$n_time || ($start_time>$lottery_time)){
+            $this->to_back(93075);
+        }
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'openid'=>$openid));
+
+        $m_usertask = new \Common\Model\Integral\TaskuserModel();
+        $where = array('id'=>$res_activity['task_user_id'],'openid'=>$openid);
+        $res_usertask = $m_usertask->getInfo($where);
+        if(empty($res_usertask)){
+            $this->to_back(93073);
+        }
+        $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
+        $where = array('a.task_id'=>$res_usertask['task_id'],'task.status'=>1,'task.flag'=>1);
+        $fileds = 'task.id as task_id,task.name,a.boot_num,task.people_num,task.end_time,task.image_url,task.portrait_image_url';
+        $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $now_time = date('Y-m-d H:i:s');
+        if($res_task[0]['end_time']<$now_time){
+            $this->to_back(93071);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+        if($scope==2){
+            $where['room.type']=1;
+        }
+        $res_box = $m_box->getBoxByCondition('box.mac',$where);
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(13);
+        $now_boot_num = 0;
+        foreach ($res_box as $v){
+            $heart_key = "heartbeat:2:{$v['mac']}";
+            $res_heart = $redis->get($heart_key);
+            if(!empty($res_heart)){
+                $heart_info = json_decode($res_heart,true);
+                $heart_diff_time = time() - strtotime($heart_info['date']);
+                if($heart_diff_time<1800){
+                    $now_boot_num++;
+                }
+            }
+        }
+        if($now_boot_num<$res_task[0]['boot_num']){
+            $code = 93074;
+            $errorinfo = C('errorinfo');
+            $resp_msg = $errorinfo[$code];
+            $msg = sprintf(L("$resp_msg"),$res_task[0]['boot_num']);
+            $data = array('code'=>$code,'msg'=>$msg);
+            $this->to_back($data);
+        }
+
+        $expire_time = 60;
+        $start_time = date('Y-m-d H:i:s',$start_time);
+        $end_time = date('Y-m-d H:i:s',$lottery_time-$expire_time);
+        $lottery_time = date('Y-m-d H:i:s',$lottery_time);
+        $add_data = array(
+            'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'scope'=>$scope
+        );
+        $m_activity->updateData(array('id'=>$activity_id),$add_data);
+        $this->to_back(array('activity_id'=>$activity_id));
+    }
+
     public function startTastewine(){
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];

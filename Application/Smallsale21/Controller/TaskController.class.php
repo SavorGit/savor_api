@@ -75,8 +75,8 @@ class TaskController extends CommonController{
         }
         $m_task_user = new \Common\Model\Integral\TaskuserModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
-        $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,
-        task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,a.people_num as join_peoplenum";
+        $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
+        task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
         $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',array(22,23)));
         $m_media = new \Common\Model\MediaModel();
         $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
@@ -132,19 +132,19 @@ class TaskController extends CommonController{
                                 }else{
                                     $activity_status = 2;
                                 }
-                                $start_hour = date('G',strtotime($res_ainfo['start_time']));
+                                $start_hour = date('G',strtotime($res_ainfo['start_time']))-10;
                                 $start_minute = date('i',strtotime($res_ainfo['start_time']));
                                 $activity_start_time = array(intval($start_hour),intval($start_minute/10));
 
-                                $lottery_start_hour = date('G',strtotime($res_ainfo['lottery_time']));
+                                $lottery_start_hour = date('G',strtotime($res_ainfo['lottery_time']))-10;
                                 $lottery_start_minute = date('i',strtotime($res_ainfo['lottery_time']));
                                 $activity_lottery_time = array(intval($lottery_start_hour),intval($lottery_start_minute/10));
 
                                 $tinfo['activity_start_time'] = $activity_start_time;
                                 $tinfo['activity_lottery_time'] = $activity_lottery_time;
                                 $tinfo['activity_scope'] = $res_ainfo['scope'];
-                                $tinfo['activity_time'] = date('Y.m.d-H:i',strtotime($res_ainfo['lottery_time']));
                             }
+                            $tinfo['task_expire_time'] = date('Y.m.d-H:i',strtotime($v['task_expire_time']));
                             $tinfo['activity_id'] = $activity_id;
                             $tinfo['activity_status'] = $activity_status;
                             $inprogress_task[$v['task_id']]=$tinfo;
@@ -216,7 +216,7 @@ class TaskController extends CommonController{
                 $v['get_num'] = $send_num;
                 $v['remain_num'] = $all_people_num-$send_num;
                 $v['percent'] = ($send_num/$all_people_num)*100;
-                $v['remain_percent'] = 100-$canreceive_task[$k]['percent'];
+                $v['remain_percent'] = 100-$v['percent'];
                 if($v['task_type']==23){
                     if($v['staff_id']==$res_staff[0]['staff_id']){
                         $res_prizes = $m_taskprize->getDataList('*',array('task_id'=>$v['task_id'],'status'=>1),'level asc');

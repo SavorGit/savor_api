@@ -425,18 +425,22 @@ return array(
     'box_download_finish'=>'当前盒子已下载完成',
     'box_otherdownload_wait'=>'当前无空闲局域网机顶盒,请等待',
     'smallapp_tastwine_not_exist'=>'品鉴酒活动正在维护中，请稍后再试。',
+    'smallapp_tasklottery_not_exist'=>'抽奖活动正在维护中，请稍后再试。',
     'smallapp_tastwine_not_meal_time'=>'请在饭局时间内参加品鉴酒活动',
     'smallapp_tastwine_room_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
     'smallapp_tastwine_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
     'smallapp_tastwine_had_join'=>'当前饭局已参加过品鉴酒活动',
+    'smallapp_tasklottery_had_join'=>'当前饭局已参加过抽奖活动',
     'smallapp_tastwine_join_first'=>'请先参加品鉴酒活动',
     'smallapp_tastwine_invalid_user'=>'无法领取，请联系管理人员',
     'smallappsale_login_had_register'=>'请勿重复注册',
     'smallappsale_notenough_inventory_to_launch_event'=>'库存不足，请联系管理员',
     'smallappsale_please_get_task_first'=>'请先领取任务',
     'smallapp_tastwine_has_expire'=>'品鉴酒活动已过期',
+    'smallapp_tasklottery_has_expire'=>'抽奖活动已过期',
     'smallappsale_activity_boot_num_error'=>'当前电视开机数不足%d个，无法发起抽奖活动',
     'smallappsale_activity_lottery_time_error'=>'请选择正确的时间',
+    'smallappsale_activity_lottery_has_begin'=>'活动已开始,请勿进行修改',
 
 
 );

@@ -80,7 +80,7 @@ class ActivityController extends CommonController{
         }
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
         $where = array('a.task_id'=>$res_usertask['task_id'],'task.status'=>1,'task.flag'=>1);
-        $fileds = 'task.id as task_id,task.name,a.boot_num,task.people_num,task.end_time,task.image_url,task.portrait_image_url';
+        $fileds = 'task.id as task_id,task.name,a.boot_num,task.people_num,task.end_time,task.image_url,task.tv_image_url,task.portrait_image_url';
         $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
         if(empty($res_task)){
             $this->to_back(93070);
@@ -124,7 +124,7 @@ class ActivityController extends CommonController{
         $lottery_time = date('Y-m-d H:i:s',$lottery_time);
         $add_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'name'=>$res_task[0]['name'],
             'start_time'=>$start_time,'end_time'=>$end_time,'lottery_time'=>$lottery_time,'scope'=>$scope,
-            'image_url'=>$res_task[0]['image_url'],'portrait_image_url'=>$res_task[0]['portrait_image_url'],
+            'tv_image_url'=>$res_task[0]['tv_image_url'],'image_url'=>$res_task[0]['image_url'],'portrait_image_url'=>$res_task[0]['portrait_image_url'],
             'people_num'=>$res_task[0]['people_num'],'task_user_id'=>$task_user_id,'status'=>0,'type'=>8
         );
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
@@ -181,6 +181,9 @@ class ActivityController extends CommonController{
         $now_time = date('Y-m-d H:i:s');
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
+        }
+        if($res_activity['status']!=0){
+            $this->to_back(93076);
         }
         $m_box = new \Common\Model\BoxModel();
         $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);

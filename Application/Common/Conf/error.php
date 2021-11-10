@@ -316,6 +316,9 @@ return array(
         '90180'=>'smallapp_tastwine_join_first',
         '90181'=>'smallapp_tastwine_invalid_user',
         '90182'=>'smallapp_tastwine_has_expire',
+        '90183'=>'smallapp_tasklottery_not_exist',
+        '90184'=>'smallapp_tasklottery_has_expire',
+        '90185'=>'smallapp_tasklottery_had_join',
 
 
         '91015'=>'smallapp_user_add_failed',
@@ -442,6 +445,7 @@ return array(
         '93073'=>'smallappsale_please_get_task_first',
         '93074'=>'smallappsale_activity_boot_num_error',
         '93075'=>'smallappsale_activity_lottery_time_error',
+        '93076'=>'smallappsale_activity_lottery_has_begin',
 
 
 	),

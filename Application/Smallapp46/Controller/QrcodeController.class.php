@@ -35,6 +35,7 @@ class QrcodeController extends CommonController{
             case 39:
             case 24:
             case 41:
+            case 42:
                 $now_time = date('zH');
                 $encode_key = "$type{$box_id}$now_time{$data_id}";
                 $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -44,6 +45,8 @@ class QrcodeController extends CommonController{
                 $cache_key = C('SAPP_QRCODE').$encode_key;
                 if($type==24){
                     $expire_time = 3600*25;
+                }elseif($type==42){
+                    $expire_time = 3600*4;
                 }else{
                     $expire_time = 3600*3;
                 }

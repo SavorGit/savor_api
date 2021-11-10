@@ -801,7 +801,7 @@ class UserController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90157);
         }
-        $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
+        $fields = 'activity.id as activity_id,activity.name,activity.start_time,activity.end_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
         $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4,8)),'a.status'=>array('in',array(1,2,4,5)));
         $order = 'a.id desc';
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
@@ -809,6 +809,7 @@ class UserController extends CommonController{
         $res_activity_apply = $m_activityapply->getApplyDatas($fields,$where,$order,$limit,'');
         $datalist = array();
         if(!empty($res_activity_apply)){
+            $all_prizes = array('1'=>'一等奖','2'=>'二等奖','3'=>'三等奖');
             $now_time = date('Y-m-d H:i:s');
             $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
             foreach ($res_activity_apply as $v){
@@ -817,16 +818,21 @@ class UserController extends CommonController{
                 }
                 if($v['type']==1){
                     $name = $v['prize'];
+                }elseif($v['type']==8){
+                    $name = '抽奖活动';
                 }else{
                     $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
                     $name = $res_prize['name'];
                 }
+                $content = '';
                 $lottery_time = date('Y-m-d-H:i',strtotime($v['add_time']));
                 switch ($v['status']){
                     case 1:
+                        if($v['type']==8)   $content="成功参与了“{$v['name']}活动“，请关注大屏及短信通知的中奖结果。";
                         $status = 1;
                         break;
                     case 2:
+                        if($v['type']==8)   $content="您在“{$v['name']}“活动中获得了{$all_prizes[$res_prize['level']]}（{$name}），请联系服务员领取奖品。";
                         $status = 2;//1待领取 2已领取 3已过期
                         break;
                     case 4:
@@ -842,7 +848,7 @@ class UserController extends CommonController{
                     default:
                         $status = 3;
                 }
-                $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id'],'type'=>$v['type']);
+                $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'content'=>$content,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id'],'type'=>$v['type']);
                 if($v['type']==1 && $v['activity_status']==2 && $status==1){
                 }else{
                     $datalist[]=$info;

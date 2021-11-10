@@ -201,10 +201,6 @@ class ActivityTastewineController extends CommonController{
         $m_userintegralrecord->add($integralrecord_data);
         //end
 
-
-
-
-
         $ucconfig = C('ALIYUN_SMS_CONFIG');
         $alisms = new \Common\Lib\AliyunSms();
         $params = array('name'=>$res_activity['name']);

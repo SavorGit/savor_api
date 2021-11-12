@@ -251,7 +251,7 @@ class TaskController extends CommonController{
         }
 
         $m_usertask = new \Common\Model\Integral\TaskuserModel();
-        $where = array('openid'=>$openid,'task_id'=>$task_id);
+        $where = array('openid'=>$openid,'task_id'=>$task_id,'status'=>1);
         $res_usertask = $m_usertask->getInfo($where);
         if(!empty($res_usertask)){
             $this->to_back(93069);

@@ -820,6 +820,7 @@ class UserController extends CommonController{
                     $name = $v['prize'];
                 }elseif($v['type']==8){
                     $name = '抽奖活动';
+                    $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
                 }else{
                     $res_prize = $m_prize->getInfo(array('id'=>$v['prize_id']));
                     $name = $res_prize['name'];
@@ -832,7 +833,7 @@ class UserController extends CommonController{
                         $status = 1;
                         break;
                     case 2:
-                        if($v['type']==8)   $content="您在“{$v['name']}“活动中获得了{$all_prizes[$res_prize['level']]}（{$name}），请联系服务员领取奖品。";
+                        if($v['type']==8)   $content="您在“{$v['name']}“活动中获得了{$all_prizes[$res_prize['level']]}（{$res_prize['name']}），请联系服务员领取奖品。";
                         $status = 2;//1待领取 2已领取 3已过期
                         break;
                     case 4:

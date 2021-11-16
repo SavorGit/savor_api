@@ -44,7 +44,7 @@ class BoxModel extends Model{
         if($mac){
             $sql ="select b.id as box_id,b.name as box_name,b.room_id,b.box_type,r.name as room_name, h.id as hotel_id,
                    h.name as hotel_name,b.name box_name,h.hotel_box_type,a.id as area_id, a.region_name as area_name,b.is_open_simple,
-                   b.is_4g,h.is_4g hotel_is_4g
+                   b.is_4g,h.is_4g hotel_is_4g,h.is_5g hotel_is_5g
                    from savor_box as b
                    left join savor_room as r on b.room_id=r.id
                    left join savor_hotel as h on r.hotel_id=h.id

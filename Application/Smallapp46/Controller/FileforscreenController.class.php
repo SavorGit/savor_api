@@ -83,7 +83,8 @@ class FileforscreenController extends CommonController{
         $data['box_type']   = $box_info['box_type'];
         $data['hotel_box_type'] = $box_info['hotel_box_type'];
         $data['hotel_is_4g']= $box_info['hotel_is_4g'];  
-        $data['box_name']   = $box_info['box_name']; 
+        $data['hotel_is_5g']= $box_info['hotel_is_5g'];
+        $data['box_name']   = $box_info['box_name'];
         
         if($save_type){
             $data['save_type'] = $save_type;

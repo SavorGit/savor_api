@@ -248,12 +248,15 @@ class ContentController extends CommonController{
                 $where  = array('menu_num'=>$box_resources['menu_num']);
                 $order = "id desc";
                 $program_info = $m_program_list->getInfo('id', $where, $order);
-                $fields = 'ads.id as ads_id,ads.name title,ads.type as ads_type,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
-                $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
-                $where['media.id']  = array('in',array_values($tmp_pro_ids));
-                $order = 'a.sort_num asc';
-                $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
-                $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,500",'media.id');
+                $res_pro_ads = array();
+                if(!empty($tmp_pro_ids)){
+                    $fields = 'ads.id as ads_id,ads.name title,ads.type as ads_type,ads.description as content,ads.img_url,ads.portraitmedia_id,ads.duration,ads.create_time,media.id as media_id,media.type as media_type,media.oss_addr,media.oss_filesize as resource_size';
+                    $where = array('a.menu_id'=>$program_info['id'],'a.type'=>2);
+                    $where['media.id']  = array('in',array_values($tmp_pro_ids));
+                    $order = 'a.sort_num asc';
+                    $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
+                    $res_pro_ads = $m_program_menu_item->getList($fields,$where,$order,"0,500",'media.id');
+                }
                 if(!empty($tmp_life_ids)){
                     $now_date = date('Y-m-d H:i:s');
                     $m_life_ads_hotel = new \Common\Model\Smallapp\LifeAdsHotelModel();

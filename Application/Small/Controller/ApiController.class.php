@@ -246,30 +246,35 @@ class ApiController extends CommonController{
         }
         $cache_key = C('SYSTEM_CONFIG');
         $redis_sys_config = $redis->get($cache_key);
-        
+        $sys_vol_arr = array();
+        $sys_vol_data = array();
         if(!empty($redis_sys_config)){
             $redis_sys_config = json_decode($redis_sys_config,true);
+            $old_vols = array('system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume','system_for_screen_volume');
+            $sys_vols = array(
+                'box_carousel_volume','box_pro_demand_volume','box_content_demand_volume','box_video_froscreen_volume','box_img_froscreen_volume','box_tv_volume',
+                'tv_carousel_volume','tv_pro_demand_volume','tv_content_demand_volume','tv_video_froscreen_volume','tv_img_froscreen_volume',
+            );
             foreach($redis_sys_config as $key=>$v){
-                if(in_array($v['config_key'], array('system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume','system_for_screen_volume'))){
+                if(in_array($v['config_key'],$old_vols)){
                     $sys_vol_arr [] = $v;
                 }
+                if(in_array($v['config_key'],$sys_vols)){
+                    $sys_vol_data [] = $v;
+                }
             }
-        }else {
-            $where = " 'system_ad_volume','system_pro_screen_volume','system_demand_video_volume','system_tv_volume','system_for_screen_volume' ";
-            $sys_vol_arr = $sysconfigModel->getInfo($where);
         }
         $sys_vol_arr = $this->changesysconfigList($sys_vol_arr);
+        $sys_vol_data = $this->changesysconfigList($sys_vol_data);
+
         $bootvideo[0]['label'] = '机顶盒开机视频地址';
         $bootvideo[0]['configKey'] = 'boot_video_url_for_set_top_box';
         $bootvideo[0]['configValue'] = 'http://oss.littlehotspot.com/media/resource/ntfrQRRH2M.mp4';
-        //$bootvideo[0]['configValue'] = 'af6066f8b89b3290276b4ff87a93d265';
         $bootvideo[1]['label'] ='机顶盒开机视频地址MD5';
         $bootvideo[1]['configKey'] = 'boot_video_md5_for_set_top_box';
         $bootvideo[1]['configValue'] = 'af6066f8b89b3290276b4ff87a93d265';
         $sys_vol_arr = array_merge($sys_vol_arr,$bootvideo);
-        $data = array();
         $data= $ho_arr;
-        //print_r($data);exit;
         $data['install_date'] = $data['install_date'].' 00:00:00';
         $data['hotel_id'] = intval($data['hotel_id']);
         $data['area_id'] = intval($data['area_id']);
@@ -281,6 +286,7 @@ class ApiController extends CommonController{
         
         $tmp = json_encode($sys_vol_arr,JSON_UNESCAPED_UNICODE);
         $data['sys_config_json']= $tmp;
+        $data['sys_volume']= json_encode($sys_vol_data,JSON_UNESCAPED_UNICODE);
         $this->to_back($data);
     }
 

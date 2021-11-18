@@ -97,8 +97,22 @@ return array(
 	'SUBSCONTRACT_CLIENT_NAME_ARR'=>array('android'=>11,'ios'=>12),
 	'DOWLOAD_SOURCE_ARR'=>array('office'=>1,'qrcode'=>2,'usershare'=>3,'scan'=>4,'waiter'=>5),
 	'DOWNLOAD_HOTEL_INFO_TYPE'=>array('ads'=>1,'adv'=>2,'pro'=>3,'vod'=>4,'logo'=>5,'load'=>6),
-	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量','system_for_screen_volume'=>'夏新电视投屏音量'),
-	'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),
+	'CONFIG_VOLUME'=>array('system_ad_volume'=>'广告音量','system_pro_screen_volume'=>'投屏音量','system_demand_video_volume'=>'点播音量','system_tv_volume'=>'电视音量','system_for_screen_volume'=>'夏新电视投屏音量',
+    'box_carousel_volume'=>'机顶盒轮播音量','box_pro_demand_volume'=>'机顶盒公司节目点播音量','box_content_demand_volume'=>'机顶盒用户内容点播音量','box_video_froscreen_volume'=>'机顶盒视频投屏音量','box_img_froscreen_volume'=>'机顶盒图片投屏音量','box_tv_volume'=>'机顶盒电视音量',
+    'tv_carousel_volume'=>'电视轮播音量','tv_pro_demand_volume'=>'电视公司节目点播音量','tv_content_demand_volume'=>'电视用户内容点播音量','tv_video_froscreen_volume'=>'电视视频投屏音量','tv_img_froscreen_volume'=>'电视图片投屏音量',
+    ),
+    'CONFIG_VOLUME_VAL' => array(
+        'system_ad_volume'=>60,
+        'system_pro_screen_volume'=>100,
+        'system_for_screen_volume'=>10,
+        'system_demand_video_volume'=>90,
+        'system_tv_volume'=>100,
+        'system_tv_volume'=>100,
+        'system_switch_time'=>30,
+        'box_carousel_volume'=>30,'box_pro_demand_volume'=>40,'box_content_demand_volume'=>40,'box_video_froscreen_volume'=>60,'box_img_froscreen_volume'=>60,'box_img_froscreen_volume'=>60,'box_tv_volume'=>60,
+        'tv_carousel_volume'=>6,'tv_pro_demand_volume'=>6,'tv_content_demand_volume'=>6,'tv_video_froscreen_volume'=>12,'tv_img_froscreen_volume'=>12,
+    ),
+    'ROOM_TYPE'=> array(1=>'包间',2=>'大厅',3=>'等候区'),
     'ALL_LOTTERY_NUMBER' => 5,
     //热点投屏小程序配置
 	'SMALLAPP_CHECK_CODE'=>'smallapp:checkcode:',
@@ -366,15 +380,6 @@ return array(
     'HEART_LOSS_HOURS'=>'48',
     'NET_REPORT_KEY'=>'net_report_',
     'SMALL_PROGRAM_LIST_KEY'=>'small_program_list_',
-	'CONFIG_VOLUME_VAL' => array(
-		'system_ad_volume'=>60,
-		'system_pro_screen_volume'=>100,
-		'system_for_screen_volume'=>10,
-		'system_demand_video_volume'=>90,
-		'system_tv_volume'=>100,
-		'system_tv_volume'=>100,
-		'system_switch_time'=>30,
-	),
 
 	'DEVICE_TYPE' => array(
 		'1'=>'小平台',
@@ -559,6 +564,14 @@ return array(
         10002=>array('id'=>10002,'name'=>'¥2','price'=>2,'image'=>'WeChat/resource/reward/jitui.png'),
         10003=>array('id'=>10003,'name'=>'¥5','price'=>5,'image'=>'WeChat/resource/reward/hanbao.png'),
         10004=>array('id'=>10004,'name'=>'¥10','price'=>10,'image'=>'WeChat/resource/reward/hongbao.png'),
+    ),
+    'MESSAGETYPE_LIST'=>array(
+        1=>array('type'=>1,'name'=>'赞','image'=>'WeChat/resource/zan.png'),
+        2=>array('type'=>2,'name'=>'内容审核','image'=>'WeChat/resource/shenhe.png'),
+        3=>array('type'=>3,'name'=>'系统通知','image'=>'WeChat/resource/xiaoxi.png'),
+        4=>array('type'=>4,'name'=>'红包领取通知','image'=>'WeChat/resource/hongbao.png'),
+        5=>array('type'=>5,'name'=>'购买成功','image'=>'WeChat/resource/goumai.png'),
+        6=>array('type'=>6,'name'=>'您的订单已发货','image'=>'WeChat/resource/fahuo.png'),
     ),
 
     'QUALITY_TYPES'=>array(

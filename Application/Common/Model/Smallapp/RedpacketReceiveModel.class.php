@@ -22,4 +22,13 @@ class RedpacketReceiveModel extends BaseModel{
             	     ->find();
 	    return $data;
 	}
+    public function getRedpacketInfo($fields,$where){
+        $data = $this->alias('a')
+            ->join('savor_smallapp_redpacket r on a.redpacket_id=r.id','left')
+            ->join('savor_smallapp_user u on r.user_id=u.id','left')
+            ->field($fields)
+            ->where($where)
+            ->find();
+        return $data;
+    }
 }

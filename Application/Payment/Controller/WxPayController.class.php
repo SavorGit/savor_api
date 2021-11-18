@@ -88,7 +88,7 @@ class WxPayController extends BaseController{
                 if(empty($res_receive)){
                     die("redpacket_id:$order_id send bonus finish");
                 }
-
+                $m_message = new \Common\Model\Smallapp\MessageModel();
                 foreach ($res_receive as $v){
                     $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
                     $res_hasget = $redis->get($key_hasget);
@@ -143,6 +143,7 @@ class WxPayController extends BaseController{
                         $condition = array('id'=>$v['id']);
                         $m_redpacket_receive->updateData($condition,array('status'=>1,'receive_time'=>date('Y-m-d H:i:s')));
                         echo "redpacket_id:$order_id redpacket_receive_id:{$v['id']} send bonus ok"."\r\n";
+                        $m_message->recordMessage($open_id,$v['id'],4);
                     }
                 }
             }

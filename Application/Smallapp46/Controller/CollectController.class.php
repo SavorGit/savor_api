@@ -36,12 +36,13 @@ class CollectController extends CommonController{
         if($only_co==1){
             $data['status']  = 1;
         }
-        $info = $m_collect->getOne('status', $data);
+        $info = $m_collect->getOne('id,status', $data);
         if(!empty($info)){
             if($only_co==1){
                 $this->to_back(90131);
-            }else {
-                $m_collect->updateInfo($data, array('status'=>$status));
+            }else{
+                $collect_id = $info['id'];
+                $m_collect->updateInfo(array('id'=>$collect_id), array('status'=>$status));
                 $map['res_id']  = $res_id;
                 $map['status']  = 1;
                 $nums = $m_collect->countNum($map);
@@ -49,12 +50,20 @@ class CollectController extends CommonController{
                 $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
                 $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
                 $all_nums = intval($nums)+intval($ret['nums']);
+
+                if($type==2){
+                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $res_forscreen = $m_forscreen->getInfo(array('forscreen_id'=>$res_id));
+                    $m_message = new \Common\Model\Smallapp\MessageModel();
+                    $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                }
                 $this->to_back(array('nums'=>$all_nums));
             }
         }else {
             $data['status']  = $status;
             $ret = $m_collect->addInfo($data,1);
             if($ret){
+                $collect_id = $ret;
                 $map['res_id']  = $res_id;
                 $map['status']  = 1;
                 $nums = $m_collect->countNum($map);
@@ -62,6 +71,13 @@ class CollectController extends CommonController{
                 $m_collect_count = new \Common\Model\Smallapp\CollectCountModel();
                 $ret = $m_collect_count->field('nums')->where(array('res_id'=>$res_id))->find();
                 $all_nums = intval($nums)+intval($ret['nums']);
+
+                if($type==2){
+                    $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+                    $res_forscreen = $m_forscreen->getInfo(array('forscreen_id'=>$res_id));
+                    $m_message = new \Common\Model\Smallapp\MessageModel();
+                    $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                }
                 $this->to_back(array('nums'=>$all_nums));
             }else {
                 $this->to_back(91016);

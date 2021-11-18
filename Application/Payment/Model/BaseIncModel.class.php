@@ -478,6 +478,8 @@ class BaseIncModel extends Model{
                     $sql_uporder = $m_order->getLastSql();
                     $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
                 }
+                $m_message = new \Common\Model\Smallapp\MessageModel();
+                $m_message->recordMessage($result_order[0]['openid'],$trade_no,5);
                 if($is_laimao==1){
                     $ucconfig = C('ALIYUN_SMS_CONFIG');
                     $alisms = new \Common\Lib\AliyunSms();

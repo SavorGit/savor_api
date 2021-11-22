@@ -123,6 +123,7 @@ class MessageController extends CommonController{
         $unread_list = $read_list = array();
         if(!empty($res_message)){
             $oss_host = 'http://'. C('OSS_HOST').'/';
+            $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
             $m_collect = new \Common\Model\Smallapp\CollectModel();
             $m_public = new \Common\Model\Smallapp\PublicModel();
             $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
@@ -141,7 +142,6 @@ class MessageController extends CommonController{
                             $content = '喜欢了你的视频';
                             $img_url = $oss_host.$imgs[0]."?x-oss-process=video/snapshot,t_5000,f_jpg,ar_auto";
                         }
-
                         $info = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'content'=>$content,
                             'img_url'=>$img_url,'add_time'=>date('Y-m-d H:i',strtotime($v['add_time'])));
                         break;
@@ -158,7 +158,6 @@ class MessageController extends CommonController{
                             $content = "你公开的视频{$audit_status_str[$v['audit_status']]}审核";
                             $img_url = $oss_host.$imgs[0]."?x-oss-process=video/snapshot,t_5000,f_jpg,ar_auto";
                         }
-
                         $info = array('nickName'=>$res_user['nickName'],'avatarUrl'=>$res_user['avatarUrl'],'content'=>$content,
                             'img_url'=>$img_url,'add_time'=>date('Y-m-d H:i',strtotime($v['add_time'])));
                         break;
@@ -184,6 +183,10 @@ class MessageController extends CommonController{
                         break;
                     default:
                         $info = array();
+                }
+                if(isset($info['nickName']) && empty($info['nickName']) && empty($info['avatarUrl'])){
+                    $info['nickName']='游客';
+                    $info['avatarUrl']=$default_avatar;
                 }
                 if($v['read_status']==1){
                     $unread_list[$v['id']]=$info;

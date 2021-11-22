@@ -54,8 +54,10 @@ class CollectController extends CommonController{
                 if($type==2){
                     $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
                     $res_forscreen = $m_forscreen->getInfo(array('forscreen_id'=>$res_id));
-                    $m_message = new \Common\Model\Smallapp\MessageModel();
-                    $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                    if($res_forscreen['openid']!=$openid){
+                        $m_message = new \Common\Model\Smallapp\MessageModel();
+                        $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                    }
                 }
                 $this->to_back(array('nums'=>$all_nums));
             }
@@ -75,8 +77,10 @@ class CollectController extends CommonController{
                 if($type==2){
                     $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
                     $res_forscreen = $m_forscreen->getInfo(array('forscreen_id'=>$res_id));
-                    $m_message = new \Common\Model\Smallapp\MessageModel();
-                    $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                    if($res_forscreen['openid']!=$openid){
+                        $m_message = new \Common\Model\Smallapp\MessageModel();
+                        $m_message->recordMessage($res_forscreen['openid'],$collect_id,1,$status);
+                    }
                 }
                 $this->to_back(array('nums'=>$all_nums));
             }else {

@@ -55,6 +55,7 @@ class MessageController extends CommonController{
         }
         $m_redpacketreceive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $all_message_types = C('MESSAGETYPE_LIST');
         $datas = array();
         $oss_host = 'http://'.C('OSS_HOST').'/';
@@ -86,12 +87,24 @@ class MessageController extends CommonController{
                         $content = "您成功领取了{$res_redpacket['nickName']}的红包";
                         break;
                     case 5:
-                        $res_ordergoods = $m_ordergoods->getOrdergoodsList('goods.name',array('og.order_id'=>$res_mdata['list'][0]['content_id']),'og.id asc',0,1);
-                        $content = "您已成功购买“{$res_ordergoods[0]['name']}“，请等待发货";
+                        $res_ordergoods = $m_ordergoods->getOrdergoodsList('goods.name,goods.parent_id',array('og.order_id'=>$res_mdata['list'][0]['content_id']),'og.id asc',0,1);
+                        if($res_ordergoods[0]['parent_id']){
+                            $res_pgoods = $m_goods->getInfo(array('id'=>$res_ordergoods[0]['parent_id']));
+                            $gname = $res_pgoods['name'];
+                        }else{
+                            $gname = $res_ordergoods[0]['name'];
+                        }
+                        $content = "您已成功购买“{$gname}“，请等待发货";
                         break;
                     case 6:
-                        $res_ordergoods = $m_ordergoods->getOrdergoodsList('goods.name',array('og.order_id'=>$res_mdata['list'][0]['content_id']),'og.id asc',0,1);
-                        $content = "您购买的“{$res_ordergoods[0]['name']}“，已发货，请注意查收";
+                        $res_ordergoods = $m_ordergoods->getOrdergoodsList('goods.name,goods.parent_id',array('og.order_id'=>$res_mdata['list'][0]['content_id']),'og.id asc',0,1);
+                        if($res_ordergoods[0]['parent_id']){
+                            $res_pgoods = $m_goods->getInfo(array('id'=>$res_ordergoods[0]['parent_id']));
+                            $gname = $res_pgoods['name'];
+                        }else{
+                            $gname = $res_ordergoods[0]['name'];
+                        }
+                        $content = "您购买的“{$gname}“，已发货，请注意查收";
                         break;
                     default:
                         $content = '';

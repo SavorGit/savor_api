@@ -11,7 +11,7 @@ class SmsController extends CommonController{
         switch(ACTION_NAME) {
             case 'sendverifyCode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('mobile'=>1001,'invite_code'=>1001);
+                $this->valid_fields = array('mobile'=>1001);
                 break;
 
         }
@@ -20,7 +20,6 @@ class SmsController extends CommonController{
     }
     public function sendverifyCode(){
         $mobile = $this->params['mobile'];
-        $invite_code = $this->params['invite_code'];
         //验证手机格式
         if(!check_mobile($mobile)){
             $this->to_back(92001);

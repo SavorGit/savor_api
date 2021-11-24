@@ -447,6 +447,8 @@ return array(
         '93075'=>'smallappsale_activity_lottery_time_error',
         '93076'=>'smallappsale_activity_lottery_has_begin',
 
-
+        //小程序运维端
+        '94001'=>'smallappops_contact_admin_createuser',
+        '94002'=>'smallappops_login_had_register',
 	),
 );

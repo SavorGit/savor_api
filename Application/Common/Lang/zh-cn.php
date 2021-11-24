@@ -441,6 +441,8 @@ return array(
     'smallappsale_activity_boot_num_error'=>'当前电视开机数不足%d个，无法发起抽奖活动',
     'smallappsale_activity_lottery_time_error'=>'请选择正确的时间',
     'smallappsale_activity_lottery_has_begin'=>'活动已开始,请勿进行修改',
+    'smallappops_contact_admin_createuser'=>'请联系管理员创建用户',
+    'smallappops_login_had_register'=>'请勿重复注册',
 
 
 );

@@ -1,6 +1,8 @@
 <?php
 namespace Smallappops\Controller;
 use \Common\Controller\CommonController;
+use Common\Lib\Smallapp_api;
+
 class LoginController extends CommonController{
     /**
      * 构造函数
@@ -16,6 +18,10 @@ class LoginController extends CommonController{
             case 'isLogin':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'getOpenid':
+                $this->is_verify = 1;
+                $this->valid_fields = array('code'=>1001);
                 break;
         }
         parent::_init_();
@@ -66,6 +72,7 @@ class LoginController extends CommonController{
         }else{
             $m_user->updateInfo(array('id'=>$userinfo['id']), $data);
         }
+        $data['staff_id'] = $res_staff['id'];
         $data['permission_city'] = $m_staff->get_permission_city($res_staff);
         $this->to_back($data);
     }
@@ -75,13 +82,23 @@ class LoginController extends CommonController{
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
-        if(empty($res_staff)){
-            $this->to_back(94001);
+        if(!empty($res_staff)){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $where = array('openid'=>$openid,'small_app_id'=>6);
+            $data = $m_user->getOne('id,openid,avatarUrl,nickName,mobile', $where);
+            $data['staff_id'] = $res_staff['id'];
+            $data['permission_city'] = $m_staff->get_permission_city($res_staff);
+            $this->to_back($data);
+        }else{
+            $data = array('id'=>0);
+            $this->to_back($data);
         }
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$openid,'small_app_id'=>6);
-        $data = $m_user->getOne('id,openid,avatarUrl,nickName,mobile', $where);
-        $data['permission_city'] = $m_staff->get_permission_city($res_staff);
+    }
+
+    public function getOpenid(){
+        $code = $this->params['code'];
+        $m_small_app = new Smallapp_api(6);
+        $data  = $m_small_app->getSmallappOpenid($code);
         $this->to_back($data);
     }
 

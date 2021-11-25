@@ -443,6 +443,7 @@ return array(
     'smallappsale_activity_lottery_has_begin'=>'活动已开始,请勿进行修改',
     'smallappops_contact_admin_createuser'=>'请联系管理员创建用户',
     'smallappops_login_had_register'=>'请勿重复注册',
+    'smallappops_not_entity_platform'=>'该酒楼非实体小平台',
 
 
 );

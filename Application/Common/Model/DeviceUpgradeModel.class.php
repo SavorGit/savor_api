@@ -21,4 +21,19 @@ class DeviceUpgradeModel extends Model{
 	    $result = $this->query($sql);
 	    return $result[0];   
 	}
+	public function getNewSmallApkInfo($hotelid,$versionCode = '',$device_type=1){
+	    $where = "";
+	    if(!empty($versionCode)){
+	        $where .= " and du.version_min<='".$versionCode."' and du.version_max>='".$versionCode."'";
+	    }
+	    $sql =" select du.id,du.version,du.update_type,dv.version_name 
+
+                from savor_device_upgrade du
+                left join savor_device_version dv on du.version=dv.version_code
+
+                where du.device_type=$device_type and dv.device_type = $device_type
+	            and  (du.hotel_id LIKE CONCAT('%,".$hotelid.",%') OR du.hotel_id IS NULL) and du.state=1 $where order by du.id desc  limit 1";
+	    $result = $this->query($sql);
+	    return $result[0];   
+	}
 }

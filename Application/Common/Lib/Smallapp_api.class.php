@@ -32,7 +32,9 @@ class Smallapp_api {
 	        $wx_config = C('SMALLAPP_DINNER_CONFIG');
 	    }else if($flag==5){
 	        $wx_config = C('SMALLAPP_SALE_CONFIG');
-	    }
+	    }else if($flag==6){
+	        $wx_config = C('SMALLAPP_OPS_CONFIG');
+        }
 	    $this->appid = $wx_config['appid'];
 	    $this->appsecret = $wx_config['appsecret'];
 	}

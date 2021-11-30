@@ -30,14 +30,17 @@ class PlatformController extends CommonController{
         }
         $data = [];
         $m_device_upgrade = new \Common\Model\DeviceUpgradeModel();
-        $up_info  = $m_device_upgrade->getLastSmallPtInfo($hotel_id);
-        $data['last_version'] = $up_info['version'];
+        $up_info  = $m_device_upgrade->getNewSmallApkInfo($hotel_id);
+        $data['last_version'] = $up_info['version_name'];
         $redis->select(13);
         $cache_key  = 'heartbeat:1:'.$hotel_info['mac_addr'];
         $cache_info = $redis->get($cache_key);
         if(!empty($cache_info)){
             $heart_info = json_decode($cache_info,true);
-            $data['now_version']= $heart_info['war'];
+            $m_device = new \Common\Model\DeviceVersionModel();
+            $p_info = $m_device->getOneByVersionAndDevice($heart_info['war'],1);
+            
+            $data['now_version']= $p_info['version_name'];
             $data['heart_time'] = date('Y-m-d H:i:s',strtotime($heart_info['date']));
             $data['intranet_ip']= $heart_info['intranet_ip'];
             $data['outside_ip'] = $heart_info['outside_ip'];
@@ -104,8 +107,8 @@ class PlatformController extends CommonController{
                 $redis_value = $this->assoc_unique($redis_value,'pub_ads_id');
                 $pub_ads_id_arr = array_keys($redis_value);
                 $whs = array();
-                $whs['pads.id'] = array('in',$pub_ads_id_arr);
-                $whs['pads.state']  = array('neq',2);
+                $whs['a.id'] = array('in',$pub_ads_id_arr);
+                $whs['a.state']  = array('neq',2);
                 $ads_list = $m_pub_ads->getPubAdsList('med.id media_id,ads.name media_name',$whs);
                 foreach($ads_list as $ks=>$vs){
                     $ads_arr[] = $vs;

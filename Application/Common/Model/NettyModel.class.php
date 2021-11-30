@@ -5,8 +5,10 @@ use Think\Model;
 class NettyModel extends Model{
     protected $tableName='box';
 
-    public function pushBox($box_mac,$message){
-        $req_id  = getMillisecond();
+    public function pushBox($box_mac,$message,$req_id=''){
+        if(empty($req_id)){
+            $req_id  = getMillisecond();
+        }
         $params = array('box_mac'=>$box_mac,'req_id'=>$req_id);
         $post_data = http_build_query($params);
         $balance_url = C('NETTY_BALANCE_URL');//定位接口

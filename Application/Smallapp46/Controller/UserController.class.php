@@ -640,7 +640,7 @@ class UserController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90157);
         }
-        $fields = 'activity.id as activity_id,activity.name,activity.start_time,activity.end_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
+        $fields = 'activity.id as activity_id,activity.name,activity.start_time,activity.end_time,activity.lottery_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
         $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4,8)),'a.status'=>array('in',array(1,2,4,5)));
         $order = 'a.id desc';
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
@@ -665,14 +665,17 @@ class UserController extends CommonController{
                     $name = $res_prize['name'];
                 }
                 $content = '';
-                $lottery_time = date('Y-m-d-H:i',strtotime($v['add_time']));
+                $lottery_time = date('Y-m-d H:i',strtotime($v['add_time']));
                 switch ($v['status']){
                     case 1:
                         if($v['type']==8)   $content="成功参与了“{$v['name']}活动“，请关注大屏及短信通知的中奖结果。";
                         $status = 1;
                         break;
                     case 2:
-                        if($v['type']==8)   $content="您在“{$v['name']}“活动中获得了{$all_prizes[$res_prize['level']]}（{$res_prize['name']}），请联系服务员领取奖品。";
+                        if($v['type']==8){
+                            $content="您在“{$v['name']}“活动中获得了{$all_prizes[$res_prize['level']]}（{$res_prize['name']}），请联系服务员领取奖品。";
+                            $lottery_time = date('Y-m-d H:i',strtotime($v['lottery_time']));
+                        }
                         $status = 2;//1待领取 2已领取 3已过期
                         break;
                     case 4:

@@ -63,7 +63,7 @@ class LoginController extends CommonController{
         $where = array('openid'=>$openid,'small_app_id'=>6);
         $userinfo = $m_user->getOne('id,openid,mobile,role_id', $where);
         $data = array('openid'=>$openid,'avatarUrl'=>$avatarUrl,'nickName'=>$nickName,'gender'=>$gender,'mobile'=>$mobile,
-            'is_wx_auth'=>3,'small_app_id'=>6);
+            'is_wx_auth'=>3,'small_app_id'=>6,'status'=>1);
         if(!empty($encryptedData['unionId'])){
             $data['unionId'] = $encryptedData['unionId'];
         }

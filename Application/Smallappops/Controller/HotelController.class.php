@@ -224,6 +224,7 @@ class HotelController extends CommonController{
             $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
 
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
+            $m_sdkerror = new \Common\Model\SdkErrorModel();
             $m_box = new \Common\Model\BoxModel();
             $fields='box.id as box_id,box.mac,box.name as box_name';
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
@@ -255,7 +256,11 @@ class HotelController extends CommonController{
                     }
                 }
                 //机顶盒内存判断
-                $ram_status = 'gray';
+                $ram_status='gray';
+                $res_sdkerror = $m_sdkerror->getInfo('*',array('box_id'=>$v['box_id']));
+                if(!empty($res_sdkerror) && $res_sdkerror['full_report_date']>$res_sdkerror['clean_report_date']){
+                    $ram_status='red';
+                }
                 $res_box[$k]['ram_status']=$ram_status;
                 $res_box[$k]['status']=$box_status;
                 $res_box[$k]['uptips']=$box_uptips;

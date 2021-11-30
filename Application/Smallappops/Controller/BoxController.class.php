@@ -13,7 +13,10 @@ class BoxController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
-                
+            case 'cleanResource':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -133,8 +136,36 @@ class BoxController extends CommonController{
         $data['mediaupdateinfo'] = $mediaupdateinfo;
         
         $this->to_back($data);
-        
     }
+
+    public function cleanResource(){
+        $box_id = $this->params['box_id'];
+        $redis = SavorRedis::getInstance();
+        $redis->select(15);
+        $cache_key   = 'savor_box_'.$box_id;
+        $cache_info  =$redis->get($cache_key);
+        $box_info = json_decode($cache_info,true);
+
+        $m_netty = new \Common\Model\NettyModel();
+        $all_types = array('1'=>'当前正在下载的一期视频内容','2'=>'正在播放的广告数据','3'=>'生日歌');
+        $is_error = 0;
+        foreach ($all_types as $k=>$v){
+            $message = array('action'=>998,'type'=>$k);
+            $res_netty = $m_netty->pushBox($box_info['mac'],json_encode($message));
+            if(isset($res_netty['error_code'])){
+                $is_error=1;
+                break;
+            }
+        }
+        if($is_error){
+            $this->to_back(94003);
+        }
+        $m_sdkerror = new \Common\Model\SdkErrorModel();
+        $sql ="update `savor_sdk_error` set clean_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
+        $m_sdkerror->execute($sql);
+        $this->to_back(array());
+    }
+
     /**
      * @desc 获取机顶盒最新广告列表
      */

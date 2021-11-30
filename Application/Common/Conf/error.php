@@ -450,6 +450,7 @@ return array(
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',
         '94002'=>'smallappops_login_had_register',
+        '94003'=>'smallappops_clean_resource_error',
 	    '94100'=>'smallappops_not_entity_platform',
 	),
 );

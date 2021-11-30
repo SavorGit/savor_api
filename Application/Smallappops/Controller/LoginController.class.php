@@ -47,8 +47,8 @@ class LoginController extends CommonController{
             $this->to_back(92006);
         }
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
-        $res_staff = $m_staff->getInfo(array('mobile'=>$mobile,'status'=>1));
-        if(empty($res_staff)){
+        $res_mobilestaff = $m_staff->getInfo(array('mobile'=>$mobile,'status'=>1));
+        if(empty($res_mobilestaff)){
             $this->to_back(94001);
         }
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -57,7 +57,7 @@ class LoginController extends CommonController{
         }
 
         $staff_data = array('openid'=>$openid,'update_time'=>date('Y-m-d H:i:s'));
-        $m_staff->updateData(array('id'=>$res_staff['id']),$staff_data);
+        $m_staff->updateData(array('id'=>$res_mobilestaff['id']),$staff_data);
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'small_app_id'=>6);

@@ -16,6 +16,10 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001);
                 break;
+            case 'resourceupdate':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001);
+                break;
 
         }
         parent::_init_();

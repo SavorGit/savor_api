@@ -16,7 +16,7 @@ class OpuserRoleModel extends Model{
 	                 ->field($fields)
 	                 ->where($where)
 	                 ->order($order)
-	                 ->limit()
+	                 ->limit($limit)
 	                 ->select();
 	    return $data;
 	}

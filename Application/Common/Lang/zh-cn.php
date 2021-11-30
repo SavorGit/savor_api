@@ -444,6 +444,7 @@ return array(
     'smallappops_contact_admin_createuser'=>'请联系管理员创建用户',
     'smallappops_login_had_register'=>'请勿重复注册',
     'smallappops_not_entity_platform'=>'该酒楼非实体小平台',
+    'smallappops_clean_resource_error'=>'清除资源失败,请稍后重试',
 
 
 );

@@ -44,11 +44,13 @@ class PlatformController extends CommonController{
             $data['heart_time'] = date('Y-m-d H:i:s',strtotime($heart_info['date']));
             $data['intranet_ip']= $heart_info['intranet_ip'];
             $data['outside_ip'] = $heart_info['outside_ip'];
+            $data['platfrom_locate'] = $hotel_info['server_location'];
         }else {
             $data['now_version']= '';
             $data['heart_time'] = '';
             $data['intranet_ip']= '';
             $data['outside_ip'] = '';
+            $data['platfrom_locate'] = $hotel_info['server_location'];
         }
         $m_program_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
         $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();

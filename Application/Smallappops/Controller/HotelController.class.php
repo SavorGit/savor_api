@@ -47,6 +47,7 @@ class HotelController extends CommonController{
         $all_hotels = array();
         foreach ($res_hotels as $v){
             $letter = substr($v['pinyin'],0,1);
+            $letter = strtoupper($letter);
             $all_hotels[$letter][]=array('hotel_id'=>$v['id'],'hotel_name'=>$v['name']);
         }
         $data = array();
@@ -254,6 +255,8 @@ class HotelController extends CommonController{
                     }elseif($apk_update_info['version']!=$cache_data['apk_time']){
                         $box_uptips='apk待升级';
                     }
+                }else{
+                    $box_uptips='apk待升级';
                 }
                 //机顶盒内存判断
                 $ram_status='gray';
@@ -266,7 +269,7 @@ class HotelController extends CommonController{
                 $res_box[$k]['uptips']=$box_uptips;
             }
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
-                '状态说明：','绿色圆点：在线','黄色圆点：24小时内在线','红色圆点：失联7天以上','灰色圆点：失联30天以上'
+                '状态说明：','绿色圆点：在线','黄色圆点：24小时内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
             );
 
             $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'address'=>$res_hotel['addr'],

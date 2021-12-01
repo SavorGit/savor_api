@@ -18,7 +18,7 @@ class OpsstaffModel extends BaseModel{
                 foreach ($permission_city as $k=>$v){
                     $staff_list = array();
                     if($v['area_id']){
-                        $fields = 'a.sysuser_id as staff_id,su.remark as staff_name';
+                        $fields = 'a.id as staff_id,su.remark as staff_name';
                         $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
@@ -34,7 +34,7 @@ class OpsstaffModel extends BaseModel{
                 foreach ($permission_city as $k=>$v){
                     $staff_list = array();
                     if($v['area_id']){
-                        $fields = 'a.sysuser_id as staff_id,su.remark as staff_name';
+                        $fields = 'a.id as staff_id,su.remark as staff_name';
                         $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');

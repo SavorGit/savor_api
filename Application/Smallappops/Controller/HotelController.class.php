@@ -228,6 +228,11 @@ class HotelController extends CommonController{
                 $adv_proid = '20190101000000';
             }
             
+            //获取最新节目单
+            $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
+            $menu_info = $m_new_menu_hotel->getLatestMenuid($hotel_id);   //获取最新的一期节目单
+            $menu_num= $menu_info['menu_num'];
+            
 
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
             $m_sdkerror = new \Common\Model\SdkErrorModel();
@@ -236,10 +241,73 @@ class HotelController extends CommonController{
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
             $res_box = $m_box->getBoxByCondition($fields,$where);
             foreach ($res_box as $k=>$v){
+                
+                
+                
+                //获取机顶盒的广告期号
+                if($res_hotel['mac_addr'] =='000000000000'){//虚拟小平台
+                    
+                    $redis->select(10);
+                    $cache_key = 'vsmall:ads:'.$hotel_id.":".$v['mac'];
+                    
+                    $cache_info = $redis->get($cache_key);
+                    $ads_info = json_decode($cache_info,true);
+                    $ads_proid = $ads_info['menu_num'];
+                    
+                }else { //实体小平台
+                    $redis->select(12);
+                    $program_ads_key = C('PROGRAM_ADS_CACHE_PRE');
+                    $cache_key = '';
+                    $cache_key = $program_ads_key.$v['box_id'];
+                    
+                    $cache_value = $redis->get($cache_key);
+                    
+                    $ads_info = json_decode($cache_value,true);
+                    $ads_proid = $ads_info['menu_num'];
+                    
+                }
+                if(empty($ads_proid)){
+                    $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
+                    $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
+                    for($i=1;$i<=$max_adv_location;$i++){
+                        $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
+                        $adv_arr = $this->changeadvList($adv_arr);
+                        
+                        if(!empty($adv_arr)){
+                            $flag =0;
+                            foreach($adv_arr as $ak=>$av){
+                                if($av['start_date']>$now_date){
+                                    $flag ++;
+                                }
+                                if($flag==2){
+                                    unset($adv_arr[$ak]);
+                                    break;
+                                }
+                                $ads_arr['create_time'] = $av['create_time'];
+                                $ads_num_arr[] = $ads_arr;
+                                $ads_time_arr[] = $av['create_time'];
+                                unset($av['pub_ads_id']);
+                                unset($av['create_time']);
+                                
+                            }
+                        }
+                    }
+                    
+                    if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
+                        $ads_time_str = max($ads_time_arr);
+                        $ads_proid = date('YmdHis',strtotime($ads_time_str));
+                    }
+                }
+                
+                $redis->select(13);
                 $cache_key  = 'heartbeat:2:'.$v['mac'];
                 $res_cache = $redis->get($cache_key);
                 $box_status='black';
                 $box_uptips='';
+                
+                
+                
+                
                 if(!empty($res_cache)){
                     $cache_data = json_decode($res_cache,true);
                     $report_time = strtotime($cache_data['date']);
@@ -258,7 +326,8 @@ class HotelController extends CommonController{
                     if($apk_update_info['version_name']!=$cache_data['apk']){
                         $box_uptips='apk待升级';
                     }
-                    if($adv_proid.$cache_data['pro_download_period']!=$cache_data['adv_period'] || $cache_data['pro_download_period']!=$cache_data['pro_period'] || $cache_data['ads_download_period']!=$cache_data['period']){
+                    
+                    if($adv_proid.$menu_num!=$cache_data['adv_period'] || $menu_num!=$cache_data['pro_period'] || $ads_proid!=$cache_data['period']){
                         $box_uptips='资源待更新';
                     }
                 }else{
@@ -287,5 +356,31 @@ class HotelController extends CommonController{
         }
         $this->to_back($data);
     }
-
+    private function changeadvList($res,$type=1){
+        if($res){
+            foreach ($res as $vk=>$val) {
+                if(!empty($val['sortNum'])){
+                    if($type==1){
+                        $res[$vk]['order'] =  $res[$vk]['sortNum'];
+                    }else {
+                        $res[$vk]['location_id'] = $res[$vk]['sortNum'];
+                    }
+                    
+                    unset($res[$vk]['sortNum']);
+                }
+                
+                if(!empty($val['name'])){
+                    $ttp = explode('/', $val['name']);
+                    $res[$vk]['name'] = $ttp[2];
+                }
+                if($val['media_type']==2){
+                    $res[$vk]['md5_type'] = 'fullMd5';
+                }
+                $res[$vk]['is_sapp_qrcode'] = intval($val['is_sapp_qrcode']);
+            }
+            
+        }
+        return $res;
+        //如果是空
+    }
 }

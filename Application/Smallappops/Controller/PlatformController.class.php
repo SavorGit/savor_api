@@ -45,12 +45,14 @@ class PlatformController extends CommonController{
             $data['intranet_ip']= $heart_info['intranet_ip'];
             $data['outside_ip'] = $heart_info['outside_ip'];
             $data['platfrom_locate'] = $hotel_info['server_location'];
+            $data['mac_addr'] = $hotel_info['mac_addr'];
         }else {
             $data['now_version']= '';
             $data['heart_time'] = '';
             $data['intranet_ip']= '';
             $data['outside_ip'] = '';
             $data['platfrom_locate'] = $hotel_info['server_location'];
+            $data['mac_addr'] = '';
         }
         $m_program_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
         $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();

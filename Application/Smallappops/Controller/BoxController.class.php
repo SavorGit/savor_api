@@ -17,6 +17,10 @@ class BoxController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
+            case 'updateApk':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -61,7 +65,7 @@ class BoxController extends CommonController{
         $baseinfo['switch_time'] = $box_info['switch_time'];
         $baseinfo['wifi_name']   = $box_info['wifi_name'];
         $baseinfo['wifi_password']   = !empty($box_info['wifi_password']) ? $box_info['wifi_password'] :'无密码'; 
-        $baseinfo['now_apk_version'] = $heart_info['apk'];
+        $baseinfo['now_apk_version'] = !empty($heart_info['apk']) ?$heart_info['apk']:'';
         
         $m_device_update = new \Common\Model\DeviceUpgradeModel();
         $apk_update_info = $m_device_update->getNewSmallApkInfo($room_info['hotel_id'],'',2);
@@ -113,7 +117,7 @@ class BoxController extends CommonController{
             $program_menu_num = '';
         }
         $mediaupdateinfo['last_pro_period'] = $program_menu_num;
-        $mediaupdateinfo['now_pro_period']  = $heart_info['pro_period'];
+        $mediaupdateinfo['now_pro_period']  = !empty($heart_info['pro_period']) ? $heart_info['pro_period']:'';
         
         //广告
         $box_ads_arr = $this->getBoxAdsList($box_id);
@@ -123,7 +127,7 @@ class BoxController extends CommonController{
             $pub_ads_peroid = '';
         }
         $mediaupdateinfo['last_ads_period'] = $pub_ads_peroid;
-        $mediaupdateinfo['now_ads_period']  = $heart_info['period'];
+        $mediaupdateinfo['now_ads_period']  = !empty($heart_info['period']) ? $heart_info['period'] :'';
         //宣传片
         //宣传片状态
         //获取当前机顶盒宣传片列表
@@ -136,7 +140,7 @@ class BoxController extends CommonController{
             $pub_adv_peroid = '';
         }
         $mediaupdateinfo['last_adv_period'] = $pub_adv_peroid;
-        $mediaupdateinfo['now_adv_period']  = $heart_info['adv_period'];
+        $mediaupdateinfo['now_adv_period']  = !empty($heart_info['adv_period']) ? $heart_info['adv_period']:'';
             
          
         $data['baseinfo'] = $baseinfo;
@@ -172,6 +176,64 @@ class BoxController extends CommonController{
         $sql ="update `savor_sdk_error` set clean_report_date='".date('Y-m-d H:i:s')."' where box_id=".$box_id.' limit 1';
         $m_sdkerror->execute($sql);
         $this->to_back(array());
+    }
+    public function updateApk(){
+        $box_id = $this->params['box_id'];
+        /*$redis = SavorRedis::getInstance();
+        $redis->select(15);
+        $cache_key   = 'savor_box_'.$box_id;
+        $cache_info  =$redis->get($cache_key);
+        $box_info = json_decode($cache_info,true); */
+        
+        $m_box = new \Common\Model\BoxModel();
+        $field = "box.id,box.device_token,box.adv_mach,hotel.id hotel_id,room.id room_id";
+        $where = " box.id=$box_id";
+        $box_info  = $m_box->getBoxByCondition($field,$where);
+        $box_info  = $box_info[0];
+        $hotel_id = $box_info['hotel_id'];
+        
+        
+        if(empty($box_info['device_token'])){
+            $this->to_back(70005); 
+        }
+        
+        if(empty($box_info['adv_mach'])){//非广告机
+            //获取当前机顶盒的最新apk
+            
+            //$m_upgrade = new \Admin\Model\UpgradeModel();
+            $m_upgrade = new \Common\Model\DeviceUpgradeModel();
+            $field = 'sdv.oss_addr,md5';
+            $device_type = 2;
+            $data = $m_upgrade->getLastOneByDeviceNew($field, $device_type, $hotel_id);
+            
+        }else {//广告机
+            $m_device_version = new \Common\Model\DeviceVersionModel();
+            $data = $m_device_version->field('oss_addr,md5')->where('device_type=21')->order('id desc')->find();
+            
+        }
+        $apk_url = 'http://'.C('OSS_HOST').'/'.$data['oss_addr'];
+        $apk_md5 = $data['md5'];
+        
+        
+        $display_type = 'notification';
+        $option_name = 'boxclient';
+        $after_a = C('AFTER_APP');
+        $after_open = $after_a[3];
+        $device_token = $box_info['device_token'];
+        $ticker = 'apk升级推送';
+        $title  = 'apk升级推送';
+        $text   = 'apk升级推送';
+        $production_mode = C('UMENG_PRODUCTION_MODE');
+        $custom = array();
+        $custom['type'] = 4;  //1:RTB  2:4G投屏 3:shell命令推送  4：apk升级
+        $custom['action'] = 1; //1:投屏  0:结束投屏
+        $custom['data'] = array('apkUrl'=>$apk_url,'apkMd5'=>$apk_md5);
+        
+        $m_pushlog = new \Common\Model\PushLogModel();
+        $m_pushlog->uPushData($display_type, 3,'listcast',$option_name, $after_open, $device_token,
+            $ticker,$title,$text,$production_mode,$custom);
+        $this->to_back(10000);
+        
     }
 
     /**

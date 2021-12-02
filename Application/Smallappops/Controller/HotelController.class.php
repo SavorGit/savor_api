@@ -202,11 +202,11 @@ class HotelController extends CommonController{
                     if($report_time>=$online_time){
                         $small_platform_status='green';
                     }elseif($report_time>=$boot24_time){
-                        $small_platform_status='yellow';
+                        $small_platform_status='blue';
                     }elseif($report_time>=$day7_time && $report_time<$boot24_time){
-                        $small_platform_status='pink';
+                        $small_platform_status='yellow';
                     }elseif($report_time>=$day30_time && $report_time<$day7_time){
-                        $small_platform_status='black';
+                        $small_platform_status='red';
                     }else{
                         $small_platform_status='black';
                     }

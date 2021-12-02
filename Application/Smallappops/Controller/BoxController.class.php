@@ -342,7 +342,13 @@ class BoxController extends CommonController{
         
         $m_ads = new \Common\Model\AdsModel();
         $adv_proid_info = $m_ads->getWhere(array('hotel_id'=>$hotel_id,'type'=>3),'max(update_time) as max_update_time');
-        $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
+        
+        if(!empty($adv_proid_info[0]['max_update_time'])){
+            $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
+        }else {
+            $adv_proid = '20190101000000';
+        }
+        
         $data['box_adv_num'] = $adv_proid;
         return $data;
     }

@@ -47,6 +47,7 @@ class HotelController extends CommonController{
         $all_hotels = array();
         foreach ($res_hotels as $v){
             $letter = substr($v['pinyin'],0,1);
+            $letter = strtoupper($letter);
             $all_hotels[$letter][]=array('hotel_id'=>$v['id'],'hotel_name'=>$v['name']);
         }
         $data = array();
@@ -224,6 +225,7 @@ class HotelController extends CommonController{
             $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
 
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
+            $m_sdkerror = new \Common\Model\SdkErrorModel();
             $m_box = new \Common\Model\BoxModel();
             $fields='box.id as box_id,box.mac,box.name as box_name';
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
@@ -253,15 +255,21 @@ class HotelController extends CommonController{
                     }elseif($apk_update_info['version']!=$cache_data['apk_time']){
                         $box_uptips='apk待升级';
                     }
+                }else{
+                    $box_uptips='apk待升级';
                 }
                 //机顶盒内存判断
-                $ram_status = 'gray';
+                $ram_status='gray';
+                $res_sdkerror = $m_sdkerror->getInfo('*',array('box_id'=>$v['box_id']));
+                if(!empty($res_sdkerror) && $res_sdkerror['full_report_date']>$res_sdkerror['clean_report_date']){
+                    $ram_status='red';
+                }
                 $res_box[$k]['ram_status']=$ram_status;
                 $res_box[$k]['status']=$box_status;
                 $res_box[$k]['uptips']=$box_uptips;
             }
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
-                '状态说明：','绿色圆点：在线','黄色圆点：24小时内在线','红色圆点：失联7天以上','灰色圆点：失联30天以上'
+                '状态说明：','绿色圆点：在线','黄色圆点：24小时内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
             );
 
             $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'address'=>$res_hotel['addr'],

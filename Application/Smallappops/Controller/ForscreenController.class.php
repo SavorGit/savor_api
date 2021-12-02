@@ -35,7 +35,7 @@ class ForscreenController extends CommonController{
         if($res_push['error_code']){
             $this->to_back($res_push['error_code']);
         }else{
-            $res_data = array('req_id'=>$req_id,'file_size'=>$file_size.'M');
+            $res_data = array('req_id'=>$req_id,'file_size'=>$file_size.'M','api_timeout'=>10000);
             $this->to_back($res_data);
         }
     }

@@ -90,8 +90,16 @@ class BoxController extends CommonController{
         }else {
             $stateinfo['smallplatform'] = '异常('.$position_result['msg'].')';
         }
-        $stateinfo['memeryinfo'] = '需要开发';
-        
+        $memeryinfo = '内存正常';
+        $memery_status = 1;
+        $m_sdkerror = new \Common\Model\SdkErrorModel();
+        $res_sdkerror = $m_sdkerror->getInfo('*',array('box_id'=>$box_id));
+        if(!empty($res_sdkerror) && $res_sdkerror['full_report_date']>$res_sdkerror['clean_report_date']){
+            $memeryinfo = '内存已满';
+            $memery_status = 2;
+        }
+        $stateinfo['memeryinfo'] = $memeryinfo;
+        $stateinfo['memery_status'] = $memery_status;
         //资源更新
         
         //节目状态

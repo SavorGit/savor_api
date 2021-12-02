@@ -19,7 +19,7 @@ class OpsstaffModel extends BaseModel{
                     $staff_list = array();
                     if($v['area_id']){
                         $fields = 'a.id as staff_id,su.remark as staff_name';
-                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1));
+                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.permission'=>array('like',"%3,%")));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
                             array_unshift($staff_list, $stmp);
@@ -35,7 +35,7 @@ class OpsstaffModel extends BaseModel{
                     $staff_list = array();
                     if($v['area_id']){
                         $fields = 'a.id as staff_id,su.remark as staff_name';
-                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1));
+                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.permission'=>array('like',"%3,%")));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
                             array_unshift($staff_list, $stmp);

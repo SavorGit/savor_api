@@ -202,11 +202,11 @@ class HotelController extends CommonController{
                     if($report_time>=$online_time){
                         $small_platform_status='green';
                     }elseif($report_time>=$boot24_time){
+                        $small_platform_status='blue';
+                    }elseif($report_time>=$day7_time && $report_time<$boot24_time){
                         $small_platform_status='yellow';
-                    }elseif($report_time<=$day7_time){
-                        $small_platform_status='pink';
-                    }elseif($report_time<=$day30_time){
-                        $small_platform_status='black';
+                    }elseif($report_time>=$day30_time && $report_time<$day7_time){
+                        $small_platform_status='red';
                     }else{
                         $small_platform_status='black';
                     }
@@ -241,22 +241,23 @@ class HotelController extends CommonController{
                     if($report_time>=$online_time){
                         $box_status='green';
                     }elseif($report_time>=$boot24_time){
+                        $box_status='blue';
+                    }elseif($report_time>=$day7_time && $report_time<$boot24_time){
                         $box_status='yellow';
-                    }elseif($report_time<=$day7_time){
-                        $box_status='pink';
-                    }elseif($report_time<=$day30_time){
-                        $box_status='black';
+                    }elseif($report_time>=$day30_time && $report_time<$day7_time){
+                        $box_status='red';
                     }else{
                         $box_status='black';
                     }
 
-                    if($adv_proid.$cache_data['pro_download_period']!=$cache_data['adv_period'] || $cache_data['pro_download_period']!=$cache_data['pro_period'] || $cache_data['ads_download_period']!=$cache_data['period']){
-                        $box_uptips='资源待更新';
-                    }elseif($apk_update_info['version']!=$cache_data['apk_time']){
+                    if($apk_update_info['version_name']!=$cache_data['apk']){
                         $box_uptips='apk待升级';
                     }
+                    if($adv_proid.$cache_data['pro_download_period']!=$cache_data['adv_period'] || $cache_data['pro_download_period']!=$cache_data['pro_period'] || $cache_data['ads_download_period']!=$cache_data['period']){
+                        $box_uptips='资源待更新';
+                    }
                 }else{
-                    $box_uptips='apk待升级';
+                    $box_uptips='资源待更新';
                 }
                 //机顶盒内存判断
                 $ram_status='gray';

@@ -222,7 +222,12 @@ class HotelController extends CommonController{
 
             $m_ads = new \Common\Model\AdsModel();
             $adv_proid_info = $m_ads->getWhere(array('hotel_id'=>$hotel_id,'type'=>3),'max(update_time) as max_update_time');
-            $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
+            if($adv_proid_info[0]['max_update_time']){
+                $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
+            }else{
+                $adv_proid = '20190101000000';
+            }
+            
 
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
             $m_sdkerror = new \Common\Model\SdkErrorModel();

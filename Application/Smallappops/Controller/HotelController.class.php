@@ -241,19 +241,20 @@ class HotelController extends CommonController{
                     if($report_time>=$online_time){
                         $box_status='green';
                     }elseif($report_time>=$boot24_time){
-                        $box_status='yellow';
+                        $box_status='blue';
                     }elseif($report_time>=$day7_time && $report_time<$boot24_time){
-                        $box_status='pink';
+                        $box_status='yellow';
                     }elseif($report_time>=$day30_time && $report_time<$day7_time){
-                        $box_status='black';
+                        $box_status='red';
                     }else{
                         $box_status='black';
                     }
 
+                    if($apk_update_info['version_name']!=$cache_data['apk']){
+                        $box_uptips='apk待升级';
+                    }
                     if($adv_proid.$cache_data['pro_download_period']!=$cache_data['adv_period'] || $cache_data['pro_download_period']!=$cache_data['pro_period'] || $cache_data['ads_download_period']!=$cache_data['period']){
                         $box_uptips='资源待更新';
-                    }elseif($apk_update_info['version_name']!=$cache_data['apk']){
-                        $box_uptips='apk待升级';
                     }
                 }else{
                     $box_uptips='资源待更新';

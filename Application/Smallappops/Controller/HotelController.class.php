@@ -254,6 +254,7 @@ class HotelController extends CommonController{
                     $ads_info = json_decode($cache_info,true);
                     $ads_proid = $ads_info['menu_num'];
                     
+                    
                 }else { //实体小平台
                     $redis->select(12);
                     $program_ads_key = C('PROGRAM_ADS_CACHE_PRE');
@@ -269,6 +270,7 @@ class HotelController extends CommonController{
                 if(empty($ads_proid)){
                     $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
                     $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
+                    $now_date = date('Y-m-d H:i:s');
                     for($i=1;$i<=$max_adv_location;$i++){
                         $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
                         $adv_arr = $this->changeadvList($adv_arr);
@@ -322,13 +324,21 @@ class HotelController extends CommonController{
                     }else{
                         $box_status='black';
                     }
-
-                    if($apk_update_info['version_name']!=$cache_data['apk']){
-                        $box_uptips='apk待升级';
-                    }
+                    /* if($v['mac']=='00226D6554FE'){
+                        echo $adv_proid.$menu_num."<br>";
+                        echo $cache_data['adv_period']."<br>";
+                        echo $menu_num."<br>";
+                        echo $cache_data['pro_period']."<br>";
+                        echo $ads_proid."<br>";
+                        echo $cache_data['period'];exit;
+                    } */
+                    
                     
                     if($adv_proid.$menu_num!=$cache_data['adv_period'] || $menu_num!=$cache_data['pro_period'] || $ads_proid!=$cache_data['period']){
                         $box_uptips='资源待更新';
+                    }
+                    if($apk_update_info['version_name']!=$cache_data['apk']){
+                        $box_uptips='apk待升级';
                     }
                 }else{
                     $box_uptips='资源待更新';

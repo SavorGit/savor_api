@@ -248,7 +248,8 @@ class ProgramController extends CommonController{
             }
             
         }
-        array_multisort($program_list,'order');
+        
+        sortArrByOneField($program_list,'order');
         //print_r($program_list);exit;
         
         

@@ -252,7 +252,12 @@ class HotelController extends CommonController{
                     
                     $cache_info = $redis->get($cache_key);
                     $ads_info = json_decode($cache_info,true);
-                    $ads_proid = $ads_info['menu_num'];
+                    if(!empty($ads_info['media_lib'])){
+                        $ads_proid = $ads_info['menu_num'];
+                    }else{
+                        $ads_proid = '';
+                    }
+                    
                     
                     
                 }else { //实体小平台
@@ -267,10 +272,13 @@ class HotelController extends CommonController{
                     $ads_proid = $ads_info['menu_num'];
                     
                 }
+                
                 if(empty($ads_proid)){
                     $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
                     $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
                     $now_date = date('Y-m-d H:i:s');
+                    $ads_num_arr = array();
+                    $ads_time_arr = array();
                     for($i=1;$i<=$max_adv_location;$i++){
                         $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
                         $adv_arr = $this->changeadvList($adv_arr);
@@ -324,17 +332,17 @@ class HotelController extends CommonController{
                     }else{
                         $box_status='black';
                     }
-                    /* if($v['mac']=='00226D6554FE'){
+                    /*  if($v['mac']=='00226D583ED0'){
                         echo $adv_proid.$menu_num."<br>";
                         echo $cache_data['adv_period']."<br>";
                         echo $menu_num."<br>";
                         echo $cache_data['pro_period']."<br>";
                         echo $ads_proid."<br>";
                         echo $cache_data['period'];exit;
-                    } */
+                    }  */
                     
                     
-                    if($adv_proid.$menu_num!=$cache_data['adv_period'] || $menu_num!=$cache_data['pro_period'] || $ads_proid!=$cache_data['period']){
+                    if($adv_proid.$menu_num!=$cache_data['adv_period'] || $menu_num!=$cache_data['pro_period'] || ( !empty($ads_proid) && $ads_proid!=$cache_data['period']) ){
                         $box_uptips='资源待更新';
                     }
                     if($apk_update_info['version_name']!=$cache_data['apk']){

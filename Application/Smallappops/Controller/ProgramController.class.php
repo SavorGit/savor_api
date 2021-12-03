@@ -47,7 +47,7 @@ class ProgramController extends CommonController{
         foreach($play_list as $key=>$v){
             
             $map = [];
-            $fields = "concat('".$oss_host."',a.`oss_addr`) oss_path,a.oss_addr,b.name,b.id ads_id";
+            $fields = "concat('".$oss_host."',a.`oss_addr`) oss_path,a.oss_addr,b.name,b.id ads_id,a.type m_type";
             $map['a.id'] = $v['media_id'];
             $media_info  = $m_media->alias('a')
                                    ->join('savor_ads b on b.media_id =a.id','left')
@@ -58,6 +58,7 @@ class ProgramController extends CommonController{
             $play_list[$key]['oss_addr'] = $media_info['oss_addr'];
             $play_list[$key]['name']     = $media_info['name'];
             $play_list[$key]['ads_id']   = $media_info['ads_id'];
+            $play_list[$key]['m_type']   = $media_info['m_type'];
             switch ($v['type']){
                 case 'pro':
                     $play_list[$key]['media_type'] ='节目';

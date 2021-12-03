@@ -209,7 +209,7 @@ class BasicdataController extends CommonController{
         }
         $res_data = array();
         if(!empty($cache_key)) {
-            $desc = array('通过各类型资源的期号进行对比，期号最新的为已更新。其余为未更新');
+            $desc = array('通过各类型资源的期号进行对比，期号最新的为已更新，其余为未更新。');
             $res_cache_data = $redis->get($cache_key);
             $res_data = json_decode($res_cache_data, true);
             foreach ($this->map_stat_hotel_key as $v){

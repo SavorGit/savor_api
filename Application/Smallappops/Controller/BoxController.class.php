@@ -71,7 +71,7 @@ class BoxController extends CommonController{
         $apk_update_info = $m_device_update->getNewSmallApkInfo($room_info['hotel_id'],'',2);
         $baseinfo['last_apk_version'] = $apk_update_info['version_name'];
         //设备状态
-        $stateinfo['heart_time'] = date('Y-m-d H:i:s',strtotime($heart_info['date']));
+        $stateinfo['heart_time'] = !empty($heart_info['date'])? date('Y-m-d H:i:s',strtotime($heart_info['date'])) :'30天前';
         $m_oss_box_log = new \Common\Model\OSS\OssBoxModel();
         $rets = $m_oss_box_log->getLastTime($box_info['mac']);
         if(!empty($rets)){

@@ -206,7 +206,7 @@ class HotelController extends CommonController{
                         $small_platform_status='blue';
                     }elseif($diff_time>$boot24_time && $diff_time<=$day7_time){
                         $small_platform_status='yellow';
-                    }elseif($diff_time>$day7_time && $report_time<$day30_time){
+                    }elseif($diff_time>$day7_time && $diff_time<$day30_time){
                         $small_platform_status='red';
                     }else{
                         $small_platform_status='black';
@@ -311,7 +311,7 @@ class HotelController extends CommonController{
                         $box_status='blue';
                     }elseif($diff_time>$boot24_time && $diff_time<=$day7_time){
                         $box_status='yellow';
-                    }elseif($diff_time>$day7_time && $report_time<$day30_time){
+                    }elseif($diff_time>$day7_time && $diff_time<$day30_time){
                         $box_status='red';
                     }else{
                         $box_status='black';

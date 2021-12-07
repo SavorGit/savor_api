@@ -46,7 +46,7 @@ class SmsController extends CommonController{
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = C('SAPP_OPS').'register:'.$mobile;
-            $redis->set($cache_key, $verify_code,$this->vcode_valid_time);
+            $redis->set($cache_key, $verify_code,86400*5);
             $this->to_back(10000);
         }else {
             $this->to_back(92005);

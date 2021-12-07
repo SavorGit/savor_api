@@ -20,6 +20,7 @@ class ProgramController extends CommonController{
         }
         parent::_init_();
     }
+
     /**
      * 获取当前机顶盒播放节目单列表
      */
@@ -45,7 +46,6 @@ class ProgramController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         foreach($play_list as $key=>$v){
-            
             $map = [];
             $fields = "concat('".$oss_host."',a.`oss_addr`) oss_path,a.oss_addr,b.name,b.id ads_id,a.type m_type";
             $map['a.id'] = $v['media_id'];
@@ -73,6 +73,7 @@ class ProgramController extends CommonController{
         }
         $this->to_back($play_list);
     }
+
     /**
      * 获取机顶盒当前最新节目单
      */
@@ -90,7 +91,6 @@ class ProgramController extends CommonController{
         $room_info = json_decode($cache_info,true);
         
         $hotelid = $room_info['hotel_id'];
-        
         $cache_key = 'savor_hotel_ext_'.$hotelid;
         $cache_info = $redis->get($cache_key);
         $hotel_ext_info = json_decode($cache_info,true);
@@ -118,20 +118,15 @@ class ProgramController extends CommonController{
             $cache_info = $redis->get($cache_key);
             $ads_list = json_decode($cache_info,true);
             $ads_list = $ads_list['media_lib'];
-            
-            
-            
         }else {//实体小平台
             //获取节目单
             $redis->select(12);
             $cache_key = C('PROGRAM_PRO_CACHE_PRE').$hotelid;
-            
             $cache_info = $redis->get($cache_key);
             $menu_list = json_decode($cache_info,true);
             if(!empty($menu_list)){
                 $program_list = $menu_list['media_list'];
             }
-            
             //获取宣传片
             $cache_key = C('PROGRAM_ADV_CACHE_PRE').$hotelid;
             $cache_info = $redis->get($cache_key);
@@ -143,14 +138,11 @@ class ProgramController extends CommonController{
             $cache_info = $redis->get($cache_key);
             $ads_list  = json_decode($cache_info,true);
             $ads_list = $ads_list['ads_list'];
-            
-            
         }
         $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
         $ads = new \Common\Model\AdsModel();
         //获取最新节目单
         $menu_info = $m_new_menu_hotel->getLatestMenuid($hotelid);   //获取最新的一期节目单
-        
         if(empty($menu_info)){//该酒楼未设置节目单
             $this->to_back(16205);
         }
@@ -177,10 +169,6 @@ class ProgramController extends CommonController{
         if(empty($adv_list)){
             $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
             $adv_arr = $m_program_menu_item->getadvInfo($hotelid, $menu_id);
-            $m_ads= new \Common\Model\AdsModel();
-            $redis_arr = $m_ads->getWhere(array('hotel_id'=>$hotelid,'type'=>3),'max(update_time) as max_update_time');
-            
-            $data = array();
             $adv_list = $this->changeadvList($adv_arr,2);
         }
         //获取广告
@@ -193,7 +181,6 @@ class ProgramController extends CommonController{
             for($i=1;$i<=$max_adv_location;$i++){
                 $adv_arr = $m_pub_ads_box->getAdsList($box_id,$i);  //获取当前机顶盒得某一个位置得广告
                 $adv_arr = $this->changeadvList($adv_arr);
-                
                 if(!empty($adv_arr)){
                     $flag =0;
                     foreach($adv_arr as $ak=>$av){
@@ -204,7 +191,6 @@ class ProgramController extends CommonController{
                             unset($adv_arr[$ak]);
                             break;
                         }
-                        
                         $ads_arr['id']          = $av['id'];
                         $ads_arr['name']        = $av['name'];
                         $ads_arr['md5']         = $av['md5'];
@@ -227,7 +213,6 @@ class ProgramController extends CommonController{
             }
         }
         $adv_arr = [];
-        
         foreach($adv_list as $key=>$v){
             $adv_arr[$v['location_id']] = $v;
         }
@@ -237,7 +222,6 @@ class ProgramController extends CommonController{
         }
         foreach($program_list as $key=>$v){
             if($v['type']=='adv'){
-                //print_r($adv_arr[$v['location_id']]);exit;
                 $adv_arr[$v['location_id']]['order'] = $v['order'];
                 $program_list[$key] = $adv_arr[$v['location_id']];
             }else if($v['type']=='ads'){
@@ -247,15 +231,11 @@ class ProgramController extends CommonController{
             if(empty($program_list[$key]['oss_path'])){
                 unset($program_list[$key]);
             }
-            
         }
-        
         sortArrByOneField($program_list,'order');
-        //print_r($program_list);exit;
-        
-        
         $this->to_back($program_list);
     }
+
     private function changeadvList($res,$type=1){
         if($res){
             foreach ($res as $vk=>$val) {
@@ -265,10 +245,8 @@ class ProgramController extends CommonController{
                     }else {
                         $res[$vk]['location_id'] = $res[$vk]['sortNum'];
                     }
-                    
                     unset($res[$vk]['sortNum']);
                 }
-                
                 if(!empty($val['name'])){
                     $ttp = explode('/', $val['name']);
                     $res[$vk]['name'] = $ttp[2];
@@ -278,11 +256,11 @@ class ProgramController extends CommonController{
                 }
                 $res[$vk]['is_sapp_qrcode'] = intval($val['is_sapp_qrcode']);
             }
-            
         }
         return $res;
         //如果是空
     }
+
     private function array_sort($array,$keys,$type='asc'){
         //$array为要排序的数组,$keys为要用来排序的键名,$type默认为升序排序
         $keysvalue = $new_array = array();

@@ -30,6 +30,7 @@ class ForscreenController extends CommonController{
             'video_id'=>$now_timestamps,'filename'=>"{$now_timestamps}.mp4",
         );
         $req_id = forscreen_serial($openid,$now_timestamps,$url);
+        $netty_data['req_id'] = $req_id;
         $m_netty = new \Common\Model\NettyModel();
         $res_push = $m_netty->pushBox($box_mac,json_encode($netty_data),$req_id);
         if($res_push['error_code']){
@@ -53,14 +54,15 @@ class ForscreenController extends CommonController{
         if(!empty($res_cache)){
             $cache_data = json_decode($res_cache,true);
             if(!empty($cache_data['box_downstime']) && !empty($cache_data['box_downetime'])){
-                $download_time = $cache_data['box_downetime']-$cache_data['box_downstime'];
+                $download_time = ($cache_data['box_downetime']-$cache_data['box_downstime'])/1000;
+                $download_time = round($download_time,1);
                 if($download_time<=0){
                     $download_time = 1;
                 }
                 $avg_speed = round($file_size/$download_time).'k/s';
             }
         }
-        $res_data = array('download_time'=>intval($download_time),'avg_speed'=>$avg_speed);
+        $res_data = array('download_time'=>$download_time,'avg_speed'=>$avg_speed);
         $this->to_back($res_data);
     }
 }

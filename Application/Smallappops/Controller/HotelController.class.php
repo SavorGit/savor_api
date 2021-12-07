@@ -184,10 +184,10 @@ class HotelController extends CommonController{
                 $hotel_network='5G';
             }
             $now_time = time();
-            $online_time = $now_time-900;
-            $boot24_time = $now_time-86400;
-            $day7_time = $now_time-(7*86400);
-            $day30_time = $now_time-(30*86400);
+            $online_time = 900;
+            $boot24_time = 86400;
+            $day7_time = 7*86400;
+            $day30_time = 30*86400;
 
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(13);
@@ -199,13 +199,14 @@ class HotelController extends CommonController{
                 if(!empty($res_cache)){
                     $platform_info = json_decode($res_cache,true);
                     $report_time = strtotime($platform_info['date']);
-                    if($report_time>=$online_time){
+                    $diff_time = $now_time - $report_time;
+                    if($diff_time<=$online_time){
                         $small_platform_status='green';
-                    }elseif($report_time>=$boot24_time){
+                    }elseif($diff_time<=$boot24_time){
                         $small_platform_status='blue';
-                    }elseif($report_time>=$day7_time && $report_time<$boot24_time){
+                    }elseif($diff_time>$boot24_time && $diff_time<=$day7_time){
                         $small_platform_status='yellow';
-                    }elseif($report_time>=$day30_time && $report_time<$day7_time){
+                    }elseif($diff_time>$day7_time && $report_time<$day30_time){
                         $small_platform_status='red';
                     }else{
                         $small_platform_status='black';
@@ -227,13 +228,10 @@ class HotelController extends CommonController{
             }else{
                 $adv_proid = '20190101000000';
             }
-            
             //获取最新节目单
             $m_new_menu_hotel = new \Common\Model\ProgramMenuHotelModel();
             $menu_info = $m_new_menu_hotel->getLatestMenuid($hotel_id);   //获取最新的一期节目单
             $menu_num= $menu_info['menu_num'];
-            
-
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
             $m_sdkerror = new \Common\Model\SdkErrorModel();
             $m_box = new \Common\Model\BoxModel();
@@ -241,15 +239,10 @@ class HotelController extends CommonController{
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
             $res_box = $m_box->getBoxByCondition($fields,$where);
             foreach ($res_box as $k=>$v){
-                
-                
-                
                 //获取机顶盒的广告期号
                 if($res_hotel['mac_addr'] =='000000000000'){//虚拟小平台
-                    
                     $redis->select(10);
                     $cache_key = 'vsmall:ads:'.$hotel_id.":".$v['mac'];
-                    
                     $cache_info = $redis->get($cache_key);
                     $ads_info = json_decode($cache_info,true);
                     if(!empty($ads_info['media_lib'])){
@@ -257,22 +250,14 @@ class HotelController extends CommonController{
                     }else{
                         $ads_proid = '';
                     }
-                    
-                    
-                    
                 }else { //实体小平台
                     $redis->select(12);
                     $program_ads_key = C('PROGRAM_ADS_CACHE_PRE');
-                    $cache_key = '';
                     $cache_key = $program_ads_key.$v['box_id'];
-                    
                     $cache_value = $redis->get($cache_key);
-                    
                     $ads_info = json_decode($cache_value,true);
                     $ads_proid = $ads_info['menu_num'];
-                    
                 }
-                
                 if(empty($ads_proid)){
                     $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
                     $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
@@ -282,7 +267,6 @@ class HotelController extends CommonController{
                     for($i=1;$i<=$max_adv_location;$i++){
                         $adv_arr = $m_pub_ads_box->getAdsList($v['box_id'],$i);  //获取当前机顶盒得某一个位置得广告
                         $adv_arr = $this->changeadvList($adv_arr);
-                        
                         if(!empty($adv_arr)){
                             $flag =0;
                             foreach($adv_arr as $ak=>$av){
@@ -302,7 +286,6 @@ class HotelController extends CommonController{
                             }
                         }
                     }
-                    
                     if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
                         $ads_time_str = max($ads_time_arr);
                         $ads_proid = date('YmdHis',strtotime($ads_time_str));
@@ -314,34 +297,21 @@ class HotelController extends CommonController{
                 $res_cache = $redis->get($cache_key);
                 $box_status='black';
                 $box_uptips='';
-                
-                
-                
-                
                 if(!empty($res_cache)){
                     $cache_data = json_decode($res_cache,true);
                     $report_time = strtotime($cache_data['date']);
-                    if($report_time>=$online_time){
+                    $diff_time = $now_time - $report_time;
+                    if($diff_time<=$online_time){
                         $box_status='green';
-                    }elseif($report_time>=$boot24_time){
+                    }elseif($diff_time<=$boot24_time){
                         $box_status='blue';
-                    }elseif($report_time>=$day7_time && $report_time<$boot24_time){
+                    }elseif($diff_time>$boot24_time && $diff_time<=$day7_time){
                         $box_status='yellow';
-                    }elseif($report_time>=$day30_time && $report_time<$day7_time){
+                    }elseif($diff_time>$day7_time && $report_time<$day30_time){
                         $box_status='red';
                     }else{
                         $box_status='black';
                     }
-                    /*  if($v['mac']=='00226D583ED0'){
-                        echo $adv_proid.$menu_num."<br>";
-                        echo $cache_data['adv_period']."<br>";
-                        echo $menu_num."<br>";
-                        echo $cache_data['pro_period']."<br>";
-                        echo $ads_proid."<br>";
-                        echo $cache_data['period'];exit;
-                    }  */
-                    
-                    
                     if($adv_proid.$menu_num!=$cache_data['adv_period'] || $menu_num!=$cache_data['pro_period'] || ( !empty($ads_proid) && $ads_proid!=$cache_data['period']) ){
                         $box_uptips='资源待更新';
                     }
@@ -362,9 +332,8 @@ class HotelController extends CommonController{
                 $res_box[$k]['uptips']=$box_uptips;
             }
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
-                '状态说明：','绿色圆点：在线','黄色圆点：24小时内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
+                '状态说明：','绿色圆点：在线','蓝色圆点：24小时内在线','黄色圆点：24小时以上，7天以内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
             );
-
             $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'address'=>$res_hotel['addr'],
                 'contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,
                 'hotel_network'=>$hotel_network,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],

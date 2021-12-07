@@ -177,44 +177,30 @@ class BoxController extends CommonController{
         $m_sdkerror->execute($sql);
         $this->to_back(array());
     }
+
     public function updateApk(){
         $box_id = $this->params['box_id'];
-        /*$redis = SavorRedis::getInstance();
-        $redis->select(15);
-        $cache_key   = 'savor_box_'.$box_id;
-        $cache_info  =$redis->get($cache_key);
-        $box_info = json_decode($cache_info,true); */
-        
         $m_box = new \Common\Model\BoxModel();
         $field = "box.id,box.device_token,box.adv_mach,hotel.id hotel_id,room.id room_id";
         $where = " box.id=$box_id";
         $box_info  = $m_box->getBoxByCondition($field,$where);
         $box_info  = $box_info[0];
         $hotel_id = $box_info['hotel_id'];
-        
-        
         if(empty($box_info['device_token'])){
             $this->to_back(70005); 
         }
-        
         if(empty($box_info['adv_mach'])){//非广告机
             //获取当前机顶盒的最新apk
-            
-            //$m_upgrade = new \Admin\Model\UpgradeModel();
             $m_upgrade = new \Common\Model\DeviceUpgradeModel();
             $field = 'sdv.oss_addr,md5';
             $device_type = 2;
             $data = $m_upgrade->getLastOneByDeviceNew($field, $device_type, $hotel_id);
-            
         }else {//广告机
             $m_device_version = new \Common\Model\DeviceVersionModel();
             $data = $m_device_version->field('oss_addr,md5')->where('device_type=21')->order('id desc')->find();
-            
         }
         $apk_url = 'http://'.C('OSS_HOST').'/'.$data['oss_addr'];
         $apk_md5 = $data['md5'];
-        
-        
         $display_type = 'notification';
         $option_name = 'boxclient';
         $after_a = C('AFTER_APP');
@@ -228,12 +214,10 @@ class BoxController extends CommonController{
         $custom['type'] = 4;  //1:RTB  2:4G投屏 3:shell命令推送  4：apk升级
         $custom['action'] = 1; //1:投屏  0:结束投屏
         $custom['data'] = array('apkUrl'=>$apk_url,'apkMd5'=>$apk_md5);
-        
         $m_pushlog = new \Common\Model\PushLogModel();
         $m_pushlog->uPushData($display_type, 3,'listcast',$option_name, $after_open, $device_token,
             $ticker,$title,$text,$production_mode,$custom);
         $this->to_back(10000);
-        
     }
 
     /**
@@ -242,7 +226,7 @@ class BoxController extends CommonController{
     private function getBoxAdsList($box_id){
         $data =  array();
         $m_box = new \Common\Model\BoxModel();
-        $fileds = 'ext.mac_addr  ';
+        $fileds = 'ext.mac_addr';
         $box_info = $m_box->alias('a')
         ->join('savor_room room on a.room_id=room.id','left')
         ->join('savor_hotel hotel on room.hotel_id=hotel.id','left')
@@ -251,7 +235,6 @@ class BoxController extends CommonController{
         ->find();
         if($box_info['mac_addr']=='000000000000'){
             $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
-            
             $pub_ads_list = $m_pub_ads_box->getVsmallAdsList($box_id);
             $ads_period_info = $m_pub_ads_box->getVsmallBoxPorid($box_id);
             foreach($pub_ads_list as $key=>$v){
@@ -262,8 +245,6 @@ class BoxController extends CommonController{
                 $data['media_list'][$v['location_id']] = $tmp;
             }
             if(!empty($ads_period_info)){//如果该机顶盒下广告位不为空
-                
-                
                 $box_ads_num = date('YmdHis',strtotime($ads_period_info['create_time']));
                 $data['box_ads_num'] = $box_ads_num;
             }
@@ -276,7 +257,6 @@ class BoxController extends CommonController{
             for($i=1;$i<=$max_adv_location;$i++){
                 $adv_arr = $m_pub_ads_box->getAdsList($box_id,$i);  //获取当前机顶盒得某一个位置得广告
                 $adv_arr = $this->changeadvList($adv_arr);
-                
                 if(!empty($adv_arr)){
                     $flag =0;
                     foreach($adv_arr as $ak=>$av){
@@ -287,7 +267,6 @@ class BoxController extends CommonController{
                             unset($adv_arr[$ak]);
                             break;
                         }
-                        
                         $ads_arr['pub_ads_id']  = $av['pub_ads_id'];
                         $ads_arr['create_time'] = $av['create_time'];
                         $ads_arr['location_id'] = $av['location_id'];
@@ -299,22 +278,18 @@ class BoxController extends CommonController{
                         $tmp['type'] = 1;
                         $tmp['location_id'] = $av['location_id'];
                         $data['media_list'][$av['location_id']] = $tmp;
-                        
                     }
                 }
             }
             if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
-                
                 $ads_time_str = max($ads_time_arr);
                 $box_ads_num = date('YmdHis',strtotime($ads_time_str));
                 $data['box_ads_num'] = $box_ads_num;
             }
-            //return $data;
         }
-        
         return $data;
-        
     }
+
     /**
      * @desc 获取当前机顶盒的宣传片列表
      */
@@ -331,7 +306,6 @@ class BoxController extends CommonController{
         $menu_num= $menu_info['menu_num'];
         $m_program_menu_item = new \Common\Model\ProgramMenuItemModel();
         $adv_arr = $m_program_menu_item->getadvInfo($hotel_id, $menu_id);
-        
         foreach($adv_arr as $key=>$v){
             $temp =array();
             $tmp['name'] = $v['chinese_name'];
@@ -339,19 +313,17 @@ class BoxController extends CommonController{
             $tmp['sort_num'] = $v['sortNum'];
             $data['media_list'][$v['sortNum']] = $tmp;
         }
-        
         $m_ads = new \Common\Model\AdsModel();
         $adv_proid_info = $m_ads->getWhere(array('hotel_id'=>$hotel_id,'type'=>3),'max(update_time) as max_update_time');
-        
         if(!empty($adv_proid_info[0]['max_update_time'])){
             $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
         }else {
             $adv_proid = '20190101000000';
         }
-        
         $data['box_adv_num'] = $adv_proid;
         return $data;
     }
+
     private function changeadvList($res,$type=1){
         if($res){
             foreach ($res as $vk=>$val) {
@@ -361,20 +333,18 @@ class BoxController extends CommonController{
                     }else {
                         $res[$vk]['location_id'] = $res[$vk]['sortNum'];
                     }
-                    
                     unset($res[$vk]['sortNum']);
                 }
-                
                 if(!empty($val['name'])){
                     $ttp = explode('/', $val['name']);
                     $res[$vk]['name'] = $ttp[2];
                 }
             }
-            
         }
         return $res;
         //如果是空
     }
+
     private function curlPost($url = '',  $post_data = ''){
         $curl = curl_init();
         curl_setopt_array($curl, array(
@@ -396,7 +366,6 @@ class BoxController extends CommonController{
         if ($err) {
             return 0;
         } else {
-            
             return $response;
         }
     }

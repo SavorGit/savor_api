@@ -238,6 +238,7 @@ class HotelController extends CommonController{
             $fields='box.id as box_id,box.mac,box.name as box_name';
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
             $res_box = $m_box->getBoxByCondition($fields,$where);
+            $ads_proid = '';
             foreach ($res_box as $k=>$v){
                 //获取机顶盒的广告期号
                 if($res_hotel['mac_addr'] =='000000000000'){//虚拟小平台
@@ -248,7 +249,7 @@ class HotelController extends CommonController{
                     if(!empty($ads_info['media_lib'])){
                         $ads_proid = $ads_info['menu_num'];
                     }else{
-                        $ads_proid = '';
+                        //$ads_proid = '';
                     }
                 }else { //实体小平台
                     $redis->select(12);
@@ -256,7 +257,10 @@ class HotelController extends CommonController{
                     $cache_key = $program_ads_key.$v['box_id'];
                     $cache_value = $redis->get($cache_key);
                     $ads_info = json_decode($cache_value,true);
-                    $ads_proid = $ads_info['menu_num'];
+                    if(!empty($ads_info['menu_num'])){
+                        $ads_proid = $ads_info['menu_num'];
+                    }
+                    
                 }
                 if(empty($ads_proid)){
                     $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 

@@ -249,7 +249,7 @@ class ForscreenController extends CommonController{
                     $oss_addr = $imgs[0];
                     $data = array('forscreen_id'=>$forscreen_id,'resource_id'=>$res_info[0]['resource_id'],'area_id'=>$area_id,
                         'oss_addr'=>$oss_addr,'display_num'=>1,'type'=>2,'add_date'=>$add_date);
-                    $this->add($data);
+                    $m_datadisplay->add($data);
                 }
                 break;
         }

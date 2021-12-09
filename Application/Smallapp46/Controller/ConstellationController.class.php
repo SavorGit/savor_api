@@ -95,7 +95,7 @@ class ConstellationController extends CommonController{
         $m_constellationvideo = new \Common\Model\Smallapp\ConstellationvideoModel();
         $where = array('constellation_id'=>$constellation_id,'status'=>1);
         $orderby = 'sort desc,id desc';
-        $res = $m_constellationvideo->getDataList('name,media_id,vimgmedia_id',$where,$orderby);
+        $res = $m_constellationvideo->getDataList('name,media_id,imgmedia_id',$where,$orderby);
         $result = array();
         if(!empty($res)){
             $m_media = new \Common\Model\MediaModel();

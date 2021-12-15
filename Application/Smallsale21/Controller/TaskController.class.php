@@ -77,12 +77,12 @@ class TaskController extends CommonController{
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
         task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
-        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',array(22,23)));
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',array(22,23,24)));
         $m_media = new \Common\Model\MediaModel();
         $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
         $inprogress_task = $invalid_task = $finish_task = array();
+        $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         if(!empty($res_inprogress_task)){
-            $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
             foreach ($res_inprogress_task as $k=>$v){
                 $tinfo = $v;
@@ -116,6 +116,10 @@ class TaskController extends CommonController{
                         $invalid_task[]=$tinfo;
                     }
                 }else{
+                    if($v['task_type']==24) {
+                        $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
+                        $tinfo['price'] = $res_goods['price'];
+                    }
                     $res_ainfo = $m_activity->getInfo(array('task_user_id'=>$v['task_user_id']));
                     if($v['status']==1 && $v['flag']==1){
                         if(!empty($res_ainfo) && $res_ainfo['status']==2){
@@ -179,8 +183,8 @@ class TaskController extends CommonController{
             $all_inprogress_task = array_merge(array_values($inprogress_task),$all_inprogress_task);
         }
 
-        $fields = "task.id task_id,task.name task_name,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,a.staff_id";
-        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',array(22,23)),'task.status'=>1,'task.flag'=>1);
+        $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,a.staff_id";
+        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',array(22,23,24)),'task.status'=>1,'task.flag'=>1);
         $no_task_ids = array();
         if(!empty($inprogress_task)){
             $no_task_ids = array_keys($inprogress_task);
@@ -229,6 +233,10 @@ class TaskController extends CommonController{
                         $canreceive_task[]=$v;
                     }
                 }else{
+                    if($v['task_type']==24) {
+                        $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
+                        $v['price'] = $res_goods['price'];
+                    }
                     $canreceive_task[]=$v;
                 }
             }
@@ -269,28 +277,30 @@ class TaskController extends CommonController{
         }
         $data = array('openid'=>$openid,'task_id'=>$task_id,'integral'=>$res_task[0]['task_integral']);
         $user_task_id = $m_usertask->add($data);
-        //增加积分
-        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
-        $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
-        if(!empty($res_integral)){
-            $userintegral = $res_integral['integral']+$res_task[0]['task_integral'];
-            $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
-        }else{
-            $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['task_integral']);
-            $m_userintegral->add($uidata);
+        if(in_array($res_task[0]['task_type'],array(22,23))){
+            //增加积分
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
+            if(!empty($res_integral)){
+                $userintegral = $res_integral['integral']+$res_task[0]['task_integral'];
+                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['task_integral']);
+                $m_userintegral->add($uidata);
+            }
+            $type = 10;
+            if($res_task[0]['task_type']==23){
+                $type = 12;
+            }
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+            $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'integral'=>$res_task[0]['task_integral'],'content'=>1,'type'=>$type,'integral_time'=>date('Y-m-d H:i:s'));
+            $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $m_userintegralrecord->add($integralrecord_data);
+            //end
         }
-        $type = 10;
-        if($res_task[0]['task_type']==23){
-            $type = 12;
-        }
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
-        $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
-            'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-            'integral'=>$res_task[0]['task_integral'],'content'=>1,'type'=>$type,'integral_time'=>date('Y-m-d H:i:s'));
-        $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $m_userintegralrecord->add($integralrecord_data);
-        //end
         $this->to_back(array('user_task_id'=>$user_task_id));
     }
 

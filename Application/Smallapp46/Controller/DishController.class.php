@@ -14,7 +14,7 @@ class DishController extends CommonController{
                 break;
             case 'detail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'box_mac'=>1002);
+                $this->valid_fields = array('goods_id'=>1001,'box_mac'=>1002,'task_user_id'=>1002,'expire_time'=>1002);
                 break;
         }
         parent::_init_();
@@ -83,6 +83,8 @@ class DishController extends CommonController{
     public function detail(){
         $goods_id = intval($this->params['goods_id']);
         $box_mac = $this->params['box_mac'];
+        $task_user_id = $this->params['task_user_id'];
+        $expire_time = $this->params['expire_time'];
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
@@ -92,7 +94,6 @@ class DishController extends CommonController{
         if($res_goods['status']!=1){
             $this->to_back(93037);
         }
-
         $price = $res_goods['price'];
         $line_price = $res_goods['line_price'];
         $stock_num = $res_goods['amount'];
@@ -127,6 +128,33 @@ class DishController extends CommonController{
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$price,'line_price'=>$line_price,
             'is_localsale'=>$res_goods['is_localsale'],'stock_num'=>$stock_num,'type'=>$res_goods['type'],'notice'=>$res_goods['notice'],
             'gtype'=>$res_goods['gtype'],'attrs'=>$attrs,'model_img'=>$model_img);
+
+        if($res_goods['type']==42){
+            if(empty($task_user_id) || empty($expire_time)){
+                $this->to_back(1001);
+            }
+            $m_usertask = new \Common\Model\Integral\TaskuserModel();
+            $fields = "a.openid,task.id task_id,task.name task_name,task.goods_id,task.integral,
+            task.task_type,task.status,task.flag,task.end_time as task_expire_time";
+            $where = array('a.id'=>$task_user_id);
+            $res_usertask = $m_usertask->getUserTaskList($fields,$where,'a.id desc');
+            if(empty($res_usertask)){
+                $this->to_back(93037);
+            }
+            $now_time = time();
+            $group_buy_time = $expire_time-$now_time>0?$expire_time-$now_time:0;
+            $where = array('a.openid'=>$res_usertask[0]['openid'],'a.status'=>1,'merchant.status'=>1);
+            $field_staff = 'a.openid,user.mobile,user.nickName';
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+            if($res_usertask[0]['status']==0){
+                $group_buy_time = 0;
+            }
+            $group_buy_tips = '优惠已结束，请联系销售经理（'.$res_staff[0]['nickName'].' 电话：'.$res_staff[0]['mobile'].'）';
+            $data['group_buy_time'] = $group_buy_time;
+            $data['group_buy_tips'] = $group_buy_tips;
+        }
+
         $oss_host = "https://".C('OSS_HOST').'/';
         $cover_imgs = $detail_imgs =array();
         if(!empty($res_goods['cover_imgs'])){

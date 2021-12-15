@@ -426,7 +426,7 @@ class BaseIncModel extends Model{
                 $laimao_seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
                 $is_laimao = 0;
                 foreach ($order_ids as $v){
-                    $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit';
+                    $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit,goods.name';
                     $where = array('og.order_id'=>$v['id']);
                     $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
                     $income_data = array();
@@ -443,7 +443,7 @@ class BaseIncModel extends Model{
                         $sql_goods = "$upsql where id=$goods_id ";
                         $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
                         $this->execute($sql_goods);
-                        if($v['sale_uid']){
+                        if($v['sale_uid'] && $otype!=8){
                             if($gv['distribution_profit']>0){
                                 $profit = $gv['distribution_profit'];
                             }
@@ -486,10 +486,26 @@ class BaseIncModel extends Model{
                     $template_code = $ucconfig['send_laimao_orderpay_templateid'];
                     $sql_orderlocaltion = "select * from savor_smallapp_orderlocation where order_id='$trade_no'";
                     $this->paynotify_log($paylog_type, $serial_no, $sql_orderlocaltion);
-                    $result_order = $this->query($sql_order);
-                    $order_location = $result_order[0];
+                    $result_orderlocation = $this->query($sql_order);
+                    $order_location = $result_orderlocation[0];
                     $params = array('hotel_name'=>$order_location['hotel_name'],'room_name'=>$order_location['room_name'],'amount'=>$result_order[0]['amount'],'order_id'=>$trade_no);
                     $alisms::sendSms(13811966726,$params,$template_code);
+                }
+                if($otype==8 && $result_order[0]['sale_uid'] && $result_order[0]['task_user_id']){
+                    $sms_config = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $template_code = $sms_config['send_groupbuy_user_templateid'];
+                    $send_mobiles = C('GROUP_BUY_USER_MOBILE');
+                    if(!empty($send_mobiles)){
+                        foreach ($send_mobiles as $v){
+                            $alisms::sendSms($v,'',$template_code);
+                        }
+                    }
+                    $template_code = $sms_config['send_groupbuy_saleuser_templateid'];
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $res_user = $m_user->getOne('*',array('id'=>$result_order[0]['sale_uid']),'');
+                    $params = array('uname'=>$result_order[0]['contact'],'name'=>$res_goods[0]['name'],'hour'=>48);
+                    $alisms::sendSms($res_user['mobile'],$params,$template_code);
                 }
             }
         }else{

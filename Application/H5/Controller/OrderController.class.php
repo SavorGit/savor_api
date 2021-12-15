@@ -175,6 +175,90 @@ class OrderController extends Controller {
         }
     }
 
+    public function grouporderincome(){
+        $now_time = date('Y-m-d H:i:s');
+        $ts = I('get.ts','');
+        if($ts!='yqQGxlth10z2EJ1A4M'){
+            die($now_time.' error');
+        }
+        $hour = date('G');
+        if($hour!=12){
+            die($now_time.' hour error');
+        }
+        $nowdtime = date('Y-m-d H:i:s');
+        echo $nowdtime." start\r\n";
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $where = array('otype'=>8,'pay_type'=>10,'status'=>53,'is_settlement'=>0);
+        $where['add_time'] = array('egt',$this->order_start_time);
+
+        $res_order = $m_order->getDataList('*',$where,'id asc');
+        if(!empty($res_order)){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $m_usertask = new \Common\Model\Integral\TaskuserModel();
+            $m_hotel = new \Common\Model\HotelModel();
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+
+            $m_orderserial = new \Common\Model\Smallapp\OrderserialModel();
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig(5);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
+            foreach ($res_order as $v){
+                $order_id=$v['id'];
+                $task_user_id = $v['task_user_id'];
+                $res_orderserial = $m_orderserial->getInfo(array('trade_no'=>$order_id));
+                if($v['sale_uid']==0 || $task_user_id==0 || empty($res_orderserial)){
+                    continue;
+                }
+                $res_user = $m_user->getOne('*',array('id'=>$v['sale_uid']),'');
+                $tfields = "a.openid,a.integral as uintegral,task.id task_id,task.goods_id,task.integral,task.money";
+                $res_usertask = $m_usertask->getUserTaskList($tfields,array('a.id'=>$task_user_id),'a.id desc');
+                if(!empty($res_user) && !empty($res_usertask)){
+                    $payee_openid=$res_user['openid'];
+                    $money=$res_usertask[0]['money'];
+                    $integral=$res_usertask[0]['integral'];
+
+                    $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$payee_openid);
+                    $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    if($res['code']==10000){
+                        $condition = array('id'=>$order_id);
+                        $m_order->updateData($condition,array('is_settlement'=>1));
+
+                        $data = array('order_id'=>$order_id,'openid'=>$payee_openid,'money'=>$money);
+                        $m_ordersettlement->add($data);
+
+                        $m_usertask->updateData(array('id'=>$task_user_id),array('integral'=>$integral+$res_usertask[0]['uintegral']));
+
+                        $res_integral = $m_userintegral->getInfo(array('openid'=>$payee_openid));
+                        if(!empty($res_integral)){
+                            $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$integral+$res_integral['integral'],'update_time'=>date('Y-m-d H:i:s')));
+                        }else{
+                            $m_userintegral->addData(array('openid'=>$payee_openid,'integral'=>$integral));
+                        }
+
+                        $staffwhere = array('a.openid'=>$payee_openid,'a.status'=>1,'merchant.status'=>1);
+                        $field_staff = 'a.id as staff_id,merchant.hotel_id';
+                        $res_staff = $m_staff->getMerchantStaff($field_staff,$staffwhere);
+                        $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
+                        $integralrecord_data = array('openid'=>$payee_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                            'hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                            'integral'=>$integral,'goods_id'=>$res_usertask[0]['goods_id'],'jdorder_id'=>$order_id,'type'=>14,
+                            'integral_time'=>date('Y-m-d H:i:s'));
+                        $m_userintegralrecord->add($integralrecord_data);
+                        $integralrecord_data['integral'] = 0;
+                        $integralrecord_data['money'] = $money;
+                        $m_userintegralrecord->add($integralrecord_data);
+
+                        echo "order_id:$order_id  settlement ok"."\r\n";
+                    }
+                }
+            }
+        }
+        echo $nowdtime." finish\r\n";
+    }
+
     public function settlement(){
         $now_time = date('Y-m-d H:i:s');
         $ts = I('get.ts','');

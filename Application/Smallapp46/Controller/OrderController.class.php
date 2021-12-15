@@ -43,7 +43,7 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'address_id'=>1002,'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,
-                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002);
+                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002,'task_user_id'=>1002);
                 break;
             case 'addGiftorder':
                 $this->is_verify = 1;
@@ -369,6 +369,7 @@ class OrderController extends CommonController{
         $title_type = $this->params['title_type'];//发票抬头类型 1企业 2个人
         $box_id = $this->params['box_id'];
         $box_mac = $this->params['box_mac'];
+        $task_user_id = intval($this->params['task_user_id']);
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -466,6 +467,9 @@ class OrderController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         if($goods_id){
             $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if($res_goods['type']==42){
+                $otype = 8;
+            }
             if(empty($res_goods) || $res_goods['amount']==0 || $res_goods['status']==2){
                 $this->to_back(90144);
             }
@@ -594,6 +598,9 @@ class OrderController extends CommonController{
             }
             if($sale_uid){
                 $add_data['sale_uid'] = $sale_uid;
+            }
+            if($task_user_id>0){
+                $add_data['task_user_id'] = $task_user_id;
             }
             if(!empty($order_location)){
                 $add_data['box_mac'] = $order_location['box_mac'];
@@ -1252,7 +1259,7 @@ class OrderController extends CommonController{
         $status = intval($this->params['status']);//1待处理 2已完成 3待发货 4已发货 5已取消 6赠送中 7已过期 8我收到
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
-        $type = isset($this->params['type'])?intval($this->params['type']):3;//类型0全部 3普通外卖订单 5全国售订单 6赠送礼品订单 7转赠订单
+        $type = isset($this->params['type'])?intval($this->params['type']):3;//类型0全部 3普通外卖订单 5全国售订单 6赠送礼品订单 7转赠订单 8团购订单
         if(empty($pagesize)){
             $pagesize =10;
         }
@@ -1264,7 +1271,11 @@ class OrderController extends CommonController{
         }
         $where = array('openid'=>$openid);
         if($type){
-            $where['otype'] = $type;
+            if($type==5){
+                $where['otype'] = array('in',array(5,8));
+            }else{
+                $where['otype'] = $type;
+            }
         }else{
             $where['otype'] = 3;
         }
@@ -1595,7 +1606,7 @@ class OrderController extends CommonController{
             $is_cancel = 1;
             $m_order->updateData(array('id'=>$order_id),array('status'=>19,'finish_time'=>date('Y-m-d H:i:s')));
         }
-        if($is_cancel && in_array($res_order['otype'],array(5,6))){
+        if($is_cancel && in_array($res_order['otype'],array(5,6,8))){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $gfields = 'goods.id as goods_id,goods.status,goods.amount as all_amount,og.amount';

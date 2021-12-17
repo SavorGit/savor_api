@@ -652,6 +652,14 @@ class UserController extends CommonController{
                 case 13:
                     $content = $all_types[$v['type']];
                     break;
+                case 14:
+                    $content = $all_types[$v['type']];
+                    if($v['integral']>0){
+                        $info['integral'] = $v['integral'].'积分';
+                    }elseif($v['money']>0){
+                        $info['integral'] = $v['money'].'元';
+                    }
+                    break;
                 case 9:
                     $content = $all_types[$v['type']];
                     if($v['integral']>0){

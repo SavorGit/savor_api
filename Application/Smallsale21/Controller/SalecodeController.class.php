@@ -60,7 +60,7 @@ class SalecodeController extends CommonController{
 
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
         $qrcode = $host_name."/Smallsale21/qrcode/dishQrcode?data_id={$goods_id}&type=43&suid={$sale_uid}&box_id=0&taskid={$task_id}&time={$expire_time}";
-        $desc = '扫码即可购买'.'（'.date('Y.m.d',$expire_time).'）';
+        $desc = '扫码即可购买'.'（'.date('Y.m.d',$expire_time).'前有效）';
         $company = '北京热点投屏科技发展有限公司';
         $data = array('goods_id'=>$goods_id,'name'=>$res_goods['name'],'price'=>$res_goods['price'],'line_price'=>$res_goods['line_price'],
             'qrcode'=>$qrcode,'poster_img'=>$poster_img,'desc'=>$desc,'company'=>$company

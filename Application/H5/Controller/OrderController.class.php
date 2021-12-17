@@ -243,7 +243,7 @@ class OrderController extends Controller {
                         $res_staff = $m_staff->getMerchantStaff($field_staff,$staffwhere);
                         $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
                         $integralrecord_data = array('openid'=>$payee_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
-                            'hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                            'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
                             'integral'=>$integral,'goods_id'=>$res_usertask[0]['goods_id'],'jdorder_id'=>$order_id,'type'=>14,
                             'integral_time'=>date('Y-m-d H:i:s'));
                         $m_userintegralrecord->add($integralrecord_data);
@@ -252,6 +252,8 @@ class OrderController extends Controller {
                         $m_userintegralrecord->add($integralrecord_data);
 
                         echo "order_id:$order_id  settlement ok"."\r\n";
+                    }else{
+                        echo "order_id:$order_id  settlement error ".json_encode($res)."\r\n";
                     }
                 }
             }

@@ -180,7 +180,7 @@ class ProgramController extends CommonController{
         $host_name = C('HOST_NAME');
         $m_task = new \Common\Model\Integral\TaskHotelModel();
         $tfields = $fields = 'g.id as goods_id,g.video_intromedia_id as media_id,g.name,g.price,g.type,0 as start_time,0 as end_time,0 as scope,0 as is_storebuy';
-        $twhere = array('a.hotel_id'=>$hotel_id,'task.task_type'=>22,'task.status'=>1,'task.flag'=>1);
+        $twhere = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',array(22,24)),'task.status'=>1,'task.flag'=>1);
         $res_taskgoods = $m_task->getHotelTaskGoodsList($tfields,$twhere,'g.id asc','g.id');
         if(!empty($res_taskgoods)){
             $res_goods = array_merge($res_taskgoods,$res_goods);
@@ -193,7 +193,7 @@ class ProgramController extends CommonController{
         foreach ($res_goods as $v){
             $info = array('goods_id'=>$v['goods_id'],'chinese_name'=>$v['name'],'price'=>intval($v['price']),
                 'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>intval($v['type']));
-            if($v['type']==41){
+            if($v['type']==41 || $v['type']==42){
                 $info['price'] = '';
                 $info['start_date'] = '';
                 $info['end_date'] = '';

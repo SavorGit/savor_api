@@ -65,6 +65,8 @@ class ProgramController extends CommonController{
                     break;
                 case 'adv':
                     $play_list[$key]['media_type'] ='宣传片';
+                    $name_arr = explode('_', $media_info['name']);
+                    $play_list[$key]['name'] = $name_arr[1];
                     break;
                 case 'ads':
                     $play_list[$key]['media_type'] ='广告';

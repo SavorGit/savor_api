@@ -49,6 +49,7 @@ class ProgramController extends CommonController{
             $map = [];
             $fields = "concat('".$oss_host."',a.`oss_addr`) oss_path,a.oss_addr,b.name,b.id ads_id,a.type m_type";
             $map['a.id'] = $v['media_id'];
+            $map['b.state'] = 1;
             $media_info  = $m_media->alias('a')
                                    ->join('savor_ads b on b.media_id =a.id','left')
                                    ->field($fields)

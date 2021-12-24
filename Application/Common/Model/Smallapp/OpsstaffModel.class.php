@@ -19,7 +19,7 @@ class OpsstaffModel extends BaseModel{
                     $staff_list = array();
                     if($v['area_id']){
                         $fields = 'a.id as staff_id,su.remark as staff_name';
-                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.permission'=>array('like',"%3,%")));
+                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.hotel_role_type'=>array('in',array(3,4))));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
                             array_unshift($staff_list, $stmp);
@@ -29,13 +29,14 @@ class OpsstaffModel extends BaseModel{
                 }
                 break;
             case 2:
+            case 4:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 foreach ($permission_city as $k=>$v){
                     $staff_list = array();
                     if($v['area_id']){
                         $fields = 'a.id as staff_id,su.remark as staff_name';
-                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.permission'=>array('like',"%3,%")));
+                        $staff_list = $this->getStaffinfo($fields,array('a.area_id'=>$v['area_id'],'a.status'=>1,'a.hotel_role_type'=>array('in',array(3,4))));
                         if(!empty($staff_list)){
                             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
                             array_unshift($staff_list, $stmp);

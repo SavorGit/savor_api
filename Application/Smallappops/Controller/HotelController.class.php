@@ -20,6 +20,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'detail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -170,6 +174,36 @@ class HotelController extends CommonController{
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $data = array();
         if(!empty($res_hotel)){
+            $small_platform_num = 0;
+            if($res_hotel['mac_addr']!='000000000000'){
+                $small_platform_num = 1;
+            }
+            $all_hotel_box_types = C('HOTEL_BOX_TYPE');
+            $m_box = new \Common\Model\BoxModel();
+            $fields='box.box_type,count(box.id) as num';
+            $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+            $res_box = $m_box->getBoxByCondition($fields,$where,'box.box_type');
+            $box_nums = array();
+            $box_info = '';
+            $tv_num = 0;
+            $box_num = 0;
+            foreach ($res_box as $v){
+                $box_nums[$v['box_type']] = array('num'=>$v['num'],'type_name'=>$all_hotel_box_types[$v['box_type']]);
+                $box_info.=$all_hotel_box_types[$v['box_type']].':'.$v['num'].',';
+                if($v['box_type']==7){
+                    $tv_num = $v['num'];
+                }else{
+                    $box_num = $box_num+$v['num'];
+                }
+            }
+            if(count($box_nums)>1){
+                $box_type = '混合';
+                $box_info = rtrim($box_info,',');
+            }else{
+                $box_type = rtrim($box_info,',');
+                $box_info = '';
+            }
+
             $m_opuser = new \Common\Model\OpuserRoleModel();
             $res_user = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['maintainer_id']),'','');
             $maintainer = $maintainer_mobile = '';
@@ -234,8 +268,7 @@ class HotelController extends CommonController{
             $menu_num= $menu_info['menu_num'];
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
             $m_sdkerror = new \Common\Model\SdkErrorModel();
-            $m_box = new \Common\Model\BoxModel();
-            $fields='box.id as box_id,box.mac,box.name as box_name';
+            $fields='box.id as box_id,box.mac,box.name as box_name,box.box_type';
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
             $res_box = $m_box->getBoxByCondition($fields,$where);
             //$ads_proid = '';
@@ -302,9 +335,11 @@ class HotelController extends CommonController{
                 $res_cache = $redis->get($cache_key);
                 $box_status='black';
                 $box_uptips='';
+                $heart_time = 0;
                 if(!empty($res_cache)){
                     $cache_data = json_decode($res_cache,true);
                     $report_time = strtotime($cache_data['date']);
+                    $heart_time = $report_time;
                     $diff_time = $now_time - $report_time;
                     if($diff_time<=$online_time){
                         $box_status='green';
@@ -335,7 +370,10 @@ class HotelController extends CommonController{
                 $res_box[$k]['ram_status']=$ram_status;
                 $res_box[$k]['status']=$box_status;
                 $res_box[$k]['uptips']=$box_uptips;
+                $res_box[$k]['box_type_str']=$all_hotel_box_types[$v['box_type']];
+                $res_box[$k]['heart_time']=$heart_time;
             }
+            sortArrByOneField($res_box,'heart_time',true);
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
                 '状态说明：','绿色圆点：在线','蓝色圆点：24小时内在线','黄色圆点：24小时以上，7天以内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
             );
@@ -343,7 +381,8 @@ class HotelController extends CommonController{
                 'contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,
                 'hotel_network'=>$hotel_network,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'small_platform_status'=>$small_platform_status,'small_platform_uptips'=>$small_platform_uptips,'box_list'=>$res_box,
-                'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc
+                'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,
+                'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info
             );
         }
         $this->to_back($data);

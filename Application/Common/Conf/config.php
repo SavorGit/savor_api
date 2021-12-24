@@ -33,7 +33,7 @@ return array(
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','H5',
 	                                 'Version','Content','Heartbeat','Heartcalcu',
 	                                 'Download','Award','Small','Smalls','Screendistance',
-	                                 'APP3','Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Smallappops','Dinnerapp',
+	                                 'Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Smallappops','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
 	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18',

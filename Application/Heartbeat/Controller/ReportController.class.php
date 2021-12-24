@@ -39,7 +39,9 @@ class ReportController extends CommonController{
         $data['apk']      = I('get.apk','','trim');
         $data['war']      = I('get.war','','trim');
         $data['logo']     = I('get.logo','','trim');
+        $data['tv_input_source']     = I('get.tv_input_source','','trim');
         $data['intranet_ip'] = I('get.ip','','trim');  //内网ip
+        $data['small_platform_ip'] = I('get.small_platform_ip','','trim');  //小平台ip
         $data['outside_ip']  = get_client_ipaddr();    //外网ip
         $data['teamviewer_id'] = I('get.teamviewer_id'); //远程id
         
@@ -104,6 +106,8 @@ class ReportController extends CommonController{
         $ret['ads_download_period'] = $data['ads_download_period'];
         $ret['net_speed']  = $data['net_speed'];
         $ret['apk_time']  = $data['apk_time'];
+        $ret['tv_input_source']  = $data['tv_input_source'];
+        $ret['small_platform_ip']  = $data['small_platform_ip'];
 
         $m_box = new \Common\Model\BoxModel();
         $info = $m_box->field('is_4g')->where(array('state'=>1,'flag'=>0,'mac'=>$data['mac']))->find();

@@ -7,7 +7,8 @@ class BasicdataController extends CommonController{
     public $map_stat_hotel_key = array('1'=>'small_platform_online_hotels','2'=>'small_platform_24_hotels','3'=>'small_platform_7day_hotels','4'=>'small_platform_30day_hotels',
         '5'=>'box_online_hotels','6'=>'box_24_hotels','7'=>'box_7day_hotels','8'=>'box_30day_hotels',
         '9'=>'small_platform_notup_hotels','10'=>'box_notup_hotels',
-        '11'=>'adv_notup_hotels','12'=>'pro_notup_hotels','13'=>'ads_notup_hotels','14'=>'small_platform_24_7_hotels','15'=>'box_24_7_hotels'
+        '11'=>'adv_notup_hotels','12'=>'pro_notup_hotels','13'=>'ads_notup_hotels','14'=>'small_platform_24_7_hotels',
+        '15'=>'box_24_7_hotels','16'=>'abnormal_hotels',
     );
 
     /**
@@ -31,6 +32,10 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001);
                 break;
+            case 'device':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -40,7 +45,7 @@ class BasicdataController extends CommonController{
         $openid = $this->params['openid'];
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
-        $source = $this->params['source'];//hotel,versionup,resourceup
+        $source = $this->params['source'];//hotel,versionup,resourceup,device
         $type = $this->params['type'];//1小平台-在线(酒楼),2小平台-24h开机(酒楼),3小平台-7天失联(酒楼),4小平台-30日失联(酒楼),
         //5机顶盒-在线(酒楼),6机顶盒-24h开机(酒楼),7机顶盒-7天失联(酒楼),8小平台-30日失联(酒楼)
         //9小平台未升级,10机顶盒未升级(版本),11酒楼宣传片未更新(资源),12节目未更新(资源),13广告未更新(资源)
@@ -58,7 +63,7 @@ class BasicdataController extends CommonController{
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(22);
-        if(in_array($check_type,array(1,2)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+        if(in_array($check_type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
             $cache_key = C('SAPP_OPS')."stat:$source:area:".$area_id;
         }elseif($area_id>0 && $staff_id>0){
             $cache_key = C('SAPP_OPS')."stat:$source:area_staff:".$res_staff['sysuser_id'].':'.$area_id;
@@ -117,7 +122,7 @@ class BasicdataController extends CommonController{
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(22);
-        if(in_array($type,array(1,2)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
             $cache_key = C('SAPP_OPS').'stat:hotel:area:'.$area_id;
         }elseif($area_id>0 && $staff_id>0){
             $cache_key = C('SAPP_OPS').'stat:hotel:area_staff:'.$res_staff['sysuser_id'].':'.$area_id;
@@ -158,7 +163,7 @@ class BasicdataController extends CommonController{
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(22);
-        if(in_array($type,array(1,2)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
             $cache_key = C('SAPP_OPS').'stat:versionup:area:'.$area_id;
         }elseif($area_id>0 && $staff_id>0){
             $cache_key = C('SAPP_OPS').'stat:versionup:area_staff:'.$res_staff['sysuser_id'].':'.$area_id;
@@ -199,7 +204,7 @@ class BasicdataController extends CommonController{
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(22);
-        if(in_array($type,array(1,2)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
             $cache_key = C('SAPP_OPS').'stat:resourceup:area:'.$area_id;
         }elseif($area_id>0 && $staff_id>0){
             $cache_key = C('SAPP_OPS').'stat:resourceup:area_staff:'.$res_staff['sysuser_id'].':'.$area_id;
@@ -211,6 +216,47 @@ class BasicdataController extends CommonController{
         $res_data = array();
         if(!empty($cache_key)) {
             $desc = array('通过各类型资源的期号进行对比，期号最新的为已更新，其余为未更新。');
+            $res_cache_data = $redis->get($cache_key);
+            $res_data = json_decode($res_cache_data, true);
+            foreach ($this->map_stat_hotel_key as $v){
+                if(isset($res_data[$v])){
+                    unset($res_data[$v]);
+                }
+            }
+            $res_data['desc'] = $desc;
+        }
+        $this->to_back($res_data);
+    }
+
+    public function device(){
+        $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $type = $this->check_permission($res_staff,$area_id,$staff_id);
+        if($type==0){
+            $this->to_back(1001);
+        }
+        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(22);
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+            $cache_key = C('SAPP_OPS').'stat:device:area:'.$area_id;
+        }elseif($area_id>0 && $staff_id>0){
+            $cache_key = C('SAPP_OPS').'stat:device:area_staff:'.$res_staff['sysuser_id'].':'.$area_id;
+        }elseif($area_id==0 && $staff_id>0){
+            $cache_key = C('SAPP_OPS').'stat:device:staff:'.$res_staff['sysuser_id'];
+        }else{
+            $cache_key = '';
+        }
+        $res_data = array();
+        if(!empty($cache_key)) {
+            $desc = array('内存使用：异常代表机顶盒内存已满，无法下载新的节目资源。');
             $res_cache_data = $redis->get($cache_key);
             $res_data = json_decode($res_cache_data, true);
             foreach ($this->map_stat_hotel_key as $v){
@@ -240,6 +286,14 @@ class BasicdataController extends CommonController{
                     $this->to_back(1001);
                 }
                 $type = 3;
+                break;
+            case 4:
+                if($area_id>0){
+                    if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
+                        $this->to_back(1001);
+                    }
+                }
+                $type = 4;
                 break;
             default:
                 $type = 0;

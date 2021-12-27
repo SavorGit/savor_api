@@ -49,7 +49,7 @@ class BasicdataController extends CommonController{
         $type = $this->params['type'];//1小平台-在线(酒楼),2小平台-24h开机(酒楼),3小平台-7天失联(酒楼),4小平台-30日失联(酒楼),
         //5机顶盒-在线(酒楼),6机顶盒-24h开机(酒楼),7机顶盒-7天失联(酒楼),8小平台-30日失联(酒楼)
         //9小平台未升级,10机顶盒未升级(版本),11酒楼宣传片未更新(资源),12节目未更新(资源),13广告未更新(资源)
-        //,14小平台-大于24小时小于7天失联(酒楼),15机顶盒-大于24小时小于7天失联(酒楼)
+        //,14小平台-大于24小时小于7天失联(酒楼),15机顶盒-大于24小时小于7天失联(酒楼),16设备概况
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));

@@ -51,20 +51,27 @@ class BoxController extends CommonController{
         $cache_key = 'heartbeat:2:'.$box_info['mac'];
         $cache_info = $redis->get($cache_key);
         $heart_info = json_decode($cache_info,true);
-        $small_platform_ip = '虚拟';
+        $small_platform_ip = '';
+        $tv_input_source = '';
         if(!empty($heart_info)){
             $baseinfo['intranet_ip'] = $heart_info['intranet_ip'];
             $baseinfo['outside_ip']  = $heart_info['outside_ip'];
-            $baseinfo['tv_input_source']  = $heart_info['tv_input_source'];
-            if(!empty($heart_info['small_platform_ip'])){
-                $small_platform_ip = $heart_info['small_platform_ip'];
+            if(isset($heart_info['small_platform_ip'])){
+                if(!empty($heart_info['small_platform_ip'])){
+                    $small_platform_ip = $heart_info['small_platform_ip'];
+                }else{
+                    $small_platform_ip = '虚拟';
+                }
+            }
+            if(!empty($heart_info['tv_input_source'])){
+                $tv_input_source = $heart_info['tv_input_source'];
             }
         }else {
             $baseinfo['intranet_ip'] = '';
             $baseinfo['outside_ip']  = '';
             $baseinfo['tv_input_source']  = '';
         }
-        
+        $baseinfo['tv_input_source']  = $tv_input_source;
         $baseinfo['small_platform_ip'] = $small_platform_ip;
         $baseinfo['is_4g']       = $box_info['is_4g']?'4G':'非4G';
         $baseinfo['box_type']    = $box_type_arr[$box_info['box_type']];

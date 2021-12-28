@@ -56,11 +56,10 @@ class BoxController extends CommonController{
         if(!empty($heart_info)){
             $baseinfo['intranet_ip'] = $heart_info['intranet_ip'];
             $baseinfo['outside_ip']  = $heart_info['outside_ip'];
-            if(isset($heart_info['small_platform_ip'])){
-                if(!empty($heart_info['small_platform_ip'])){
-                    $small_platform_ip = $heart_info['small_platform_ip'];
-                }else{
-                    $small_platform_ip = '虚拟';
+            if(!empty($heart_info['small_platform_ip'])){
+                $small_platform_ip = $heart_info['small_platform_ip'];
+                if($small_platform_ip=='vsmall.littlehotspot.com'){
+                    $small_platform_ip='虚拟';
                 }
             }
             if(!empty($heart_info['tv_input_source'])){

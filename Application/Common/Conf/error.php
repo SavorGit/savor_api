@@ -319,6 +319,10 @@ return array(
         '90183'=>'smallapp_tasklottery_not_exist',
         '90184'=>'smallapp_tasklottery_has_expire',
         '90185'=>'smallapp_tasklottery_had_join',
+        '90186'=>'smallapp_meeting_not_exist',
+        '90187'=>'smallapp_start_singin',
+        '90188'=>'smallapp_singin_nouser',
+        '90189'=>'smallapp_choose_date_notday',
 
 
         '91015'=>'smallapp_user_add_failed',

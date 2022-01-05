@@ -326,6 +326,7 @@ return array(
     'SAPP_SALE_TASK_SENDNUM'=>'smallappsale:tasksendnum:',
     'SMALLAPP_HOTEL_RELATION'=>'smallapp:hotelrelation:',
     'SAPP_SELECTCONTENT_PROGRAM'=>'smallapp:selectcontent:program',
+    'SAPP_ANNUALMEETING_PROGRAM'=>'smallapp:annualmeeting:program:',
     'SAPP_SHOP_PROGRAM'=>'smallapp:shopprogram',
     'SAPP_SELECTCONTENT_CONTENT'=>'smallapp:selectcontent:content',
     'SAPP_SELECTCONTENT_PUSH'=>'smallapp:selectcontent:wxpush',
@@ -465,7 +466,7 @@ return array(
 //     10:极简版大码11:极简版呼玛12:大二维码（节目）13:小程序呼二维码 15:大二维码（新节目）16：极简版二维码19:极简版节目大二维码
 //     20:极简版大二维码21:极简版呼二维码22购物二维码 23销售二维码 24菜品商家 25单个菜品 26海报分销售卖商品 27 商城商家 28商城商品大屏购买
 //     29推广渠道投屏码 30投屏帮助视频 31活动霸王菜 32商城商品点播大屏购买 33手机公众号二维码 34分享文件二维码 35活动抽奖 36运营扫码抢红包 37本地生活店铺二维码 38系统抽奖活动 39聚划算活动
-//     40极简版二维码连接WiFi 41销售人员发起品鉴酒活动二维码 42销售人员发起抽奖活动二维码 43团购商品销售二维码
+//     40极简版二维码连接WiFi 41销售人员发起品鉴酒活动二维码 42销售人员发起抽奖活动二维码 43团购商品销售二维码 44年会参会签到
 
     'SMALLAPP_JJ_ERWEI_CODE_TYPES'=>array('16'=>'极简版二维码','19'=>'极简版节目大二维码','20'=>'极简版大二维码','21'=>'极简版呼二维码','40'=>'极简版二维码连接WiFi'),
     'SAPP_FILE_FORSCREEN_TYPES'=>array(
@@ -633,7 +634,13 @@ return array(
     ),
     'SCENCE_ADV_FILEFORSCREEN'=>array('ads_img_url'=>'','countdown'=>0),
     'SCENCE_ADV_FILEFORSCREEN_NUM'=>0,
-
+    'MEETING_SIGNIN_IMG'=>'WeChat/resource/meeting_img.png',
+    'MEETING_SIGNIN_PLAY_TIMES'=>array(
+        array('id'=>10,'name'=>'10分钟','value'=>10,'is_select'=>1),
+        array('id'=>20,'name'=>'20分钟','value'=>20,'is_select'=>0),
+        array('id'=>40,'name'=>'40分钟','value'=>40,'is_select'=>0),
+        array('id'=>60,'name'=>'60分钟','value'=>60,'is_select'=>0),
+    ),
 
 //    'RD_WIFI_HOTEL'=>array('46'=>'辉哥火锅（8号公馆店）','47'=>'孔乙己尚宴(8号公馆店)','48'=>'江仙雅居(东直门店)','55'=>'1949-全鸭季(金宝街店)','85'=>'花家怡园(王府井店)','222'=>'新荣记(银泰店)','395'=>'江山享味酒家(白云万达店)','420'=>'山东老家（科韵分店）','436'=>'江仙雅居（苏州桥店）','787'=>'湘江宴','1007'=>'峨嵋酒家广渠路店','1023'=>'新渝城·川菜·火锅(区庄店)','1038'=>'广东道至正餐厅(保利·时光里店)','1047'=>'四季小馆·北京菜·烤鸭(越秀公园店)','1051'=>'陇上荟·老兰州味道(天河公园店)','1059'=>'御彩酒家(东风东路店)','1064'=>'海门渔港(棠下店)','1065'=>'新泰乐·宴会厅(江南店)','1077'=>'新粤新疆菜(佳兆业广场店)'),
     'RD_WIFI_HOTEL'=>array(),

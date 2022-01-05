@@ -19,7 +19,7 @@ class WelcomeController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'images'=>1001,
                     'content'=>1002,'wordsize_id'=>1001,'color_id'=>1001,'font_id'=>1002,
-                    'music_id'=>1002,'stay_time'=>1001,'type'=>1001);
+                    'music_id'=>1002,'stay_time'=>1001,'type'=>1001,'annualmeeting_id'=>1002,'welcome_id'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -90,8 +90,12 @@ class WelcomeController extends CommonController{
         $font_id = intval($this->params['font_id']);
         $music_id = intval($this->params['music_id']);
         $stay_time = $this->params['stay_time'];
-        $type = intval($this->params['type']);//3商务宴请 4生日聚会 5首页致欢迎词
-
+        $type = intval($this->params['type']);//3商务宴请 4生日聚会 5首页致欢迎词 6年会-单个盒子播放
+        $annualmeeting_id = $this->params['annualmeeting_id'];
+        $welcome_id = $this->params['welcome_id'];
+        if($type==6 && empty($annualmeeting_id)){
+            $this->to_back(1001);
+        }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid);
         $res_user = $m_user->getOne('id', $where);
@@ -116,18 +120,24 @@ class WelcomeController extends CommonController{
         $data = array('user_id'=>$user_id,'content'=>$content,'wordsize_id'=>$wordsize_id,'font_id'=>$font_id,
             'color_id'=>$color_id,'music_id'=>$music_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'type'=>$type,'stay_time'=>$stay_time);
         $data['image'] = join(',',$all_images);
-
+        if($type==6){
+            $data['annualmeeting_id'] = $annualmeeting_id;
+        }
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
-        $condition = array('user_id'=>$user_id,'box_mac'=>$box_mac,'type'=>$type);
-        $start_time = date('Y-m-d 00:00:00');
-        $end_time = date('Y-m-d 23:59:59');
-        $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
-        $res_welcome = $m_welcome->getInfo($condition);
-        if(empty($res_welcome)){
-            $welcome_id = $m_welcome->addData($data);
+        if(!empty($welcome_id)){
+            $m_welcome->updateData(array('id'=>$welcome_id),$data);
         }else{
-            $welcome_id = $res_welcome['id'];
-            $m_welcome->updateData(array('id'=>$res_welcome['id']),$data);
+            $condition = array('user_id'=>$user_id,'box_mac'=>$box_mac,'type'=>$type);
+            $start_time = date('Y-m-d 00:00:00');
+            $end_time = date('Y-m-d 23:59:59');
+            $condition['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
+            $res_welcome = $m_welcome->getInfo($condition);
+            if(empty($res_welcome)){
+                $welcome_id = $m_welcome->addData($data);
+            }else{
+                $welcome_id = $res_welcome['id'];
+                $m_welcome->updateData(array('id'=>$res_welcome['id']),$data);
+            }
         }
         $this->to_back(array('welcome_id'=>$welcome_id));
     }

@@ -544,6 +544,7 @@ class IndexController extends CommonController{
         $is_comment = 0;
         $is_open_reward = 1;
         $is_open_simplehistory = 0;
+        $is_annualmeeting = 0;
         $seckill_goods_id = 0;
         $hotel_id = 0;
         $box_mac = '';
@@ -661,15 +662,14 @@ class IndexController extends CommonController{
                 if($res_ext['is_reward']==0){
                     $is_open_reward = 0;
                 }
-
                 $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
                 $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
                 $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
                 if(empty($res_hgoods)){
                     $seckill_goods_id = 0;
                 }
+                $is_annualmeeting = intval($res_ext['is_annualmeeting']);
             }
-
             $data['is_open_popcomment'] = 0;
             $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
@@ -721,6 +721,11 @@ class IndexController extends CommonController{
                 $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
             }
         }
+        $data['is_annualmeeting'] = $is_annualmeeting;
+        $data['meeting_banner'] = 'http://'.C('OSS_HOST').'/media/resource/pkNdszmrtN.png';
+        $data['meeting_signin_img'] = 'http://'.C('OSS_HOST').'/'.C('MEETING_SIGNIN_IMG').'?x-oss-process=image/resize,p_30';
+        $data['meeting_signin_play_times'] = C('MEETING_SIGNIN_PLAY_TIMES');
+        $data['is_annualmeeting'] = $is_annualmeeting;
         $data['taste_wine'] = $taste_wine;
         $data['is_sale_page'] = $is_sale_page;
         $data['syslottery_activity_id'] = $syslottery_activity_id;

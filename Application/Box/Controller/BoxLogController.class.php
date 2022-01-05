@@ -21,6 +21,10 @@ class BoxLogController extends CommonController{
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001,'welcome_id'=>1001);
                 break;
+            case 'annualmeetingResource':
+                $this->is_verify =1;
+                $this->valid_fields = array('box_mac'=>1001,'mv_id'=>1001,'status'=>1001);
+                break;
         }
         parent::_init_();
         //log_type 0：关闭  1：日志文件 2:文件下载情况 3：异常  4：遥控器按键日志 5：重启日志
@@ -101,6 +105,16 @@ class BoxLogController extends CommonController{
         if(!empty($res_welcome)){
             $m_welcomerecord->updateData(array('id'=>$res_welcome['id']),array('status'=>2,'update_time'=>date('Y-m-d H:i:s')));
         }
+        $this->to_back(array());
+    }
+
+    public function annualmeetingResource(){
+        $box_mac = $this->params['box_mac'];
+        $mv_id = intval($this->params['mv_id']);
+        $status = intval($this->params['status']);
+        $m_meeting_video = new \Common\Model\Smallapp\AnnualmeetingVideoModel();
+        $data = array('status'=>$status);
+        $m_meeting_video->updateData(array('id'=>$mv_id),$data);
         $this->to_back(array());
     }
 

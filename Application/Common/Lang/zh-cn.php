@@ -445,6 +445,10 @@ return array(
     'smallappops_login_had_register'=>'请勿重复注册',
     'smallappops_not_entity_platform'=>'该酒楼非实体小平台',
     'smallappops_clean_resource_error'=>'清除资源失败,请稍后重试',
+    'smallapp_meeting_not_exist'=>'加入年会失败,请稍后重试',
+    'smallapp_start_singin'=>'请先发起参会签到',
+    'smallapp_singin_nouser'=>'当前无签到人员,请重新发起参会签到',
+    'smallapp_choose_date_notday'=>'请选择同一天的日期',
 
 
 );

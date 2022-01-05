@@ -43,6 +43,10 @@ class ProgramController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
+            case 'getAnnualmeetingResource':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -824,14 +828,7 @@ class ProgramController extends CommonController{
         $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();
         $fields = 'id,name,media_id,type';
         $where = array('status'=>1);
-
-        $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
-        if($version>=2019123101){
-            $where['type'] = array('in',array(3,4,5));
-        }else{
-            $where['type'] = array('in',array(3,4));
-        }
-
+        $where['type'] = array('in',array(3,4,5));
         $res_resource = $m_welcomeresource->getDataList($fields,$where,'id asc');
         $data_list = array();
         if(!empty($res_resource)){
@@ -847,6 +844,35 @@ class ProgramController extends CommonController{
             }
         }
 
+        $res = array('period'=>$period,'datalist'=>$data_list);
+        $this->to_back($res);
+    }
+
+    public function getAnnualmeetingResource(){
+        $box_mac = $this->params['box_mac'];
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $program_key = C('SAPP_ANNUALMEETING_PROGRAM').$box_mac;
+        $period = $redis->get($program_key);
+        if(empty($period)){
+            $period = getMillisecond();
+            $redis->set($program_key,$period);
+        }
+
+        $m_annualmeetingvideo = new \Common\Model\Smallapp\AnnualmeetingVideoModel();
+        $where = array('box_mac'=>$box_mac);
+        $where['download_date'] = array('elt',date('Y-m-d'));
+        $where['end_time'] = array('egt',date('Y-m-d H:i:s'));
+        $res_resource = $m_annualmeetingvideo->getDataList('*',$where,'id desc');
+        $data_list = array();
+        if(!empty($res_resource)){
+            foreach ($res_resource as $v){
+                $sname_info = pathinfo($v['oss_addr']);
+                $file_name = $sname_info['basename'];
+                $data_list[]=array('id'=>$v['id'],'name'=>$file_name,'oss_path'=>$v['oss_addr'],'md5'=>$v['md5_file'],
+                    'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>$v['type'],'media_type'=>1);
+            }
+        }
         $res = array('period'=>$period,'datalist'=>$data_list);
         $this->to_back($res);
     }

@@ -449,6 +449,8 @@ return array(
     'smallapp_start_singin'=>'请先发起参会签到',
     'smallapp_singin_nouser'=>'当前无签到人员,请重新发起参会签到',
     'smallapp_choose_date_notday'=>'请选择同一天的日期',
+    'smallapp_singin_time_error'=>'请签到结束后，再发起抽奖',
+    'smallapp_choose_enddate_error'=>'请选择大于当前时间的结束时间',
 
 
 );

@@ -114,6 +114,14 @@ class AnnualMeetingController extends CommonController{
             $box_id = $res_box[0]['box_id'];
             $host_name = C('HOST_NAME');
             $partake_user = array();
+            $fields = 'a.openid,user.avatarUrl,user.nickName';
+            $m_signinuser = new \Common\Model\Smallapp\AnnualmeetingSigninUserModel();
+            $res_alluser = $m_signinuser->getsigninuser($fields,array('a.signin_id'=>$signin_id),'a.id desc','','');
+            if(!empty($res_alluser)){
+                foreach ($res_alluser as $uv){
+                    $partake_user[] = array('avatarUrl'=>base64_encode($uv['avatarUrl']),'nickName'=>$uv['nickName']);
+                }
+            }
             $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac={$box_mac}&type=44&data_id={$signin_id}&box_id={$box_id}";
             $netty_data = array('action'=>161,'countdown'=>$add_data['show_time'],
                 'activity_name'=>$name,'codeUrl'=>$qrcode_url,'partake_user'=>$partake_user
@@ -121,7 +129,6 @@ class AnnualMeetingController extends CommonController{
             $message = json_encode($netty_data);
             $m_netty = new \Common\Model\NettyModel();
             $res_push = $m_netty->pushBox($box_mac,$message);
-            $this->to_back(array('qrcode_url'=>$qrcode_url));
             if($res_push['error_code']){
                 $this->to_back($res_push['error_code']);
             }
@@ -166,6 +173,7 @@ class AnnualMeetingController extends CommonController{
 
             $m_box = new \Common\Model\BoxModel();
             $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+
             $fields = 'box.id as box_id';
             $res_box = $m_box->getBoxByCondition($fields,$where);
             $box_id = $res_box[0]['box_id'];
@@ -227,6 +235,9 @@ class AnnualMeetingController extends CommonController{
         if(empty($res_signin)){
             $this->to_back(90187);
         }
+        if($res_signin['end_time']>date('Y-m-d H:i:s')){
+            $this->to_back(90190);
+        }
         $signin_id = $res_signin['id'];
         $m_signinuser = new \Common\Model\Smallapp\AnnualmeetingSigninUserModel();
         $fields = 'a.openid,user.avatarUrl,user.nickName';
@@ -234,7 +245,6 @@ class AnnualMeetingController extends CommonController{
         if(empty($res_alluser)){
             $this->to_back(90188);
         }
-
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $start_time = date('Y-m-d H:i:s');
         $data = array('hotel_id'=>$hotel_id,'box_mac'=>$box_mac,'openid'=>$openid,'prize'=>$prize,'image_url'=>$image_url,
@@ -257,8 +267,8 @@ class AnnualMeetingController extends CommonController{
                 $adata = array('activity_id'=>$res_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>$status);
                 $m_activityapply->add($adata);
 
-                $partake_user[] = array('openid'=>$uv['openid'],'avatarUrl'=>base64_encode($uv['avatarurl']),
-                    'nickName'=>$uv['nickname'],'is_lottery'=>$is_lottery);
+                $partake_user[] = array('openid'=>$uv['openid'],'avatarUrl'=>base64_encode($uv['avatarUrl']),
+                    'nickName'=>$uv['nickName'],'is_lottery'=>$is_lottery);
             }
             $netty_data = array('action'=>156,'partake_user'=>$partake_user,'lottery'=>$lottery_users);
             $message = json_encode($netty_data);
@@ -351,7 +361,9 @@ class AnnualMeetingController extends CommonController{
         }
         $start_time = date('Y-m-d H:i:s',$tmp_start_time);
         $end_time = date('Y-m-d H:i:s',$tmp_end_time);
-
+        if($end_time<date('Y-m-d H:i:s')){
+            $this->to_back(90191);
+        }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
@@ -390,11 +402,13 @@ class AnnualMeetingController extends CommonController{
         }else{
             $mv_id = $m_meeting_video->add($data);
         }
+
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $program_key = C('SAPP_ANNUALMEETING_PROGRAM').$box_mac;
         $period = getMillisecond();
-        $redis->set($program_key,$period);
+        $cache_data = array('period'=>$period,'is_has_data'=>1);
+        $redis->set($program_key,json_encode($cache_data),86400*10);
 
         $this->to_back(array('mv_id'=>$mv_id));
     }
@@ -486,14 +500,14 @@ class AnnualMeetingController extends CommonController{
             $welcome_message['play_times'] = $playtime;
         }
 
-        $netty_data = array('action'=>162,'resource_ids'=>$resource_ids,'welcome'=>$welcome_message);
-        $message = json_encode($netty_data);
-        echo $message;
-
-        $m_netty = new \Common\Model\NettyModel();
-        $res_push = $m_netty->pushBox($box_mac,$message);
-        if($res_push['error_code']){
-            $this->to_back($res_push['error_code']);
+        if(!empty($resource_ids) || !empty($welcome_message)){
+            $netty_data = array('action'=>162,'resource_ids'=>$resource_ids,'welcome'=>$welcome_message);
+            $message = json_encode($netty_data);
+            $m_netty = new \Common\Model\NettyModel();
+            $res_push = $m_netty->pushBox($box_mac,$message);
+            if($res_push['error_code']){
+                $this->to_back($res_push['error_code']);
+            }
         }
         $this->to_back(array());
     }

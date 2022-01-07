@@ -850,14 +850,6 @@ class ProgramController extends CommonController{
 
     public function getAnnualmeetingResource(){
         $box_mac = $this->params['box_mac'];
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(14);
-        $program_key = C('SAPP_ANNUALMEETING_PROGRAM').$box_mac;
-        $period = $redis->get($program_key);
-        if(empty($period)){
-            $period = getMillisecond();
-            $redis->set($program_key,$period);
-        }
 
         $m_annualmeetingvideo = new \Common\Model\Smallapp\AnnualmeetingVideoModel();
         $where = array('box_mac'=>$box_mac);
@@ -865,7 +857,9 @@ class ProgramController extends CommonController{
         $where['end_time'] = array('egt',date('Y-m-d H:i:s'));
         $res_resource = $m_annualmeetingvideo->getDataList('*',$where,'id desc');
         $data_list = array();
+        $is_has_data=0;
         if(!empty($res_resource)){
+            $is_has_data=1;
             foreach ($res_resource as $v){
                 $sname_info = pathinfo($v['oss_addr']);
                 $file_name = $sname_info['basename'];
@@ -873,6 +867,23 @@ class ProgramController extends CommonController{
                     'start_date'=>$v['start_time'],'end_date'=>$v['end_time'],'type'=>$v['type'],'media_type'=>1);
             }
         }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $program_key = C('SAPP_ANNUALMEETING_PROGRAM').$box_mac;
+        $res_period = $redis->get($program_key);
+        if(!empty($res_period)){
+            $res_period = json_decode($res_period,true);
+            if($res_period['is_has_data']==$is_has_data){
+                $period = $res_period['period'];
+            }else{
+                $period = getMillisecond();
+            }
+        }else{
+            $period = getMillisecond();
+        }
+        $cache_data = array('period'=>$period,'is_has_data'=>$is_has_data);
+        $redis->set($program_key,json_encode($cache_data),86400*10);
+
         $res = array('period'=>$period,'datalist'=>$data_list);
         $this->to_back($res);
     }

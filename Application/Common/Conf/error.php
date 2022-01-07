@@ -323,6 +323,8 @@ return array(
         '90187'=>'smallapp_start_singin',
         '90188'=>'smallapp_singin_nouser',
         '90189'=>'smallapp_choose_date_notday',
+        '90190'=>'smallapp_singin_time_error',
+        '90191'=>'smallapp_choose_enddate_error',
 
 
         '91015'=>'smallapp_user_add_failed',

@@ -235,9 +235,9 @@ class AnnualMeetingController extends CommonController{
         if(empty($res_signin)){
             $this->to_back(90187);
         }
-        if($res_signin['end_time']>date('Y-m-d H:i:s')){
-            $this->to_back(90190);
-        }
+//        if($res_signin['end_time']>date('Y-m-d H:i:s')){
+//            $this->to_back(90190);
+//        }
         $signin_id = $res_signin['id'];
         $m_signinuser = new \Common\Model\Smallapp\AnnualmeetingSigninUserModel();
         $fields = 'a.openid,user.avatarUrl,user.nickName';

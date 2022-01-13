@@ -555,6 +555,13 @@ class UserController extends CommonController{
             $score = sprintf("%01.1f",$res_score[0]['score']);
         }
         $data['score'] = $score;
+        $is_salestat = 0;
+        $m_hotelext = new \Common\Model\HotelExtModel();
+        $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$res_staff[0]['hotel_id']));
+        if(!empty($res_ext)){
+            $is_salestat = intval($res_ext['is_salestat']);
+        }
+        $data['is_salestat'] = $is_salestat;
 
         $this->to_back($data);
     }

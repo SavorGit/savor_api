@@ -438,7 +438,7 @@ class AnnualMeetingController extends CommonController{
 
         $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
         $res_welcome = $m_welcome->getDataList('*',array('annualmeeting_id'=>$annualmeeting_id),'id desc');
-        $welcome_message = array();
+        $welcome_message = new \stdClass();
         if(!empty($res_welcome)){
             $res_welcome = $res_welcome[0];
             $m_welcomeresource = new \Common\Model\Smallapp\WelcomeresourceModel();

@@ -549,6 +549,10 @@ class IndexController extends CommonController{
         $hotel_id = 0;
         $box_mac = '';
         $oss_host = C('OSS_HOST');
+        $seckill_banner = '';
+        $hotel_seckill_goods_id = 0;
+        $hotel_seckill_goods_img = '';
+        $m_media = new \Common\Model\MediaModel();
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(15);
@@ -608,7 +612,6 @@ class IndexController extends CommonController{
                         $avatarUrl = $user_info['avatarUrl'];
                         $nickName = $user_info['nickName'];
                     }else{
-                        $m_media = new \Common\Model\MediaModel();
                         $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
                         $avatarUrl = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
                         if(!empty($res_media)){
@@ -667,6 +670,18 @@ class IndexController extends CommonController{
                 $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
                 if(empty($res_hgoods)){
                     $seckill_goods_id = 0;
+                }else{
+                    $seckill_banner = 'http://'.$oss_host.'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
+                }
+                $fields = 'g.id as goods_id,g.poster_media_id';
+                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+                $res_goods = $m_hotel_goods->getGoodsList($fields,$where,'g.id desc','0,1');
+                if(!empty($res_goods)){
+                    $hotel_seckill_goods_id = $res_goods[0]['goods_id'];
+                    $res_media = $m_media->getMediaInfoById($res_goods[0]['poster_media_id']);
+                    if(!empty($res_media)){
+                        $hotel_seckill_goods_img = $res_media['oss_addr'];
+                    }
                 }
                 $is_annualmeeting = intval($res_ext['is_annualmeeting']);
             }
@@ -674,7 +689,7 @@ class IndexController extends CommonController{
             $data['cacsi'] = $cacsi;
             $data['staff_user_info'] = $staffuser_info;
             $data['reward_money'] = $reward_money;
-
+            /*
             $m_heart_log = new \Common\Model\HeartLogModel();
             $res_box_version = $m_heart_log->getInfo('apk_version',array('box_id'=>$box_id));
             $box_version = '';
@@ -684,6 +699,8 @@ class IndexController extends CommonController{
             if($box_version>='2.1.4'){
                 $is_open_simplehistory = 1;
             }
+            */
+            $is_open_simplehistory = 1;
         }
         $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
         $syslottery_activity_id = 0;
@@ -721,6 +738,8 @@ class IndexController extends CommonController{
                 $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
             }
         }
+        $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
+        $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;
         $data['is_annualmeeting'] = $is_annualmeeting;
         $data['meeting_banner'] = 'http://'.C('OSS_HOST').'/media/resource/pkNdszmrtN.png';
         $data['meeting_signin_img'] = 'http://'.C('OSS_HOST').'/'.C('MEETING_SIGNIN_IMG').'?x-oss-process=image/resize,p_30';
@@ -730,7 +749,7 @@ class IndexController extends CommonController{
         $data['is_sale_page'] = $is_sale_page;
         $data['syslottery_activity_id'] = $syslottery_activity_id;
         $data['seckill_goods_id'] = $seckill_goods_id;
-        $data['seckill_banner'] = 'http://'.C('OSS_HOST').'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
+        $data['seckill_banner'] = $seckill_banner;
         $data['is_open_reward'] = $is_open_reward;
         $data['is_comment'] = $is_comment;
         $data['is_open_simplehistory'] = $is_open_simplehistory;

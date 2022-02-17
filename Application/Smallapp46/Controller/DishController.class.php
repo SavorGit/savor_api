@@ -130,29 +130,28 @@ class DishController extends CommonController{
             'gtype'=>$res_goods['gtype'],'attrs'=>$attrs,'model_img'=>$model_img);
 
         if($res_goods['type']==42){
-            if(empty($task_user_id) || empty($expire_time)){
-                $this->to_back(1001);
+            if(!empty($task_user_id) && !empty($expire_time)){
+                $m_usertask = new \Common\Model\Integral\TaskuserModel();
+                $fields = "a.openid,task.id task_id,task.name task_name,task.goods_id,task.integral,
+                task.task_type,task.status,task.flag,task.end_time as task_expire_time";
+                $where = array('a.id'=>$task_user_id);
+                $res_usertask = $m_usertask->getUserTaskList($fields,$where,'a.id desc');
+                if(empty($res_usertask)){
+                    $this->to_back(93037);
+                }
+                $now_time = time();
+                $group_buy_time = $expire_time-$now_time>0?$expire_time-$now_time:0;
+                $where = array('a.openid'=>$res_usertask[0]['openid'],'a.status'=>1,'merchant.status'=>1);
+                $field_staff = 'a.openid,user.mobile,user.nickName';
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+                if($res_usertask[0]['status']==0){
+                    $group_buy_time = 0;
+                }
+                $group_buy_tips = '优惠已结束，请联系销售经理（'.$res_staff[0]['nickName'].' 电话：'.$res_staff[0]['mobile'].'）';
+                $data['group_buy_time'] = $group_buy_time;
+                $data['group_buy_tips'] = $group_buy_tips;
             }
-            $m_usertask = new \Common\Model\Integral\TaskuserModel();
-            $fields = "a.openid,task.id task_id,task.name task_name,task.goods_id,task.integral,
-            task.task_type,task.status,task.flag,task.end_time as task_expire_time";
-            $where = array('a.id'=>$task_user_id);
-            $res_usertask = $m_usertask->getUserTaskList($fields,$where,'a.id desc');
-            if(empty($res_usertask)){
-                $this->to_back(93037);
-            }
-            $now_time = time();
-            $group_buy_time = $expire_time-$now_time>0?$expire_time-$now_time:0;
-            $where = array('a.openid'=>$res_usertask[0]['openid'],'a.status'=>1,'merchant.status'=>1);
-            $field_staff = 'a.openid,user.mobile,user.nickName';
-            $m_staff = new \Common\Model\Integral\StaffModel();
-            $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
-            if($res_usertask[0]['status']==0){
-                $group_buy_time = 0;
-            }
-            $group_buy_tips = '优惠已结束，请联系销售经理（'.$res_staff[0]['nickName'].' 电话：'.$res_staff[0]['mobile'].'）';
-            $data['group_buy_time'] = $group_buy_time;
-            $data['group_buy_tips'] = $group_buy_tips;
         }
 
         $oss_host = "https://".C('OSS_HOST').'/';

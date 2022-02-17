@@ -12,6 +12,10 @@ class GoodsController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'attr'=>1001);
                 break;
+            case 'hotdrinklist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -134,6 +138,49 @@ class GoodsController extends CommonController{
         }
         $data['gift'] = $gift;
         $this->to_back($data);
+    }
+
+    public function hotdrinklist(){
+        $box_mac = $this->params['box_mac'];
+        $type = $this->params['type'];//44团购商品,43本店有售商品
+        $page = intval($this->params['page']);
+        $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
+        $start = ($page-1)*$pagesize;
+
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+        $box_info = $m_box->getBoxByCondition($fields,$where);
+        $hotel_id = $box_info[0]['hotel_id'];
+        if($type==44){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $where = array('status'=>1,'type'=>44);
+            $orderby = 'id desc';
+            $res_goods = $m_goods->getDataList('*',$where,$orderby,$start,$pagesize);
+        }else{
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $fields = 'g.id,g.name,g.price,g.cover_imgs,g.line_price,g.type';
+            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+            $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc',"$start,$pagesize");
+            $res_goods = array('list'=>$res_data);
+        }
+        $datalist = array();
+        if($res_goods['list']){
+            foreach ($res_goods['list'] as $v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $oss_host = "https://".C('OSS_HOST').'/';
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    }
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),'type'=>$v['type'],
+                    'img_url'=>$img_url);
+                $datalist[] = $dinfo;
+            }
+        }
+        $this->to_back($datalist);
     }
 
 }

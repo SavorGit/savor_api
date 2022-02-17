@@ -23,6 +23,10 @@ class ContentController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
                 break;
+            case 'hotdrinks':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001);
+                break;
             case 'addFormid':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'formid'=>1001);
@@ -806,5 +810,51 @@ class ContentController extends CommonController{
         $m_feedback->add($data);
         $this->to_back(array());
     }
+
+    public function hotdrinks(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res = $m_user->getOne('id',array('openid'=>$openid,'status'=>1),'id desc');
+        if(empty($res)){
+            $this->to_back(92010);
+        }
+
+        $m_box = new \Common\Model\BoxModel();
+        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+        $box_info = $m_box->getBoxByCondition($fields,$where);
+        $hotel_id = $box_info[0]['hotel_id'];
+
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'count(g.id) as num';
+        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+        $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
+        $datalist = array();
+        if($res_goods[0]['num']){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $where = array('status'=>1,'type'=>44);
+            $orderby = 'id desc';
+            $fields = 'id,name,price,cover_imgs,type';
+            $res_goods = $m_goods->getDataList($fields,$where,$orderby,0,5);
+            if(!empty($res_goods['list'])){
+                $oss_host = "https://".C('OSS_HOST').'/';
+                foreach ($res_goods['list'] as $v){
+                    $img_url = '';
+                    if(!empty($v['cover_imgs'])){
+                        $cover_imgs_info = explode(',',$v['cover_imgs']);
+                        if(!empty($cover_imgs_info[0])){
+                            $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        }
+                    }
+                    $price = intval($v['price']);
+                    $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,'type'=>$v['type']);
+                    $datalist[]=$dinfo;
+                }
+            }
+        }
+        $this->to_back($datalist);
+    }
+
 
 }

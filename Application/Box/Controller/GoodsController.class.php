@@ -1,0 +1,63 @@
+<?php
+namespace Box\Controller;
+use \Common\Controller\CommonController as CommonController;
+class GoodsController extends CommonController{
+
+
+    function _init_() {
+        switch(ACTION_NAME) {
+            case 'getSeckillGoods':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_mac'=>1001);
+                break;
+
+        }
+        parent::_init_();
+    }
+
+    public function getSeckillGoods(){
+        $box_mac = $this->params['box_mac'];
+        $m_box = new \Common\Model\BoxModel();
+        $map = array();
+        $map['a.mac'] = $box_mac;
+        $map['a.state'] = 1;
+        $map['a.flag']  = 0;
+        $map['d.state'] = 1;
+        $map['d.flag']  = 0;
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        if(empty($box_info)){
+            $this->to_back(70001);
+        }
+        $hotel_id = $box_info[0]['hotel_id'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $nowtime = date('Y-m-d H:i:s');
+        $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
+        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+        $where['g.start_time'] = array('elt',$nowtime);
+        $where['g.end_time'] = array('egt',$nowtime);
+        $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
+        $res_data = array('remain_time'=>0);
+        if(!empty($res_goods)){
+            $goods_id = $res_goods[0]['goods_id'];
+            $roll_content = json_decode($res_goods[0]['roll_content'],true);
+
+            $end_time = strtotime($res_goods[0]['end_time']);
+            $now_time = time();
+            $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+            if($remain_time==0){
+                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
+            }
+            $m_media = new \Common\Model\MediaModel();
+            $res_media = $m_media->getMediaInfoById($res_goods[0]['model_media_id']);
+            $res_data['goods_id'] = $goods_id;
+            $res_data['image'] = $res_media['oss_path'];
+            $res_data['price'] = intval($res_goods[0]['price']);
+            $res_data['line_price'] = intval($res_goods[0]['line_price']);
+            $res_data['roll_content'] = $roll_content;
+            $res_data['remain_time'] = intval($remain_time);
+        }
+        $this->to_back($res_data);
+    }
+
+}

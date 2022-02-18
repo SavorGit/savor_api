@@ -230,8 +230,18 @@ class ScanqrcodeController extends Controller {
             $all_bless = C('SMALLAPP_REDPACKET_BLESS');
             $info['bless'] = $all_bless[$res_order['bless_id']];
             $op_uid = C('REDPACKET_OPERATIONERID');
+            $op_info = C('BONUS_OPERATION_INFO');
+            $display_html = 'grab';
+            $questions = array();
             if($res_order['user_id']==$op_uid){
-                $info['bless'] = '';
+                $res_data['bless'] = '';
+                if($res_order['operate_type']==2){
+                    $res_data['nickName'] = $op_info['nickName'];
+                    $res_data['avatarUrl'] = $op_info['avatarUrl'];
+                    $questions = C('BONUS_QUESTIONNAIRE');
+                    $display_html = 'grab_question';
+                }
+                /*
                 $m_box = new \Common\Model\BoxModel();
                 $fileds = 'd.id as hotel_id';
                 $where = array('a.mac'=>$res_order['mac'],'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
@@ -246,14 +256,16 @@ class ScanqrcodeController extends Controller {
                     $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
                     $info['avatarUrl'] = $res_media['oss_addr'];
                 }
+                */
             }
             $status = 4;
             $sign = create_sign($status.$order_id.$grap_userid);
             $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$grap_userid,'sign'=>$sign,'money'=>0);
             $this->assign('params',$params);
+            $this->assign('questions',$questions);
             $this->assign('info',$info);
             $this->assign('time',time());
-            $this->display('grab');
+            $this->display($display_html);
         }else{
             $ou = $order_id.'o'.$grap_userid;
             $url = http_host().'/h5/scanqrcode/grabpage/ou/'.$ou;
@@ -340,8 +352,17 @@ class ScanqrcodeController extends Controller {
         $all_bless = C('SMALLAPP_REDPACKET_BLESS');
         $info['bless'] = $all_bless[$res_order['bless_id']];
         $op_uid = C('REDPACKET_OPERATIONERID');
+        $op_info = C('BONUS_OPERATION_INFO');
+        $display_html = 'grab';
+        $questions = array();
         if($res_order['user_id']==$op_uid){
-            $info['bless'] = '';
+            $res_data['bless'] = '';
+            if($res_order['operate_type']==2){
+                $res_data['nickName'] = $op_info['nickName'];
+                $res_data['avatarUrl'] = $op_info['avatarUrl'];
+                $questions = C('BONUS_QUESTIONNAIRE');
+                $display_html = 'grab_question';
+            }
             $m_box = new \Common\Model\BoxModel();
             $fileds = 'd.id as hotel_id';
             $where = array('a.mac'=>$res_order['mac'],'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
@@ -362,8 +383,9 @@ class ScanqrcodeController extends Controller {
         $params = array('status'=>$status,'order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign,'money'=>$get_money);
         $this->assign('time',time());
         $this->assign('params',$params);
+        $this->assign('questions',$questions);
         $this->assign('info',$info);
-        $this->display('grab');
+        $this->display($display_html);
     }
 
     private function wx_oauth($url){

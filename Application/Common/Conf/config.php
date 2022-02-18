@@ -673,6 +673,13 @@ return array(
         '120'=>'发红包',
         '121'=>'扫码抢红包'
     ),
+    'BONUS_OPERATION_INFO'=>array('nickName'=>'热点酒水超市','avatarUrl'=>'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg'),
+    'BONUS_QUESTIONNAIRE'=>array(
+        '1'=>array('id'=>1,'name'=>'泸州老窖','image'=>'media/resource/eE7RsxB8Zx.jpg'),
+        '2'=>array('id'=>2,'name'=>'海之蓝','image'=>'media/resource/M2Sp4XdjGx.png'),
+        '3'=>array('id'=>3,'name'=>'赖茅','image'=>'media/resource/S5B6KQKQPD.jpg'),
+        '4'=>array('id'=>4,'name'=>'冰清','image'=>'media/resource/3mHDWxXBhM.jpg'),
+    ),
 //    'RD_WIFI_HOTEL'=>array('46'=>'辉哥火锅（8号公馆店）','47'=>'孔乙己尚宴(8号公馆店)','48'=>'江仙雅居(东直门店)','55'=>'1949-全鸭季(金宝街店)','85'=>'花家怡园(王府井店)','222'=>'新荣记(银泰店)','395'=>'江山享味酒家(白云万达店)','420'=>'山东老家（科韵分店）','436'=>'江仙雅居（苏州桥店）','787'=>'湘江宴','1007'=>'峨嵋酒家广渠路店','1023'=>'新渝城·川菜·火锅(区庄店)','1038'=>'广东道至正餐厅(保利·时光里店)','1047'=>'四季小馆·北京菜·烤鸭(越秀公园店)','1051'=>'陇上荟·老兰州味道(天河公园店)','1059'=>'御彩酒家(东风东路店)','1064'=>'海门渔港(棠下店)','1065'=>'新泰乐·宴会厅(江南店)','1077'=>'新粤新疆菜(佳兆业广场店)'),
     'RD_WIFI_HOTEL'=>array(),
     'LAIMAO_SALE_HOTELS'=>array('7'=>'永峰写字楼(正式)','28'=>'经易家肴(西单店)','81'=>'海棠居(长椿街店)','787'=>'湘江宴','1007'=>'峨嵋酒家广渠路店'),

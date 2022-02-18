@@ -26,7 +26,7 @@ class RedpacketController extends CommonController{
                 break;
             case 'grabBonus':
                 $this->is_verify =1;
-                $this->valid_fields = array('order_id'=>1001,'status'=>1001,'user_id'=>1001,'sign'=>1001);
+                $this->valid_fields = array('order_id'=>1001,'status'=>1001,'user_id'=>1001,'sign'=>1001,'option_id'=>1002);
                 break;
             case 'grabBonusResult':
                 $this->is_verify =1;
@@ -399,9 +399,16 @@ class RedpacketController extends CommonController{
         //end
         $op_type = 1;
         $op_uid = C('REDPACKET_OPERATIONERID');
+        $op_info = C('BONUS_OPERATION_INFO');
         if($res_order['user_id']==$op_uid){
-            $op_type = 2;
             $res_data['bless'] = '';
+            if($res_order['operate_type']==2){
+                $op_type = 3;
+                $res_data['nickName'] = $op_info['nickName'];
+                $res_data['avatarUrl'] = $op_info['avatarUrl'];
+            }
+            /*
+            $op_type = 2;
             $m_box = new \Common\Model\BoxModel();
             $fileds = 'd.id as hotel_id';
             $where = array('a.mac'=>$res_order['mac'],'a.state'=>1,'a.flag'=>0,'d.state'=>1,'d.flag'=>0);
@@ -416,6 +423,7 @@ class RedpacketController extends CommonController{
                 $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
                 $res_data['avatarUrl'] = $res_media['oss_addr'];
             }
+            */
         }
         $res_data['op_type'] = $op_type;
         $this->to_back($res_data);
@@ -425,6 +433,7 @@ class RedpacketController extends CommonController{
         $order_id = $this->params['order_id'];
         $status = $this->params['status'];
         $user_id = $this->params['user_id'];
+        $option_id = $this->params['option_id'];
         $sign = $this->params['sign'];
         $now_sign = create_sign($status.$order_id.$user_id);
         if($sign!=$now_sign){
@@ -506,6 +515,17 @@ class RedpacketController extends CommonController{
                 $res_data['avatarUrl'] = $user_info['avatarUrl'];
                 break;
         }
+
+        if(!empty($option_id)){
+            $all_question = C('BONUS_QUESTIONNAIRE');
+            $wine_name = $all_question[$option_id]['name'];
+            if(!empty($wine_name)){
+                $m_question = new \Common\Model\Smallapp\QuestionnaireModel();
+                $add_data = array('user_id'=>$user_id,'redpacket_id'=>$order_id,'wine_name'=>$wine_name);
+                $m_question->add($add_data);
+            }
+        }
+
         $this->to_back($res_data);
     }
 
@@ -708,8 +728,15 @@ class RedpacketController extends CommonController{
         }
         $op_type = 1;
         $op_uid = C('REDPACKET_OPERATIONERID');
+        $op_info = C('BONUS_OPERATION_INFO');
         if($res_order['user_id']==$op_uid){
             $res_data['bless'] = '';
+            if($res_order['operate_type']==2){
+                $op_type = 3;
+                $res_data['nickName'] = $op_info['nickName'];
+                $res_data['avatarUrl'] = $op_info['avatarUrl'];
+            }
+            /*
             $op_type = 2;
             $m_box = new \Common\Model\BoxModel();
             $fileds = 'd.id as hotel_id';
@@ -725,6 +752,7 @@ class RedpacketController extends CommonController{
                 $res_media = $m_media->getMediaInfoById($res_hotel_ext['hotel_cover_media_id']);
                 $res_data['avatarUrl'] = $res_media['oss_addr'];
             }
+            */
         }
         $res_data['op_type'] = $op_type;
         $this->to_back($res_data);

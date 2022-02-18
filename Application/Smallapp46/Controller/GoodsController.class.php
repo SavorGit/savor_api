@@ -144,7 +144,10 @@ class GoodsController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $type = $this->params['type'];//44团购商品,43本店有售商品
         $page = intval($this->params['page']);
-        $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
+        $pagesize = $this->params['pagesize'];
+        if(empty($pagesize)){
+            $pagesize = 10;
+        }
         $start = ($page-1)*$pagesize;
 
         $m_box = new \Common\Model\BoxModel();

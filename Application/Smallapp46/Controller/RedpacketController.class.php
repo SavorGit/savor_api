@@ -195,7 +195,7 @@ class RedpacketController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$open_id,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $user_info = $m_user->getOne('id,openid,wx_mpopenid as mpopenid',$where,'');
         if(empty($user_info)){
             $this->to_back(90116);
         }
@@ -229,7 +229,6 @@ class RedpacketController extends CommonController{
         if(!empty($res_boxdata)){
             $redis->set($key_box,json_encode($res_boxdata),86400);
         }
-
         $status = 0;
         if($res_order['status'] == 5){
             $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包的用户列表

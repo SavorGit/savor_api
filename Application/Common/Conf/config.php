@@ -686,11 +686,11 @@ return array(
     'LAIMAO_SECKILL_GOODS_ID'=>622,
     'RD_TEST_HOTEL' =>
         array (
-            7 =>
-                array (
-                    'hotel_id' => 7,
-                    'hotel_name' => '永峰写字楼(正式)	',
-                    'short_name' => '永峰写字楼',
-                ),
+//            7 =>
+//                array (
+//                    'hotel_id' => 7,
+//                    'hotel_name' => '永峰写字楼(正式)	',
+//                    'short_name' => '永峰写字楼',
+//                ),
         ),
 );

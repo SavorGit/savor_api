@@ -670,7 +670,7 @@ class RedpacketController extends CommonController{
                         $get_money = $now_money;
                     }
                 }
-                if(!empty($user_barrages)){
+                if(!empty($user_barrages) && $res_order['operate_type']!=2){
                     $m_box = new \Common\Model\BoxModel();
                     $bwhere = array('a.mac'=>$res_order['mac'],'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
                     $res_box = $m_box->getBoxInfo('a.is_4g',$bwhere);

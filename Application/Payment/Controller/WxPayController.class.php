@@ -70,6 +70,8 @@ class WxPayController extends BaseController{
         $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
         $m_refund = new \Common\Model\Smallapp\RefundModel();
         $m_wxpay = new \Payment\Model\WxpayModel();
+        $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+        $is_test = false;
         if(!empty($orders)){
             $pk_type = C('PK_TYPE');//1走线上原来逻辑 2走新的支付方式
             foreach ($orders as $v){
@@ -88,6 +90,7 @@ class WxPayController extends BaseController{
                 if(empty($res_receive)){
                     die("redpacket_id:$order_id send bonus finish");
                 }
+                $res_order = $m_redpacket->getInfo(array('id'=>$order_id));
                 $m_message = new \Common\Model\Smallapp\MessageModel();
                 foreach ($res_receive as $v){
                     $key_hasget = $red_packet_key.$order_id.':hasget';//已经抢到红包资格的用户列表
@@ -130,8 +133,12 @@ class WxPayController extends BaseController{
                     $res_lockuser[$v['user_id']] = date('Y-m-d H:i:s');
                     $redis->set($key_lockuser,json_encode($res_lockuser),86400);
 
-                    $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$open_id);
-                    $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    if($is_test && $res_order['operate_type']==2){
+                        $res = array('code'=>10000);
+                    }else{
+                        $trade_info = array('trade_no'=>$v['redpacket_id'],'money'=>$v['money'],'open_id'=>$open_id);
+                        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    }
 
                     unset($res_lockuser[$v['user_id']]);
                     $redis->set($key_lockuser,json_encode($res_lockuser),86400);

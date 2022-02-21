@@ -675,6 +675,9 @@ class IndexController extends CommonController{
                 }
                 $fields = 'g.id as goods_id,g.poster_media_id';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+                $nowtime = date('Y-m-d H:i:s');
+                $where['g.start_time'] = array('elt',$nowtime);
+                $where['g.end_time'] = array('egt',$nowtime);
                 $res_goods = $m_hotel_goods->getGoodsList($fields,$where,'g.id desc','0,1');
                 if(!empty($res_goods)){
                     $hotel_seckill_goods_id = $res_goods[0]['goods_id'];

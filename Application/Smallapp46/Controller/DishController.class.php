@@ -262,6 +262,8 @@ class DishController extends CommonController{
             $data['expire_date'] = date('Y.m.d',strtotime($res_goods['start_time'])).'-'.date('m.d',strtotime($res_goods['end_time']));
             $data['page_url'] = $res_goods['page_url'];
         }
+        $data['store_buy_btn'] = '本店有售，请联系服务员';
+
 
         $this->to_back($data);
     }

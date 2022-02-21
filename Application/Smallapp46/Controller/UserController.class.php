@@ -649,7 +649,7 @@ class UserController extends CommonController{
             $this->to_back(90157);
         }
         $fields = 'activity.id as activity_id,activity.name,activity.start_time,activity.end_time,activity.lottery_time,activity.type,activity.prize,activity.status as activity_status,a.id,a.prize_id,a.status,a.add_time';
-        $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4,8)),'a.status'=>array('in',array(1,2,4,5)));
+        $where = array('a.openid'=>$openid,'activity.type'=>array('in',array(1,3,4,8,10)),'a.status'=>array('in',array(1,2,4,5)));
         $order = 'a.id desc';
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $limit = "0,$all_nums";
@@ -700,7 +700,7 @@ class UserController extends CommonController{
                         $status = 3;
                 }
                 $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'content'=>$content,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id'],'type'=>$v['type']);
-                if($v['type']==1 && $v['activity_status']==2 && $status==1){
+                if(in_array($v['type'],array(1,10)) && $v['activity_status']==2 && $status==1){
                 }else{
                     $datalist[]=$info;
                 }

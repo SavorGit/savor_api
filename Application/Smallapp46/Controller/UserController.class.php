@@ -119,14 +119,13 @@ class UserController extends CommonController{
             $userinfo['subscribe'] = 1;
         }
         $data['userinfo'] = $userinfo;
+        $box_info = array();
         if(!empty($box_mac) && $box_mac!='undefined'){
             $m_box = new \Common\Model\BoxModel();
-            $map = array();
-            $map['mac']   = $box_mac;
-            $map['state'] = 1;
-            $map['flag']  = 0;
-            $ret = $m_box->field('is_open_simple')->where($map)->find();
-            $data['userinfo']['is_open_simple'] = $ret['is_open_simple'];
+            $fields = 'box.is_open_simple,hotel.id as hotel_id';
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+            $data['userinfo']['is_open_simple'] = $box_info[0]['is_open_simple'];
         }
         if($page_id){
             $redis->select(5);
@@ -139,11 +138,11 @@ class UserController extends CommonController{
             if($page_id == 1 && $is_have_link==1){
                 $redis->select(1);
                 $cache_key = C('SMALLAPP_DAY_QRCDE').$openid;
-                
                 $end_time = strtotime(date('Y-m-d').' 23:59:59');
                 $now_time = time();
                 $diff_time = $end_time - $now_time;
                 $redis->set($cache_key, 1,$diff_time);
+
                 $redis->select(5);
                 $forscreen_nums_cache_key = C('SAPP_FORSCREEN_NUMS').$openid;
                 $forscreen_nums_list = $redis->lgetrange($forscreen_nums_cache_key,0,-1);
@@ -156,6 +155,15 @@ class UserController extends CommonController{
                 if(!empty($forscreen_nums) && $forscreen_nums>=5 && $userinfo['is_interact']==0){
                     $data['userinfo']['is_interact'] = 1;
                     $m_user->updateInfo(array('openid'=>$openid), array('is_interact'=>1));
+                }
+                if(!empty($box_info)){
+                    $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+                    $fields = 'g.id,g.name,g.price,g.cover_imgs,g.line_price,g.type';
+                    $where = array('h.hotel_id'=>$box_info[0]['hotel_id'],'g.type'=>43,'g.status'=>1);
+                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc',"0,1");
+                    if(!empty($res_data)){
+                        $data['userinfo']['is_interact'] = 1;
+                    }
                 }
             }
         }

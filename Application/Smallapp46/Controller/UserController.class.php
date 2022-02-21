@@ -663,7 +663,7 @@ class UserController extends CommonController{
                 if($v['type']==4){
                     $v['type']=1;
                 }
-                if($v['type']==1){
+                if($v['type']==1 || $v['type']==10){
                     $name = $v['prize'];
                 }elseif($v['type']==8){
                     $name = '抽奖活动';
@@ -676,6 +676,7 @@ class UserController extends CommonController{
                 $lottery_time = date('Y-m-d H:i',strtotime($v['add_time']));
                 switch ($v['status']){
                     case 1:
+                    case 10:
                         if($v['type']==8)   $content="成功参与了“{$v['name']}活动“，请关注大屏及短信通知的中奖结果。";
                         $status = 1;
                         break;

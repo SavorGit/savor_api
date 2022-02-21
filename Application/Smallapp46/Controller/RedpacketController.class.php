@@ -448,7 +448,9 @@ class RedpacketController extends CommonController{
         $now_time = time();
         $remain_time = $now_time - strtotime($res_order['add_time']);
         if(!in_array($res_order['status'],array(4,6)) || $remain_time>86400){
-            $this->to_back(90130);
+            $sign = create_sign($order_id.$user_id);
+            $res_data = array('order_id'=>$order_id,'user_id'=>$user_id,'sign'=>$sign);
+            $this->to_back($res_data);
         }
 
         $red_packet_key = C('SAPP_REDPACKET');
@@ -519,8 +521,24 @@ class RedpacketController extends CommonController{
             $all_question = C('BONUS_QUESTIONNAIRE');
             $wine_name = $all_question[$option_id]['name'];
             if(!empty($wine_name)){
+                $where = array('id'=>$res_order['user_id']);
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $user_info = $m_user->getOne('*',$where,'');
+
+                $box_key = C('SMALLAPP_CHECK_CODE')."*".$user_info['openid'];
+                $all_keys = $redis->keys($box_key);
+                $box_mac = '';
+                foreach($all_keys as $v) {
+                    $key_arr = explode(':', $v);
+                    if(empty($box_mac) && !empty($key_arr)){
+                        $box_mac = $key_arr[2];
+                    }
+                }
                 $m_question = new \Common\Model\Smallapp\QuestionnaireModel();
                 $add_data = array('user_id'=>$user_id,'redpacket_id'=>$order_id,'wine_name'=>$wine_name);
+                if(!empty($box_mac)){
+                    $add_data['box_mac'] = $box_mac;
+                }
                 $m_question->add($add_data);
             }
         }

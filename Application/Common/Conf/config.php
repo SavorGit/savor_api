@@ -621,7 +621,9 @@ return array(
         18910538751
     ),
     'GROUP_BUY_USER_MOBILE'=>array(
-        13810910309
+        13811966726,
+        13810910309,
+        13911344326,
     ),
     'EXCLUDE_VIDEOS'=>array(17614,19533,26965),
     'SCENCE_ADV_BIRTHDAY'=>array(

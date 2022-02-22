@@ -507,6 +507,17 @@ class BaseIncModel extends Model{
                     $params = array('uname'=>$result_order[0]['contact'],'name'=>$res_goods[0]['name'],'hour'=>48);
                     $alisms::sendSms($res_user['mobile'],$params,$template_code);
                 }
+                if($otype==5){
+                    $sms_config = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $template_code = $sms_config['send_groupbuy_user_templateid'];
+                    $send_mobiles = C('GROUP_BUY_USER_MOBILE');
+                    if(!empty($send_mobiles)){
+                        foreach ($send_mobiles as $v){
+                            $alisms::sendSms($v,'',$template_code);
+                        }
+                    }
+                }
             }
         }else{
             $is_succ = true;

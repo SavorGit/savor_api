@@ -151,6 +151,7 @@ class HotelController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'h.hotel_id';
         $where = array('g.type'=>array('in',array(40,43)),'g.status'=>1);
+        $where['h.hotel_id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883,53,925');
         $res_ghotels = $m_hotelgoods->getGoodsList($fields,$where,'','','h.hotel_id');
         $hotel_ids = array();
         foreach ($res_ghotels as $v){

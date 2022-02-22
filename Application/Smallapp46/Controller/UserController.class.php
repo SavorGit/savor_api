@@ -676,7 +676,6 @@ class UserController extends CommonController{
                 $lottery_time = date('Y-m-d H:i',strtotime($v['add_time']));
                 switch ($v['status']){
                     case 1:
-                    case 10:
                         if($v['type']==8)   $content="成功参与了“{$v['name']}活动“，请关注大屏及短信通知的中奖结果。";
                         $status = 1;
                         break;
@@ -701,7 +700,7 @@ class UserController extends CommonController{
                         $status = 3;
                 }
                 $info = array('activity_id'=>$v['activity_id'],'name'=>$name,'content'=>$content,'lottery_time'=>$lottery_time,'status'=>$status,'id'=>$v['id'],'type'=>$v['type']);
-                if(in_array($v['type'],array(1,10)) && $v['activity_status']==2 && $status==1){
+                if($v['type']==1 && $v['activity_status']==2 && $status==1){
                 }else{
                     $datalist[]=$info;
                 }

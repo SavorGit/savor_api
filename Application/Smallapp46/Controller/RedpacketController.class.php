@@ -521,7 +521,7 @@ class RedpacketController extends CommonController{
             $all_question = C('BONUS_QUESTIONNAIRE');
             $wine_name = $all_question[$option_id]['name'];
             if(!empty($wine_name)){
-                $where = array('id'=>$res_order['user_id']);
+                $where = array('id'=>$user_id);
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $user_info = $m_user->getOne('*',$where,'');
 

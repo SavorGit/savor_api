@@ -10,7 +10,7 @@ class RoomController extends CommonController{
         switch(ACTION_NAME) {
             case 'getRoomList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1002);
                 break;
             case 'getWelcomeBoxlist':
                 $this->is_verify = 1;
@@ -39,7 +39,7 @@ class RoomController extends CommonController{
         foreach($list as $key=>$v){
             $box_list[] = $v;
             $box_name_list[] = $v['box_name'];
-            if($v['box_mac']==$box_mac){
+            if(!empty($box_mac) && $v['box_mac']==$box_mac){
                 $box_index = $key;
             }        
         }

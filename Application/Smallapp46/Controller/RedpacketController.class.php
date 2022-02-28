@@ -274,32 +274,11 @@ class RedpacketController extends CommonController{
                 $res_redpacketqueue = $redis->lgetrange($key_bonusqueue,0,2000);
 
                 //红包黑名单
-                $key_invaliduser = $red_packet_key.'invaliduser';
-                $res_invaliduser = $redis->get($key_invaliduser);
-                if(!empty($res_invaliduser)){
-                    $invaliduser = json_decode($res_invaliduser,true);
-                }else{
-                    $invaliduser = array();
-                    $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
-                    $res_invalids = $m_invalidlist->getDataList('invalidid',array('type'=>4),'id desc');
-                    if(!empty($res_invalids)) {
-                        foreach ($res_invalids as $iv) {
-                            $invaliduser[] = $iv['invalidid'];
-                        }
-                        $redis->set($key_invaliduser,json_encode($invaliduser),86400);
-                    }
-                }
                 $is_finish = 0;
-                if(!empty($invaliduser) && in_array($open_id,$invaliduser)){
-                    $key_invaliduserdate = $red_packet_key.'invaliduser'.date('Ymd');
-                    $res_invaliduserdate = $redis->get($key_invaliduserdate);
-                    if(!empty($res_invaliduserdate)){
-                        $invaliduserdate = json_decode($res_invaliduserdate,true);
-                        $getnum = C('REDPACKET_GETNUM');
-                        if(array_key_exists($open_id,$invaliduserdate) && $invaliduserdate[$open_id]>=$getnum){
-                            $is_finish = 1;
-                        }
-                    }
+                $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+                $res_invalids = $m_invalidlist->getInfo(array('invalidid'=>$open_id));
+                if(!empty($res_invalids)){
+                    $is_finish = 1;
                 }
 
                 if(empty($res_redpacketqueue) || $is_finish){
@@ -659,28 +638,6 @@ class RedpacketController extends CommonController{
                     }
                     $user_barrages[] = array('nickName'=>$user_info['nickName'],'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
                     //end
-
-                    //红包黑名单
-                    $key_invaliduser = $red_packet_key.'invaliduser';
-                    $res_invaliduser = $redis->get($key_invaliduser);
-                    if(!empty($res_invaliduser)) {
-                        $invaliduser = json_decode($res_invaliduser, true);
-                        if(!empty($invaliduser) && in_array($user_info['openid'],$invaliduser)){
-                            $key_invaliduserdate = $red_packet_key.'invaliduser'.date('Ymd');
-                            $res_invaliduserdate = $redis->get($key_invaliduserdate);
-                            if(!empty($res_invaliduserdate)){
-                                $invaliduserdate = json_decode($res_invaliduserdate,true);
-                            }else{
-                                $invaliduserdate = array();
-                            }
-                            if(isset($invaliduserdate[$user_info['openid']])){
-                                $invaliduserdate[$user_info['openid']] = $invaliduserdate[$user_info['openid']]+1;
-                            }else{
-                                $invaliduserdate[$user_info['openid']] = 1;
-                            }
-                            $redis->set($key_invaliduserdate,json_encode($invaliduserdate),86400);
-                        }
-                    }
 
                     if($grab_user_id == $user_id){
                         $status = 1;

@@ -970,7 +970,7 @@ class IndexController extends CommonController{
                 }
 
                 $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
-                $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+                $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid));
                 if(empty($res_invalid)){
                     $sms_config = C('ALIYUN_SMS_CONFIG');
                     $alisms = new \Common\Lib\AliyunSms();

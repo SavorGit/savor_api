@@ -328,8 +328,6 @@ class SyslotteryController extends CommonController{
                     $res_data['message'] = '请联系服务员领奖';
                 }
                 if($res_prize['type']==1 && $res_prize['money']>0){
-                    $res_prize['money'] = 0.33;
-
                     $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
                     if($res_activity_apply['status']==5){
                         $smallapp_config = C('SMALLAPP_CONFIG');

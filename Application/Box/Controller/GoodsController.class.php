@@ -37,6 +37,8 @@ class GoodsController extends CommonController{
         $where['g.end_time'] = array('egt',$nowtime);
         $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
         $res_data = array('remain_time'=>0);
+        $roll_content = array();
+        $goods_id = 0;
         if(!empty($res_goods)){
             $goods_id = $res_goods[0]['goods_id'];
             $roll_content = json_decode($res_goods[0]['roll_content'],true);
@@ -54,9 +56,21 @@ class GoodsController extends CommonController{
             $res_data['image'] = $res_media['oss_path'];
             $res_data['price'] = intval($res_goods[0]['price']);
             $res_data['line_price'] = intval($res_goods[0]['line_price']);
-            $res_data['roll_content'] = $roll_content;
             $res_data['remain_time'] = intval($remain_time);
         }
+        $fields = 'g.id as goods_id,g.name as goods_name,g.price';
+        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+        $res_allgoods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
+        if(!empty($res_allgoods)){
+            $goods_info = array();
+            foreach ($res_allgoods as $v){
+                $price = intval($v['price']);
+                $goods_info[]="{$v['goods_name']}({$price}元)";
+            }
+            $goods_content = join('、',$goods_info);
+            $roll_content[]="本店有售：".$goods_content.'，更多活动，扫码获取。';
+        }
+        $res_data['roll_content'] = $roll_content;
         $this->to_back($res_data);
     }
 

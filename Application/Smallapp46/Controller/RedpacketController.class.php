@@ -374,6 +374,9 @@ class RedpacketController extends CommonController{
                 }
             }
         }
+        $m_qrcodelog = new \Common\Model\Smallapp\QrcodeLogModel();
+        $data = array('openid'=>$open_id,'box_mac'=>$box_mac,'type'=>8,'is_overtime'=>0);
+        $m_qrcodelog->addInfo($data);
         //end
         $op_type = 1;
         $op_uid = C('REDPACKET_OPERATIONERID');

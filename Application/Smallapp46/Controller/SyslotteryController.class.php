@@ -127,14 +127,16 @@ class SyslotteryController extends CommonController{
                     }
                     $success_rate=$fail_rate=$success_num=$fail_num = 0;
                     foreach ($res_prize as $v){
-                        if($v['type']==3){
-                            $fail_rate+=$v['probability'];
-                            $fail_num++;
-                        }else{
-                            $success_rate+=$v['probability'];
-                            $success_num++;
+                        if($v['probability']>0){
+                            if($v['type']==3){
+                                $fail_rate+=$v['probability'];
+                                $fail_num++;
+                            }else{
+                                $success_rate+=$v['probability'];
+                                $success_num++;
+                            }
+                            $all_probability[$v['id']]=array('probability'=>$v['probability'],'type'=>$v['type']);
                         }
-                        $all_probability[$v['id']]=array('probability'=>$v['probability'],'type'=>$v['type']);
                     }
                     if($is_lottery){
                         $amount = $success_num;
@@ -328,6 +330,10 @@ class SyslotteryController extends CommonController{
                     $res_data['message'] = '请联系服务员领奖';
                 }
                 if($res_prize['type']==1 && $res_prize['money']>0){
+                    $num = intval($res_prize['money']/0.3);
+                    $all_money = bonus_random($res_prize['money'],$num,0.3,$res_prize['money']);
+                    $res_prize['money'] = $all_money[0];
+
                     $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
                     if($res_activity_apply['status']==5){
                         $smallapp_config = C('SMALLAPP_CONFIG');

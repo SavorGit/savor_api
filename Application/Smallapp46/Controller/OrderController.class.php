@@ -37,13 +37,13 @@ class OrderController extends CommonController{
                 break;
             case 'getpreorder':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_ids'=>1001);
+                $this->valid_fields = array('goods_ids'=>1001,'openid'=>1002);
                 break;
             case 'addShoporder':
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'address_id'=>1002,'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,
-                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002,'task_user_id'=>1002);
+                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002,'task_user_id'=>1002,'usercoupon_id'=>1002);
                 break;
             case 'addGiftorder':
                 $this->is_verify = 1;
@@ -268,6 +268,8 @@ class OrderController extends CommonController{
 
     public function getpreorder(){
         $goods_ids = $this->params['goods_ids'];
+        $openid = $this->params['openid'];
+
         $json_str = stripslashes(html_entity_decode($goods_ids));
         $goods_ids_arr = json_decode($json_str,true);
         $ids = array();
@@ -284,15 +286,21 @@ class OrderController extends CommonController{
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_media = new \Common\Model\MediaModel();
-            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale";
+            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale,is_usecoupon";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
             $total_fee = 0;
             $total_amount = 0;
+            $coupon_goods_price = array();
+            $usercoupon_id = 0;
+            $coupon_info = '';
             foreach ($res_goods as $v){
                 if($v['status']==2){
                     continue;
+                }
+                if($v['type']==44 && $v['is_usecoupon']==1){
+                    $coupon_goods_price[]=$v['price'];
                 }
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
@@ -324,6 +332,27 @@ class OrderController extends CommonController{
                 $total_fee = $total_fee+$tmp_money;
                 $res_online[$v['merchant_id']][]=$dinfo;
             }
+            if(!empty($coupon_goods_price) && !empty($openid)){
+                $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                $where = array('a.openid'=>$openid,'a.ustatus'=>1);
+                $nowtime = date('Y-m-d H:i:s');
+                $where['coupon.start_time'] = array('elt',$nowtime);
+                $where['coupon.end_time'] = array('egt',$nowtime);
+                $fields = 'a.id as usercoupon_id,a.money,a.min_price';
+                $res_coupon_user = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','0,1');
+                if(!empty($res_coupon_user)){
+                    foreach ($coupon_goods_price as $pv){
+                        if($pv>=$res_coupon_user[0]['min_price']){
+                            $usercoupon_id = $res_coupon_user[0]['usercoupon_id'];
+                            $coupon_info = "满{$res_coupon_user[0]['min_price']}减{$res_coupon_user[0]['money']}";
+                            $total_fee = $total_fee - $res_coupon_user[0]['money'];
+                            break;
+                        }
+                    }
+                }
+            }
+            $datas['usercoupon_id'] = $usercoupon_id;
+            $datas['coupon_info'] = $coupon_info;
             $datas['total_fee'] = $total_fee;
             $datas['amount'] = $total_amount;
 
@@ -370,6 +399,7 @@ class OrderController extends CommonController{
         $box_id = $this->params['box_id'];
         $box_mac = $this->params['box_mac'];
         $task_user_id = intval($this->params['task_user_id']);
+        $usercoupon_id = intval($this->params['usercoupon_id']);
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -555,6 +585,14 @@ class OrderController extends CommonController{
                 $amount = $amount+$gv['amount'];
             }
         }
+        $coupon_info = array();
+        if($usercoupon_id>0){
+            $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+            $coupon_info = $m_coupon_user->getInfo(array('id'=>$usercoupon_id,'openid'=>$openid));
+            if(!empty($coupon_info)){
+                $total_fee = $total_fee - $coupon_info['money'];
+            }
+        }
 
         if($total_fee<=0){
             $this->to_back(90142);
@@ -576,6 +614,7 @@ class OrderController extends CommonController{
         $m_invoice = new \Common\Model\Smallapp\OrderinvoiceModel();
         $m_orderlocation = new \Common\Model\Smallapp\OrderlocationModel();
         $trade_name = '';
+        $is_use_coupon = 0;
         foreach ($goods as $k=>$v){
             $amount = 0;
             $total_money = 0;
@@ -604,6 +643,12 @@ class OrderController extends CommonController{
             }
             if(!empty($order_location)){
                 $add_data['box_mac'] = $order_location['box_mac'];
+            }
+            if(!empty($coupon_info) && $is_use_coupon==0){
+                $is_use_coupon = 1;
+                $add_data['usercoupon_id'] = $usercoupon_id;
+                $add_data['coupon_fee'] = $coupon_info['money'];
+                $add_data['total_fee'] = $total_money - $coupon_info['money'];
             }
             $order_id = $m_order->add($add_data);
             if(!empty($order_location)){
@@ -1317,7 +1362,7 @@ class OrderController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'id as order_id,gift_oid,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time';
+        $fields = 'id as order_id,gift_oid,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time,usercoupon_id';
         $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -1335,6 +1380,14 @@ class OrderController extends CommonController{
                 if($v['finish_time']=='0000-00-00 00:00:00'){
                     $datalist[$k]['finish_time'] = '';
                 }
+                $coupon_info = '';
+                if(!empty($v['usercoupon_id'])){
+                    $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                    $res_coupon = $m_coupon_user->getInfo(array('id'=>$v['usercoupon_id']));
+                    $coupon_info = "满{$res_coupon['min_price']}减{$res_coupon['money']}";
+                }
+                $datalist[$k]['coupon_info'] = $coupon_info;
+
                 $order_id = $v['order_id'];
                 $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.gtype,goods.attr_name,goods.parent_id,
                 goods.model_media_id,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
@@ -1414,11 +1467,16 @@ class OrderController extends CommonController{
             'contact'=>$res_order['contact'],'phone'=>$res_order['phone'],'address'=>$res_order['address'],'tableware'=>$res_order['tableware'],
             'remark'=>$res_order['remark'],'delivery_type'=>$res_order['delivery_type'],'delivery_time'=>$res_order['delivery_time'],
             'delivery_fee'=>$res_order['delivery_fee'],'selfpick_time'=>$res_order['selfpick_time'],'finish_time'=>$res_order['finish_time'],
-            'type'=>$res_order['otype'],'message'=>$res_order['message'],
+            'type'=>$res_order['otype'],'message'=>$res_order['message'],'coupon_info'=>''
         );
         $order_data['add_time'] = date('Y-m-d H:i',strtotime($res_order['add_time']));
         if($res_order['finish_time']=='0000-00-00 00:00:00'){
             $order_data['finish_time'] = '';
+        }
+        if(!empty($res_order['usercoupon_id'])){
+            $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+            $res_coupon = $m_coupon_user->getInfo(array('id'=>$res_order['usercoupon_id']));
+            $order_data['coupon_info'] = "满{$res_coupon['min_price']}减{$res_coupon['money']}";
         }
 
         $order_status_str = C('ORDER_STATUS');
@@ -1427,7 +1485,6 @@ class OrderController extends CommonController{
         }
 
         $oss_host = "http://".C('OSS_HOST').'/';
-
         $gifts = array();
         $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,
@@ -1438,7 +1495,6 @@ class OrderController extends CommonController{
                 $gifts[$v['buy_goods_id']]=array('id'=>$v['goods_id'],'name'=>$v['goods_name'],'amount'=>intval($v['amount']));
             }
         }
-
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,

@@ -14,7 +14,7 @@ class DishController extends CommonController{
                 break;
             case 'detail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'box_mac'=>1002,'task_user_id'=>1002,'expire_time'=>1002);
+                $this->valid_fields = array('goods_id'=>1001,'box_mac'=>1002,'task_user_id'=>1002,'expire_time'=>1002,'openid'=>1002);
                 break;
         }
         parent::_init_();
@@ -85,6 +85,7 @@ class DishController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $task_user_id = $this->params['task_user_id'];
         $expire_time = $this->params['expire_time'];
+        $openid = $this->params['openid'];
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
@@ -243,27 +244,30 @@ class DishController extends CommonController{
             $data['resource_size'] = $media_info['oss_filesize'];
             $data['qrcode_url'] = $host_name."/smallsale21/qrcode/dishQrcode?data_id={$res_goods['id']}&type=32";
         }
-        if($goods_id==C('LAIMAO_SECKILL_GOODS_ID')){
-            $is_hotelsale = 0;
-            $m_box = new \Common\Model\BoxModel();
-            $fields = 'box.id as box_id,hotel.id as hotel_id';
-            $bwhere = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-            $res_box = $m_box->getBoxByCondition($fields,$bwhere);
-            $hotel_id = $res_box[0]['hotel_id'];
-            $all_hotelsale = C('LAIMAO_SALE_HOTELS');
-            if(isset($all_hotelsale[$hotel_id])){
-                $is_hotelsale = 1;
-            }
-            $data['is_hotelsale'] = $is_hotelsale;
-            $data['price'] = intval($data['price']);
-            $data['line_price'] = intval($data['line_price']);
-            $m_goods = new \Common\Model\Smallapp\GoodsModel();
-            $res_goods = $m_goods->getInfo(array('id'=>C('LAIMAO_SECKILL_GOODS_ID')));
-            $data['expire_date'] = date('Y.m.d',strtotime($res_goods['start_time'])).'-'.date('m.d',strtotime($res_goods['end_time']));
-            $data['page_url'] = $res_goods['page_url'];
-        }
         $data['store_buy_btn'] = '本店有售，请联系服务员';
+        if($res_goods['type']==44){
+            $coupon_id = $discount_price = 0;
+            $coupon_info = '';
+            if($res_goods['is_usecoupon'] && !empty($openid)){
+                $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                $where = array('a.openid'=>$openid,'a.ustatus'=>1);
+                $where['a.min_price'] = array('elt',$res_goods['price']);
+                $nowtime = date('Y-m-d H:i:s');
+                $where['coupon.start_time'] = array('elt',$nowtime);
+                $where['coupon.end_time'] = array('egt',$nowtime);
+                $fields = 'a.coupon_id,a.money,a.min_price';
+                $res_coupon_user = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','0,1');
+                if(!empty($res_coupon_user)){
+                    $coupon_id = $res_coupon_user[0]['coupon_id'];
+                    $discount_price = intval($res_goods['price'] - $res_coupon_user[0]['money']);
+                    $coupon_info = "满{$res_coupon_user[0]['min_price']}-{$res_coupon_user[0]['money']}";
+                }
+            }
 
+            $data['coupon_id'] = $coupon_id;
+            $data['coupon_info'] = $coupon_info;
+            $data['discount_price'] = $discount_price;
+        }
 
         $this->to_back($data);
     }

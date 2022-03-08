@@ -292,15 +292,26 @@ class OrderController extends CommonController{
             $res_online = array();
             $total_fee = 0;
             $total_amount = 0;
-            $coupon_goods_price = array();
             $usercoupon_id = 0;
             $coupon_info = '';
+            $res_coupons = array();
+            if(!empty($openid)){
+                $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                $where = array('a.openid'=>$openid,'a.ustatus'=>1);
+                $nowtime = date('Y-m-d H:i:s');
+                $where['coupon.status'] = 1;
+                $where['coupon.start_time'] = array('elt',$nowtime);
+                $where['coupon.end_time'] = array('egt',$nowtime);
+                $fields = 'a.id as usercoupon_id,a.money,a.min_price';
+                $res_coupon_user = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','0,1');
+                if(!empty($res_coupon_user)){
+                    $res_coupons = $res_coupon_user[0];
+                }
+            }
+
             foreach ($res_goods as $v){
                 if($v['status']==2){
                     continue;
-                }
-                if($v['type']==44 && $v['is_usecoupon']==1){
-                    $coupon_goods_price[]=$v['price'];
                 }
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
@@ -328,29 +339,20 @@ class OrderController extends CommonController{
 
                 $total_amount = $total_amount+$dinfo['amount'];
                 $tmp_money = sprintf("%.2f",$dinfo['amount']*$dinfo['price']);
+                if($v['type']==44 && $v['is_usecoupon']==1 && !empty($res_coupons) && !empty($openid)){
+                    if($usercoupon_id==0){
+                        if($v['price']>=$res_coupons['min_price']){
+                            $usercoupon_id = $res_coupons['usercoupon_id'];
+                            $coupon_info = "满{$res_coupons['min_price']}减{$res_coupons['money']}";
+                            $tmp_money = $tmp_money - $res_coupons['money'];
+                        }
+                    }
+                }
                 $dinfo['money'] = $tmp_money;
                 $total_fee = $total_fee+$tmp_money;
                 $res_online[$v['merchant_id']][]=$dinfo;
             }
-            if(!empty($coupon_goods_price) && !empty($openid)){
-                $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
-                $where = array('a.openid'=>$openid,'a.ustatus'=>1);
-                $nowtime = date('Y-m-d H:i:s');
-                $where['coupon.start_time'] = array('elt',$nowtime);
-                $where['coupon.end_time'] = array('egt',$nowtime);
-                $fields = 'a.id as usercoupon_id,a.money,a.min_price';
-                $res_coupon_user = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','0,1');
-                if(!empty($res_coupon_user)){
-                    foreach ($coupon_goods_price as $pv){
-                        if($pv>=$res_coupon_user[0]['min_price']){
-                            $usercoupon_id = $res_coupon_user[0]['usercoupon_id'];
-                            $coupon_info = "满{$res_coupon_user[0]['min_price']}减{$res_coupon_user[0]['money']}";
-                            $total_fee = $total_fee - $res_coupon_user[0]['money'];
-                            break;
-                        }
-                    }
-                }
-            }
+
             $datas['usercoupon_id'] = $usercoupon_id;
             $datas['coupon_info'] = $coupon_info;
             $datas['total_fee'] = $total_fee;

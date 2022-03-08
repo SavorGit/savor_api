@@ -253,6 +253,7 @@ class DishController extends CommonController{
                 $where = array('a.openid'=>$openid,'a.ustatus'=>1);
                 $where['a.min_price'] = array('elt',$res_goods['price']);
                 $nowtime = date('Y-m-d H:i:s');
+                $where['coupon.status'] = 1;
                 $where['coupon.start_time'] = array('elt',$nowtime);
                 $where['coupon.end_time'] = array('egt',$nowtime);
                 $fields = 'a.coupon_id,a.money,a.min_price';

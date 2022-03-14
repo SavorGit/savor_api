@@ -302,82 +302,96 @@ class SyslotteryController extends CommonController{
                     'start_time'=>$res_activity['start_time'],'end_time'=>$res_activity['end_time']);
                 $redis->set($cache_key,json_encode($cdata),3600*3);
             }
-            if($res_activity['type']==11){
-                if($res_prize['type']==2){
-                    $ucconfig = C('ALIYUN_SMS_CONFIG');
-                    $alisms = new \Common\Lib\AliyunSms();
-                    $params = array('name'=>$res_prize['name']);
-                    $template_code = $ucconfig['send_tastewine_user_templateid'];
-                    $res_sms = $alisms::sendSms($mobile,$params,$template_code);
-                    $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                        'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
-                    );
-                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                    $m_account_sms_log->addData($data);
-
-                    $where = array('openid'=>$res_activity['openid'],'status'=>1);
-                    $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
-                    $tailnum = substr($mobile,-4);
-                    $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
-                    $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
-                    $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
-                    $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                        'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
-                    );
-                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                    $m_account_sms_log->addData($data);
-
-                    $res_data['message'] = '请联系服务员领奖';
-                }
-                if($res_prize['type']==1 && $res_prize['money']>0){
-                    $num = intval($res_prize['money']/0.3);
-                    $all_money = bonus_random($res_prize['money'],$num,0.3,$res_prize['money']);
-                    $res_prize['money'] = $all_money[0];
-
-                    $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
-                    if($res_activity_apply['status']==5){
-                        $smallapp_config = C('SMALLAPP_CONFIG');
-                        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
-                        $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
-                        $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
-                        $payconfig = array(
-                            'appid'=>$smallapp_config['appid'],
-                            'partner'=>$pay_wx_config['partner'],
-                            'key'=>$pay_wx_config['key'],
-                            'sslcert_path'=>$sslcert_path,
-                            'sslkey_path'=>$sslkey_path,
+            if(in_array($res_activity['type'],array(11,12))){
+                if(in_array($res_prize['type'],array(1,2))){
+                    if($res_prize['type']==2){
+                        $ucconfig = C('ALIYUN_SMS_CONFIG');
+                        $alisms = new \Common\Lib\AliyunSms();
+                        $params = array('name'=>$res_prize['name']);
+                        $template_code = $ucconfig['send_tastewine_user_templateid'];
+                        $res_sms = $alisms::sendSms($mobile,$params,$template_code);
+                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
                         );
-                        $total_fee = $res_prize['money'];
-                        $m_order = new \Common\Model\Smallapp\ExchangeModel();
-                        $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>4,
-                            'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
-                        $order_id = $m_order->add($add_data);
+                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                        $m_account_sms_log->addData($data);
 
-                        $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
-                        $m_wxpay = new \Payment\Model\WxpayModel();
-                        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-                        if($res['code']==10000){
-                            $m_order->updateData(array('id'=>$order_id),array('status'=>21));
-                            $m_activity_apply->updateData(array('id'=>$res_activity_apply['id']),array('status'=>2));
-                        }else{
-                            if($res['code']==10003){
-                                //发送短信
-                                $ucconfig = C('ALIYUN_SMS_CONFIG');
-                                $alisms = new \Common\Lib\AliyunSms();
-                                $params = array('merchant_no'=>1594752111);
-                                $template_code = $ucconfig['wx_money_not_enough_templateid'];
+                        $where = array('openid'=>$res_activity['openid'],'status'=>1);
+                        $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
+                        $tailnum = substr($mobile,-4);
+                        $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
+                        $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
+                        $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
+                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
+                        );
+                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                        $m_account_sms_log->addData($data);
 
-                                $phones = C('WEIXIN_MONEY_NOTICE');
-                                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                                foreach ($phones as $vp){
-                                    $res_sms = $alisms::sendSms($vp,$params,$template_code);
-                                    $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                                        'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_sms->Code,'msg_type'=>3
-                                    );
-                                    $m_account_sms_log->addData($data);
+                        $res_data['message'] = '请联系服务员领奖';
+                    }
+                    if($res_prize['type']==1 && $res_prize['money']>0){
+                        $num = intval($res_prize['money']/0.3);
+                        $all_money = bonus_random($res_prize['money'],$num,0.3,$res_prize['money']);
+                        $res_prize['money'] = $all_money[0];
+
+                        $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
+                        if($res_activity_apply['status']==5){
+                            $smallapp_config = C('SMALLAPP_CONFIG');
+                            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+                            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+                            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+                            $payconfig = array(
+                                'appid'=>$smallapp_config['appid'],
+                                'partner'=>$pay_wx_config['partner'],
+                                'key'=>$pay_wx_config['key'],
+                                'sslcert_path'=>$sslcert_path,
+                                'sslkey_path'=>$sslkey_path,
+                            );
+                            $total_fee = $res_prize['money'];
+                            $m_order = new \Common\Model\Smallapp\ExchangeModel();
+                            $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>4,
+                                'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+                            $order_id = $m_order->add($add_data);
+
+                            $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
+                            $m_wxpay = new \Payment\Model\WxpayModel();
+                            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                            if($res['code']==10000){
+                                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+                                $m_activity_apply->updateData(array('id'=>$res_activity_apply['id']),array('status'=>2));
+                            }else{
+                                if($res['code']==10003){
+                                    //发送短信
+                                    $ucconfig = C('ALIYUN_SMS_CONFIG');
+                                    $alisms = new \Common\Lib\AliyunSms();
+                                    $params = array('merchant_no'=>1594752111);
+                                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                                    $phones = C('WEIXIN_MONEY_NOTICE');
+                                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                                    foreach ($phones as $vp){
+                                        $res_sms = $alisms::sendSms($vp,$params,$template_code);
+                                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_sms->Code,'msg_type'=>3
+                                        );
+                                        $m_account_sms_log->addData($data);
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    if($res_activity['type']==11){
+                        $head_pic = '';
+                        if(!empty($user_info['avatarUrl'])){
+                            $head_pic = base64_encode($user_info['avatarUrl']);
+                        }
+                        $barrage = "恭喜{$box_name}包间的客人抽中了{$res_prize['name']}";
+                        $user_barrage = array('nickName'=>$user_info['nickName'],'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+
+                        $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
+                        $m_syslottery->send_common_lottery($hotel_id,$box_mac,$activity_id,$user_barrage);
                     }
                 }
             }

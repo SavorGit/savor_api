@@ -29,34 +29,69 @@ class GoodsController extends CommonController{
             $this->to_back(70001);
         }
         $hotel_id = $box_info[0]['hotel_id'];
-        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $nowtime = date('Y-m-d H:i:s');
-        $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
-        $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
-        $where['g.start_time'] = array('elt',$nowtime);
-        $where['g.end_time'] = array('egt',$nowtime);
-        $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
-        $res_data = array('remain_time'=>0);
-        $roll_content = array();
-        $goods_id = 0;
-        if(!empty($res_goods)){
-            $goods_id = $res_goods[0]['goods_id'];
-            $roll_content = json_decode($res_goods[0]['roll_content'],true);
 
-            $end_time = strtotime($res_goods[0]['end_time']);
-            $now_time = time();
-            $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
-            if($remain_time==0){
-                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-                $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
+        $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $roll_content = array();
+        if($version>2022030203){
+            $m_config = new \Common\Model\SysConfigModel();
+            $all_config = $m_config->getAllconfig();
+            $roll_content = json_decode($all_config['seckill_roll_content'],true);
+
+            $nowtime = date('Y-m-d H:i:s');
+            $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
+            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+            $where['g.start_time'] = array('elt',$nowtime);
+            $where['g.end_time'] = array('egt',$nowtime);
+            $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
+            $datalist = array();
+            if(!empty($res_goods)){
+                foreach ($res_goods as $v){
+                    $goods_id = $v['goods_id'];
+                    $end_time = strtotime($v['end_time']);
+                    $now_time = time();
+                    $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+                    if($remain_time==0){
+                        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                        $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
+                    }
+                    $m_media = new \Common\Model\MediaModel();
+                    $res_media = $m_media->getMediaInfoById($v['model_media_id']);
+                    $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>intval($v['price']),
+                        'line_price'=>intval($v['line_price']),'remain_time'=>intval($remain_time)
+                    );
+                    $datalist[]=$info;
+                }
             }
-            $m_media = new \Common\Model\MediaModel();
-            $res_media = $m_media->getMediaInfoById($res_goods[0]['model_media_id']);
-            $res_data['goods_id'] = $goods_id;
-            $res_data['image'] = $res_media['oss_path'];
-            $res_data['price'] = intval($res_goods[0]['price']);
-            $res_data['line_price'] = intval($res_goods[0]['line_price']);
-            $res_data['remain_time'] = intval($remain_time);
+            $res_data = array('datalist'=>$datalist);
+        }else{
+            $nowtime = date('Y-m-d H:i:s');
+            $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
+            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+            $where['g.start_time'] = array('elt',$nowtime);
+            $where['g.end_time'] = array('egt',$nowtime);
+            $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
+            $res_data = array('remain_time'=>0);
+            $goods_id = 0;
+            if(!empty($res_goods)){
+                $goods_id = $res_goods[0]['goods_id'];
+                $roll_content = json_decode($res_goods[0]['roll_content'],true);
+
+                $end_time = strtotime($res_goods[0]['end_time']);
+                $now_time = time();
+                $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+                if($remain_time==0){
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
+                }
+                $m_media = new \Common\Model\MediaModel();
+                $res_media = $m_media->getMediaInfoById($res_goods[0]['model_media_id']);
+                $res_data['goods_id'] = $goods_id;
+                $res_data['image'] = $res_media['oss_path'];
+                $res_data['price'] = intval($res_goods[0]['price']);
+                $res_data['line_price'] = intval($res_goods[0]['line_price']);
+                $res_data['remain_time'] = intval($remain_time);
+            }
         }
         $fields = 'g.id as goods_id,g.name as goods_name,g.price';
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
@@ -67,6 +102,7 @@ class GoodsController extends CommonController{
                 $price = intval($v['price']);
                 $goods_info[]="{$v['goods_name']}({$price}元)";
             }
+            $goods_info = array_unique($goods_info);
             $goods_content = join('、',$goods_info);
             $roll_content[]="本店有售：".$goods_content.'，更多活动，扫码获取。';
         }

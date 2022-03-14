@@ -351,6 +351,7 @@ return array(
     'SAPP_NEARBYHOTEL'=>'smallapp:nearbyhotel:',
     'SAPP_LUCKYLOTTERY_POSITION'=>'smallapp:luckylottery:position:',
     'SAPP_LUCKYLOTTERY_USERQUEUE'=>'smallapp:luckylottery:userqueue:',
+    'SAPP_LUCKYLOTTERY_SENDCOMMON'=>'smallapp:luckylottery:sendcommon:',
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',
     'BOX_LANHOTEL_DOWNLOAD_FAIL'=>'lanhotel:faildownload:',

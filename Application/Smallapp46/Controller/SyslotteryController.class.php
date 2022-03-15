@@ -67,7 +67,7 @@ class SyslotteryController extends CommonController{
             $this->to_back(90171);
         }
         $now_time = date('Y-m-d H:i:s');
-        if(!in_array($res_activity['type'],array(3,11))){
+        if(!in_array($res_activity['type'],array(3,11,12))){
             $this->to_back(90172);
         }
         $res_data = array('activity_id'=>$activity_id);
@@ -203,7 +203,7 @@ class SyslotteryController extends CommonController{
             $this->to_back(90171);
         }
         $now_time = date('Y-m-d H:i:s');
-        if(!in_array($res_activity['type'],array(3,11)) || $now_time>$res_activity['end_time']){
+        if(!in_array($res_activity['type'],array(3,11,12)) || $now_time>$res_activity['end_time']){
             $this->to_back(90172);
         }
         $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();

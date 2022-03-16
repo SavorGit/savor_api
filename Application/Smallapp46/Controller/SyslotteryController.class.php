@@ -106,7 +106,7 @@ class SyslotteryController extends CommonController{
             $prize_list = array();
             if(!empty($res_prize)){
                 $all_probability = array();
-                if($res_activity['type']==11){
+                if($res_activity['type']==11 || $res_activity['type']==12){
                     $redis = \Common\Lib\SavorRedis::getInstance();
                     $redis->select(1);
                     $pcache_key = C('SAPP_LUCKYLOTTERY_POSITION').$activity_id;

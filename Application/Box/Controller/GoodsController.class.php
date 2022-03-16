@@ -34,10 +34,7 @@ class GoodsController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $roll_content = array();
         if($version>2022030203){
-            $m_config = new \Common\Model\SysConfigModel();
-            $all_config = $m_config->getAllconfig();
-            $roll_content = json_decode($all_config['seckill_roll_content'],true);
-
+            $roll_content = array();
             $nowtime = date('Y-m-d H:i:s');
             $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
@@ -46,6 +43,10 @@ class GoodsController extends CommonController{
             $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
             $datalist = array();
             if(!empty($res_goods)){
+                $m_config = new \Common\Model\SysConfigModel();
+                $all_config = $m_config->getAllconfig();
+                $roll_content = json_decode($all_config['seckill_roll_content'],true);
+                
                 foreach ($res_goods as $v){
                     $goods_id = $v['goods_id'];
                     $end_time = strtotime($v['end_time']);

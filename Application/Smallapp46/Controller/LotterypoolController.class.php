@@ -111,10 +111,10 @@ class LotterypoolController extends CommonController{
                 $redis = \Common\Lib\SavorRedis::getInstance();
                 $redis->select(1);
                 $cache_prize_user = C('SAPP_LUCKYLOTTERY_PRIZEUSER').$activity_id;
-                $res_prize = $redis->get($cache_prize_user);
+                $res_allprize = $redis->get($cache_prize_user);
                 $user_prize = array();
-                if(!empty($res_prize)){
-                    $user_prize = json_decode($res_prize);
+                if(!empty($res_allprize)){
+                    $user_prize = json_decode($res_allprize,true);
                 }
                 $lucky_info = array();
                 if(isset($user_prize[$openid])){
@@ -124,13 +124,15 @@ class LotterypoolController extends CommonController{
                     $cache_key = C('SAPP_LUCKYLOTTERY_USERQUEUE').$activity_id;
                     for ($i=0;$i<100;$i++) {
                         $now_openid = $redis->lpop($cache_key);
-                        $user_lucky_info = $this->luckdraw($openid,$activity_id,$lottery_num,$res_prize);
+                        if(empty($now_openid)){
+                           break;
+                        }
+                        $user_lucky_info = $this->luckdraw($now_openid,$activity_id,$lottery_num,$res_prize);
                         if($openid==$now_openid){
                             $lucky_info = $user_lucky_info;
                         }
                     }
                 }
-
                 foreach ($res_prize as $k=>$v){
                     $color_index = $k+1;
                     $probability = 0;
@@ -185,6 +187,30 @@ class LotterypoolController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
+
+        $key_winuser = C('SAPP_LUCKYLOTTERY_WINUSER').$activity_id;
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(1);
+        $res_cache = $redis->get($key_winuser);
+        $now_lottery_num = 0;
+        if(!empty($res_cache)){
+            $win_users = json_decode($res_cache,true);
+            $now_lottery_num = count($win_users);
+        }
+        $key_pool = C('SAPP_PRIZEPOOL');
+        $res_pool = $redis->get($key_pool.$res_prize['prizepool_prize_id']);
+        $send_amount = 0;
+        if(!empty($res_pool)){
+            $send_pool = json_decode($res_pool,true);
+            $send_amount = count($send_pool);
+        }
+        $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
+        $res_prizepool = $m_prizepool_prize->getInfo(array('id'=>$res_prize['prizepool_prize_id']));
+        if($now_lottery_num>$res_activity['people_num'] || $send_amount>=$res_prizepool['amount'] || $res_prizepool['send_amount']>=$res_prizepool['amount']){
+            $res_prize = $m_prize->getDataList('*',array('activity_id'=>$activity_id,'type'=>3),'id desc');
+            $res_prize = $res_prize[0];
+        }
+
         if($res_prize['type']==3){
             $status = 3;
             $lottery_status = 3;
@@ -249,7 +275,7 @@ class LotterypoolController extends CommonController{
             if(!empty($res_pool)){
                 $pools = json_decode($res_pool,true);
             }
-            $pools[$openid]=2;
+            $pools[$openid.$activity_id]=2;
             $redis->set($lucky_pool_key,json_encode($pools));
             $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
             $m_prizepool_prize->where(array('id'=>$prizepool_prize_id))->setInc('send_amount',1);
@@ -406,7 +432,7 @@ class LotterypoolController extends CommonController{
         foreach ($res_prize as $pk=>$pv){
             $res_pool = $redis->get($key_pool.$pv['prizepool_prize_id']);
             $send_amount = 0;
-            if(!empty($res_prize)){
+            if(!empty($res_pool)){
                 $send_pool = json_decode($res_pool,true);
                 $send_amount = count($send_pool);
             }
@@ -448,7 +474,6 @@ class LotterypoolController extends CommonController{
         }else{
             $lucky_id = $not_win_lucky_id;
         }
-
         $is_lottery = 1;
         if($prizes[$lucky_id]['type']==3){
             $is_lottery = 0;
@@ -459,21 +484,22 @@ class LotterypoolController extends CommonController{
         if(!empty($res_pool)){
             $pools = json_decode($res_pool,true);
         }
-        $pools[$openid]=1;
+        $pools[$openid.$activity_id]=1;
         $redis->set($lucky_pool_key,json_encode($pools));
+
         if($is_lottery){
             $win_users[$openid]=$lucky_id;
-            $redis->set($key_winuser,$win_users,86400);
+            $redis->set($key_winuser,json_encode($win_users),86400);
         }
 
         $cache_prize_user = C('SAPP_LUCKYLOTTERY_PRIZEUSER').$activity_id;
         $res_puser = $redis->get($cache_prize_user);
         $puser = array();
-        if(!empty($res_prize)){
+        if(!empty($res_puser)){
             $puser = json_decode($res_puser,true);
         }
-        $puser[$openid] = $lucky_id;
-        $redis->set($key_winuser,json_encode($puser),86400);
+        $puser[$openid] = array('lucky_id'=>$lucky_id);
+        $redis->set($cache_prize_user,json_encode($puser),86400);
 
         return array('lucky_id'=>$lucky_id,'is_lottery'=>$is_lottery);
     }

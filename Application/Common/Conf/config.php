@@ -352,6 +352,11 @@ return array(
     'SAPP_LUCKYLOTTERY_POSITION'=>'smallapp:luckylottery:position:',
     'SAPP_LUCKYLOTTERY_USERQUEUE'=>'smallapp:luckylottery:userqueue:',
     'SAPP_LUCKYLOTTERY_SENDCOMMON'=>'smallapp:luckylottery:sendcommon:',
+    'SAPP_LUCKYLOTTERY_WINUSER'=>'smallapp:luckylottery:winuser:',
+    'SAPP_LUCKYLOTTERY_PRIZEUSER'=>'smallapp:luckylottery:prizeuser:',
+    'SAPP_PRIZEPOOL'=>'smallapp:prizepool:',
+    'SAPP_PRIZEPOOL_MONEYQUEUE'=>'smallapp:prizepool:moneyqueue:',
+
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',
     'BOX_LANHOTEL_DOWNLOAD_FAIL'=>'lanhotel:faildownload:',

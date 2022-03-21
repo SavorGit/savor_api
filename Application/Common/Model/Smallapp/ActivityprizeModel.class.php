@@ -5,6 +5,17 @@ use Common\Model\BaseModel;
 class ActivityprizeModel extends BaseModel{
 	protected $tableName='smallapp_activity_prize';
 
+
+	public function getActivityPoolprize($fileds,$where,$orderby){
+        $res = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_smallapp_prizepool_prize prize on a.prizepool_prize_id=prize.id','left')
+            ->where($where)
+            ->order($orderby)
+            ->select();
+        return $res;
+    }
+
     public function getTaskinfo($task,$utask=array()){
         $content = array();
         if($task['interact_num']>0){

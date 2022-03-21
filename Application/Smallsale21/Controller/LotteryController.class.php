@@ -78,26 +78,34 @@ class LotteryController extends CommonController{
 
         $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
         $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$syslottery_id),'id desc');
+
         $prize_data = array();
+        $is_prizepool = 0;
         foreach ($res_lottery_prize as $pv){
             $prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
-                'probability'=>$pv['probability'],'type'=>$pv['type']
+                'prizepool_prize_id'=>$pv['prizepool_prize_id'],'probability'=>$pv['probability'],'type'=>$pv['type']
             );
+            if($pv['prizepool_prize_id']>0){
+                $is_prizepool = 1;
+            }
         }
         $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
         $m_activityprize->addAll($prize_data);
-        //分配中奖信息
-        $lottery_num = $people_num*2;
-        $position = array();
-        for($i=1;$i<=$lottery_num;$i++){
-            $position[]=$i;
+
+        if($is_prizepool==0){
+            //分配中奖信息
+            $lottery_num = $people_num*2;
+            $position = array();
+            for($i=1;$i<=$lottery_num;$i++){
+                $position[]=$i;
+            }
+            shuffle($position);
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(1);
+            $cache_key = C('SAPP_LUCKYLOTTERY_POSITION').$activity_id;
+            $position = array_slice($position,0,$people_num);
+            $redis->set($cache_key,json_encode($position),86400);
         }
-        shuffle($position);
-        $redis = \Common\Lib\SavorRedis::getInstance();
-        $redis->select(1);
-        $cache_key = C('SAPP_LUCKYLOTTERY_POSITION').$activity_id;
-        $position = array_slice($position,0,$people_num);
-        $redis->set($cache_key,json_encode($position),86400);
 
         $code_url = '';
         if($status==2){

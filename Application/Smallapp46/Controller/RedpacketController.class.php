@@ -604,7 +604,7 @@ class RedpacketController extends CommonController{
                     if(empty($grab_user_id)){
                         break;
                     }
-                    $now_money = $redis->lpop($key_bonusqueue);;
+                    $now_money = $redis->lpop($key_bonusqueue);
 //                    $now_money = $unused_bonus[$i];
                     if(empty($now_money)){
                         break;

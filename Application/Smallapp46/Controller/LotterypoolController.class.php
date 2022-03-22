@@ -103,7 +103,7 @@ class LotterypoolController extends CommonController{
                 '7'=>'#f5c287','8'=>'#ffe6b1','9'=>'#f7896c');
             $lottery_status=1;
             $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
-            $fileds = 'a.id,a.name,a.probability,a.prizepool_prize_id,prize.amount,prize.send_amount,prize.type';
+            $fileds = 'a.id,a.name,a.probability,a.prizepool_prize_id,a.image_url,prize.amount,prize.send_amount,prize.type';
             $where = array('a.activity_id'=>$activity_id);
             $res_prize = $m_prize->getActivityPoolprize($fileds,$where,'a.probability asc');
             $prize_list = array();

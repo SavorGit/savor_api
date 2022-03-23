@@ -24,11 +24,12 @@ class GoodsController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,d.short_name', $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
         $hotel_id = $box_info[0]['hotel_id'];
+        $short_name = $box_info[0]['short_name'];
 
         $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
@@ -59,7 +60,7 @@ class GoodsController extends CommonController{
                     $m_media = new \Common\Model\MediaModel();
                     $res_media = $m_media->getMediaInfoById($v['model_media_id']);
                     $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>intval($v['price']),
-                        'line_price'=>intval($v['line_price']),'remain_time'=>intval($remain_time)
+                        'line_price'=>intval($v['line_price']),'remain_time'=>intval($remain_time),'hotel_name'=>$short_name
                     );
                     $datalist[]=$info;
                 }

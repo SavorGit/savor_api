@@ -206,7 +206,7 @@ class LotterypoolController extends CommonController{
         }
         $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
         $res_prizepool = $m_prizepool_prize->getInfo(array('id'=>$res_prize['prizepool_prize_id']));
-        if($now_lottery_num>$res_activity['people_num'] || $send_amount>=$res_prizepool['amount'] || $res_prizepool['send_amount']>=$res_prizepool['amount']){
+        if($now_lottery_num>$res_activity['people_num'] || $send_amount>$res_prizepool['amount'] || $res_prizepool['send_amount']>$res_prizepool['amount']){
             $res_prize = $m_prize->getDataList('*',array('activity_id'=>$activity_id,'type'=>3),'id desc');
             $res_prize = $res_prize[0];
         }
@@ -341,9 +341,7 @@ class LotterypoolController extends CommonController{
                             $res_prize['money'] = $money;
                         }
                     }else{
-                        $num = intval($res_prize['money']/0.3);
-                        $all_money = bonus_random($res_prize['money'],$num,0.3,$res_prize['money']);
-                        $res_prize['money'] = $all_money[0];
+                        $res_prize['money'] = 0;
                     }
 
                     if($res_prize['type']==1 && $res_prize['money']>0){

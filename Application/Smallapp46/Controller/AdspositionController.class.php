@@ -24,6 +24,16 @@ class AdspositionController extends CommonController{
         $box_id = $this->params['box_id'];
         $goods_id = !empty($this->params['goods_id'])?intval($this->params['goods_id']):0;
         $version = $this->params['version'];
+        $arr_positions = explode(',',$position);
+        $now_positions = array();
+        foreach ($arr_positions as $v){
+            $p_num = intval($v);
+            if($p_num>0){
+                $now_positions[]=$p_num;
+            }
+        }
+        $position = join(',',$now_positions);
+
         if(empty($box_id)){
             $result = $this->getAdList($position);
         }else {

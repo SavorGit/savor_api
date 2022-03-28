@@ -175,6 +175,60 @@ class OrderController extends Controller {
         }
     }
 
+    public function prizemoney(){
+        $content = file_get_contents('php://input');
+        $orders = array();
+        if(!empty($content)) {
+            $res = json_decode($content, true);
+            if (!empty($res['Message'])) {
+                $message = base64_decode($res['Message']);
+                $orders = json_decode($message,true);
+            }
+        }
+        if(empty($orders[0]['order_id'])){
+            $now_time = date('Y-m-d H:i:s');
+            die($now_time.' error');
+        }
+        $params = explode('_',$orders[0]['order_id']);
+        $prizepool_prize_id = intval($params[0]);
+        $apply_id = intval($params[1]);
+        if($prizepool_prize_id<=0 || $apply_id<=0){
+            $now_time = date('Y-m-d H:i:s');
+            die($now_time.' error');
+        }
+        $m_activityapply = new \Admin\Model\Smallapp\ActivityapplyModel();
+        $res_apply = $m_activityapply->getInfo(array('id'=>$apply_id));
+        if(empty($res_apply)){
+            $now_time = date('Y-m-d H:i:s');
+            die($now_time.' error');
+        }
+
+        $money_queue = C('SAPP_PRIZEPOOL_MONEYQUEUE').$prizepool_prize_id;
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(1);
+        $money = $redis->lpop($money_queue);
+        if(empty($money)){
+            $now_time = date('Y-m-d H:i:s');
+            die($now_time.' error');
+        }
+        $openid = $res_apply['openid'];
+        $m_order = new \Common\Model\Smallapp\ExchangeModel();
+        $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>4,
+            'amount'=>1,'total_fee'=>$money,'status'=>20);
+        $order_id = $m_order->add($add_data);
+
+        $m_baseinc = new \Payment\Model\BaseIncModel();
+        $payconfig = $m_baseinc->getPayConfig();
+        $m_wxpay = new \Payment\Model\WxpayModel();
+
+        $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
+        $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+        if($res['code']==10000){
+            echo "order_id:$order_id  prizemoney ok"."\r\n";
+        }
+
+    }
+
     public function grouporderincome(){
         $now_time = date('Y-m-d H:i:s');
         $ts = I('get.ts','');

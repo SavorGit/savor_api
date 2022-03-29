@@ -189,6 +189,7 @@ class OrderController extends Controller {
             $now_time = date('Y-m-d H:i:s');
             die($now_time.' error');
         }
+
         $params = explode('_',$orders[0]['order_id']);
         $prizepool_prize_id = intval($params[0]);
         $apply_id = intval($params[1]);
@@ -196,7 +197,7 @@ class OrderController extends Controller {
             $now_time = date('Y-m-d H:i:s');
             die($now_time.' error');
         }
-        $m_activityapply = new \Admin\Model\Smallapp\ActivityapplyModel();
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $res_apply = $m_activityapply->getInfo(array('id'=>$apply_id));
         if(empty($res_apply)){
             $now_time = date('Y-m-d H:i:s');

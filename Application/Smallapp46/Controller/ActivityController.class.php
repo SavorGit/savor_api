@@ -819,28 +819,40 @@ class ActivityController extends CommonController{
         $activity_id = intval($this->params['activity_id']);
         $version = $this->params['version'];
 
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info, true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $hotel_info = json_decode($redis_hotel_info, true);
+            $hotel_id = $room_info['hotel_id'];
+            $hotel_name = $hotel_info['name'];
+            $room_id = $box_info['room_id'];
+            $box_id = $forscreen_info['box_id'];
+            $box_name = $box_info['name'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,d.id as hotel_id,d.name as hotel_name';
+            $rets = $m_box->getBoxInfo($fields, $where);
+            $hotel_id = $rets[0]['hotel_id'];
+            $hotel_name = $rets[0]['hotel_name'];
+            $room_id = $rets[0]['room_id'];
+            $box_id = $rets[0]['box_id'];
+            $box_name = $rets[0]['box_name'];
+        }
+
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         if($activity_id>0){
             $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
         }else{
-            $m_box = new \Common\Model\BoxModel();
-            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
-            if(isset($forscreen_info['box_id'])){
-                $redis = new \Common\Lib\SavorRedis();
-                $redis->select(15);
-                $cache_key = 'savor_box_'.$forscreen_info['box_id'];
-                $redis_box_info = $redis->get($cache_key);
-                $box_info = json_decode($redis_box_info,true);
-                $cache_key = 'savor_room_' . $box_info['room_id'];
-                $redis_room_info = $redis->get($cache_key);
-                $room_info = json_decode($redis_room_info, true);
-                $hotel_id = $room_info['hotel_id'];
-            }else{
-                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $rets = $m_box->getBoxInfo('d.id as hotel_id,',$where);
-                $hotel_id = $rets[0]['hotel_id'];
-            }
-
             $where = array('hotel_id'=>$hotel_id);
             $start_time = date('Y-m-d 00:00:00');
             $end_time = date('Y-m-d 23:59:59');
@@ -908,7 +920,9 @@ class ActivityController extends CommonController{
             $now_time = date('Y-m-d H:i:s');
             if($status==0 && $now_time>$res_activity['start_time'] && $now_time<=$res_activity['end_time']){
                 $is_apply = 1;
-                $adata = array('activity_id'=>$activity_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1);
+                $adata = array('activity_id'=>$activity_id,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,
+                    'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'room_id'=>$room_id,'box_id'=>$box_id,'box_name'=>$box_name,
+                );
                 $m_activityapply->add($adata);
                 $redis->set($cache_key,date('Y-m-d H:i:s'),10800);
                 $status = 1;
@@ -951,6 +965,17 @@ class ActivityController extends CommonController{
                 if(!empty($version)){
                     $tips = "恭喜您中奖了";
                     $message = '';
+                    if(!empty($res_apply['list'][0]['prize_id'])){
+                        $prize_id = $res_apply['list'][0]['prize_id'];
+                        $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
+                        $res_prize = $m_prize->getInfo(array('id'=>$prize_id));
+                        if($res_prize['type']==2){
+                            $tips = "恭喜您，获得{$res_prize['name']}";
+                        }
+                        $res_activity['prize'] = $res_prize['name'];
+                        $res_activity['img_url'] = $res_prize['image_url'];
+                    }
+
                 }else{
                     $tips = "恭喜您，获得{$res_activity['prize']}";
                     $expire_time = date('Y-m-d H:00',strtotime($res_apply['list'][0]['expire_time']));
@@ -968,8 +993,13 @@ class ActivityController extends CommonController{
         }
         $lottery_time = date('Y-m-d H:i:s',strtotime($res_activity['lottery_time']));
         $oss_host = 'http://'. C('OSS_HOST').'/';
+        $img_url = '';
+        if(!empty($res_activity['img_url'])){
+            $img_url = $oss_host.$res_activity['img_url'];
+        }
+
         $data = array('activity_num'=>$activity_id,'status'=>$status,'tips'=>$tips,'message'=>$message,
-            'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$oss_host.$res_activity['image_url'],
+            'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$img_url,
             'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
             'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time);
         $this->to_back($data);

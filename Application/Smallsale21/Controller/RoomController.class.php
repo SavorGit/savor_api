@@ -10,7 +10,7 @@ class RoomController extends CommonController{
         switch(ACTION_NAME) {
             case 'getRoomList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1002);
+                $this->valid_fields = array('hotel_id'=>1001,'box_mac'=>1002,'type'=>1002);
                 break;
             case 'getWelcomeBoxlist':
                 $this->is_verify = 1;
@@ -23,7 +23,12 @@ class RoomController extends CommonController{
         $m_box = new \Common\Model\BoxModel();
         $hotel_id = $this->params['hotel_id'];
         $box_mac  = $this->params['box_mac'];
-        $fields = 'a.id,a.mac box_mac,a.name box_name ';
+        if(!empty($this->params['type'])){
+            $type = intval($this->params['type']);
+        }else{
+            $type = 1;
+        }
+        $fields = 'a.id,a.mac box_mac,a.name box_name,c.name as room_name';
         $where  = array('d.id'=>$hotel_id,'d.state'=>1,'d.flag'=>0,
             'a.state'=>1,'a.flag'=>0);
         $order = 'a.id asc';
@@ -38,7 +43,11 @@ class RoomController extends CommonController{
         $box_index = 0; 
         foreach($list as $key=>$v){
             $box_list[] = $v;
-            $box_name_list[] = $v['box_name'];
+            $name = $v['box_name'];
+            if($type==2){
+                $name = $v['room_name'];
+            }
+            $box_name_list[] = $name;
             if(!empty($box_mac) && $v['box_mac']==$box_mac){
                 $box_index = $key;
             }        

@@ -451,6 +451,7 @@ return array(
     'smallapp_choose_date_notday'=>'请选择同一天的日期',
     'smallapp_singin_time_error'=>'请签到结束后，再发起抽奖',
     'smallapp_choose_enddate_error'=>'请选择大于当前时间的结束时间',
+    'smallappsale_invitation_hotel_error'=>'请选择正确的酒楼',
 
 
 );

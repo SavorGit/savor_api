@@ -714,4 +714,102 @@ return array(
 //                    'short_name' => '永峰写字楼',
 //                ),
         ),
+
+
+
+    'INVITATION_HOTEL'=>array(
+        'share_img'=>'media/resource/jZW8m7QNNn.jpg',
+        '955'=>array (
+                'hotel_id' => 955,
+                'hotel_name' => '渔意如意',
+                'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-letter-bg-demo.jpg',
+                'themeColor'=>'rgb(193,147,166)',
+                'themeContrastColor'=>'rgb(255, 255, 255)',
+                'painColor'=>'rgb(16, 16, 16)',
+                'weakColor'=>'rgb(153, 153, 153)',
+                'is_open_sellplatform'=>1
+            ),
+        '941'=>array (
+            'hotel_id' => 941,
+            'hotel_name' => '徽宜人家',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '968'=>array (
+            'hotel_id' => 968,
+            'hotel_name' => '君临廷·渔意一品园林海鲜酒家',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '1324'=>array (
+            'hotel_id' => 1324,
+            'hotel_name' => '群勝潮菜',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '964'=>array (
+            'hotel_id' => 964,
+            'hotel_name' => '榕记·蒸汽海鲜餐厅(番禺总店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '1033'=>array (
+            'hotel_id' => 1033,
+            'hotel_name' => '朝花熹食·琶醍粤菜',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '970'=>array (
+            'hotel_id' => 970,
+            'hotel_name' => '尚膳御汤',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '847'=>array (
+            'hotel_id' => 847,
+            'hotel_name' => '隴熙火锅(天河北路店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '810'=>array (
+            'hotel_id' => 810,
+            'hotel_name' => '隴熙火锅(珠江新城店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+
+
+    ),
 );

@@ -452,6 +452,7 @@ return array(
         '93074'=>'smallappsale_activity_boot_num_error',
         '93075'=>'smallappsale_activity_lottery_time_error',
         '93076'=>'smallappsale_activity_lottery_has_begin',
+        '93077'=>'smallappsale_invitation_hotel_error',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

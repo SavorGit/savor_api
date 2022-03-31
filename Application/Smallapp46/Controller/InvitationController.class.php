@@ -26,6 +26,7 @@ class InvitationController extends CommonController{
             $latitude = $gps_arr[1];
             $longitude = $gps_arr[0];
             $title = $res_info['name'].'，已成功为您预定包间。';
+            $share_title = $res_hotel['name'].'期待您的光临';
             $oss_host = 'http://'.C('OSS_HOST').'/';
             $invitation_hotels = C('INVITATION_HOTEL');
             $mobile = '';
@@ -40,6 +41,7 @@ class InvitationController extends CommonController{
             $res_data['name'] = $res_info['name'];
             $res_data['mobile'] = $mobile;
             $res_data['title'] = $title;
+            $res_data['share_title'] = $share_title;
             $res_data['hotel_name'] = $res_hotel['name'];
             $res_data['addr'] = $res_hotel['addr'];
             $res_data['box_mac'] = $res_info['box_mac'];

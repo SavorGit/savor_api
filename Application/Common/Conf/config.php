@@ -722,17 +722,27 @@ return array(
         '955'=>array (
                 'hotel_id' => 955,
                 'hotel_name' => '渔意如意',
-                'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-letter-bg-demo.jpg',
+                'bg_img'=>'WeChat/MiniProgram/images/imgs/yyry.jpeg',
                 'themeColor'=>'rgb(193,147,166)',
                 'themeContrastColor'=>'rgb(255, 255, 255)',
                 'painColor'=>'rgb(16, 16, 16)',
                 'weakColor'=>'rgb(153, 153, 153)',
                 'is_open_sellplatform'=>1
             ),
+        '1211'=>array (
+            'hotel_id' => 1211,
+            'hotel_name' => '渔意如意·凯宾轩(建六店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/yyry.jpeg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
         '941'=>array (
             'hotel_id' => 941,
             'hotel_name' => '徽宜人家',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -742,7 +752,7 @@ return array(
         '968'=>array (
             'hotel_id' => 968,
             'hotel_name' => '君临廷·渔意一品园林海鲜酒家',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -752,7 +762,7 @@ return array(
         '1324'=>array (
             'hotel_id' => 1324,
             'hotel_name' => '群勝潮菜',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -762,7 +772,7 @@ return array(
         '964'=>array (
             'hotel_id' => 964,
             'hotel_name' => '榕记·蒸汽海鲜餐厅(番禺总店)',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -772,7 +782,7 @@ return array(
         '1033'=>array (
             'hotel_id' => 1033,
             'hotel_name' => '朝花熹食·琶醍粤菜',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -782,7 +792,7 @@ return array(
         '970'=>array (
             'hotel_id' => 970,
             'hotel_name' => '尚膳御汤',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -792,7 +802,7 @@ return array(
         '847'=>array (
             'hotel_id' => 847,
             'hotel_name' => '隴熙火锅(天河北路店)',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',
@@ -802,7 +812,7 @@ return array(
         '810'=>array (
             'hotel_id' => 810,
             'hotel_name' => '隴熙火锅(珠江新城店)',
-            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation9999999.jpg',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',

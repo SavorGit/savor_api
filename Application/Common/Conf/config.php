@@ -739,6 +739,16 @@ return array(
             'weakColor'=>'rgb(153, 153, 153)',
             'is_open_sellplatform'=>1
         ),
+        '1284'=>array (
+            'hotel_id' => 1284,
+            'hotel_name' => '翰黎茶馆',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
         '941'=>array (
             'hotel_id' => 941,
             'hotel_name' => '徽宜人家',

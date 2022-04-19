@@ -144,8 +144,13 @@ class UserController extends CommonController{
             unset($userinfo['role_id']);
         }
         if($mtype==2){
-            $userinfo['role_type'] = 5;//4是代购人员 5非合作商家
+            $userinfo['role_type'] = 5;//4是代购人员 5非合作商家 6库存管理人员
         }
+        $stock_users = C('STOCK_MANAGER');
+        if(isset($stock_users[$openid])){
+            $userinfo['role_type'] = 6;
+        }
+
         $userinfo['hotel_id'] = $hotel_id;
         $userinfo['hotel_has_room'] = 0;
         $m_hotel = new \Common\Model\HotelModel();
@@ -298,7 +303,11 @@ class UserController extends CommonController{
                 $data['role_type']=4;
             }
             if($rts['mtype']==2){
-                $userinfo['role_type'] = 5;//4是代购人员 5非合作商家
+                $userinfo['role_type'] = 5;//4是代购人员 5非合作商家 6库存管理人员
+            }
+            $stock_users = C('STOCK_MANAGER');
+            if(isset($stock_users[$openid])){
+                $userinfo['role_type'] = 6;
             }
             
             $this->to_back($data);

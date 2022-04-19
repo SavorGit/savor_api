@@ -452,6 +452,14 @@ return array(
     'smallapp_singin_time_error'=>'请签到结束后，再发起抽奖',
     'smallapp_choose_enddate_error'=>'请选择大于当前时间的结束时间',
     'smallappsale_invitation_hotel_error'=>'请选择正确的酒楼',
+    'smallappsale_finance_qrcode_type_error'=>'二维码单位和商品单位不一致',
+    'smallappsale_finance_qrcode_error'=>'二维码不存在',
+    'smallappsale_finance_stock_goods_hasin_exist'=>'扫码商品已入库',
+    'smallappsale_finance_stock_goods_hasin_noexist'=>'扫码商品未入库',
+    'smallappsale_finance_stock_goods_out_not_matchup'=>'商品不一致',
+    'smallappsale_finance_stock_goods_not_exist'=>'商品不存在',
+    'smallappsale_finance_stock_donot_restock_in'=>'请勿重复入库',
+
 
 
 );

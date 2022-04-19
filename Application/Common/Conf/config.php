@@ -81,6 +81,7 @@ return array(
 	//开发配置
 	'SECRET_KEY' => 'w&-ld0n!',//解密接口数据key
 	'USER_SECRET_KEY'=>'#@%$&#&!&@!@*!*#',   //用户解密接口数据
+    'QRCODE_SECRET_KEY' => 'sw&a-lvd0onr!',//解密接口数据key
 	'SIGN_KEY'				=> 'savor4321abcd1234',
 	'COMMENT_MD5_KEY'       =>  '#F4$)68!KaMtc^',
     'PWDPRE'                =>'SAVOR@&^2017^2030&*^',
@@ -608,6 +609,13 @@ return array(
         'ofYZG43DyszPj-qwvP5ZutMCGC_c'=>'欧懿','ofYZG4zTOtj9RCaLmDXI0qfY-I34'=>'熊静怡','ofYZG45GWNg7k9CLVHoRdUqQVPJ4'=>'黎晓欣',
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
+    'STOCK_MANAGER'=>array(
+//        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
+//        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
+        'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
+        'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
+        'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
+    ),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>0,
     'LOTTERY_TIMEOUT'=>300,
     'DEFAULT_PAGE_SHOW_TIME'=>2*1000,

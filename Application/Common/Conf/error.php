@@ -453,6 +453,14 @@ return array(
         '93075'=>'smallappsale_activity_lottery_time_error',
         '93076'=>'smallappsale_activity_lottery_has_begin',
         '93077'=>'smallappsale_invitation_hotel_error',
+        '93078'=>'smallappsale_finance_qrcode_type_error',
+        '93079'=>'smallappsale_finance_qrcode_type_error',
+        '93080'=>'smallappsale_finance_qrcode_error',
+        '93081'=>'smallappsale_finance_stock_goods_hasin_exist',
+        '93082'=>'smallappsale_finance_stock_goods_hasin_noexist',
+        '93083'=>'smallappsale_finance_stock_goods_out_not_matchup',
+        '93084'=>'smallappsale_finance_stock_goods_not_exist',
+        '93085'=>'smallappsale_finance_stock_donot_restock_in',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

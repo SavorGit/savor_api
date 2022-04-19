@@ -204,7 +204,7 @@ class StockController extends CommonController{
         if(!empty($res_stock_outrecord)){
             $this->to_back(93085);
         }
-        
+
         $m_stockdetail = new \Common\Model\Finance\StockDetailModel();
         $res_detail = $m_stockdetail->getInfo(array('id'=>$stock_detail_id));
         if(empty($res_detail)){

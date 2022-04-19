@@ -27,6 +27,10 @@ class StockController extends CommonController{
                 $this->params = array('openid'=>1001,'stock_detail_id'=>1001,'idcode'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'getRecords':
+                $this->params = array('openid'=>1001,'stock_detail_id'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'finishGoods':
                 $this->params = array('openid'=>1001,'type'=>1001,'stock_detail_id'=>1001,'goods_codes'=>1001);
                 $this->is_verify = 1;
@@ -295,6 +299,32 @@ class StockController extends CommonController{
             $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
         }
         $this->to_back(array('stock_detail_id'=>$stock_detail_id));
+    }
+
+    public function getRecords(){
+        $openid = $this->params['openid'];
+        $stock_detail_id = intval($this->params['stock_detail_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stockdetail = new \Common\Model\Finance\StockDetailModel();
+        $res_detail = $m_stockdetail->getInfo(array('id'=>$stock_detail_id));
+        if(empty($res_detail)){
+            $this->to_back(93084);
+        }
+
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $res = $m_stock_record->getDataList('id,idcode,add_time',array('stock_detail_id'=>$stock_detail_id),'id desc');
+        $res_data = array();
+        if(!empty($res)){
+            $res_data = $res;
+        }
+        $this->to_back($res_data);
     }
 
 

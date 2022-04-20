@@ -39,6 +39,10 @@ class StockController extends CommonController{
                 $this->params = array('openid'=>1001,'stock_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'delGoodscode':
+                $this->params = array('openid'=>1001,'idcode'=>1001,'type'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -79,7 +83,7 @@ class StockController extends CommonController{
             }
         }
 
-        $where = array('op_openid'=>$area_id,'type'=>$type,'status'=>2);
+        $where = array('op_openid'=>$openid,'type'=>$type,'status'=>2);
         $res_stock = $m_stock->getDataList('*',$where,'id asc');
         if(!empty($res_stock)){
             $m_duser = new \Common\Model\Finance\DepartmentUserModel();
@@ -106,10 +110,16 @@ class StockController extends CommonController{
         }
         $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
         $where = array('a.stock_id'=>$stock_id);
-        $fileds = 'a.id as stock_detail_id,a.goods_id,a.amount,goods.name,cate.name as cate_name,spec.name as sepc_name,
+        $fileds = 'a.id as stock_detail_id,a.goods_id,a.amount,a.stock_amount,goods.name,cate.name as cate_name,spec.name as sepc_name,
         unit.id as unit_id,unit.name as unit_name';
-        $datalist = $m_stock_detail->getStockGoods($fileds,$where);
-
+        $res_data = $m_stock_detail->getStockGoods($fileds,$where);
+        $datalist = array();
+        foreach ($res_data as $v){
+            if($v['amount']<0){
+                $v['amount'] = abs($v['amount']);
+            }
+            $datalist[]=$v;
+        }
         $this->to_back($datalist);
     }
 
@@ -168,12 +178,17 @@ class StockController extends CommonController{
         }
         if($qr_type!=$unit_type){
             if($qr_type==1){//出库 弹框是否拆箱,入库报错
-                $this->to_back(93078);
+                if($type==20){
+                    $res = array('is_unpacking'=>1);
+                    $this->to_back($res);
+                }else{
+                    $this->to_back(93078);
+                }
             }else{
                 $this->to_back(93079);
             }
         }
-        $res = array('qr_type'=>$qr_type,'idcode_id'=>$qrcode_id);
+        $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'status'=>1,'is_unpacking'=>0);
         $this->to_back($res);
     }
 
@@ -204,7 +219,7 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $res_stock_outrecord = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>2));
+        $res_stock_outrecord = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>array('in',array(2,3))));
         if(!empty($res_stock_outrecord)){
             $this->to_back(93085);
         }
@@ -214,6 +229,7 @@ class StockController extends CommonController{
         if(empty($res_detail)){
             $this->to_back(93084);
         }
+
         $stock_id = $res_detail['stock_id'];
         $goods_id = $res_detail['goods_id'];
         $unit_id = $res_detail['unit_id'];
@@ -222,23 +238,26 @@ class StockController extends CommonController{
         $res_all_qrcode = $m_qrcode_content->getQrcodeList('id',array('parent_id'=>$qrcode_id),'id asc',0,1);
         if(!empty($res_all_qrcode)){
             $qrcode = encrypt_data($res_all_qrcode[0]['id'],$key);
-            //记录拆箱:箱-1,瓶+6
-            $add_record_data = array('stock_id'=>$res_stock_record['stock_id'],'stock_detail_id'=>$res_stock_record['stock_detail_id'],'goods_id'=>$res_stock_record['goods_id'],
-                'idcode'=>$idcode,'price'=>$res_stock_record['price'],'unit_id'=>$res_stock_record['unit_id'],'amount'=>-1,'total_amount'=>-1,'type'=>3,'op_openid'=>$openid
-            );
-            $m_stock_record->add($add_record_data);
-
             $amount = 1;
             $m_unit = new \Common\Model\Finance\UnitModel();
-            $res_unit = $m_unit->getInfo(array('unit_id'=>$unit_id));
+            $res_unit = $m_unit->getInfo(array('id'=>$res_stock_record['unit_id']));
             $total_amount = $res_unit['convert_type']*$amount;
-            $price = sprintf("%.2f",$res_stock_record['price']/$total_amount);
-            $add_record_data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,
-                'idcode'=>$qrcode,'price'=>$price,'unit_id'=>$unit_id,'amount'=>$total_amount,'total_amount'=>$total_amount,'type'=>2,'op_openid'=>$openid
+
+            $batch_no = date('YmdHis');
+            //记录拆箱:箱-1,瓶+6
+            $add_record_data = array('stock_id'=>$res_stock_record['stock_id'],'stock_detail_id'=>$res_stock_record['stock_detail_id'],'goods_id'=>$res_stock_record['goods_id'],
+                'batch_no'=>$batch_no,'idcode'=>$idcode,'price'=>$res_stock_record['price'],'unit_id'=>$res_stock_record['unit_id'],'amount'=>-$amount,'total_amount'=>-$total_amount,'type'=>3,'op_openid'=>$openid
             );
             $m_stock_record->add($add_record_data);
 
-            $all_code[]=$qrcode;
+            $batch_no = $batch_no.'01';
+            $price = $res_stock_record['price'];
+            $add_record_data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,
+                'batch_no'=>$batch_no,'idcode'=>$qrcode,'price'=>$price,'unit_id'=>$unit_id,'amount'=>$total_amount,'total_amount'=>$total_amount,'type'=>3,'op_openid'=>$openid
+            );
+            $m_stock_record->add($add_record_data);
+
+            $all_code[]= array('idcode'=>$qrcode,'add_time'=>date('Y-m-d H:i:s'),'status'=>1);
         }
         $this->to_back($all_code);
     }
@@ -272,21 +291,27 @@ class StockController extends CommonController{
         }
         $amount = 1;
         $m_unit = new \Common\Model\Finance\UnitModel();
-        $res_unit = $m_unit->getInfo(array('unit_id'=>$unit_id));
+        $res_unit = $m_unit->getInfo(array('id'=>$unit_id));
         $total_amount = $res_unit['convert_type']*$amount;
-
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
             $idcode_num = 0;
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $batch_no = date('YmdHis');
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 if(!empty($idcode)){
                     $idcode_num++;
-                    $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'idcode'=>$idcode,
+                    $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'batch_no'=>$batch_no,'idcode'=>$idcode,
                         'price'=>$price,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>$type,'op_openid'=>$openid
                     );
                     $m_stock_record->add($data);
+                    if($type==2){
+                        $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1));
+                        if(!empty($res_in)){
+                            $m_stock_record->updateData(array('id'=>$res_in['id']),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
+                        }
+                    }
                 }
             }
             $detail_amount = $amount*$idcode_num;
@@ -319,14 +344,43 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $res = $m_stock_record->getDataList('id,idcode,add_time',array('stock_detail_id'=>$stock_detail_id),'id desc');
+        $where = array('stock_detail_id'=>$stock_detail_id);
+        $where['type'] = array('neq',3);
+        $res = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
         $res_data = array();
         if(!empty($res)){
-            $res_data = $res;
+            foreach ($res as $k=>$v){
+                $v['status'] = 2;
+                $res_data[]=$v;
+            }
         }
         $this->to_back($res_data);
     }
 
+    public function delGoodscode(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+        $type = intval($this->params['type']);//1入库,2出库
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $m_stock_record->delData(array('idcode'=>$idcode,'type'=>$type));
+        $this->to_back(array());
+    }
 
     public function finish(){
         $openid = $this->params['openid'];

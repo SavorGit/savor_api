@@ -283,16 +283,20 @@ class StockController extends CommonController{
         $stock_id = $res_detail['stock_id'];
         $goods_id = $res_detail['goods_id'];
         $unit_id = $res_detail['unit_id'];
-        $price = 0;
-        if($type==1 && !empty($res_detail['purchase_detail_id'])){
-            $m_purchasedetail = new \Common\Model\Finance\PurchaseDetailModel();
-            $res_purchase = $m_purchasedetail->getInfo(array('id'=>$res_detail['purchase_detail_id']));
-            $price = sprintf("%.2f",$res_purchase['total_fee']/$res_purchase['total_amount']);
-        }
+
         $amount = 1;
         $m_unit = new \Common\Model\Finance\UnitModel();
         $res_unit = $m_unit->getInfo(array('id'=>$unit_id));
         $total_amount = $res_unit['convert_type']*$amount;
+
+        $price = 0;
+        $total_fee = 0;
+        if($type==1 && !empty($res_detail['purchase_detail_id'])){
+            $m_purchasedetail = new \Common\Model\Finance\PurchaseDetailModel();
+            $res_purchase = $m_purchasedetail->getInfo(array('id'=>$res_detail['purchase_detail_id']));
+            $total_fee = $res_purchase['price'];
+            $price = sprintf("%.2f",$total_fee/$total_amount);//单瓶价格
+        }
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
             $idcode_num = 0;
@@ -303,25 +307,35 @@ class StockController extends CommonController{
                 if(!empty($idcode)){
                     $idcode_num++;
                     $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'batch_no'=>$batch_no,'idcode'=>$idcode,
-                        'price'=>$price,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>$type,'op_openid'=>$openid
+                        'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>$type,'op_openid'=>$openid
                     );
-                    $m_stock_record->add($data);
+                    $res_in = array();
                     if($type==2){
                         $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1));
-                        if(!empty($res_in)){
-                            $m_stock_record->updateData(array('id'=>$res_in['id']),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
-                        }
+                        $data['price'] = -$res_in['price'];
+                        $data['total_fee'] = $data['price']*$total_amount;
+                        $data['amount'] = -$amount;
+                        $data['total_amount'] = -$total_amount;
+                    }
+
+                    $m_stock_record->add($data);
+                    if($type==2 && !empty($res_in)){
+                        $m_stock_record->updateData(array('id'=>$res_in['id']),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
                     }
                 }
             }
-            $detail_amount = $amount*$idcode_num;
-            $detail_total_amount = $total_amount*$idcode_num;
-            if($type==2){
-                $detail_amount = -$detail_amount;
-                $detail_total_amount = -$detail_total_amount;
+            if($idcode_num>0){
+                $detail_amount = $amount*$idcode_num;
+                $detail_total_amount = $total_amount*$idcode_num;
+                if($type==2){
+                    $detail_amount = -$detail_amount;
+                    $detail_total_amount = -$detail_total_amount;
+                }
+                $updata = array('amount'=>$res_detail['amount']+$detail_amount,'total_amount'=>$res_detail['total_amount']+$detail_total_amount);
+                $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
+                $m_stock = new \Common\Model\Finance\StockModel();
+                $m_stock->updateData(array('id'=>$stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
             }
-            $updata = array('amount'=>$res_detail['amount']+$detail_amount,'total_amount'=>$res_detail['total_amount']+$detail_total_amount);
-            $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
         }
         $this->to_back(array('stock_detail_id'=>$stock_detail_id));
     }

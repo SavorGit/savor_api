@@ -610,8 +610,8 @@ return array(
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
     'STOCK_MANAGER'=>array(
-//        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
-//        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
+        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
+        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
         'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
         'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
         'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',

@@ -459,6 +459,14 @@ return array(
     'smallappsale_finance_stock_goods_out_not_matchup'=>'商品不一致',
     'smallappsale_finance_stock_goods_not_exist'=>'商品不存在',
     'smallappsale_finance_stock_donot_restock_in'=>'请勿重复入库',
+    'smallappsale_finance_cant_receive_more_stock'=>'不能同时领取多个出库单的商品',
+    'smallappsale_finance_cant_outstock_error'=>'当前出库单还未完成出库',
+    'smallappsale_finance_outstock_has_receive_first'=>'请先领取当前出库单',
+    'smallappsale_finance_outstock_has_receive'=>'当前出库单已领取',
+    'smallappsale_finance_outstock_has_check'=>'当前出库单已验收',
+    'smallappsale_finance_stock_recevie_num_not_eq'=>'领取数量不一致',
+    'smallappsale_finance_stock_check_num_not_eq'=>'验收数量不一致',
+
 
 
 

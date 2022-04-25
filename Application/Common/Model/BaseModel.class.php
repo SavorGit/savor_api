@@ -19,6 +19,11 @@ class BaseModel extends Model{
         return $data;
     }
 
+    public function getALLDataList($fields,$where,$order,$limit,$group){
+        $data = $this->field($fields)->where($where)->order($order)->limit($limit)->group($group)->select();
+        return $data;
+    }
+
     public function countNum($where){
         $nums = $this->where($where)->count();
         return $nums;

@@ -53,10 +53,12 @@ class GoodsController extends CommonController{
                     $end_time = strtotime($v['end_time']);
                     $now_time = time();
                     $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+                    /*
                     if($remain_time==0){
                         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
                         $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
                     }
+                    */
                     $m_media = new \Common\Model\MediaModel();
                     $res_media = $m_media->getMediaInfoById($v['model_media_id']);
                     $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>intval($v['price']),
@@ -82,10 +84,12 @@ class GoodsController extends CommonController{
                 $end_time = strtotime($res_goods[0]['end_time']);
                 $now_time = time();
                 $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
-//                if($remain_time==0){
-//                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-//                    $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
-//                }
+                /*
+                if($remain_time==0){
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $m_goods->updateData(array('id'=>$goods_id),array('status'=>2,'flag'=>3));
+                }
+                */
                 $m_media = new \Common\Model\MediaModel();
                 $res_media = $m_media->getMediaInfoById($res_goods[0]['model_media_id']);
                 $res_data['goods_id'] = $goods_id;

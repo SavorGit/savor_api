@@ -615,6 +615,16 @@ return array(
         'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
         'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
         'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
+        'o9GS-4iinyutBsN73FJFjdZC3rWg'=>'赵翠燕',
+        'o9GS-4kpg8khL72nVZKDsgn0ioDM'=>'陈灵玉',
+        'o9GS-4mouXnk_WhBAL-Zhsg0YbOE'=>'余穗筠',
+        'o9GS-4mTCZvkRCDRnkg77QqohMI4'=>'胡子凤',
+    ),
+    'STOCK_RECORD_TYPE'=>array('1'=>'入库','2'=>'出库','3'=>'拆箱','4'=>'领取','5'=>'验收','6'=>'报损','7'=>'核销'),
+    'STOCK_REASON'=>array(
+        '1'=>array('id'=>1,'name'=>'售卖'),
+        '2'=>array('id'=>2,'name'=>'品鉴酒'),
+        '3'=>array('id'=>3,'name'=>'活动')
     ),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>0,
     'LOTTERY_TIMEOUT'=>300,

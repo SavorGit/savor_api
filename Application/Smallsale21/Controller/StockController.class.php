@@ -62,6 +62,31 @@ class StockController extends CommonController{
             case 'finishCheck':
                 $this->params = array('openid'=>1001,'stock_id'=>1001,'goods_codes'=>1001,'check_img'=>1001);
                 $this->is_verify = 1;
+                break;
+            case 'scanReportedloss':
+                $this->params = array('openid'=>1001,'idcode'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'finishReportedloss':
+                $this->params = array('openid'=>1001,'goods_codes'=>1001,'reason'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'getWriteoffReasonByGoods':
+                $this->params = array('goods_id'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'scanWriteoff':
+                $this->params = array('openid'=>1001,'idcode'=>1001,'goods_id'=>1002);
+                $this->is_verify = 1;
+                break;
+            case 'finishWriteoff':
+                $this->params = array('openid'=>1001,'goods_codes'=>1001,'reason_type'=>1001,'data_imgs'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'getWriteoffList':
+                $this->params = array('openid'=>1001,'page'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -459,8 +484,32 @@ class StockController extends CommonController{
         if(empty($res_qrcode)){
             $this->to_back(93080);
         }
+        $where = array('idcode'=>$idcode,'type'=>$type);
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $m_stock_record->delData(array('idcode'=>$idcode,'type'=>$type));
+        $res_record = $m_stock_record->getInfo($where);
+        if(!empty($res_record)){
+            $m_stock_record->delData(array('id'=>$res_record['id']));
+
+            $stock_detail_id = $res_record['stock_detail_id'];
+            $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
+            $res_detail = $m_stock_detail->getInfo(array('id'=>$stock_detail_id));
+            $amount = abs($res_detail['amount']);
+            $total_amount = abs($res_detail['total_amount']);
+
+            $now_amount = 1;
+            $m_unit = new \Common\Model\Finance\UnitModel();
+            $res_unit = $m_unit->getInfo(array('id'=>$res_record['unit_id']));
+            $now_total_amount = $res_unit['convert_type']*$now_amount;
+
+            $detail_amount = $amount-$now_amount;
+            $detail_total_amount = $total_amount-$now_total_amount;
+            if($type==2){
+                $detail_amount = -$detail_amount;
+                $detail_total_amount = -$detail_total_amount;
+            }
+            $updata = array('amount'=>$detail_amount,'total_amount'=>$detail_total_amount);
+            $m_stock_detail->updateData(array('id'=>$stock_detail_id),$updata);
+        }
         $this->to_back(array());
     }
 
@@ -549,7 +598,12 @@ class StockController extends CommonController{
             if($is_first){
                 $where = array('stock_id'=>$stock_id,'type'=>2);
                 $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
-                $res_data['goods_list'] = $res_records;
+                $goods_list = array();
+                foreach ($res_records as $v){
+                    $v['checked'] = false;
+                    $goods_list[]=$v;
+                }
+                $res_data['goods_list'] = $goods_list;
             }
             $this->to_back($res_data);
         }else{
@@ -662,12 +716,12 @@ class StockController extends CommonController{
                 $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
                 $goods_list = array();
                 foreach ($res_records as $v){
-                    $res_data = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6));
-                    if(empty($res_data)){
+                    $res_datainfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6));
+                    if(empty($res_datainfo)){
+                        $v['checked'] = false;
                         $goods_list[]=$v;
                     }
                 }
-
                 $res_data['goods_list'] = $goods_list;
             }
             $this->to_back($res_data);
@@ -740,6 +794,303 @@ class StockController extends CommonController{
         $this->to_back(array());
     }
 
+    public function scanReportedloss(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+        spec.name as spec_name,unit.name as unit_name,a.type,stock.serial_number,stock.name as stock_name,a.op_openid,a.add_time';
+        $where = array('a.idcode'=>$idcode);
+        $res_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+        $goods_info = array();
+        if(!empty($res_records)){
+            $goods_info = $res_records[0];
+            $record_types = C('STOCK_RECORD_TYPE');
+            $goods_info['type_str'] = $record_types[$goods_info['type']];
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_user = $m_user->getOne('nickName',array('openid'=>$openid),'id desc');
+            $goods_info['op_uname'] = $res_user['nickName'];
+        }
+        $this->to_back($goods_info);
+    }
+
+    public function userstocklist(){
+        $openid = $this->params['openid'];
+        $type = $this->params['type'];//10入库,20出库 30领取
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stock = new \Common\Model\Finance\StockModel();
+        if($type==30){
+            $where = array('receive_openid'=>$openid);
+        }else{
+            $where = array('op_openid'=>$openid,'type'=>$type);
+        }
+        $where['status'] = array('in',array(2,3));
+        $res_stock = $m_stock->getDataList('*',$where,'id asc');
+
+        $data_list = array();
+        if(!empty($res_stock)){
+            $m_duser = new \Common\Model\Finance\DepartmentUserModel();
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
+            foreach ($res_stock as $v){
+                $stock_id = $v['id'];
+                $res_duser = $m_duser->getInfo(array('id'=>$v['department_user_id']));
+                $info = array('stock_id'=>$stock_id,'name'=>$v['name'],'add_time'=>$v['add_time'],'user_name'=>$res_duser['name']);
+                if($type==30){
+                    $dfields = 'sum(stock_total_amount) as stock_num';
+                    $res_detail = $m_stock_detail->getALLDataList($dfields,array('stock_id'=>$stock_id),'id desc','','');
+                    $stock_num = intval($res_detail[0]['stock_num']);
+                    $check_num = 0;
+                    $rfields = 'sum(total_amount) as total_amount';
+                    $res_record = $m_stock_record->getALLDataList($rfields,array('stock_id'=>$stock_id,'type'=>7),'id desc','','');
+                    if(!empty($res_record[0]['total_amount'])){
+                        $check_num = abs($res_record[0]['total_amount']);
+                    }
+                    $last_num = $stock_num-$check_num;
+                    if($last_num>0){
+                        $data_list[]=$info;
+                    }
+                }else{
+                    $data_list[]=$info;
+                }
+            }
+        }
+        $res_data = array('data_list'=>$data_list);
+        $this->to_back($res_data);
+    }
+
+    public function getStockGoods(){
+        $openid = $this->params['openid'];
+        $stock_id = intval($this->params['stock_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $where = array('stock_id'=>$stock_id,'type'=>2);
+        $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
+        $goods_list = array();
+        foreach ($res_records as $v){
+            $is_check=0;
+            $res_rinfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>7));
+            if(!empty($res_rinfo)){
+                $is_check=1;
+            }
+            $v['checked'] = false;
+            $v['is_check'] = $is_check;
+            $goods_list[]=$v;
+        }
+        $res_data = array('stock_id'=>$stock_id,'goods_list'=>$goods_list);
+
+        $this->to_back($res_data);
+    }
+
+    public function finishReportedloss(){
+        $openid = $this->params['openid'];
+        $goods_codes = $this->params['goods_codes'];
+        $reason = trim($this->params['reason']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $all_idcodes = explode(',',$goods_codes);
+        if(!empty($all_idcodes)){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            foreach ($all_idcodes as $v){
+                $idcode = $v;
+                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+                if(!empty($res_record)){
+                    $batch_no = date('YmdHis');
+                    $add_data = $res_record[0];
+
+                    unset($add_data['id'],$add_data['update_time']);
+                    $add_data['price'] = -abs($add_data['price']);
+                    $add_data['total_fee'] = -abs($add_data['total_fee']);
+                    $add_data['amount'] = -abs($add_data['amount']);
+                    $add_data['total_amount'] = -abs($add_data['total_amount']);
+                    $add_data['type'] = 6;
+                    $add_data['op_openid'] = $openid;
+                    $add_data['batch_no'] = $batch_no;
+                    $add_data['reason'] = $reason;
+                    $add_data['add_time'] = date('Y-m-d H:i:s');
+                    $m_stock_record->add($add_data);
+                }
+            }
+        }
+        $this->to_back(array());
+    }
+
+    public function getWriteoffReasonByGoods(){
+        $goods_id = intval($this->params['goods_id']);
+
+        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>1);
+        $field = 'id,name,is_required';
+        $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
+        $data = array();
+        if(!empty($res_config)){
+            $data = $res_config;
+        }
+        $res_data = array('reasons'=>array_values(C('STOCK_REASON')),'datas'=>$data);
+        $this->to_back($res_data);
+    }
+
+    public function scanWriteoff(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+        $goods_id = intval($this->params['goods_id']);//如为0,则是第一次扫码
+
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$record_info[0]['stock_id']));
+        if($res_stock['io_type']!=22){
+            $this->to_back(93093);
+        }
+        if($record_info[0]['type']==5){
+            if($goods_id>0 && $goods_id!=$record_info[0]['goods_id']){
+                $this->to_back(93097);
+            }
+            $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'goods_id'=>$record_info[0]['goods_id']);
+            $this->to_back($res);
+        }else{
+            if($record_info[0]['type']==7){
+                $this->to_back(93094);
+            }elseif($record_info[0]['type']==6){
+                $this->to_back(93095);
+            }else{
+                $this->to_back(93096);
+            }
+        }
+    }
+
+    public function finishWriteoff(){
+        $openid = $this->params['openid'];
+        $goods_codes = $this->params['goods_codes'];
+        $reason_type = intval($this->params['reason_type']);
+        $data_imgs = $this->params['data_imgs'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $all_idcodes = explode(',',$goods_codes);
+        if(!empty($all_idcodes)){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $batch_no = date('YmdHis');
+            foreach ($all_idcodes as $v){
+                $idcode = $v;
+                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+                if(!empty($res_record)){
+                    $add_data = $res_record[0];
+
+                    unset($add_data['id'],$add_data['update_time']);
+                    $add_data['price'] = -abs($add_data['price']);
+                    $add_data['total_fee'] = -abs($add_data['total_fee']);
+                    $add_data['amount'] = -abs($add_data['amount']);
+                    $add_data['total_amount'] = -abs($add_data['total_amount']);
+                    $add_data['type'] = 7;
+                    $add_data['op_openid'] = $openid;
+                    $add_data['batch_no'] = $batch_no;
+                    $add_data['wo_reason_type'] = $reason_type;
+                    $add_data['wo_data_imgs'] = $data_imgs;
+                    $add_data['wo_status'] = 1;
+                    $add_data['add_time'] = date('Y-m-d H:i:s');
+                    $m_stock_record->add($add_data);
+                }
+            }
+        }
+        $this->to_back(array());
+    }
+
+    public function getWriteoffList(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $offset = ($page-1)*$pagesize;
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $limit = "$offset,$pagesize";
+        $order = 'id desc';
+        $where = array('openid'=>$openid,'type'=>7);
+        $fields = 'batch_no,add_time,wo_status as status,wo_reason_type as reason_type';
+        $res_records = $m_stock_record->getALLDataList($fields,$where,$order,$limit,'batch_no');
+        $data_list = array();
+        if(!empty($res_records)){
+            $all_reasons = C('STOCK_REASON');
+            $all_status = array('1'=>'待审核','2'=>'通过审核');
+            $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+            spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
+            foreach ($res_records as $v){
+                $batch_no = $v['batch_no'];
+                $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
+                $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'id asc','','');
+                $data_list[]=array('reason'=>$all_reasons[$v['reason_type']]['name'],'status_str'=>$all_status[$v['status']],
+                    'num'=>count($res_goods),'add_time'=>$v['add_time'],'goods'=>$res_goods);
+            }
+        }
+        $this->to_back($data_list);
+
+
+
+    }
 
 
 }

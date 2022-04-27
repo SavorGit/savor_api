@@ -468,6 +468,11 @@ return array(
         '93090'=>'smallappsale_finance_stock_recevie_num_not_eq',
         '93091'=>'smallappsale_finance_outstock_has_receive_first',
         '93092'=>'smallappsale_finance_stock_check_num_not_eq',
+        '93093'=>'smallappsale_finance_goods_writeoff_error',
+        '93094'=>'smallappsale_finance_goods_had_writeoff',
+        '93095'=>'smallappsale_finance_goods_had_reportedloss',
+        '93096'=>'smallappsale_finance_goods_check_error',
+        '93097'=>'smallappsale_finance_goods_differentwrittenoff_sametime',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

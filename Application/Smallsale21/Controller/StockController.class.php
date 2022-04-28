@@ -11,6 +11,10 @@ class StockController extends CommonController{
             case 'arealist':
                 $this->is_verify = 0;
                 break;
+            case 'hotelstock':
+                $this->params = array('openid'=>1001,'hotel_id'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'stocklist':
                 $this->params = array('openid'=>1001,'area_id'=>1001,'type'=>1001);
                 $this->is_verify = 1;
@@ -99,6 +103,61 @@ class StockController extends CommonController{
             array('id'=>246,'name'=>'深圳库房','is_select'=>0),
         );
         $this->to_back($all_stock_city);
+    }
+
+    public function hotelstock(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getOneById('name',$hotel_id);
+        $res_data = array('hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['name']);
+
+        $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
+        $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20);
+        $fileds = 'a.goods_id,sum(a.stock_total_amount) as stock_num,goods.name,cate.name as cate_name,spec.name as sepc_name,a.unit_id,unit.name as unit_name';
+        $group = 'a.goods_id,a.unit_id';
+        $res_stock = $m_stock_detail->getStockGoodsByHotelId($fileds,$where,$group);
+        $goods_list = array();
+        if(!empty($res_stock)){
+            $m_record = new \Common\Model\Finance\StockRecordModel();
+            foreach ($res_stock as $v){
+                $out_num = $unpack_num = $wo_num = 0;
+                $goods_id = $v['goods_id'];
+                $unit_id = $v['unit_id'];
+                $rfileds = 'sum(a.total_amount) as total_amount,a.type';
+                $rwhere = array('stock.hotel_id'=>$hotel_id,'a.goods_id'=>$goods_id,'a.unit_id'=>$unit_id);
+                $rwhere['a.type'] = array('in',array(2,3,7));
+                $rgroup = 'a.type';
+                $res_record = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','',$rgroup);
+                foreach ($res_record as $rv){
+                    switch ($rv['type']){
+                        case 2:
+                            $out_num = abs($rv['total_amount']);
+                            break;
+                        case 3:
+                            $unpack_num = $rv['total_amount'];
+                            break;
+                        case 7:
+                            $wo_num = $rv['total_amount'];
+                            break;
+                    }
+                }
+                $stock_num = $out_num+$unpack_num+$wo_num;
+                $v['stock_num']=$stock_num;
+                $goods_list[]=$v;
+            }
+        }
+        $res_data['goods_list'] = $goods_list;
+        $this->to_back($res_data);
     }
 
     public function stocklist(){
@@ -899,13 +958,18 @@ class StockController extends CommonController{
         $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
         $goods_list = array();
         foreach ($res_records as $v){
-            $is_check=0;
+            $status=0;//1已核销,2已报损
             $res_rinfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>7));
             if(!empty($res_rinfo)){
-                $is_check=1;
+                $status=1;
+            }else{
+                $res_rinfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6));
+                if(!empty($res_rinfo)){
+                    $status=2;
+                }
             }
             $v['checked'] = false;
-            $v['is_check'] = $is_check;
+            $v['status'] = $status;
             $goods_list[]=$v;
         }
         $res_data = array('stock_id'=>$stock_id,'goods_list'=>$goods_list);
@@ -961,7 +1025,10 @@ class StockController extends CommonController{
         $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
         $data = array();
         if(!empty($res_config)){
-            $data = $res_config;
+            foreach ($res_config as $v){
+                $v['img_url']='';
+                $data[]=$v;
+            }
         }
         $res_data = array('reasons'=>array_values(C('STOCK_REASON')),'datas'=>$data);
         $this->to_back($res_data);
@@ -1081,7 +1148,7 @@ class StockController extends CommonController{
             foreach ($res_records as $v){
                 $batch_no = $v['batch_no'];
                 $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
-                $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'id asc','','');
+                $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
                 $data_list[]=array('reason'=>$all_reasons[$v['reason_type']]['name'],'status_str'=>$all_status[$v['status']],
                     'num'=>count($res_goods),'add_time'=>$v['add_time'],'goods'=>$res_goods);
             }

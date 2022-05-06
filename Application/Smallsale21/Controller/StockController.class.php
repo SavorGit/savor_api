@@ -149,7 +149,7 @@ class StockController extends CommonController{
                     }
                 }
                 $rwhere['a.type']=7;
-                $rwhere['a.wo_status']=2;
+                $rwhere['a.wo_status']= array('in',array(1,2));
                 $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
                 $wo_num = $res_worecord[0]['total_amount'];
 

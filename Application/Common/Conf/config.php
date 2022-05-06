@@ -610,8 +610,9 @@ return array(
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
     'STOCK_MANAGER'=>array(
-        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
+//        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
         'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
+        'o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI'=>'李丛',
         'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
         'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
         'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
@@ -751,6 +752,36 @@ return array(
             'hotel_id' => 1211,
             'hotel_name' => '渔意如意·凯宾轩(建六店)',
             'bg_img'=>'WeChat/MiniProgram/images/imgs/yyry.jpeg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '920'=>array (
+            'hotel_id' => 920,
+            'hotel_name' => '鹅潭一号酒家',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '1064'=>array (
+            'hotel_id' => 1064,
+            'hotel_name' => '海门渔港(棠下店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
+            'themeColor'=>'rgb(193,147,166)',
+            'themeContrastColor'=>'rgb(255, 255, 255)',
+            'painColor'=>'rgb(16, 16, 16)',
+            'weakColor'=>'rgb(153, 153, 153)',
+            'is_open_sellplatform'=>1
+        ),
+        '1056'=>array (
+            'hotel_id' => 1056,
+            'hotel_name' => '太艮堡毋米粥 · 粥底火锅(东站店)',
+            'bg_img'=>'WeChat/MiniProgram/images/imgs/invitation-common.jpeg',
             'themeColor'=>'rgb(193,147,166)',
             'themeContrastColor'=>'rgb(255, 255, 255)',
             'painColor'=>'rgb(16, 16, 16)',

@@ -468,6 +468,7 @@ return array(
     'smallappsale_finance_stock_check_num_not_eq'=>'验收数量不一致',
     'smallappsale_finance_goods_writeoff_error'=>'当前商品不支持核销',
     'smallappsale_finance_goods_had_writeoff'=>'当前商品已完成核销',
+    'smallappsale_finance_goods_had_submit_writeoff'=>'当前商品已申请核销',
     'smallappsale_finance_goods_had_reportedloss'=>'当前商品已报损',
     'smallappsale_finance_goods_check_error'=>'当前商品未验收',
     'smallappsale_finance_goods_differentwrittenoff_sametime'=>'不能同时核销不同的商品',

@@ -135,7 +135,7 @@ class StockController extends CommonController{
                 $unit_id = $v['unit_id'];
                 $rfileds = 'sum(a.total_amount) as total_amount,a.type';
                 $rwhere = array('stock.hotel_id'=>$hotel_id,'a.goods_id'=>$goods_id,'a.unit_id'=>$unit_id);
-                $rwhere['a.type'] = array('in',array(2,3,7));
+                $rwhere['a.type'] = array('in',array(2,3));
                 $rgroup = 'a.type';
                 $res_record = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','',$rgroup);
                 foreach ($res_record as $rv){
@@ -146,11 +146,13 @@ class StockController extends CommonController{
                         case 3:
                             $unpack_num = $rv['total_amount'];
                             break;
-                        case 7:
-                            $wo_num = $rv['total_amount'];
-                            break;
                     }
                 }
+                $rwhere['a.type']=7;
+                $rwhere['a.wo_status']=2;
+                $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
+                $wo_num = $res_worecord[0]['total_amount'];
+
                 $stock_num = $out_num+$unpack_num+$wo_num;
                 $v['stock_num']=$stock_num;
                 $goods_list[]=$v;
@@ -259,6 +261,15 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $where = array('idcode'=>$idcode);
+        $res_stock_record = $m_stock_record->getALLDataList('type',$where,'id desc','0,1','');
+        if(!empty($res_stock_record[0]['type']) && $res_stock_record[0]['type']>3){
+            $type_error_codes = array('4'=>93088,'5'=>93089,'6'=>93095,'7'=>93094);
+            if(isset($type_error_codes[$res_stock_record[0]['type']])){
+                $this->to_back($type_error_codes[$res_stock_record[0]['type']]);
+            }
+        }
+
         $where = array('idcode'=>$idcode,'type'=>1);
         $res_stock_record = $m_stock_record->getInfo($where);
         $now_unit_id = 0;
@@ -1069,7 +1080,14 @@ class StockController extends CommonController{
             $this->to_back($res);
         }else{
             if($record_info[0]['type']==7){
-                $this->to_back(93094);
+                if($record_info[0]['wo_status']==1){
+                    $this->to_back(93098);
+                }elseif($record_info[0]['wo_status']==2){
+                    $this->to_back(93094);
+                }else{
+                    $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'goods_id'=>$record_info[0]['goods_id']);
+                    $this->to_back($res);
+                }
             }elseif($record_info[0]['type']==6){
                 $this->to_back(93095);
             }else{
@@ -1100,20 +1118,28 @@ class StockController extends CommonController{
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
                 if(!empty($res_record)){
                     $add_data = $res_record[0];
-
-                    unset($add_data['id'],$add_data['update_time']);
-                    $add_data['price'] = -abs($add_data['price']);
-                    $add_data['total_fee'] = -abs($add_data['total_fee']);
-                    $add_data['amount'] = -abs($add_data['amount']);
-                    $add_data['total_amount'] = -abs($add_data['total_amount']);
-                    $add_data['type'] = 7;
-                    $add_data['op_openid'] = $openid;
-                    $add_data['batch_no'] = $batch_no;
-                    $add_data['wo_reason_type'] = $reason_type;
-                    $add_data['wo_data_imgs'] = $data_imgs;
-                    $add_data['wo_status'] = 1;
-                    $add_data['add_time'] = date('Y-m-d H:i:s');
-                    $m_stock_record->add($add_data);
+                    if($add_data['type']==7){
+                        $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
+                            'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                        );
+                        $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                    }else{
+                        unset($add_data['id'],$add_data['update_time']);
+                        $add_data['price'] = -abs($add_data['price']);
+                        $add_data['total_fee'] = -abs($add_data['total_fee']);
+                        $add_data['amount'] = -abs($add_data['amount']);
+                        $add_data['total_amount'] = -abs($add_data['total_amount']);
+                        $add_data['type'] = 7;
+                        $add_data['op_openid'] = $openid;
+                        $add_data['batch_no'] = $batch_no;
+                        $add_data['wo_reason_type'] = $reason_type;
+                        $add_data['wo_data_imgs'] = $data_imgs;
+                        $add_data['wo_status'] = 1;
+                        $add_data['wo_num'] = 1;
+                        $add_data['update_time'] = date('Y-m-d H:i:s');
+                        $add_data['add_time'] = date('Y-m-d H:i:s');
+                        $m_stock_record->add($add_data);
+                    }
                 }
             }
         }
@@ -1136,21 +1162,22 @@ class StockController extends CommonController{
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $limit = "$offset,$pagesize";
         $order = 'id desc';
-        $where = array('openid'=>$openid,'type'=>7);
+        $where = array('op_openid'=>$openid,'type'=>7);
         $fields = 'batch_no,add_time,wo_status as status,wo_reason_type as reason_type';
         $res_records = $m_stock_record->getALLDataList($fields,$where,$order,$limit,'batch_no');
         $data_list = array();
         if(!empty($res_records)){
             $all_reasons = C('STOCK_REASON');
-            $all_status = array('1'=>'待审核','2'=>'通过审核');
+            $all_status = array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过');
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
             spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
             foreach ($res_records as $v){
                 $batch_no = $v['batch_no'];
                 $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
-                $data_list[]=array('reason'=>$all_reasons[$v['reason_type']]['name'],'status_str'=>$all_status[$v['status']],
-                    'num'=>count($res_goods),'add_time'=>$v['add_time'],'goods'=>$res_goods);
+                $data_list[]=array('reason'=>$all_reasons[$v['reason_type']]['name'],'status'=>$v['status'],
+                    'status_str'=>$all_status[$v['status']],'num'=>count($res_goods),'add_time'=>$v['add_time'],
+                    'goods'=>$res_goods);
             }
         }
         $this->to_back($data_list);

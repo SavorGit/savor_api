@@ -474,6 +474,7 @@ return array(
         '93096'=>'smallappsale_finance_goods_check_error',
         '93097'=>'smallappsale_finance_goods_differentwrittenoff_sametime',
         '93098'=>'smallappsale_finance_goods_had_submit_writeoff',
+        '93099'=>'smallappsale_finance_goods_had_submit_reportedloss',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

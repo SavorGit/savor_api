@@ -472,6 +472,7 @@ return array(
     'smallappsale_finance_goods_had_reportedloss'=>'当前商品已报损',
     'smallappsale_finance_goods_check_error'=>'当前商品未验收',
     'smallappsale_finance_goods_differentwrittenoff_sametime'=>'不能同时核销不同的商品',
+    'smallappsale_finance_goods_had_submit_reportedloss'=>'当前商品已申请报损',
 
 
 

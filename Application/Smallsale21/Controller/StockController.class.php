@@ -885,12 +885,16 @@ class StockController extends CommonController{
         }
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
-        spec.name as spec_name,unit.name as unit_name,a.type,stock.serial_number,stock.name as stock_name,a.op_openid,a.add_time';
+        spec.name as spec_name,unit.name as unit_name,a.type,a.status,stock.serial_number,stock.name as stock_name,a.op_openid,a.add_time';
         $where = array('a.idcode'=>$idcode);
         $res_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $goods_info = array();
         if(!empty($res_records)){
             $goods_info = $res_records[0];
+            if($goods_info['type']==6 && in_array($goods_info['status'],array(1,2))){
+                $error_status = array('1'=>93099,'2'=>93095);
+                $this->to_back($error_status[$goods_info['status']]);
+            }
             $record_types = C('STOCK_RECORD_TYPE');
             $goods_info['type_str'] = $record_types[$goods_info['type']];
             $m_user = new \Common\Model\Smallapp\UserModel();
@@ -902,7 +906,7 @@ class StockController extends CommonController{
 
     public function userstocklist(){
         $openid = $this->params['openid'];
-        $type = $this->params['type'];//10入库,20出库 30领取
+        $type = $this->params['type'];//10入库,20出库 30领取 40验收
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -914,10 +918,12 @@ class StockController extends CommonController{
         $m_stock = new \Common\Model\Finance\StockModel();
         if($type==30){
             $where = array('receive_openid'=>$openid);
+        }elseif($type==40){
+            $where = array('check_openid'=>$openid);
         }else{
             $where = array('op_openid'=>$openid,'type'=>$type);
         }
-        $where['status'] = array('in',array(2,3));
+        $where['status'] = array('in',array(2,3,4));
         $res_stock = $m_stock->getDataList('*',$where,'id asc');
 
         $data_list = array();
@@ -1009,18 +1015,27 @@ class StockController extends CommonController{
                 if(!empty($res_record)){
                     $batch_no = date('YmdHis');
                     $add_data = $res_record[0];
-
-                    unset($add_data['id'],$add_data['update_time']);
-                    $add_data['price'] = -abs($add_data['price']);
-                    $add_data['total_fee'] = -abs($add_data['total_fee']);
-                    $add_data['amount'] = -abs($add_data['amount']);
-                    $add_data['total_amount'] = -abs($add_data['total_amount']);
-                    $add_data['type'] = 6;
-                    $add_data['op_openid'] = $openid;
-                    $add_data['batch_no'] = $batch_no;
-                    $add_data['reason'] = $reason;
-                    $add_data['add_time'] = date('Y-m-d H:i:s');
-                    $m_stock_record->add($add_data);
+                    if($add_data['type']==7){
+                        continue;
+                    }
+                    if($add_data['type']==6){
+                        $up_data = array('type'=>6,'status'=>1,'op_openid'=>$openid,'batch_no'=>$batch_no,
+                            'reason'=>$reason,'update_time'=>date('Y-m-d H:i:s'));
+                        $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                    }else{
+                        unset($add_data['id'],$add_data['update_time']);
+                        $add_data['price'] = -abs($add_data['price']);
+                        $add_data['total_fee'] = -abs($add_data['total_fee']);
+                        $add_data['amount'] = -abs($add_data['amount']);
+                        $add_data['total_amount'] = -abs($add_data['total_amount']);
+                        $add_data['type'] = 6;
+                        $add_data['status'] = 1;
+                        $add_data['op_openid'] = $openid;
+                        $add_data['batch_no'] = $batch_no;
+                        $add_data['reason'] = $reason;
+                        $add_data['add_time'] = date('Y-m-d H:i:s');
+                        $m_stock_record->add($add_data);
+                    }
                 }
             }
         }

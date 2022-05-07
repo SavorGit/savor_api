@@ -130,7 +130,7 @@ class StockController extends CommonController{
         if(!empty($res_stock)){
             $m_record = new \Common\Model\Finance\StockRecordModel();
             foreach ($res_stock as $v){
-                $out_num = $unpack_num = $wo_num = 0;
+                $out_num = $unpack_num = $wo_num = $report_num = 0;
                 $goods_id = $v['goods_id'];
                 $unit_id = $v['unit_id'];
                 $rfileds = 'sum(a.total_amount) as total_amount,a.type';
@@ -153,7 +153,12 @@ class StockController extends CommonController{
                 $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
                 $wo_num = $res_worecord[0]['total_amount'];
 
-                $stock_num = $out_num+$unpack_num+$wo_num;
+                $rwhere['a.type']=6;
+                $rwhere['a.status']= array('in',array(1,2));
+                $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
+                $report_num = $res_worecord[0]['total_amount'];
+
+                $stock_num = $out_num+$unpack_num+$wo_num+$report_num;
                 $v['stock_num']=$stock_num;
                 $goods_list[]=$v;
             }

@@ -7,7 +7,8 @@ class InvitationController extends CommonController{
         switch(ACTION_NAME) {
             case 'confirminfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'name'=>1001,'book_time'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'name'=>1001,'book_time'=>1001,
+                    'people_num'=>1002,'mobile'=>1002);
                 break;
         }
         parent::_init_();
@@ -19,17 +20,19 @@ class InvitationController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $book_time = $this->params['book_time'];
         $name = trim($this->params['name']);
+        $people_num = $this->params['people_num'];
+        $mobile = $this->params['mobile'];
 
-//        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
-//        $field_staff = 'a.openid,a.level,merchant.type';
-//        $m_staff = new \Common\Model\Integral\StaffModel();
-//        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
-//        if(empty($res_staff)){
-//            $this->to_back(93014);
-//        }
-
-        $all_invitation_hotels = C('INVITATION_HOTEL');
-        if(!isset($all_invitation_hotels[$hotel_id])){
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
+        $res_invitation = $m_hotelinvitation->getInfo(array('hotel_id'=>$hotel_id));
+        if(empty($res_invitation)){
             $this->to_back(93077);
         }
 
@@ -68,6 +71,12 @@ class InvitationController extends CommonController{
         $adata = array('openid'=>$openid,'name'=>$name,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
             'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'book_time'=>$book_time
         );
+        if(!empty($people_num)){
+            $adata['people_num'] = intval($people_num);
+        }
+        if(!empty($mobile)){
+            $adata['mobile'] = $mobile;
+        }
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $invitation_id = $m_invitation->add($adata);
 

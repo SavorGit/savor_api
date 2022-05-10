@@ -49,18 +49,29 @@ class InvitationController extends CommonController{
             $res_data['longitude'] = floatval($longitude);
             $res_data['room_name'] = $res_info['room_name'];
             $res_data['book_time'] = $res_info['book_time'];
-            $res_data['book_time'] = $res_info['book_time'];
-            $res_data['backgroundImage'] = $oss_host.$invitation_hotels[$res_info['hotel_id']]['bg_img'];
-            $res_data['themeColor'] = $invitation_hotels[$res_info['hotel_id']]['themeColor'];
-            $res_data['themeContrastColor'] = $invitation_hotels[$res_info['hotel_id']]['themeContrastColor'];
-            $res_data['painColor'] = $invitation_hotels[$res_info['hotel_id']]['painColor'];
-            $res_data['weakColor'] = $invitation_hotels[$res_info['hotel_id']]['weakColor'];
+            $res_data['people_num'] = $res_info['people_num'];
             $res_data['share_img_url'] = $oss_host.$invitation_hotels['share_img'];
-            $res_data['is_open_sellplatform'] = $invitation_hotels[$res_info['hotel_id']]['is_open_sellplatform'];
+
+            $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
+            $res_invitation = $m_hotelinvitation->getInfo(array('hotel_id'=>$res_info['hotel_id']));
+            if(!empty($res_invitation)){
+                $res_data['backgroundImage'] = $oss_host.$res_invitation['bg_img'];
+                $res_data['themeColor'] = $res_invitation['theme_color'];
+                $res_data['themeContrastColor'] = $res_invitation['theme_contrast_color'];
+                $res_data['painColor'] = $res_invitation['pain_color'];
+                $res_data['weakColor'] = $res_invitation['weak_color'];
+                $res_data['is_open_sellplatform'] = intval($res_invitation['is_open_sellplatform']);
+            }else{
+                $res_data['backgroundImage'] = $oss_host.$invitation_hotels['bg_img'];
+                $res_data['themeColor'] = $invitation_hotels['themeColor'];
+                $res_data['themeContrastColor'] = $invitation_hotels['themeContrastColor'];
+                $res_data['painColor'] = $invitation_hotels['painColor'];
+                $res_data['weakColor'] = $invitation_hotels['weakColor'];
+                $res_data['is_open_sellplatform'] = $invitation_hotels['is_open_sellplatform'];
+            }
         }
         $this->to_back($res_data);
     }
-
 
 
 }

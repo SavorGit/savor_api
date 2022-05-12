@@ -243,6 +243,7 @@ return array(
         'send_tastewine_sponsor_templateid'=>'SMS_227251496',
         'send_groupbuy_user_templateid'=>'SMS_229638185',
         'send_groupbuy_saleuser_templateid'=>'SMS_229648099',
+        'send_invitation_to_user'=>'SMS_241067478',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),
 	'ONLINE_CONTENT_HOST' => 'http://admin.littlehotspot.com/',
@@ -745,5 +746,10 @@ return array(
         'painColor'=>'rgb(16, 16, 16)',
         'weakColor'=>'rgb(153, 153, 153)',
         'is_open_sellplatform'=>1,
+    ),
+    'INVITATION_TASK_INTEGRAL'=>array(
+        'send_guest'=>50,
+        'guest_to_user'=>20,
+        'max_limit'=>300,
     ),
 );

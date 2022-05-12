@@ -473,6 +473,8 @@ return array(
     'smallappsale_finance_goods_check_error'=>'当前商品未验收',
     'smallappsale_finance_goods_differentwrittenoff_sametime'=>'不能同时核销不同的商品',
     'smallappsale_finance_goods_had_submit_reportedloss'=>'当前商品已申请报损',
+    'smallappsale_invitation_not_exist'=>'邀请函正在维护中，请稍后再试。',
+    'smallappsale_invitation_had_expire'=>'请在预定时间内接收邀请',
 
 
 

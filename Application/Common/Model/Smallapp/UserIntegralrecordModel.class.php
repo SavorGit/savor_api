@@ -124,4 +124,49 @@ class UserIntegralrecordModel extends BaseModel{
         }
     }
 
+    /**
+     * @param $invitation 邀请函信息
+     * @param $type 15邀请函发给客人,16邀请函客人扩散
+     * @return bool
+     */
+    public function finishInvitationTask($invitation,$type){
+        $task_integral = C('INVITATION_TASK_INTEGRAL');
+        if($type==15){
+            $now_integral = $task_integral['send_guest'];
+        }else{
+            $now_integral = $task_integral['guest_to_user'];
+        }
+        $where = array('openid'=>$invitation['openid'],'jdorder_id'=>$invitation['id']);
+        $fields = 'sum(integral) as total_integral';
+        $res = $this->field($fields)->where($where)->find();
+        $total_integral = 0;
+        if(!empty($res)){
+            $total_integral = intval($res['total_integral']);
+        }
+        if($total_integral<$task_integral['max_limit']){
+            if($total_integral+$now_integral>$task_integral['max_limit']){
+                $now_integral = $task_integral['max_limit']-$total_integral>0?$task_integral['max_limit']-$total_integral:0;
+            }
+            if($now_integral>0){
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$invitation['openid']));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$now_integral;
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $m_userintegral->add(array('openid'=>$invitation['openid'],'integral'=>$now_integral));
+                }
+
+                $m_hotel = new \Common\Model\HotelModel();
+                $res_hotel = $m_hotel->getHotelInfoById($invitation['hotel_id']);
+                $integralrecord_data = array('openid'=>$invitation['openid'],'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                    'hotel_id'=>$invitation['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                    'integral'=>$now_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
+                    'integral_time'=>date('Y-m-d H:i:s'));
+                $this->add($integralrecord_data);
+            }
+        }
+        return true;
+    }
+
 }

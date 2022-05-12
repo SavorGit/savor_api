@@ -7,10 +7,106 @@ class InvitationController extends CommonController{
         switch(ACTION_NAME) {
             case 'detail':
                 $this->is_verify = 1;
-                $this->valid_fields = array('invitation_id'=>1001);
+                $this->valid_fields = array('invitation_id'=>1001,'openid'=>1002);
+                break;
+            case 'accept':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invitation_id'=>1001,'openid'=>1001);
+                break;
+            case 'userlist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invitation_id'=>1001,'openid'=>1001);
+                break;
+            case 'receiveintegral':
+                $this->is_verify = 1;
+                $this->valid_fields = array('invitation_id'=>1001,'openid'=>1002);
                 break;
         }
         parent::_init_();
+    }
+
+    public function accept(){
+        $invitation_id = intval($this->params['invitation_id']);
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $now_time = date('Y-m-d H:00:00');
+        $m_invitation = new \Common\Model\Smallapp\InvitationModel();
+        $res_info = $m_invitation->getInfo(array('id'=>$invitation_id));
+        if(empty($res_info)){
+            $this->to_back(93200);
+        }
+        if($now_time>$res_info['book_time']){
+            $this->to_back(93201);
+        }
+        $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+        $res_data = $m_invitation_user->getInfo(array('invitation_id'=>$invitation_id,'openid'=>$openid));
+        if(empty($res_data)){
+            $data = array('invitation_id'=>$invitation_id,'openid'=>$openid,'type'=>2);
+            $m_invitation_user->add($data);
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $m_userintegral->finishInvitationTask($res_info,16);
+        }
+        $this->to_back(array('invitation_id'=>$invitation_id));
+    }
+
+    public function userlist(){
+        $invitation_id = intval($this->params['invitation_id']);
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+        $where = array('invitation_id'=>$invitation_id,'type'=>2);
+        $res_user = $m_invitation_user->getDataList('openid',$where,'id desc');
+        $users = array();
+        $num = 0;
+        if(!empty($res_user)){
+            $u_openids = array();
+            foreach ($res_user as $v){
+                $u_openids[]=$v['openid'];
+            }
+            $where = array('openid'=>array('in',$u_openids));
+            $users = $m_user->getWhere('avatarUrl,nickName',$where,'','','');
+            $num = count($users);
+        }
+        $this->to_back(array('num'=>$num,'users'=>$users));
+    }
+
+    public function receiveintegral(){
+        $invitation_id = intval($this->params['invitation_id']);
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_invitation = new \Common\Model\Smallapp\InvitationModel();
+        $res_info = $m_invitation->getInfo(array('id'=>$invitation_id));
+        if(empty($res_info)){
+            $this->to_back(93200);
+        }
+        $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+        $res_data = $m_invitation_user->getInfo(array('invitation_id'=>$invitation_id,'openid'=>$openid));
+        if(empty($res_data)){
+            $data = array('invitation_id'=>$invitation_id,'openid'=>$openid,'type'=>1);
+            $m_invitation_user->add($data);
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $where = array('openid'=>$res_info['openid'],'jdorder_id'=>$res_info['id'],'type'=>15);
+            $res_integral = $m_userintegral->getInfo($where);
+            if(empty($res_integral)){
+                $m_userintegral->finishInvitationTask($res_info,15);
+            }
+        }
+        $this->to_back(array('invitation_id'=>$invitation_id));
     }
 
     public function detail(){
@@ -51,6 +147,18 @@ class InvitationController extends CommonController{
             $res_data['book_time'] = $res_info['book_time'];
             $res_data['people_num'] = $res_info['people_num'];
             $res_data['share_img_url'] = $oss_host.$invitation_hotels['share_img'];
+            $res_data['calendar'] = array(
+                'title'=>$res_info['name'].'的饭局',
+                'time'=>strtotime($res_info['book_time']),
+                'location'=>$res_hotel['addr'],
+                'desc'=>$res_info['hotel_name'].'酒楼'.$res_info['room_name'].'包间',
+            );
+            $is_accept = 1;
+            $now_time = date('Y-m-d H:00:00');
+            if($now_time>$res_info['book_time']){
+                $is_accept = 0;
+            }
+            $res_data['is_accept'] = $is_accept;
 
             $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
             $res_invitation = $m_hotelinvitation->getInfo(array('hotel_id'=>$res_info['hotel_id']));

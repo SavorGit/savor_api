@@ -111,6 +111,7 @@ class InvitationController extends CommonController{
 
     public function detail(){
         $invitation_id = intval($this->params['invitation_id']);
+        $openid = $this->params['openid'];
 
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $res_info = $m_invitation->getInfo(array('id'=>$invitation_id));
@@ -153,9 +154,12 @@ class InvitationController extends CommonController{
                 'location'=>$res_hotel['addr'],
                 'desc'=>$res_info['hotel_name'].'酒楼'.$res_info['room_name'].'包间',
             );
+
+            $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+            $res_invitationdata = $m_invitation_user->getInfo(array('invitation_id'=>$invitation_id,'openid'=>$openid));
             $is_accept = 1;
             $now_time = date('Y-m-d H:00:00');
-            if($now_time>$res_info['book_time']){
+            if($now_time>$res_info['book_time'] || !empty($res_invitationdata)){
                 $is_accept = 0;
             }
             $res_data['is_accept'] = $is_accept;

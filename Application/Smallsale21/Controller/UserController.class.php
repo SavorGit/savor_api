@@ -666,6 +666,8 @@ class UserController extends CommonController{
                 case 11:
                 case 12:
                 case 13:
+                case 15:
+                case 16:
                     $content = $all_types[$v['type']];
                     break;
                 case 14:
@@ -1059,6 +1061,8 @@ class UserController extends CommonController{
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,a.merchant_id,merchant.type',$where);
         if(empty($res_staff) || $res_staff[0]['type']!=2){
+            $data = array('datalist'=>array());
+            $this->to_back($data);
             $this->to_back(93001);
         }
         $all_nums = $page * $pagesize;

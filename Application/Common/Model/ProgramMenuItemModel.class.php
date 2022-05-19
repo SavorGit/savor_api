@@ -72,7 +72,7 @@ class ProgramMenuItemModel extends Model
                when 8 then 'life'
                when 9 then 'storesale'
 			   END AS type 
-	           FROM savor_programmenu_item WHERE menu_id=$menuid and  type in(1,3,4,5,6,7,8)";
+	           FROM savor_programmenu_item WHERE menu_id=$menuid and  type in(1,3,4,5,6,7,8,9)";
 	    $result = $this->query($sql);
 	    return $result;
 	}

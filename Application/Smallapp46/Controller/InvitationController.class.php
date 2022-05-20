@@ -77,7 +77,13 @@ class InvitationController extends CommonController{
             $users = $m_user->getWhere('avatarUrl,nickName',$where,'','','');
             $num = count($users);
         }
-        $this->to_back(array('num'=>$num,'users'=>$users));
+        $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+        $res_data = $m_invitation_user->getInfo(array('invitation_id'=>$invitation_id,'openid'=>$openid));
+        $type = 1;
+        if(!empty($res_data)){
+            $type = $res_data['type'];
+        }
+        $this->to_back(array('type'=>$type,'num'=>$num,'users'=>$users));
     }
 
     public function receiveintegral(){

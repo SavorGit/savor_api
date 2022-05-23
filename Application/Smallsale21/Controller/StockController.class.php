@@ -158,7 +158,8 @@ class StockController extends CommonController{
                 $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
                 $report_num = $res_worecord[0]['total_amount'];
 
-                $stock_num = $out_num+$unpack_num+$wo_num+$report_num;
+//                $stock_num = $out_num+$unpack_num+$wo_num+$report_num;
+                $stock_num = $out_num+$wo_num+$report_num;
                 $v['stock_num']=$stock_num;
                 $goods_list[]=$v;
             }

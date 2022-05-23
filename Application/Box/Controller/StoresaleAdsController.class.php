@@ -38,7 +38,7 @@ class StoresaleAdsController extends CommonController{
         }
         $now_date = date('Y-m-d H:i:s');
         $m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
-        $fields = "media.id as vid,ads.id as ads_id,media.md5,ads.name as chinese_name,media.oss_addr as oss_path,media.duration as duration,
+        $fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as chinese_name,media.oss_addr as oss_path,media.duration as duration,
         media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,ads.resource_type as media_type";
         $where = array('a.hotel_id'=>$hotel_id);
         $where['sads.start_date'] = array('ELT',$now_date);
@@ -51,6 +51,7 @@ class StoresaleAdsController extends CommonController{
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             foreach ($res_data as $k=>$v){
                 $res_data[$k]['type'] = 'storesale';
+                $res_data[$k]['is_sapp_qrcode'] = intval($v['is_sapp_qrcode']);
                 $res_data[$k]['is_price'] = intval($v['is_price']);
                 $name_info = pathinfo($v['oss_path']);
                 $res_data[$k]['name'] = $name_info['basename'];

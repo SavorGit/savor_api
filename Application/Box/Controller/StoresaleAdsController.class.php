@@ -59,7 +59,7 @@ class StoresaleAdsController extends CommonController{
                 $res_media = $m_media->getMediaInfoById($goods_info['model_media_id']);
                 $res_data[$k]['wine_type'] = intval($goods_info['wine_type']);
                 $res_data[$k]['goods_id'] = $v['goods_id'];
-                $res_data[$k]['image'] = $res_media['oss_path'];
+                $res_data[$k]['image_url'] = $res_media['oss_path'];
                 $res_data[$k]['price'] = intval($goods_info['price']).'元/瓶';
             }
         }

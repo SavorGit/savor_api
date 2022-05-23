@@ -53,7 +53,7 @@ class IndexController extends CommonController{
                 break;
             case 'isHaveCallBox':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002,'action'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002);
+                $this->valid_fields = array('openid'=>1001,'pop_eval'=>1002,'action'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002,'jump_id'=>1002);
                 break;
             case 'recordForScreenPics':
                 $this->is_verify = 1;
@@ -270,6 +270,7 @@ class IndexController extends CommonController{
         $action = $this->params['action'];
         $mobile_brand = $this->params['mobile_brand'];
         $mobile_model = $this->params['mobile_model'];
+		$jump_id      = !empty($this->params['jump_id']) ?$this->params['jump_id'] :0 ;
 
         $redis = SavorRedis::getInstance();
         $redis->select(5);
@@ -384,6 +385,15 @@ class IndexController extends CommonController{
         }
         $data['is_test'] = $is_test;
         $data['audit_tips'] = $audit_tips;
+		
+		if(!empty($jump_id)){
+			switch($jump_id){
+				case 101:
+				 $jump_arr = array('type'=>1,'url'=>'/mall/pages/wine/index?tab=online','is_param'=>1);
+				 break;
+			}
+			$data['jump_info'] = $jump_arr;
+		}
         $this->to_back($data);
     }
 

@@ -755,4 +755,8 @@ return array(
         'guest_to_user'=>20,
         'max_limit'=>300,
     ),
+	'SECKILL_GOODS_CONFIG'=>ARRAY(
+		'left_pop_wind' =>1,
+		'marquee'       =>1,
+	),
 );

@@ -149,7 +149,24 @@ class ForscreenController extends CommonController{
                 }
                 */
             }
-
+			//$data['left_pop_wind'] = 1;    //左侧弹窗
+			//$data['marquee']       = 1;    //跑马灯
+			$hotel_id = $room_info['hotel_id'];
+			$m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $nowtime = date('Y-m-d H:i:s');
+            $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
+            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
+            $where['g.start_time'] = array('elt',$nowtime);
+            $where['g.end_time'] = array('egt',$nowtime);
+            $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','0,1');
+			if(!empty($res_goods)){
+				$data['is_sale_hotel'] = 1;    //是否为售酒酒楼
+			}else {
+				$data['is_sale_hotel'] = 0;    //是否为售酒酒楼
+			}
+			
+			
+			
 
             $this->to_back($data);
         }

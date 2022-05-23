@@ -34,6 +34,7 @@ class GoodsController extends CommonController{
         $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $roll_content = array();
+		$seckill_goods_config = C('SECKILL_GOODS_CONFIG');
         if($version>2022030203){
             $roll_content = array();
             $nowtime = date('Y-m-d H:i:s');
@@ -67,7 +68,7 @@ class GoodsController extends CommonController{
                     $datalist[]=$info;
                 }
             }
-            $res_data = array('datalist'=>$datalist);
+            $res_data = array('datalist'=>$datalist,'left_pop_wind'=>$seckill_goods_config['left_pop_wind'],'marquee'=>$seckill_goods_config['marquee']);
         }else{
             $nowtime = date('Y-m-d H:i:s');
             $fields = 'g.id as goods_id,g.model_media_id,g.price,g.line_price,g.roll_content,g.end_time';
@@ -97,6 +98,8 @@ class GoodsController extends CommonController{
                 $res_data['price'] = intval($res_goods[0]['price']);
                 $res_data['line_price'] = intval($res_goods[0]['line_price']);
                 $res_data['remain_time'] = intval($remain_time);
+				$res_data['left_pop_wind'] = $seckill_goods_config['left_pop_wind'];
+				$res_data['marquee']        = $seckill_goods_config['marquee'];
             }
         }
         $fields = 'g.id as goods_id,g.name as goods_name,g.price';
@@ -113,7 +116,8 @@ class GoodsController extends CommonController{
             $roll_content[]="本店有售：".$goods_content.'，更多活动，扫码获取。';
         }
         $res_data['roll_content'] = $roll_content;
+		
         $this->to_back($res_data);
     }
-
+	
 }

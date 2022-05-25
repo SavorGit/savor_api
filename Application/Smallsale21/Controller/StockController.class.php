@@ -154,6 +154,7 @@ class StockController extends CommonController{
                 $wo_num = $res_worecord[0]['total_amount'];
 
                 $rwhere['a.type']=6;
+                unset($rwhere['a.wo_status']);
                 $rwhere['a.status']= array('in',array(1,2));
                 $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
                 $report_num = $res_worecord[0]['total_amount'];

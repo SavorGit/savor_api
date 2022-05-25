@@ -389,7 +389,7 @@ class IndexController extends CommonController{
 		if(!empty($jump_id)){
 			switch($jump_id){
 				case 101:
-				 $jump_arr = array('type'=>1,'url'=>'/mall/pages/wine/index?tab=online','is_param'=>1);
+				 $jump_arr = array('type'=>1,'url'=>'/pages/shopping/index','is_param'=>0);
 				 break;
 			}
 			$data['jump_info'] = $jump_arr;

@@ -1,7 +1,7 @@
 <?php
 namespace Smallsale21\Controller;
 use \Common\Controller\CommonController as CommonController;
-
+use Common\Lib\SavorRedis;
 class AdvController extends CommonController{
     /**
      * 构造函数
@@ -124,38 +124,49 @@ class AdvController extends CommonController{
         }
 		
 		//酒水
-		$now_date = date('Y-m-d H:i:s');
-        $m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
-        $fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as title,media.oss_addr as oss_path,media.duration as duration,
-				   media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,ads.resource_type as media_type,ads.create_time,
-				   media.oss_filesize as resource_size,media.id as media_id,dg.cover_imgs img_url";
-        $where = array('a.hotel_id'=>$hotel_id);
-        $where['sads.start_date'] = array('ELT',$now_date);
-        $where['sads.end_date'] = array('EGT',$now_date);
-        $where['sads.state']= 1;
-        $order = "sads.id asc";
-        $res_data = $m_life_adshotel->getGoodsList($fields, $where, $order);
+		$redis = SavorRedis::getInstance();
+        $redis->select(9);
+        $cache_key = C('FINANCE_HOTELSTOCK');
+		$result  = $redis->get($cache_key);
+		
+		$hotel_arr = json_decode($result,true);
+		//print_r($hotel_arr);exit;
 		$win_list = array();
-		if(!empty($res_data)){
-			foreach($res_data as $v){
-				$dinfo = array('id'=>$v['ads_id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time);
-				$res_url = $oss_host.$v['oss_path'];
-                $forscreen_url = $v['oss_path'];
-                $duration = intval($v['duration']);
-                $resource_size = $v['resource_size'];
-                $res_id = $v['media_id'];
-                $pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
-                    'resource_size'=>$resource_size,'res_id'=>$res_id);
-                $oss_info = pathinfo($forscreen_url);
-                $pdetail['filename'] = $oss_info['basename'];
-				$img_arr = explode(',',$v['img_url']);
-				
-                $img_url = $v['img_url']? $img_arr[0] :'media/resource/EDBAEDArdh.png';
-                $pdetail['img_url'] = $oss_host.$img_url;
-                $dinfo['pubdetail'] = array($pdetail);
-				$win_list[] = $dinfo;
+		if(!empty($hotel_arr[$hotel_id])){
+			$now_date = date('Y-m-d H:i:s');
+			$m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
+			$fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as title,media.oss_addr as oss_path,media.duration as duration,
+					   media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,ads.resource_type as media_type,ads.create_time,
+					   media.oss_filesize as resource_size,media.id as media_id,dg.cover_imgs img_url";
+			$where = array('a.hotel_id'=>$hotel_id);
+			$where['sads.start_date'] = array('ELT',$now_date);
+			$where['sads.end_date'] = array('EGT',$now_date);
+			$where['sads.state']= 1;
+			$order = "sads.id asc";
+			$res_data = $m_life_adshotel->getGoodsList($fields, $where, $order);
+			if(!empty($res_data)){
+				foreach($res_data as $v){
+					$dinfo = array('id'=>$v['ads_id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time);
+					$res_url = $oss_host.$v['oss_path'];
+					$forscreen_url = $v['oss_path'];
+					$duration = intval($v['duration']);
+					$resource_size = $v['resource_size'];
+					$res_id = $v['media_id'];
+					$pdetail = array('res_url'=>$res_url,'forscreen_url'=>$forscreen_url,'duration'=>$duration,
+						'resource_size'=>$resource_size,'res_id'=>$res_id);
+					$oss_info = pathinfo($forscreen_url);
+					$pdetail['filename'] = $oss_info['basename'];
+					$img_arr = explode(',',$v['img_url']);
+					
+					$img_url = $v['img_url']? $img_arr[0] :'media/resource/EDBAEDArdh.png';
+					$pdetail['img_url'] = $oss_host.$img_url;
+					$dinfo['pubdetail'] = array($pdetail);
+					$win_list[] = $dinfo;
+				}
 			}
 		}
+		
+		
 		$result = array_merge($ads_list,$win_list);
 		
         $data = array('datalist'=>$result);

@@ -1,7 +1,7 @@
 <?php
 namespace Smallsale21\Controller;
 use \Common\Controller\CommonController as CommonController;
-
+use Common\Lib\SavorRedis;
 class StockController extends CommonController{
     /**
      * 构造函数
@@ -89,6 +89,10 @@ class StockController extends CommonController{
                 break;
             case 'getWriteoffList':
                 $this->params = array('openid'=>1001,'page'=>1001);
+                $this->is_verify = 1;
+                break;
+			case 'isHaveStockHotel':
+				$this->params = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
                 break;
         }
@@ -1207,6 +1211,27 @@ class StockController extends CommonController{
 
 
     }
-
+	public function isHaveStockHotel(){
+		$openid = $this->params['openid'];
+		$hotel_id = $this->params['hotel_id'];
+		$data = [];
+		$data['is_pop_time'] = 0;
+		$redis = SavorRedis::getInstance();
+        $redis->select(9);
+        $cache_key = C('FINANCE_HOTELSTOCK');
+		$result  = $redis->get($cache_key);
+		
+		$hotel_arr = json_decode($result,true);
+		if(!empty($hotel_arr[$hotel_id])){
+			$now_time = time();
+			$s_time = strtotime(date('Y-m-d 18:45:00'));
+			$end_time = strtotime(date('Y-m-d 19:15:00'));
+			if($now_time>=$s_time && $now_time<=$end_time){
+				$data['is_pop_time'] = 1;
+			}
+		}
+		
+		$this->to_back($data);
+	}
 
 }

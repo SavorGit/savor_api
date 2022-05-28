@@ -52,7 +52,7 @@ class StoresaleAdsController extends CommonController{
         $now_date = date('Y-m-d H:i:s');
         $m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
         $fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as chinese_name,media.oss_addr as oss_path,media.duration as duration,
-        media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,dg.finance_goods_id,ads.resource_type as media_type";
+        media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,dg.finance_goods_id,dg.price,dg.wine_type,dg.advright_media_id,ads.resource_type as media_type";
         $where = array('a.hotel_id'=>$hotel_id);
         $where['sads.start_date'] = array('ELT',$now_date);
         $where['sads.end_date'] = array('EGT',$now_date);
@@ -69,13 +69,15 @@ class StoresaleAdsController extends CommonController{
                     $v['is_price'] = intval($v['is_price']);
                     $name_info = pathinfo($v['oss_path']);
                     $v['name'] = $name_info['basename'];
-
-                    $goods_info = $m_goods->getInfo(array('id'=>$v['goods_id']));
-                    $res_media = $m_media->getMediaInfoById($goods_info['model_media_id']);
-                    $v['wine_type'] = intval($goods_info['wine_type']);
+                    $v['wine_type'] = intval($v['wine_type']);
                     $v['goods_id'] = $v['goods_id'];
-                    $v['image_url'] = $res_media['oss_path'];
-                    $v['price'] = intval($goods_info['price']).'元/瓶';
+                    $v['price'] = intval($v['price']).'元/瓶';
+                    $image_url = '';
+                    if($v['advright_media_id']){
+                        $res_media = $m_media->getMediaInfoById($v['advright_media_id']);
+                        $image_url = $res_media['oss_path'];
+                    }
+                    $v['image_url'] = $image_url;
                     $media_list[]=$v;
                 }
             }

@@ -142,14 +142,14 @@ class AdvController extends CommonController{
 		$result  = $redis->get($cache_key);
 		
 		$hotel_arr = json_decode($result,true);
-		//print_r($hotel_arr);exit;
 		$win_list = array();
 		if(!empty($hotel_arr[$hotel_id])){
+		    $m_media = new \Common\Model\MediaModel();
 			$now_date = date('Y-m-d H:i:s');
 			$m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
 			$fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as title,media.oss_addr as oss_path,media.duration as duration,
 					   media.surfix as suffix,sads.start_date,sads.end_date,sads.is_price,sads.goods_id,ads.resource_type as media_type,ads.create_time,
-					   media.oss_filesize as resource_size,media.id as media_id,dg.cover_imgs img_url";
+					   media.oss_filesize as resource_size,media.id as media_id,sads.cover_img_media_id";
 			$where = array('a.hotel_id'=>$hotel_id);
 			$where['sads.start_date'] = array('ELT',$now_date);
 			$where['sads.end_date'] = array('EGT',$now_date);
@@ -168,9 +168,12 @@ class AdvController extends CommonController{
 						'resource_size'=>$resource_size,'res_id'=>$res_id);
 					$oss_info = pathinfo($forscreen_url);
 					$pdetail['filename'] = $oss_info['basename'];
-					$img_arr = explode(',',$v['img_url']);
-					
-					$img_url = $v['img_url']? $img_arr[0] :'media/resource/EDBAEDArdh.png';
+
+                    $img_url = 'media/resource/EDBAEDArdh.png';
+                    if($v['cover_img_media_id']){
+                        $res_media = $m_media->getMediaInfoById($v['cover_img_media_id']);
+                        $img_url = $res_media['oss_path'];
+                    }
 					$pdetail['img_url'] = $oss_host.$img_url;
 					$dinfo['pubdetail'] = array($pdetail);
 					$win_list[] = $dinfo;

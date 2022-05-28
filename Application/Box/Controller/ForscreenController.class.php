@@ -164,8 +164,8 @@ class ForscreenController extends CommonController{
 			}else {
 				$data['is_sale_hotel'] = 0;    //是否为售酒酒楼
 			}
-			$data['qrcode_tip']  = array('扫码投屏','扫码有礼','扫码抽奖');
-			
+			//$data['qrcode_tip']  = array('扫码投屏','扫码有礼','扫码抽奖');
+			$data['qrcode_tip']  = array('扫码投屏','扫码有礼');
 			
 
             $this->to_back($data);

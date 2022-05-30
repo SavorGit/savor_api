@@ -29,12 +29,16 @@ class StoresaleAdsController extends CommonController{
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(12);
         $cache_key = C('SMALLAPP_STORESALE_ADS').$hotel_id;
-        $res_cachedata = $redis->get($cache_key);
-        if(!empty($res_cachedata)){
-            $period = $res_cachedata;
+        $res_ads_cachedata = $redis->get($cache_key);
+        if(!empty($res_ads_cachedata)){
+            $ads_cache_data = json_decode($res_ads_cachedata,true);
+            $period = $ads_cache_data['period'];
+            $cache_goods_ids = $ads_cache_data['goods_ids'];
         }else {
             $period = getMillisecond();
-            $redis->set($cache_key,$period,86400*14);
+            $cache_goods_ids = array();
+            $ads_cache_data = array('period'=>$period,'goods_ids'=>$cache_goods_ids);
+            $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
         }
         $redis->select(9);
         $key = C('FINANCE_HOTELSTOCK');
@@ -45,6 +49,7 @@ class StoresaleAdsController extends CommonController{
         }
         $media_list = array();
         if(!isset($hotel_stock[$hotel_id])){
+            $period = getMillisecond();
             $data = array('period'=>$period,'media_list'=>$media_list);
             $this->to_back($data);
         }
@@ -59,11 +64,12 @@ class StoresaleAdsController extends CommonController{
         $where['sads.state']= 1;
         $order = "sads.id asc";
         $res_data = $m_life_adshotel->getGoodsList($fields,$where,$order,'');
+        $now_goods_ids = array();
         if(!empty($res_data)){
             $m_media = new \Common\Model\MediaModel();
-            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             foreach ($res_data as $k=>$v){
                 if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                    $now_goods_ids[]=$v['goods_id'];
                     $v['type'] = 'storesale';
                     $v['is_sapp_qrcode'] = intval($v['is_sapp_qrcode']);
                     $v['is_price'] = intval($v['is_price']);
@@ -82,7 +88,24 @@ class StoresaleAdsController extends CommonController{
                 }
             }
         }
-        $data = array('period'=>$period,'media_list'=>$media_list);
+        $is_upcache = 0;
+        if(empty($now_goods_ids)){
+            $period = getMillisecond();
+            $is_upcache = 1;
+        }else{
+            if($cache_goods_ids!=$now_goods_ids){
+                $is_upcache = 1;
+                $period = getMillisecond();
+            }
+        }
+        if($is_upcache){
+            $redis->select(12);
+            $cache_key = C('SMALLAPP_STORESALE_ADS').$hotel_id;
+            $ads_cache_data = array('period'=>$period,'goods_ids'=>$now_goods_ids);
+            $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
+        }
+
+        $data = array('period'=>$period,'media_list'=>$media_list,'cache_goods_ids'=>$cache_goods_ids,'now_goods_ids'=>$now_goods_ids);
         $this->to_back($data);
     }
 }

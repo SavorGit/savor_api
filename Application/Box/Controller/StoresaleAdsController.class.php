@@ -105,7 +105,7 @@ class StoresaleAdsController extends CommonController{
             $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
         }
 
-        $data = array('period'=>$period,'media_list'=>$media_list,'cache_goods_ids'=>$cache_goods_ids,'now_goods_ids'=>$now_goods_ids);
+        $data = array('period'=>$period,'media_list'=>$media_list);
         $this->to_back($data);
     }
 }

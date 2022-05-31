@@ -38,7 +38,7 @@ class UserController extends CommonController{
                 break;
             case 'signin':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1000,'is_sale_wine'=>1002);
                 break;
             case 'getSigninBoxList':
                 $this->is_verify = 1;
@@ -317,6 +317,7 @@ class UserController extends CommonController{
     public function signin(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
+		$is_sale_wine = !empty($this->params['is_sale_wine']) ? $this->params['is_sale_wine'] :0;
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -383,39 +384,73 @@ class UserController extends CommonController{
 
         $m_taskuser = new \Common\Model\Integral\TaskuserModel();
         $m_taskuser->getTask($openid,$box_info[0]['hotel_id']);
-
-        $m_ads = new \Common\Model\AdsModel();
-        $ads_where = array('hotel_id'=>$box_info[0]['hotel_id'],'state'=>1,'is_online'=>1);
-        $res_ads = $m_ads->getWhere($ads_where, 'id,media_id');
-        if(!empty($res_ads)){
-            $media_ids = array();
-            foreach ($res_ads as $av){
-                $media_ids[]=$av['media_id'];
-            }
-            shuffle($media_ids);
-            $media_id = $media_ids[0];
-            $m_media = new \Common\Model\MediaModel();
-            $res_media = $m_media->getMediaInfoById($media_id);
-            $file_info = pathinfo($res_media['oss_path']);
-            $filename = $file_info['basename'];
-
-            $nowtime = getMillisecond();
-            $message = array('action'=>5,'url'=>$res_media['oss_addr'],'filename'=>$filename,
-                'forscreen_id'=>$nowtime,'resource_id'=>$nowtime);
-            $m_netty = new \Common\Model\NettyModel();
-            $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
-            if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
-                $m_netty->pushBox($box_mac,json_encode($message));
-            }
-
-            $imgs = array($res_media['oss_path']);
-            $data = array('openid'=>$openid,'box_mac'=>$box_mac,'action'=>5,'forscreen_char'=>'','forscreen_id'=>$nowtime,
-                'mobile_brand'=>'iPhone','mobile_model'=>'iPhone XR','resource_id'=>$nowtime,'imgs'=>json_encode($imgs),'small_app_id'=>5);
-            $redis = \Common\Lib\SavorRedis::getInstance();
-            $redis->select(5);
-            $cache_key = C('SAPP_SCRREN').":".$box_mac;
-            $redis->rpush($cache_key, json_encode($data));
+		
+		
+		$redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK');
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)) {
+            $hotel_stock = json_decode($res_cache, true);
         }
+		if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && !empty($is_sale_wine)) {//酒水广告
+			$media_id = 0;
+			$res_media['oss_addr'] = 'media/resource/TYFeD6BXJc.mp4';
+			$file_info = pathinfo($res_media['oss_path']);
+			$filename = $file_info['basename'];
+			$nowtime = getMillisecond();
+			
+			$message = array('action'=>5,'url'=>$res_media['oss_addr'],'filename'=>$filename,
+					'forscreen_id'=>$nowtime,'resource_id'=>$nowtime);
+					
+			$m_netty = new \Common\Model\NettyModel();
+			$res_netty = $m_netty->pushBox($box_mac,json_encode($message));
+			if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+				$m_netty->pushBox($box_mac,json_encode($message));
+			}
+			$imgs = array($res_media['oss_path']);
+			$data = array('openid'=>$openid,'box_mac'=>$box_mac,'action'=>5,'forscreen_char'=>'','forscreen_id'=>$nowtime,
+				'mobile_brand'=>'iPhone','mobile_model'=>'iPhone XR','resource_id'=>$nowtime,'imgs'=>json_encode($imgs),'small_app_id'=>5);
+			$redis = \Common\Lib\SavorRedis::getInstance();
+			$redis->select(5);
+			$cache_key = C('SAPP_SCRREN').":".$box_mac;
+			$redis->rpush($cache_key, json_encode($data));
+
+		}else {
+			$m_ads = new \Common\Model\AdsModel();
+			$ads_where = array('hotel_id'=>$box_info[0]['hotel_id'],'state'=>1,'is_online'=>1);
+			$res_ads = $m_ads->getWhere($ads_where, 'id,media_id');
+			if(!empty($res_ads)){
+				$media_ids = array();
+				foreach ($res_ads as $av){
+					$media_ids[]=$av['media_id'];
+				}
+				shuffle($media_ids);
+				$media_id = $media_ids[0];
+				$m_media = new \Common\Model\MediaModel();
+				$res_media = $m_media->getMediaInfoById($media_id);
+				$file_info = pathinfo($res_media['oss_path']);
+				$filename = $file_info['basename'];
+
+				$nowtime = getMillisecond();
+				$message = array('action'=>5,'url'=>$res_media['oss_addr'],'filename'=>$filename,
+					'forscreen_id'=>$nowtime,'resource_id'=>$nowtime);
+				$m_netty = new \Common\Model\NettyModel();
+				$res_netty = $m_netty->pushBox($box_mac,json_encode($message));
+				if(isset($res_netty['error_code']) && $res_netty['error_code']==90109){
+					$m_netty->pushBox($box_mac,json_encode($message));
+				}
+
+				$imgs = array($res_media['oss_path']);
+				$data = array('openid'=>$openid,'box_mac'=>$box_mac,'action'=>5,'forscreen_char'=>'','forscreen_id'=>$nowtime,
+					'mobile_brand'=>'iPhone','mobile_model'=>'iPhone XR','resource_id'=>$nowtime,'imgs'=>json_encode($imgs),'small_app_id'=>5);
+				$redis = \Common\Lib\SavorRedis::getInstance();
+				$redis->select(5);
+				$cache_key = C('SAPP_SCRREN').":".$box_mac;
+				$redis->rpush($cache_key, json_encode($data));
+			}
+		}
+
+        
 
         $res_data = array('status'=>2);
         $where = array('openid'=>$openid,'small_app_id'=>5);

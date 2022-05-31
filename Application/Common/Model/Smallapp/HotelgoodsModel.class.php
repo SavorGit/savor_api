@@ -29,4 +29,32 @@ class HotelgoodsModel extends BaseModel{
             ->select();
         return $data;
     }
+
+    public function getStockGoodsList($hotel_id,$offset,$pagesize){
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK');
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $hotel_stock = json_decode($res_cache,true);
+            if(isset($hotel_stock[$hotel_id])){
+                $fields = 'g.id,g.name,g.price,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
+                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+                $order = 'g.wine_type asc';
+                $res_data = $this->getGoodsList($fields,$where,$order,'','');
+                $all_data = array();
+                foreach ($res_data as $v){
+                    if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                        $all_data[]=$v;
+                    }
+                }
+                $data = array_slice($all_data,$offset,$pagesize);
+            }else{
+                $data = array();
+            }
+        }else{
+            $data = array();
+        }
+        return $data;
+    }
 }

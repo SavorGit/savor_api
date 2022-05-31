@@ -51,16 +51,15 @@ class GoodsController extends CommonController{
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
+
         $res_goods = array();
         if($is_olddata || isset($hotel_stock[$hotel_id])){
-            $nowtime = date('Y-m-d H:i:s');
-            $fields = 'g.id as goods_id,g.name as goods_name,g.model_media_id,g.price,g.line_price,g.finance_goods_id,g.end_time,g.is_seckill';
+            $fields = 'g.id as goods_id,g.name as goods_name,g.model_media_id,g.price,g.line_price,g.finance_goods_id,g.end_time,g.is_seckill,
+            g.start_time,g.end_time';
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-            $where['g.start_time'] = array('elt',$nowtime);
-            $where['g.end_time'] = array('egt',$nowtime);
             $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
         }
-
+        $nowtime = date('Y-m-d H:i:s');
         if(!empty($res_goods)){
             $m_config = new \Common\Model\SysConfigModel();
             $all_config = $m_config->getAllconfig();
@@ -71,7 +70,8 @@ class GoodsController extends CommonController{
                 if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
                     $price = intval($v['price']);
                     $goods_info[]="{$v['goods_name']}({$price}元)";
-                    if($v['is_seckill']==1){
+
+                    if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
                         $end_time = strtotime($v['end_time']);
                         $now_time = time();
                         $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
@@ -86,8 +86,12 @@ class GoodsController extends CommonController{
             }
             if(!empty($goods_info)){
                 $goods_info = array_unique($goods_info);
-                $goods_content = join('、',$goods_info);
-                $roll_content[]="本店有售：".$goods_content.'，更多活动，扫码获取。';
+                if(count($goods_info)>1){
+                    $goods_content = join("、",$goods_info);
+                }else{
+                    $goods_content = $goods_info[0]."                                       ";
+                }
+                $roll_content[]=$goods_content;
             }
         }
         $res_data = array('datalist'=>$datalist,'left_pop_wind'=>$seckill_goods_config['left_pop_wind'],'marquee'=>$seckill_goods_config['marquee'],

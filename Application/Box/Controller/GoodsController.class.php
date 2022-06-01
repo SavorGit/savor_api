@@ -89,9 +89,11 @@ class GoodsController extends CommonController{
                 if(count($goods_info)>1){
                     $goods_content = join("、",$goods_info);
                 }else{
-                    $goods_content = $goods_info[0]."                                       ";
+                    $goods_content = $goods_info[0]."                                                                                   ";
                 }
                 $roll_content[]=$goods_content;
+            }else{
+                $roll_content = array();
             }
         }
         $res_data = array('datalist'=>$datalist,'left_pop_wind'=>$seckill_goods_config['left_pop_wind'],'marquee'=>$seckill_goods_config['marquee'],

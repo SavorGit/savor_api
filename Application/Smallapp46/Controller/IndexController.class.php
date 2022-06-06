@@ -683,18 +683,29 @@ class IndexController extends CommonController{
                 }else{
                     $seckill_banner = 'http://'.$oss_host.'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
                 }
-                $fields = 'g.id as goods_id,g.poster_media_id';
+                $fields = 'g.id as goods_id,g.poster_media_id,g.finance_goods_id';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
                 $nowtime = date('Y-m-d H:i:s');
                 $where['g.start_time'] = array('elt',$nowtime);
                 $where['g.end_time'] = array('egt',$nowtime);
                 $res_goods = $m_hotel_goods->getGoodsList($fields,$where,'g.id desc','0,1');
                 if(!empty($res_goods)){
-                    $hotel_seckill_goods_id = $res_goods[0]['goods_id'];
-                    $res_media = $m_media->getMediaInfoById($res_goods[0]['poster_media_id']);
-                    if(!empty($res_media)){
-                        $hotel_seckill_goods_img = $res_media['oss_addr'];
+                    $redis->select(9);
+                    $stock_key = C('FINANCE_HOTELSTOCK');
+                    $res_stockcache = $redis->get($stock_key);
+                    if(!empty($res_stockcache)) {
+                        $hotel_stock = json_decode($res_stockcache, true);
+                        if (isset($hotel_stock[$hotel_id])) {
+                            if(in_array($res_goods[0]['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                                $hotel_seckill_goods_id = $res_goods[0]['goods_id'];
+                                $res_media = $m_media->getMediaInfoById($res_goods[0]['poster_media_id']);
+                                if(!empty($res_media)){
+                                    $hotel_seckill_goods_img = $res_media['oss_addr'];
+                                }
+                            }
+                        }
                     }
+
                 }
                 $is_annualmeeting = intval($res_ext['is_annualmeeting']);
             }

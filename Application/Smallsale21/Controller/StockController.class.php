@@ -76,7 +76,7 @@ class StockController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'getWriteoffReasonByGoods':
-                $this->params = array('goods_id'=>1001);
+                $this->params = array('goods_id'=>1001,'type'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'scanWriteoff':
@@ -1055,9 +1055,14 @@ class StockController extends CommonController{
 
     public function getWriteoffReasonByGoods(){
         $goods_id = intval($this->params['goods_id']);
-
+        $type = intval($this->params['type']);//类型 1售卖,2品鉴酒,3活动
+        if($type>0){
+            $now_type = $type;
+        }else{
+            $now_type = 1;
+        }
         $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>1);
+        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>$now_type);
         $field = 'id,name,is_required';
         $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
         $data = array();

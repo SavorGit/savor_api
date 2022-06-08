@@ -1,7 +1,7 @@
 <?php
 namespace Smallsale21\Controller;
 use \Common\Controller\CommonController as CommonController;
-use Common\Lib\SavorRedis;
+
 class StockController extends CommonController{
     /**
      * 构造函数
@@ -24,7 +24,7 @@ class StockController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'scancode':
-                $this->params = array('openid'=>1001,'unit_id'=>1001,'idcode'=>1001,'type'=>1001,'goods_id'=>1001);
+                $this->params = array('openid'=>1001,'unit_id'=>1001,'idcode'=>1001,'type'=>1001,'goods_id'=>1001,'stock_detail_id'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'unpacking':
@@ -185,13 +185,13 @@ class StockController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
+        $m_duser = new \Common\Model\Finance\DepartmentUserModel();
         $m_stock = new \Common\Model\Finance\StockModel();
         $where = array('area_id'=>$area_id,'type'=>$type);
         $where['status'] = array('in',array(1,0));
         $res_stock = $m_stock->getDataList('*',$where,'id asc');
         $inprogress_list = $finish_list = array();
         if(!empty($res_stock)){
-            $m_duser = new \Common\Model\Finance\DepartmentUserModel();
             foreach ($res_stock as $v){
                 $res_duser = $m_duser->getInfo(array('id'=>$v['department_user_id']));
                 $info = array('stock_id'=>$v['id'],'name'=>$v['name'],'add_time'=>$v['add_time'],'user_name'=>$res_duser['name'],'status'=>1);
@@ -203,7 +203,6 @@ class StockController extends CommonController{
         $where['status'] = array('in',array(2,3,4));
         $res_stock = $m_stock->getDataList('*',$where,'id asc');
         if(!empty($res_stock)){
-            $m_duser = new \Common\Model\Finance\DepartmentUserModel();
             foreach ($res_stock as $v){
                 $res_duser = $m_duser->getInfo(array('id'=>$v['department_user_id']));
                 $info = array('stock_id'=>$v['id'],'name'=>$v['name'],'add_time'=>$v['add_time'],'user_name'=>$res_duser['name'],'status'=>2);
@@ -254,6 +253,7 @@ class StockController extends CommonController{
         $idcode = $this->params['idcode'];
         $type = $this->params['type'];//类型 10入库,20出库
         $goods_id = intval($this->params['goods_id']);
+        $stock_detail_id = intval($this->params['stock_detail_id']);
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -271,28 +271,47 @@ class StockController extends CommonController{
             $this->to_back(93080);
         }
 
-        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $where = array('idcode'=>$idcode);
-        $res_stock_record = $m_stock_record->getALLDataList('type',$where,'id desc','0,1','');
-        if(!empty($res_stock_record[0]['type']) && $res_stock_record[0]['type']>3){
-            $type_error_codes = array('4'=>93088,'5'=>93089,'6'=>93095,'7'=>93094);
-            if(isset($type_error_codes[$res_stock_record[0]['type']])){
-                $this->to_back($type_error_codes[$res_stock_record[0]['type']]);
+        $io_type = 0;
+        if($stock_detail_id>0){
+            $m_stockdetail = new \Common\Model\Finance\StockDetailModel();
+            $res_detail = $m_stockdetail->getStockDetailInfo('stock.io_type',array('a.id'=>$stock_detail_id));
+            if(!empty($res_detail)){
+                $io_type = $res_detail['io_type'];
             }
         }
 
-        $where = array('idcode'=>$idcode,'type'=>1);
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $where = array('idcode'=>$idcode,'dstatus'=>1);
+        $res_stock_record_type = $m_stock_record->getALLDataList('type',$where,'id desc','0,1','');
+        if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']>3){
+            $type_error_codes = array('4'=>93088,'5'=>93089,'6'=>93095,'7'=>93094);
+            if(in_array($io_type,array(12,13))){
+                $type_error_codes = array('6'=>93095,'7'=>93094);
+            }
+            if(isset($type_error_codes[$res_stock_record_type[0]['type']])){
+                $this->to_back($type_error_codes[$res_stock_record_type[0]['type']]);
+            }
+        }
+
+        $where = array('idcode'=>$idcode,'type'=>1,'dstatus'=>1);
         $res_stock_record = $m_stock_record->getInfo($where);
         $now_unit_id = 0;
         if($type==10){
             if(!empty($res_stock_record)){
-                $this->to_back(93081);
+            if(in_array($io_type,array(12,13))){
+                if(!empty($res_stock_record_type[0]['type'])){
+                    $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));
+                }
+            }else{
+                if(!empty($res_stock_record)){
+                    $this->to_back(93081);
+                }
             }
         }else{
             if(empty($res_stock_record)){
                 if(!empty($res_qrcode['parent_id'])){
                     $p_idcode = encrypt_data($res_qrcode['parent_id'],$key);
-                    $where = array('idcode'=>$p_idcode,'type'=>1);
+                    $where = array('idcode'=>$p_idcode,'type'=>1,'dstatus'=>1);
                     $res_p_stock_record = $m_stock_record->getInfo($where);
                     if(empty($res_p_stock_record)){
                         $this->to_back(93082);
@@ -329,7 +348,7 @@ class StockController extends CommonController{
             }
         }elseif($type==20){
             if($unit_id!=$now_unit_id){
-                $where = array('idcode'=>$idcode,'type'=>3);
+                $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                 $res_uppack = $m_stock_record->getInfo($where);
                 if(empty($res_uppack)){
                     $res = array('is_unpacking'=>1);
@@ -363,14 +382,14 @@ class StockController extends CommonController{
             $this->to_back(93080);
         }
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $res_stock_record = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1));
+        $res_stock_record = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1,'dstatus'=>1));
         $p_idcode = '';
         $p_idnum = 0;
         if(empty($res_stock_record) && $res_qrcode['type']==2){
             if(!empty($res_qrcode['parent_id'])){
                 $p_idnum = $res_qrcode['parent_id'];
                 $p_idcode = encrypt_data($res_qrcode['parent_id'],$key);
-                $where = array('idcode'=>$p_idcode,'type'=>1);
+                $where = array('idcode'=>$p_idcode,'type'=>1,'dstatus'=>1);
                 $res_p_stock_record = $m_stock_record->getInfo($where);
                 if(empty($res_p_stock_record)){
                     $this->to_back(93082);
@@ -380,7 +399,7 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $res_stock_outrecord = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>array('in',array(2,3))));
+        $res_stock_outrecord = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>array('in',array(2,3)),'dstatus'=>1));
         if(!empty($res_stock_outrecord)){
             $this->to_back(93085);
         }
@@ -457,11 +476,20 @@ class StockController extends CommonController{
 
         $price = 0;
         $total_fee = 0;
-        if($type==1 && !empty($res_detail['purchase_detail_id'])){
-            $m_purchasedetail = new \Common\Model\Finance\PurchaseDetailModel();
-            $res_purchase = $m_purchasedetail->getInfo(array('id'=>$res_detail['purchase_detail_id']));
-            $total_fee = $res_purchase['price'];
-            $price = sprintf("%.2f",$total_fee/$total_amount);//单瓶价格
+        if($type==1){
+            if(!empty($res_detail['purchase_detail_id'])){
+                $m_purchasedetail = new \Common\Model\Finance\PurchaseDetailModel();
+                $res_purchase = $m_purchasedetail->getInfo(array('id'=>$res_detail['purchase_detail_id']));
+                $total_fee = $res_purchase['price'];
+                $price = sprintf("%.2f",$total_fee/$total_amount);//单瓶价格
+            }else{
+                $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+                $res_record = $m_stock_record->getALLDataList('price,total_fee',array('goods_id'=>$goods_id,'unit_id'=>$unit_id,'type'=>1),'id asc','0,1','');
+                if(!empty($res_record)){
+                    $price = $res_record[0]['price'];
+                    $total_fee = $res_record[0]['total_fee'];
+                }
+            }
         }
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
@@ -478,11 +506,11 @@ class StockController extends CommonController{
                     );
                     $res_in = array();
                     if($type==2){
-                        $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1));
+                        $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1,'dstatus'=>1));
                         if(!empty($res_in)){
                             $data['price'] = -$res_in['price'];
                         }else{
-                            $where = array('idcode'=>$idcode,'type'=>3);
+                            $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                             $res_in = $m_stock_record->getInfo($where);
                             if(!empty($res_in)){
                                 $data['price'] = -$res_in['price'];
@@ -565,7 +593,7 @@ class StockController extends CommonController{
         if(empty($res_qrcode)){
             $this->to_back(93080);
         }
-        $where = array('idcode'=>$idcode,'type'=>$type);
+        $where = array('idcode'=>$idcode,'type'=>$type,'dstatus'=>1);
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $res_record = $m_stock_record->getInfo($where);
         if(!empty($res_record)){
@@ -660,7 +688,7 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $record_info = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>2));
+        $record_info = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>2,'dstatus'=>1));
         $now_stock_id = $record_info['stock_id'];
 
         $is_first = 0;
@@ -677,7 +705,7 @@ class StockController extends CommonController{
         if($res_stock['status']==2){
             $res_data = array('stock_id'=>$stock_id,'idcode'=>$idcode,'goods_list'=>array());
             if($is_first){
-                $where = array('stock_id'=>$stock_id,'type'=>2);
+                $where = array('stock_id'=>$stock_id,'type'=>2,'dstatus'=>1);
                 $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
                 $goods_list = array();
                 foreach ($res_records as $v){
@@ -727,7 +755,7 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $where = array('stock_id'=>$stock_id,'type'=>2);
+        $where = array('stock_id'=>$stock_id,'type'=>2,'dstatus'=>1);
         $res_records = $m_stock_record->getDataList('*',$where,'id desc');
         $goods_code_num = count($res_records);
         if($idcode_nums!=$goods_code_num){
@@ -776,7 +804,7 @@ class StockController extends CommonController{
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $record_info = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>2));
+        $record_info = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>2,'dstatus'=>1));
         $now_stock_id = $record_info['stock_id'];
 
         $is_first = 0;
@@ -793,11 +821,11 @@ class StockController extends CommonController{
         if($res_stock['status']==3){
             $res_data = array('stock_id'=>$stock_id,'idcode'=>$idcode,'goods_list'=>array());
             if($is_first){
-                $where = array('stock_id'=>$stock_id,'type'=>4);
+                $where = array('stock_id'=>$stock_id,'type'=>4,'dstatus'=>1);
                 $res_records = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
                 $goods_list = array();
                 foreach ($res_records as $v){
-                    $res_datainfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6));
+                    $res_datainfo = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6,'dstatus'=>1));
                     if(empty($res_datainfo)){
                         $v['checked'] = false;
                         $goods_list[]=$v;
@@ -844,12 +872,12 @@ class StockController extends CommonController{
         $now_idcodes = array();
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $where = array('stock_id'=>$stock_id,'type'=>4);
+        $where = array('stock_id'=>$stock_id,'type'=>4,'dstatus'=>1);
         $res_records = $m_stock_record->getDataList('*',$where,'id desc');
         $add_datas = array();
         $batch_no = date('YmdHis');
         foreach ($res_records as $v){
-            $res_data = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6));
+            $res_data = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6,'dstatus'=>1));
             if(empty($res_data)){
                 unset($v['id'],$v['update_time']);
                 $v['price'] = abs($v['price']);
@@ -897,7 +925,7 @@ class StockController extends CommonController{
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
         spec.name as spec_name,unit.name as unit_name,a.type,a.status,stock.serial_number,stock.name as stock_name,a.op_openid,a.add_time';
-        $where = array('a.idcode'=>$idcode);
+        $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
         $res_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $goods_info = array();
         if(!empty($res_records)){
@@ -1022,7 +1050,7 @@ class StockController extends CommonController{
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
             foreach ($all_idcodes as $v){
                 $idcode = $v;
-                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
                 if(!empty($res_record)){
                     $batch_no = date('YmdHis');
                     $add_data = $res_record[0];
@@ -1097,7 +1125,7 @@ class StockController extends CommonController{
             $this->to_back(93001);
         }
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
         $m_stock = new \Common\Model\Finance\StockModel();
         $res_stock = $m_stock->getInfo(array('id'=>$record_info[0]['stock_id']));
         if($res_stock['io_type']!=22){
@@ -1146,7 +1174,7 @@ class StockController extends CommonController{
             $batch_no = date('YmdHis');
             foreach ($all_idcodes as $v){
                 $idcode = $v;
-                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+                $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
                 if(!empty($res_record)){
                     $add_data = $res_record[0];
                     if($add_data['type']==7){
@@ -1212,30 +1240,27 @@ class StockController extends CommonController{
             }
         }
         $this->to_back($data_list);
-
-
-
     }
+
 	public function isHaveStockHotel(){
 		$openid = $this->params['openid'];
 		$hotel_id = $this->params['hotel_id'];
-		$data = [];
-		$data['is_pop_time'] = 0;
-		$redis = SavorRedis::getInstance();
+
+		$is_pop_time = 0;
+        $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
         $cache_key = C('FINANCE_HOTELSTOCK');
 		$result  = $redis->get($cache_key);
-		
 		$hotel_arr = json_decode($result,true);
 		if(!empty($hotel_arr[$hotel_id])){
 			$now_time = time();
 			$s_time = strtotime(date('Y-m-d 18:45:00'));
 			$end_time = strtotime(date('Y-m-d 19:15:00'));
 			if($now_time>=$s_time && $now_time<=$end_time){
-				$data['is_pop_time'] = 1;
+				$is_pop_time = 1;
 			}
 		}
-		
+        $data = array('is_pop_time'=>$is_pop_time);
 		$this->to_back($data);
 	}
 

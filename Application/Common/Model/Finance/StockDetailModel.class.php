@@ -30,4 +30,13 @@ class StockDetailModel extends BaseModel{
             ->select();
         return $res;
     }
+
+    public function getStockDetailInfo($fileds,$where){
+        $res = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_finance_stock stock on a.stock_id=stock.id','left')
+            ->where($where)
+            ->find();
+        return $res;
+    }
 }

@@ -297,7 +297,6 @@ class StockController extends CommonController{
         $res_stock_record = $m_stock_record->getInfo($where);
         $now_unit_id = 0;
         if($type==10){
-            if(!empty($res_stock_record)){
             if(in_array($io_type,array(12,13))){
                 if(!empty($res_stock_record_type[0]['type'])){
                     $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));

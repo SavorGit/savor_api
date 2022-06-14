@@ -136,7 +136,7 @@ class UserIntegralrecordModel extends BaseModel{
         }else{
             $now_integral = $task_integral['guest_to_user'];
         }
-        $where = array('openid'=>$invitation['openid'],'jdorder_id'=>$invitation['id']);
+        $where = array('openid'=>$invitation['openid'],'type'=>15);
         $fields = 'sum(integral) as total_integral';
         $res = $this->field($fields)->where($where)->find();
         $total_integral = 0;

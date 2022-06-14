@@ -534,7 +534,8 @@ return array(
         13=>'完成抽奖',
         14=>'完成销售任务',
         15=>'邀请函发给客人',
-        16=>'邀请函客人扩散',
+//        16=>'邀请函客人扩散',
+        17=>'开瓶费',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式
@@ -628,6 +629,7 @@ return array(
         'o9GS-4kpg8khL72nVZKDsgn0ioDM'=>'陈灵玉',
         'o9GS-4mouXnk_WhBAL-Zhsg0YbOE'=>'余穗筠',
         'o9GS-4mTCZvkRCDRnkg77QqohMI4'=>'胡子凤',
+        'o9GS-4ix2RgA41QyHjMqAljsvbvY'=>'黎晓欣',
     ),
     'STOCK_RECORD_TYPE'=>array('1'=>'入库','2'=>'出库','3'=>'拆箱','4'=>'领取','5'=>'验收','6'=>'报损','7'=>'核销'),
     'STOCK_REASON'=>array(
@@ -754,9 +756,9 @@ return array(
         'is_open_sellplatform'=>1,
     ),
     'INVITATION_TASK_INTEGRAL'=>array(
-        'send_guest'=>50,
-        'guest_to_user'=>20,
-        'max_limit'=>300,
+        'send_guest'=>555,
+        'guest_to_user'=>0,
+        'max_limit'=>6660,
     ),
 	'SECKILL_GOODS_CONFIG'=>ARRAY(
 		'left_pop_wind' =>1,

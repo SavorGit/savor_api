@@ -48,8 +48,10 @@ class InvitationController extends CommonController{
         if(empty($res_data)){
             $data = array('invitation_id'=>$invitation_id,'openid'=>$openid,'type'=>2);
             $m_invitation_user->add($data);
+            /*
             $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_userintegral->finishInvitationTask($res_info,16);
+            */
         }
         $this->to_back(array('invitation_id'=>$invitation_id));
     }

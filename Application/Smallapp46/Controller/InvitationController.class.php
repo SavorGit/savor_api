@@ -130,6 +130,12 @@ class InvitationController extends CommonController{
             $gps_arr = explode(',',$res_hotel['gps']);
             $latitude = $gps_arr[1];
             $longitude = $gps_arr[0];
+            $tx_lnglat = getgeoByTc($latitude, $longitude,2);
+            if($tx_lnglat[0]['x'] && !empty($tx_lnglat[0]['y'])) {
+                $latitude = $tx_lnglat[0]['y'];
+                $longitude = $tx_lnglat[0]['x'];
+            }
+
             $title = $res_info['name'].'，已成功为您预定包间。';
             $share_title = $res_hotel['name'].'期待您的光临';
             $oss_host = 'http://'.C('OSS_HOST').'/';

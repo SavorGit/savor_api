@@ -583,9 +583,16 @@ function getgeoByloa($lat,$lon){
         return $re['result'];
     }
 }
-function getgeoByTc($lat,$lon){
+function getgeoByTc($lat,$lon,$type=1){
+    if($type==1){//1转百度坐标,2百度转腾讯
+        $from = 1;
+        $to = 5;
+    }else{
+        $from = 5;
+        $to = 3;
+    }
     $ak = C('BAIDU_GEO_KEY');
-    $url = 'http://api.map.baidu.com/geoconv/v1/?coords='.$lon.','.$lat.'&from=1&to=5&ak='.$ak;
+    $url = 'http://api.map.baidu.com/geoconv/v1/?coords='.$lon.','.$lat."&from=$from&to=$to&ak=".$ak;
     
     $result = file_get_contents($url);
     $re = json_decode($result,true);

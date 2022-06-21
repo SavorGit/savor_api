@@ -91,8 +91,12 @@ class StockController extends CommonController{
                 $this->params = array('openid'=>1001,'page'=>1001);
                 $this->is_verify = 1;
                 break;
-			case 'isHaveStockHotel':
-				$this->params = array('openid'=>1001,'hotel_id'=>1001);
+            case 'scanReplaceCode':
+                $this->params = array('openid'=>1001,'idcode'=>1001,'type'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'isHaveStockHotel':
+                $this->params = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
                 break;
         }
@@ -936,7 +940,7 @@ class StockController extends CommonController{
             $record_types = C('STOCK_RECORD_TYPE');
             $goods_info['type_str'] = $record_types[$goods_info['type']];
             $m_user = new \Common\Model\Smallapp\UserModel();
-            $res_user = $m_user->getOne('nickName',array('openid'=>$openid),'id desc');
+            $res_user = $m_user->getOne('nickName',array('openid'=>$goods_info['op_openid']),'id desc');
             $goods_info['op_uname'] = $res_user['nickName'];
         }
         $this->to_back($goods_info);
@@ -1167,6 +1171,7 @@ class StockController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
+        $goods_ids = array();
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
@@ -1176,6 +1181,7 @@ class StockController extends CommonController{
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
                 if(!empty($res_record)){
                     $add_data = $res_record[0];
+                    $goods_ids[]=$add_data['goods_id'];
                     if($add_data['type']==7){
                         $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
                             'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
@@ -1201,7 +1207,17 @@ class StockController extends CommonController{
                 }
             }
         }
-        $this->to_back(array());
+        $message = '提交成功';
+        if(!empty($goods_ids)){
+            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $configwhere = array('goods_id'=>array('in',$goods_ids),'type'=>10);
+            $configwhere['integral'] = array('gt',0);
+            $res_goods = $m_goodsconfig->getDataList('*',$configwhere,'id desc');
+            if(!empty($res_goods)){
+                $message = '提交成功，审核通过后24小时内将为你发放对应积分奖励。';
+            }
+        }
+        $this->to_back(array('message'=>$message));
     }
 
     public function getWriteoffList(){
@@ -1241,26 +1257,126 @@ class StockController extends CommonController{
         $this->to_back($data_list);
     }
 
-	public function isHaveStockHotel(){
-		$openid = $this->params['openid'];
-		$hotel_id = $this->params['hotel_id'];
+    public function scanReplaceCode(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+        $type = $this->params['type'];//1老码,2新码
 
-		$is_pop_time = 0;
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        if($res_qrcode['type']!=1){
+            $res_data = array('tips'=>'扫码失败，目前只支持扫描箱码进行替换');
+            $this->to_back($res_data);
+        }
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+        spec.name as spec_name,unit.name as unit_name,a.type,a.status,stock.serial_number,stock.name as stock_name,a.op_openid,a.add_time';
+        $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
+        $res_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+        $res_data = array('tips'=>'');
+        if($type==1){
+            if(!empty($res_records)){
+                $goods_info = $res_records[0];
+                $record_types = C('STOCK_RECORD_TYPE');
+                $goods_info['type_str'] = $record_types[$goods_info['type']];
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $res_user = $m_user->getOne('nickName',array('openid'=>$goods_info['op_openid']),'id desc');
+                $goods_info['op_uname'] = $res_user['nickName'];
+                $res_data = array_merge($res_data,$goods_info);
+            }else{
+                $this->to_back(93101);
+            }
+        }else{
+            if(!empty($res_records)){
+                $this->to_back(93100);
+            }else{
+                $res_data['idcode'] = $idcode;
+            }
+        }
+        $this->to_back($res_data);
+    }
+
+
+    public function finishReplaceCode(){
+        $openid = $this->params['openid'];
+        $old_code = $this->params['old_code'];
+        $new_code = $this->params['new_code'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($old_code,false,$key);
+        $old_qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_oldqrcode = $m_qrcode_content->getInfo(array('id'=>$old_qrcode_id));
+        if(empty($res_oldqrcode)){
+            $this->to_back(93080);
+        }
+
+        $qrcode_id = decrypt_data($new_code,false,$key);
+        $new_qrcode_id = intval($qrcode_id);
+        $res_newqrcode = $m_qrcode_content->getInfo(array('id'=>$new_qrcode_id));
+        if(empty($res_newqrcode)){
+            $this->to_back(93080);
+        }
+
+        if($res_oldqrcode['type']==1 && $res_newqrcode['type']==1){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $m_stock_record->updateData(array('idcode'=>$old_code),array('idcode'=>$new_code));
+
+            $all_new_codes = array();
+            $res_ncodes = $m_qrcode_content->getDataList('*',array('parent_id'=>$new_qrcode_id),'id desc');
+            foreach ($res_ncodes as $v){
+                $all_new_codes[]=encrypt_data($v['id'],$key);
+            }
+            $res_ocodes = $m_qrcode_content->getDataList('*',array('parent_id'=>$old_qrcode_id),'id desc');
+            foreach ($res_ocodes as $k=>$v){
+                $o_code = encrypt_data($v['id'],$key);
+                $n_code = $all_new_codes[$k];
+                $m_stock_record->updateData(array('idcode'=>$o_code),array('idcode'=>$n_code));
+            }
+        }
+        $this->to_back(array('tips'=>'提交成功'));
+    }
+
+    public function isHaveStockHotel(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+
+        $is_pop_time = 0;
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
         $cache_key = C('FINANCE_HOTELSTOCK');
-		$result  = $redis->get($cache_key);
-		$hotel_arr = json_decode($result,true);
-		if(!empty($hotel_arr[$hotel_id])){
-			$now_time = time();
-			$s_time = strtotime(date('Y-m-d 18:45:00'));
-			$end_time = strtotime(date('Y-m-d 19:15:00'));
-			if($now_time>=$s_time && $now_time<=$end_time){
-				$is_pop_time = 1;
-			}
-		}
+        $result  = $redis->get($cache_key);
+        $hotel_arr = json_decode($result,true);
+        if(!empty($hotel_arr[$hotel_id])){
+            $now_time = time();
+            $s_time = strtotime(date('Y-m-d 18:45:00'));
+            $end_time = strtotime(date('Y-m-d 19:15:00'));
+            if($now_time>=$s_time && $now_time<=$end_time){
+                $is_pop_time = 1;
+            }
+        }
         $data = array('is_pop_time'=>$is_pop_time);
-		$this->to_back($data);
-	}
+        $this->to_back($data);
+    }
 
 }

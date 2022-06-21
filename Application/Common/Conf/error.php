@@ -475,6 +475,8 @@ return array(
         '93097'=>'smallappsale_finance_goods_differentwrittenoff_sametime',
         '93098'=>'smallappsale_finance_goods_had_submit_writeoff',
         '93099'=>'smallappsale_finance_goods_had_submit_reportedloss',
+        '93100'=>'smallappsale_finance_qrcode_had_use',
+        '93101'=>'smallappsale_finance_qrcode_has_nouse',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

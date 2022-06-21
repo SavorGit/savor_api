@@ -475,6 +475,8 @@ return array(
     'smallappsale_finance_goods_had_submit_reportedloss'=>'当前商品已申请报损',
     'smallappsale_invitation_not_exist'=>'邀请函正在维护中，请稍后再试。',
     'smallappsale_invitation_had_expire'=>'请在预定时间内接收邀请',
+    'smallappsale_finance_qrcode_had_use'=>'当前二维码已使用',
+    'smallappsale_finance_qrcode_has_nouse'=>'当前二维码还未使用',
 
 
 

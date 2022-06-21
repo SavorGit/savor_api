@@ -334,7 +334,7 @@ class UserController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id', $map);
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,d.area_id', $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
@@ -392,7 +392,7 @@ class UserController extends CommonController{
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
-		if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && !empty($is_sale_wine)) {//酒水广告
+		if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && $box_info[0]['area_id']==236){//酒水广告
 			$media_id = 0;
 			$res_media['oss_addr'] = 'media/resource/tBtFDitm8N.mp4';
 			$file_info = pathinfo($res_media['oss_addr']);

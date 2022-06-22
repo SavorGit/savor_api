@@ -142,7 +142,7 @@ class StockController extends CommonController{
                 $goods_id = $v['goods_id'];
                 $unit_id = $v['unit_id'];
                 $rfileds = 'sum(a.total_amount) as total_amount,a.type';
-                $rwhere = array('stock.hotel_id'=>$hotel_id,'a.goods_id'=>$goods_id,'a.unit_id'=>$unit_id);
+                $rwhere = array('stock.hotel_id'=>$hotel_id,'a.goods_id'=>$goods_id,'a.unit_id'=>$unit_id,'a.dstatus'=>1);
                 $rwhere['a.type'] = array('in',array(2,3));
                 $rgroup = 'a.type';
                 $res_record = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','',$rgroup);

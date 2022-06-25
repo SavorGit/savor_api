@@ -392,7 +392,8 @@ class UserController extends CommonController{
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
-		if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && $box_info[0]['area_id']==236){//酒水广告
+		//if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && $box_info[0]['area_id']==236){//酒水广告
+		if(1==2)
 			$media_id = 0;
 			$res_media['oss_addr'] = 'media/resource/tBtFDitm8N.mp4';
 			$file_info = pathinfo($res_media['oss_addr']);

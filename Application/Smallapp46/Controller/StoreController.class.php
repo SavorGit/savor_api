@@ -73,6 +73,24 @@ class StoreController extends CommonController{
             }
             sortArrByOneField($res_store,'dis_com');
         }
+        if($cate_id==0){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(9);
+            $cache_key = C('FINANCE_HOTELSTOCK');
+            $result  = $redis->get($cache_key);
+            $hotel_arr = json_decode($result,true);
+            $stock_hotel = array();
+            $other_hotel = array();
+            foreach ($res_store as $k=>$v){
+                if(!empty($hotel_arr[$v['hotel_id']])){
+                    $stock_hotel[]=$v;
+                }else{
+                    $other_hotel[]=$v;
+                }
+            }
+            $res_store = array_merge($stock_hotel,$other_hotel);
+        }
+
         $offset = $page * $pagesize;
         $hotel_list = array_slice($res_store,0,$offset);
         $m_meida = new \Common\Model\MediaModel();

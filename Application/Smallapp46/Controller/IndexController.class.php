@@ -358,7 +358,7 @@ class IndexController extends CommonController{
             $data['limit_video_size'] = 10485760;
             $data['tail_lenth']   = 1024*1024;
             $data['max_video_size'] = 1024*1024*300;
-            $data['max_user_forvideo_size'] = 1024*1024*5;
+            $data['max_user_forvideo_size'] = 1024*1024*15;
             $data['max_user_forimage_size'] = 1024*1024*2;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
             $data['simple_forscreen_public_videosize'] = $simple_forscreen_public_videosize;//极简投屏公开资源大小

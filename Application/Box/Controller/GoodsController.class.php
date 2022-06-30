@@ -24,7 +24,7 @@ class GoodsController extends CommonController{
         $map['a.flag']  = 0;
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
-        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,d.short_name', $map);
+        $box_info = $m_box->getBoxInfo('a.id as box_id,d.id as hotel_id,d.short_name,d.area_id', $map);
         if(empty($box_info)){
             $this->to_back(70001);
         }
@@ -71,7 +71,7 @@ class GoodsController extends CommonController{
                     $price = intval($v['price']);
                     $goods_info[]="{$v['goods_name']}({$price}元)";
 
-                    if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
+                    if($box_info[0]['area_id']==236 && $v['is_seckill']==1 && $v['end_time']>=$nowtime){
                         $end_time = strtotime($v['end_time']);
                         $now_time = time();
                         $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;

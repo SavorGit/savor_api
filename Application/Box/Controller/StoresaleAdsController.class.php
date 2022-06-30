@@ -77,7 +77,7 @@ class StoresaleAdsController extends CommonController{
                     $v['name'] = $name_info['basename'];
                     $v['wine_type'] = intval($v['wine_type']);
                     $v['goods_id'] = $v['goods_id'];
-                    $v['price'] = intval($v['price']).'元/瓶';
+                    $v['price'] = intval($v['price']).'元';
                     $image_url = '';
                     if($v['advright_media_id']){
                         $res_media = $m_media->getMediaInfoById($v['advright_media_id']);

@@ -140,10 +140,13 @@ class InvitationController extends CommonController{
             $share_title = $res_hotel['name'].'期待您的光临';
             $oss_host = 'http://'.C('OSS_HOST').'/';
             $invitation_hotels = C('INVITATION_HOTEL');
+            $themes = C('INVITATION_THEME');
             $mobile = '';
             $m_user = new \Common\Model\Smallapp\UserModel();
             $res_user = $m_user->getOne('mobile',array('openid'=>$res_info['openid']),'id desc');
-            if(!empty($res_user['mobile'])){
+            if(!empty($res_info['contact_mobile'])){
+                $mobile = $res_info['contact_mobile'];
+            }elseif(!empty($res_user['mobile'])){
                 $mobile = $res_user['mobile'];
             }elseif(!empty($res_hotel['tel'])){
                 $mobile = $res_hotel['tel'];
@@ -153,14 +156,17 @@ class InvitationController extends CommonController{
             $res_data['mobile'] = $mobile;
             $res_data['title'] = $title;
             $res_data['share_title'] = $share_title;
+            $res_data['hotel_id'] = $res_info['hotel_id'];
             $res_data['hotel_name'] = $res_hotel['name'];
             $res_data['addr'] = $res_hotel['addr'];
+            $res_data['room_id'] = $res_info['room_id'];
             $res_data['box_mac'] = $res_info['box_mac'];
             $res_data['latitude'] = floatval($latitude);
             $res_data['longitude'] = floatval($longitude);
             $res_data['room_name'] = $res_info['room_name'];
             $res_data['book_time'] = $res_info['book_time'];
             $res_data['people_num'] = $res_info['people_num'];
+            $res_data['contact_name'] = $res_info['contact_name'];
             $res_data['share_img_url'] = $oss_host.$invitation_hotels['share_img'];
             $res_data['calendar'] = array(
                 'title'=>$res_info['name'].'的饭局',
@@ -177,23 +183,33 @@ class InvitationController extends CommonController{
                 $is_accept = 0;
             }
             $res_data['is_accept'] = $is_accept;
-
             $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
             $res_invitation = $m_hotelinvitation->getInfo(array('hotel_id'=>$res_info['hotel_id']));
-            if(!empty($res_invitation)){
-                $res_data['backgroundImage'] = $oss_host.$res_invitation['bg_img'];
-                $res_data['themeColor'] = $res_invitation['theme_color'];
-                $res_data['themeContrastColor'] = $res_invitation['theme_contrast_color'];
-                $res_data['painColor'] = $res_invitation['pain_color'];
-                $res_data['weakColor'] = $res_invitation['weak_color'];
+
+            if(isset($themes[$res_info['theme_id']])){
+                $theme_info = $themes[$res_info['theme_id']];
+                $res_data['backgroundImage'] = $oss_host.$theme_info['bg_img'];
+                $res_data['themeColor'] = $theme_info['themeColor'];
+                $res_data['themeContrastColor'] = $theme_info['themeContrastColor'];
+                $res_data['painColor'] = $theme_info['painColor'];
+                $res_data['weakColor'] = $theme_info['weakColor'];
                 $res_data['is_open_sellplatform'] = intval($res_invitation['is_open_sellplatform']);
             }else{
-                $res_data['backgroundImage'] = $oss_host.$invitation_hotels['bg_img'];
-                $res_data['themeColor'] = $invitation_hotels['themeColor'];
-                $res_data['themeContrastColor'] = $invitation_hotels['themeContrastColor'];
-                $res_data['painColor'] = $invitation_hotels['painColor'];
-                $res_data['weakColor'] = $invitation_hotels['weakColor'];
-                $res_data['is_open_sellplatform'] = $invitation_hotels['is_open_sellplatform'];
+                if(!empty($res_invitation)){
+                    $res_data['backgroundImage'] = $oss_host.$res_invitation['bg_img'];
+                    $res_data['themeColor'] = $res_invitation['theme_color'];
+                    $res_data['themeContrastColor'] = $res_invitation['theme_contrast_color'];
+                    $res_data['painColor'] = $res_invitation['pain_color'];
+                    $res_data['weakColor'] = $res_invitation['weak_color'];
+                    $res_data['is_open_sellplatform'] = intval($res_invitation['is_open_sellplatform']);
+                }else{
+                    $res_data['backgroundImage'] = $oss_host.$invitation_hotels['bg_img'];
+                    $res_data['themeColor'] = $invitation_hotels['themeColor'];
+                    $res_data['themeContrastColor'] = $invitation_hotels['themeContrastColor'];
+                    $res_data['painColor'] = $invitation_hotels['painColor'];
+                    $res_data['weakColor'] = $invitation_hotels['weakColor'];
+                    $res_data['is_open_sellplatform'] = $invitation_hotels['is_open_sellplatform'];
+                }
             }
         }
         $this->to_back($res_data);

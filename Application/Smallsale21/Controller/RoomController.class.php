@@ -16,6 +16,10 @@ class RoomController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'getRooms':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -55,6 +59,32 @@ class RoomController extends CommonController{
         $data['box_list'] = $box_list;
         $data['box_name_list'] = $box_name_list;
         $data['box_index']= $box_index;
+        $this->to_back($data);
+    }
+
+    public function getRooms(){
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_room = new \Common\Model\RoomModel();
+        $fields = 'room.id,room.name as room_name';
+        $where  = array('hotel.id'=>$hotel_id,'hotel.state'=>1,'hotel.flag'=>0,'room.state'=>1,'room.flag'=>0);
+        $order = 'room.id asc';
+        $list = $m_room->alias('room')
+            ->join('savor_hotel hotel on hotel.id=room.hotel_id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->select();
+        $room_list = $room_name_list = array();
+        $room_index = 0;
+        foreach($list as $key=>$v){
+            $room_list[] = $v;
+            $room_name_list[] = $v['room_name'];
+
+        }
+        $data['room_list'] = $room_list;
+        $data['room_name_list'] = $room_name_list;
+        $data['room_index']= $room_index;
         $this->to_back($data);
     }
 

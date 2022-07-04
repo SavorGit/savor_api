@@ -14,7 +14,7 @@ class GoodsController extends CommonController{
                 break;
             case 'hotdrinklist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'page'=>1001,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -144,17 +144,26 @@ class GoodsController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $type = $this->params['type'];//44团购商品,43本店有售商品
         $page = intval($this->params['page']);
+        $room_id = intval($this->params['room_id']);
         $pagesize = $this->params['pagesize'];
         if(empty($pagesize)){
             $pagesize = 10;
         }
         $start = ($page-1)*$pagesize;
 
-        $m_box = new \Common\Model\BoxModel();
-        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
-        $box_info = $m_box->getBoxByCondition($fields,$where);
-        $hotel_id = $box_info[0]['hotel_id'];
+        $fields = "hotel.id as hotel_id,hotel.area_id";
+        if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+            $hotel_id = $box_info[0]['hotel_id'];
+        }else{
+            $where = array('room.id'=>$room_id,'room.state'=>1,'room.flag'=>0);
+            $m_room = new \Common\Model\RoomModel();
+            $room_info = $m_room->getRoomByCondition($fields,$where);
+            $hotel_id = $room_info[0]['hotel_id'];
+        }
+
         if($type==44){
             $res_goods = array();
         }else{

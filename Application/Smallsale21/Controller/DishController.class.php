@@ -15,7 +15,7 @@ class DishController extends CommonController{
                 break;
             case 'editDish':
                 $this->is_verify = 1;
-                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'category_id'=>1002,'price'=>1001,'supply_price'=>1002,
+                $this->valid_fields = array('goods_id'=>1001,'openid'=>1001,'name'=>1001,'category_id'=>1002,'price'=>1002,'supply_price'=>1002,
                     'amount'=>1002,'imgs'=>1001,'intro'=>1002,'detail_imgs'=>1002,'video_path'=>1002,'is_localsale'=>1002,'type'=>1001);
                 break;
             case 'goodslist':
@@ -140,7 +140,7 @@ class DishController extends CommonController{
         $imgs = $this->params['imgs'];
         $intro = $this->params['intro'];
         $detail_imgs = $this->params['detail_imgs'];
-        $type = intval($this->params['type']);//21商家外卖商品 22商家售全国商品
+        $type = intval($this->params['type']);//21商家外卖商品 22商家售全国商品 24商家菜品商品
         $category_id = $this->params['category_id'];
         $supply_price = $this->params['supply_price'];
         $amount = intval($this->params['amount']);
@@ -167,8 +167,11 @@ class DishController extends CommonController{
         if(!empty($res_name) && $res_name['id']!=$goods_id){
             $this->to_back(93042);
         }
-        $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'merchant_id'=>$merchant_id,'type'=>$type,
+        $data = array('name'=>$name,'price'=>$price,'cover_imgs'=>$imgs,'type'=>$type,
             'staff_id'=>$staff_id,'status'=>1);
+        if($type!=24){
+            $data['merchant_id'] = $merchant_id;
+        }
         if($type==22){
             if(empty($category_id) || empty($supply_price)){
                 $this->to_back(1001);
@@ -211,6 +214,7 @@ class DishController extends CommonController{
         $data['intro'] = trim($intro);
         $data['detail_imgs'] = $detail_imgs;
         $res = $m_goods->updateData(array('id'=>$goods_id),$data);
+        /*
         if($res){
             $merchant_data = array();
             if($res_staff[0]['is_takeout']==0){
@@ -221,13 +225,13 @@ class DishController extends CommonController{
                 $m_merchant->updateData(array('id'=>$merchant_id),$merchant_data);
             }
         }
+        */
         $this->to_back(array());
     }
 
-
     public function goodslist(){
         $merchant_id = intval($this->params['merchant_id']);
-        $type = isset($this->params['type'])?intval($this->params['type']):21;//21商家外卖商品 22商家售全国商品
+        $type = isset($this->params['type'])?intval($this->params['type']):21;//21商家外卖商品 22商家售全国商品 24商家菜品商品
 
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('id'=>$merchant_id));
@@ -240,6 +244,9 @@ class DishController extends CommonController{
 
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$merchant_id,'type'=>$type);
+        if($type==24){
+            $where['status'] = 1;
+        }
         $orderby = 'is_top desc,status asc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,$all_nums);
 
@@ -248,21 +255,26 @@ class DishController extends CommonController{
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
+                $oss_url = '';
                 if(!empty($v['cover_imgs'])){
                     $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0].'?x-oss-process=image/resize,p_50/quality,q_80';
+                        $oss_url = $cover_imgs_info[0];
                     }
                 }
                 $price = $v['price'];
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'img_url'=>$img_url,'is_localsale'=>$v['is_localsale'],
-                    'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),'type'=>$v['type'],'flag'=>$v['flag'],'gtype'=>$v['gtype']);
-                $qrcode = $host_name."/Smallsale21/qrcode/dishQrcode?data_id={$v['id']}&type=25";
-                if($v['type']==22){
-                    $qrcode = $host_name."/Smallsale21/qrcode/dishQrcode?data_id={$v['id']}&type=26";
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'oss_url'=>$oss_url,'intro'=>$v['intro'],'type'=>$v['type'],
+                    'price'=>$price,'is_localsale'=>$v['is_localsale'],'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),
+                    'flag'=>$v['flag'],'gtype'=>$v['gtype']);
+                if($v['type']!=24){
+                    $qrcode = $host_name."/Smallsale21/qrcode/dishQrcode?data_id={$v['id']}&type=25";
+                    if($v['type']==22){
+                        $qrcode = $host_name."/Smallsale21/qrcode/dishQrcode?data_id={$v['id']}&type=26";
+                    }
+                    $dinfo['qrcode_url'] = $qrcode;
                 }
-                $dinfo['qrcode_url'] = $qrcode;
                 $datalist[] = $dinfo;
             }
         }
@@ -393,10 +405,7 @@ class DishController extends CommonController{
 
         $this->to_back($data);
     }
-
-
-
-
+    
     public function top(){
         $goods_id = intval($this->params['goods_id']);
         $openid = $this->params['openid'];

@@ -16,6 +16,10 @@ class DishController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('goods_id'=>1001,'box_mac'=>1002,'task_user_id'=>1002,'expire_time'=>1002,'openid'=>1002);
                 break;
+            case 'invitationgoods':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -290,6 +294,51 @@ class DishController extends CommonController{
             }
         }
         $this->to_back($datalist);
+    }
+
+    public function invitationgoods(){
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
+        if(empty($res_merchant) || $res_merchant['status']!=1){
+            $this->to_back(93035);
+        }
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'type'=>24);
+        $orderby = 'id desc';
+        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,3);
+        $datalist = array();
+        if($res_goods['total']){
+            $m_media = new \Common\Model\MediaModel();
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $hotel_goods = $m_hotelgoods->getStockGoodsList($hotel_id,0,100);
+            $oss_host = "https://".C('OSS_HOST').'/';
+            foreach ($res_goods['list'] as $k=>$v){
+                $img_url = '';
+                if(!empty($v['cover_imgs'])){
+                    $cover_imgs_info = explode(',',$v['cover_imgs']);
+                    if(!empty($cover_imgs_info[0])){
+                        $img_url = $oss_host.$cover_imgs_info[0];
+                    }
+                }
+                $stock_goods_id = 0;
+                $stock_goods_img = '';
+                if(isset($hotel_goods[$k])){
+                    $stock_goods_id = $hotel_goods[$k]['id'];
+                    if($hotel_goods[$k]['advright_media_id']>0){
+                        $res_media = $m_media->getMediaInfoById($hotel_goods[$k]['advright_media_id']);
+                        $stock_goods_img = $res_media['oss_addr'];
+                    }
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url,'intro'=>$v['intro'],
+                    'stock_goods_id'=>$stock_goods_id,'stock_goods_img'=>$stock_goods_img);
+                $datalist[] = $dinfo;
+            }
+        }
+
+        $res_data = array('datalist'=>$datalist);
+        $this->to_back($res_data);
     }
 
 }

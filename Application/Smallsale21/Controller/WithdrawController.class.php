@@ -72,7 +72,7 @@ class WithdrawController extends CommonController{
             $is_inlist = 1;
         }
 
-        $exchange_num = 1;
+        $exchange_num = 10;
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'exchange:'.'openid'.$openid.date('Ymd');
         $redis  =  \Common\Lib\SavorRedis::getInstance();

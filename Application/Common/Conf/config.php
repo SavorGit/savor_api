@@ -800,7 +800,7 @@ return array(
 	),
 
     'HOTELQRCODE_JUMP_PAGE'=>array(
-        '1'=>array('id'=>1,'name'=>'及时抽奖页面','page'=>'/pages/activity/turntable/lottery','type'=>'navigate'),
+        '1'=>array('id'=>1,'name'=>'及时抽奖页面','page'=>'/games/pages/activity/turn_lottery','type'=>'navigate'),
         '2'=>array('id'=>2,'name'=>'本地有售酒水列表页面','page'=>'/mall/pages/wine/index','type'=>'navigate'),
         '3'=>array('id'=>3,'name'=>'小程序首页','page'=>'/pages/index/index','type'=>'tabbar'),
     ),

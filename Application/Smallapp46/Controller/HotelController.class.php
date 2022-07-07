@@ -20,7 +20,7 @@ class HotelController extends CommonController{
                 break;
             case 'hotdrinksHotels':
                 $this->is_verify =1;
-                $this->valid_fields = array('box_mac'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('box_mac'=>1002,'room_id'=>1002,'hotel_id'=>1002,'page'=>1001,'pagesize'=>1002);
                 break;
             case 'scancode':
                 $this->is_verify =1;
@@ -141,15 +141,23 @@ class HotelController extends CommonController{
 
     public function hotdrinksHotels(){
         $box_mac = $this->params['box_mac'];
+        $hotel_id = $this->params['hotel_id'];
         $page = intval($this->params['page']);
         $pagesize = isset($this->params['pagesize'])?intval($this->params['pagesize']):10;
         $start = ($page-1)*$pagesize;
-
         $m_box = new \Common\Model\BoxModel();
-        $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-        $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
-        $box_info = $m_box->getBoxByCondition($fields,$where);
-        $area_id = $box_info[0]['area_id'];
+        $m_hotel = new \Common\Model\HotelModel();
+        if(!empty($box_mac)){
+            
+            $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+            $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
+            $box_info = $m_box->getBoxByCondition($fields,$where);
+            $area_id = $box_info[0]['area_id'];
+        }else if(!empty($hotel_id)) {
+            $hotel_info = $m_hotel->getOneById('area_id',$hotel_id);
+            $area_id = $hotel_info['area_id'];
+        }
+        
 
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'h.hotel_id';
@@ -163,7 +171,7 @@ class HotelController extends CommonController{
         $datalist = array();
         if(!empty($hotel_ids)){
             $oss_host = 'http://'. C('OSS_HOST').'/';
-            $m_hotel = new \Common\Model\HotelModel();
+            
             $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,b.food_style_id,
                    b.avg_expense,concat('".$oss_host."',c.`oss_addr`) as img_url,
                    d.name food_name,a.gps";
@@ -283,7 +291,7 @@ class HotelController extends CommonController{
                     $res_data['page'].="?activity_id={$activity_id}&openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&is_share=1";
                     break;
                 case 2://本店有售
-                    $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&is_share=1";
+                    $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&tab=hotel&is_share=1";
                     break;
             }
         }

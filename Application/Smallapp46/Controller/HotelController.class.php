@@ -1,6 +1,5 @@
 <?php
 namespace Smallapp46\Controller;
-use Think\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
 class HotelController extends CommonController{
@@ -22,6 +21,10 @@ class HotelController extends CommonController{
             case 'hotdrinksHotels':
                 $this->is_verify =1;
                 $this->valid_fields = array('box_mac'=>1001,'page'=>1001,'pagesize'=>1002);
+                break;
+            case 'scancode':
+                $this->is_verify =1;
+                $this->valid_fields = array('openid'=>1001,'content'=>1001);
                 break;
         }
         $this->avg_exp_arr = array(
@@ -193,6 +196,102 @@ class HotelController extends CommonController{
         }
         $this->to_back(array('datalist'=>$datalist));
     }
+
+    public function scancode(){
+        $openid = $this->params['openid'];
+        $content = intval($this->params['content']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $hotel_id = $room_id = 0;
+        if($content>C('QRCODE_MIN_NUM')){
+            $m_hotelqrcode = new \Common\Model\HotelQrcodeModel();
+            $res_hotelqrcode = $m_hotelqrcode->getInfo(array('id'=>$content));
+            if(!empty($res_hotelqrcode)){
+                $hotel_id = $res_hotelqrcode['hotel_id'];
+            }
+        }else{
+            $m_room = new \Common\Model\RoomModel();
+            $res_room = $m_room->getOne('hotel_id',array('id'=>$content));
+            if(!empty($res_room)){
+                $hotel_id = $res_room['hotel_id'];
+                $room_id = $content;
+            }
+        }
+        $res_data = array('hotel_id'=>$hotel_id,'room_id'=>$room_id);
+        if($hotel_id){
+            $jump_id = 3;
+            $all_jump = C('HOTELQRCODE_JUMP_PAGE');
+            $m_hotelqrcode_jump = new \Common\Model\HotelQrcodeJumpModel();
+            $where = array('hotel_id'=>$hotel_id);
+            $now_time = date('H:i:s');
+            $where['start_time'] = array('ELT',$now_time);
+            $where['end_time']   = array('EGT',$now_time);
+            $res_hoteljump = $m_hotelqrcode_jump->getDataList('*',$where,'id desc');
+            if(!empty($res_hoteljump)){
+                $jump_id = $res_hoteljump[0]['open_page'];
+            }
+            $res_data['page'] = $all_jump[$jump_id]['page'];
+            $res_data['type'] = $all_jump[$jump_id]['type'];
+            switch ($jump_id){
+                case 1://及时抽奖
+                    $activity_id = 0;
+                    $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
+                    $where = array('hotel_id'=>$hotel_id,'status'=>1,'type'=>4);
+                    $orderby = 'id desc';
+                    $fields = 'id as syslottery_id,prize as name';
+                    $res_syslottery = $m_syslottery->getDataList($fields,$where,$orderby,0,1);
+                    if($res_syslottery['total']){
+                        $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
+                        $prize = $res_syslottery['list'][0]['name'];
+
+                        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+                        $res_activity = $m_activity->getInfo(array('hotel_id'=>$hotel_id,'syslottery_id'=>$now_syslottery_id,'type'=>13));
+                        if(!empty($res_activity)){
+                            $activity_id = $res_activity['id'];
+                        }else{
+                            $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
+                            $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id),'id desc');
+                            $prize_data = array();
+                            foreach ($res_lottery_prize as $pv){
+                                $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                                    'probability'=>$pv['probability'],'type'=>$pv['type']
+                                );
+                            }
+                            $start_time = date('Y-m-d H:i:s');
+                            $end_time = '2025-12-31 17:50:57';
+                            $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>'','name'=>'幸运抽奖','prize'=>$prize,
+                                'box_mac'=>'','people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,
+                                'type'=>13,'status'=>1);
+                            $activity_id = $m_activity->add($add_activity_data);
+
+                            $all_prize_data = array();
+                            foreach ($prize_data as $pv){
+                                $all_prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                                    'probability'=>$pv['probability'],'type'=>$pv['type']
+                                );
+                            }
+                            $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
+                            $m_activityprize->addAll($all_prize_data);
+                        }
+                    }
+
+                    $res_data['page'].="?activity_id={$activity_id}&openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&is_share=1";
+                    break;
+                case 2://本店有售
+                    $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&is_share=1";
+                    break;
+            }
+        }
+
+        $this->to_back($res_data);
+    }
+
+
 
     private function getAvgWhere($avg_id){
         switch ($avg_id){

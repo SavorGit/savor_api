@@ -187,6 +187,14 @@ class HotelController extends CommonController{
             $box_info = '';
             $tv_num = 0;
             $box_num = 0;
+            $room_num = 0;
+            $room_fields='count(room.id) as room_num';
+            $m_room = new \Common\Model\RoomModel();
+            $res_rooms = $m_room->getRoomByCondition($room_fields,array('hotel.id'=>$hotel_id,'room.flag'=>0));
+            if(!empty($res_rooms)){
+                $room_num = intval($res_rooms[0]['room_num']);
+            }
+
             foreach ($res_box as $v){
                 $box_nums[$v['box_type']] = array('num'=>$v['num'],'type_name'=>$all_hotel_box_types[$v['box_type']]);
                 $box_info.=$all_hotel_box_types[$v['box_type']].':'.$v['num'].',';
@@ -269,7 +277,7 @@ class HotelController extends CommonController{
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');
             $m_sdkerror = new \Common\Model\SdkErrorModel();
             $fields='box.id as box_id,box.mac,box.name as box_name,box.box_type';
-            $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+            $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0,'room.is_device'=>1);
             $res_box = $m_box->getBoxByCondition($fields,$where);
             //$ads_proid = '';
             foreach ($res_box as $k=>$v){
@@ -382,7 +390,7 @@ class HotelController extends CommonController{
                 'hotel_network'=>$hotel_network,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'small_platform_status'=>$small_platform_status,'small_platform_uptips'=>$small_platform_uptips,'box_list'=>$res_box,
                 'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,
-                'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info
+                'box_num'=>$box_num,'room_num'=>$room_num,'box_type'=>$box_type,'box_info'=>$box_info
             );
         }
         $this->to_back($data);

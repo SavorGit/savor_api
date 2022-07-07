@@ -149,6 +149,17 @@ class LotterypoolController extends CommonController{
                         'pic'=>$oss_host.$v['image_url'],'color'=>$colors[$color_index]);
                     $prize_list[]=$info;
                 }
+                $tmp_all_probability = 0;
+                foreach ($prize_list as $k=>$v){
+                    $tmp_all_probability+=$v['probability'];
+                }
+                if($tmp_all_probability==0){
+                    foreach ($prize_list as $k=>$v){
+                        if($v['type']==3){
+                            $prize_list[$k]['probability'] = 100;
+                        }
+                    }
+                }
             }
             $res_data['activity_name'] = $res_activity['name'];
             $res_data['prize_list'] = $prize_list;

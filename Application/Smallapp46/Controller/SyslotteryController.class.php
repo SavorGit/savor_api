@@ -171,6 +171,17 @@ class SyslotteryController extends CommonController{
                             }
                         }
                     }
+                    $tmp_probability = 0;
+                    foreach ($all_probability as $v){
+                        $tmp_probability+=$v['probability'];
+                    }
+                    if($tmp_probability==0){
+                        foreach ($all_probability as $k=>$v){
+                            if($v['type']==3){
+                                $all_probability[$k]['probability']=100;
+                            }
+                        }
+                    }
                 }
 
                 foreach ($res_prize as $k=>$v){

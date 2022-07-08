@@ -620,7 +620,7 @@ return array(
     'STOCK_MANAGER'=>array(
 //        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
 //        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
-        'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
+//        'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
 //        'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
 //        'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
 //        'o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI'=>'李丛',
@@ -747,7 +747,8 @@ return array(
 
 
     'INVITATION_HOTEL'=>array(
-        'share_img'=>'media/resource/jZW8m7QNNn.jpg',
+        //'share_img'=>'media/resource/jZW8m7QNNn.jpg',
+        'share_img'=>'media/resource/NFs23wnwQa.jpg',
         'bg_img'=>'media/resource/kJxFWZJEDG.jpeg',
         'themeColor'=>'rgb(193,147,166)',
         'themeContrastColor'=>'rgb(255, 255, 255)',

@@ -148,7 +148,6 @@ class HotelController extends CommonController{
         $m_box = new \Common\Model\BoxModel();
         $m_hotel = new \Common\Model\HotelModel();
         if(!empty($box_mac)){
-            
             $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
             $fields = "box.id as box_id,hotel.id as hotel_id,hotel.area_id";
             $box_info = $m_box->getBoxByCondition($fields,$where);
@@ -157,7 +156,6 @@ class HotelController extends CommonController{
             $hotel_info = $m_hotel->getOneById('area_id',$hotel_id);
             $area_id = $hotel_info['area_id'];
         }
-        
 
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'h.hotel_id';

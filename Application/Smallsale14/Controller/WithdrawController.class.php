@@ -64,7 +64,7 @@ class WithdrawController extends CommonController{
             $is_inlist = 1;
         }
 
-        $exchange_num = 1;
+        $exchange_num = 10;
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'exchange:'.'openid'.$openid.date('Ymd');
         $redis  =  \Common\Lib\SavorRedis::getInstance();
@@ -153,7 +153,7 @@ class WithdrawController extends CommonController{
                     //发送短信
                     $ucconfig = C('ALIYUN_SMS_CONFIG');
                     $alisms = new \Common\Lib\AliyunSms();
-                    $params = array('merchant_no'=>1594752111);
+                    $params = array('merchant_no'=>1554975591);
                     $template_code = $ucconfig['wx_money_not_enough_templateid'];
 
                     $phones = C('WEIXIN_MONEY_NOTICE');

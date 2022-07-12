@@ -14,7 +14,7 @@ class GoodsController extends CommonController{
                 break;
             case 'hotdrinklist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'hotel_id'=>1002,'page'=>1001,'pagesize'=>1002);
                 break;
         }
         parent::_init_();
@@ -145,6 +145,7 @@ class GoodsController extends CommonController{
         $type = $this->params['type'];//44团购商品,43本店有售商品
         $page = intval($this->params['page']);
         $room_id = intval($this->params['room_id']);
+        $jump_hotel_id = intval($this->params['hotel_id']);
         $pagesize = $this->params['pagesize'];
         if(empty($pagesize)){
             $pagesize = 10;
@@ -157,6 +158,8 @@ class GoodsController extends CommonController{
             $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
             $box_info = $m_box->getBoxByCondition($fields,$where);
             $hotel_id = $box_info[0]['hotel_id'];
+        }elseif(!empty($jump_hotel_id)){
+            $hotel_id = $jump_hotel_id;
         }else{
             $where = array('room.id'=>$room_id,'room.state'=>1,'room.flag'=>0);
             $m_room = new \Common\Model\RoomModel();

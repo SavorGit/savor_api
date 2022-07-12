@@ -13,7 +13,8 @@ class LotterypoolController extends CommonController{
                 break;
             case 'join':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1001,'prize_id'=>1001,'mobile'=>1002);
+                $this->valid_fields = array('openid'=>1001,'box_mac'=>1001,'activity_id'=>1001,'prize_id'=>1001,
+                    'mobile'=>1002,'room_id'=>1002,'hotel_id'=>1002);
                 break;
             case 'getResult':
                 $this->valid_fields = array('openid'=>1001,'activity_id'=>1002);
@@ -74,7 +75,11 @@ class LotterypoolController extends CommonController{
         $res_data = array('activity_id'=>$activity_id);
         $lottery_status = 0;//1待抽奖 2已中奖 3未中奖 4已中奖未完成 5已中奖已完成待领取
         $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
-        $res_activity_apply = $m_activity_apply->getInfo(array('activity_id'=>$activity_id,'openid'=>$openid));
+        $awhere = array('activity_id'=>$activity_id,'openid'=>$openid);
+        if($res_activity['type']==13){
+            $awhere['DATE(add_time)'] = date('Y-m-d');
+        }
+        $res_activity_apply = $m_activity_apply->getInfo($awhere);
         $oss_host = 'http://'. C('OSS_HOST').'/';
         if(!empty($res_activity_apply)){
             switch ($res_activity_apply['status']){
@@ -174,6 +179,9 @@ class LotterypoolController extends CommonController{
         $mobile = $this->params['mobile'];
         $activity_id = intval($this->params['activity_id']);
         $prize_id = intval($this->params['prize_id']);
+        $room_id = intval($this->params['room_id']);
+        $hotel_id = intval($this->params['hotel_id']);
+
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
         if(empty($res_activity)){
@@ -187,7 +195,11 @@ class LotterypoolController extends CommonController{
         $res_prize = $m_prize->getInfo(array('id'=>$prize_id));
 
         $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
-        $res_activity_apply = $m_activity_apply->getInfo(array('activity_id'=>$activity_id,'openid'=>$openid));
+        $awhere = array('activity_id'=>$activity_id,'openid'=>$openid);
+        if($res_activity['type']==13){
+            $awhere['DATE(add_time)'] = date('Y-m-d');
+        }
+        $res_activity_apply = $m_activity_apply->getInfo($awhere);
 
         if(empty($res_prize) || $res_prize['activity_id']!=$activity_id || !empty($res_activity_apply)){
             $this->to_back(90173);
@@ -235,34 +247,46 @@ class LotterypoolController extends CommonController{
                 }
             }
         }
-        $m_box = new \Common\Model\BoxModel();
-        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
-        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(15);
-            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
-            $redis_box_info = $redis->get($cache_key);
-            $box_info = json_decode($redis_box_info, true);
-            $cache_key = 'savor_room_' . $box_info['room_id'];
-            $redis_room_info = $redis->get($cache_key);
-            $room_info = json_decode($redis_room_info, true);
-            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
-            $redis_hotel_info = $redis->get($cache_key);
-            $hotel_info = json_decode($redis_hotel_info, true);
-            $hotel_id = $room_info['hotel_id'];
-            $hotel_name = $hotel_info['name'];
-            $room_id = $box_info['room_id'];
-            $box_id = $forscreen_info['box_id'];
-            $box_name = $box_info['name'];
+        if(!empty($box_mac)){
+            $m_box = new \Common\Model\BoxModel();
+            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+            if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(15);
+                $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+                $redis_box_info = $redis->get($cache_key);
+                $box_info = json_decode($redis_box_info, true);
+                $cache_key = 'savor_room_' . $box_info['room_id'];
+                $redis_room_info = $redis->get($cache_key);
+                $room_info = json_decode($redis_room_info, true);
+                $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+                $redis_hotel_info = $redis->get($cache_key);
+                $hotel_info = json_decode($redis_hotel_info, true);
+                $hotel_id = $room_info['hotel_id'];
+                $hotel_name = $hotel_info['name'];
+                $room_id = $box_info['room_id'];
+                $box_id = $forscreen_info['box_id'];
+                $box_name = $box_info['name'];
+            }else{
+                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,d.id as hotel_id,d.name as hotel_name';
+                $rets = $m_box->getBoxInfo($fields, $where);
+                $hotel_id = $rets[0]['hotel_id'];
+                $hotel_name = $rets[0]['hotel_name'];
+                $room_id = $rets[0]['room_id'];
+                $box_id = $rets[0]['box_id'];
+                $box_name = $rets[0]['box_name'];
+            }
         }else{
-            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,d.id as hotel_id,d.name as hotel_name';
-            $rets = $m_box->getBoxInfo($fields, $where);
-            $hotel_id = $rets[0]['hotel_id'];
-            $hotel_name = $rets[0]['hotel_name'];
-            $room_id = $rets[0]['room_id'];
-            $box_id = $rets[0]['box_id'];
-            $box_name = $rets[0]['box_name'];
+            $box_id = 0;
+            $box_name = '';
+            if($room_id>C('QRCODE_MIN_NUM')){
+                $room_id = 0;
+            }
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('id,name',$hotel_id);
+            $hotel_id = $res_hotel['id'];
+            $hotel_name = $res_hotel['name'];
         }
 
         $add_data = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'room_id'=>$room_id,

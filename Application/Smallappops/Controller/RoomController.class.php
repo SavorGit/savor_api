@@ -19,7 +19,7 @@ class RoomController extends CommonController{
                 break;
             case 'config':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -70,11 +70,21 @@ class RoomController extends CommonController{
 
     public function config(){
         $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
+        }
+        $device_types = array(
+            array('name'=>'有','value'=>1),
+            array('name'=>'无','value'=>0),
+        );
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getOneById('type',$hotel_id);
+        if($res_hotel['type']==4){
+            $device_types = array(array('name'=>'无','value'=>0));
         }
         $res_data = array(
             'room_types'=>array(
@@ -82,10 +92,7 @@ class RoomController extends CommonController{
                 array('name'=>'大厅','value'=>2),
                 array('name'=>'等候区','value'=>3),
             ),
-            'device_types'=>array(
-                array('name'=>'有','value'=>1),
-                array('name'=>'无','value'=>0),
-            ),
+            'device_types'=>$device_types,
             'freeze_status'=>array(
                 array('name'=>'正常','value'=>1),
                 array('name'=>'冻结','value'=>2),

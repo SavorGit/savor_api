@@ -175,7 +175,7 @@ class HotelController extends CommonController{
         $data = array();
         if(!empty($res_hotel)){
             $small_platform_num = 0;
-            if($res_hotel['mac_addr']!='000000000000'){
+            if($res_hotel['mac_addr']!='000000000000' && $res_hotel['type']!=4){
                 $small_platform_num = 1;
             }
             $all_hotel_box_types = C('HOTEL_BOX_TYPE');

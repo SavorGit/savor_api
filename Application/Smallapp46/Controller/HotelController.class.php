@@ -265,20 +265,20 @@ class HotelController extends CommonController{
                             $prize_data = array();
                             foreach ($res_lottery_prize as $pv){
                                 $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
-                                    'probability'=>$pv['probability'],'type'=>$pv['type']
+                                    'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
                                 );
                             }
                             $start_time = date('Y-m-d H:i:s');
                             $end_time = '2025-12-31 17:50:57';
                             $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>'','name'=>'幸运抽奖','prize'=>$prize,
                                 'box_mac'=>'','people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,
-                                'type'=>13,'status'=>1);
+                                'syslottery_id'=>$now_syslottery_id,'type'=>13,'status'=>1);
                             $activity_id = $m_activity->add($add_activity_data);
 
                             $all_prize_data = array();
                             foreach ($prize_data as $pv){
                                 $all_prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
-                                    'probability'=>$pv['probability'],'type'=>$pv['type']
+                                    'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
                                 );
                             }
                             $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();

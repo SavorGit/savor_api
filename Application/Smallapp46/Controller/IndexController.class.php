@@ -358,12 +358,12 @@ class IndexController extends CommonController{
             $data['limit_video_size'] = 10485760;
             $data['tail_lenth']   = 1024*1024;
             $data['max_video_size'] = 1024*1024*300;
-            $data['max_user_forvideo_size'] = 1024*1024*15;
-            $data['max_user_forimage_size'] = 1024*1024*2;
+            $data['max_user_forvideo_size'] = 1024*1024*50;
+            $data['max_user_forimage_size'] = 1024*1024*5;
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
             $data['simple_forscreen_public_videosize'] = $simple_forscreen_public_videosize;//极简投屏公开资源大小
             $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
-            $data['forscreen_timeout_time'] = 10000;   //投屏超时时间
+            $data['forscreen_timeout_time'] = 15000;   //投屏超时时间
             $data['image_quality'] = 10;
             $data['image_compress'] = 1024*1024*50;
             $data['tv_forscreen_type'] = $tv_forscreen_type;

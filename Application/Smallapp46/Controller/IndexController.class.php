@@ -29,7 +29,7 @@ class IndexController extends CommonController{
                 break;
             case 'recOverQrcodeLog':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1001,'openid'=>1001,'type'=>1000,'is_overtime'=>1001);
+                $this->valid_fields = array('box_mac'=>1002,'openid'=>1001,'is_overtime'=>1001,'type'=>1002,'room_id'=>1002,'hotel_id'=>1002);
                 break;
             case 'closeauthLog':
                 $this->is_verify =1;
@@ -402,7 +402,12 @@ class IndexController extends CommonController{
         $openid  = $this->params['openid'];
         $type    = $this->params['type'];
         $is_overtime = $this->params['is_overtime'];
-        $this->recodeScannCode($box_mac,$openid,$type,$is_overtime);
+        $room_id = intval($this->params['room_id']);
+        $hotel_id = intval($this->params['hotel_id']);
+        if(empty($box_mac)){
+            $box_mac = '';
+        }
+        $this->recodeScannCode(0,$box_mac,$openid,$type,$is_overtime,'','',$room_id,$hotel_id);
         $this->to_back(10000);
     }
 
@@ -1061,7 +1066,7 @@ class IndexController extends CommonController{
      * @param varchar $openid   openid
      * @param tinyint $type     1:小码2:大码3:手机小程序呼码
      */
-    private function recodeScannCode($data_id,$box_mac,$openid,$type,$is_overtime=0,$mobile_brand='',$mobile_model=''){
+    private function recodeScannCode($data_id,$box_mac,$openid,$type,$is_overtime=0,$mobile_brand='',$mobile_model='',$room_id=0,$hotel_id=0){
         $data = array();
         $data['data_id']= $data_id;
         $data['box_mac'] = $box_mac;
@@ -1070,6 +1075,19 @@ class IndexController extends CommonController{
         $data['is_overtime'] = $is_overtime ? $is_overtime :0;
         if(!empty($mobile_brand))   $data['mobile_brand'] = $mobile_brand;
         if(!empty($mobile_model))   $data['mobile_model'] = $mobile_model;
+        if($room_id>0){
+            if($room_id>C('QRCODE_MIN_NUM')){
+                $data['data_id'] = $room_id;
+                $data['room_id'] = 0;
+            }else{
+                $data['data_id'] = 0;
+                $data['room_id'] = $room_id;
+            }
+        }
+        if($hotel_id>0){
+            $data['hotel_id'] = $hotel_id;
+        }
+
         $m_qrcode_log = new \Common\Model\Smallapp\QrcodeLogModel();
         $m_qrcode_log->addInfo($data);
         if($type==33){

@@ -341,7 +341,7 @@ class LotterypoolController extends CommonController{
                     'start_time'=>$res_activity['start_time'],'end_time'=>$res_activity['end_time']);
                 $redis->set($cache_key,json_encode($cdata),3600*3);
             }
-            if(in_array($res_activity['type'],array(11,12))){
+            if(in_array($res_activity['type'],array(11,12,13))){
                 if(in_array($res_prize['type'],array(1,2))){
                     if($res_prize['type']==2){
                         $ucconfig = C('ALIYUN_SMS_CONFIG');

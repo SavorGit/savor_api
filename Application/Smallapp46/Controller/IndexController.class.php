@@ -363,7 +363,7 @@ class IndexController extends CommonController{
             $data['simple_forscreen_timeout_time'] = 120000;   //极简投屏超时时间
             $data['simple_forscreen_public_videosize'] = $simple_forscreen_public_videosize;//极简投屏公开资源大小
             $data['wifi_timeout_time'] = 30000;   //链接wifi超时时间
-            $data['forscreen_timeout_time'] = 15000;   //投屏超时时间
+            $data['forscreen_timeout_time'] = 20000;   //投屏超时时间
             $data['image_quality'] = 10;
             $data['image_compress'] = 1024*1024*50;
             $data['tv_forscreen_type'] = $tv_forscreen_type;

@@ -759,7 +759,7 @@ return array(
     'INVITATION_TASK_INTEGRAL'=>array(
         'send_guest'=>555,
         'guest_to_user'=>0,
-        'max_limit'=>6660,
+        'max_limit'=>66600000,
     ),
     'INVITATION_THEME'=>array(
         '1'=>array(

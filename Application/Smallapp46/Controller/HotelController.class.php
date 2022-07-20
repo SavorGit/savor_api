@@ -271,8 +271,11 @@ class HotelController extends CommonController{
                             $start_time = date('Y-m-d H:i:s');
                             $end_time = '2025-12-31 17:50:57';
                             $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>'','name'=>'幸运抽奖','prize'=>$prize,
-                                'box_mac'=>'','people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,
+                                'box_mac'=>'','people_num'=>100,'start_time'=>$start_time,'end_time'=>$end_time,
                                 'syslottery_id'=>$now_syslottery_id,'type'=>13,'status'=>1);
+                            if($room_id){
+                                $add_activity_data['room_id'] = $room_id;
+                            }
                             $activity_id = $m_activity->add($add_activity_data);
 
                             $all_prize_data = array();

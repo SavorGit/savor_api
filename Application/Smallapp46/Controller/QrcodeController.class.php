@@ -12,6 +12,10 @@ class QrcodeController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('data_id'=>1001,'type'=>1001,'box_id'=>1002,'box_mac'=>1002);
                 break;
+            case 'getCouponQrcode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('data_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -70,5 +74,13 @@ class QrcodeController extends CommonController{
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
     }
 
+    public function getCouponQrcode(){
+        $data_id = $this->params['data_id'];
+
+        $content = $data_id;
+        $errorCorrectionLevel = 'L';//容错级别
+        $matrixPointSize = 5;//生成图片大小
+        Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
+    }
 
 }

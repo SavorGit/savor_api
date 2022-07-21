@@ -17,6 +17,14 @@ class LotteryController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'syslottery_id'=>1001,
                     'people_num'=>1001,'start_time'=>1002);
                 break;
+            case 'scanGoodsCode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'idcode'=>1001);
+                break;
+            case 'startSellwineLottery':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'goods_codes'=>1001,'hotel_id'=>1001,'room_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -131,6 +139,180 @@ class LotteryController extends CommonController{
             }
         }
         $this->to_back(array('activity_id'=>$activity_id,'qrcode_url'=>$code_url));
+    }
+
+
+    public function scanGoodsCode(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$record_info[0]['stock_id']));
+        if($res_stock['io_type']!=22){
+            $this->to_back(93093);
+        }
+        $goods_id = $record_info[0]['goods_id'];
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_goods->getInfo(array('finance_goods_id'=>$goods_id,'is_lottery'=>1));
+        if(empty($res_goods)){
+            $this->to_back(93202);
+        }
+
+        $m_unit = new \Common\Model\Finance\UnitModel();
+        $res_unit = $m_unit->getInfo(array('id'=>$record_info[0]['unit_id']));
+        $m_finance_goods = new \Common\Model\Finance\GoodsModel();
+        $fileds = 'goods.name,cate.name as cate_name,spec.name as sepc_name';
+        $res_finance_goods = $m_finance_goods->getGoodsInfo($fileds,array('goods.id'=>$goods_id));
+        $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'goods_id'=>$goods_id,'name'=>$res_finance_goods[0]['name'],
+            'cate_name'=>$res_finance_goods[0]['cate_name'],'sepc_name'=>$res_finance_goods[0]['sepc_name'],'unit_name'=>$res_unit['name']
+        );
+
+        if($record_info[0]['type']==5){
+            $this->to_back($res);
+        }else{
+            if($record_info[0]['type']==7){
+                if($record_info[0]['wo_status']==1){
+                    $this->to_back(93098);
+                }elseif($record_info[0]['wo_status']==2){
+                    $this->to_back(93094);
+                }else{
+                    $this->to_back($res);
+                }
+            }elseif($record_info[0]['type']==6){
+                $this->to_back(93095);
+            }else{
+                $this->to_back(93096);
+            }
+        }
+    }
+
+    public function startSellwineLottery(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+        $hotel_id = $this->params['hotel_id'];
+        $room_id = $this->params['room_id'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+
+        $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
+        $where = array('hotel_id'=>$hotel_id,'status'=>1,'type'=>5);
+        $orderby = 'id desc';
+        $fields = 'id as syslottery_id,prize as name';
+        $res_syslottery = $m_syslottery->getDataList($fields,$where,$orderby,0,1);
+        if($res_syslottery['total']<=0){
+            $this->to_back(93209);
+        }
+        $m_box = new \Common\Model\BoxModel();
+        $bwhere = array('hotel.id'=>$hotel_id,'room.id'=>$room_id,'box.state'=>1,'box.flag'=>0);
+        $fileds = 'box.id as box_id,box.mac as box_mac';
+        $res_box = $m_box->getBoxByCondition($fileds,$bwhere);
+        if(empty($res_box)){
+            $this->to_back(93209);
+        }
+        $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
+        $prize = $res_syslottery['list'][0]['name'];
+
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
+        $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id),'id desc');
+        $prize_data = array();
+        foreach ($res_lottery_prize as $pv){
+            $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
+            );
+        }
+        $now_time = time();
+        $start_time = date('Y-m-d H:i:s');
+        $end_time = date('Y-m-d H:i:s',$now_time+1800);
+        $status = 2;
+        $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>'','name'=>'幸运抽奖','prize'=>$prize,
+            'room_id'=>$room_id,'people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,'idcode'=>$idcode,
+            'syslottery_id'=>$now_syslottery_id,'type'=>14,'status'=>$status);
+        $activity_id = $m_activity->add($add_activity_data);
+        $all_prize_data = array();
+        foreach ($prize_data as $pv){
+            $all_prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
+            );
+        }
+        $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
+        $m_activityprize->addAll($all_prize_data);
+
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelById('hotel.name,ext.hotel_cover_media_id',array('hotel.id'=>$hotel_id));
+        $hotel_logo = '';
+        if($res_hotel['hotel_cover_media_id']>0){
+            $m_media = new \Common\Model\MediaModel();
+            $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id']);
+            $hotel_logo = $res_media['oss_addr'];
+        }
+        $headPic = base64_encode($hotel_logo);
+        $host_name = C('HOST_NAME');
+        $code_url = '';
+        foreach ($res_box as $v){
+            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
+            $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_box[0]['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
+            $m_netty = new \Common\Model\NettyModel();
+            $m_netty->pushBox($v['box_mac'],json_encode($message));
+        }
+
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $batch_no = date('YmdHis');
+        $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+        if(!empty($res_record)){
+            $reason_type = 0;
+            $data_imgs = '';
+
+            $add_data = $res_record[0];
+            $goods_ids[]=$add_data['goods_id'];
+            if($add_data['type']==7){
+                $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
+                    'wo_data_imgs'=>$data_imgs,'wo_status'=>4,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                );
+                $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+            }else{
+                unset($add_data['id'],$add_data['update_time']);
+                $add_data['price'] = -abs($add_data['price']);
+                $add_data['total_fee'] = -abs($add_data['total_fee']);
+                $add_data['amount'] = -abs($add_data['amount']);
+                $add_data['total_amount'] = -abs($add_data['total_amount']);
+                $add_data['type'] = 7;
+                $add_data['op_openid'] = $openid;
+                $add_data['batch_no'] = $batch_no;
+                $add_data['wo_reason_type'] = $reason_type;
+                $add_data['wo_data_imgs'] = $data_imgs;
+                $add_data['wo_status'] = 4;
+                $add_data['wo_num'] = 1;
+                $add_data['update_time'] = date('Y-m-d H:i:s');
+                $add_data['add_time'] = date('Y-m-d H:i:s');
+                $m_stock_record->add($add_data);
+            }
+        }
+        $this->to_back(array('activity_id'=>$activity_id,'qrcode_url'=>$code_url));
+
     }
 
 

@@ -20,6 +20,10 @@ class QrcodeController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('data_id'=>1001,'type'=>1001,'suid'=>1002,'box_id'=>1002,'taskid'=>1002,'time'=>1002);
                 break;
+            case 'scancode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'content'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -123,5 +127,41 @@ class QrcodeController extends CommonController{
         Qrcode::png($content,false,$errorCorrectionLevel, $matrixPointSize, 0);
     }
 
+    public function scancode(){
+        $openid = $this->params['openid'];
+        $type = $this->params['type']; //1商品核销 2优惠券核销 3发起售酒抽奖
+        $content = $this->params['content'];
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        if($type==2){
+            $param_coupon = decrypt_data($content);
+            if(!is_array($param_coupon) || $param_coupon['type']!='coupon'){
+                $this->to_back(93206);
+            }
+        }else{
+            $key = C('QRCODE_SECRET_KEY');
+            $qrcode_id = decrypt_data($content,false,$key);
+            $qrcode_id = intval($qrcode_id);
+            $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+            $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+            if(empty($res_qrcode)){
+                switch ($type){
+                    case 1:
+                        $this->to_back(93207);
+                        break;
+                    case 3:
+                        $this->to_back(93208);
+                        break;
+                }
+            }
+        }
+        $res_data = array('type'=>$type,'content'=>$content);
+        $this->to_back($res_data);
+    }
 
 }

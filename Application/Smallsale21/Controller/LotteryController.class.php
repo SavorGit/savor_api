@@ -23,7 +23,7 @@ class LotteryController extends CommonController{
                 break;
             case 'startSellwineLottery':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'goods_codes'=>1001,'hotel_id'=>1001,'room_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'idcode'=>1001,'hotel_id'=>1001,'room_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -216,6 +216,11 @@ class LotteryController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+        if(!empty($res_activity)){
+            $this->to_back(93210);
+        }
 
         $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
         $where = array('hotel_id'=>$hotel_id,'status'=>1,'type'=>5);
@@ -235,7 +240,6 @@ class LotteryController extends CommonController{
         $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
         $prize = $res_syslottery['list'][0]['name'];
 
-        $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
         $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id),'id desc');
         $prize_data = array();

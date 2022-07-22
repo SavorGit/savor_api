@@ -485,6 +485,8 @@ return array(
     'smallappsale_qrcode_not_support_goods_writeoff'=>'此码无法商品核销',
     'smallappsale_qrcode_not_support_lottery'=>'此码无法发起售酒抽奖',
     'smallappsale_hotel_nothave_sell_lottery'=>'当前酒楼暂未配置售卖抽奖,请联系管理员',
+    'smallappsale_hotel_nothave_sell_lottery'=>'当前酒楼暂未配置售卖抽奖,请联系管理员',
+    'smallappsale_sellgoods_has_sell_lottery'=>'当前核销商品已发起过售酒抽奖',
 
 
 

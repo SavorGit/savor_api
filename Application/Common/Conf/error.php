@@ -488,6 +488,7 @@ return array(
         '93207'=>'smallappsale_qrcode_not_support_goods_writeoff',
         '93208'=>'smallappsale_qrcode_not_support_lottery',
         '93209'=>'smallappsale_hotel_nothave_sell_lottery',
+        '93210'=>'smallappsale_sellgoods_has_sell_lottery',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

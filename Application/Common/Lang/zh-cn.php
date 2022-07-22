@@ -477,6 +477,11 @@ return array(
     'smallappsale_invitation_had_expire'=>'请在预定时间内接收邀请',
     'smallappsale_finance_qrcode_had_use'=>'当前二维码已使用',
     'smallappsale_finance_qrcode_has_nouse'=>'当前二维码还未使用',
+    'smallappsale_goods_not_support_lottery'=>'当前酒水不可发起抽奖活动',
+    'smallappsale_qrcode_type_error'=>'二维码类型错误',
+    'smallappsale_wo_coupon_has_used'=>'当前优惠券已使用',
+    'smallappsale_wo_coupon_not_intime'=>'当前优惠券不在使用范围',
+
 
 
 

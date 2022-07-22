@@ -480,6 +480,10 @@ return array(
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',
+        '93202'=>'smallappsale_goods_not_support_lottery',
+        '93203'=>'smallappsale_qrcode_type_error',
+        '93204'=>'smallappsale_wo_coupon_has_used',
+        '93205'=>'smallappsale_wo_coupon_not_intime',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

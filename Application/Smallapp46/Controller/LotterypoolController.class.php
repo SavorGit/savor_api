@@ -312,13 +312,13 @@ class LotterypoolController extends CommonController{
             }
             $pools[$openid.$activity_id]=2;
             $redis->set($lucky_pool_key,json_encode($pools));
-            $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
             $m_prizepool_prize->where(array('id'=>$prizepool_prize_id))->setInc('send_amount',1);
         }
 
         $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status);
         if($lottery_status==4){
             $oss_host = 'http://'. C('OSS_HOST').'/';
+            $res_data['hotel_name'] = $hotel_name;
             $res_data['avatarUrl'] = $user_info['avatarUrl'];
             $res_data['nickName'] = $user_info['nickName'];
             $res_data['message'] = '恭喜您中奖了';
@@ -326,6 +326,7 @@ class LotterypoolController extends CommonController{
             $res_data['prize_name'] = $res_prize['name'];
             $res_data['prize_image_url'] = $oss_host.$res_prize['image_url'];
             $res_data['lottery_time'] = date('Y-m-d H:i:s');
+            $res_data['prize_type'] = $res_prize['type'];
 
             if($res_activity['type']==3){
                 $task_content = $m_prize->getTaskinfo($res_prize,$add_data);
@@ -341,9 +342,67 @@ class LotterypoolController extends CommonController{
                     'start_time'=>$res_activity['start_time'],'end_time'=>$res_activity['end_time']);
                 $redis->set($cache_key,json_encode($cdata),3600*3);
             }
-            if(in_array($res_activity['type'],array(11,12))){
-                if(in_array($res_prize['type'],array(1,2))){
-                    if($res_prize['type']==2){
+            if(in_array($res_activity['type'],array(11,12,13))){
+                switch ($res_prize['type']){
+                    case 1:
+                        if(!empty($res_prize['prizepool_prize_id'])) {
+                            $money_queue = C('SAPP_PRIZEPOOL_MONEYQUEUE').$res_prize['prizepool_prize_id'];
+                            $money = $redis->lpop($money_queue);
+                            if(!empty($money)){
+                                $res_prize['money'] = $money;
+                            }
+                        }else{
+                            $res_prize['money'] = 0;
+                        }
+                        if($res_prize['money']>0){
+                            $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
+                            if($res_activity_apply['status']==5){
+                                $smallapp_config = C('SMALLAPP_CONFIG');
+                                $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+                                $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+                                $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+                                $payconfig = array(
+                                    'appid'=>$smallapp_config['appid'],
+                                    'partner'=>$pay_wx_config['partner'],
+                                    'key'=>$pay_wx_config['key'],
+                                    'sslcert_path'=>$sslcert_path,
+                                    'sslkey_path'=>$sslkey_path,
+                                );
+                                $total_fee = $res_prize['money'];
+                                $m_order = new \Common\Model\Smallapp\ExchangeModel();
+                                $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>4,
+                                    'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+                                $order_id = $m_order->add($add_data);
+
+                                $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
+                                $m_wxpay = new \Payment\Model\WxpayModel();
+                                $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                                if($res['code']==10000){
+                                    $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+                                    $m_activity_apply->updateData(array('id'=>$res_activity_apply['id']),array('status'=>2));
+                                }else{
+                                    if($res['code']==10003){
+                                        //发送短信
+                                        $ucconfig = C('ALIYUN_SMS_CONFIG');
+                                        $alisms = new \Common\Lib\AliyunSms();
+                                        $params = array('merchant_no'=>1594752111);
+                                        $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                                        $phones = C('WEIXIN_MONEY_NOTICE');
+                                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                                        foreach ($phones as $vp){
+                                            $res_sms = $alisms::sendSms($vp,$params,$template_code);
+                                            $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                                'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_sms->Code,'msg_type'=>3
+                                            );
+                                            $m_account_sms_log->addData($data);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 2:
                         $ucconfig = C('ALIYUN_SMS_CONFIG');
                         $alisms = new \Common\Lib\AliyunSms();
                         $params = array('name'=>$res_prize['name']);
@@ -368,76 +427,46 @@ class LotterypoolController extends CommonController{
                         $m_account_sms_log->addData($data);
 
                         $res_data['message'] = '请联系服务员领奖';
-                    }
-                    if(!empty($res_prize['prizepool_prize_id'])) {
-                        $money_queue = C('SAPP_PRIZEPOOL_MONEYQUEUE').$res_prize['prizepool_prize_id'];
-                        $money = $redis->lpop($money_queue);
-                        if(!empty($money)){
-                            $res_prize['money'] = $money;
+                        break;
+                    case 4:
+                        $coupon_id = intval($res_prizepool['coupon_id']);
+                        $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                        $res_coupon = $m_coupon->getInfo(array('id'=>$coupon_id));
+                        if($res_coupon['start_hour']>0){
+                            $start_time = date('Y-m-d H:i:s',$res_coupon['start_hour']*3600);
+                        }else{
+                            $start_time = $res_coupon['start_time'];
                         }
-                    }else{
-                        $res_prize['money'] = 0;
-                    }
+                        $coupon_data = array('openid'=>$openid,'coupon_id'=>$coupon_id,'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
+                            'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
+                            'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+                        $coupon_user_id = $m_user_coupon->add($coupon_data);
 
-                    if($res_prize['type']==1 && $res_prize['money']>0){
-                        $res_activity_apply = $m_activity_apply->getInfo(array('id'=>$activityapply_id));
-                        if($res_activity_apply['status']==5){
-                            $smallapp_config = C('SMALLAPP_CONFIG');
-                            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
-                            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
-                            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
-                            $payconfig = array(
-                                'appid'=>$smallapp_config['appid'],
-                                'partner'=>$pay_wx_config['partner'],
-                                'key'=>$pay_wx_config['key'],
-                                'sslcert_path'=>$sslcert_path,
-                                'sslkey_path'=>$sslkey_path,
-                            );
-                            $total_fee = $res_prize['money'];
-                            $m_order = new \Common\Model\Smallapp\ExchangeModel();
-                            $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>4,
-                                'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
-                            $order_id = $m_order->add($add_data);
-
-                            $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$openid);
-                            $m_wxpay = new \Payment\Model\WxpayModel();
-                            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-                            if($res['code']==10000){
-                                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
-                                $m_activity_apply->updateData(array('id'=>$res_activity_apply['id']),array('status'=>2));
-                            }else{
-                                if($res['code']==10003){
-                                    //发送短信
-                                    $ucconfig = C('ALIYUN_SMS_CONFIG');
-                                    $alisms = new \Common\Lib\AliyunSms();
-                                    $params = array('merchant_no'=>1594752111);
-                                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
-
-                                    $phones = C('WEIXIN_MONEY_NOTICE');
-                                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                                    foreach ($phones as $vp){
-                                        $res_sms = $alisms::sendSms($vp,$params,$template_code);
-                                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_sms->Code,'msg_type'=>3
-                                        );
-                                        $m_account_sms_log->addData($data);
-                                    }
-                                }
-                            }
+                        if($res_coupon['min_price']>0){
+                            $min_price = "满{$res_coupon['min_price']}可用";
+                        }else{
+                            $min_price = '无门槛立减券';
                         }
-                    }
 
-                    if($res_activity['type']==11){
-                        $head_pic = '';
-                        if(!empty($user_info['avatarUrl'])){
-                            $head_pic = base64_encode($user_info['avatarUrl']);
-                        }
-                        $barrage = "恭喜{$box_name}包间的客人抽中了{$res_prize['name']}";
-                        $user_barrage = array('nickName'=>$user_info['nickName'],'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+                        $expire_time = date('Y.m.d H:i',strtotime($res_coupon['end_time']));
+                        $res_data['coupon_user_id'] = $coupon_user_id;
+                        $res_data['coupon_money'] = $res_coupon['money'];
+                        $res_data['coupon_min_price'] = $min_price;
+                        $res_data['coupon_expire_time'] = "有效期至{$expire_time}";
+                        break;
+                }
 
-                        $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
-                        $m_syslottery->send_common_lottery($hotel_id,$box_mac,$activity_id,$user_barrage);
+                if(in_array($res_prize['type'],array(1,2)) && $res_activity['type']==11){
+                    $head_pic = '';
+                    if(!empty($user_info['avatarUrl'])){
+                        $head_pic = base64_encode($user_info['avatarUrl']);
                     }
+                    $barrage = "恭喜{$box_name}包间的客人抽中了{$res_prize['name']}";
+                    $user_barrage = array('nickName'=>$user_info['nickName'],'headPic'=>$head_pic,'avatarUrl'=>$user_info['avatarUrl'],'barrage'=>$barrage);
+
+                    $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
+                    $m_syslottery->send_common_lottery($hotel_id,$box_mac,$activity_id,$user_barrage);
                 }
             }
         }

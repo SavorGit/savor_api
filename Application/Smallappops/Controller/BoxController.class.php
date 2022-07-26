@@ -21,6 +21,10 @@ class BoxController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('box_id'=>1001);
                 break;
+            case 'editBoxVolume':
+                $this->is_verify = 1;
+                $this->valid_fields = array('box_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -78,6 +82,20 @@ class BoxController extends CommonController{
         $baseinfo['wifi_name']   = $box_info['wifi_name'];
         $baseinfo['wifi_password']   = !empty($box_info['wifi_password']) ? $box_info['wifi_password'] :'无密码'; 
         $baseinfo['now_apk_version'] = !empty($heart_info['apk']) ?$heart_info['apk']:'';
+        
+        
+        $m_sysconfig = new \Common\Model\SysConfigModel();
+        $sysconfig = $m_sysconfig->getAllconfig();
+        
+        $baseinfo['box_carousel_volume']        = !empty($box_info['box_carousel_volume']) ? $box_info['box_carousel_volume'] : $sysconfig['box_carousel_volume'];
+        $baseinfo['box_pro_demand_volume']      = !empty($box_info['box_pro_demand_volume']) ? $box_info['box_pro_demand_volume'] :$sysconfig['box_pro_demand_volume'];
+        $baseinfo['box_content_demand_volume']  = !empty($box_info['box_content_demand_volume']) ? $box_info['box_content_demand_volume'] :$sysconfig['box_content_demand_volume'];
+        $baseinfo['box_video_froscreen_volume'] = !empty($box_info['box_video_froscreen_volume']) ? $box_info['box_video_froscreen_volume'] :$sysconfig['box_video_froscreen_volume'];
+        $baseinfo['box_img_froscreen_volume']   = !empty($box_info['box_img_froscreen_volume']) ? $box_info['box_img_froscreen_volume'] :$sysconfig['box_img_froscreen_volume'];
+        $baseinfo['box_tv_volume']              = !empty($box_info['box_tv_volume']) ? $box_info['box_tv_volume'] :$sysconfig['box_tv_volume'];
+        $baseinfo['tv_volume']                  = !empty($box_info['tv_volume']) ? $box_info['tv_volume'] :0;
+        
+        
         
         $m_device_update = new \Common\Model\DeviceUpgradeModel();
         $apk_update_info = $m_device_update->getNewSmallApkInfo($room_info['hotel_id'],'',2);
@@ -300,6 +318,48 @@ class BoxController extends CommonController{
             }
         }
         return $data;
+    }
+    public function editBoxVolume(){
+        $box_id = $this->params['box_id'];
+        $box_type_arr = C('HOTEL_BOX_TYPE');
+        $redis = SavorRedis::getInstance();
+        $redis->select(15);
+        $cache_key   = 'savor_box_'.$box_id;
+        $cache_info  =$redis->get($cache_key);
+        $box_info = json_decode($cache_info,true);
+        $m_box = new \Common\Model\BoxModel();
+        
+        $where = $data = [];
+        $where['id'] = $box_id;
+        $data['box_carousel_volume']        = !empty($this->params['box_carousel_volume']) ? $this->params['box_carousel_volume'] : 0;
+        $data['box_pro_demand_volume']      = !empty($this->params['box_pro_demand_volume']) ? $this->params['box_pro_demand_volume'] : 0;
+        $data['box_content_demand_volume']  = !empty($this->params['box_content_demand_volume']) ? $this->params['box_content_demand_volume'] : 0;
+        $data['box_video_froscreen_volume'] = !empty($this->params['box_video_froscreen_volume']) ? $this->params['box_video_froscreen_volume'] : 0;
+        $data['box_img_froscreen_volume']   = !empty($this->params['box_img_froscreen_volume']) ? $this->params['box_img_froscreen_volume'] : 0;
+        $data['box_tv_volume']              = !empty($this->params['box_tv_volume']) ? $this->params['box_tv_volume'] : 0;
+        $data['tv_volume']                  = !empty($this->params['tv_volume']) ? $this->params['tv_volume'] : 0;
+        
+        
+        $ret = $m_box->saveData($data, $where);
+        if($ret){
+            if(!empty($box_info)){
+                $box_info['box_carousel_volume']        = $data['box_carousel_volume'];
+                $box_info['box_pro_demand_volume']      = $data['box_pro_demand_volume'];
+                $box_info['box_content_demand_volume']  = $data['box_content_demand_volume'];
+                $box_info['box_video_froscreen_volume'] = $data['box_video_froscreen_volume'];
+                $box_info['box_img_froscreen_volume']   = $data['box_img_froscreen_volume'];
+                $box_info['box_tv_volume']              = $data['box_tv_volume'];
+                $box_info['tv_volume']                  = $data['tv_volume'];
+            }else {
+                $box_info = $m_box->where($where)->find();
+                unset($box_info['id']);
+                
+            }
+            //echo $cache_key;exit;
+            $box_info = json_encode($box_info);
+            $redis->set($cache_key, $box_info);
+        }
+        $this->to_back(10000);
     }
 
     /**

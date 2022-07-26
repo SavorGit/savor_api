@@ -157,7 +157,7 @@ class StockController extends CommonController{
                     }
                 }
                 $rwhere['a.type']=7;
-                $rwhere['a.wo_status']= array('in',array(1,2));
+                $rwhere['a.wo_status']= array('in',array(1,2,4));
                 $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
                 $wo_num = $res_worecord[0]['total_amount'];
 
@@ -1242,14 +1242,19 @@ class StockController extends CommonController{
         $data_list = array();
         if(!empty($res_records)){
             $all_reasons = C('STOCK_REASON');
-            $all_status = array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过');
+            $all_status = array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料');
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
             spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
             foreach ($res_records as $v){
+                $reason = '';
+                if(isset($all_reasons[$v['reason_type']])){
+                    $reason = $all_reasons[$v['reason_type']]['name'];
+                }
+
                 $batch_no = $v['batch_no'];
                 $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
-                $data_list[]=array('reason'=>$all_reasons[$v['reason_type']]['name'],'status'=>$v['status'],
+                $data_list[]=array('reason'=>$reason,'status'=>$v['status'],
                     'status_str'=>$all_status[$v['status']],'num'=>count($res_goods),'add_time'=>$v['add_time'],
                     'goods'=>$res_goods);
             }

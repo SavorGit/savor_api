@@ -451,7 +451,7 @@ return array(
     'smallapp_choose_date_notday'=>'请选择同一天的日期',
     'smallapp_singin_time_error'=>'请签到结束后，再发起抽奖',
     'smallapp_choose_enddate_error'=>'请选择大于当前时间的结束时间',
-    'smallappsale_invitation_hotel_error'=>'请选择正确的酒楼',
+    'smallappsale_invitation_hotel_error'=>'当前酒楼暂未开通邀请函,请联系管理员',
     'smallappsale_finance_qrcode_type_error'=>'二维码单位和商品单位不一致',
     'smallappsale_finance_qrcode_error'=>'二维码不存在',
     'smallappsale_finance_stock_goods_hasin_exist'=>'扫码商品已入库',
@@ -481,6 +481,12 @@ return array(
     'smallappsale_qrcode_type_error'=>'二维码类型错误',
     'smallappsale_wo_coupon_has_used'=>'当前优惠券已使用',
     'smallappsale_wo_coupon_not_intime'=>'当前优惠券不在使用范围',
+    'smallappsale_qrcode_not_support_coupon_writeoff'=>'此码无法优惠券核销',
+    'smallappsale_qrcode_not_support_goods_writeoff'=>'此码无法商品核销',
+    'smallappsale_qrcode_not_support_lottery'=>'此码无法发起售酒抽奖',
+    'smallappsale_hotel_nothave_sell_lottery'=>'当前酒楼暂未配置售卖抽奖,请联系管理员',
+    'smallappsale_hotel_nothave_sell_lottery'=>'当前酒楼暂未配置售卖抽奖,请联系管理员',
+    'smallappsale_sellgoods_has_sell_lottery'=>'当前核销商品已发起过售酒抽奖',
 
 
 

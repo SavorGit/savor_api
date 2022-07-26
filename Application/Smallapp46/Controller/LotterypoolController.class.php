@@ -6,6 +6,8 @@ class LotterypoolController extends CommonController{
     /**
      * 构造函数
      */
+    public $lottery_pool_type = array(3,11,12,13,14);
+
     function _init_() {
         switch(ACTION_NAME) {
             case 'enterQueue':
@@ -69,7 +71,7 @@ class LotterypoolController extends CommonController{
             $this->to_back(90171);
         }
         $now_time = date('Y-m-d H:i:s');
-        if(!in_array($res_activity['type'],array(3,11,12,13))){
+        if(!in_array($res_activity['type'],$this->lottery_pool_type)){
             $this->to_back(90172);
         }
         $res_data = array('activity_id'=>$activity_id);
@@ -188,7 +190,7 @@ class LotterypoolController extends CommonController{
             $this->to_back(90171);
         }
         $now_time = date('Y-m-d H:i:s');
-        if(!in_array($res_activity['type'],array(3,11,12,13)) || $now_time>$res_activity['end_time']){
+        if(!in_array($res_activity['type'],$this->lottery_pool_type) || $now_time>$res_activity['end_time']){
             $this->to_back(90172);
         }
         $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
@@ -433,7 +435,8 @@ class LotterypoolController extends CommonController{
                         $m_coupon = new \Common\Model\Smallapp\CouponModel();
                         $res_coupon = $m_coupon->getInfo(array('id'=>$coupon_id));
                         if($res_coupon['start_hour']>0){
-                            $start_time = date('Y-m-d H:i:s',$res_coupon['start_hour']*3600);
+                            $now_stime = time()+($res_coupon['start_hour']*3600);
+                            $start_time = date('Y-m-d H:i:s',$now_stime);
                         }else{
                             $start_time = $res_coupon['start_time'];
                         }

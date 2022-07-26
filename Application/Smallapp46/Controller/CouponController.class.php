@@ -106,7 +106,7 @@ class CouponController extends CommonController{
         if($ustatus){
             $where['a.ustatus'] = $ustatus;
         }
-        $fields = 'a.*';
+        $fields = 'a.*,coupon.use_range';
         $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
         $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','');
         $unused = $used = $expired = array();
@@ -121,8 +121,13 @@ class CouponController extends CommonController{
                 }else{
                     $min_price = '无门槛立减券';
                 }
+                if($v['use_range']==1){
+                    $range_str = '全部活动酒水';
+                }else{
+                    $range_str = '部分活动酒水';
+                }
                 $info = array('coupon_user_id'=>$v['id'],'money'=>$v['money'],'min_price'=>$min_price,'expire_time'=>"有效期至{$expire_time}",
-                    'hotel_name'=>$res_hotel['name'],
+                    'hotel_name'=>$res_hotel['name'],'range_str'=>$range_str
                 );
                 switch ($v['ustatus']){
                     case 1:

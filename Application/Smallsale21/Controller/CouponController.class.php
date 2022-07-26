@@ -15,6 +15,10 @@ class CouponController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'getWriteoffList':
+                $this->params = array('openid'=>1001,'page'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -88,6 +92,9 @@ class CouponController extends CommonController{
                 'sslcert_path'=>$sslcert_path,
                 'sslkey_path'=>$sslkey_path,
             );
+
+            $res_usercoupon['money'] = 0.1;//测试
+
             $total_fee = $res_usercoupon['money'];
             $m_order = new \Common\Model\Smallapp\ExchangeModel();
             $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>5,
@@ -124,5 +131,65 @@ class CouponController extends CommonController{
         }else{
             $this->to_back(93205);
         }
+    }
+
+    public function getWriteoffList(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $offset = ($page-1)*$pagesize;
+        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+        $where = array('op_openid'=>$openid,'ustatus'=>2);
+        $res_records = $m_user_coupon->getDataList('*',$where,'id desc',$offset,$pagesize);
+        $data_list = array();
+        if($res_records['total']>0){
+            $m_hotel = new \Common\Model\HotelModel();
+            $m_activity = new \Common\Model\Smallapp\ActivityModel();
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            foreach ($res_records['list'] as $v){
+                $res_hotel = $m_hotel->getInfoById($v['hotel_id'],'name');
+                $expire_time = date('Y.m.d H:i',strtotime($v['end_time']));
+                if($v['min_price']>0){
+                    $min_price = "满{$v['min_price']}可用";
+                }else{
+                    $min_price = '无门槛立减券';
+                }
+                if($v['use_range']==1){
+                    $range_str = '全部活动酒水';
+                }else{
+                    $range_str = '部分活动酒水';
+                }
+                $res_activity = $m_activity->getInfo(array('id'=>$v['activity_id']));
+                $type_str = '幸运抽奖';
+                if($res_activity['type']==14){
+                    $type_str = '售酒抽奖';
+                }
+                $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+                spec.name as spec_name,unit.name as unit_name,a.add_time';
+                $where = array('a.idcode'=>$res_activity['idcode'],'a.dstatus'=>1);
+                $res_srecord = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+                $info = array();
+                if(!empty($res_srecord)){
+                    $info = $res_srecord[0];
+                }
+                $info['money'] = $v['money'];
+                $info['min_price'] = $min_price;
+                $info['expire_time'] = "有效期至{$expire_time}";
+                $info['hotel_name'] = $res_hotel['name'];
+                $info['range_str'] = $range_str;
+                $info['type_str'] = $type_str;
+                $info['status_str'] = '已核销';
+                $data_list[]=$info;
+            }
+        }
+        $this->to_back($data_list);
     }
 }

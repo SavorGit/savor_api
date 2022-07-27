@@ -6,7 +6,7 @@ class LotterypoolController extends CommonController{
     /**
      * 构造函数
      */
-    public $lottery_pool_type = array(3,11,12,13,14);
+    public $lottery_pool_type = array(11,12,13,14);
 
     function _init_() {
         switch(ACTION_NAME) {
@@ -94,8 +94,31 @@ class LotterypoolController extends CommonController{
                     $res_data['activity_name'] = $res_activity['name'];
                     $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
                     $res_prize = $m_prize->getInfo(array('id'=>$res_activity_apply['prize_id']));
+                    $res_data['prize_type'] = $res_prize['type'];
                     $res_data['prize_name'] = $res_prize['name'];
                     $res_data['prize_image_url'] = $oss_host.$res_prize['image_url'];
+                    if($res_prize['type']==4){
+                        $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
+                        $res_prizepool = $m_prizepool_prize->getInfo(array('id'=>$res_prize['prizepool_prize_id']));
+                        $coupon_id = intval($res_prizepool['coupon_id']);
+                        $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                        $res_coupon = $m_coupon->getInfo(array('id'=>$coupon_id));
+                        if($res_coupon['min_price']>0){
+                            $min_price = "满{$res_coupon['min_price']}可用";
+                        }else{
+                            $min_price = '无门槛立减券';
+                        }
+                        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+                        $res_ucoupon = $m_user_coupon->getInfo(array('activity_id'=>$activity_id,'coupon_id'=>$coupon_id));
+                        $start_time = date('Y.m.d H:i',strtotime($res_ucoupon['start_time']));
+                        $end_time = date('Y.m.d H:i',strtotime($res_ucoupon['end_time']));
+                        $res_data['coupon_user_id'] = $res_ucoupon['id'];
+                        $res_data['coupon_money'] = $res_coupon['money'];
+                        $res_data['coupon_min_price'] = $min_price;
+                        $res_data['coupon_start_time'] = "有效期：{$start_time}";
+                        $res_data['coupon_end_time'] = "至{$end_time}";
+                    }
+
                     $task_content = $m_prize->getTaskinfo($res_prize,$res_activity_apply);
                     $res_data['task_content'] = $task_content;
                     $res_data['lottery_time'] = $res_activity_apply['add_time'];
@@ -344,7 +367,7 @@ class LotterypoolController extends CommonController{
                     'start_time'=>$res_activity['start_time'],'end_time'=>$res_activity['end_time']);
                 $redis->set($cache_key,json_encode($cdata),3600*3);
             }
-            if(in_array($res_activity['type'],array(11,12,13))){
+            if(in_array($res_activity['type'],$this->lottery_pool_type)){
                 switch ($res_prize['type']){
                     case 1:
                         if(!empty($res_prize['prizepool_prize_id'])) {
@@ -452,11 +475,13 @@ class LotterypoolController extends CommonController{
                             $min_price = '无门槛立减券';
                         }
 
-                        $expire_time = date('Y.m.d H:i',strtotime($res_coupon['end_time']));
+                        $start_time = date('Y.m.d H:i',strtotime($start_time));
+                        $end_time = date('Y.m.d H:i',strtotime($res_coupon['end_time']));
                         $res_data['coupon_user_id'] = $coupon_user_id;
                         $res_data['coupon_money'] = $res_coupon['money'];
                         $res_data['coupon_min_price'] = $min_price;
-                        $res_data['coupon_expire_time'] = "有效期至{$expire_time}";
+                        $res_data['coupon_start_time'] = "有效期：{$start_time}";
+                        $res_data['coupon_end_time'] = "至{$end_time}";
                         break;
                 }
 

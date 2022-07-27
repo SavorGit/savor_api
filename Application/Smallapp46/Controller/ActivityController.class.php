@@ -965,6 +965,7 @@ class ActivityController extends CommonController{
                     $res_prize = $m_prize->getInfo(array('id'=>$prize_id));
                     $res_activity['prize'] = $res_prize['name'];
                     $res_activity['img_url'] = $res_prize['image_url'];
+                    $res_activity['prize_type'] = $res_prize['type'];
 
                     switch ($res_prize['type']){
                         case 2:
@@ -1014,6 +1015,14 @@ class ActivityController extends CommonController{
             'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$img_url,
             'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
             'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time);
+        if($status==3){
+            $data['prize_type']  = $res_activity['prize_type'];
+            $data['coupon_user_id']  = $res_activity['coupon_user_id'];
+            $data['coupon_money']  = $res_activity['coupon_money'];
+            $data['coupon_min_price']  = $res_activity['coupon_min_price'];
+            $data['coupon_start_time']  = $res_activity['coupon_start_time'];
+            $data['coupon_end_time']  = $res_activity['coupon_end_time'];
+        }
         $this->to_back($data);
     }
 

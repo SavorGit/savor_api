@@ -57,6 +57,7 @@ class ConfigController extends CommonController{
         $res_hotelext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
 
         $is_activity = intval($res_hotelext['is_activity']);
+        $is_activity = 0;
         $activity_next_time = time() + 7200;
         $day = 0;
         $hour = date('G',$activity_next_time);

@@ -1013,7 +1013,7 @@ class ActivityController extends CommonController{
 
         $data = array('activity_num'=>$activity_id,'status'=>$status,'tips'=>$tips,'message'=>$message,
             'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$img_url,
-            'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
+            'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],'hotel_name'=>$hotel_name,
             'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time);
         if($status==3){
             $data['prize_type']  = $res_activity['prize_type'];

@@ -49,7 +49,8 @@ class ConfigsController extends CommonController{
             }
             $sys_vol_data[]=array('label'=>$v,'configKey'=>$k,'configValue'=>$configValue);
         }
-        $res_box['sys_volume']= json_encode($sys_vol_data,JSON_UNESCAPED_UNICODE);
+        $res_box['sys_volume'] = $sys_vol_data;
+        //$res_box[]= json_encode($sys_vol_data,JSON_UNESCAPED_UNICODE);
         $this->to_back($res_box);
     }
     

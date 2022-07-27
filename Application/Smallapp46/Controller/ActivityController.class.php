@@ -931,55 +931,67 @@ class ActivityController extends CommonController{
         $is_hotplay = 1;
         switch ($status){
             case 1:
-                if(!empty($version)){
-                    $m_config = new \Common\Model\SysConfigModel();
-                    $all_config = $m_config->getAllconfig();
-                    $hotellottery_people_num = $all_config['hotellottery_people_num'];
+                $m_config = new \Common\Model\SysConfigModel();
+                $all_config = $m_config->getAllconfig();
+                $hotellottery_people_num = $all_config['hotellottery_people_num'];
 
-                    $lottery_stime = strtotime($res_activity['lottery_time']);
-                    $countdown_time = $lottery_stime-time()>0?$lottery_stime-time():0;
-                    $countdown_mtime = round($countdown_time/60);
-                    if($countdown_mtime>0){
-                        $tips = $countdown_mtime.'分钟后开始抽奖';
-                    }else{
-                        $tips = '即将开始抽奖';
-                        if(time()>$lottery_stime){
-                            $awhere = array('activity_id'=>$activity_id);
-                            $res_apply = $m_activityapply->getDataList('*',$awhere,'id desc',0,1);
-                            if($res_apply['total']<$hotellottery_people_num){
-                                $tips = '参与人数不足，无法开奖';
-                            }
+                $lottery_stime = strtotime($res_activity['lottery_time']);
+                $countdown_time = $lottery_stime-time()>0?$lottery_stime-time():0;
+                $countdown_mtime = round($countdown_time/60);
+                if($countdown_mtime>0){
+                    $tips = $countdown_mtime.'分钟后开始抽奖';
+                }else{
+                    $tips = '即将开始抽奖';
+                    if(time()>$lottery_stime){
+                        $awhere = array('activity_id'=>$activity_id);
+                        $res_apply = $m_activityapply->getDataList('*',$awhere,'id desc',0,1);
+                        if($res_apply['total']<$hotellottery_people_num){
+                            $tips = '参与人数不足，无法开奖';
                         }
                     }
-                    $message = "本轮参与人数在{$hotellottery_people_num}人以上才可开始抽奖";
-                }else{
-                    $tips = '恭喜您，报名成功';
-                    $message = "开奖时间为{$activity_date}（今天）{$lottery_hour}，请及时关注中奖结果。详细奖项请看奖品列表";
                 }
+                $message = "本轮参与人数在{$hotellottery_people_num}人以上才可开始抽奖";
                 break;
             case 2:
                 $tips = '已过本轮抽奖时间，请等待下一轮抽奖';
                 $message = "本轮报名时间为{$activity_date} {$start_hour}-{$end_hour}。现已超时，请等待新一轮抽奖";
                 break;
             case 3:
-                if(!empty($version)){
-                    $tips = "恭喜您中奖了";
-                    $message = '';
-                    if(!empty($res_apply['list'][0]['prize_id'])){
-                        $prize_id = $res_apply['list'][0]['prize_id'];
-                        $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
-                        $res_prize = $m_prize->getInfo(array('id'=>$prize_id));
-                        if($res_prize['type']==2){
-                            $tips = "恭喜您，获得{$res_prize['name']}";
-                        }
-                        $res_activity['prize'] = $res_prize['name'];
-                        $res_activity['img_url'] = $res_prize['image_url'];
-                    }
+                $tips = "恭喜您中奖了";
+                $message = '';
+                if(!empty($res_apply['list'][0]['prize_id'])){
+                    $prize_id = $res_apply['list'][0]['prize_id'];
+                    $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
+                    $res_prize = $m_prize->getInfo(array('id'=>$prize_id));
+                    $res_activity['prize'] = $res_prize['name'];
+                    $res_activity['img_url'] = $res_prize['image_url'];
 
-                }else{
-                    $tips = "恭喜您，获得{$res_activity['prize']}";
-                    $expire_time = date('Y-m-d H:00',strtotime($res_apply['list'][0]['expire_time']));
-                    $message = "请及时联系餐厅服务人员进行兑换，过期无效。有效时间至：{$expire_time}";
+                    switch ($res_prize['type']){
+                        case 2:
+                            $tips = "恭喜您，获得{$res_prize['name']}";
+                            break;
+                        case 4:
+                            $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
+                            $res_prizepool = $m_prizepool_prize->getInfo(array('id'=>$res_prize['prizepool_prize_id']));
+                            $coupon_id = intval($res_prizepool['coupon_id']);
+                            $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                            $res_coupon = $m_coupon->getInfo(array('id'=>$coupon_id));
+                            if($res_coupon['min_price']>0){
+                                $min_price = "满{$res_coupon['min_price']}可用";
+                            }else{
+                                $min_price = '无门槛立减券';
+                            }
+                            $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+                            $res_ucoupon = $m_user_coupon->getInfo(array('activity_id'=>$activity_id,'coupon_id'=>$coupon_id));
+                            $start_time = date('Y.m.d H:i',strtotime($res_ucoupon['start_time']));
+                            $end_time = date('Y.m.d H:i',strtotime($res_ucoupon['end_time']));
+                            $res_activity['coupon_user_id'] = $res_ucoupon['id'];
+                            $res_activity['coupon_money'] = $res_coupon['money'];
+                            $res_activity['coupon_min_price'] = $min_price;
+                            $res_activity['coupon_start_time'] = "有效期：{$start_time}";
+                            $res_activity['coupon_end_time'] = "至{$end_time}";
+                            break;
+                    }
                 }
                 break;
             case 4:

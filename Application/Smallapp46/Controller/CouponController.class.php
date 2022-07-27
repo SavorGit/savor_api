@@ -191,14 +191,18 @@ class CouponController extends CommonController{
             $en_data = array('type'=>'coupon','id'=>$coupon_id);
             $data_id = encrypt_data(json_encode($en_data));
             $qrcode_url = $host_name."/smallapp46/qrcode/getCouponQrcode?data_id={$data_id}";
-            $expire_time = date('Y.m.d H:i',strtotime($coupon_info['end_time']));
             if($coupon_info['min_price']>0){
                 $min_price = "满{$coupon_info['min_price']}可用";
             }else{
                 $min_price = '无门槛立减券';
             }
+            $start_time = date('Y.m.d H:i',strtotime($coupon_info['start_time']));
+            $end_time = date('Y.m.d H:i',strtotime($coupon_info['end_time']));
+            $start_time = "有效期：{$start_time}";
+            $end_time = "至{$end_time}";
+
             $res_data = array('openid'=>$openid,'coupon_id'=>$coupon_id,'money'=>$coupon_info['money'],'use_range'=>$coupon_info['use_range'],
-                'range_str'=>$range_str,'min_price'=>$min_price,'expire_time'=>"有效期至{$expire_time}",
+                'range_str'=>$range_str,'min_price'=>$min_price,'start_time'=>$start_time,'end_time'=>$end_time,
                 'range_goods'=>$range_goods,'hotel_name'=>$res_hotel['name'],'qrcode_url'=>$qrcode_url
             );
         }

@@ -92,9 +92,6 @@ class CouponController extends CommonController{
                 'sslcert_path'=>$sslcert_path,
                 'sslkey_path'=>$sslkey_path,
             );
-
-            $res_usercoupon['money'] = 0.1;//测试
-
             $total_fee = $res_usercoupon['money'];
             $m_order = new \Common\Model\Smallapp\ExchangeModel();
             $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>5,

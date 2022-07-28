@@ -251,7 +251,7 @@ class TaskController extends CommonController{
         $task_id = $this->params['task_id'];
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
-        $field_staff = 'a.openid,a.level,merchant.type';
+        $field_staff = 'a.openid,a.level,merchant.type,merchant.id as merchant_id,merchant.is_integral';
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
         if(empty($res_staff)){
@@ -279,22 +279,31 @@ class TaskController extends CommonController{
         $user_task_id = $m_usertask->add($data);
         if(in_array($res_task[0]['task_type'],array(22,23))){
             //增加积分
-            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
-            $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
-            if(!empty($res_integral)){
-                $userintegral = $res_integral['integral']+$res_task[0]['task_integral'];
-                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+            if($res_staff[0]['is_integral']==1){
+                $integralrecord_openid = $openid;
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$res_task[0]['task_integral'];
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['task_integral']);
+                    $m_userintegral->add($uidata);
+                }
             }else{
-                $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['task_integral']);
-                $m_userintegral->add($uidata);
+                $integralrecord_openid = $hotel_id;
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $where = array('id'=>$res_staff[0]['merchant_id']);
+                $m_merchant->where($where)->setInc('integral',$res_task[0]['task_integral']);
             }
+
             $type = 10;
             if($res_task[0]['task_type']==23){
                 $type = 12;
             }
             $m_hotel = new \Common\Model\HotelModel();
             $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
-            $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
                 'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
                 'integral'=>$res_task[0]['task_integral'],'content'=>1,'type'=>$type,'integral_time'=>date('Y-m-d H:i:s'));
             $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();

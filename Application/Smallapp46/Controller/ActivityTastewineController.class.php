@@ -176,29 +176,48 @@ class ActivityTastewineController extends CommonController{
         $fields = 'a.openid,a.task_id,a.integral as user_integral,a.people_num,task.goods_id,task.integral';
         $where = array('a.id'=>$res_activity['task_user_id']);
         $res_task = $m_taskuser->getUserTaskList($fields,$where,'a.id desc');
-        $tudata = array('people_num'=>$res_task[0]['people_num']+1,'integral'=>$res_task[0]['user_integral']+$res_task[0]['integral']);
-        $m_taskuser->updateData(array('id'=>$res_activity['task_user_id']),$tudata);
 
-        $m_goodsstock = new \Common\Model\Smallapp\GoodsstockModel();
-        $m_goodsstock->where(array('goods_id'=>$res_task[0]['goods_id'],'hotel_id'=>$hotel_id))->setInc('consume_drink_copies',1);
+        $where = array('a.openid'=>$res_task[0]['openid'],'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'merchant.id as merchant_id,merchant.is_integral';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(!empty($res_staff)){
+            if($res_staff[0]['is_integral']==1){
+                $integralrecord_openid = $res_task[0]['openid'];
+                $tudata = array('people_num'=>$res_task[0]['people_num']+1,'integral'=>$res_task[0]['user_integral']+$res_task[0]['integral']);
+                $m_taskuser->updateData(array('id'=>$res_activity['task_user_id']),$tudata);
 
-        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
-        $res_integral = $m_userintegral->getInfo(array('openid'=>$res_task[0]['openid']));
-        if(!empty($res_integral)){
-            $userintegral = $res_integral['integral']+$res_task[0]['integral'];
-            $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
-        }else{
-            $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['integral']);
-            $m_userintegral->add($uidata);
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$res_task[0]['openid']));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$res_task[0]['integral'];
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $uidata = array('openid'=>$openid,'integral'=>$res_task[0]['integral']);
+                    $m_userintegral->add($uidata);
+                }
+            }else{
+                $integralrecord_openid = $hotel_id;
+                $tudata = array('people_num'=>$res_task[0]['people_num']+1);
+                $m_taskuser->updateData(array('id'=>$res_activity['task_user_id']),$tudata);
+
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $where = array('id'=>$res_staff[0]['merchant_id']);
+                $m_merchant->where($where)->setInc('integral',$res_task[0]['integral']);
+            }
+
+            $m_goodsstock = new \Common\Model\Smallapp\GoodsstockModel();
+            $m_goodsstock->where(array('goods_id'=>$res_task[0]['goods_id'],'hotel_id'=>$hotel_id))->setInc('consume_drink_copies',1);
+
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$res_task[0]['task_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'room_id'=>$room_id,'room_name'=>$box_name,'box_id'=>$box_id,'box_mac'=>$box_mac,
+                'integral'=>$res_task[0]['integral'],'content'=>1,'type'=>11,'integral_time'=>date('Y-m-d H:i:s'));
+            $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $m_userintegralrecord->add($integralrecord_data);
         }
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
-        $integralrecord_data = array('openid'=>$res_task[0]['openid'],'area_id'=>$res_hotel['area_id'],'task_id'=>$res_task[0]['task_id'],'area_name'=>$res_hotel['area_name'],
-            'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-            'room_id'=>$room_id,'room_name'=>$box_name,'box_id'=>$box_id,'box_mac'=>$box_mac,
-            'integral'=>$res_task[0]['integral'],'content'=>1,'type'=>11,'integral_time'=>date('Y-m-d H:i:s'));
-        $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $m_userintegralrecord->add($integralrecord_data);
         //end
 
         $ucconfig = C('ALIYUN_SMS_CONFIG');

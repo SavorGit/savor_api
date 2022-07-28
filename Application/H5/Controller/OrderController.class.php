@@ -280,32 +280,41 @@ class OrderController extends Controller {
                     if($res['code']==10000){
                         $condition = array('id'=>$order_id);
                         $m_order->updateData($condition,array('is_settlement'=>1));
-
                         $data = array('order_id'=>$order_id,'openid'=>$payee_openid,'money'=>$money);
                         $m_ordersettlement->add($data);
 
-                        $m_usertask->updateData(array('id'=>$task_user_id),array('integral'=>$integral+$res_usertask[0]['uintegral']));
-
-                        $res_integral = $m_userintegral->getInfo(array('openid'=>$payee_openid));
-                        if(!empty($res_integral)){
-                            $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$integral+$res_integral['integral'],'update_time'=>date('Y-m-d H:i:s')));
-                        }else{
-                            $m_userintegral->addData(array('openid'=>$payee_openid,'integral'=>$integral));
-                        }
-
                         $staffwhere = array('a.openid'=>$payee_openid,'a.status'=>1,'merchant.status'=>1);
-                        $field_staff = 'a.id as staff_id,merchant.hotel_id';
+                        $field_staff = 'a.id as staff_id,merchant.id as merchant_id,merchant.hotel_id,merchant.is_integral';
                         $res_staff = $m_staff->getMerchantStaff($field_staff,$staffwhere);
-                        $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
-                        $integralrecord_data = array('openid'=>$payee_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
-                            'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-                            'integral'=>$integral,'goods_id'=>$res_usertask[0]['goods_id'],'jdorder_id'=>$order_id,'type'=>14,
-                            'integral_time'=>date('Y-m-d H:i:s'));
-                        $m_userintegralrecord->add($integralrecord_data);
-                        $integralrecord_data['integral'] = 0;
-                        $integralrecord_data['money'] = $money;
-                        $m_userintegralrecord->add($integralrecord_data);
+                        if(!empty($res_staff)){
+                            if($res_staff[0]['is_integral']==1){
+                                $integralrecord_openid = $payee_openid;
+                                $m_usertask->updateData(array('id'=>$task_user_id),array('integral'=>$integral+$res_usertask[0]['uintegral']));
+                                $res_integral = $m_userintegral->getInfo(array('openid'=>$payee_openid));
+                                if(!empty($res_integral)){
+                                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$integral+$res_integral['integral'],'update_time'=>date('Y-m-d H:i:s')));
+                                }else{
+                                    $m_userintegral->addData(array('openid'=>$payee_openid,'integral'=>$integral));
+                                }
+                            }else{
+                                $integralrecord_openid = $res_staff[0]['hotel_id'];
+                                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                                $where = array('id'=>$res_staff[0]['merchant_id']);
+                                $m_merchant->where($where)->setInc('integral',$integral);
+                            }
 
+                            $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
+                            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                                'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                                'integral'=>$integral,'goods_id'=>$res_usertask[0]['goods_id'],'jdorder_id'=>$order_id,'type'=>14,
+                                'integral_time'=>date('Y-m-d H:i:s'));
+                            $m_userintegralrecord->add($integralrecord_data);
+
+                            $integralrecord_data['openid'] = $payee_openid;
+                            $integralrecord_data['integral'] = 0;
+                            $integralrecord_data['money'] = $money;
+                            $m_userintegralrecord->add($integralrecord_data);
+                        }
                         echo "order_id:$order_id  settlement ok"."\r\n";
                     }else{
                         echo "order_id:$order_id  settlement error ".json_encode($res)."\r\n";

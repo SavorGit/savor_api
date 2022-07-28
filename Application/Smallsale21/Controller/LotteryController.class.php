@@ -267,18 +267,18 @@ class LotteryController extends CommonController{
 
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelById('hotel.name,ext.hotel_cover_media_id',array('hotel.id'=>$hotel_id));
-        $hotel_logo = '';
+
+        $headPic = '';
         if($res_hotel['hotel_cover_media_id']>0){
             $m_media = new \Common\Model\MediaModel();
             $res_media = $m_media->getMediaInfoById($res_hotel['hotel_cover_media_id']);
-            $hotel_logo = $res_media['oss_addr'];
+            $headPic = base64_encode($res_media['oss_addr']);
         }
-        $headPic = base64_encode($hotel_logo);
         $host_name = C('HOST_NAME');
         $code_url = '';
         foreach ($res_box as $v){
             $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
-            $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_box[0]['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
+            $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_hotel['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
             $m_netty = new \Common\Model\NettyModel();
             $m_netty->pushBox($v['box_mac'],json_encode($message));
         }

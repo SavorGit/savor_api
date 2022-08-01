@@ -883,10 +883,12 @@ class ActivityController extends CommonController{
         $redis->select(1);
         $status = 0;
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $lottery_apply_id = 0;
         if($res_activity['status']==2){
             $where = array('openid'=>$openid,'activity_id'=>$activity_id);
             $res_apply = $m_activityapply->getDataList('*',$where,'id desc',0,1);
             if($res_apply['total']){
+                $lottery_apply_id = $res_apply['list'][0]['id'];
                 if($res_apply['list'][0]['status']==2){
                     $status = 3;
                 }elseif($res_apply['list'][0]['status']==3){
@@ -1014,7 +1016,7 @@ class ActivityController extends CommonController{
         $data = array('activity_num'=>$activity_id,'status'=>$status,'tips'=>$tips,'message'=>$message,
             'activity_name'=>$res_activity['name'],'prize_name'=>$res_activity['prize'],'img_url'=>$img_url,
             'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],'hotel_name'=>$hotel_name,
-            'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time);
+            'is_hotplay'=>$is_hotplay,'lottery_time'=>$lottery_time,'lottery_apply_id'=>$lottery_apply_id);
         if($status==3){
             $data['prize_type']  = $res_activity['prize_type'];
             $data['coupon_user_id']  = $res_activity['coupon_user_id'];

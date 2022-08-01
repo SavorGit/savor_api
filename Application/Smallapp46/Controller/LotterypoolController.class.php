@@ -84,6 +84,7 @@ class LotterypoolController extends CommonController{
         $res_activity_apply = $m_activity_apply->getInfo($awhere);
         $oss_host = 'http://'. C('OSS_HOST').'/';
         if(!empty($res_activity_apply)){
+            $res_data['lottery_apply_id'] = $res_activity_apply['id'];
             switch ($res_activity_apply['status']){
                 case 2:
                 case 4:
@@ -340,7 +341,7 @@ class LotterypoolController extends CommonController{
             $m_prizepool_prize->where(array('id'=>$prizepool_prize_id))->setInc('send_amount',1);
         }
 
-        $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status);
+        $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status,'lottery_apply_id'=>$activityapply_id);
         if($lottery_status==4){
             $oss_host = 'http://'. C('OSS_HOST').'/';
             $res_data['hotel_name'] = $hotel_name;

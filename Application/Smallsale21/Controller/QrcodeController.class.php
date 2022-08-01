@@ -129,7 +129,7 @@ class QrcodeController extends CommonController{
 
     public function scancode(){
         $openid = $this->params['openid'];
-        $type = $this->params['type']; //1商品核销 2优惠券核销 3发起售酒抽奖
+        $type = $this->params['type']; //1商品核销 2优惠券核销 3售酒抽奖优惠券核销 4实物奖品核销
         $content = $this->params['content'];
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -138,27 +138,31 @@ class QrcodeController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
-        if($type==2){
-            $param_coupon = decrypt_data($content);
-            if(!is_array($param_coupon) || $param_coupon['type']!='coupon'){
-                $this->to_back(93206);
-            }
-        }else{
-            $key = C('QRCODE_SECRET_KEY');
-            $qrcode_id = decrypt_data($content,false,$key);
-            $qrcode_id = intval($qrcode_id);
-            $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
-            $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
-            if(empty($res_qrcode)){
-                switch ($type){
-                    case 1:
-                        $this->to_back(93207);
-                        break;
-                    case 3:
-                        $this->to_back(93208);
-                        break;
+        switch ($type){
+            case 1:
+            case 3:
+                $key = C('QRCODE_SECRET_KEY');
+                $qrcode_id = decrypt_data($content,false,$key);
+                $qrcode_id = intval($qrcode_id);
+                $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+                $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+                if(empty($res_qrcode)){
+                    $errcode_map = array('1'=>93207,'3'=>93208);
+                    $this->to_back($errcode_map[$type]);
                 }
-            }
+                break;
+            case 2:
+                $param_coupon = decrypt_data($content);
+                if(!is_array($param_coupon) || $param_coupon['type']!='coupon'){
+                    $this->to_back(93206);
+                }
+                break;
+            case 4:
+                $param_goods = decrypt_data($content);
+                if(!is_array($param_goods) || $param_goods['type']!='goods'){
+                    $this->to_back(93212);
+                }
+                break;
         }
         $res_data = array('type'=>$type,'content'=>$content);
         $this->to_back($res_data);

@@ -572,7 +572,7 @@ class ActivityController extends CommonController{
         $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
-        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>array('in',array(6,7,8,10,11)));
+        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>array('in',array(6,7,8,10,11,12,13,14)));
         $fields = 'activity.name,activity.prize,activity.type,a.id,a.openid,a.box_mac,a.box_name,a.prize_id,a.status,a.add_time';
         $res_apply = $m_activityapply->getApplyDatas($fields,$where,'a.id desc',$limit,'');
         $datalist = array();
@@ -584,7 +584,7 @@ class ActivityController extends CommonController{
                 $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
 
                 $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
-                if($v['type']==8 || $v['type']==10 || $v['type']==11){
+                if(in_array($v['type'],array(8,10,11,12,13,14))){
                     if($v['status']==2){
                         $res_prize = $m_activityprize->getInfo(array('id'=>$v['prize_id']));
                         $content = "{$v['box_name']}包间抽中了{$all_prizes[$res_prize['level']]}“{$res_prize['name']}“，请及时处理。";

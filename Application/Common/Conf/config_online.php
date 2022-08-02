@@ -31,3 +31,4 @@ $config_db =  array(
 return $config_db;
 
 
+    'DB_NAME' => $db_name,

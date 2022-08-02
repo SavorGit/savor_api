@@ -118,7 +118,12 @@ class InvitationController extends CommonController{
             $alisms = new \Common\Lib\AliyunSms();
             $params = array('book_time'=>$book_time = date('Y-m-d H点',strtotime($book_time)),
                 'hotel_name'=>$hotel_name,'room_name'=>$room_name);
-            $template_code = $ucconfig['send_invitation_to_user'];
+            if(!empty($contact_mobile)){
+                $params['tel'] = $contact_mobile;
+                $template_code = $ucconfig['send_invitation_to_user_has_mobile'];
+            }else{
+                $template_code = $ucconfig['send_invitation_to_user'];
+            }
             $res_data = $alisms::sendSms($mobile,$params,$template_code);
             $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
                 'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3

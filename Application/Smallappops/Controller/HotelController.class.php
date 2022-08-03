@@ -20,7 +20,22 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'editbaseinfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'area_id'=>1001,'county_id'=>1001,
+                    'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1001,'food_style_id'=>1001,
+                    'avg_expense'=>1001,'contract_expiretime'=>1001,'hotel_wifi'=>1001,'hotel_wifi_pas'=>1002
+                    );
+                break;
             case 'detail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001);
+                break;
+            case 'addhoteldrinks':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'is_nosell'=>1001,'images'=>1002);
+                break;
+            case 'hoteldrinkslist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
@@ -107,6 +122,12 @@ class HotelController extends CommonController{
                 $res_foodstyle = $m_foodstyle->getOne('name',array('id'=>$res_hotel['food_style_id']),'');
                 $food_style_name = $res_foodstyle['name'];
             }
+            $business_circle_name = '';
+            if(!empty($res_hotel['business_circle_id'])){
+                $m_business_circle = new \Common\Model\BusinessCircleModel();
+                $res_circle = $m_business_circle->getInfo(array('id'=>$res_hotel['business_circle_id']));
+                $business_circle_name = $res_circle['name'];
+            }
             $avg_expense = '';
             if(!empty($res_hotel['avg_expense'])){
                 $avg_expense = $res_hotel['avg_expense'].'/人';
@@ -155,12 +176,13 @@ class HotelController extends CommonController{
                 $box_type = rtrim($box_info,',');
                 $box_info = '';
             }
-            $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'area_name'=>$area_name,'address'=>$res_hotel['addr'],
+            $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'area_name'=>$area_name,'business_circle_name'=>$business_circle_name,'address'=>$res_hotel['addr'],
                 'contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'food_style_name'=>$food_style_name,'avg_expense'=>$avg_expense,
                 'contract_expiretime'=>$contract_expiretime,'hotel_wifi'=>$res_hotel['hotel_wifi'],'hotel_wifi_pas'=>$res_hotel['hotel_wifi_pas'],
                 'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
-                'install_date'=>$install_date,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info
-
+                'install_date'=>$install_date,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info,
+                'area_id'=>$res_hotel['area_id'],'county_id'=>$res_hotel['county_id'],'food_style_id'=>$res_hotel['food_style_id'],
+                'business_circle_id'=>$res_hotel['business_circle_id'],'now_date'=>date('Y-m-d')
             );
         }
         $this->to_back($data);
@@ -385,16 +407,130 @@ class HotelController extends CommonController{
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
                 '状态说明：','绿色圆点：在线','蓝色圆点：24小时内在线','黄色圆点：24小时以上，7天以内在线','红色圆点：失联7天以上','黑色圆点：失联30天以上'
             );
+            $m_hotel_drinks = new \Common\Model\HotelDrinksModel();
+            $hwhere = array('hotel_id'=>$hotel_id,'type'=>2);
+            $res_drinks = $m_hotel_drinks->getALLDataList('image,add_time',$hwhere,'id desc','0,1','');
+            $hotel_drinks_content = '当前餐厅无在售酒水';
+            $hotel_drinks_num = 0;
+            if(!empty($res_drinks)){
+                if(!empty($res_drinks['image'])){
+                    $hwhere['image'] = array('neq','');
+                    $res_num = $m_hotel_drinks->getALLDataList('count(*) as num',$hwhere,'id desc','0,1','');
+                    $hotel_drinks_num = intval($res_num[0]['num']);
+                    $hotel_drinks_content = '';
+                }
+            }
             $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'address'=>$res_hotel['addr'],
                 'contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,
                 'hotel_network'=>$hotel_network,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'small_platform_status'=>$small_platform_status,'small_platform_uptips'=>$small_platform_uptips,'box_list'=>$res_box,
                 'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,
-                'box_num'=>$box_num,'room_num'=>$room_num,'box_type'=>$box_type,'box_info'=>$box_info
+                'box_num'=>$box_num,'room_num'=>$room_num,'box_type'=>$box_type,'box_info'=>$box_info,
+                'hotel_drinks_num'=>$hotel_drinks_num,'hotel_drinks_content'=>$hotel_drinks_content
             );
         }
         $this->to_back($data);
     }
+
+    public function editbaseinfo(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $name = $this->params['name'];
+        $area_id = $this->params['area_id'];
+        $county_id = $this->params['county_id'];
+        $business_circle_id = intval($this->params['business_circle_id']);
+        $addr = $this->params['addr'];
+        $contractor = $this->params['contractor'];
+        $mobile = $this->params['mobile'];
+        $food_style_id = $this->params['food_style_id'];
+        $avg_expense = $this->params['avg_expense'];
+        $contract_expiretime = $this->params['contract_expiretime'];
+        $hotel_wifi = trim($this->params['hotel_wifi']);
+        $hotel_wifi_pas = trim($this->params['hotel_wifi_pas']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $hotel_data = array('name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,'business_circle_id'=>$business_circle_id,
+            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'hotel_wifi'=>$hotel_wifi,'hotel_wifi_pas'=>$hotel_wifi_pas
+        );
+        $m_hotel = new \Common\Model\HotelModel();
+        $m_hotel->saveData($hotel_data,array('id'=>$hotel_id));
+
+        $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'contract_expiretime'=>$contract_expiretime);
+        $m_hotel_ext = new \Common\Model\HotelExtModel();
+        $m_hotel_ext->saveData($hotel_ext_data, array('hotel_id'=>$hotel_id));
+
+        $this->to_back(array());
+    }
+
+    public function addhoteldrinks(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $is_nosell = intval($this->params['is_nosell']);//是否无在售酒水 1是 0否
+        $images = $this->params['images'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $m_hotel_drinks = new \Common\Model\HotelDrinksModel();
+        if($is_nosell==1){
+            $add_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'image'=>'','type'=>2);
+            $m_hotel_drinks->add($add_data);
+        }else{
+            if(empty($images)){
+                $this->to_back(1001);
+            }
+            $all_images = explode(',',$images);
+            foreach ($all_images as $v){
+                if(!empty($v)){
+                    $add_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'image'=>$v,'type'=>2);
+                    $m_hotel_drinks->add($add_data);
+                }
+            }
+        }
+        $this->to_back(array('message'=>'添加成功'));
+
+    }
+
+    public function hoteldrinkslist(){
+        $hotel_id = intval($this->params['hotel_id']);
+        $m_hotel_drinks = new \Common\Model\HotelDrinksModel();
+        $fields = 'date(add_time) as adate, GROUP_CONCAT(id) as all_ids';
+        $where = array('hotel_id'=>$hotel_id,'type'=>2);
+        $group = 'adate';
+        $all_drinks = $m_hotel_drinks->getALLDataList($fields,$where,'','',$group);
+        $datalist = array();
+        if(!empty($all_drinks)){
+            $oss_host = 'http://'.C('OSS_HOST').'/';
+            foreach ($all_drinks as $v){
+                $imgs = array();
+                $re_imgs = $m_hotel_drinks->getALLDataList('image',array('id'=>array('in',$v['all_ids'])),'id desc','','');
+                foreach ($re_imgs as $iv){
+                    if(!empty($iv['image'])){
+                        $imgs[]=$oss_host.$iv['image'];
+                    }
+                }
+                $content = '';
+                if(empty($imgs)){
+                    $content = '当前餐厅无在售酒水';
+                }
+                $info = array('date'=>$v['adate'],'imgs'=>$imgs,'content'=>$content);
+                $datalist[]=$info;
+            }
+            sortArrByOneField($datalist,'date',true);
+        }
+        $res_data = array('datalist'=>$datalist);
+        $this->to_back($res_data);
+    }
+
+
     private function changeadvList($res,$type=1){
         if($res){
             foreach ($res as $vk=>$val) {
@@ -420,6 +556,5 @@ class HotelController extends CommonController{
             
         }
         return $res;
-        //如果是空
     }
 }

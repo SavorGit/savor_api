@@ -74,7 +74,7 @@ class UserController extends CommonController{
                 break;
             case 'edit':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002);
+                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002,'mobile'=>1001);
                 break;
             case 'assigntypes':
                 $this->is_verify = 1;
@@ -392,8 +392,9 @@ class UserController extends CommonController{
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
+        $hotel_stock = 1;
 		//if(!empty($hotel_stock) && !empty($hotel_stock[$box_info[0]['hotel_id']]) && $box_info[0]['area_id']==236){//酒水广告
-		if(1==2)
+		if(!empty($hotel_stock)){
 			$media_id = 0;
 			$res_media['oss_addr'] = 'media/resource/tBtFDitm8N.mp4';
 			$file_info = pathinfo($res_media['oss_addr']);
@@ -416,7 +417,7 @@ class UserController extends CommonController{
 			$cache_key = C('SAPP_SCRREN').":".$box_mac;
 			$redis->rpush($cache_key, json_encode($data));
 
-		}else {
+		}else{
 			$m_ads = new \Common\Model\AdsModel();
 			$ads_where = array('hotel_id'=>$box_info[0]['hotel_id'],'state'=>1,'is_online'=>1);
 			$res_ads = $m_ads->getWhere($ads_where, 'id,media_id');
@@ -616,6 +617,7 @@ class UserController extends CommonController{
         $openid = $this->params['openid'];
         $name = $this->params['name'];
         $avatar_url = $this->params['avatar_url'];
+        $mobile = $this->params['mobile'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -625,12 +627,17 @@ class UserController extends CommonController{
         if (empty($res_user)) {
             $this->to_back(92010);
         }
-        if($name || $avatar_url){
-            if($name){
-                $data = array('nickName'=>$name);
-            }else{
+        if($name || $avatar_url || $mobile){
+            $data = array();
+            if(!empty($name)){
+                $data['nickName'] = $name;
+            }
+            if(!empty($avatar_url)){
                 $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
-                $data = array('avatarUrl'=>$avatar_url);
+                $data['avatarUrl'] = $avatar_url;
+            }
+            if(!empty($mobile)){
+                $data['mobile'] = $mobile;
             }
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
             $data = array('message'=>'修改成功');

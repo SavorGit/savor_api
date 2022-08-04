@@ -633,15 +633,19 @@ class UserController extends CommonController{
                 $data['nickName'] = $name;
             }
             if(!empty($avatar_url)){
-                $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
-                $data['avatarUrl'] = $avatar_url;
+                if(substr($avatar_url,0,5)=='https'){
+                    $data['avatarUrl'] = $avatar_url;
+                }else{
+                    $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
+                    $data['avatarUrl'] = $avatar_url;
+                }
             }
             if(!empty($mobile)){
                 $data['mobile'] = $mobile;
             }
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
-            $data = array('message'=>'修改成功');
-            $this->to_back($data);
+            $res_data = array('message'=>'修改成功');
+            $this->to_back($res_data);
         }else{
             $data = array('message'=>'修改失败');
             $this->to_back($data);

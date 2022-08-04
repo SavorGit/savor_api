@@ -26,20 +26,46 @@ class ConfigsController extends CommonController{
         $map['d.state'] = 1;
         $map['d.flag']  = 0;
         $box_info = $m_box->getBoxInfo('a.box_carousel_volume,a.box_pro_demand_volume,a.box_content_demand_volume,
-                                        a.box_video_froscreen_volume,a.box_img_froscreen_volume,a.box_tv_volume', $map);
+                                        a.box_video_froscreen_volume,a.box_img_froscreen_volume,a.box_tv_volume,a.box_type', $map);
         
         if(empty($box_info)){
             $this->to_back(70001);
         }
+        if($box_info[0]['box_type']==7){
+            /*$box_info = $m_box->getBoxInfo('a.box_carousel_volume tv_carousel_volume,
+                                            a.box_pro_demand_volume tv_pro_demand_volume,
+                                            a.box_content_demand_volume tv_content_demand_volume,
+                                            a.box_video_froscreen_volume tv_video_froscreen_volume,
+                                            a.box_img_froscreen_volume tv_img_froscreen_volume,
+                                            a.box_tv_volume,a.box_type', $map);*/
+            $box_info[0]['tv_carousel_volume'] = $box_info[0]['box_carousel_volume'];
+            $box_info[0]['tv_pro_demand_volume'] = $box_info[0]['box_pro_demand_volume'];
+            $box_info[0]['tv_content_demand_volume'] = $box_info[0]['box_content_demand_volume'];
+            $box_info[0]['tv_video_froscreen_volume'] = $box_info[0]['box_video_froscreen_volume'];
+            $box_info[0]['tv_img_froscreen_volume'] = $box_info[0]['box_img_froscreen_volume'];
+            $config_volume = array(
+                'tv_carousel_volume'=>'机顶盒轮播音量','tv_pro_demand_volume'=>'机顶盒公司节目点播音量',
+                'tv_content_demand_volume'=>'机顶盒用户内容点播音量','tv_video_froscreen_volume'=>'机顶盒视频投屏音量',
+                'tv_img_froscreen_volume'=>'机顶盒图片投屏音量','box_tv_volume'=>'机顶盒电视音量',
+                
+            );
+        }else {
+            $config_volume = array(
+                'box_carousel_volume'=>'机顶盒轮播音量','box_pro_demand_volume'=>'机顶盒公司节目点播音量',
+                'box_content_demand_volume'=>'机顶盒用户内容点播音量','box_video_froscreen_volume'=>'机顶盒视频投屏音量',
+                'box_img_froscreen_volume'=>'机顶盒图片投屏音量','box_tv_volume'=>'机顶盒电视音量',
+                
+            );
+        }
+            
+           
         $box_info = $box_info[0];
+        
+        
+        
         $m_sysconfig = new \Common\Model\SysConfigModel();
         $sysconfig = $m_sysconfig->getAllconfig();
-        $config_volume = array(
-            'box_carousel_volume'=>'机顶盒轮播音量','box_pro_demand_volume'=>'机顶盒公司节目点播音量',
-            'box_content_demand_volume'=>'机顶盒用户内容点播音量','box_video_froscreen_volume'=>'机顶盒视频投屏音量',
-            'box_img_froscreen_volume'=>'机顶盒图片投屏音量','box_tv_volume'=>'机顶盒电视音量',
-            
-        );
+        
         $sys_vol_data = array();
         foreach ($config_volume as $k=>$v){
             if(empty($box_info[$k])){

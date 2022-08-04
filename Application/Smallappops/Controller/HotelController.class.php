@@ -24,7 +24,7 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'area_id'=>1001,'county_id'=>1001,
                     'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1001,'food_style_id'=>1001,
-                    'avg_expense'=>1001,'contract_expiretime'=>1001,'hotel_wifi'=>1001,'hotel_wifi_pas'=>1002
+                    'avg_expense'=>1001,'contract_expiretime'=>1001,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
                     );
                 break;
             case 'detail':
@@ -128,6 +128,7 @@ class HotelController extends CommonController{
                 $res_circle = $m_business_circle->getInfo(array('id'=>$res_hotel['business_circle_id']));
                 $business_circle_name = $res_circle['name'];
             }
+            $avg_expense_num = intval($res_hotel['avg_expense']);
             $avg_expense = '';
             if(!empty($res_hotel['avg_expense'])){
                 $avg_expense = $res_hotel['avg_expense'].'/人';
@@ -182,7 +183,7 @@ class HotelController extends CommonController{
                 'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'install_date'=>$install_date,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info,
                 'area_id'=>$res_hotel['area_id'],'county_id'=>$res_hotel['county_id'],'food_style_id'=>$res_hotel['food_style_id'],
-                'business_circle_id'=>$res_hotel['business_circle_id'],'now_date'=>date('Y-m-d')
+                'business_circle_id'=>$res_hotel['business_circle_id'],'avg_expense_num'=>$avg_expense_num,'now_date'=>date('Y-m-d')
             );
         }
         $this->to_back($data);
@@ -458,12 +459,27 @@ class HotelController extends CommonController{
             'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'hotel_wifi'=>$hotel_wifi,'hotel_wifi_pas'=>$hotel_wifi_pas
         );
         $m_hotel = new \Common\Model\HotelModel();
-        $m_hotel->saveData($hotel_data,array('id'=>$hotel_id));
+        $res_hotel = $m_hotel->saveData($hotel_data,array('id'=>$hotel_id));
 
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(15);
+        if($res_hotel){
+            $cache_key = "savor_hotel_$hotel_id";
+            $data = $m_hotel->getInfoById($hotel_id);
+            if(!empty($data)){
+                $redis->set($cache_key, json_encode($data));
+            }
+        }
         $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'contract_expiretime'=>$contract_expiretime);
         $m_hotel_ext = new \Common\Model\HotelExtModel();
-        $m_hotel_ext->saveData($hotel_ext_data, array('hotel_id'=>$hotel_id));
-
+        $res_ext = $m_hotel_ext->saveData($hotel_ext_data, array('hotel_id'=>$hotel_id));
+        if($res_ext){
+            $cache_key = "savor_hotel_ext_$hotel_id";
+            $data = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotel_id));
+            if(!empty($data)){
+                $redis->set($cache_key, json_encode($data));
+            }
+        }
         $this->to_back(array());
     }
 

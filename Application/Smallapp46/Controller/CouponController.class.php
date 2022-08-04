@@ -106,7 +106,7 @@ class CouponController extends CommonController{
         if($ustatus){
             $where['a.ustatus'] = $ustatus;
         }
-        $fields = 'a.*,coupon.use_range';
+        $fields = 'a.*,coupon.use_range,coupon.range_finance_goods_ids';
         $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
         $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','');
         $unused = $used = $expired = array();
@@ -116,19 +116,32 @@ class CouponController extends CommonController{
             foreach ($res_coupon as $v){
                 $res_hotel = $m_hotel->getInfoById($v['hotel_id'],'name');
                 $expire_time = date('Y.m.d H:i',strtotime($v['end_time']));
+                $start_time = date('Y.m.d H:i',strtotime($v['start_time']));
                 if($v['min_price']>0){
                     $min_price = "满{$v['min_price']}可用";
                 }else{
                     $min_price = '无门槛立减券';
                 }
+                $range_goods = array();
                 if($v['use_range']==1){
                     $range_str = '全部活动酒水';
                 }else{
                     $range_str = '部分活动酒水';
+                    $range_finance_goods_ids = explode(',',trim($v['range_finance_goods_ids'],','));
+                    $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+                    $res_data = $m_hotelgoods->getStockGoodsList($v['hotel_id'],0,1000);
+                    if(!empty($res_data)){
+                        foreach ($res_data as $gv){
+                            if(in_array($gv['finance_goods_id'],$range_finance_goods_ids)){
+                                $range_goods[]=$gv['name'];
+                            }
+                        }
+                    }
                 }
                 $info = array('coupon_user_id'=>$v['id'],'money'=>$v['money'],'min_price'=>$min_price,'expire_time'=>"有效期至{$expire_time}",
-                    'hotel_name'=>$res_hotel['name'],'range_str'=>$range_str
+                    'hotel_name'=>$res_hotel['name'],'range_str'=>$range_str,'range_goods'=>$range_goods,'start_time'=>$start_time,'end_time'=>$expire_time
                 );
+
                 switch ($v['ustatus']){
                     case 1:
                         if($nowtime>$v['end_time']){

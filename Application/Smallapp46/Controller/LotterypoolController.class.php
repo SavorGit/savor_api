@@ -118,6 +118,16 @@ class LotterypoolController extends CommonController{
                         $res_data['coupon_min_price'] = $min_price;
                         $res_data['coupon_start_time'] = "有效期：{$start_time}";
                         $res_data['coupon_end_time'] = "至{$end_time}";
+                    }elseif($res_prize['type']==5){
+                        $m_prizepool_prize = new \Common\Model\Smallapp\PrizepoolprizeModel();
+                        $res_prizepool = $m_prizepool_prize->getInfo(array('id'=>$res_prize['prizepool_prize_id']));
+                        $coupon_ids = explode(',',trim($res_prizepool['coupon_ids'],','));
+                        $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                        $cfileds = 'sum(money) as total_money,count(*) as num';
+                        $res_coupon = $m_coupon->getALLDataList($cfileds,array('id'=>array('in',$coupon_ids)),'id desc','','');
+
+                        $res_data['coupon_money'] = "{$res_coupon['money']}元";
+                        $res_data['coupon_num'] = "共{$res_coupon[0]['num']}张券";
                     }
 
                     $task_content = $m_prize->getTaskinfo($res_prize,$res_activity_apply);
@@ -483,6 +493,31 @@ class LotterypoolController extends CommonController{
                         $res_data['coupon_min_price'] = $min_price;
                         $res_data['coupon_start_time'] = "有效期：{$start_time}";
                         $res_data['coupon_end_time'] = "至{$end_time}";
+                        break;
+                    case 5:
+                        $coupon_ids = explode(',',trim($res_prizepool['coupon_ids'],','));
+                        $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                        $res_all_coupon = $m_coupon->getALLDataList('*',array('id'=>array('in',$coupon_ids)),'id desc','','');
+                        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+                        $coupon_money = $coupon_num = 0;
+                        foreach ($res_all_coupon as $v){
+                            $res_coupon = $v;
+                            $coupon_num++;
+                            $coupon_money+=$res_coupon['money'];
+
+                            if($res_coupon['start_hour']>0){
+                                $now_stime = time()+($res_coupon['start_hour']*3600);
+                                $start_time = date('Y-m-d H:i:s',$now_stime);
+                            }else{
+                                $start_time = $res_coupon['start_time'];
+                            }
+                            $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
+                                'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
+                                'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                            $m_user_coupon->add($coupon_data);
+                        }
+                        $res_data['coupon_money'] = $coupon_money;
+                        $res_data['coupon_num'] = $coupon_num;
                         break;
                 }
 

@@ -77,6 +77,7 @@ class BoxController extends CommonController{
         $baseinfo['tv_input_source']  = $tv_input_source;
         $baseinfo['small_platform_ip'] = $small_platform_ip;
         $baseinfo['is_4g']       = $box_info['is_4g']?'4G':'非4G';
+        $baseinfo['box_type_id'] = $box_info['box_type'];
         $baseinfo['box_type']    = $box_type_arr[$box_info['box_type']];
         $baseinfo['switch_time'] = $box_info['switch_time'];
         $baseinfo['wifi_name']   = $box_info['wifi_name'];

@@ -378,6 +378,15 @@ class ProgramController extends CommonController{
              
              
          }
+         if(empty($data)){
+             foreach($list as $key=>$v){
+                 $data[$key]['media_list'] = [];
+                 $data[$key]['box_id']     = $v['box_id'];
+                 $data[$key]['box_mac']    = $v['box_mac'];
+                 $data[$key]['room_id']    = $v['room_id'];
+                 $data[$key]['menu_num']   = '19700101080000';
+             }
+         }
          $this->to_back($data);
      }
      /**

@@ -71,7 +71,7 @@ class GoodsController extends CommonController{
                     $price = intval($v['price']);
                     $goods_info[]="{$v['goods_name']}({$price}元)";
 
-                    if($box_info[0]['area_id']==236 && $v['is_seckill']==1 && $v['end_time']>=$nowtime){
+                    if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
                         $end_time = strtotime($v['end_time']);
                         $now_time = time();
                         $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;

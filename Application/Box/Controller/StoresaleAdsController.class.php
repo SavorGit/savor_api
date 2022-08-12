@@ -12,7 +12,7 @@ class StoresaleAdsController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1001);
                 break;
         }
-        parent::_init_(); 
+        parent::_init_();
     }
     public function getAdsList(){
         $box_mac = $this->params['box_mac'];
@@ -25,7 +25,7 @@ class StoresaleAdsController extends CommonController{
         }
         $hotel_id = $box_info[0]['hotel_id'];
         $box_id = $box_info[0]['box_id'];
-        
+
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(12);
         $cache_key = C('SMALLAPP_STORESALE_ADS').$hotel_id;
@@ -53,7 +53,7 @@ class StoresaleAdsController extends CommonController{
             $data = array('period'=>$period,'media_list'=>$media_list);
             $this->to_back($data);
         }
-        
+
         $now_date = date('Y-m-d H:i:s');
         $m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
         $fields = "media.id as vid,ads.id as ads_id,ads.is_sapp_qrcode,media.md5,ads.name as chinese_name,media.oss_addr as oss_path,media.duration as duration,
@@ -66,6 +66,14 @@ class StoresaleAdsController extends CommonController{
         $res_data = $m_life_adshotel->getGoodsList($fields,$where,$order,'');
         $now_goods_ids = array();
         if(!empty($res_data)){
+            $m_storesale_sort_hotel = new \Common\Model\Smallapp\StoresaleSortHotelModel();
+            $swhere = array('a.hotel_id'=>$hotel_id,'salesort.status'=>1);
+            $res_sort = $m_storesale_sort_hotel->getSortDatas('salesort.content',$swhere,'salesort.id desc','0,1','');
+            $sort_content = array();
+            if(!empty($res_sort[0]['content'])){
+                $sort_content = json_decode($res_sort[0]['content'],true);
+                $sort_content = array_flip($sort_content);
+            }
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_data as $k=>$v){
                 if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
@@ -84,6 +92,11 @@ class StoresaleAdsController extends CommonController{
                         $image_url = $res_media['oss_path'];
                     }
                     $v['image_url'] = $image_url;
+                    $sort_num = 99999;
+                    if(isset($sort_content[$v['finance_goods_id']])){
+                        $sort_num = intval($sort_content[$v['finance_goods_id']]);
+                    }
+                    $v['sort_num'] = $sort_num;
                     $media_list[]=$v;
                 }
             }

@@ -12,6 +12,10 @@ class StaffController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1002);
                 break;
+            case 'hotelstafflist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'pagesize'=>1002);
+                break;
             case 'detail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
@@ -158,6 +162,44 @@ class StaffController extends CommonController{
             }
         }
         $data = array('datalist'=>$datalist,'user'=>$user);
+        $this->to_back($data);
+    }
+
+    public function hotelstafflist(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $page = intval($this->params['page']);
+        $pagesize = intval($this->params['pagesize']);
+        if(empty($pagesize)){
+            $pagesize = 15;
+        }
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
+        if(empty($res_staff) || $res_staff[0]['type']!=3){
+            $this->to_back(93001);
+        }
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
+        $merchant_id = intval($res_merchant['id']);
+
+        $start = ($page-1)*$pagesize;
+        $staff_where = array('merchant_id'=>$merchant_id,'status'=>1);
+        $res_staffs = $m_staff->getDataList('id,openid,parent_id,level',$staff_where,'level asc',$start,$pagesize);
+        $datalist = array();
+        if(!empty($res_staffs['total'])){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            foreach ($res_staffs['list'] as $v){
+                $where = array('openid'=>$v['openid']);
+                $fields = 'openid,avatarUrl,nickName,mobile';
+                $res_user = $m_user->getOne($fields,$where);
+                $res_user['staff_id'] = $v['id'];
+                $res_user['level'] = intval($v['level']);
+                $datalist[] = $res_user;
+            }
+        }
+        $data = array('datalist'=>$datalist);
         $this->to_back($data);
     }
 

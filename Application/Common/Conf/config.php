@@ -280,6 +280,7 @@ return array(
 		'11'=>'1500',
 		'12'=>'2000及以上',
 	),
+    'PROGRAM_ADS_MENU_NUM' =>'program_ads_menu_num',
     'PROGRAM_ADS_CACHE_PRE'=>'program_ads_',
     'PROGRAM_PRO_CACHE_PRE'=>'program_pro_',
     'PROGRAM_ADV_CACHE_PRE'=>'program_adv_',

@@ -257,6 +257,10 @@ class BoxController extends CommonController{
     private function getBoxAdsList($box_id){
         $data =  array();
         $m_box = new \Common\Model\BoxModel();
+        $redis = SavorRedis::getInstance();
+        $redis->select(12);
+        $program_ads_menu_num_key = C('PROGRAM_ADS_MENU_NUM');
+        $program_ads_menu_num     = $redis->get($program_ads_menu_num_key);
         $fileds = 'ext.mac_addr';
         $box_info = $m_box->alias('a')
         ->join('savor_room room on a.room_id=room.id','left')
@@ -277,7 +281,8 @@ class BoxController extends CommonController{
             }
             if(!empty($ads_period_info)){//如果该机顶盒下广告位不为空
                 $box_ads_num = date('YmdHis',strtotime($ads_period_info['create_time']));
-                $data['box_ads_num'] = $box_ads_num;
+                //$data['box_ads_num'] = $box_ads_num;
+                $data['box_ads_num'] = $program_ads_menu_num;
             }
         }else {
             $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
@@ -315,7 +320,8 @@ class BoxController extends CommonController{
             if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
                 $ads_time_str = max($ads_time_arr);
                 $box_ads_num = date('YmdHis',strtotime($ads_time_str));
-                $data['box_ads_num'] = $box_ads_num;
+                //$data['box_ads_num'] = $program_ads_menu_num.$box_ads_num;
+                $data['box_ads_num'] = $program_ads_menu_num;
             }
         }
         return $data;

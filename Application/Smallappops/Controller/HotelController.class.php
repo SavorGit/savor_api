@@ -23,8 +23,8 @@ class HotelController extends CommonController{
             case 'editbaseinfo':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'area_id'=>1001,'county_id'=>1001,
-                    'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1001,'food_style_id'=>1001,
-                    'avg_expense'=>1001,'contract_expiretime'=>1001,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
+                    'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1002,'food_style_id'=>1001,
+                    'avg_expense'=>1002,'contract_expiretime'=>1002,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
                     );
                 break;
             case 'detail':
@@ -419,7 +419,7 @@ class HotelController extends CommonController{
             $hotel_drinks_content = '当前餐厅无在售酒水';
             $hotel_drinks_num = 0;
             if(!empty($res_drinks)){
-                if(!empty($res_drinks['image'])){
+                if(!empty($res_drinks[0]['image'])){
                     $hwhere['image'] = array('neq','');
                     $res_num = $m_hotel_drinks->getALLDataList('count(*) as num',$hwhere,'id desc','0,1','');
                     $hotel_drinks_num = intval($res_num[0]['num']);
@@ -534,7 +534,9 @@ class HotelController extends CommonController{
                 $imgs = array();
                 $re_imgs = $m_hotel_drinks->getALLDataList('image',array('id'=>array('in',$v['all_ids'])),'id desc','','');
                 foreach ($re_imgs as $iv){
-                    if(!empty($iv['image'])){
+                    if(empty($iv['image'])){
+                        break;
+                    }else{
                         $imgs[]=$oss_host.$iv['image'];
                     }
                 }

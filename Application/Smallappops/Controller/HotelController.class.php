@@ -357,7 +357,12 @@ class HotelController extends CommonController{
                     }
                     if(!empty($ads_num_arr)){//如果该机顶盒下广告位不为空
                         $ads_time_str = max($ads_time_arr);
-                        $ads_proid = date('YmdHis',strtotime($ads_time_str));
+                        //$ads_proid = date('YmdHis',strtotime($ads_time_str));
+                        $redis->select(12);
+                        $program_ads_menu_num_key = C('PROGRAM_ADS_MENU_NUM');
+                        $program_ads_menu_num = $redis->get($program_ads_menu_num_key);
+                        $ads_proid = $program_ads_menu_num;
+                        
                     }
                 }
                 

@@ -39,6 +39,15 @@ class MessageModel extends BaseModel{
                 $data = array('hotel_id'=>$openid,'content_id'=>$content_id,'type'=>$type,'read_status'=>1);
                 $this->add($data);
                 break;
+            case 9:
+                $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+                $fields = 'a.id,a.hotel_id';
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getMerchantStaff($fields,$where);
+                $data = array('staff_openid'=>$openid,'hotel_id'=>$res_staff[0]['hotel_id'],'content_id'=>$content_id,
+                    'type'=>$type,'read_status'=>1);
+                $this->add($data);
+                break;
         }
 
         return true;

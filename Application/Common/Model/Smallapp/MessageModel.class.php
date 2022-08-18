@@ -11,7 +11,7 @@ class MessageModel extends BaseModel{
     }
 
 	/*
-	 * $type 类型1赞(喜欢内容),2内容审核,3优质内容,4领取红包,5购买订单,6发货订单
+	 * $type 类型1赞(喜欢内容),2内容审核,3优质内容,4领取红包,5购买订单,6发货订单,7销售端酒水点播提醒,8活动中奖,9注册会员
 	 */
 	public function recordMessage($openid,$content_id,$type,$status=0){
 	    switch ($type){
@@ -33,6 +33,10 @@ class MessageModel extends BaseModel{
             case 4:
             case 5:
                 $data = array('openid'=>$openid,'content_id'=>$content_id,'type'=>$type,'read_status'=>1);
+                $this->add($data);
+                break;
+            case 8:
+                $data = array('hotel_id'=>$openid,'content_id'=>$content_id,'type'=>$type,'read_status'=>1);
                 $this->add($data);
                 break;
         }

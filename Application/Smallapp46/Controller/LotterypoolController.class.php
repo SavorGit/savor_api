@@ -533,6 +533,9 @@ class LotterypoolController extends CommonController{
                     $m_syslottery->send_common_lottery($hotel_id,$box_mac,$activity_id,$user_barrage);
                 }
             }
+
+            $m_message = new \Common\Model\Smallapp\MessageModel();
+            $m_message->recordMessage($hotel_id,$activityapply_id,8);
         }
         $this->to_back($res_data);
     }

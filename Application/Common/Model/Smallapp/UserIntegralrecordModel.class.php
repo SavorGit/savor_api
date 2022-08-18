@@ -196,4 +196,38 @@ class UserIntegralrecordModel extends BaseModel{
         return true;
     }
 
+    public function finishInviteVipTask($sale_openid){
+        $task_integral = C('MEMBER_INTEGRAL');
+        $now_integral = $task_integral['invite_vip_reward_saler'];
+
+        $where = array('a.openid'=>$sale_openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('merchant.id as merchant_id,merchant.is_integral,merchant.hotel_id',$where);
+        if(!empty($res_staff) && $now_integral>0){
+            if($res_staff[0]['is_integral']==1){
+                $integralrecord_openid = $sale_openid;
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$sale_openid));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$now_integral;
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $m_userintegral->add(array('openid'=>$sale_openid,'integral'=>$now_integral));
+                }
+            }else{
+                $integralrecord_openid = $res_staff[0]['hotel_id'];
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $where = array('id'=>$res_staff[0]['merchant_id']);
+                $m_merchant->where($where)->setInc('integral',$now_integral);
+            }
+
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'integral'=>$now_integral,'content'=>1,'type'=>18,'integral_time'=>date('Y-m-d H:i:s'));
+            $this->add($integralrecord_data);
+        }
+        return true;
+    }
 }

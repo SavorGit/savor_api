@@ -252,7 +252,7 @@ class LotteryController extends CommonController{
         $start_time = date('Y-m-d H:i:s');
         $end_time = date('Y-m-d H:i:s',$now_time+1800);
         $status = 2;
-        $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>'','name'=>'幸运抽奖','prize'=>$prize,
+        $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'name'=>'幸运抽奖','prize'=>$prize,
             'room_id'=>$room_id,'people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,'idcode'=>$idcode,
             'syslottery_id'=>$now_syslottery_id,'type'=>14,'status'=>$status);
         $activity_id = $m_activity->add($add_activity_data);

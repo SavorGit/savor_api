@@ -82,7 +82,7 @@ class UserController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid,use_time,is_interact', $where);
+        $userinfo = $m_user->getOne('id user_id,openid,avatarUrl,nickName,mobile,gender,status,is_wx_auth,close_hotel_hint,wx_mpopenid,use_time,is_interact,is_vip', $where);
         $data = array();
         
         $redis = SavorRedis::getInstance();
@@ -96,6 +96,7 @@ class UserController extends CommonController{
             $userinfo['avatarUrl'] = '';
             $userinfo['nickName']  = '';
             $userinfo['is_wx_auth']= 0;
+            $userinfo['is_vip']= 0;
             $userinfo['use_time'] = array('use_time_str'=>'本次您是第1次使用热点投屏','cut_sec'=>5);
         }else{
             $redis->select(1);

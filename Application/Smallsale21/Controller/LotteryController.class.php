@@ -293,10 +293,12 @@ class LotteryController extends CommonController{
             $add_data = $res_record[0];
             $goods_ids[]=$add_data['goods_id'];
             if($add_data['type']==7){
-                $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
-                    'wo_data_imgs'=>$data_imgs,'wo_status'=>4,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
-                );
-                $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                if($add_data['wo_reason_type']==0){
+                    $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
+                        'wo_data_imgs'=>$data_imgs,'wo_status'=>4,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                    );
+                    $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                }
             }else{
                 unset($add_data['id'],$add_data['update_time']);
                 $add_data['price'] = -abs($add_data['price']);

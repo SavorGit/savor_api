@@ -539,6 +539,8 @@ return array(
         15=>'邀请函发给客人',
 //        16=>'邀请函客人扩散',
         17=>'开瓶费',
+        18=>'邀请新会员',
+        19=>'会员购买奖励',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式
@@ -748,7 +750,10 @@ return array(
         ),
 
 
-
+    'MEMBER_INTEGRAL'=>array(
+        'invite_vip_reward_saler'=>200,
+        'buy_reward_saler'=>100,
+    ),
     'INVITATION_HOTEL'=>array(
         //'share_img'=>'media/resource/jZW8m7QNNn.jpg',
         'share_img'=>'media/resource/NFs23wnwQa.jpg',

@@ -1182,12 +1182,26 @@ class StockController extends CommonController{
                 if(!empty($res_record)){
                     $add_data = $res_record[0];
                     $goods_ids[]=$add_data['goods_id'];
+                    $is_new = 0;
                     if($add_data['type']==7){
-                        $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
-                            'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
-                        );
-                        $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                        switch ($add_data['wo_status']){
+                            case 1:
+                            case 4:
+                                $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
+                                    'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                                );
+                                $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                                break;
+                            case 3:
+                                $up_data = array('dstatus'=>2,'update_time'=>date('Y-m-d H:i:s'));
+                                $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                                $is_new = 1;
+                                break;
+                        }
                     }else{
+                        $is_new = 1;
+                    }
+                    if($is_new==1){
                         unset($add_data['id'],$add_data['update_time']);
                         $add_data['price'] = -abs($add_data['price']);
                         $add_data['total_fee'] = -abs($add_data['total_fee']);

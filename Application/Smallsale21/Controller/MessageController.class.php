@@ -57,7 +57,7 @@ class MessageController extends CommonController{
                         break;
                     case 9:
                         $res_user = $m_user->getOne('id,openid,avatarUrl,nickName,invite_time', array('id'=>$v['content_id']),'id desc');
-                        $content = "{$res_user['avatarUrl']}已成功注册为热点会员";
+                        $content = "{$res_user['nickName']}已成功注册为热点会员";
                         $add_time = date('Y.m.d H:i',strtotime($res_user['invite_time']));
 
                         $info = array('id'=>$v['id'],'name'=>'注册会员','content'=>$content,'nickName'=>$res_user['nickName'],

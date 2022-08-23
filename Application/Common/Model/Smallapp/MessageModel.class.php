@@ -41,7 +41,7 @@ class MessageModel extends BaseModel{
                 break;
             case 9:
                 $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-                $fields = 'a.id,a.hotel_id';
+                $fields = 'a.id,merchant.hotel_id';
                 $m_staff = new \Common\Model\Integral\StaffModel();
                 $res_staff = $m_staff->getMerchantStaff($fields,$where);
                 $data = array('staff_openid'=>$openid,'hotel_id'=>$res_staff[0]['hotel_id'],'content_id'=>$content_id,

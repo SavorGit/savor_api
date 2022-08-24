@@ -125,6 +125,7 @@ class StatDataController extends CommonController{
         $where  = [];
         $where['hotel_id'] = $hotel_id;
         $where['status']   = 1;
+        $where['type']   = array('neq',4);
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $res_record = $m_userintegral_record->getDataList($fields,$where,'id desc',0,0);
         $integral_nums = intval($res_record[0]['total_amount']);
@@ -134,7 +135,7 @@ class StatDataController extends CommonController{
         $where  = [];
         $where['hotel_id'] = $hotel_id;
         $where['status']   = 21;
-        $where['audit_status'] = 1;
+        //$where['audit_status'] = 1;
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $ret = $m_exchange->field($fields)->where($where)->find();
         $exchange_fee = intval($ret['total_fee']);

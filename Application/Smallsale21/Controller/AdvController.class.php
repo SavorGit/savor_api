@@ -32,7 +32,7 @@ class AdvController extends CommonController{
         if(!empty($res_ads)){
             foreach($res_ads as $v){
                 $create_time = $v['create_time'];
-                $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time);
+                $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,'rtype'=>'adv');
 
                 $res_url = $oss_host.$v['oss_addr'];
                 $forscreen_url = $v['oss_addr'];
@@ -77,7 +77,7 @@ class AdvController extends CommonController{
                 foreach($res_data as $v){
                     if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
                         $create_time = $v['create_time'];
-                        $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time);
+                        $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,'rtype'=>'wineads');
                         $res_url = $oss_host.$v['oss_addr'];
                         $forscreen_url = $v['oss_addr'];
                         $duration = intval($v['duration']);

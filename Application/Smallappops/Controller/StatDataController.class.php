@@ -102,12 +102,14 @@ class StatDataController extends CommonController{
                      ->select();
         $sigin_nums = count($ret);
         //发送邀请函
-        $m_welcome = new \Common\Model\Smallapp\WelcomeModel();
+        //$m_welcome = new \Common\Model\Smallapp\WelcomeModel();
+        $m_invite = new \Common\Model\Smallapp\InvitationModel();
+        
         $fields = 'id';
         $where  = [];
         $where['hotel_id'] = $hotel_id;
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-        $ret  = $m_welcome->field($fields)->where($where)->select();
+        $ret  = $m_invite->field($fields)->where($where)->select();
         $send_welcome_nums = count($ret);
         
         //售酒数量

@@ -751,8 +751,8 @@ return array(
 
 
     'MEMBER_INTEGRAL'=>array(
-        'invite_vip_reward_saler'=>200,
-        'buy_reward_saler'=>100,
+        'invite_vip_reward_saler'=>10,
+        'buy_reward_saler'=>10,
     ),
     'INVITATION_HOTEL'=>array(
         //'share_img'=>'media/resource/jZW8m7QNNn.jpg',

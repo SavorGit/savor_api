@@ -42,8 +42,19 @@ class CouponController extends CommonController{
         $coupon_user_id = intval($param_coupon['id']);
         $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
         $res_usercoupon = $m_user_coupon->getInfo(array('id'=>$coupon_user_id));
-        if($res_usercoupon['ustatus']!=1 || $res_usercoupon['hotel_id']!=$hotel_id){
+        if($res_usercoupon['ustatus']!=1){
             $this->to_back(93204);
+        }
+        if($res_usercoupon['hotel_id']>0){
+            if($res_usercoupon['hotel_id']!=$hotel_id){
+                $this->to_back(93205);
+            }
+        }else{
+            $m_couponhotel = new \Common\Model\Smallapp\CouponHotelModel();
+            $res_hotel = $m_couponhotel->getALLDataList('*',array('coupon_id'=>$res_usercoupon['coupon_id'],'hotel_id'=>$hotel_id),'id desc','0,1','');
+            if(empty($res_hotel)){
+                $this->to_back(93205);
+            }
         }
         $now_time = date('Y-m-d H:i:s');
         if($now_time>=$res_usercoupon['start_time'] && $now_time<=$res_usercoupon['end_time']){
@@ -75,8 +86,19 @@ class CouponController extends CommonController{
         $coupon_user_id = intval($param_coupon['id']);
         $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
         $res_usercoupon = $m_user_coupon->getInfo(array('id'=>$coupon_user_id));
-        if($res_usercoupon['ustatus']!=1 || $res_usercoupon['hotel_id']!=$hotel_id){
+        if($res_usercoupon['ustatus']!=1){
             $this->to_back(93204);
+        }
+        if($res_usercoupon['hotel_id']>0){
+            if($res_usercoupon['hotel_id']!=$hotel_id){
+                $this->to_back(93205);
+            }
+        }else{
+            $m_couponhotel = new \Common\Model\Smallapp\CouponHotelModel();
+            $res_hotel = $m_couponhotel->getALLDataList('*',array('coupon_id'=>$res_usercoupon['coupon_id'],'hotel_id'=>$hotel_id),'id desc','0,1','');
+            if(empty($res_hotel)){
+                $this->to_back(93205);
+            }
         }
 
         $now_time = date('Y-m-d H:i:s');

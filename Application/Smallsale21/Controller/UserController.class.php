@@ -203,6 +203,10 @@ class UserController extends CommonController{
         }
         $userinfo['subscribe_status'] = $subscribe_status;
         $data['userinfo'] = $userinfo;
+
+        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
+        $m_taskuser->getTask($openid,$hotel_id);
+
         $this->to_back($data);
     }
     
@@ -382,10 +386,6 @@ class UserController extends CommonController{
         $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
         $redis->set($cache_key,json_encode($cache_data),18000);
 
-        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
-        $m_taskuser->getTask($openid,$box_info[0]['hotel_id']);
-		
-		
 		$redis->select(9);
         $key = C('FINANCE_HOTELSTOCK');
         $res_cache = $redis->get($key);

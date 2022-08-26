@@ -53,6 +53,10 @@ class TaskController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'task_user_id'=>1001,'openid'=>1001);
                 break;
+            case 'finishDemandadvTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'ads_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -77,92 +81,108 @@ class TaskController extends CommonController{
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
         task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
-        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',array(22,23,24)));
+        $activity_task_types = array(22,23,24,25);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',$activity_task_types));
         $m_media = new \Common\Model\MediaModel();
         $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
         $inprogress_task = $invalid_task = $finish_task = array();
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
         if(!empty($res_inprogress_task)){
+            $now_time = date('Y-m-d H:i:s');
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
             foreach ($res_inprogress_task as $k=>$v){
                 $tinfo = $v;
-                if($v['task_type']==22){
-                    $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
-                    $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
-                    $oss_path = $media_info['oss_path'];
-                    $oss_path_info = pathinfo($oss_path);
-                    $tinfo['is_tvdemand'] = 1;
-                    $tinfo['price'] = $res_goods['price'];
-                    $tinfo['duration'] = $media_info['duration'];
-                    $tinfo['tx_url'] = $media_info['oss_addr'];
-                    $tinfo['filename'] = $oss_path_info['basename'];
-                    $tinfo['forscreen_url'] = $oss_path;
-                    $tinfo['resource_size'] = $media_info['oss_filesize'];
-                    $tinfo['people_num'] = $v['people_num']-$v['join_peoplenum']>0?$v['people_num']-$v['join_peoplenum']:0;
-                    if($v['status']==1 && $v['flag']==1){
-                        if($tinfo['people_num']>0){
-                            $inprogress_task[$v['task_id']]=$tinfo;
-                        }else{
-                            $finish_task[]=$v['task_id'];
-                            $tinfo['itype'] = 2;
-                            $invalid_task[]=$tinfo;
-                        }
-                    }else{
-                        if($tinfo['people_num']>0){
-                            $tinfo['itype'] = 1;
-                        }else{
-                            $tinfo['itype'] = 2;
-                        }
-                        $invalid_task[]=$tinfo;
-                    }
-                }else{
-                    if($v['task_type']==24) {
-                        $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
-                        $tinfo['price'] = $res_goods['price'];
-                    }
-                    $res_ainfo = $m_activity->getInfo(array('task_user_id'=>$v['task_user_id']));
-                    if($v['status']==1 && $v['flag']==1){
-                        if(!empty($res_ainfo) && $res_ainfo['status']==2){
-                            $finish_task[]=$v['task_id'];
-                            $tinfo['itype'] = 2;
-                            $invalid_task[]=$tinfo;
-                        }else{
-                            $activity_status = 0;//0待发起 1已发起未开始(可修改) 2进行中
-                            $activity_id = 0;
-                            if(!empty($res_ainfo)){
-                                $activity_id = $res_ainfo['id'];
-                                if($res_ainfo['status']==0){
-                                    $activity_status = 1;
-                                }else{
-                                    $activity_status = 2;
-                                }
-                                $start_hour = date('G',strtotime($res_ainfo['start_time']))-10;
-                                $start_minute = date('i',strtotime($res_ainfo['start_time']));
-                                $activity_start_time = array(intval($start_hour),intval($start_minute/10));
-
-                                $lottery_start_hour = date('G',strtotime($res_ainfo['lottery_time']))-10;
-                                $lottery_start_minute = date('i',strtotime($res_ainfo['lottery_time']));
-                                $activity_lottery_time = array(intval($lottery_start_hour),intval($lottery_start_minute/10));
-
-                                $tinfo['activity_start_time'] = $activity_start_time;
-                                $tinfo['activity_lottery_time'] = $activity_lottery_time;
-                                $tinfo['activity_scope'] = $res_ainfo['scope'];
-                            }
-                            $tinfo['task_expire_time'] = date('Y.m.d-H:i',strtotime($v['task_expire_time']));
-                            $tinfo['activity_id'] = $activity_id;
-                            $tinfo['activity_status'] = $activity_status;
-                            $inprogress_task[$v['task_id']]=$tinfo;
-                        }
-                    }else{
-                        if($res_ainfo['status']==2){
-                            $tinfo['itype'] = 2;
-                        }else{
-                            $tinfo['itype'] = 1;
-                        }
-                        $invalid_task[]=$tinfo;
-                    }
+                if($now_time>=$v['task_expire_time']){
+                    $v['status']=0;
                 }
+                switch ($v['task_type']){
+                    case 22:
+                        $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
+                        $media_info = $m_media->getMediaInfoById($res_goods['video_intromedia_id']);
+                        $oss_path = $media_info['oss_path'];
+                        $oss_path_info = pathinfo($oss_path);
+                        $tinfo['is_tvdemand'] = 1;
+                        $tinfo['price'] = $res_goods['price'];
+                        $tinfo['duration'] = $media_info['duration'];
+                        $tinfo['tx_url'] = $media_info['oss_addr'];
+                        $tinfo['filename'] = $oss_path_info['basename'];
+                        $tinfo['forscreen_url'] = $oss_path;
+                        $tinfo['resource_size'] = $media_info['oss_filesize'];
+                        $tinfo['people_num'] = $v['people_num']-$v['join_peoplenum']>0?$v['people_num']-$v['join_peoplenum']:0;
+                        if($v['status']==1 && $v['flag']==1){
+                            if($tinfo['people_num']>0){
+                                $inprogress_task[$v['task_id']]=$tinfo;
+                            }else{
+                                $finish_task[]=$v['task_id'];
+                                $tinfo['itype'] = 2;
+                                $invalid_task[]=$tinfo;
+                            }
+                        }else{
+                            if($tinfo['people_num']>0){
+                                $tinfo['itype'] = 1;
+                            }else{
+                                $tinfo['itype'] = 2;
+                            }
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
+                    case 23:
+                    case 24:
+                        if($v['task_type']==24) {
+                            $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
+                            $tinfo['price'] = $res_goods['price'];
+                        }
+                        $res_ainfo = $m_activity->getInfo(array('task_user_id'=>$v['task_user_id']));
+                        if($v['status']==1 && $v['flag']==1){
+                            if(!empty($res_ainfo) && $res_ainfo['status']==2){
+                                $finish_task[]=$v['task_id'];
+                                $tinfo['itype'] = 2;
+                                $invalid_task[]=$tinfo;
+                            }else{
+                                $activity_status = 0;//0待发起 1已发起未开始(可修改) 2进行中
+                                $activity_id = 0;
+                                if(!empty($res_ainfo)){
+                                    $activity_id = $res_ainfo['id'];
+                                    if($res_ainfo['status']==0){
+                                        $activity_status = 1;
+                                    }else{
+                                        $activity_status = 2;
+                                    }
+                                    $start_hour = date('G',strtotime($res_ainfo['start_time']))-10;
+                                    $start_minute = date('i',strtotime($res_ainfo['start_time']));
+                                    $activity_start_time = array(intval($start_hour),intval($start_minute/10));
 
+                                    $lottery_start_hour = date('G',strtotime($res_ainfo['lottery_time']))-10;
+                                    $lottery_start_minute = date('i',strtotime($res_ainfo['lottery_time']));
+                                    $activity_lottery_time = array(intval($lottery_start_hour),intval($lottery_start_minute/10));
+
+                                    $tinfo['activity_start_time'] = $activity_start_time;
+                                    $tinfo['activity_lottery_time'] = $activity_lottery_time;
+                                    $tinfo['activity_scope'] = $res_ainfo['scope'];
+                                }
+                                $tinfo['task_expire_time'] = date('Y.m.d-H:i',strtotime($v['task_expire_time']));
+                                $tinfo['activity_id'] = $activity_id;
+                                $tinfo['activity_status'] = $activity_status;
+                                $inprogress_task[$v['task_id']]=$tinfo;
+                            }
+                        }else{
+                            if($res_ainfo['status']==2){
+                                $tinfo['itype'] = 2;
+                            }else{
+                                $tinfo['itype'] = 1;
+                            }
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
+                    case 25:
+                        if($v['status']==1 && $v['flag']==1){
+                            $inprogress_task[$v['task_id']]=$tinfo;
+                        }else{
+                            $tinfo['itype'] = 1;
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
+                }
             }
         }
         $m_task_hotel = new \Common\Model\Integral\TaskHotelModel();
@@ -184,7 +204,7 @@ class TaskController extends CommonController{
         }
 
         $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,a.staff_id";
-        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',array(22,23,24)),'task.status'=>1,'task.flag'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',$activity_task_types),'task.status'=>1,'task.flag'=>1);
         $no_task_ids = array();
         if(!empty($inprogress_task)){
             $no_task_ids = array_keys($inprogress_task);
@@ -755,6 +775,25 @@ class TaskController extends CommonController{
         );
         $user_task_id = $m_usertask->add($data);
         $this->to_back(array('user_task_id'=>$user_task_id));
+    }
+
+    public function finishDemandadvTask(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $ads_id = $this->params['ads_id'];
+        $hotel_id = $this->params['hotel_id'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $res_task = $m_userintegral_record->finishDemandAdvTask($openid,$ads_id,$box_mac);
+
+        $this->to_back($res_task);
     }
 
 }

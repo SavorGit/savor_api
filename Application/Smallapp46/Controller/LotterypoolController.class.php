@@ -447,29 +447,30 @@ class LotterypoolController extends CommonController{
                         }
                         break;
                     case 2:
-                        $ucconfig = C('ALIYUN_SMS_CONFIG');
-                        $alisms = new \Common\Lib\AliyunSms();
-                        $params = array('name'=>$res_prize['name']);
-                        $template_code = $ucconfig['send_tastewine_user_templateid'];
-                        $res_sms = $alisms::sendSms($mobile,$params,$template_code);
-                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
-                        );
-                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                        $m_account_sms_log->addData($data);
+                        if(!empty($mobile)){
+                            $ucconfig = C('ALIYUN_SMS_CONFIG');
+                            $alisms = new \Common\Lib\AliyunSms();
+                            $params = array('name'=>$res_prize['name']);
+                            $template_code = $ucconfig['send_tastewine_user_templateid'];
+                            $res_sms = $alisms::sendSms($mobile,$params,$template_code);
+                            $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
+                            );
+                            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                            $m_account_sms_log->addData($data);
 
-                        $where = array('openid'=>$res_activity['openid'],'status'=>1);
-                        $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
-                        $tailnum = substr($mobile,-4);
-                        $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
-                        $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
-                        $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
-                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                            'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
-                        );
-                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                        $m_account_sms_log->addData($data);
-
+                            $where = array('openid'=>$res_activity['openid'],'status'=>1);
+                            $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
+                            $tailnum = substr($mobile,-4);
+                            $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
+                            $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
+                            $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
+                            $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
+                            );
+                            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                            $m_account_sms_log->addData($data);
+                        }
                         $res_data['message'] = '请联系服务员领奖';
                         break;
                     case 4:

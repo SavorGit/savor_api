@@ -236,8 +236,11 @@ class LotterypoolController extends CommonController{
             $awhere['DATE(add_time)'] = date('Y-m-d');
         }
         $res_activity_apply = $m_activity_apply->getInfo($awhere);
+        if(!empty($res_activity_apply)){
+            $this->to_back(90185);
+        }
 
-        if(empty($res_prize) || $res_prize['activity_id']!=$activity_id || !empty($res_activity_apply)){
+        if(empty($res_prize) || $res_prize['activity_id']!=$activity_id){
             $this->to_back(90173);
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -316,8 +319,13 @@ class LotterypoolController extends CommonController{
         }else{
             $box_id = 0;
             $box_name = '';
-            if($room_id>C('QRCODE_MIN_NUM')){
-                $room_id = 0;
+            if($hotel_id && $room_id){
+                if($room_id>C('QRCODE_MIN_NUM')){
+                    $room_id = 0;
+                }
+            }else{
+                $hotel_id = $res_activity['hotel_id'];
+                $room_id = $res_activity['room_id'];
             }
             $m_hotel = new \Common\Model\HotelModel();
             $res_hotel = $m_hotel->getOneById('id,name',$hotel_id);

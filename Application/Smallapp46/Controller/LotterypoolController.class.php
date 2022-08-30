@@ -485,7 +485,7 @@ class LotterypoolController extends CommonController{
                         }
                         $coupon_data = array('openid'=>$openid,'coupon_id'=>$coupon_id,'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
                             'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
-                            'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                            'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>1);
                         $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
                         $coupon_user_id = $m_user_coupon->add($coupon_data);
 
@@ -522,7 +522,7 @@ class LotterypoolController extends CommonController{
                             }
                             $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
                                 'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
-                                'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                                'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>1);
                             $m_user_coupon->add($coupon_data);
                         }
                         $res_data['coupon_money'] = $coupon_money;

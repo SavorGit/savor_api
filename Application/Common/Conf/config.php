@@ -541,6 +541,7 @@ return array(
         17=>'开瓶费',
         18=>'邀请新会员',
         19=>'会员购买奖励',
+        20=>'广告点播',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式
@@ -751,8 +752,8 @@ return array(
 
 
     'MEMBER_INTEGRAL'=>array(
-        'invite_vip_reward_saler'=>10,
-        'buy_reward_saler'=>10,
+        'invite_vip_reward_saler'=>0,
+        'buy_reward_saler'=>400,
     ),
     'INVITATION_HOTEL'=>array(
         //'share_img'=>'media/resource/jZW8m7QNNn.jpg',
@@ -814,4 +815,6 @@ return array(
         '3'=>array('id'=>3,'name'=>'小程序首页','page'=>'/pages/index/index','type'=>'tabbar'),
     ),
     'QRCODE_MIN_NUM'=>500000,
+    'STOCK_AUDIT_STATUS'=>array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料'),
+    'STOCK_RECYCLE_STATUS'=>array('1'=>'待回收物料','2'=>'已回收物料'),
 );

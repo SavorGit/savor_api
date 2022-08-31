@@ -47,17 +47,24 @@ class WithdrawController extends CommonController{
         if(!empty($res_userintegral)){
             $integral = intval($res_userintegral['integral']);
         }
-
-        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $fields = 'g.id,g.name goods_name,g.rebate_integral as integral,g.is_audit';
+        $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'sum(integral) as total_integral';
+        $where = array('openid'=>$openid,'type'=>17,'status'=>2);
+        $freeze_integral = 0;
+        $res_integral = $m_integralrecord->getALLDataList($fields,$where,'','','');
+        if(!empty($res_integral)){
+            $freeze_integral = intval($res_integral[0]['total_integral']);
+        }
 
         $nowtime = date('Y-m-d H:i:s');
         $where = array('h.hotel_id'=>$hotel_id,'g.type'=>30,'g.status'=>2);
         $where['g.start_time'] = array('elt',$nowtime);
         $where['g.end_time'] = array('egt',$nowtime);
         $orderby = 'g.price asc';
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id,g.name goods_name,g.rebate_integral as integral,g.is_audit';
         $res_goods = $m_hotelgoods->getList($fields,$where,$orderby,'','');
-        $data = array('integral'=>$integral,'datalist'=>$res_goods);
+        $data = array('integral'=>$integral,'freeze_integral'=>$freeze_integral,'datalist'=>$res_goods);
         $this->to_back($data);
     }
 

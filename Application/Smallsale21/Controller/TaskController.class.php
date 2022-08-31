@@ -203,7 +203,7 @@ class TaskController extends CommonController{
             $all_inprogress_task = array_merge(array_values($inprogress_task),$all_inprogress_task);
         }
 
-        $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,a.staff_id";
+        $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,task.end_time as task_expire_time,a.staff_id";
         $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>array('in',$activity_task_types),'task.status'=>1,'task.flag'=>1);
         $no_task_ids = array();
         if(!empty($inprogress_task)){
@@ -225,7 +225,11 @@ class TaskController extends CommonController{
             $redis = new \Common\Lib\SavorRedis();
             $redis->select(14);
             $all_people_num = 1000;
+            $now_time = date('Y-m-d H:i:s');
             foreach ($rescanreceive_task as $k=>$v){
+                if($now_time>$v['task_expire_time']){
+                    continue;
+                }
                 $send_num_cache_key = $send_num_key.$v['task_id'];
                 $res_send_num = $redis->get($send_num_cache_key);
                 if(!empty($res_send_num)){

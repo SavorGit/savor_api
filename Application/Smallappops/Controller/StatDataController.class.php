@@ -117,7 +117,7 @@ class StatDataController extends CommonController{
         $rfileds = 'sum(a.total_amount) as total_amount,a.type';
         $rwhere['stock.hotel_id'] = $hotel_id;
         $rwhere['a.type'] = 7;
-        $rwhere['a.wo_status'] = array('in',array(4));
+        $rwhere['a.wo_status'] = array('in',array(2));
         $rwhere['a.add_time']  = array(array('egt',$start_time),array('elt',$end_time));
         $res_worecord = $m_record->getStockRecordList($rfileds,$rwhere,'a.id desc','','');
         $sale_wine_nums = abs($res_worecord[0]['total_amount']);

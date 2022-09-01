@@ -236,8 +236,11 @@ class LotterypoolController extends CommonController{
             $awhere['DATE(add_time)'] = date('Y-m-d');
         }
         $res_activity_apply = $m_activity_apply->getInfo($awhere);
+        if(!empty($res_activity_apply)){
+            $this->to_back(90185);
+        }
 
-        if(empty($res_prize) || $res_prize['activity_id']!=$activity_id || !empty($res_activity_apply)){
+        if(empty($res_prize) || $res_prize['activity_id']!=$activity_id){
             $this->to_back(90173);
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -316,8 +319,13 @@ class LotterypoolController extends CommonController{
         }else{
             $box_id = 0;
             $box_name = '';
-            if($room_id>C('QRCODE_MIN_NUM')){
-                $room_id = 0;
+            if($hotel_id && $room_id){
+                if($room_id>C('QRCODE_MIN_NUM')){
+                    $room_id = 0;
+                }
+            }else{
+                $hotel_id = $res_activity['hotel_id'];
+                $room_id = $res_activity['room_id'];
             }
             $m_hotel = new \Common\Model\HotelModel();
             $res_hotel = $m_hotel->getOneById('id,name',$hotel_id);
@@ -439,29 +447,30 @@ class LotterypoolController extends CommonController{
                         }
                         break;
                     case 2:
-                        $ucconfig = C('ALIYUN_SMS_CONFIG');
-                        $alisms = new \Common\Lib\AliyunSms();
-                        $params = array('name'=>$res_prize['name']);
-                        $template_code = $ucconfig['send_tastewine_user_templateid'];
-                        $res_sms = $alisms::sendSms($mobile,$params,$template_code);
-                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                            'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
-                        );
-                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                        $m_account_sms_log->addData($data);
+                        if(!empty($mobile)){
+                            $ucconfig = C('ALIYUN_SMS_CONFIG');
+                            $alisms = new \Common\Lib\AliyunSms();
+                            $params = array('name'=>$res_prize['name']);
+                            $template_code = $ucconfig['send_tastewine_user_templateid'];
+                            $res_sms = $alisms::sendSms($mobile,$params,$template_code);
+                            $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_sms->Code,'msg_type'=>3
+                            );
+                            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                            $m_account_sms_log->addData($data);
 
-                        $where = array('openid'=>$res_activity['openid'],'status'=>1);
-                        $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
-                        $tailnum = substr($mobile,-4);
-                        $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
-                        $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
-                        $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
-                        $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                            'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
-                        );
-                        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-                        $m_account_sms_log->addData($data);
-
+                            $where = array('openid'=>$res_activity['openid'],'status'=>1);
+                            $staff_user_info = $m_user->getOne('id,openid,mobile', $where, '');
+                            $tailnum = substr($mobile,-4);
+                            $params = array('room_name'=>$box_name,'tailnum'=>$tailnum,'name'=>$res_prize['name']);
+                            $template_code = $ucconfig['send_tastewine_sponsor_templateid'];
+                            $res_sms = $alisms::sendSms($staff_user_info['mobile'],$params,$template_code);
+                            $data = array('type'=>13,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                                'url'=>join(',',$params),'tel'=>$staff_user_info['mobile'],'resp_code'=>$res_sms->Code,'msg_type'=>3
+                            );
+                            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                            $m_account_sms_log->addData($data);
+                        }
                         $res_data['message'] = '请联系服务员领奖';
                         break;
                     case 4:
@@ -476,7 +485,7 @@ class LotterypoolController extends CommonController{
                         }
                         $coupon_data = array('openid'=>$openid,'coupon_id'=>$coupon_id,'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
                             'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
-                            'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                            'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>1);
                         $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
                         $coupon_user_id = $m_user_coupon->add($coupon_data);
 
@@ -513,7 +522,7 @@ class LotterypoolController extends CommonController{
                             }
                             $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
                                 'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],'activity_id'=>$activity_id,
-                                'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                                'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>1);
                             $m_user_coupon->add($coupon_data);
                         }
                         $res_data['coupon_money'] = $coupon_money;

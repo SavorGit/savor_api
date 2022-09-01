@@ -93,7 +93,7 @@ class MemberController extends CommonController{
 
                     $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>0,
                         'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],
-                        'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1);
+                        'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>2);
                     $coupon_user_id = $m_user_coupon->add($coupon_data);
 
                     if($res_coupon['min_price']>0){

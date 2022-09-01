@@ -188,13 +188,7 @@ class LotteryController extends CommonController{
             $this->to_back($res);
         }else{
             if($record_info[0]['type']==7){
-                if($record_info[0]['wo_status']==1){
-                    $this->to_back(93098);
-                }elseif($record_info[0]['wo_status']==2){
-                    $this->to_back(93094);
-                }else{
-                    $this->to_back($res);
-                }
+                $this->to_back($res);
             }elseif($record_info[0]['type']==6){
                 $this->to_back(93095);
             }else{
@@ -234,12 +228,9 @@ class LotteryController extends CommonController{
         $bwhere = array('hotel.id'=>$hotel_id,'room.id'=>$room_id,'box.state'=>1,'box.flag'=>0);
         $fileds = 'box.id as box_id,box.mac as box_mac';
         $res_box = $m_box->getBoxByCondition($fileds,$bwhere);
-        if(empty($res_box)){
-            $this->to_back(93209);
-        }
+
         $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
         $prize = $res_syslottery['list'][0]['name'];
-
         $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
         $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id),'id desc');
         $prize_data = array();
@@ -276,11 +267,15 @@ class LotteryController extends CommonController{
         }
         $host_name = C('HOST_NAME');
         $code_url = '';
-        foreach ($res_box as $v){
-            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
-            $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_hotel['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
-            $m_netty = new \Common\Model\NettyModel();
-            $m_netty->pushBox($v['box_mac'],json_encode($message));
+        if(!empty($res_box)){
+            foreach ($res_box as $v){
+                $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
+                $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_hotel['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
+                $m_netty = new \Common\Model\NettyModel();
+                $m_netty->pushBox($v['box_mac'],json_encode($message));
+            }
+        }else{
+            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id=0&box_mac=0&data_id={$activity_id}&type=49";
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();

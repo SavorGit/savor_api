@@ -100,6 +100,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001,'idate'=>1002);
                 break;
+            case 'getWriteoffFreezeIntegralrecord':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1002,'page'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -203,6 +207,10 @@ class UserController extends CommonController{
         }
         $userinfo['subscribe_status'] = $subscribe_status;
         $data['userinfo'] = $userinfo;
+
+        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
+        $m_taskuser->getTask($openid,$hotel_id);
+
         $this->to_back($data);
     }
     
@@ -338,7 +346,7 @@ class UserController extends CommonController{
         if(empty($box_info)){
             $this->to_back(70001);
         }
-        $redis  =  \Common\Lib\SavorRedis::getInstance();
+        $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
         $cache_key = C('SAPP_SALE').'signin:'.$box_mac;
         $res_cache = $redis->get($cache_key);
@@ -382,10 +390,6 @@ class UserController extends CommonController{
         $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
         $redis->set($cache_key,json_encode($cache_data),18000);
 
-        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
-        $m_taskuser->getTask($openid,$box_info[0]['hotel_id']);
-		
-		
 		$redis->select(9);
         $key = C('FINANCE_HOTELSTOCK');
         $res_cache = $redis->get($key);
@@ -451,8 +455,6 @@ class UserController extends CommonController{
 				$redis->rpush($cache_key, json_encode($data));
 			}
 		}
-
-        
 
         $res_data = array('status'=>2);
         $where = array('openid'=>$openid,'small_app_id'=>5);
@@ -589,7 +591,15 @@ class UserController extends CommonController{
         $data['income_fee'] = $income_fee;
         $data['withdraw_fee'] = $withdraw_fee;
         $score = 0;
+        $freeze_integral = 0;
         if($data['staff_level']==1){
+            $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $fields = 'sum(integral) as total_integral';
+            $freezewhere = array('openid'=>$res_staff[0]['hotel_id'],'type'=>17,'status'=>2);
+            $res_integral = $m_integralrecord->getALLDataList($fields,$freezewhere,'','','');
+            if(!empty($res_integral)){
+                $freeze_integral = intval($res_integral[0]['total_integral']);
+            }
             $condition = array('hotel_id'=>$res_staff[0]['hotel_id'],'status'=>1);
         }elseif($data['staff_level']==2 || $data['staff_level']==3){
             $condition = array('staff_id'=>$res_staff[0]['staff_id'],'status'=>1);
@@ -609,6 +619,7 @@ class UserController extends CommonController{
             $is_salestat = intval($res_ext['is_salestat']);
         }
         $data['is_salestat'] = $is_salestat;
+        $data['freeze_integral'] = $freeze_integral;
 
         $this->to_back($data);
     }
@@ -671,7 +682,7 @@ class UserController extends CommonController{
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $fields = 'hotel_id,room_name,integral,money,content,type,integral_time,goods_id,source';
-        $where = array('openid'=>$openid);
+        $where = array('openid'=>$openid,'status'=>1);
         if($type){
             $where['type'] = $type;
         }
@@ -719,6 +730,7 @@ class UserController extends CommonController{
                 case 17:
                 case 18:
                 case 19:
+                case 20:
                     $content = $all_types[$v['type']];
                     break;
                 case 14:
@@ -751,6 +763,63 @@ class UserController extends CommonController{
             $info['content'] = $content;
             $datalist[] = $info;
 
+        }
+        $data = array('datalist'=>$datalist);
+        $this->to_back($data);
+    }
+
+    public function getWriteoffFreezeIntegralrecord(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $page = intval($this->params['page']);
+
+        $pagesize = 10;
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,gender,status,is_wx_auth';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $offset = ($page-1)*$pagesize;
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        if(!empty($hotel_id)){
+            $openid = $hotel_id;
+        }
+        $where = array('a.openid'=>$openid,'a.type'=>17,'a.status'=>2);
+        $fileds = 'a.id,a.openid,a.integral,a.add_time,a.jdorder_id,user.avatarUrl as avatar_url,user.nickName as user_name';
+        $res_data = $m_userintegral_record->getFinishRecordlist($fileds,$where,'a.id desc',$offset,$pagesize);
+
+        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+        $m_media = new \Common\Model\MediaModel();
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $all_audit_status = C('STOCK_AUDIT_STATUS');
+        $all_recycle_status = C('STOCK_RECYCLE_STATUS');
+        $datalist = array();
+        foreach ($res_data as $v){
+            $add_time = date('Y/m/d H:i',strtotime($v['add_time']));
+            $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,
+            unit.name as unit_name,a.wo_status,a.recycle_status';
+            $where = array('a.id'=>$v['jdorder_id']);
+            $stock_record = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+            $recycle_status_str = '';
+            if($stock_record[0]['wo_status']==2){
+                $recycle_status_str = $all_recycle_status[$stock_record[0]['recycle_status']];
+            }
+            $entity = array();
+            $cwhere = array('goods_id'=>$stock_record[0]['goods_id'],'status'=>1,'type'=>20);
+            $res_config = $m_goodsconfig->getDataList('id,name,media_id',$cwhere,'id asc');
+            if(!empty($res_config)){
+                foreach ($res_config as $cv){
+                    $res_media = $m_media->getMediaInfoById($cv['media_id']);
+                    $entity[]=array('name'=>$cv['name'],'img_url'=>$res_media['oss_addr']);
+                }
+            }
+
+            $info = array('id'=>$v['id'],'openid'=>$v['openid'],'avatar_url'=>$v['avatar_url'],'user_name'=>$v['user_name'],
+                'integral'=>$v['integral'],'add_time'=>$add_time,'wo_status_str'=>$all_audit_status[$stock_record[0]['wo_status']],
+                'recycle_status_str'=>$recycle_status_str,'entity'=>$entity);
+            $datalist[] = array_merge($info,$stock_record[0]);
         }
         $data = array('datalist'=>$datalist);
         $this->to_back($data);
@@ -1100,7 +1169,6 @@ class UserController extends CommonController{
         $this->to_back($data);
     }
 
-
     public function employeelist(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
@@ -1195,6 +1263,7 @@ class UserController extends CommonController{
         $res = array('qrcode_url'=>$qrcode_url,'qrcode'=>$qrinfo);
         $this->to_back($res);
     }
+
     public function bindmobile(){
         $mobile = $this->params['mobile'];
         $verify_code = $this->params['verify_code'];
@@ -1231,12 +1300,10 @@ class UserController extends CommonController{
             $m_service_mx = new \Common\Model\Integral\ServiceMxModel();
             $service_info = $m_service_mx->field('service_ids')->where(array('id'=>$service_model_id))->find();
             $service_id_arr = json_decode($service_info['service_ids'],true);
-            $where = [];
-            $where['id']= array('in',$service_id_arr);
-            $where['status'] = 1;
+            $where = array('id'=>array('in',$service_id_arr),'status'=>1);
             $m_service = new \Common\Model\Integral\ServiceModel();
             $service_ret = $m_service->field('m_name')->where($where)->select();
-            $service_temp = [];
+            $service_temp = array();
             foreach($service_ret as $key=>$v){
                 if(in_array($v['m_name'],$service_list)){
                     $service_temp[] = $v['m_name'];

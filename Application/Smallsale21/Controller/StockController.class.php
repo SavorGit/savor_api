@@ -1103,7 +1103,19 @@ class StockController extends CommonController{
                 $data[]=$v;
             }
         }
-        $res_data = array('reasons'=>array_values(C('STOCK_REASON')),'datas'=>$data);
+        $entity = array();
+        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>20);
+        $field = 'id,name,media_id';
+        $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
+        if(!empty($res_config)){
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_config as $v){
+                $res_media = $m_media->getMediaInfoById($v['media_id']);
+                $entity[]=array('name'=>$v['name'],'img_url'=>$res_media['oss_addr']);
+            }
+        }
+
+        $res_data = array('reasons'=>array_values(C('STOCK_REASON')),'entity'=>$entity,'datas'=>$data);
         $this->to_back($res_data);
     }
 
@@ -1255,8 +1267,10 @@ class StockController extends CommonController{
         $res_records = $m_stock_record->getALLDataList($fields,$where,$order,$limit,'batch_no');
         $data_list = array();
         if(!empty($res_records)){
+            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $m_media = new \Common\Model\MediaModel();
             $all_reasons = C('STOCK_REASON');
-            $all_status = array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料');
+            $all_status = C('STOCK_AUDIT_STATUS');
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
             spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
             foreach ($res_records as $v){
@@ -1264,13 +1278,23 @@ class StockController extends CommonController{
                 if(isset($all_reasons[$v['reason_type']])){
                     $reason = $all_reasons[$v['reason_type']]['name'];
                 }
-
                 $batch_no = $v['batch_no'];
                 $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
+
+                $entity = array();
+                $cwhere = array('goods_id'=>$res_goods[0]['goods_id'],'status'=>1,'type'=>20);
+                $res_config = $m_goodsconfig->getDataList('id,name,media_id',$cwhere,'id asc');
+                if(!empty($res_config)){
+                    foreach ($res_config as $cv){
+                        $res_media = $m_media->getMediaInfoById($cv['media_id']);
+                        $entity[]=array('name'=>$cv['name'],'img_url'=>$res_media['oss_addr']);
+                    }
+                }
+
                 $data_list[]=array('reason'=>$reason,'status'=>$v['status'],
                     'status_str'=>$all_status[$v['status']],'num'=>count($res_goods),'add_time'=>$v['add_time'],
-                    'goods'=>$res_goods);
+                    'goods'=>$res_goods,'entity'=>$entity);
             }
         }
         $this->to_back($data_list);

@@ -10,7 +10,7 @@ class MemberController extends CommonController{
         switch(ACTION_NAME) {
             case 'joinvip':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,'sale_openid'=>1002,'idcode'=>1002);
+                $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,'activity_id'=>1002,'idcode'=>1002);
                 break;
             case 'join':
                 $this->is_verify = 1;
@@ -36,7 +36,7 @@ class MemberController extends CommonController{
             $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
             $sale_openid = $res_activity['openid'];
             $where = array('a.openid'=>$sale_openid,'a.status'=>1,'merchant.status'=>1);
-            $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+            $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id';
             $res_staff = $m_staff->getMerchantStaff($fields,$where);
             if(empty($res_staff)){
                 $this->to_back(93001);
@@ -49,7 +49,7 @@ class MemberController extends CommonController{
             }
             $sale_openid = $record_info[0]['op_openid'];
             $where = array('a.openid'=>$sale_openid,'a.status'=>1,'merchant.status'=>1);
-            $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+            $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id';
             $res_staff = $m_staff->getMerchantStaff($fields,$where);
             if(empty($res_staff)){
                 $this->to_back(93001);
@@ -82,14 +82,12 @@ class MemberController extends CommonController{
                 $m_user->updateInfo(array('id'=>$res_user['id']),$data);
             }else{
                 if(!empty($res_apply) && in_array($res_apply[0]['prize_type'],array(1,2,4,5))){
+                    $level_buy_num = C('VIP_3_BUY_WINDE_NUM');
                     $buy_wine_num = $buy_wine_num+1;
                     if($buy_wine_num==1){
                         $now_vip_level = 2;
-                    }else{
-                        $level_buy_num = C('VIP_3_BUY_WINDE_NUM');
-                        if($buy_wine_num>=$level_buy_num){
-                            $now_vip_level = 3;
-                        }
+                    }elseif($buy_wine_num==$level_buy_num){
+                        $now_vip_level = 3;
                     }
                     $data = array('buy_wine_num'=>$buy_wine_num);
                     if($now_vip_level){
@@ -132,6 +130,7 @@ class MemberController extends CommonController{
                         $start_time = $res_coupon['start_time'];
                     }
                     $res_coupon_hotel = $m_coupon_hotel->getDataList('hotel_id',array('coupon_id'=>$res_coupon['id']),'id desc');
+
                     if(!empty($res_coupon_hotel)){
                         if(count($res_coupon_hotel)==1){
                             $hotel_id = $res_coupon_hotel[0]['hotel_id'];
@@ -141,8 +140,7 @@ class MemberController extends CommonController{
                     }else{
                         $hotel_id = $res_staff[0]['hotel_id'];
                     }
-
-                    $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>0,
+                    $coupon_data = array('openid'=>$openid,'coupon_id'=>$res_coupon['id'],'money'=>$res_coupon['money'],'hotel_id'=>$hotel_id,
                         'min_price'=>$res_coupon['min_price'],'max_price'=>$res_coupon['max_price'],
                         'start_time'=>$start_time,'end_time'=>$res_coupon['end_time'],'ustatus'=>1,'type'=>2,'vip_level'=>$now_vip_level);
                     $coupon_user_id = $m_user_coupon->add($coupon_data);
@@ -163,7 +161,7 @@ class MemberController extends CommonController{
                         $range_finance_goods_ids = explode(',',trim($res_coupon['range_finance_goods_ids'],','));
                         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
                         if($hotel_id){
-                            $res_data = $m_hotelgoods->getStockGoodsList($res_coupon['hotel_id'],0,1000);
+                            $res_data = $m_hotelgoods->getStockGoodsList($hotel_id,0,1000);
                         }else{
                             $res_data = $m_hotelgoods->getALLhotelStockGoodsList($res_coupon_hotel);
                         }

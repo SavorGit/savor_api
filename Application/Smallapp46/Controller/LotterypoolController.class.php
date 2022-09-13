@@ -126,7 +126,7 @@ class LotterypoolController extends CommonController{
                         $cfileds = 'sum(money) as total_money,count(*) as num';
                         $res_coupon = $m_coupon->getALLDataList($cfileds,array('id'=>array('in',$coupon_ids)),'id desc','','');
 
-                        $res_data['coupon_money'] = "{$res_coupon['money']}元";
+                        $res_data['coupon_money'] = "{$res_coupon[0]['total_money']}元";
                         $res_data['coupon_num'] = "共{$res_coupon[0]['num']}张券";
                     }
 

@@ -202,17 +202,19 @@ class HotelController extends CommonController{
         }
         //邀请函打开次数
         $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
-        $fields = ' count(a.id) as nums';
+        $fields = ' a.id';
         $where  = [];
         $where['i.hotel_id'] = $hotel_id;
-        $where['a.type'] = 1;
+        $where['a.add_time'] = array(array('egt',$s_date.' 00:00:00'),array('elt',$e_date.' 23:59:59'));
+        //$where['a.type'] = 1;
         $ret = $m_invitation_user->alias('a')
                           ->join('savor_smallapp_invitation as i on a.invitation_id=i.id','left')
                           ->field($fields)
                           ->where($where)
-                          ->find();
+                          ->group('a.invitation_id')
+                          ->select();
         
-        $invite_open_num = $ret['nums'];
+        $invite_open_num = count($ret);
         //邀请函发送次数
         $m_invite = new \Common\Model\Smallapp\InvitationModel();
         

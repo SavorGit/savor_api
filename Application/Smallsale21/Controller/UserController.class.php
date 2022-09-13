@@ -591,15 +591,7 @@ class UserController extends CommonController{
         $data['income_fee'] = $income_fee;
         $data['withdraw_fee'] = $withdraw_fee;
         $score = 0;
-        $freeze_integral = 0;
         if($data['staff_level']==1){
-            $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $fields = 'sum(integral) as total_integral';
-            $freezewhere = array('openid'=>$res_staff[0]['hotel_id'],'type'=>17,'status'=>2);
-            $res_integral = $m_integralrecord->getALLDataList($fields,$freezewhere,'','','');
-            if(!empty($res_integral)){
-                $freeze_integral = intval($res_integral[0]['total_integral']);
-            }
             $condition = array('hotel_id'=>$res_staff[0]['hotel_id'],'status'=>1);
         }elseif($data['staff_level']==2 || $data['staff_level']==3){
             $condition = array('staff_id'=>$res_staff[0]['staff_id'],'status'=>1);
@@ -619,7 +611,6 @@ class UserController extends CommonController{
             $is_salestat = intval($res_ext['is_salestat']);
         }
         $data['is_salestat'] = $is_salestat;
-        $data['freeze_integral'] = $freeze_integral;
 
         $this->to_back($data);
     }

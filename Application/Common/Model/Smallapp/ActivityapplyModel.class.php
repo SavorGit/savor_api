@@ -12,6 +12,7 @@ class ActivityapplyModel extends BaseModel{
 
     public function getApplyDatas($fields,$where,$order,$limit,$group){
         $data = $this->alias('a')
+            ->join('savor_smallapp_activity_prize prize on a.prize_id=prize.id','left')
             ->join('savor_smallapp_activity activity on a.activity_id=activity.id','left')
             ->field($fields)
             ->where($where)

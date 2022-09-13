@@ -417,7 +417,16 @@ class StaffController extends CommonController{
         if($res_staff[0]['level']!=1){
             $this->to_back(93031);
         }
-        $res = array('money'=>intval($res_staff[0]['money']),'integral'=>intval($res_staff[0]['integral']));
+        $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $fields = 'sum(integral) as total_integral';
+        $freezewhere = array('openid'=>$res_staff[0]['hotel_id'],'type'=>17,'status'=>2);
+        $res_integral = $m_integralrecord->getALLDataList($fields,$freezewhere,'','','');
+        $freeze_integral = 0;
+        if(!empty($res_integral)){
+            $freeze_integral = intval($res_integral[0]['total_integral']);
+        }
+
+        $res = array('money'=>intval($res_staff[0]['money']),'integral'=>intval($res_staff[0]['integral']),'freeze_integral'=>$freeze_integral);
         $this->to_back($res);
     }
 

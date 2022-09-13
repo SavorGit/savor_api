@@ -109,6 +109,7 @@ class StockController extends CommonController{
             array('id'=>9,'name'=>'上海库房','is_select'=>0),
             array('id'=>236,'name'=>'广州库房','is_select'=>0),
             array('id'=>246,'name'=>'深圳库房','is_select'=>0),
+            array('id'=>248,'name'=>'佛山库房','is_select'=>0),
         );
         $this->to_back($all_stock_city);
     }

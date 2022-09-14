@@ -232,7 +232,7 @@ class LotteryController extends CommonController{
         $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
         $prize = $res_syslottery['list'][0]['name'];
         $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
-        $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id),'id desc');
+        $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id,'status'=>1),'id desc');
         $prize_data = array();
         foreach ($res_lottery_prize as $pv){
             $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],

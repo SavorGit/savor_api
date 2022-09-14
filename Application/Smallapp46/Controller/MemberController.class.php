@@ -64,8 +64,6 @@ class MemberController extends CommonController{
             $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_openid'=>$sale_openid,'invite_time'=>date('Y-m-d H:i:s'));
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
 
-            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $m_userintegral->finishInviteVipTask($sale_openid);
             $m_message = new \Common\Model\Smallapp\MessageModel();
             $m_message->recordMessage($sale_openid,$res_user['id'],9);
         }

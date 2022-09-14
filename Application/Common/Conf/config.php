@@ -361,6 +361,7 @@ return array(
     'SAPP_LUCKYLOTTERY_PRIZEUSER'=>'smallapp:luckylottery:prizeuser:',
     'SAPP_PRIZEPOOL'=>'smallapp:prizepool:',
     'SAPP_PRIZEPOOL_MONEYQUEUE'=>'smallapp:prizepool:moneyqueue:',
+    'SAPP_VIP_LEVEL_COUPON'=>'smallapp:viplevelcoupon:',
 
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',

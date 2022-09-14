@@ -489,6 +489,8 @@ return array(
     'smallappsale_sellgoods_has_sell_lottery'=>'当前核销商品已发起过售酒抽奖',
     'smallappsale_lotterygoods_has_writeoff'=>'当前奖品已核销',
     'smallappsale_qrcode_not_support_lotterygoods_writeoff'=>'此码无法实物奖品核销',
+    'smallappsale_goods_had_bind_coupon'=>'无法使用，此商品已经被其他优惠券绑定',
+    'smallappsale_goods_has_notin_coupon_use_range'=>'此商品不在当前优惠券使用范围',
 
 
 

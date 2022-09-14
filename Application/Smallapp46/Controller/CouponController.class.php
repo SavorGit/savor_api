@@ -28,6 +28,10 @@ class CouponController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'coupon_id'=>1001);
                 break;
+            case 'vipLevelCouponList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'coupon_user_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -308,6 +312,27 @@ class CouponController extends CommonController{
             }
         }
         $this->to_back($data_list);
+    }
+
+    public function vipLevelCouponList(){
+        $openid = $this->params['openid'];
+        $coupon_user_id = intval($this->params['coupon_user_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        if(empty($user_info)){
+            $this->to_back(90157);
+        }
+        $cache_key = C('SAPP_VIP_LEVEL_COUPON').$openid.':'.$coupon_user_id;
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(1);
+        $res_cache = $redis->get($cache_key);
+        $resp_data = array();
+        if(!empty($res_cache)){
+            $resp_data = json_decode($res_cache,true);
+        }
+        $this->to_back($resp_data);
     }
 
 

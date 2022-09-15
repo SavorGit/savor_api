@@ -199,15 +199,12 @@ class CouponController extends CommonController{
             if(!empty($res_bindcoupon)){
                 $this->to_back(93213);
             }
-
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $res_stock_records = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
             $m_coupon = new \Common\Model\Smallapp\CouponModel();
             $res_couponinfo = $m_coupon->getInfo(array('id'=>$res_usercoupon['coupon_id']));
             if($res_couponinfo['use_range']==2){
                 $range_finance_goods_ids = explode(',',trim($res_couponinfo['range_finance_goods_ids'],','));
-                $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-                $fileds = 'goods.id as goods_id';
-                $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
-                $res_stock_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
                 if(!in_array($res_stock_records[0]['goods_id'],$range_finance_goods_ids)){
                     $this->to_back(93214);
                 }
@@ -234,17 +231,8 @@ class CouponController extends CommonController{
             $order_id = $m_order->add($add_data);
 
             $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$res_usercoupon['openid']);
-//            $m_wxpay = new \Payment\Model\WxpayModel();
-//            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-
-            //测试金额 上线去掉
-            if(!empty($idcode)){
-                $res = array('code'=>10000);
-            }else{
-                $m_wxpay = new \Payment\Model\WxpayModel();
-                $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-            }
-
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
             if($res['code']==10000){
                 $m_order->updateData(array('id'=>$order_id),array('status'=>21));
                 $up_data = array('ustatus'=>2,'use_time'=>date('Y-m-d H:i:s'),'op_openid'=>$openid);
@@ -290,6 +278,25 @@ class CouponController extends CommonController{
                             $cache_data = array('vip_level'=>$now_vip_level,'coupon_list'=>$coupon_list);
                             $redis->set($cache_key,json_encode($cache_data),3600);
                         }
+                    }
+                    if($res_stock_records[0]['type']==5){
+                        $batch_no = date('YmdHis');
+                        $add_data = $res_stock_records[0];
+                        unset($add_data['id'],$add_data['update_time']);
+                        $add_data['price'] = -abs($add_data['price']);
+                        $add_data['total_fee'] = -abs($add_data['total_fee']);
+                        $add_data['amount'] = -abs($add_data['amount']);
+                        $add_data['total_amount'] = -abs($add_data['total_amount']);
+                        $add_data['type'] = 7;
+                        $add_data['op_openid'] = $openid;
+                        $add_data['batch_no'] = $batch_no;
+                        $add_data['wo_reason_type'] = 0;
+                        $add_data['wo_data_imgs'] = '';
+                        $add_data['wo_status'] = 4;
+                        $add_data['wo_num'] = 1;
+                        $add_data['update_time'] = date('Y-m-d H:i:s');
+                        $add_data['add_time'] = date('Y-m-d H:i:s');
+                        $m_stock_record->add($add_data);
                     }
                 }
             }else{

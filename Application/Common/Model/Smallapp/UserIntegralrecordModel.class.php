@@ -298,9 +298,10 @@ class UserIntegralrecordModel extends BaseModel{
         $task_integral = 0;
         $m_task = new \Common\Model\Integral\TaskuserModel();
         $task_where = array('a.openid'=>$openid,'task.type'=>2,'task.task_type'=>25);
-        $res_task = $m_task->getUserTaskList('a.id,task.task_info,task.integral',$task_where,'a.id desc');
+        $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
         if(!empty($res_task)){
             $task_user_id = $res_task[0]['id'];
+            $task_id = $res_task[0]['task_id'];
             $task_integral = $res_task[0]['integral'];
             $task_content = json_decode($res_task[0]['task_info'],true);
             $lunch_start_time = $task_content['lunch_start_time'];
@@ -308,7 +309,10 @@ class UserIntegralrecordModel extends BaseModel{
             $dinner_start_time = $task_content['dinner_start_time'];
             $dinner_end_time = $task_content['dinner_end_time'];
             $max_daily_integral = $task_content['max_daily_integral'];
-
+            $room_num = $task_content['room_num'];
+            if($ads_id!=$task_content['ads_id']){
+                return array('task_user_id'=>$task_user_id,'task_integral'=>0);
+            }
             $now_time = date('Y-m-d H:i:s');
             $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
             $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
@@ -325,6 +329,16 @@ class UserIntegralrecordModel extends BaseModel{
                 $task_integral = 0;
             }
             if($task_integral>0){
+                $m_box = new \Common\Model\BoxModel();
+                $res_box = $m_box->getHotelInfoByBoxMacNew($box_mac);
+
+                $where = array('openid'=>$openid,'type'=>20,'room_id'=>$res_box['room_id']);
+                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
+                $fields = 'count(id) as num';
+                $res_room_num = $this->field($fields)->where($where)->find();
+                if($res_room_num['num']>=$room_num){
+                    return array('task_user_id'=>$task_user_id,'task_integral'=>0);
+                }
                 $stime = date('Y-m-d 00:00:00');
                 $etime = date('Y-m-d 23:59:59');
                 $where = array('openid'=>$openid,'type'=>20);
@@ -360,16 +374,13 @@ class UserIntegralrecordModel extends BaseModel{
                             $m_merchant->where($where)->setInc('integral',$task_integral);
                         }
 
-                        $m_box = new \Common\Model\BoxModel();
-                        $res_box = $m_box->getHotelInfoByBoxMacNew($box_mac);
                         $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_box['area_id'],'area_name'=>$res_box['area_name'],
                             'hotel_id'=>$res_box['hotel_id'],'hotel_name'=>$res_box['hotel_name'],'hotel_box_type'=>$res_box['hotel_box_type'],
                             'room_id'=>$res_box['room_id'],'room_name'=>$res_box['room_name'],'box_id'=>$res_box['box_id'],'box_mac'=>$box_mac,
-                            'box_type'=>$res_box['box_type'],'integral'=>$task_integral,'jdorder_id'=>$ads_id,'content'=>1,'type'=>20,
+                            'box_type'=>$res_box['box_type'],'task_id'=>$task_id,'integral'=>$task_integral,'jdorder_id'=>$ads_id,'content'=>1,'type'=>20,
                             'integral_time'=>date('Y-m-d H:i:s'));
                         $this->add($integralrecord_data);
                     }
-
                 }
             }
         }

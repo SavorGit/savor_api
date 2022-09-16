@@ -753,7 +753,7 @@ return array(
 
 
     'MEMBER_INTEGRAL'=>array(
-        'invite_vip_reward_saler'=>0,
+        'invite_vip_reward_saler'=>5600,
         'buy_reward_saler'=>400,
     ),
     'INVITATION_HOTEL'=>array(

@@ -241,9 +241,10 @@ class CouponController extends CommonController{
                 }
                 $m_user_coupon->updateData(array('id'=>$coupon_user_id),$up_data);
 
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
                 if(!empty($idcode)){
                     $m_user = new \Common\Model\Smallapp\UserModel();
-                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num', array('openid'=>$res_usercoupon['openid']));
+                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid', array('openid'=>$res_usercoupon['openid']));
                     $now_vip_level = 0;
                     $buy_wine_num = $res_user['buy_wine_num']+1;
                     if($res_user['vip_level']==0){
@@ -252,19 +253,28 @@ class CouponController extends CommonController{
                         $data = array('vip_level'=>$now_vip_level,'buy_wine_num'=>$buy_wine_num,'invite_openid'=>$sale_openid,'invite_time'=>date('Y-m-d H:i:s'));
                         $m_user->updateInfo(array('id'=>$res_user['id']),$data);
 
-                        $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-                        $m_userintegral->finishInviteVipTask($sale_openid);
+                        $m_userintegral->finishInviteVipTask($sale_openid,$idcode);
                         $m_message = new \Common\Model\Smallapp\MessageModel();
                         $m_message->recordMessage($sale_openid,$res_user['id'],9);
                     }else{
                         $data = array('buy_wine_num'=>$buy_wine_num);
+                        if(!empty($res_user['invite_openid'])){
+                            $sale_openid = $res_user['invite_openid'];
+                        }else{
+                            $data['invite_openid'] = $openid;
+                            $sale_openid = $openid;
+                        }
                         $level_buy_num = C('VIP_3_BUY_WINDE_NUM');
                         if($buy_wine_num==1){
                             $now_vip_level = 2;
                             $data['vip_level'] = $now_vip_level;
+                            $m_userintegral->finishInviteVipTask($sale_openid,$idcode);
                         }elseif($buy_wine_num==$level_buy_num){
                             $now_vip_level = 3;
                             $data['vip_level'] = $now_vip_level;
+                        }
+                        if($buy_wine_num>1){
+                            $m_userintegral->finishBuyRewardsalerTask($sale_openid,$idcode);
                         }
                         $m_user->updateInfo(array('id'=>$res_user['id']),$data);
                     }

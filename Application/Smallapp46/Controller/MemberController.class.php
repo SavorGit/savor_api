@@ -61,7 +61,10 @@ class MemberController extends CommonController{
         $now_vip_level = 0;
         if($res_user['vip_level']==0){
             $now_vip_level = 1;
-            $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_openid'=>$sale_openid,'invite_time'=>date('Y-m-d H:i:s'));
+            $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_time'=>date('Y-m-d H:i:s'));
+            if($source==1){
+                $data['invite_openid'] = $sale_openid;
+            }
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
 
             $m_message = new \Common\Model\Smallapp\MessageModel();

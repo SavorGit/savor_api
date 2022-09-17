@@ -49,7 +49,7 @@ class WithdrawController extends CommonController{
         }
         $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $fields = 'sum(integral) as total_integral';
-        $where = array('openid'=>$openid,'type'=>17,'status'=>2);
+        $where = array('openid'=>$openid,'type'=>array('in',array(17,18,19)),'status'=>2);
         $freeze_integral = 0;
         $res_integral = $m_integralrecord->getALLDataList($fields,$where,'','','');
         if(!empty($res_integral)){

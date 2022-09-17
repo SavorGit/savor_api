@@ -777,8 +777,8 @@ class UserController extends CommonController{
         if(!empty($hotel_id)){
             $openid = $hotel_id;
         }
-        $where = array('a.openid'=>$openid,'a.type'=>17,'a.status'=>2);
-        $fileds = 'a.id,a.openid,a.integral,a.add_time,a.jdorder_id,user.avatarUrl as avatar_url,user.nickName as user_name';
+        $where = array('a.openid'=>$openid,'a.type'=>array('in',array(17,18,19)),'a.status'=>2);
+        $fileds = 'a.id,a.openid,a.integral,a.add_time,a.jdorder_id,a.type,user.avatarUrl as avatar_url,user.nickName as user_name';
         $res_data = $m_userintegral_record->getFinishRecordlist($fileds,$where,'a.id desc',$offset,$pagesize);
 
         $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
@@ -791,7 +791,11 @@ class UserController extends CommonController{
             $add_time = date('Y/m/d H:i',strtotime($v['add_time']));
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,
             unit.name as unit_name,a.wo_status,a.recycle_status';
-            $where = array('a.id'=>$v['jdorder_id']);
+            if($v['type']==17){
+                $where = array('a.id'=>$v['jdorder_id']);
+            }else{
+                $where = array('a.idcode'=>$v['jdorder_id']);
+            }
             $stock_record = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
             $recycle_status_str = '';
             if($stock_record[0]['wo_status']==2){

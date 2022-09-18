@@ -111,6 +111,7 @@ class InvitationController extends CommonController{
             $where = array('openid'=>$res_info['openid'],'jdorder_id'=>$res_info['id'],'type'=>15);
             $res_integral = $m_userintegral->getInfo($where);
             if(empty($res_integral)){
+                $res_info['receive_openid'] = $openid;
                 $m_userintegral->finishInvitationTask($res_info,15);
             }
         }

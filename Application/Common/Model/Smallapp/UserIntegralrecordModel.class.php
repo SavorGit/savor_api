@@ -171,11 +171,16 @@ class UserIntegralrecordModel extends BaseModel{
             $week_end = strtotime('today +' . (8 - $week) . 'day -1second');
             $week_start_time = date('Y-m-d H:i:s',$week_start);
             $week_end_time = date('Y-m-d H:i:s',$week_end);
-            $where = array('openid'=>$invitation['openid'],'type'=>$type);
+
+            $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
+            $where = array('openid'=>$invitation['receive_openid']);
             $where['add_time'] = array(array('egt',$week_start_time),array('elt',$week_end_time), 'and');
-            $fields = 'count(id) as num';
-            $res_week_num = $this->field($fields)->where($where)->find();
-            if($res_week_num['num']>=$week_num){
+            $res_data = $m_invitation_user->getALLDataList('COUNT(DISTINCT invitation_id) as user_num',$where,'id desc','0,1','');
+            $now_week_num = 0;
+            if(!empty($res_data[0]['user_num'])){
+                $now_week_num = intval($res_data[0]['user_num']);
+            }
+            if($now_week_num>=$week_num){
                 $now_integral = 0;
                 return true;
             }

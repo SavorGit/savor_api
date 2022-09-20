@@ -244,7 +244,7 @@ class CouponController extends CommonController{
                 $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
                 if(!empty($idcode)){
                     $m_user = new \Common\Model\Smallapp\UserModel();
-                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid', array('openid'=>$res_usercoupon['openid']));
+                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid,invite_time', array('openid'=>$res_usercoupon['openid']));
                     $now_vip_level = 0;
                     $buy_wine_num = $res_user['buy_wine_num']+1;
                     if($res_user['vip_level']==0){
@@ -273,7 +273,10 @@ class CouponController extends CommonController{
                             $now_vip_level = 3;
                             $data['vip_level'] = $now_vip_level;
                         }
-                        if($buy_wine_num>1){
+                        $all_day = 180*86400;
+                        $reward_end_time = strtotime($res_user['invite_time']) + $all_day;
+                        $now_retime = time();
+                        if($buy_wine_num>1 && $now_retime<$reward_end_time){
                             $m_userintegral->finishBuyRewardsalerTask($sale_openid,$idcode);
                         }
                         $m_user->updateInfo(array('id'=>$res_user['id']),$data);

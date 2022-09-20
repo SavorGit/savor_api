@@ -818,5 +818,5 @@ return array(
     'QRCODE_MIN_NUM'=>500000,
     'STOCK_AUDIT_STATUS'=>array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料'),
     'STOCK_RECYCLE_STATUS'=>array('1'=>'待回收物料','2'=>'已回收物料'),
-    'VIP_3_BUY_WINDE_NUM'=>12,
+    'VIP_3_BUY_WINDE_NUM'=>1200,
 );

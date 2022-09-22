@@ -80,7 +80,7 @@ class TaskController extends CommonController{
         $m_task_user = new \Common\Model\Integral\TaskuserModel();
         $oss_host = 'http://'. C('OSS_HOST').'/';
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
-        task.desc,task.is_shareprofit,task.task_type,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
+        task.desc,task.is_shareprofit,task.task_type,task.task_info,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
         $activity_task_types = array(22,23,24,25);
         $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('in',$activity_task_types));
         $m_media = new \Common\Model\MediaModel();
@@ -90,7 +90,10 @@ class TaskController extends CommonController{
         if(!empty($res_inprogress_task)){
             $now_time = date('Y-m-d H:i:s');
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
+            $m_ads = new \Common\Model\AdsModel();
             foreach ($res_inprogress_task as $k=>$v){
+                $task_info = $v['task_info'];
+                unset($v['task_info']);
                 $tinfo = $v;
                 if($now_time>=$v['task_expire_time']){
                     $v['status']=0;
@@ -176,6 +179,19 @@ class TaskController extends CommonController{
                         break;
                     case 25:
                         if($v['status']==1 && $v['flag']==1){
+                            $task_info = json_decode($task_info,true);
+                            if(!empty($task_info['ads_id'])){
+                                $res_ads = $m_ads->getWhere(array('id'=>$task_info['ads_id']), '*');
+                                $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
+                                $oss_path = $media_info['oss_path'];
+                                $oss_path_info = pathinfo($oss_path);
+                                $tinfo['duration'] = $media_info['duration'];
+                                $tinfo['tx_url'] = $media_info['oss_addr'];
+                                $tinfo['resource_size'] = $media_info['oss_filesize'];
+                                $tinfo['filename'] = $oss_path_info['basename'];
+                                $tinfo['forscreen_url'] = $oss_path;
+                                $tinfo['ads_id'] = $task_info['ads_id'];
+                            }
                             $inprogress_task[$v['task_id']]=$tinfo;
                         }else{
                             $tinfo['itype'] = 1;

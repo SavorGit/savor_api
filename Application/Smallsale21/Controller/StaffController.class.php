@@ -419,7 +419,7 @@ class StaffController extends CommonController{
         }
         $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $fields = 'sum(integral) as total_integral';
-        $freezewhere = array('openid'=>$res_staff[0]['hotel_id'],'type'=>17,'status'=>2);
+        $freezewhere = array('openid'=>$res_staff[0]['hotel_id'],'type'=>array('in',array(17,18,19)),'status'=>2);
         $res_integral = $m_integralrecord->getALLDataList($fields,$freezewhere,'','','');
         $freeze_integral = 0;
         if(!empty($res_integral)){

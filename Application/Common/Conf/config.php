@@ -361,6 +361,7 @@ return array(
     'SAPP_LUCKYLOTTERY_PRIZEUSER'=>'smallapp:luckylottery:prizeuser:',
     'SAPP_PRIZEPOOL'=>'smallapp:prizepool:',
     'SAPP_PRIZEPOOL_MONEYQUEUE'=>'smallapp:prizepool:moneyqueue:',
+    'SAPP_VIP_LEVEL_COUPON'=>'smallapp:viplevelcoupon:',
 
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',
@@ -752,7 +753,7 @@ return array(
 
 
     'MEMBER_INTEGRAL'=>array(
-        'invite_vip_reward_saler'=>0,
+        'invite_vip_reward_saler'=>5600,
         'buy_reward_saler'=>400,
     ),
     'INVITATION_HOTEL'=>array(
@@ -817,5 +818,5 @@ return array(
     'QRCODE_MIN_NUM'=>500000,
     'STOCK_AUDIT_STATUS'=>array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料'),
     'STOCK_RECYCLE_STATUS'=>array('1'=>'待回收物料','2'=>'已回收物料'),
-    'VIP_3_BUY_WINDE_NUM'=>12,
+    'VIP_3_BUY_WINDE_NUM'=>1200,
 );

@@ -148,11 +148,21 @@ class UserController extends CommonController{
             unset($userinfo['role_id']);
         }
         if($mtype==2){
-            $userinfo['role_type'] = 5;//4是代购人员 5非合作商家 6库存管理人员
+            $userinfo['role_type'] = 5;//4是代购人员 5非合作商家 6全部库存管理 7部分库存管理
         }
-        $stock_users = C('STOCK_MANAGER');
-        if(isset($stock_users[$openid])){
-            $userinfo['role_type'] = 6;
+        $m_finance_user = new \Common\Model\Finance\SappuserModel();
+        $res_fuser = $m_finance_user->getInfo(array('openid'=>$openid,'status'=>1));
+        if(!empty($res_fuser)){
+            $role_type = 6;
+            if($res_fuser['permission_type']==2){
+                $role_type = 7;
+            }
+            $userinfo['role_type'] = $role_type;
+        }else{
+            $stock_users = C('STOCK_MANAGER');
+            if(isset($stock_users[$openid])){
+                $userinfo['role_type'] = 6;
+            }
         }
 
         $userinfo['hotel_id'] = $hotel_id;
@@ -313,9 +323,19 @@ class UserController extends CommonController{
             if($rts['mtype']==2){
                 $userinfo['role_type'] = 5;//4是代购人员 5非合作商家 6库存管理人员
             }
-            $stock_users = C('STOCK_MANAGER');
-            if(isset($stock_users[$openid])){
-                $userinfo['role_type'] = 6;
+            $m_finance_user = new \Common\Model\Finance\SappuserModel();
+            $res_fuser = $m_finance_user->getInfo(array('openid'=>$openid,'status'=>1));
+            if(!empty($res_fuser)){
+                $role_type = 6;
+                if($res_fuser['permission_type']==2){
+                    $role_type = 7;
+                }
+                $userinfo['role_type'] = $role_type;
+            }else{
+                $stock_users = C('STOCK_MANAGER');
+                if(isset($stock_users[$openid])){
+                    $userinfo['role_type'] = 6;
+                }
             }
             
             $this->to_back($data);
@@ -541,6 +561,9 @@ class UserController extends CommonController{
         $data['staff_level'] = intval($res_staff[0]['level']);
         $data['reward_money'] = intval($res_staff[0]['money']);
         $data['reward_integral'] = intval($res_staff[0]['integral']);
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getInfoById($res_staff[0]['hotel_id'],'*');
+        $data['nickName'] = $data['nickName']."({$res_hotel['name']})";
 
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $where = array('merchant_id'=>$data['merchant_id'],'otype'=>3);

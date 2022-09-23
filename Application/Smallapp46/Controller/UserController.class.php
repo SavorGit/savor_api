@@ -95,7 +95,11 @@ class UserController extends CommonController{
             $userinfo['subscribe'] = 1;
             $userinfo['avatarUrl'] = '';
             $userinfo['nickName']  = '';
+            $userinfo['mobile']  = '';
+            $userinfo['gender']  = 0;
+            $userinfo['status']  = 1;
             $userinfo['is_wx_auth']= 0;
+            $userinfo['is_interact']= 0;
             $userinfo['vip_level']= 0;
             $userinfo['use_time'] = array('use_time_str'=>'本次您是第1次使用热点投屏','cut_sec'=>5);
         }else{

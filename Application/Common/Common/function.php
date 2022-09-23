@@ -407,8 +407,8 @@ function decrypt_data($data, $dejson = true, $key = '')
 	return $res_data;
 }
 
-function get_oss_host(){
-	$oss_host = C('CONTENT_HOST');
+function get_oss_host($http='https'){
+    $oss_host = "$http://".C('OSS_HOST').'/';
 	return $oss_host;
 }
 function get_host_name(){

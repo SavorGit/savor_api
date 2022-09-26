@@ -10,7 +10,7 @@ class OcrController extends CommonController{
         switch(ACTION_NAME) {
             case 'getIdcardInfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('img_url'=>1001);
+                $this->valid_fields = array('img_url'=>1001,'openid'=>1001);
                 break;
         }
         parent::_init_();

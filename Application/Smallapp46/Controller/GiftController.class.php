@@ -199,7 +199,7 @@ class GiftController extends CommonController{
             'selfreceive_num'=>intval($selfreceive_num),'give_num'=>$give_num,'address'=>$address,'receive_order_id'=>$receive_order_id,'give_order_id'=>$give_order_id,
             'share_title'=>$share_title,
         );
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
 
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
@@ -852,7 +852,7 @@ class GiftController extends CommonController{
             'openid'=>$res_order['openid'],'nickName'=>$give_uname,'selfreceive_num'=>$selfreceive_num,'give_num'=>$give_num,'address'=>$address,
             'receive_order_id'=>$receive_order_id,'give_order_id'=>$give_order_id,'share_title'=>$share_title,
         );
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
 
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();

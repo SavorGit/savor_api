@@ -301,7 +301,7 @@ class AnnualMeetingController extends CommonController{
         $resources = array();
         $m_meetingvideo = new \Common\Model\Smallapp\AnnualmeetingVideoModel();
         $res_video = $m_meetingvideo->getDataList('*',array('annualmeeting_id'=>$annualmeeting_id),'type asc');
-        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         foreach ($res_video as $v){
             $res_url = $oss_host.$v['oss_addr'];
             $img_url = $res_url.'?x-oss-process=video/snapshot,t_3000,f_jpg,w_450,m_fast';

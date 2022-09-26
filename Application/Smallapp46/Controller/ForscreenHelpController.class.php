@@ -84,7 +84,7 @@ class ForscreenHelpController extends CommonController{
         $res_data['rate'] = $this->help_rate($helpuser_num);
 
         $typeinfo = C('RESOURCE_TYPEINFO');
-        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $imgs_info = json_decode($res_forscreen['imgs'],true);
         $oss_addr = $imgs_info[0];
         $tempInfo = pathinfo($oss_addr);

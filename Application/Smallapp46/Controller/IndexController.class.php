@@ -81,7 +81,6 @@ class IndexController extends CommonController{
     public function getOssParams(){
         $id = C('OSS_ACCESS_ID');
         $key = C('OSS_ACCESS_KEY');
-        //$host = 'http://'.C('OSS_BUCKET').'.'.C('OSS_HOST');
         $host = 'https://'.C('OSS_HOST');
         $callbackUrl = C('HOST_NAME').'/'.C('OSS_SYNC_CALLBACK_URL');
         $callback_param = array(
@@ -564,7 +563,7 @@ class IndexController extends CommonController{
         $seckill_goods_id = 0;
         $hotel_id = 0;
         $box_mac = '';
-        $oss_host = C('OSS_HOST');
+        $oss_host = get_oss_host();
         $seckill_banner = '';
         $hotel_seckill_goods_id = 0;
         $hotel_seckill_goods_img = '';
@@ -629,7 +628,7 @@ class IndexController extends CommonController{
                         $nickName = $user_info['nickName'];
                     }else{
                         $res_media = $m_media->getMediaInfoById($res_ext['hotel_cover_media_id']);
-                        $avatarUrl = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                        $avatarUrl = $oss_host.'media/resource/kS3MPQBs7Y.png';
                         if(!empty($res_media)){
                             $avatarUrl = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
                         }
@@ -659,7 +658,7 @@ class IndexController extends CommonController{
                 $reward_money_list = C('REWARD_MONEY_LIST');
                 $reward_money = array();
                 foreach ($reward_money_list as $v){
-                    $v['image'] = 'http://'.$oss_host.'/'.$v['image'];
+                    $v['image'] = $oss_host.$v['image'];
                     $v['selected'] = false;
                     $reward_money[]=$v;
                 }
@@ -687,7 +686,7 @@ class IndexController extends CommonController{
                 if(empty($res_hgoods)){
                     $seckill_goods_id = 0;
                 }else{
-                    $seckill_banner = 'http://'.$oss_host.'/WeChat/MiniProgram/images/laimao_sale_banner.jpg';
+                    $seckill_banner = $oss_host.'WeChat/MiniProgram/images/laimao_sale_banner.jpg';
                 }
                 $fields = 'g.id as goods_id,g.poster_media_id,g.finance_goods_id';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.is_seckill'=>1,'g.status'=>1);
@@ -771,8 +770,8 @@ class IndexController extends CommonController{
         $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
         $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;
         $data['is_annualmeeting'] = $is_annualmeeting;
-        $data['meeting_banner'] = 'http://'.C('OSS_HOST').'/media/resource/pkNdszmrtN.png';
-        $data['meeting_signin_img'] = 'http://'.C('OSS_HOST').'/'.C('MEETING_SIGNIN_IMG').'?x-oss-process=image/resize,p_30';
+        $data['meeting_banner'] = $oss_host.'media/resource/pkNdszmrtN.png';
+        $data['meeting_signin_img'] = $oss_host.C('MEETING_SIGNIN_IMG').'?x-oss-process=image/resize,p_30';
         $data['meeting_signin_play_times'] = C('MEETING_SIGNIN_PLAY_TIMES');
         $data['is_annualmeeting'] = $is_annualmeeting;
         $data['taste_wine'] = $taste_wine;
@@ -1040,7 +1039,7 @@ class IndexController extends CommonController{
     public function happylist(){
         $m_ads = new \Common\Model\AdsModel();
         $where = array();
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $where['a.id'] = array('in','8855,5246,5245,5244');
 
         $fields =  "a.name, CONCAT('".$oss_host."',a.img_url) img_url,

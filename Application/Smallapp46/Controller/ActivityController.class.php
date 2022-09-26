@@ -1007,7 +1007,7 @@ class ActivityController extends CommonController{
                 $tips = $message = '';
         }
         $lottery_time = date('Y-m-d H:i:s',strtotime($res_activity['lottery_time']));
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $img_url = '';
         if(!empty($res_activity['img_url'])){
             $img_url = $oss_host.$res_activity['img_url'];

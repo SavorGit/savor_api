@@ -159,7 +159,7 @@ class WelcomeController extends CommonController{
             $data = array('welcome_id'=>$welcome_id,'content'=>$res_welcome['content'],'wordsize_id'=>$res_welcome['wordsize_id'],
                 'color_id'=>$res_welcome['color_id'],'font_id'=>$res_welcome['font_id'],'music_id'=>$res_welcome['music_id'],'stay_time'=>$res_welcome['stay_time']
             );
-            $oss_host = "https://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $image = $image_path = array();
             $imgs = explode(',',$res_welcome['image']);
             if(!empty($imgs)){

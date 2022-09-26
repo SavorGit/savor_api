@@ -187,7 +187,7 @@ class LotteryController extends CommonController{
         if($record_info[0]['type']==5){
             $this->to_back($res);
         }else{
-            if($record_info[0]['type']==7){
+            if($record_info[0]['type']==7 && $record_info[0]['wo_status']==4){
                 $this->to_back($res);
             }elseif($record_info[0]['type']==6){
                 $this->to_back(93095);
@@ -210,12 +210,6 @@ class LotteryController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
-        $m_activity = new \Common\Model\Smallapp\ActivityModel();
-        $res_activity = $m_activity->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
-        if(!empty($res_activity)){
-            $this->to_back(93210);
-        }
-
         $m_syslottery = new \Common\Model\Smallapp\SyslotteryModel();
         $where = array('hotel_id'=>$hotel_id,'status'=>1,'type'=>5);
         $orderby = 'id desc';
@@ -224,41 +218,49 @@ class LotteryController extends CommonController{
         if($res_syslottery['total']<=0){
             $this->to_back(93209);
         }
-        $m_box = new \Common\Model\BoxModel();
-        $bwhere = array('hotel.id'=>$hotel_id,'room.id'=>$room_id,'box.state'=>1,'box.flag'=>0);
-        $fileds = 'box.id as box_id,box.mac as box_mac';
-        $res_box = $m_box->getBoxByCondition($fileds,$bwhere);
 
-        $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
-        $prize = $res_syslottery['list'][0]['name'];
-        $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
-        $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id,'status'=>1),'id desc');
-        $prize_data = array();
-        foreach ($res_lottery_prize as $pv){
-            $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
-                'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
-            );
+        $m_activity = new \Common\Model\Smallapp\ActivityModel();
+        $res_activity = $m_activity->getALLDataList('*',array('idcode'=>$idcode),'id desc','0,1','');
+        $is_new_activity = 0;
+        if(!empty($res_activity)){
+            $now_time = date('Y-m-d H:i:s');
+            if($now_time>$res_activity[0]['end_time']){
+                $this->to_back(93210);
+            }
+            $activity_id = $res_activity[0]['id'];
+        }else{
+            $is_new_activity = 1;
+            $now_syslottery_id = $res_syslottery['list'][0]['syslottery_id'];
+            $prize = $res_syslottery['list'][0]['name'];
+            $m_lotteryprize = new \Common\Model\Smallapp\SyslotteryPrizeModel();
+            $res_lottery_prize = $m_lotteryprize->getDataList('*',array('syslottery_id'=>$now_syslottery_id,'status'=>1),'id desc');
+            $prize_data = array();
+            foreach ($res_lottery_prize as $pv){
+                $prize_data[]=array('name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                    'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
+                );
+            }
+            $now_time = time();
+            $start_time = date('Y-m-d H:i:s');
+            $end_time = date('Y-m-d H:i:s',$now_time+1800);
+            $status = 2;
+            $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'name'=>'幸运抽奖','prize'=>$prize,
+                'room_id'=>$room_id,'people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,'idcode'=>$idcode,
+                'syslottery_id'=>$now_syslottery_id,'type'=>14,'status'=>$status);
+            $activity_id = $m_activity->add($add_activity_data);
+            $all_prize_data = array();
+            foreach ($prize_data as $pv){
+                $all_prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
+                    'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
+                );
+            }
+            $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
+            $m_activityprize->addAll($all_prize_data);
         }
-        $now_time = time();
-        $start_time = date('Y-m-d H:i:s');
-        $end_time = date('Y-m-d H:i:s',$now_time+1800);
-        $status = 2;
-        $add_activity_data = array('hotel_id'=>$hotel_id,'openid'=>$openid,'name'=>'幸运抽奖','prize'=>$prize,
-            'room_id'=>$room_id,'people_num'=>1,'start_time'=>$start_time,'end_time'=>$end_time,'idcode'=>$idcode,
-            'syslottery_id'=>$now_syslottery_id,'type'=>14,'status'=>$status);
-        $activity_id = $m_activity->add($add_activity_data);
-        $all_prize_data = array();
-        foreach ($prize_data as $pv){
-            $all_prize_data[]=array('activity_id'=>$activity_id,'name'=>$pv['name'],'money'=>$pv['money'],'image_url'=>$pv['image_url'],
-                'probability'=>$pv['probability'],'prizepool_prize_id'=>$pv['prizepool_prize_id'],'type'=>$pv['type']
-            );
-        }
-        $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
-        $m_activityprize->addAll($all_prize_data);
+
 
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelById('hotel.name,ext.hotel_cover_media_id',array('hotel.id'=>$hotel_id));
-
         $headPic = '';
         if($res_hotel['hotel_cover_media_id']>0){
             $m_media = new \Common\Model\MediaModel();
@@ -267,53 +269,60 @@ class LotteryController extends CommonController{
         }
         $host_name = C('HOST_NAME');
         $code_url = '';
+        $m_box = new \Common\Model\BoxModel();
+        $bwhere = array('hotel.id'=>$hotel_id,'room.id'=>$room_id,'box.state'=>1,'box.flag'=>0);
+        $fileds = 'box.id as box_id,box.mac as box_mac';
+        $res_box = $m_box->getBoxByCondition($fileds,$bwhere);
         if(!empty($res_box)){
             foreach ($res_box as $v){
                 $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
                 $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_hotel['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
-                $m_netty = new \Common\Model\NettyModel();
-                $m_netty->pushBox($v['box_mac'],json_encode($message));
+                if($is_new_activity){
+                    $m_netty = new \Common\Model\NettyModel();
+                    $m_netty->pushBox($v['box_mac'],json_encode($message));
+                }
             }
         }else{
             $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id=0&box_mac=0&data_id={$activity_id}&type=49";
         }
 
-        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $batch_no = date('YmdHis');
-        $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
-        if(!empty($res_record)){
-            $reason_type = 0;
-            $data_imgs = '';
+        if($is_new_activity){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $batch_no = date('YmdHis');
+            $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+            if(!empty($res_record)){
+                $reason_type = 0;
+                $data_imgs = '';
 
-            $add_data = $res_record[0];
-            $goods_ids[]=$add_data['goods_id'];
-            if($add_data['type']==7){
-                if($add_data['wo_reason_type']==0){
-                    $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
-                        'wo_data_imgs'=>$data_imgs,'wo_status'=>4,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
-                    );
-                    $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                $add_data = $res_record[0];
+                $goods_ids[]=$add_data['goods_id'];
+                if($add_data['type']==7){
+                    if($add_data['wo_reason_type']==0){
+                        $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
+                            'wo_data_imgs'=>$data_imgs,'wo_status'=>4,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                        );
+                        $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                    }
+                }else{
+                    unset($add_data['id'],$add_data['update_time']);
+                    $add_data['price'] = -abs($add_data['price']);
+                    $add_data['total_fee'] = -abs($add_data['total_fee']);
+                    $add_data['amount'] = -abs($add_data['amount']);
+                    $add_data['total_amount'] = -abs($add_data['total_amount']);
+                    $add_data['type'] = 7;
+                    $add_data['op_openid'] = $openid;
+                    $add_data['batch_no'] = $batch_no;
+                    $add_data['wo_reason_type'] = $reason_type;
+                    $add_data['wo_data_imgs'] = $data_imgs;
+                    $add_data['wo_status'] = 4;
+                    $add_data['wo_num'] = 1;
+                    $add_data['update_time'] = date('Y-m-d H:i:s');
+                    $add_data['add_time'] = date('Y-m-d H:i:s');
+                    $m_stock_record->add($add_data);
                 }
-            }else{
-                unset($add_data['id'],$add_data['update_time']);
-                $add_data['price'] = -abs($add_data['price']);
-                $add_data['total_fee'] = -abs($add_data['total_fee']);
-                $add_data['amount'] = -abs($add_data['amount']);
-                $add_data['total_amount'] = -abs($add_data['total_amount']);
-                $add_data['type'] = 7;
-                $add_data['op_openid'] = $openid;
-                $add_data['batch_no'] = $batch_no;
-                $add_data['wo_reason_type'] = $reason_type;
-                $add_data['wo_data_imgs'] = $data_imgs;
-                $add_data['wo_status'] = 4;
-                $add_data['wo_num'] = 1;
-                $add_data['update_time'] = date('Y-m-d H:i:s');
-                $add_data['add_time'] = date('Y-m-d H:i:s');
-                $m_stock_record->add($add_data);
             }
         }
         $this->to_back(array('activity_id'=>$activity_id,'qrcode_url'=>$code_url));
-
     }
 
 

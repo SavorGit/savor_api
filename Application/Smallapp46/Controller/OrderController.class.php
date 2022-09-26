@@ -308,14 +308,13 @@ class OrderController extends CommonController{
                     $res_coupons = $res_coupon_user[0];
                 }
             }
-
+            $oss_host = get_oss_host();
             foreach ($res_goods as $v){
                 if($v['status']==2){
                     continue;
                 }
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
-                    $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
@@ -918,7 +917,7 @@ class OrderController extends CommonController{
             'total_fee'=>$res_order['total_fee'],'type'=>$res_order['otype'],'message'=>$res_order['message'],
             'openid'=>$res_order['openid'],'nickName'=>$res_user['nickName'],'expire_date'=>$expire_date
         );
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
 
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
@@ -1373,7 +1372,7 @@ class OrderController extends CommonController{
             $m_merchant = new \Common\Model\Integral\MerchantModel();
             $m_media = new \Common\Model\MediaModel();
             $datalist = $res_order['list'];
-            $oss_host = "http://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $all_status = C('ORDER_STATUS');
             foreach($datalist as $k=>$v){
                 $datalist[$k]['type'] = $v['otype'];
@@ -1486,7 +1485,7 @@ class OrderController extends CommonController{
             $order_data['status_str'] = $order_status_str[$res_order['status']];
         }
 
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $gifts = array();
         $m_ordergift = new \Common\Model\Smallapp\OrdergiftModel();
         $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.price,goods.gtype,goods.attr_name,goods.parent_id,

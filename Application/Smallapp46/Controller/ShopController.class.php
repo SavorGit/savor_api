@@ -100,7 +100,7 @@ class ShopController extends CommonController{
         if($res_goods['total']){
             $res_data['total'] = $res_goods['total'];
 
-            $oss_host = "http://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){
@@ -188,10 +188,10 @@ class ShopController extends CommonController{
         $datalist = array();
         if($res_goods['total']){
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $oss_host = get_oss_host();
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
-                    $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
@@ -239,10 +239,10 @@ class ShopController extends CommonController{
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
+            $oss_host = get_oss_host();
             foreach ($res_goods as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
-                    $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
@@ -307,7 +307,7 @@ class ShopController extends CommonController{
         if($res_goods['total']){
             $res_data['total'] = $res_goods['total'];
 
-            $oss_host = "http://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){

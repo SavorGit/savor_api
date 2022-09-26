@@ -95,18 +95,18 @@ class StoreController extends CommonController{
         $hotel_list = array_slice($res_store,0,$offset);
         $m_meida = new \Common\Model\MediaModel();
         $datalist = array();
-
+        $oss_host = get_oss_host();
         foreach ($hotel_list as $k=>$v){
             $tag_name = $v['tag_name'];
             if(empty($tag_name)){
                 $tag_name = '';
             }
             if($v['media_id']){
-                $res_media = $m_meida->getMediaInfoById($v['media_id'],'https');
+                $res_media = $m_meida->getMediaInfoById($v['media_id']);
                 $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
                 $ori_img_url = $res_media['oss_addr'];
             }else{
-                $img_url = 'https://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                $img_url = $oss_host.'media/resource/kS3MPQBs7Y.png';
                 $ori_img_url = $img_url;
             }
             $dis = $v['dis'];
@@ -143,7 +143,7 @@ class StoreController extends CommonController{
         if(empty($tel)){
             $tel = $res_store['mobile'];
         }
-        $oss_host = "https://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $detail_imgs =array();
         if(!empty($res_store['detail_imgs'])){
             $detail_imgs_info = explode(',',$res_store['detail_imgs']);
@@ -159,7 +159,7 @@ class StoreController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $coupon_img = '';
         if(!empty($res_store['coupon_media_id'])){
-            $res_coupon = $m_media->getMediaInfoById($res_store['coupon_media_id'],'https');
+            $res_coupon = $m_media->getMediaInfoById($res_store['coupon_media_id']);
             $coupon_img = $res_coupon['oss_addr'];
         }
         $m_collect = new \Common\Model\Smallapp\CollectModel();
@@ -223,6 +223,7 @@ class StoreController extends CommonController{
         $datalist = array();
         $total = 0;
         if(!empty($res_collect)){
+            $oss_host = get_oss_host();
             $m_meida = new \Common\Model\MediaModel();
             foreach ($res_collect as $v){
                 $tag_name = $v['tag_name'];
@@ -234,7 +235,7 @@ class StoreController extends CommonController{
                     $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_20';
                     $ori_img_url = $res_media['oss_addr'];
                 }else{
-                    $img_url = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                    $img_url = $oss_host.'media/resource/kS3MPQBs7Y.png';
                     $ori_img_url = $img_url;
                 }
                 $tel = $v['tel'];

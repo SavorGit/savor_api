@@ -290,7 +290,7 @@ class UserController extends CommonController{
         $m_public      = new \Common\Model\Smallapp\PublicModel();
         $m_play_log = new \Common\Model\Smallapp\PlayLogModel();
         $m_ads      = new \Common\Model\AdsModel();
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         foreach($collect_info as $key=>$v){
             switch ($v['type']){
                 case 1://点播
@@ -324,7 +324,7 @@ class UserController extends CommonController{
                     $collect_info[$key]['res_type'] = $v['type'];
                     if(empty($v['avatarUrl']) || empty($v['nickName'])){
                         $collect_info[$key]['nickName'] = '小热点';
-                        $collect_info[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                        $collect_info[$key]['avatarUrl'] = $oss_host.'media/resource/btCfRRhHkn.jpg';
                     }
                     $info = $m_ads->alias('a')
                         ->field("a.id,media.type as media_type,concat('".$oss_host."',a.img_url) imgurl,concat('".$oss_host."',`oss_addr`) res_url,media.oss_filesize as resource_size")
@@ -344,7 +344,7 @@ class UserController extends CommonController{
                     }
                     if(empty($info['avatarUrl']) || empty($info['nickName'])){
                         $info['nickName'] = '小热点';
-                        $info['avatarUrl'] = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+                        $info['avatarUrl'] = $oss_host.'media/resource/btCfRRhHkn.jpg';
                     }
                     $info['filename'] = substr($info['res_url'], strripos($info['res_url'], '/')+1);
                     $collect_info[$key]['list'] = $info;
@@ -421,7 +421,7 @@ class UserController extends CommonController{
         $public_list = $m_public->getList($fields, $where, $order, $limit);
     
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         foreach($public_list as $key=>$v){
             $fields = "concat('".$oss_host."',`res_url`) res_url,duration,`res_url` forscreen_url,resource_size";
             $where = array();

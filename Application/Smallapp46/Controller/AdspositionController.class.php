@@ -64,6 +64,7 @@ class AdspositionController extends CommonController{
                     }
                 }
             }
+            $oss_host = get_oss_host();
             if($is_act_time==1){
                 $info = array();
                 $info['appid'] = '';
@@ -72,7 +73,7 @@ class AdspositionController extends CommonController{
                 $info['id'] = 999;
                 $info['linkcontent'] = '/games/pages/activity/din_dash';
                 $info['name'] = '霸王餐';
-                $info['oss_addr'] = 'http://oss.littlehotspot.com/media/resource/5b5ks2pdzt.jpg';
+                $info['oss_addr'] = $oss_host.'media/resource/5b5ks2pdzt.jpg';
                 $info['position'] = 2;
                 $result[2][]= $info;
             }else {

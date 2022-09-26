@@ -30,7 +30,7 @@ class ActivityApplyController extends CommonController{
         $res_apply = $m_activity_apply->getInfo(array('id'=>$lottery_apply_id));
         $res_data = array();
         if(!empty($res_apply)){
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $m_prize = new \Common\Model\Smallapp\ActivityprizeModel();
             $res_prize = $m_prize->getInfo(array('id'=>$res_apply['prize_id']));
             $prize = $res_prize['name'];

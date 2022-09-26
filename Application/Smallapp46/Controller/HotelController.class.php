@@ -40,7 +40,7 @@ class HotelController extends CommonController{
     }
 
     public function recList(){
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
         $hotel_box_type_arr = array_keys($hotel_box_type_arr);
         $page     = $this->params['page'] ? $this->params['page'] :1;
@@ -104,8 +104,8 @@ class HotelController extends CommonController{
                 $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
                 $hotel_list[$key]['ori_img_url'] = $v['img_url'];
             }else {
-                $hotel_list[$key]['img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
-                $hotel_list[$key]['ori_img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                $hotel_list[$key]['img_url'] = $oss_host.'media/resource/kS3MPQBs7Y.png';
+                $hotel_list[$key]['ori_img_url'] = $oss_host.'media/resource/kS3MPQBs7Y.png';
             }
 
             $hotel_list[$key]['dis'] = '';
@@ -168,7 +168,7 @@ class HotelController extends CommonController{
         }
         $datalist = array();
         if(!empty($hotel_ids)){
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             
             $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,b.food_style_id,
                    b.avg_expense,concat('".$oss_host."',c.`oss_addr`) as img_url,
@@ -194,8 +194,8 @@ class HotelController extends CommonController{
                     $hotel_list[$key]['img_url'] = $v['img_url'].'?x-oss-process=image/resize,p_20';
                     $hotel_list[$key]['ori_img_url'] = $v['img_url'];
                 }else {
-                    $hotel_list[$key]['img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
-                    $hotel_list[$key]['ori_img_url'] = 'http://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                    $hotel_list[$key]['img_url'] = $oss_host.'media/resource/kS3MPQBs7Y.png';
+                    $hotel_list[$key]['ori_img_url'] = $oss_host.'media/resource/kS3MPQBs7Y.png';
                 }
             }
             $datalist = $hotel_list;

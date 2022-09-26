@@ -1,9 +1,4 @@
 <?php
-/**
- *酒店model
- *@author  hongwei <[<email address>]>
- * 
- */
 namespace Common\Model;
 use Think\Model;
 
@@ -16,7 +11,7 @@ class MediaModel extends Model{
 					  ->select();
 		$count = $this->where($where)->count();
 		if($count){
-		    $image_host = 'http://'.C('OSS_HOST').'/';
+		    $image_host = get_oss_host();
 		    foreach ($list as $k=>$v){
 		        $list[$k]['oss_addr'] = $image_host.$v['oss_addr'];
 		    }
@@ -27,26 +22,19 @@ class MediaModel extends Model{
         return $data;
 	}
 
-
 	public function getWhere($where, $field){
 		$list = $this->where($where)->field($field)->select();
-
 		return $list;
 	}
 
-
-	public function getMediaInfoById($media_id,$http='http'){
-	    $oss_host = "$http://".C('OSS_HOST').'/';
+	public function getMediaInfoById($media_id,$http='https'){
+	    $oss_host = get_oss_host($http);
 	    $vinfo = $this->find($media_id);
 	    if($vinfo){
 	        $vinfo['oss_path'] = $vinfo['oss_addr'];
 	        $vinfo['oss_addr'] = $oss_host.$vinfo['oss_addr'];
 	    }
 	    return $vinfo;
-	}
-	
-	public function getMediaInfoByName($name){
-	    
 	}
 
 

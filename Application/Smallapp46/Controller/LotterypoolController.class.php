@@ -29,12 +29,14 @@ class LotterypoolController extends CommonController{
         $openid = $this->params['openid'];
         $activity_id = intval($this->params['activity_id']);
 
+        /*
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,avatarUrl,nickName,openid,mpopenid',$where,'');
         if(empty($user_info)){
             $this->to_back(90157);
         }
+        */
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getInfo(array('id'=>$activity_id));
         if(empty($res_activity)){

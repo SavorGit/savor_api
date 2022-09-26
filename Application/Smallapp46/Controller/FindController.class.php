@@ -9,10 +9,6 @@ class FindController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
-            case 'index':    //获取精选公开内容(已废弃)
-                $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
-                break;
             case 'showPic':
                 $this->is_verify = 1;
                 $this->valid_fields = array('forscreen_id'=>1001,'openid'=>1001,'res_id'=>1002);
@@ -54,7 +50,7 @@ class FindController extends CommonController{
 
         //内容选择 1点播10条 2精选20 3公开20
         $content_num = array('num'=>50,'1'=>0.4,'2'=>0.4,'3'=>0.2);
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
 
         $m_public = new \Common\Model\Smallapp\PublicModel();
@@ -470,7 +466,7 @@ class FindController extends CommonController{
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $public_list = array();
 
         //$all_nums = $page * $pagesize;
@@ -530,10 +526,8 @@ class FindController extends CommonController{
             $public_list = array_merge($public_list,$rt);
         }
         foreach($public_list as $key=>$v){
-
             if(empty($v['avatarUrl'])){
-                $public_list[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
-
+                $public_list[$key]['avatarUrl'] = $oss_host.'WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
             }
             if(empty($v['nickName'])){
                 $public_list[$key]['nickName'] = '游客';
@@ -649,7 +643,7 @@ class FindController extends CommonController{
         }
         $pub_info['hotel_name'] = $hotel_name;
 
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $where = array('forscreen_id'=>$forscreen_id);
         $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url,duration,resource_size";
         $pubdetail_info = $m_pubdetail->getWhere($fields, $where);
@@ -674,7 +668,7 @@ class FindController extends CommonController{
         $data = array();
         if(!empty($rec_pub_list)){
             if(empty($pub_info['avatarUrl'])){
-                $pub_info['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+                $pub_info['avatarUrl'] = $oss_host.'WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
             }
             if(empty($pub_info['nickName'])){
                 $pub_info['nickName'] = '游客';
@@ -720,7 +714,7 @@ class FindController extends CommonController{
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $public_list = array();
         if(empty($ret)){
             //获取系统推荐
@@ -745,7 +739,7 @@ class FindController extends CommonController{
 
         foreach($public_list as $key=>$v){
             if(empty($v['avatarUrl'])){
-                $public_list[$key]['avatarUrl'] = 'http://oss.littlehotspot.com/WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
+                $public_list[$key]['avatarUrl'] = $oss_host.'WeChat/MiniProgram/LaunchScreen/source/images/imgs/default_user_head.png';
             }
             if(empty($v['nickName'])){
                 $public_list[$key]['nickName'] = '游客';
@@ -810,8 +804,8 @@ class FindController extends CommonController{
 
             $format_webp = '';
         }
-        $oss_host = 'http://'. C('OSS_HOST').'/';
-        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+        $oss_host = get_oss_host();
+        $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
         foreach($all_public as $key=>$v){
             if($type){

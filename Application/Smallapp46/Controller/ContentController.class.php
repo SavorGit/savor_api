@@ -76,8 +76,8 @@ class ContentController extends CommonController{
         $m_hotplay = new \Common\Model\Smallapp\HotplayModel();
         $res_play = $m_hotplay->getDataList('*',$where,$orderby,0,$all_hot_nums);
 
-        $oss_host = 'http://'.C('OSS_HOST').'/';
-        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+        $oss_host = get_oss_host();
+        $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
@@ -209,8 +209,8 @@ class ContentController extends CommonController{
         $pagesize = !empty($this->params['pagesize'])?intval($this->params['pagesize']):10;
         $box_mac = $this->params['box_mac'];
 
-        $oss_host = 'http://'.C('OSS_HOST').'/';
-        $default_avatar = 'http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg';
+        $oss_host = get_oss_host();
+        $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $m_public = new \Common\Model\Smallapp\PublicModel();
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -368,7 +368,8 @@ class ContentController extends CommonController{
         if(!empty($res_play)){
             $play_num = intval($res_play['nums']);
         }
-        $avatarUrl = "http://oss.littlehotspot.com/media/resource/btCfRRhHkn.jpg";
+        $oss_host = get_oss_host();
+        $avatarUrl = $oss_host."media/resource/btCfRRhHkn.jpg";
         $nickName = '小热点';
         $data = array('forscreen_id'=>$res_id,'forscreen_char'=>'','public_text'=>'','res_type'=>1,
             'res_nums'=>1,'is_pub_hotelinfo'=>0,'create_time'=>'','avatarUrl'=>$avatarUrl,'nickName'=>$nickName,
@@ -388,7 +389,7 @@ class ContentController extends CommonController{
         }else{
             $create_time = '';
         }
-        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $oss_path = $ads_info['oss_addr'];
         $oss_path_info = pathinfo($oss_path);
         $pubdetail_info = array('res_url'=>$oss_host.$oss_path,'forscreen_url'=>$oss_path,'duration'=>$ads_info['duration'],
@@ -466,7 +467,7 @@ class ContentController extends CommonController{
             $page = 1;
             $pagesize = 10;
             $offset = $page * $pagesize;
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $hotel_box_type_arr = C('HEART_HOTEL_BOX_TYPE');
             $hotel_box_type_arr = array_keys($hotel_box_type_arr);
             $m_hotel = new \Common\Model\HotelModel();
@@ -600,7 +601,7 @@ class ContentController extends CommonController{
             $public_list = $m_public->getList($fields, $where, $order, $limit);
             if(!empty($public_list)){
                 $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
-                $oss_host = 'http://'. C('OSS_HOST').'/';
+                $oss_host = get_oss_host();
                 foreach($public_list as $key=>$v){
                     $fields = "concat('".$oss_host."',`res_url`) res_url,duration";
                     $where = array();
@@ -634,7 +635,7 @@ class ContentController extends CommonController{
                 $m_pubdetail= new \Common\Model\Smallapp\PubdetailModel();
                 $m_public      = new \Common\Model\Smallapp\PublicModel();
                 $m_ads = new \Common\Model\AdsModel();
-                $oss_host = 'http://'. C('OSS_HOST').'/';
+                $oss_host = get_oss_host();
                 foreach($collect_info as $key=>$v){
                     switch ($v['type']){
                         case 1://点播
@@ -727,6 +728,7 @@ class ContentController extends CommonController{
                 $res_store = $m_store->getHotelStore($box_info[0]['area_id']);
 
                 $all_hotel = array();
+                $oss_host = get_oss_host();
                 foreach($res_store as $key=>$v){
                     if($v['hotel_id']==$box_info[0]['hotel_id']){
                         continue;
@@ -764,7 +766,7 @@ class ContentController extends CommonController{
                         $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
                         $ori_img_url = $res_media['oss_addr'];
                     }else{
-                        $img_url = 'https://oss.littlehotspot.com/media/resource/kS3MPQBs7Y.png';
+                        $img_url = $oss_host.'media/resource/kS3MPQBs7Y.png';
                         $ori_img_url = $img_url;
                     }
                     $dis = $v['dis'];
@@ -838,7 +840,7 @@ class ContentController extends CommonController{
             $fields = 'id,name,price,cover_imgs,type';
             $res_goods = $m_goods->getDataList($fields,$where,$orderby,0,5);
             if(!empty($res_goods['list'])){
-                $oss_host = "https://".C('OSS_HOST').'/';
+                $oss_host = get_oss_host();
                 foreach ($res_goods['list'] as $v){
                     $img_url = '';
                     if(!empty($v['cover_imgs'])){

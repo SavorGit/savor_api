@@ -58,7 +58,7 @@ class MessageController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $all_message_types = C('MESSAGETYPE_LIST');
         $datas = array();
-        $oss_host = 'http://'.C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         foreach ($all_message_types as $v){
             if(in_array($v['type'],$has_types)){
                 $unread_num = 0;
@@ -135,7 +135,7 @@ class MessageController extends CommonController{
         $res_message = $m_message->getDataList('*',$where,'id desc');
         $unread_list = $read_list = array();
         if(!empty($res_message)){
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
             $m_collect = new \Common\Model\Smallapp\CollectModel();
             $m_public = new \Common\Model\Smallapp\PublicModel();

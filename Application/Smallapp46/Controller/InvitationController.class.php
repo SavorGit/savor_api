@@ -139,7 +139,7 @@ class InvitationController extends CommonController{
 
             $title = $res_info['name'].'，已成功为您预定包间。';
             $share_title = $res_hotel['name'].'期待您的光临';
-            $oss_host = 'http://'.C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $invitation_hotels = C('INVITATION_HOTEL');
             $themes = C('INVITATION_THEME');
             $mobile = '';

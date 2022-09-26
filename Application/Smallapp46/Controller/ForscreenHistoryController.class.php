@@ -31,7 +31,7 @@ class ForscreenHistoryController extends CommonController{
         $redis = SavorRedis::getInstance();
         $redis->select('5');
         $keys = $redis->keys($cache_key);
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         if(empty($keys)){
             $data = array();
         }else {
@@ -123,7 +123,7 @@ class ForscreenHistoryController extends CommonController{
         $redis->select('5');
         $cache_key = C('SAPP_HISTORY_SCREEN').$box_mac.":".$openid;
         $res_history_cache = $redis->lgetrange($cache_key, 0, -1);
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
 
         $history_forscreen_data = array();
         $history_forscreen_ids = array();
@@ -206,7 +206,7 @@ class ForscreenHistoryController extends CommonController{
         $public_data = array();
         if(!empty($res_public)){
             $m_pubdetail = new \Common\Model\Smallapp\PubdetailModel();
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             foreach ($res_public as $v){
                 $fields = "concat('".$oss_host."',`res_url`) res_url, res_url as forscreen_url,duration,resource_size,width,height";
                 $pubdetail_info = $m_pubdetail->getWhere($fields, array('forscreen_id'=>$v['forscreen_id']),'');

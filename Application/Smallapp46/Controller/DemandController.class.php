@@ -33,7 +33,7 @@ class DemandController extends CommonController{
      * @用户未连接盒子之前获取点播列表
      */
     public function getDemanList(){
-        $oss_host = "http://".C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $pagesize = 10;
         $page = $this->params['page'] ?  $this->params['page']: 1;
         $openid = $this->params['openid'] ;

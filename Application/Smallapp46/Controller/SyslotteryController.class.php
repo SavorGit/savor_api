@@ -74,7 +74,7 @@ class SyslotteryController extends CommonController{
         $lottery_status = 0;//1待抽奖 2已中奖 3未中奖 4已中奖未完成 5已中奖已完成待领取
         $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
         $res_activity_apply = $m_activity_apply->getInfo(array('activity_id'=>$activity_id,'openid'=>$openid));
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         if(!empty($res_activity_apply)){
             switch ($res_activity_apply['status']){
                 case 2:
@@ -290,7 +290,7 @@ class SyslotteryController extends CommonController{
 
         $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status);
         if($lottery_status==4){
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $res_data['avatarUrl'] = $user_info['avatarUrl'];
             $res_data['nickName'] = $user_info['nickName'];
             $res_data['message'] = '恭喜您中奖了';

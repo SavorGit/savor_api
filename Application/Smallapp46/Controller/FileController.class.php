@@ -174,7 +174,7 @@ class FileController extends CommonController{
         $res_files = $m_userfile->getDataList('*',$condition,'id desc');
         $all_file = array();
         if(!empty($res_files)){
-            $oss_host = 'http://'.C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             foreach ($res_files as $v){
                 $filename = str_replace('forscreen/resource/','',$v['file_path']);
                 $file_info = pathinfo($v['file_path']);
@@ -369,7 +369,7 @@ class FileController extends CommonController{
         }
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');
-        $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
+        $result = array('oss_host'=>"https://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
         $this->to_back($result);
     }
 }

@@ -84,7 +84,7 @@ class LotterypoolController extends CommonController{
             $awhere['DATE(add_time)'] = date('Y-m-d');
         }
         $res_activity_apply = $m_activity_apply->getInfo($awhere);
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         if(!empty($res_activity_apply)){
             $res_data['lottery_apply_id'] = $res_activity_apply['id'];
             switch ($res_activity_apply['status']){
@@ -363,7 +363,7 @@ class LotterypoolController extends CommonController{
 
         $res_data = array('activity_id'=>$activity_id,'lottery_status'=>$lottery_status,'lottery_apply_id'=>$activityapply_id);
         if($lottery_status==4){
-            $oss_host = 'http://'. C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             $res_data['hotel_name'] = $hotel_name;
             $res_data['avatarUrl'] = $user_info['avatarUrl'];
             $res_data['nickName'] = $user_info['nickName'];

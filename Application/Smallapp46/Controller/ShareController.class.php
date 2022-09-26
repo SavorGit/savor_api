@@ -43,7 +43,7 @@ class ShareController extends CommonController{
         $res_id = $this->params['res_id'];
         $type = $this->params['type'];
         $openid = $this->params['openid'];
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $info = array();
         $m_collect = new \Common\Model\Smallapp\CollectModel();
         $m_share   = new \Common\Model\Smallapp\ShareModel();

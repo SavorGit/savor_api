@@ -285,7 +285,7 @@ class DishController extends CommonController{
         $res_platform = $m_dishplatform->getDataList('*',$where,'id desc');
         $datalist = array();
         if(!empty($res_platform)){
-            $oss_host = "http://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             foreach ($res_platform as $v){
                 $img_url = $oss_host.'/'.$v['img_path'];
                 $info = array('id'=>$v['id'],'name'=>$v['name'],

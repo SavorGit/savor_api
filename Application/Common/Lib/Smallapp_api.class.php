@@ -19,6 +19,7 @@ class Smallapp_api {
 	private $url_get_userinfo = 'https://api.weixin.qq.com/sns/userinfo';
 	private $url_get_smallapp_code = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
 	private $url_get_smallapp_openid = "https://api.weixin.qq.com/sns/jscode2session";
+	private $url_get_idcard_info = 'https://api.weixin.qq.com/cv/ocr/idcard';
     private $flag;
 	public function __construct($flag = 1){
 	    $this->flag =$flag;
@@ -222,5 +223,18 @@ class Smallapp_api {
         $log_file_name = APP_PATH.'Runtime/Logs/getopenid_'.date("Ymd").".log";
         @file_put_contents($log_file_name, $log_content, FILE_APPEND);
         return $result;
+    }
+    public function getIdcardInfo($access_token ,$img_url){
+        $url = $this->url_get_idcard_info."?type=MODE&img_url=".$img_url."&access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);   //没有这个会自动输出，不用print_r();也会在后面多个1
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $out = json_decode($output);
+        return $out;
     }
 }

@@ -18,10 +18,13 @@ class OcrController extends CommonController{
     public function getIdcardInfo(){
         $m_small_app = new Smallapp_api(5);
         $tokens  = $m_small_app->getWxAccessToken();
-        $img_url = $this->params['img_url'];
+        $oss_host = get_oss_host();
+        $img_url = $oss_host.$this->params['img_url'];
         $img_url = urlencode($img_url);
         $ret = $m_small_app->getIdcardInfo($tokens, $img_url);
-        print_r($ret);
+        
+        $this->to_back($ret);
+        
     }
     
 }

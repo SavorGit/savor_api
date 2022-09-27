@@ -389,8 +389,8 @@ class StockController extends CommonController{
         $res_stock_record = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1,'dstatus'=>1));
         $p_idcode = '';
         $p_idnum = 0;
-        if(empty($res_stock_record) && $res_qrcode['type']==2){
-            if(!empty($res_qrcode['parent_id'])){
+        if(empty($res_stock_record)){
+            if($res_qrcode['type']==2 && !empty($res_qrcode['parent_id'])){
                 $p_idnum = $res_qrcode['parent_id'];
                 $p_idcode = encrypt_data($res_qrcode['parent_id'],$key);
                 $where = array('idcode'=>$p_idcode,'type'=>1,'dstatus'=>1);
@@ -400,6 +400,8 @@ class StockController extends CommonController{
                 }
                 $res_stock_record = $res_p_stock_record;
             }
+        }else{
+            $this->to_back(93081);
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
@@ -420,6 +422,11 @@ class StockController extends CommonController{
 
         $all_code = array();
         if(!empty($p_idcode)){
+            $res_stock_unpackrecord = $m_stock_record->getInfo(array('idcode'=>$p_idcode,'type'=>3,'dstatus'=>1));
+            if(!empty($res_stock_unpackrecord)){
+                $this->to_back(93102);
+            }
+
             $amount = 1;
             $m_unit = new \Common\Model\Finance\UnitModel();
             $res_unit = $m_unit->getInfo(array('id'=>$res_stock_record['unit_id']));

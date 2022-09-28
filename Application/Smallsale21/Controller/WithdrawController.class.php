@@ -27,6 +27,10 @@ class WithdrawController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'money'=>1001);
                 break;
+            case 'checkMoney':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'goods_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -370,6 +374,45 @@ class WithdrawController extends CommonController{
         }
         $res = array('message'=>$message,'tips'=>$tips,'withdraw_fee'=>0,'income_fee'=>$income_fee);
         $this->to_back($res);
+    }
+
+    public function checkMoney(){
+        $openid = $this->params['openid'];
+        $goods_id = $this->params['goods_id'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>5);
+        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,name,idnumber';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+
+        $is_alert = 0;
+        if(empty($res_user['name']) || empty($res_user['idnumber'])){
+            $m_goods = new \Common\Model\Smallapp\GoodsModel();
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            $total_money = intval($res_goods['price']);
+
+            $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
+            $fields = 'sum(total_fee) as total_fee';
+            $where = array('openid'=>$openid,'type'=>1,'status'=>21);
+            $start_time = date('Y-m-01 00:00:00');
+            $end_time = date('Y-m-31 23:59:59');
+            $where['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
+            $res_exchange = $m_exchange->getDataList($fields,$where,'');
+
+            if(!empty($res_exchange)){
+                $total_money = $total_money + intval($res_exchange[0]['total_fee']);
+            }
+            $m_sysconfig = new \Common\Model\SysConfigModel();
+            $all_config = $m_sysconfig->getAllconfig();
+            $sys_exchange_money = intval($all_config['exchange_money']);
+            if($total_money>=$sys_exchange_money){
+                $is_alert = 1;
+            }
+        }
+        $this->to_back(array('is_alert'=>$is_alert));
     }
 
 

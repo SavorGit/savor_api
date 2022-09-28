@@ -445,7 +445,12 @@ return array(
             '愿你们百年好合永结同心！','祝相爱年年岁岁，相知岁岁年年！'
         ),
     ),
-    'WX_UBLACKLIST'=>array('o9GS-4qaJwiz9uJz2wvVU45eP5-Y','o9GS-4u6wf_l-YQ2jB31juYUfW6c'),
+    'WX_UBLACKLIST'=>array(
+        'o9GS-4qaJwiz9uJz2wvVU45eP5-Y','o9GS-4u6wf_l-YQ2jB31juYUfW6c',
+        'o9GS-4g6xM3jhCWUUPnvK5a4sysI','o9GS-4t61F_qSPmwEaAtd9v6f6DY','o9GS-4reX0MCJbXvGamZghvmPk6U',
+        'o9GS-4ny76ss08PN9CzrVCDz1ans','o9GS-4qrx2qR_5e0TqpEVCmgC_h8','o9GS-4icfJEZSX8_qDs6pB_nD30o',
+        'o9GS-4lGQpR1jntGIX06o5zCakzw','o9GS-4lFWll8oqpXx_k95VIB-RmM','o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI'
+    ),
     'COMMENT_CACSI'=>array(
         '1'=>array('name'=>'很糟糕','title'=>'很糟糕，不太满意','desc'=>'本次饭局很糟糕，还需要改善','tv_tips'=>'感谢您的评价！很抱歉本次饭局没有让您满意，我们将针对您提出的意见进行改善。',
             'images'=>array('/images/icon/1_select.png','/images/icon/1_no_select.png'),

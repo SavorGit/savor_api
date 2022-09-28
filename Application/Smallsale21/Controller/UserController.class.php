@@ -78,7 +78,7 @@ class UserController extends CommonController{
                 break;
             case 'edit':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002,'mobile'=>1001);
+                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002,'mobile'=>1002,'idnumber'=>1002);
                 break;
             case 'assigntypes':
                 $this->is_verify = 1;
@@ -647,6 +647,9 @@ class UserController extends CommonController{
         $name = $this->params['name'];
         $avatar_url = $this->params['avatar_url'];
         $mobile = $this->params['mobile'];
+        $idnumber = $this->params['idnumber'];
+
+
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -656,10 +659,11 @@ class UserController extends CommonController{
         if (empty($res_user)) {
             $this->to_back(92010);
         }
-        if($name || $avatar_url || $mobile){
+        if($name || $avatar_url || $mobile || $idnumber){
             $data = array();
             if(!empty($name)){
                 $data['nickName'] = $name;
+                $data['name'] = $name;
             }
             if(!empty($avatar_url)){
                 if(substr($avatar_url,0,5)=='https'){
@@ -671,6 +675,9 @@ class UserController extends CommonController{
             }
             if(!empty($mobile)){
                 $data['mobile'] = $mobile;
+            }
+            if(!empty($idnumber)){
+                $data['idnumber'] = $idnumber;
             }
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
             $res_data = array('message'=>'修改成功');

@@ -145,7 +145,7 @@ class FileforscreenController extends CommonController{
             $imgs = json_decode($res_cache,true);
             $img_num = count($imgs);
             $oss_host = C('OSS_HOST');
-            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
+            $result = array('status'=>2,'task_id'=>0,'percent'=>100,'oss_host'=>"https://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
         }else{
             $aliyun = new AliyunImm();
             $res = $aliyun->getImgResponse($task_id);
@@ -189,7 +189,7 @@ class FileforscreenController extends CommonController{
         $imgs = json_decode($res_cache, true);
         $img_num = count($imgs);
         $oss_host = C('OSS_HOST');
-        $result = array('oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
+        $result = array('oss_host'=>"https://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20','imgs'=>$imgs,'img_num'=>$img_num);
         $this->to_back($result);
     }
 
@@ -278,7 +278,7 @@ class FileforscreenController extends CommonController{
                 $imgs = array();
         }
         $result = array('status'=>$status,'task_id'=>$task_id,'percent'=>$percent,
-            'oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
+            'oss_host'=>"https://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
             'imgs'=>$imgs,'img_num'=>$img_num);
         return $result;
     }

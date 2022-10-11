@@ -109,7 +109,7 @@ class FileforscreenController extends CommonController{
             $img_num = count($imgs);
             $oss_host = C('OSS_HOST');
             $result = array('status'=>2,'task_id'=>0,'percent'=>100,
-                'oss_host'=>"http://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
+                'oss_host'=>"https://$oss_host",'oss_suffix'=>'?x-oss-process=image/resize,p_20',
                 'imgs'=>$imgs,'img_num'=>$img_num);
         }
 

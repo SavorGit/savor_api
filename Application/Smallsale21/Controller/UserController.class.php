@@ -662,7 +662,6 @@ class UserController extends CommonController{
         if($name || $avatar_url || $mobile || $idnumber){
             $data = array();
             if(!empty($name)){
-                $data['nickName'] = $name;
                 $data['name'] = $name;
             }
             if(!empty($avatar_url)){

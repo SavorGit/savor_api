@@ -312,6 +312,9 @@ class StockController extends CommonController{
                 }
             }
         }else{
+            if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']==2){
+                $this->to_back(93103);
+            }
             if(empty($res_stock_record)){
                 if(!empty($res_qrcode['parent_id'])){
                     $p_idcode = encrypt_data($res_qrcode['parent_id'],$key);

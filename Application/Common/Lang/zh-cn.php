@@ -455,6 +455,7 @@ return array(
     'smallappsale_finance_qrcode_type_error'=>'二维码单位和商品单位不一致',
     'smallappsale_finance_qrcode_error'=>'二维码不存在',
     'smallappsale_finance_stock_goods_hasin_exist'=>'扫码商品已入库',
+    'smallappsale_finance_stock_goods_hasout_exist'=>'扫码商品已出库',
     'smallappsale_finance_stock_goods_hasin_noexist'=>'扫码商品未入库',
     'smallappsale_finance_stock_goods_out_not_matchup'=>'商品不一致',
     'smallappsale_finance_stock_goods_not_exist'=>'商品不存在',

@@ -10,7 +10,8 @@ class MemberController extends CommonController{
         switch(ACTION_NAME) {
             case 'joinvip':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,'activity_id'=>1002,'idcode'=>1002);
+                $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,
+                    'activity_id'=>1002,'idcode'=>1002,'hotel_id'=>1002,'room_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -19,9 +20,11 @@ class MemberController extends CommonController{
     public function joinvip(){
         $openid = $this->params['openid'];
         $mobile = $this->params['mobile'];
-        $source = $this->params['source'];//来源1销售经理发起抽奖 2扫瓶码
+        $source = $this->params['source'];//来源1销售经理发起抽奖 2扫瓶码 3扫易拉宝二维码
         $activity_id = $this->params['activity_id'];
         $idcode = $this->params['idcode'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $room_id = intval($this->params['room_id']);
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         if($source==1){
@@ -37,7 +40,8 @@ class MemberController extends CommonController{
             if(empty($res_staff)){
                 $this->to_back(93001);
             }
-        }else{
+            $hotel_id = $res_staff[0]['hotel_id'];
+        }elseif($source==2){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
             $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
             if($record_info[0]['type']<5){
@@ -50,6 +54,7 @@ class MemberController extends CommonController{
             if(empty($res_staff)){
                 $this->to_back(93001);
             }
+            $hotel_id = $res_staff[0]['hotel_id'];
         }
         $where = array('openid'=>$openid);
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -57,24 +62,26 @@ class MemberController extends CommonController{
         if(empty($res_user)){
             $this->to_back(92010);
         }
-
         $now_vip_level = 0;
         if($res_user['vip_level']==0){
             $now_vip_level = 1;
-            $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_time'=>date('Y-m-d H:i:s'));
+            $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_time'=>date('Y-m-d H:i:s'),'invite_type'=>$source);
             if($source==1){
                 $data['invite_openid'] = $sale_openid;
+                $m_message = new \Common\Model\Smallapp\MessageModel();
+                $m_message->recordMessage($sale_openid,$res_user['id'],9);
+            }
+            if($source==3){
+                $data['hotel_id'] = $hotel_id;
+                $data['room_id'] = $room_id;
             }
             $m_user->updateInfo(array('id'=>$res_user['id']),$data);
-
-            $m_message = new \Common\Model\Smallapp\MessageModel();
-            $m_message->recordMessage($sale_openid,$res_user['id'],9);
         }
 
         $coupon_list = array();
         if($now_vip_level>0){
             $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
-            $coupon_list = $m_user_coupon->addVipCoupon($now_vip_level,$res_staff[0]['hotel_id'],$openid);
+            $coupon_list = $m_user_coupon->addVipCoupon($now_vip_level,$hotel_id,$openid);
         }
 
         $resp_data = array('vip_level'=>$res_user['vip_level'].'-'.$now_vip_level,'coupon_list'=>$coupon_list);

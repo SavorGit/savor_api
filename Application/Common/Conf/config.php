@@ -449,7 +449,7 @@ return array(
         'o9GS-4qaJwiz9uJz2wvVU45eP5-Y','o9GS-4u6wf_l-YQ2jB31juYUfW6c',
         'o9GS-4g6xM3jhCWUUPnvK5a4sysI','o9GS-4t61F_qSPmwEaAtd9v6f6DY','o9GS-4reX0MCJbXvGamZghvmPk6U',
         'o9GS-4ny76ss08PN9CzrVCDz1ans','o9GS-4qrx2qR_5e0TqpEVCmgC_h8','o9GS-4icfJEZSX8_qDs6pB_nD30o',
-        'o9GS-4lGQpR1jntGIX06o5zCakzw','o9GS-4lFWll8oqpXx_k95VIB-RmM','o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI'
+        'o9GS-4lGQpR1jntGIX06o5zCakzw','o9GS-4lFWll8oqpXx_k95VIB-RmM','o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI',
     ),
     'COMMENT_CACSI'=>array(
         '1'=>array('name'=>'很糟糕','title'=>'很糟糕，不太满意','desc'=>'本次饭局很糟糕，还需要改善','tv_tips'=>'感谢您的评价！很抱歉本次饭局没有让您满意，我们将针对您提出的意见进行改善。',
@@ -772,7 +772,7 @@ return array(
         'is_open_sellplatform'=>1,
     ),
     'INVITATION_TASK_INTEGRAL'=>array(
-        'send_guest'=>555,
+        'send_guest'=>0,
         'guest_to_user'=>0,
         'max_limit'=>66600000,
     ),
@@ -819,6 +819,7 @@ return array(
         '1'=>array('id'=>1,'name'=>'及时抽奖页面','page'=>'/games/pages/activity/turn_lottery','type'=>'navigate'),
         '2'=>array('id'=>2,'name'=>'本地有售酒水列表页面','page'=>'/mall/pages/wine/index','type'=>'navigate'),
         '3'=>array('id'=>3,'name'=>'小程序首页','page'=>'/pages/index/index','type'=>'tabbar'),
+        '4'=>array('id'=>4,'name'=>'邀请会员注册','page'=>'/pages/mine/register','type'=>'navigate'),
     ),
     'QRCODE_MIN_NUM'=>500000,
     'STOCK_AUDIT_STATUS'=>array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料'),

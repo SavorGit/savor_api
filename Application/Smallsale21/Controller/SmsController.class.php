@@ -70,7 +70,7 @@ class SmsController extends CommonController{
             $this->to_back(92005);
         }
     }
-    function sendbindmobileverifyCode(){
+    public function sendbindmobileverifyCode(){
         $mobile = $this->params['mobile'];
         $openid = $this->params['openid'];
         $redis  =  \Common\Lib\SavorRedis::getInstance();

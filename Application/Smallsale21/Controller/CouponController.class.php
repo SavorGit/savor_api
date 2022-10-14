@@ -23,6 +23,10 @@ class CouponController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'qrcontent'=>1001,'idcode'=>1002);
                 break;
+            case 'writeoffcoupon':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'qrcontent'=>1001,'idcode'=>1002);
+                break;
             case 'getWriteoffList':
                 $this->params = array('openid'=>1001,'page'=>1001);
                 $this->is_verify = 1;
@@ -150,6 +154,192 @@ class CouponController extends CommonController{
             }
         }
         $this->to_back($datalist);
+    }
+
+    public function writeoffcoupon(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $qrcontent = $this->params['qrcontent'];
+        $idcode = $this->params['idcode'];
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type,merchant.hotel_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $param_coupon = decrypt_data($qrcontent);
+        if(!is_array($param_coupon) || $param_coupon['type']!='coupon'){
+            $this->to_back(93203);
+        }
+
+        $coupon_user_id = intval($param_coupon['id']);
+        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+        $res_usercoupon = $m_user_coupon->getInfo(array('id'=>$coupon_user_id));
+        if($res_usercoupon['ustatus']!=1){
+            $this->to_back(93204);
+        }
+        if($res_usercoupon['hotel_id']>0){
+            if($res_usercoupon['hotel_id']!=$hotel_id){
+                $this->to_back(93205);
+            }
+        }else{
+            $m_couponhotel = new \Common\Model\Smallapp\CouponHotelModel();
+            $res_hotel = $m_couponhotel->getALLDataList('*',array('coupon_id'=>$res_usercoupon['coupon_id'],'hotel_id'=>$hotel_id),'id desc','0,1','');
+            if(empty($res_hotel)){
+                $this->to_back(93205);
+            }
+        }
+        if(!empty($idcode)){
+            $key = C('QRCODE_SECRET_KEY');
+            $qrcode_id = decrypt_data($idcode,false,$key);
+            $qrcode_id = intval($qrcode_id);
+            $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+            $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+            if(empty($res_qrcode)){
+                $this->to_back(93080);
+            }
+            $res_bindcoupon = $m_user_coupon->getInfo(array('idcode'=>$idcode));
+            if(!empty($res_bindcoupon)){
+                $this->to_back(93213);
+            }
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $res_stock_records = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+            $m_coupon = new \Common\Model\Smallapp\CouponModel();
+            $res_couponinfo = $m_coupon->getInfo(array('id'=>$res_usercoupon['coupon_id']));
+            if($res_couponinfo['use_range']==2){
+                $range_finance_goods_ids = explode(',',trim($res_couponinfo['range_finance_goods_ids'],','));
+                if(!in_array($res_stock_records[0]['goods_id'],$range_finance_goods_ids)){
+                    $this->to_back(93214);
+                }
+            }
+        }
+
+        $now_time = date('Y-m-d H:i:s');
+        if($now_time>=$res_usercoupon['start_time'] && $now_time<=$res_usercoupon['end_time']){
+            $smallapp_config = C('SMALLAPP_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key'],
+                'sslcert_path'=>$sslcert_path,
+                'sslkey_path'=>$sslkey_path,
+            );
+            $total_fee = $res_usercoupon['money'];
+            $m_order = new \Common\Model\Smallapp\ExchangeModel();
+            $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>5,
+                'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+            $order_id = $m_order->add($add_data);
+
+            $trade_info = array('trade_no'=>$order_id,'money'=>$total_fee,'open_id'=>$res_usercoupon['openid']);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            if($res['code']==10000){
+                $m_order->updateData(array('id'=>$order_id),array('status'=>21));
+                $up_data = array('ustatus'=>2,'use_time'=>date('Y-m-d H:i:s'),'op_openid'=>$openid);
+                if(!empty($idcode)){
+                    $up_data['idcode'] = $idcode;
+                }
+                $m_user_coupon->updateData(array('id'=>$coupon_user_id),$up_data);
+
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+                if(!empty($idcode)){
+                    $m_user = new \Common\Model\Smallapp\UserModel();
+                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid,invite_gold_openid', array('openid'=>$res_usercoupon['openid']));
+                    $now_vip_level = 0;
+                    $buy_wine_num = $res_user['buy_wine_num']+1;
+                    if($res_user['vip_level']==0){
+                        $sale_openid = $openid;
+                        $now_vip_level = 2;
+                        $data = array('vip_level'=>$now_vip_level,'buy_wine_num'=>$buy_wine_num,'invite_gold_openid'=>$sale_openid,'invite_gold_time'=>date('Y-m-d H:i:s'));
+                        $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+
+                        $m_userintegral->finishInviteVipTask($sale_openid,$idcode);
+                        $m_message = new \Common\Model\Smallapp\MessageModel();
+                        $m_message->recordMessage($sale_openid,$res_user['id'],9);
+                    }else{
+                        $data = array('buy_wine_num'=>$buy_wine_num);
+                        if(!empty($res_user['invite_gold_openid'])){
+                            $sale_openid = $res_user['invite_gold_openid'];
+                        }else{
+                            $sale_openid = $openid;
+                        }
+                        $level_buy_num = C('VIP_3_BUY_WINDE_NUM');
+                        if($buy_wine_num==1){
+                            $now_vip_level = 2;
+                            $data['invite_gold_openid'] = $sale_openid;
+                            $data['invite_gold_time'] = date('Y-m-d H:i:s');
+                            $data['vip_level'] = $now_vip_level;
+                            $m_userintegral->finishInviteVipTask($sale_openid,$idcode);
+                        }elseif($buy_wine_num==$level_buy_num){
+                            $now_vip_level = 3;
+                            $data['vip_level'] = $now_vip_level;
+                        }
+                        $all_day = 180*86400;
+                        $reward_end_time = strtotime($res_user['invite_time']) + $all_day;
+                        $now_retime = time();
+                        if($buy_wine_num>1 && $now_retime<$reward_end_time){
+                            $m_userintegral->finishBuyRewardsalerTask($sale_openid,$idcode);
+                        }
+                        $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+                    }
+                    if($now_vip_level>0){
+                        $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
+                        $coupon_list = $m_user_coupon->addVipCoupon($now_vip_level,$res_staff[0]['hotel_id'],$res_usercoupon['openid']);
+                        if(!empty($coupon_list)){
+                            $cache_key = C('SAPP_VIP_LEVEL_COUPON').$res_usercoupon['openid'].':'.$coupon_user_id;
+                            $redis = new \Common\Lib\SavorRedis();
+                            $redis->select(1);
+                            $cache_data = array('vip_level'=>$now_vip_level,'coupon_list'=>$coupon_list);
+                            $redis->set($cache_key,json_encode($cache_data),3600);
+                        }
+                    }
+                    if($res_stock_records[0]['type']==5){
+                        $batch_no = date('YmdHis');
+                        $add_data = $res_stock_records[0];
+                        unset($add_data['id'],$add_data['update_time']);
+                        $add_data['price'] = -abs($add_data['price']);
+                        $add_data['total_fee'] = -abs($add_data['total_fee']);
+                        $add_data['amount'] = -abs($add_data['amount']);
+                        $add_data['total_amount'] = -abs($add_data['total_amount']);
+                        $add_data['type'] = 7;
+                        $add_data['op_openid'] = $openid;
+                        $add_data['batch_no'] = $batch_no;
+                        $add_data['wo_reason_type'] = 0;
+                        $add_data['wo_data_imgs'] = '';
+                        $add_data['wo_status'] = 4;
+                        $add_data['wo_num'] = 1;
+                        $add_data['update_time'] = date('Y-m-d H:i:s');
+                        $add_data['add_time'] = date('Y-m-d H:i:s');
+                        $m_stock_record->add($add_data);
+                    }
+                }
+            }else{
+                if($res['code']==10003){
+                    //发送短信
+                    $ucconfig = C('ALIYUN_SMS_CONFIG');
+                    $alisms = new \Common\Lib\AliyunSms();
+                    $params = array('merchant_no'=>1594752111);
+                    $template_code = $ucconfig['wx_money_not_enough_templateid'];
+
+                    $phones = C('WEIXIN_MONEY_NOTICE');
+                    $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                    foreach ($phones as $vp){
+                        $res_sms = $alisms::sendSms($vp,$params,$template_code);
+                        $data = array('type'=>8,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                            'url'=>join(',',$params),'tel'=>$vp,'resp_code'=>$res_sms->Code,'msg_type'=>3
+                        );
+                        $m_account_sms_log->addData($data);
+                    }
+                }
+            }
+            $this->to_back(array('message'=>'成功使用优惠券'));
+        }else{
+            $this->to_back(93205);
+        }
     }
 
     public function writeoff(){

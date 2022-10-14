@@ -116,20 +116,23 @@ class InvitationController extends CommonController{
             //发送短信
             $ucconfig = C('ALIYUN_SMS_CONFIG');
             $alisms = new \Common\Lib\AliyunSms();
-            $params = array('book_time'=>$book_time = date('Y-m-d H点',strtotime($book_time)),
-                'hotel_name'=>$hotel_name,'room_name'=>$room_name);
+            $book_time = date('Y-m-d H点',strtotime($book_time));
+            $params = array('book_time'=>$book_time,'hotel_name'=>$hotel_name,'room_name'=>$room_name);
             if(!empty($contact_mobile)){
                 $params['tel'] = $contact_mobile;
                 $template_code = $ucconfig['send_invitation_to_user_has_mobile'];
             }else{
                 $template_code = $ucconfig['send_invitation_to_user'];
             }
-            $res_data = $alisms::sendSms($mobile,$params,$template_code);
-            $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
-            );
-            $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
-            $m_account_sms_log->addData($data);
+            $is_send = check_sendsms_content($mobile,$params,$template_code);
+            if($is_send==0){
+                $res_data = $alisms::sendSms($mobile,$params,$template_code);
+                $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                    'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+                );
+                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                $m_account_sms_log->addData($data);
+            }
         }
 
         $this->to_back(array('invitation_id'=>$invitation_id));

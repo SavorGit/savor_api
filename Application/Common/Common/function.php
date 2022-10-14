@@ -17,6 +17,22 @@ function check_phone_os(){
     return $otype;
 }
 
+function check_sendsms_content($mobile,$params,$template_code){
+    $redis = SavorRedis::getInstance();
+    $redis->select(16);
+    $json_params = json_encode($params);
+    $en_content = md5($json_params.$template_code);
+    $send_cache_key = C('SAPP_SENDSMS').date('Ymd').':'.$mobile.$en_content;
+    $res_send = $redis->get($send_cache_key);
+    if(empty($res_send)){
+        $is_send = 0;
+        $redis->set($send_cache_key,date('Y-m-d H:i:s'),86400);
+    }else{
+        $is_send = 1;
+    }
+    return $is_send;
+}
+
 function text_substr($str, $num,$sub_content='...'){
     $intro = '';
     if($str){

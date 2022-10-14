@@ -362,6 +362,7 @@ return array(
     'SAPP_PRIZEPOOL'=>'smallapp:prizepool:',
     'SAPP_PRIZEPOOL_MONEYQUEUE'=>'smallapp:prizepool:moneyqueue:',
     'SAPP_VIP_LEVEL_COUPON'=>'smallapp:viplevelcoupon:',
+    'SAPP_SENDSMS'=>'smallapp:sendsms:',
 
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',

@@ -143,11 +143,14 @@ class UserIntegralrecordModel extends BaseModel{
      */
     public function finishInvitationTask($invitation,$type){
         $task_integral = C('INVITATION_TASK_INTEGRAL');
+        $now_integral = 0;
+        /*
         if($type==15){
             $now_integral = $task_integral['send_guest'];
         }else{
             $now_integral = $task_integral['guest_to_user'];
         }
+        */
         $m_task = new \Common\Model\Integral\TaskuserModel();
         $task_where = array('a.openid'=>$invitation['openid'],'a.status'=>1,'task.type'=>1,'task.task_type'=>6);
         $task_where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');

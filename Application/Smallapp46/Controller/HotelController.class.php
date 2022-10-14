@@ -294,6 +294,9 @@ class HotelController extends CommonController{
                 case 2://本店有售
                     $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&tab=hotel&is_share=1";
                     break;
+                case 4://邀请会员
+                    $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$content}&code_msg=&source=3";
+                    break;
             }
         }
 

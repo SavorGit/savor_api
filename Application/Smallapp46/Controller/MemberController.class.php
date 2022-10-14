@@ -13,6 +13,10 @@ class MemberController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,
                     'activity_id'=>1002,'idcode'=>1002,'hotel_id'=>1002,'room_id'=>1002);
                 break;
+            case 'scanbottlecode':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'idcode'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -86,5 +90,34 @@ class MemberController extends CommonController{
 
         $resp_data = array('vip_level'=>$res_user['vip_level'].'-'.$now_vip_level,'coupon_list'=>$coupon_list);
         $this->to_back($resp_data);
+    }
+
+
+    public function scanbottlecode(){
+        $openid = $this->params['openid'];
+        $idcode = $this->params['idcode'];
+
+        $where = array('openid'=>$openid);
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res_user = $m_user->getOne('id,mobile', $where);
+        if(empty($res_user)){
+            $this->to_back(92010);
+        }
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+        if($record_info[0]['type']<5){
+            $this->to_back(93096);
+        }
+
+        $res = array('idcode'=>$idcode);
+        $this->to_back($res);
     }
 }

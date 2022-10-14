@@ -233,7 +233,7 @@ class HotelController extends CommonController{
             $jump_id = 3;
             $all_jump = C('HOTELQRCODE_JUMP_PAGE');
             $m_hotelqrcode_jump = new \Common\Model\HotelQrcodeJumpModel();
-            $where = array('hotel_id'=>$hotel_id);
+            $where = array('hotel_id'=>$hotel_id,'status'=>1);
             $now_time = date('H:i:s');
             $where['start_time'] = array('ELT',$now_time);
             $where['end_time']   = array('EGT',$now_time);

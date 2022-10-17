@@ -254,7 +254,7 @@ class CouponController extends CommonController{
         $openid = $this->params['openid'];
         $coupon_id = intval($this->params['coupon_id']);
         $page = $this->params['page'];
-        $pagesize = empty($this->params['pagesize'])?10:$this->params['pagesize'];
+        $pagesize = empty($this->params['pagesize'])?20:$this->params['pagesize'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);

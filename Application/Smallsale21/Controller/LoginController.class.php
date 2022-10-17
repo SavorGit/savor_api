@@ -37,6 +37,8 @@ class LoginController extends CommonController{
         $gender = $this->params['gender'];
         $encryptedData = $this->params['encryptedData'];
 
+        $this->to_back(93068);
+
         if(!check_mobile($mobile)){//验证手机格式
             $this->to_back(92001);
         }

@@ -37,7 +37,7 @@ return array(
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
 	                                 'Games','Smallappsimple','Smallapp3','Smalldinnerapp','Payment','Smalldinnerapp11',
 	                                 'Smallsale','Smallsale14','Smallsale16','Smallapp4','Smallapp43','Smallsale18',
-                                     'Smallsale19','Smallapp44','Smallapp45','Smallapp46','Smallsale20','Smallsale21'), //模块配置
+                                     'Smallsale19','Smallapp44','Smallapp45','Smallapp46','Smallsale20','Smallsale21','Smallsale22'), //模块配置
 
 	'DEFAULT_MODULE'        => 'Small',
 	//session cookie配置

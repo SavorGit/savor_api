@@ -248,7 +248,7 @@ class CouponController extends CommonController{
                 $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
                 if(!empty($idcode)){
                     $m_user = new \Common\Model\Smallapp\UserModel();
-                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid,invite_gold_openid', array('openid'=>$res_usercoupon['openid']));
+                    $res_user = $m_user->getOne('id,mobile,vip_level,buy_wine_num,invite_openid,invite_time,invite_gold_openid', array('openid'=>$res_usercoupon['openid']));
                     $now_vip_level = 0;
                     $buy_wine_num = $res_user['buy_wine_num']+1;
                     if($res_user['vip_level']==0){

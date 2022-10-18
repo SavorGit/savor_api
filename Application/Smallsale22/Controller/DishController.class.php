@@ -269,9 +269,9 @@ class DishController extends CommonController{
                     'price'=>$price,'is_localsale'=>$v['is_localsale'],'is_top'=>intval($v['is_top']),'status'=>intval($v['status']),
                     'flag'=>$v['flag'],'gtype'=>$v['gtype']);
                 if($v['type']!=24){
-                    $qrcode = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$v['id']}&type=25";
+                    $qrcode = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$v['id']}&type=25";
                     if($v['type']==22){
-                        $qrcode = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$v['id']}&type=26";
+                        $qrcode = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$v['id']}&type=26";
                     }
                     $dinfo['qrcode_url'] = $qrcode;
                 }
@@ -296,7 +296,7 @@ class DishController extends CommonController{
         );
 
         $host_name = 'https://'.$_SERVER['HTTP_HOST'];
-        $qrcode = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$goods_id}&type=25";
+        $qrcode = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$goods_id}&type=25";
         $income_fee = 0;
         if($res_goods['type']==22){
             if($openid){
@@ -310,7 +310,7 @@ class DishController extends CommonController{
                 $hash_ids_key = C('HASH_IDS_KEY');
                 $hashids = new \Common\Lib\Hashids($hash_ids_key);
                 $sale_uid = $hashids->encode($res_user['user_id']);
-                $qrcode = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
+                $qrcode = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$goods_id}&suid=$sale_uid&type=26";
 
                 if($res_goods['distribution_profit']>0){
                     $profit = $res_goods['distribution_profit'];
@@ -325,7 +325,7 @@ class DishController extends CommonController{
                 }
 
             }else{
-                $qrcode = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$goods_id}&type=26";
+                $qrcode = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$goods_id}&type=26";
             }
         }
         $data['income_fee'] = $income_fee;

@@ -1287,7 +1287,7 @@ class UserController extends CommonController{
         $redis->set($code_key,$res_invite_code['id'],3600*4);
         $qrinfo = encrypt_data($invite_cache_key);
         $host_name = C('HOST_NAME');
-        $qrcode_url = $host_name."/smallsale22/qrcode/inviteQrcode?qrinfo=$qrinfo";
+        $qrcode_url = $host_name."/basedata/saleQrcode/inviteQrcode?qrinfo=$qrinfo";
         $res = array('qrcode_url'=>$qrcode_url,'qrcode'=>$qrinfo);
         $this->to_back($res);
     }

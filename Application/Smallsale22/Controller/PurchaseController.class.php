@@ -287,7 +287,7 @@ class PurchaseController extends CommonController{
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'line_price'=>$v['line_price'],
                     'income_fee'=>$income_fee,'img_url'=>$img_url,'type'=>$v['type']);
-                $dinfo['qrcode_url'] = $host_name."/Smallsale22/qrcode/dishQrcode?data_id={$v['id']}&suid=$sale_uid&type=26";
+                $dinfo['qrcode_url'] = $host_name."/basedata/saleQrcode/dishQrcode?data_id={$v['id']}&suid=$sale_uid&type=26";
                 $goods_list[] = $dinfo;
             }
             $datalist['total'] = $res_goods['total'];

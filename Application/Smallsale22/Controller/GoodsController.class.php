@@ -189,7 +189,7 @@ class GoodsController extends CommonController{
                     $v['start_time'] = date('Y-m-d',strtotime($v['start_time']));
                     $v['end_time'] = date('Y-m-d',strtotime($v['end_time']));
                     $v['img_url'] = str_replace('http://','https://',$v['img_url']);
-                    $v['qrcode_url'] = $host_name."/smallsale22/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
+                    $v['qrcode_url'] = $host_name."/basedata/saleQrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
                     $v['is_my_activity'] = 1;
                     $v['price'] = intval($v['price']);
                     unset($v['media_id'],$v['imgmedia_id']);
@@ -252,9 +252,9 @@ class GoodsController extends CommonController{
                 }
                 $v['img_url'] = str_replace('http://','https://',$v['img_url']);
                 if($type==20){
-                    $qrcode_url = $host_name."/smallsale22/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
+                    $qrcode_url = $host_name."/basedata/saleQrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=22&uid=$uid";
                 }else{
-                    $qrcode_url = $host_name."/smallsale22/qrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
+                    $qrcode_url = $host_name."/basedata/saleQrcode/getBoxQrcode?box_mac=$box_mac&goods_id={$v['goods_id']}&type=23&uid=$uid";
                 }
                 $v['qrcode_url'] = $qrcode_url;
                 $v['price'] = intval($v['price']);

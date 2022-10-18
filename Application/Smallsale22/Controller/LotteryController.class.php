@@ -130,7 +130,7 @@ class LotteryController extends CommonController{
             }
             $headPic = base64_encode($hotel_logo);
             $host_name = C('HOST_NAME');
-            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$res_box[0]['box_id']}&box_mac={$box_mac}&data_id={$activity_id}&type=46";
+            $code_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_id={$res_box[0]['box_id']}&box_mac={$box_mac}&data_id={$activity_id}&type=46";
             $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_box[0]['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
             $m_netty = new \Common\Model\NettyModel();
             $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
@@ -275,7 +275,7 @@ class LotteryController extends CommonController{
         $res_box = $m_box->getBoxByCondition($fileds,$bwhere);
         if(!empty($res_box)){
             foreach ($res_box as $v){
-                $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
+                $code_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_id={$v['box_id']}&box_mac={$v['box_mac']}&data_id={$activity_id}&type=49";
                 $message = array('action'=>138,'countdown'=>120,'nickName'=>$res_hotel['name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
                 if($is_new_activity){
                     $m_netty = new \Common\Model\NettyModel();
@@ -283,7 +283,7 @@ class LotteryController extends CommonController{
                 }
             }
         }else{
-            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id=0&box_mac=0&data_id={$activity_id}&type=49";
+            $code_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_id=0&box_mac=0&data_id={$activity_id}&type=49";
         }
 
         if($is_new_activity){

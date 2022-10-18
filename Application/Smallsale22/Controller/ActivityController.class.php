@@ -290,7 +290,7 @@ class ActivityController extends CommonController{
         }
 
         $host_name = C('HOST_NAME');
-        $qrcode_url = $host_name."/smallapp46/qrcode/getBoxQrcode?box_mac=$box_mac&box_id=$box_id&data_id=$activity_id&type=41";
+        $qrcode_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_mac=$box_mac&box_id=$box_id&data_id=$activity_id&type=41";
         $message = array('action'=>154,'url'=>$media_info['oss_path'],'qrcode_url'=>$qrcode_url,'filename'=>$name_info['basename'],'countdown'=>$countdown);
         $m_netty = new \Common\Model\NettyModel();
         $res_push = $m_netty->pushBox($box_mac,json_encode($message));
@@ -517,7 +517,7 @@ class ActivityController extends CommonController{
             $m_box = new \Common\Model\BoxModel();
             $res_box = $m_box->getHotelInfoByBoxMacNew($res_activity['box_mac']);
             $host_name = C('HOST_NAME');
-            $code_url = $host_name."/Smallapp46/qrcode/getBoxQrcode?box_id={$res_box['box_id']}&box_mac={$res_activity['box_mac']}&data_id={$activity_id}&type=39";
+            $code_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_id={$res_box['box_id']}&box_mac={$res_activity['box_mac']}&data_id={$activity_id}&type=39";
             $message = array('action'=>151,'countdown'=>120,'nickName'=>$res_hotel_ext['hotel_name'],'headPic'=>$headPic,'codeUrl'=>$code_url);
             $m_netty = new \Common\Model\NettyModel();
             $res_netty = $m_netty->pushBox($res_activity['box_mac'],json_encode($message));

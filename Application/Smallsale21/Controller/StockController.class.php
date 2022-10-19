@@ -1290,7 +1290,7 @@ class StockController extends CommonController{
                     $reason = $all_reasons[$v['reason_type']]['name'];
                 }
                 $batch_no = $v['batch_no'];
-                $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
+                $where = array('a.batch_no'=>$batch_no,'a.type'=>7,'a.op_openid'=>$openid);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
 
                 $entity = array();

@@ -493,6 +493,10 @@ return array(
     'smallappsale_qrcode_not_support_lotterygoods_writeoff'=>'此码无法实物奖品核销',
     'smallappsale_goods_had_bind_coupon'=>'无法使用，此商品已经被其他优惠券绑定',
     'smallappsale_goods_has_notin_coupon_use_range'=>'此商品不在当前优惠券使用范围',
+    'smallappsale_ads_notin_demand_task'=>'请选择点播任务的广告',
+    'smallappsale_demand_task_notin_meal'=>'点播无效，请在就餐时间重试',
+    'smallappsale_demand_task_box_had_finish'=>'当前电视此任务已被完成，请使用其他电视。',
+    'smallappsale_demand_task_box_has_finish_plase_next'=>'本次任务已被xxxx完成，新任务xx分钟后开始',
 
 
 

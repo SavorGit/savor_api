@@ -495,6 +495,10 @@ return array(
         '93212'=>'smallappsale_qrcode_not_support_lotterygoods_writeoff',
         '93213'=>'smallappsale_goods_had_bind_coupon',
         '93214'=>'smallappsale_goods_has_notin_coupon_use_range',
+        '93215'=>'smallappsale_ads_notin_demand_task',
+        '93216'=>'smallappsale_demand_task_notin_meal',
+        '93217'=>'smallappsale_demand_task_box_had_finish',
+        '93218'=>'smallappsale_demand_task_box_has_finish_plase_next',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

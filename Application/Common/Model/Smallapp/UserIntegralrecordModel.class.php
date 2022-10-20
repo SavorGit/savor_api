@@ -275,9 +275,24 @@ class UserIntegralrecordModel extends BaseModel{
         return true;
     }
 
-    public function finishInviteVipTask($sale_openid,$idcode){
-        $task_integral = C('MEMBER_INTEGRAL');
-        $now_integral = $task_integral['invite_vip_reward_saler'];
+    public function finishInviteVipTask($sale_openid,$idcode,$type=1){
+        $now_integral = 0;
+        $task_id = 0;
+        if($type==1){
+            $task_integral = C('MEMBER_INTEGRAL');
+            $now_integral = $task_integral['invite_vip_reward_saler'];
+        }elseif($type==2){
+            $where = array('a.openid'=>$sale_openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
+            $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
+            $m_task_user = new \Common\Model\Integral\TaskuserModel();
+            $fields = "a.id as task_user_id,task.id task_id,task.task_info";
+            $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+            if(!empty($res_utask)){
+                $task_id = $res_utask[0]['task_id'];
+                $task_info = json_decode($res_utask[0]['task_info'],true);
+                $now_integral = intval($task_info['invite_vip_reward_saler']);
+            }
+        }
 
         $where = array('a.openid'=>$sale_openid,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -293,15 +308,30 @@ class UserIntegralrecordModel extends BaseModel{
             $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
             $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
                 'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-                'integral'=>$now_integral,'content'=>1,'jdorder_id'=>$idcode,'status'=>2,'type'=>18);
+                'task_id'=>$task_id,'integral'=>$now_integral,'content'=>1,'jdorder_id'=>$idcode,'status'=>2,'type'=>18);
             $this->add($integralrecord_data);
         }
         return true;
     }
 
-    public function finishBuyRewardsalerTask($sale_openid,$idcode){
-        $task_integral = C('MEMBER_INTEGRAL');
-        $now_integral = $task_integral['buy_reward_saler'];
+    public function finishBuyRewardsalerTask($sale_openid,$idcode,$type=1){
+        $now_integral = 0;
+        $task_id = 0;
+        if($type==1){
+            $task_integral = C('MEMBER_INTEGRAL');
+            $now_integral = $task_integral['buy_reward_saler'];
+        }elseif($type==2){
+            $where = array('a.openid'=>$sale_openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
+            $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
+            $m_task_user = new \Common\Model\Integral\TaskuserModel();
+            $fields = "a.id as task_user_id,task.id task_id,task.task_info";
+            $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+            if(!empty($res_utask)){
+                $task_id = $res_utask[0]['task_id'];
+                $task_info = json_decode($res_utask[0]['task_info'],true);
+                $now_integral = intval($task_info['buy_reward_saler']);
+            }
+        }
 
         $where = array('a.openid'=>$sale_openid,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -316,7 +346,7 @@ class UserIntegralrecordModel extends BaseModel{
             $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
             $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
                 'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-                'integral'=>$now_integral,'content'=>1,'jdorder_id'=>$idcode,'status'=>2,'type'=>19);
+                'task_id'=>$task_id,'integral'=>$now_integral,'content'=>1,'jdorder_id'=>$idcode,'status'=>2,'type'=>19);
             $this->add($integralrecord_data);
         }
         return true;

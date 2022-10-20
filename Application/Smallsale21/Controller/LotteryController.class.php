@@ -187,8 +187,12 @@ class LotteryController extends CommonController{
         if($record_info[0]['type']==5){
             $this->to_back($res);
         }else{
-            if($record_info[0]['type']==7 && $record_info[0]['wo_status']==4){
-                $this->to_back($res);
+            if($record_info[0]['type']==7){
+                if($record_info[0]['wo_status']==4){
+                    $this->to_back($res);
+                }else{
+                    $this->to_back(93094);
+                }
             }elseif($record_info[0]['type']==6){
                 $this->to_back(93095);
             }else{

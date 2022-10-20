@@ -221,10 +221,6 @@ class UserController extends CommonController{
         }
         $userinfo['subscribe_status'] = $subscribe_status;
         $data['userinfo'] = $userinfo;
-
-        $m_taskuser = new \Common\Model\Integral\TaskuserModel();
-        $m_taskuser->getTask($openid,$hotel_id);
-
         $this->to_back($data);
     }
     

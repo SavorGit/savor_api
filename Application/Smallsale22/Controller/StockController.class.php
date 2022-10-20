@@ -435,7 +435,7 @@ class StockController extends CommonController{
             $res_unit = $m_unit->getInfo(array('id'=>$res_stock_record['unit_id']));
             $total_amount = $res_unit['convert_type']*$amount;
 
-            $batch_no = date('YmdHis');
+            $batch_no = getMillisecond();
             $price = $res_stock_record['price'];
             $total_fee = $total_amount*$price;
 
@@ -510,7 +510,7 @@ class StockController extends CommonController{
             $idcode_num = 0;
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
             $key = C('QRCODE_SECRET_KEY');
-            $batch_no = date('YmdHis');
+            $batch_no = getMillisecond();
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 if(!empty($idcode)){
@@ -775,7 +775,7 @@ class StockController extends CommonController{
         if($idcode_nums!=$goods_code_num){
             $this->to_back(93090);
         }
-        $batch_no = date('YmdHis');
+        $batch_no = getMillisecond();
         foreach ($res_records as $v){
             unset($v['id'],$v['update_time']);
             $v['price'] = abs($v['price']);
@@ -889,7 +889,7 @@ class StockController extends CommonController{
         $where = array('stock_id'=>$stock_id,'type'=>4,'dstatus'=>1);
         $res_records = $m_stock_record->getDataList('*',$where,'id desc');
         $add_datas = array();
-        $batch_no = date('YmdHis');
+        $batch_no = getMillisecond();
         foreach ($res_records as $v){
             $res_data = $m_stock_record->getInfo(array('idcode'=>$v['idcode'],'type'=>6,'dstatus'=>1));
             if(empty($res_data)){
@@ -1066,7 +1066,7 @@ class StockController extends CommonController{
                 $idcode = $v;
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
                 if(!empty($res_record)){
-                    $batch_no = date('YmdHis');
+                    $batch_no = getMillisecond();
                     $add_data = $res_record[0];
                     if($add_data['type']==7){
                         continue;
@@ -1198,7 +1198,7 @@ class StockController extends CommonController{
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-            $batch_no = date('YmdHis');
+            $batch_no = getMillisecond();
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
@@ -1290,7 +1290,7 @@ class StockController extends CommonController{
                     $reason = $all_reasons[$v['reason_type']]['name'];
                 }
                 $batch_no = $v['batch_no'];
-                $where = array('a.batch_no'=>$batch_no,'a.type'=>7);
+                $where = array('a.batch_no'=>$batch_no,'a.type'=>7,'a.op_openid'=>$openid);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
 
                 $entity = array();

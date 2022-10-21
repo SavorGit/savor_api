@@ -499,6 +499,7 @@ return array(
         '93216'=>'smallappsale_demand_task_notin_meal',
         '93217'=>'smallappsale_demand_task_box_had_finish',
         '93218'=>'smallappsale_demand_task_box_has_finish_plase_next',
+        '93219'=>'smallappsale_forscreenuser_in_selluser',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

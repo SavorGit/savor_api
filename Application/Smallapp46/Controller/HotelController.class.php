@@ -9,6 +9,12 @@ class HotelController extends CommonController{
      */
     function _init_() {
         switch(ACTION_NAME) {
+            case 'dataList':
+                $this->is_verify =1;
+                $this->valid_fields = array('page'=>1001,'area_id'=>1001,'county_id'=>1002,
+                    'latitude'=>1002,'longitude'=>1002,'food_style_id'=>1002,'avg_exp_id'=>1002
+                );
+                break;
             case 'recList':
                 $this->is_verify =1;
                 $this->valid_fields = array('page'=>1001,'area_id'=>1001,'count_id'=>1002,
@@ -37,6 +43,89 @@ class HotelController extends CommonController{
             )
         );
         parent::_init_();
+    }
+
+    public function dataList(){
+        $page     = $this->params['page'] ? $this->params['page'] :1;
+        $area_id  = $this->params['area_id'] ? $this->params['area_id'] :1;
+        $county_id = $this->params['county_id'];
+        $food_style_id = $this->params['food_style_id'];
+        $avg_id   = $this->params['avg_exp_id'];
+        $latitude = $this->params['latitude'];
+        $longitude = $this->params['longitude'];
+        $pagesize = 10;
+
+        $m_store = new \Common\Model\Smallapp\StoreModel();
+        $res_store = $m_store->getHotelStore($area_id,$county_id,$food_style_id,$avg_id);
+        if($longitude>0 && $latitude>0){
+            $bd_lnglat = getgeoByTc($latitude, $longitude);
+            foreach($res_store as $key=>$v){
+                $res_store[$key]['dis'] = '';
+                if($v['gps']!='' && $longitude>0 && $latitude>0){
+                    $latitude = $bd_lnglat[0]['y'];
+                    $longitude = $bd_lnglat[0]['x'];
+
+                    $gps_arr = explode(',',$v['gps']);
+                    $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                    $res_store[$key]['dis_com'] = $dis;
+                    if($dis>1000){
+                        $tmp_dis = $dis/1000;
+                        $dis = sprintf('%0.2f',$tmp_dis);
+                        $dis = $dis.'km';
+                    }else{
+                        $dis = intval($dis);
+                        $dis = $dis.'m';
+                    }
+                    $res_store[$key]['dis'] = $dis;
+                }else {
+                    $res_store[$key]['dis'] = '';
+                }
+            }
+            sortArrByOneField($res_store,'dis_com');
+        }
+
+        $stock_hotel = array();
+        $other_hotel = array();
+        foreach ($res_store as $k=>$v){
+            if($v['is_salehotel']==1){
+                $stock_hotel[]=$v;
+            }else{
+                $other_hotel[]=$v;
+            }
+        }
+        $res_store = array_merge($stock_hotel,$other_hotel);
+
+        $offset = $page * $pagesize;
+        $hotel_list = array_slice($res_store,0,$offset);
+        $m_meida = new \Common\Model\MediaModel();
+        $datalist = array();
+        $oss_host = get_oss_host();
+        foreach ($hotel_list as $k=>$v){
+            $tag_name = $v['tag_name'];
+            if(empty($tag_name)){
+                $tag_name = '';
+            }
+            if($v['media_id']){
+                $res_media = $m_meida->getMediaInfoById($v['media_id']);
+                $img_url = $res_media['oss_addr'].'?x-oss-process=image/resize,p_50';
+                $ori_img_url = $res_media['oss_addr'];
+            }else{
+                $img_url = $oss_host.'media/resource/kS3MPQBs7Y.png';
+                $ori_img_url = $img_url;
+            }
+            $dis = $v['dis'];
+            if(empty($dis)){
+                $dis = '';
+            }
+            $tel = $v['tel'];
+            if(empty($tel)){
+                $tel = $v['mobile'];
+            }
+            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'tel'=>$tel,'avg_expense'=>$v['avg_expense'],
+                'dis'=>$dis,'tag_name'=>$tag_name,'img_url'=>$img_url,'ori_img_url'=>$ori_img_url,'is_salehotel'=>$v['is_salehotel']
+            );
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
     public function recList(){
@@ -71,7 +160,7 @@ class HotelController extends CommonController{
         $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in',$hotel_box_type_arr);
-        $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883,53');
+        $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883,53,598,1366');
         $order = " a.id asc";
         $offset = $page * $pagesize;
         $limit = " 0 ,".$offset;
@@ -160,7 +249,8 @@ class HotelController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $fields = 'h.hotel_id';
         $where = array('g.type'=>array('in',array(40,43)),'g.status'=>1);
-        $where['h.hotel_id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883,53,925');
+        $not_hotel = array(7,482,504,791,508,844,845,597,201,493,883,53,598,1366);
+        $where['h.hotel_id'] = array('not in',$not_hotel);
         $res_ghotels = $m_hotelgoods->getGoodsList($fields,$where,'','','h.hotel_id');
         $hotel_ids = array();
         foreach ($res_ghotels as $v){
@@ -209,7 +299,7 @@ class HotelController extends CommonController{
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid,vip_level,mobile', $where, '');
         if(empty($user_info)){
             $this->to_back(90116);
         }
@@ -241,6 +331,7 @@ class HotelController extends CommonController{
             if(!empty($res_hoteljump)){
                 $jump_id = $res_hoteljump[0]['open_page'];
             }
+            $res_data['jump_id'] = $jump_id;
             $res_data['page'] = $all_jump[$jump_id]['page'];
             $res_data['type'] = $all_jump[$jump_id]['type'];
             switch ($jump_id){
@@ -295,7 +386,27 @@ class HotelController extends CommonController{
                     $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&tab=hotel&is_share=1";
                     break;
                 case 4://邀请会员
-                    $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$content}&code_msg=&source=3";
+                    $vip_level = $user_info['vip_level'];
+                    $coupon_money = 0;
+                    $coupon_end_time = '';
+                    if($vip_level==0){
+                        $m_sys_config = new \Common\Model\SysConfigModel();
+                        $sys_info = $m_sys_config->getAllconfig();
+                        $vip_coupons = json_decode($sys_info['vip_coupons'],true);
+                        $now_vip_level = 1;
+                        if(!empty($vip_coupons) && !empty($vip_coupons[$now_vip_level])){
+                            $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                            $res_all_coupon = $m_coupon->getALLDataList('*',array('id'=>array('in',$vip_coupons[$now_vip_level])),'end_time desc','','');
+                            $end_time = date('Y年m月d日',strtotime($res_all_coupon[0]['end_time']));
+                            $coupon_end_time = $end_time.'到期';
+                            foreach ($res_all_coupon as $v){
+                                $coupon_money+=$v['money'];
+                            }
+                        }
+                    }
+                    $params = array('openid'=>$openid,'vip_level'=>$vip_level,'coupon_money'=>$coupon_money,'coupon_end_time'=>$coupon_end_time,
+                        'hotel_id'=>$hotel_id,'room_id'=>$content,'mobile'=>$user_info['mobile'],'code_msg'=>'','source'=>3);
+                    $res_data['params'] = json_encode($params);
                     break;
             }
         }

@@ -79,7 +79,7 @@ class HotelgoodsModel extends BaseModel{
             foreach ($res_data as $v){
                 $hotel_id = $v['hotel_id'];
                 if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
-                    $all_data[$v['id']]=$v;
+                    $all_data[$v['finance_goods_id']]=$v;
                 }
             }
         }

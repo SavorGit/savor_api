@@ -820,7 +820,7 @@ return array(
         '1'=>array('id'=>1,'name'=>'及时抽奖页面','page'=>'/games/pages/activity/turn_lottery','type'=>'navigate'),
         '2'=>array('id'=>2,'name'=>'本地有售酒水列表页面','page'=>'/mall/pages/wine/index','type'=>'navigate'),
         '3'=>array('id'=>3,'name'=>'小程序首页','page'=>'/pages/index/index','type'=>'tabbar'),
-        '4'=>array('id'=>4,'name'=>'邀请会员注册','page'=>'/pages/mine/register','type'=>'navigate'),
+        '4'=>array('id'=>4,'name'=>'邀请会员注册','page'=>'/pages/index/index','type'=>'switchTab'),
     ),
     'QRCODE_MIN_NUM'=>500000,
     'STOCK_AUDIT_STATUS'=>array('1'=>'待审核','2'=>'通过审核','3'=>'审核不通过','4'=>'待补充核销资料'),

@@ -101,7 +101,7 @@ class TaskController extends CommonController{
                 }
                 $tinfo = $v;
                 if($now_time>=$v['task_expire_time']){
-                    $v ['status']=0;
+                    $v['status']=0;
                 }
                 switch ($v['task_type']){
                     case 22:
@@ -213,9 +213,18 @@ class TaskController extends CommonController{
                             $invalid_task[]=$tinfo;
                         }
                         break;
+                    case 6:
+                        if($v['status']==1 && $v['flag']==1){
+                            $inprogress_task[$v['task_id']]=$tinfo;
+                        }else{
+                            $tinfo['itype'] = 1;
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
                 }
             }
         }
+        $all_inprogress_task = array();
         if(!empty($inprogress_task)){
             $all_inprogress_task = array_values($inprogress_task);
         }

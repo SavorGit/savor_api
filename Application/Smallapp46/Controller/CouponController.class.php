@@ -43,7 +43,7 @@ class CouponController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $this->to_back(90116);
         }
         $m_coupon = new \Common\Model\Smallapp\CouponModel();
         $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
@@ -76,7 +76,7 @@ class CouponController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $this->to_back(90116);
         }
         $m_coupon = new \Common\Model\Smallapp\CouponModel();
         $coupon_info = $m_coupon->getInfo(array('id'=>$coupon_id));
@@ -102,12 +102,12 @@ class CouponController extends CommonController{
         $type = intval($this->params['type']);
         $ustatus = intval($this->params['status']);//1待使用 2已使用 3已过期
 
-
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $res_data = array('unused'=>array(),'used'=>array(),'expired'=>array());
+            $this->to_back($res_data);
         }
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'coupon.type'=>$type);
@@ -185,7 +185,7 @@ class CouponController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $this->to_back(90116);
         }
         $m_coupon = new \Common\Model\Smallapp\UserCouponModel();
         $where = array('a.id'=>$coupon_id);
@@ -260,7 +260,7 @@ class CouponController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $this->to_back(90116);
         }
         $m_coupon = new \Common\Model\Smallapp\UserCouponModel();
         $where = array('a.id'=>$coupon_id);
@@ -322,7 +322,7 @@ class CouponController extends CommonController{
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
         if(empty($user_info)){
-            $this->to_back(90157);
+            $this->to_back(90116);
         }
         $cache_key = C('SAPP_VIP_LEVEL_COUPON').$openid.':'.$coupon_user_id;
         $redis = new \Common\Lib\SavorRedis();

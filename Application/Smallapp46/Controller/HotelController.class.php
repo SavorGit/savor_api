@@ -160,7 +160,8 @@ class HotelController extends CommonController{
         $where['a.state'] = 1;
         $where['a.flag']  = 0;
         $where['a.hotel_box_type'] = array('in',$hotel_box_type_arr);
-        $where['a.id'] = array('not in','7,482,504,791,508,844,845,597,201,493,883,53,598,1366');
+        $test_hotel_ids = C('TEST_HOTEL');
+        $where['a.id'] = array('not in',"$test_hotel_ids");
         $order = " a.id asc";
         $offset = $page * $pagesize;
         $limit = " 0 ,".$offset;
@@ -299,10 +300,7 @@ class HotelController extends CommonController{
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid,vip_level,mobile', $where, '');
-        if(empty($user_info)){
-            $this->to_back(90116);
-        }
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid,vip_level,mobile,is_wx_auth', $where, '');
         $hotel_id = $room_id = 0;
         if($content>C('QRCODE_MIN_NUM')){
             $m_hotelqrcode = new \Common\Model\HotelQrcodeModel();
@@ -386,9 +384,17 @@ class HotelController extends CommonController{
                     $res_data['page'].="?openid={$openid}&hotel_id={$hotel_id}&room_id={$room_id}&tab=hotel&is_share=1";
                     break;
                 case 4://邀请会员
-                    $vip_level = $user_info['vip_level'];
+                    $vip_level = 0;
+                    $is_wx_auth = 0;
+                    $mobile = '';
+                    if(!empty($user_info)){
+                        $vip_level = $user_info['vip_level'];
+                        $mobile = $user_info['mobile'];
+                        $is_wx_auth = $user_info['is_wx_auth'];
+                    }
                     $coupon_money = 0;
                     $coupon_end_time = '';
+                    $coupon_unnum = 0;
                     if($vip_level==0){
                         $m_sys_config = new \Common\Model\SysConfigModel();
                         $sys_info = $m_sys_config->getAllconfig();
@@ -403,9 +409,18 @@ class HotelController extends CommonController{
                                 $coupon_money+=$v['money'];
                             }
                         }
+                    }else{
+                        $where = array('a.openid'=>$openid,'a.ustatus'=>1,'a.status'=>1,'coupon.type'=>2);
+                        $fields = 'count(a.id) as num';
+                        $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                        $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','');
+                        if(!empty($res_coupon)){
+                            $coupon_unnum = intval($res_coupon[0]['num']);
+                        }
                     }
                     $params = array('openid'=>$openid,'vip_level'=>$vip_level,'coupon_money'=>$coupon_money,'coupon_end_time'=>$coupon_end_time,
-                        'hotel_id'=>$hotel_id,'room_id'=>$content,'mobile'=>$user_info['mobile'],'code_msg'=>'','source'=>3);
+                        'coupon_unnum'=>$coupon_unnum,'hotel_id'=>$hotel_id,'room_id'=>$content,'mobile'=>$mobile,'is_wx_auth'=>$is_wx_auth,
+                        'code_msg'=>'','source'=>3);
                     $res_data['params'] = json_encode($params);
                     break;
             }

@@ -31,7 +31,8 @@ class StoreModel extends BaseModel {
         $hotel_box_types = C('HEART_HOTEL_BOX_TYPE');
         $hotel_box_type_str = join(',',array_keys($hotel_box_types));
         $sql_hotel.= " and hotel.hotel_box_type in ($hotel_box_type_str)";
-        $sql_hotel.= " and hotel.id not in (7,482,504,791,508,844,845,597,201,493,883,53,598,1366)";
+        $test_hotel_ids = C('TEST_HOTEL');
+        $sql_hotel.= " and hotel.id not in ($test_hotel_ids)";
 
         if($county_id){
             $sql_hotel.=" and hotel.county_id={$county_id}";

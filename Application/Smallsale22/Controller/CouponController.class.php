@@ -175,6 +175,22 @@ class CouponController extends CommonController{
         if($res_usercoupon['ustatus']!=1){
             $this->to_back(93204);
         }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$res_usercoupon['openid'],'status'=>1);
+        $user_info = $m_user->getOne('id,openid,unionId,mobile',$where,'');
+        if(!empty($user_info['unionId'])){
+            $where = array('unionId'=>$user_info['unionId'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $this->to_back(93219);
+            }
+        }elseif(!empty($user_info['mobile'])){
+            $where = array('mobile'=>$user_info['mobile'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $this->to_back(93219);
+            }
+        }
         if($res_usercoupon['hotel_id']>0){
             if($res_usercoupon['hotel_id']!=$hotel_id){
                 $this->to_back(93205);

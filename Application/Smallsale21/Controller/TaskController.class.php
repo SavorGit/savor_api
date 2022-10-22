@@ -810,9 +810,30 @@ class TaskController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
-        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $res_task = $m_userintegral_record->finishDemandAdvTask($openid,$ads_id,$box_mac);
 
+        $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $rate = 1.8;
+        $integral = 100;
+        $m_box = new \Common\Model\BoxModel();
+        $bwhere = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0);
+        $res_box = $m_box->getBoxByCondition('count(box.id) as num',$bwhere);
+        $box_num = intval($res_box[0]['num']);
+        $hotel_integral = $box_num*$rate*$integral;
+
+        $stime = date('Y-m-d 00:00:00');
+        $etime = date('Y-m-d 23:59:59');
+        $where = array('hotel_id'=>$hotel_id,'type'=>20);
+        $where['add_time'] = array(array('egt',$stime),array('elt',$etime), 'and');
+
+        $fields = 'sum(integral) as total_integral';
+        $res_all_integral = $m_userintegral_record->getALLDataList($fields,$where,'','','');
+        $now_all_integral = intval($res_all_integral[0]['total_integral']);
+
+        if($now_all_integral < $hotel_integral){
+            $res_task = $m_userintegral_record->finishDemandAdvTask($openid,$ads_id,$box_mac);
+        }else{
+            $res_task = array();
+        }
         $this->to_back($res_task);
     }
 

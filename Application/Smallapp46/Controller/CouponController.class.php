@@ -110,7 +110,7 @@ class CouponController extends CommonController{
             $this->to_back(90157);
         }
 
-        $where = array('a.openid'=>$openid,'coupon.type'=>$type);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'coupon.type'=>$type);
         if($ustatus){
             $where['a.ustatus'] = $ustatus;
         }

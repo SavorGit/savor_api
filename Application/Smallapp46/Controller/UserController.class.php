@@ -31,7 +31,7 @@ class UserController extends CommonController{
                 break;
             case 'isForscreenIng':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac');
+                $this->valid_fields = array('box_mac'=>1002);
                 break;
             case 'getMyPublic':
                 $this->is_verify = 1;

@@ -17,6 +17,10 @@ class MemberController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'idcode'=>1001);
                 break;
+            case 'getpopupinfo':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -141,5 +145,53 @@ class MemberController extends CommonController{
 
         $res = array('idcode'=>$idcode);
         $this->to_back($res);
+    }
+
+    public function getpopupinfo(){
+        $openid = $this->params['openid'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid,vip_level,mobile,is_wx_auth', $where, '');
+
+        $vip_level = 0;
+        $is_wx_auth = 0;
+        $mobile = '';
+        if(!empty($user_info)){
+            $vip_level = $user_info['vip_level'];
+            $mobile = $user_info['mobile'];
+            $is_wx_auth = $user_info['is_wx_auth'];
+        }
+        $coupon_money = 0;
+        $coupon_end_time = '';
+        $coupon_unnum = 0;
+        if($vip_level==0){
+            $m_sys_config = new \Common\Model\SysConfigModel();
+            $sys_info = $m_sys_config->getAllconfig();
+            $vip_coupons = json_decode($sys_info['vip_coupons'],true);
+            $now_vip_level = 1;
+            if(!empty($vip_coupons) && !empty($vip_coupons[$now_vip_level])){
+                $m_coupon = new \Common\Model\Smallapp\CouponModel();
+                $res_all_coupon = $m_coupon->getALLDataList('*',array('id'=>array('in',$vip_coupons[$now_vip_level])),'end_time desc','','');
+                $end_time = date('Y年m月d日',strtotime($res_all_coupon[0]['end_time']));
+                $coupon_end_time = $end_time.'到期';
+                foreach ($res_all_coupon as $v){
+                    $coupon_money+=$v['money'];
+                }
+            }
+        }else{
+            $where = array('a.openid'=>$openid,'a.ustatus'=>1,'a.status'=>1,'coupon.type'=>2);
+            $fields = 'count(a.id) as num';
+            $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+            $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','');
+            if(!empty($res_coupon)){
+                $coupon_unnum = intval($res_coupon[0]['num']);
+            }
+        }
+        $params = array('openid'=>$openid,'vip_level'=>$vip_level,'coupon_money'=>$coupon_money,'coupon_end_time'=>$coupon_end_time,
+            'coupon_unnum'=>$coupon_unnum,'mobile'=>$mobile,'is_wx_auth'=>$is_wx_auth,
+            'code_msg'=>'','source'=>4);
+        $res_data = array('params'=>json_encode($params));
+        $this->to_back($res_data);
     }
 }

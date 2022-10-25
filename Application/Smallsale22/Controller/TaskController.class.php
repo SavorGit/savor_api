@@ -901,7 +901,7 @@ class TaskController extends CommonController{
             $uname = $res_user['nickName'];
             $countdown_time = $last_demand_time - $now_time;
             $mtime = round($countdown_time/60);
-            $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
+            $msg = '本次任务已被'.$uname.'完成，下次'.$mtime.'分钟后开始';
             $res_pdata = array('code'=>93218,'msg'=>$msg);
             $this->to_back($res_pdata);
         }

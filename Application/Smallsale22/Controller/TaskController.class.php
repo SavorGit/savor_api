@@ -90,7 +90,7 @@ class TaskController extends CommonController{
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
             $m_ads = new \Common\Model\AdsModel();
             foreach ($res_inprogress_task as $k=>$v){
-                $task_info = $v['task_info'];
+                $task_info = json_decode($v['task_info'],true);
                 unset($v['task_info']);
                 if($v['type']==1){
                     $map = array('openid'=>$openid,'task_id'=>$v['task_id']);
@@ -184,7 +184,6 @@ class TaskController extends CommonController{
                         break;
                     case 25:
                         if($v['status']==1 && $v['flag']==1){
-                            $task_info = json_decode($task_info,true);
                             if(!empty($task_info['ads_id'])){
                                 $res_ads = $m_ads->getWhere(array('id'=>$task_info['ads_id']), '*');
                                 $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
@@ -204,6 +203,7 @@ class TaskController extends CommonController{
                         }
                         break;
                     case 26:
+                        $tinfo['integral'] = $task_info['invite_vip_reward_saler'];
                         $code_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?box_id=0&box_mac=0&data_id={$res_staff[0]['staff_id']}&type=50";
                         if($v['status']==1 && $v['flag']==1){
                             $tinfo['code_url'] = $code_url;
@@ -229,7 +229,7 @@ class TaskController extends CommonController{
             $all_inprogress_task = array_values($inprogress_task);
         }
 
-        $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,task.end_time as task_expire_time,a.staff_id";
+        $fields = "task.id task_id,task.name task_name,task.goods_id,task.integral,task.task_info,task.task_type,concat('".$oss_host."',media.`oss_addr`) img_url,task.desc,task.is_shareprofit,task.end_time as task_expire_time,a.staff_id";
         $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
         $no_task_ids = array();
         if(!empty($inprogress_task)){
@@ -254,6 +254,9 @@ class TaskController extends CommonController{
             $all_people_num = 1000;
             $now_time = date('Y-m-d H:i:s');
             foreach ($rescanreceive_task as $k=>$v){
+                $task_info = json_decode($v['task_info'],true);
+                unset($v['task_info']);
+
                 if($now_time>$v['task_expire_time']){
                     continue;
                 }
@@ -272,23 +275,31 @@ class TaskController extends CommonController{
                 $v['remain_num'] = $all_people_num-$send_num;
                 $v['percent'] = ($send_num/$all_people_num)*100;
                 $v['remain_percent'] = 100-$v['percent'];
-                if($v['task_type']==23){
-                    if($v['staff_id']==$res_staff[0]['staff_id']){
-                        $res_prizes = $m_taskprize->getDataList('*',array('task_id'=>$v['task_id'],'status'=>1),'level asc');
-                        $prize_list = array();
-                        foreach ($res_prizes as $pv){
-                            $name = $all_prizes[$pv['level']].$pv['amount'].'人';
-                            $prize_list[]=array('name'=>$name,'prize'=>$pv['name']);
+
+                switch ($v['task_type']){
+                    case 23:
+                        if($v['staff_id']==$res_staff[0]['staff_id']){
+                            $res_prizes = $m_taskprize->getDataList('*',array('task_id'=>$v['task_id'],'status'=>1),'level asc');
+                            $prize_list = array();
+                            foreach ($res_prizes as $pv){
+                                $name = $all_prizes[$pv['level']].$pv['amount'].'人';
+                                $prize_list[]=array('name'=>$name,'prize'=>$pv['name']);
+                            }
+                            $v['prize_list'] = $prize_list;
+                            $canreceive_task[]=$v;
                         }
-                        $v['prize_list'] = $prize_list;
-                        $canreceive_task[]=$v;
-                    }
-                }else{
-                    if($v['task_type']==24) {
+                        break;
+                    case 24:
                         $res_goods = $m_dishgoods->getInfo(array('id'=>$v['goods_id']));
                         $v['price'] = $res_goods['price'];
-                    }
-                    $canreceive_task[]=$v;
+                        $canreceive_task[]=$v;
+                        break;
+                    case 26:
+                        $v['integral'] = $task_info['invite_vip_reward_saler'];
+                        $canreceive_task[]=$v;
+                        break;
+                    default:
+                        $canreceive_task[]=$v;
                 }
             }
         }
@@ -317,7 +328,7 @@ class TaskController extends CommonController{
             $this->to_back(93069);
         }
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
-        $where = array('a.task_id'=>$task_id,'task.status'=>1,'task.flag'=>1);
+        $where = array('a.task_id'=>$task_id,'a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
         $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral,task.task_type';
         $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
         if(empty($res_task)){
@@ -327,7 +338,7 @@ class TaskController extends CommonController{
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
         }
-        $data = array('openid'=>$openid,'task_id'=>$task_id,'integral'=>$res_task[0]['task_integral']);
+        $data = array('openid'=>$openid,'task_id'=>$task_id,'hotel_id'=>$hotel_id,'integral'=>$res_task[0]['task_integral']);
         $user_task_id = $m_usertask->add($data);
         if(in_array($res_task[0]['task_type'],array(22,23))){
             //增加积分
@@ -825,111 +836,112 @@ class TaskController extends CommonController{
         $m_task = new \Common\Model\Integral\TaskuserModel();
         $task_where = array('a.openid'=>$openid,'task.type'=>2,'task.task_type'=>25);
         $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
-        if(!empty($res_task)){
-            $task_user_id = $res_task[0]['id'];
-            $task_id = $res_task[0]['task_id'];
-            $task_content = json_decode($res_task[0]['task_info'],true);
-            $lunch_start_time = $task_content['lunch_start_time'];
-            $lunch_end_time = $task_content['lunch_end_time'];
-            $dinner_start_time = $task_content['dinner_start_time'];
-            $dinner_end_time = $task_content['dinner_end_time'];
-            $box_finish_num = $task_content['box_finish_num'];
-            $interval_time = $task_content['interval_time'];
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $task_user_id = $res_task[0]['id'];
+        $task_id = $res_task[0]['task_id'];
+        $task_content = json_decode($res_task[0]['task_info'],true);
+        $lunch_start_time = $task_content['lunch_start_time'];
+        $lunch_end_time = $task_content['lunch_end_time'];
+        $dinner_start_time = $task_content['dinner_start_time'];
+        $dinner_end_time = $task_content['dinner_end_time'];
+        $box_finish_num = $task_content['box_finish_num'];
+        $interval_time = $task_content['interval_time'];
 
-            if($ads_id!=$task_content['ads_id']){
-                $this->to_back(93215);
-            }
-            $now_time = date('Y-m-d H:i:s');
-            $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
-            $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
-            $dinner_stime = date("Y-m-d {$dinner_start_time}:00");
-            $dinner_etime = date("Y-m-d {$dinner_end_time}:59");
-            $meal_stime = $meal_etime = '';
-            if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
-                $meal_stime = $lunch_stime;
-                $meal_etime = $lunch_etime;
-            }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
-                $meal_stime = $dinner_stime;
-                $meal_etime = $dinner_etime;
-            }
-            if(empty($meal_stime) && empty($meal_etime)){
-                $this->to_back(93216);
-            }
-            $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
-            $where = array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'box_mac'=>$box_mac);
-            $where['add_time'] = array(array('EGT',$meal_stime),array('ELT',$meal_etime));
-            $res_record = $m_usertask_record->getALLDataList('openid,add_time',$where,'id asc','','');
-            $now_box_finish_num = 0;
-            $last_demand_time = 0;
-            $demand_openid = '';
-            if(!empty($res_record)){
-                foreach ($res_record as $k=>$v){
-                    $str_demand_time = strtotime($v['add_time']);
-                    if($k==0){
+        if($ads_id!=$task_content['ads_id']){
+            $this->to_back(93215);
+        }
+        $now_time = date('Y-m-d H:i:s');
+        $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
+        $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
+        $dinner_stime = date("Y-m-d {$dinner_start_time}:00");
+        $dinner_etime = date("Y-m-d {$dinner_end_time}:59");
+        $meal_stime = $meal_etime = '';
+        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
+            $meal_stime = $lunch_stime;
+            $meal_etime = $lunch_etime;
+        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+            $meal_stime = $dinner_stime;
+            $meal_etime = $dinner_etime;
+        }
+        if(empty($meal_stime) && empty($meal_etime)){
+            $this->to_back(93216);
+        }
+        $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
+        $where = array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'box_mac'=>$box_mac);
+        $where['add_time'] = array(array('EGT',$meal_stime),array('ELT',$meal_etime));
+        $res_record = $m_usertask_record->getALLDataList('openid,add_time',$where,'id asc','','');
+        $now_box_finish_num = 0;
+        $last_demand_time = 0;
+        $demand_openid = '';
+        if(!empty($res_record)){
+            foreach ($res_record as $k=>$v){
+                $str_demand_time = strtotime($v['add_time']);
+                if($k==0){
+                    $demand_openid = $v['openid'];
+                    $now_box_finish_num++;
+                    $last_demand_time = $str_demand_time + $interval_time*60;
+                }else{
+                    if($str_demand_time>=$last_demand_time){
                         $demand_openid = $v['openid'];
                         $now_box_finish_num++;
                         $last_demand_time = $str_demand_time + $interval_time*60;
-                    }else{
-                        if($str_demand_time>=$last_demand_time){
-                            $demand_openid = $v['openid'];
-                            $now_box_finish_num++;
-                            $last_demand_time = $last_demand_time + $interval_time*60;
-                        }
                     }
                 }
             }
-            if($now_box_finish_num>=$box_finish_num){
-                $this->to_back(93217);
-            }
-            $now_time = time();
-            if($last_demand_time>$now_time){
-                $m_user = new \Common\Model\Smallapp\UserModel();
-                $res_user = $m_user->getOne('*',array('openid'=>$demand_openid),'');
-                $uname = $res_user['nickName'];
-                $countdown_time = $last_demand_time - $now_time;
-                $mtime = round($countdown_time/60);
-                $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
-                $res_pdata = array('code'=>93218,'msg'=>$msg);
-                $this->to_back($res_pdata);
-            }
-
-            $m_box = new \Common\Model\BoxModel();
-            $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
-            if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
-                $redis = new \Common\Lib\SavorRedis();
-                $redis->select(15);
-                $cache_key = 'savor_box_' . $forscreen_info['box_id'];
-                $redis_box_info = $redis->get($cache_key);
-                $box_info = json_decode($redis_box_info, true);
-                $cache_key = 'savor_room_' . $box_info['room_id'];
-                $redis_room_info = $redis->get($cache_key);
-                $room_info = json_decode($redis_room_info, true);
-                $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
-                $redis_hotel_info = $redis->get($cache_key);
-                $hotel_info = json_decode($redis_hotel_info, true);
-                $hotel_id = $room_info['hotel_id'];
-                $hotel_name = $hotel_info['name'];
-                $room_id = $box_info['room_id'];
-                $room_name = $room_info['name'];
-                $box_id = $forscreen_info['box_id'];
-                $box_name = $box_info['name'];
-            }else{
-                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-                $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
-                $rets = $m_box->getBoxInfo($fields, $where);
-                $hotel_id = $rets[0]['hotel_id'];
-                $hotel_name = $rets[0]['hotel_name'];
-                $room_id = $rets[0]['room_id'];
-                $room_name = $rets[0]['room_name'];
-                $box_id = $rets[0]['box_id'];
-                $box_name = $rets[0]['box_name'];
-            }
-            $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
-                'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
-                'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
-            );
-            $m_usertask_record->add($usertask_record);
         }
+        if($now_box_finish_num>=$box_finish_num){
+            $this->to_back(93217);
+        }
+        $now_time = time();
+        if($last_demand_time>$now_time){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_user = $m_user->getOne('*',array('openid'=>$demand_openid),'');
+            $uname = $res_user['nickName'];
+            $countdown_time = $last_demand_time - $now_time;
+            $mtime = round($countdown_time/60);
+            $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
+            $res_pdata = array('code'=>93218,'msg'=>$msg);
+            $this->to_back($res_pdata);
+        }
+
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info, true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $hotel_info = json_decode($redis_hotel_info, true);
+            $hotel_id = $room_info['hotel_id'];
+            $hotel_name = $hotel_info['name'];
+            $room_id = $box_info['room_id'];
+            $room_name = $room_info['name'];
+            $box_id = $forscreen_info['box_id'];
+            $box_name = $box_info['name'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+            $rets = $m_box->getBoxInfo($fields, $where);
+            $hotel_id = $rets[0]['hotel_id'];
+            $hotel_name = $rets[0]['hotel_name'];
+            $room_id = $rets[0]['room_id'];
+            $room_name = $rets[0]['room_name'];
+            $box_id = $rets[0]['box_id'];
+            $box_name = $rets[0]['box_name'];
+        }
+        $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
+            'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
+            'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
+        );
+        $m_usertask_record->add($usertask_record);
         $this->to_back(array());
     }
 

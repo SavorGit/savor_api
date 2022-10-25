@@ -19,7 +19,7 @@ class MemberController extends CommonController{
                 break;
             case 'getpopupinfo':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'staff_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -149,6 +149,7 @@ class MemberController extends CommonController{
 
     public function getpopupinfo(){
         $openid = $this->params['openid'];
+        $staff_id = $this->params['staff_id'];
 
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
@@ -190,7 +191,7 @@ class MemberController extends CommonController{
         }
         $params = array('openid'=>$openid,'vip_level'=>$vip_level,'coupon_money'=>$coupon_money,'coupon_end_time'=>$coupon_end_time,
             'coupon_unnum'=>$coupon_unnum,'mobile'=>$mobile,'is_wx_auth'=>$is_wx_auth,
-            'code_msg'=>'','source'=>4);
+            'hotel_id'=>0,'room_id'=>0,'staff_id'=>intval($staff_id),'code_msg'=>'','source'=>4);
         $res_data = array('params'=>json_encode($params));
         $this->to_back($res_data);
     }

@@ -158,7 +158,7 @@ class CouponController extends CommonController{
         $qrcontent = $this->params['qrcontent'];
         $idcode = $this->params['idcode'];
 
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1,'merchant.hotel_id'=>$hotel_id);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.type,merchant.hotel_id',$where);
         if(empty($res_staff)){
@@ -229,14 +229,19 @@ class CouponController extends CommonController{
         $now_vip_level = 0;
         $buy_wine_num = $res_user['buy_wine_num']+1;
         if($buy_wine_num==1){
-            $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
-            $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
-            $m_task_user = new \Common\Model\Integral\TaskuserModel();
-            $fields = "a.id as task_user_id,task.id task_id,task.task_info";
-            $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
-            if(empty($res_utask)){
-                $resp_data = array('incode'=>50,'message'=>'请领取会员邀请任务，否则无法获得会员积分奖励');
-                $this->to_back($resp_data);
+            $m_taskhotel = new \Common\Model\Integral\TaskHotelModel();
+            $where = array('a.hotel_id'=>$hotel_id,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
+            $res_hoteltask = $m_taskhotel->getHotelTasks('a.*',$where);
+            if(!empty($res_hoteltask)){
+                $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
+                $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
+                $m_task_user = new \Common\Model\Integral\TaskuserModel();
+                $fields = "a.id as task_user_id,task.id task_id,task.task_info";
+                $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+                if(empty($res_utask)){
+                    $resp_data = array('incode'=>50,'message'=>'请领取会员邀请任务，否则无法获得会员积分奖励');
+                    $this->to_back($resp_data);
+                }
             }
         }
 

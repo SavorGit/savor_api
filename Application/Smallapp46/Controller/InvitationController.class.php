@@ -93,10 +93,24 @@ class InvitationController extends CommonController{
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid,unionId,mobile', $where, '');
         if(empty($user_info)){
             $this->to_back(90116);
         }
+        if(!empty($user_info['unionId'])){
+            $where = array('unionId'=>$user_info['unionId'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $this->to_back(93219);
+            }
+        }elseif(!empty($user_info['mobile'])){
+            $where = array('mobile'=>$user_info['mobile'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $this->to_back(93219);
+            }
+        }
+
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $res_info = $m_invitation->getInfo(array('id'=>$invitation_id));
         if(empty($res_info)){

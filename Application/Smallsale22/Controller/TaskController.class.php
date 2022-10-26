@@ -902,8 +902,11 @@ class TaskController extends CommonController{
             $countdown_time = $last_demand_time - $now_time;
             $mtime = round($countdown_time/60);
             $msg = '本次任务已被'.$uname.'完成，下次'.$mtime.'分钟后开始';
-            $res_pdata = array('code'=>93218,'msg'=>$msg);
-            $this->to_back($res_pdata);
+            //$res_pdata = array('code'=>93218,'msg'=>$msg);
+            $ret = [];
+            $ret['is_pop_tips_wind'] = 1;
+            $ret['msg'] = $msg;
+            $this->to_back($ret);
         }
 
         $m_box = new \Common\Model\BoxModel();
@@ -942,7 +945,7 @@ class TaskController extends CommonController{
             'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
         );
         $m_usertask_record->add($usertask_record);
-        $this->to_back(array());
+        $this->to_back(array('is_pop_tips_wind'=>0));
     }
 
 }

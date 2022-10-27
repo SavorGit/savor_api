@@ -92,13 +92,11 @@ class TaskController extends CommonController{
             foreach ($res_inprogress_task as $k=>$v){
                 $task_info = json_decode($v['task_info'],true);
                 unset($v['task_info']);
-                if($v['type']==1){
-                    $map = array('openid'=>$openid,'task_id'=>$v['task_id']);
-                    $map['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
-                    $rs = $m_task_user->field('integral')->where($map)->find();
-                    $v['integral'] = intval($rs['integral']);
-                    $v['progress'] = '今日获得积分';
-                }
+                $tuwhere = array('openid'=>$openid,'task_id'=>$v['task_id']);
+                $tuwhere['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
+                $res_tu = $m_task_user->field('integral')->where($tuwhere)->find();
+                $v['integral'] = intval($res_tu['integral']);
+                $v['progress'] = '今日获得积分';
                 $tinfo = $v;
                 if($now_time>=$v['task_expire_time']){
                     $v['status']=0;

@@ -55,7 +55,7 @@ class TaskController extends CommonController{
                 break;
             case 'finishDemandadvTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'ads_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'ads_id'=>1001,'task_id'=>1001);
                 break;
         }
         parent::_init_();
@@ -826,6 +826,7 @@ class TaskController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $ads_id = $this->params['ads_id'];
         $hotel_id = $this->params['hotel_id'];
+        $task_id = $this->params['task_id'];
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,a.level,merchant.type';
@@ -835,13 +836,15 @@ class TaskController extends CommonController{
             $this->to_back(93014);
         }
         $m_task = new \Common\Model\Integral\TaskuserModel();
-        $task_where = array('a.openid'=>$openid,'task.type'=>2,'task.task_type'=>25);
+        $task_where = array('a.openid'=>$openid,'a.task_id'=>$task_id,'a.status'=>1,'task.type'=>2,'task.task_type'=>25);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time   = date('Y-m-d 23:59:59');
+        $task_where['a.add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
         $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
         if(empty($res_task)){
             $this->to_back(93070);
         }
         $task_user_id = $res_task[0]['id'];
-        $task_id = $res_task[0]['task_id'];
         $task_content = json_decode($res_task[0]['task_info'],true);
         $lunch_start_time = $task_content['lunch_start_time'];
         $lunch_end_time = $task_content['lunch_end_time'];

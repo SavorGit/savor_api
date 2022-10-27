@@ -92,10 +92,10 @@ class TaskController extends CommonController{
             foreach ($res_inprogress_task as $k=>$v){
                 $task_info = json_decode($v['task_info'],true);
                 unset($v['task_info']);
-                $tuwhere = array('openid'=>$openid,'task_id'=>$v['task_id']);
+                $tuwhere = array('openid'=>$openid,'task_id'=>$v['task_id'],'status'=>1);
                 $tuwhere['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
                 $res_tu = $m_task_user->field('integral')->where($tuwhere)->find();
-                $v['integral'] = intval($res_tu['integral']);
+                $v['today_integral'] = intval($res_tu['integral']);
                 $v['progress'] = '今日获得积分';
                 $tinfo = $v;
                 if($now_time>=$v['task_expire_time']){
@@ -271,7 +271,7 @@ class TaskController extends CommonController{
                 $redis->set($send_num_cache_key,$send_num,86400*30);
                 $v['get_num'] = $send_num;
                 $v['remain_num'] = $all_people_num-$send_num;
-                $v['percent'] = ($send_num/$all_people_num)*100;
+                $v['percent'] = round(($send_num/$all_people_num)*100,2);
                 $v['remain_percent'] = 100-$v['percent'];
 
                 switch ($v['task_type']){
@@ -893,7 +893,10 @@ class TaskController extends CommonController{
             }
         }
         if($now_box_finish_num>=$box_finish_num){
-            $this->to_back(93217);
+//            $this->to_back(93217);
+            $msg = '当前电视此任务已被完成，请使用其他电视。';
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
         }
         $now_time = time();
         if($last_demand_time>$now_time){

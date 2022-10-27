@@ -498,6 +498,7 @@ return array(
     'smallappsale_demand_task_box_had_finish'=>'当前电视此任务已被完成，请使用其他电视。',
     'smallappsale_demand_task_box_has_finish_plase_next'=>'本次任务已被xxxx完成，新任务xx分钟后开始',
     'smallappsale_forscreenuser_in_selluser'=>'请勿使用相同用户进行操作',
+    'smallappsale_task_notin_get_time'=>'请在每天上午六点后领取任务',
 
 
 

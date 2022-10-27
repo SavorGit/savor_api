@@ -319,7 +319,11 @@ class TaskController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
-
+        $now_time = date('Y-m-d H:i:s');
+        $get_start_task_time = date('Y-m-d 06:00:00');
+        if($get_start_task_time>$now_time){
+            $this->to_back(93220);
+        }
         $m_usertask = new \Common\Model\Integral\TaskuserModel();
         $where = array('openid'=>$openid,'task_id'=>$task_id,'status'=>1);
         $where["DATE_FORMAT(add_time,'%Y-%m-%d')"] = date('Y-m-d');
@@ -334,7 +338,6 @@ class TaskController extends CommonController{
         if(empty($res_task)){
             $this->to_back(93070);
         }
-        $now_time = date('Y-m-d H:i:s');
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
         }

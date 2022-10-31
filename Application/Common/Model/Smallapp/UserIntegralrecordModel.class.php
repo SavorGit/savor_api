@@ -168,6 +168,7 @@ class UserIntegralrecordModel extends BaseModel{
             $dinner_end_time = $task_content['dinner_end_time'];
             $week_num = $task_content['user_reward']['week_num'];
             $room_num = $task_content['user_reward']['room_num'];
+            $hotel_max_rate = $task_content['user_reward']['hotel_max_rate'];
 
             $week = date('w') == 0 ? 7 : date('w');
             $week_start = strtotime('today -' . ($week - 1) . 'day');
@@ -192,9 +193,8 @@ class UserIntegralrecordModel extends BaseModel{
             }
             if($now_week_num>=$week_num){
                 $now_integral = 0;
-                return true;
+                return array('task_user_id'=>$task_user_id,'now_week_num'=>$now_week_num,'week_num'=>$week_num);
             }
-
             $now_time = date('Y-m-d H:i:s');
             $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
             $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
@@ -209,20 +209,52 @@ class UserIntegralrecordModel extends BaseModel{
                 $meal_etime = $dinner_etime;
             }else{
                 $now_integral = 0;
-                return true;
+                return array('task_user_id'=>$task_user_id,'meal_stime'=>$meal_stime,'meal_etime'=>$meal_etime);
             }
-            $where = array('openid'=>$invitation['openid'],'type'=>$type,'room_id'=>$invitation['room_id']);
-            $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
-            $fields = 'count(id) as num';
-            $res_room_num = $this->field($fields)->where($where)->find();
-            if($res_room_num['num']>=$room_num){
-                $now_integral = 0;
-                return true;
+
+            if($invitation['hotel_id']==7 || $invitation['hotel_id']==1366){
+                $m_room = new \Common\Model\RoomModel();
+                $rwhere = array('hotel.id'=>$invitation['hotel_id'],'room.state'=>1,'room.flag'=>0);
+                $res_room = $m_room->getRoomByCondition('count(room.id) as num',$rwhere);
+                $hotel_room_num = intval($res_room[0]['num']);
+                $hotel_max_integral = $hotel_room_num*$hotel_max_rate*$now_task_integral;
+
+                $stime = date('Y-m-d 00:00:00');
+                $etime = date('Y-m-d 23:59:59');
+                $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type);
+                $where['add_time'] = array(array('egt',$stime),array('elt',$etime), 'and');
+                $fields = 'sum(integral) as total_integral';
+                $res_all_integral = $this->getALLDataList($fields,$where,'','','');
+                $now_all_integral = intval($res_all_integral[0]['total_integral']);
+                if($now_all_integral>=$hotel_max_integral){
+                    $now_integral = 0;
+                    return array('task_user_id'=>$task_user_id,'now_all_integral'=>$now_all_integral,'hotel_max_integral'=>$hotel_max_integral);
+                }
+
+                $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_id'=>$invitation['room_id']);
+                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
+                $fields = 'count(id) as num';
+                $res_room_num = $this->field($fields)->where($where)->find();
+                $now_room_num = intval($res_room_num['num']);
+                if($now_room_num>=$room_num){
+                    $now_integral = 0;
+                    return array('task_user_id'=>$task_user_id,'now_room_num'=>$now_room_num,'room_num'=>$room_num);
+                }
+            }else{
+                $where = array('openid'=>$invitation['openid'],'type'=>$type,'room_id'=>$invitation['room_id']);
+                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
+                $fields = 'count(id) as num';
+                $res_room_num = $this->field($fields)->where($where)->find();
+                $now_room_num = intval($res_room_num['num']);
+                if($now_room_num>=$room_num){
+                    $now_integral = 0;
+                    return true;
+                }
             }
             $now_integral = $now_task_integral;
         }
         if($now_integral==0){
-            return true;
+            return array('task_user_id'=>$task_user_id,'now_integral'=>$now_integral);
         }
         $where = array('a.openid'=>$invitation['openid'],'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -269,8 +301,11 @@ class UserIntegralrecordModel extends BaseModel{
                     'hotel_id'=>$invitation['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
                     'room_id'=>$invitation['room_id'],'room_name'=>$invitation['room_name'],'integral'=>$now_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
                     'task_id'=>$task_id,'integral_time'=>date('Y-m-d H:i:s'));
-                $this->add($integralrecord_data);
+                $record_id = $this->add($integralrecord_data);
+                return array('task_user_id'=>$task_user_id,'record_id'=>$record_id,'now_integral'=>$now_integral);
             }
+        }else{
+            return array('task_user_id'=>$task_user_id,'total_integral'=>$total_integral,'max_limit'=>$task_integral['max_limit']);
         }
         return true;
     }
@@ -278,17 +313,19 @@ class UserIntegralrecordModel extends BaseModel{
     public function finishInviteVipTask($sale_openid,$idcode,$type=1){
         $now_integral = 0;
         $task_id = 0;
+        $task_user_id = 0;
+        $m_task_user = new \Common\Model\Integral\TaskuserModel();
         if($type==1){
             $task_integral = C('MEMBER_INTEGRAL');
             $now_integral = $task_integral['invite_vip_reward_saler'];
         }elseif($type==2){
             $where = array('a.openid'=>$sale_openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
             $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
-            $m_task_user = new \Common\Model\Integral\TaskuserModel();
             $fields = "a.id as task_user_id,task.id task_id,task.task_info";
             $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
             if(!empty($res_utask)){
                 $task_id = $res_utask[0]['task_id'];
+                $task_user_id = $res_utask[0]['task_user_id'];
                 $task_info = json_decode($res_utask[0]['task_info'],true);
                 $now_integral = intval($task_info['invite_vip_reward_saler']);
             }
@@ -300,6 +337,9 @@ class UserIntegralrecordModel extends BaseModel{
         if(!empty($res_staff) && $now_integral>0){
             if($res_staff[0]['is_integral']==1){
                 $integralrecord_openid = $sale_openid;
+                if($task_user_id>0){
+                    $m_task_user->where(array('id'=>$task_user_id))->setInc('integral',$now_integral);
+                }
             }else{
                 $integralrecord_openid = $res_staff[0]['hotel_id'];
             }
@@ -317,13 +357,14 @@ class UserIntegralrecordModel extends BaseModel{
     public function finishBuyRewardsalerTask($sale_openid,$idcode,$type=1){
         $now_integral = 0;
         $task_id = 0;
+        $task_user_id = 0;
+        $m_task_user = new \Common\Model\Integral\TaskuserModel();
         if($type==1){
             $task_integral = C('MEMBER_INTEGRAL');
             $now_integral = $task_integral['buy_reward_saler'];
         }elseif($type==2){
             $where = array('a.openid'=>$sale_openid,'a.status'=>1,'task.task_type'=>26,'task.status'=>1,'task.flag'=>1);
             $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
-            $m_task_user = new \Common\Model\Integral\TaskuserModel();
             $fields = "a.id as task_user_id,task.id task_id,task.task_info";
             $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
             if(!empty($res_utask)){

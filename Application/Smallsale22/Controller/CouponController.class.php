@@ -307,7 +307,7 @@ class CouponController extends CommonController{
                     $reward_end_time = strtotime($res_user['invite_time']) + $all_day;
                     $now_retime = time();
                     if($buy_wine_num>1 && $now_retime<$reward_end_time){
-                        $m_userintegral->finishBuyRewardsalerTask($sale_openid,$idcode,2);
+                        $m_userintegral->finishBuyRewardsalerTask($sale_openid,$idcode,1);
                     }
                     $m_user->updateInfo(array('id'=>$res_user['id']),$data);
                 }

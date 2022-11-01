@@ -11,7 +11,8 @@ class MemberController extends CommonController{
             case 'joinvip':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'mobile'=>1001,'source'=>1001,
-                    'activity_id'=>1002,'idcode'=>1002,'hotel_id'=>1002,'room_id'=>1002,'staff_id'=>1002);
+                    'activity_id'=>1002,'idcode'=>1002,'hotel_id'=>1002,'room_id'=>1002,'staff_id'=>1002,
+                    'box_id'=>1002);
                 break;
             case 'scanbottlecode':
                 $this->is_verify = 1;
@@ -28,11 +29,12 @@ class MemberController extends CommonController{
     public function joinvip(){
         $openid = $this->params['openid'];
         $mobile = $this->params['mobile'];
-        $source = $this->params['source'];//来源1销售经理发起抽奖 2扫瓶码 3扫易拉宝二维码 4销售端任务邀请会员
+        $source = $this->params['source'];//来源1销售经理发起抽奖 2扫瓶码 3扫易拉宝二维码 4销售端任务邀请会员 5电视二维码
         $activity_id = $this->params['activity_id'];
         $idcode = $this->params['idcode'];
         $hotel_id = intval($this->params['hotel_id']);
         $room_id = intval($this->params['room_id']);
+        $box_id = intval($this->params['box_id']);
         $staff_id = intval($this->params['staff_id']);
 
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -85,9 +87,10 @@ class MemberController extends CommonController{
         if($res_user['vip_level']==0){
             $now_vip_level = 1;
             $data = array('mobile'=>$mobile,'vip_level'=>$now_vip_level,'invite_time'=>date('Y-m-d H:i:s'),'invite_type'=>$source);
-            if($source==3){
+            if($source==3 || $source==5){
                 $data['hotel_id'] = $hotel_id;
                 $data['room_id'] = $room_id;
+                $data['box_id'] = $box_id;
             }
             if($source==1 || $source==4){
                 $data['invite_openid'] = $sale_openid;

@@ -239,7 +239,7 @@ class CouponController extends CommonController{
                 $fields = "a.id as task_user_id,task.id task_id,task.task_info";
                 $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
                 if(empty($res_utask)){
-                    $resp_data = array('incode'=>50,'message'=>'请领取会员邀请任务，否则无法获得会员积分奖励');
+                    $resp_data = array('incode'=>50,'message'=>'请领取发放优惠券任务，否则无法获得优惠券积分奖励');
                     $this->to_back($resp_data);
                 }
             }

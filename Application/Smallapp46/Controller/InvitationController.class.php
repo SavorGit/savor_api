@@ -118,18 +118,25 @@ class InvitationController extends CommonController{
         }
         $m_invitation_user = new \Common\Model\Smallapp\InvitationUserModel();
         $res_data = $m_invitation_user->getInfo(array('invitation_id'=>$invitation_id,'openid'=>$openid));
+        $finish_task_info = array();
         if(empty($res_data)){
             $data = array('invitation_id'=>$invitation_id,'openid'=>$openid,'type'=>1);
             $m_invitation_user->add($data);
-            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $where = array('openid'=>$res_info['openid'],'jdorder_id'=>$res_info['id'],'type'=>15);
-            $res_integral = $m_userintegral->getInfo($where);
-            if(empty($res_integral)){
-                $res_info['receive_openid'] = $openid;
-                $m_userintegral->finishInvitationTask($res_info,15);
-            }
         }
-        $this->to_back(array('invitation_id'=>$invitation_id));
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $where = array('openid'=>$res_info['openid'],'jdorder_id'=>$res_info['id'],'type'=>15);
+        $res_integral = $m_userintegral->getInfo($where);
+        if(empty($res_integral)){
+            $res_info['receive_openid'] = $openid;
+            $finish_task_info = $m_userintegral->finishInvitationTask($res_info,15);
+        }
+
+        $msg = json_encode($finish_task_info);
+        $log_content = date("Y-m-d H:i:s").'[invitation_id]'.$invitation_id.'[openid]'.$openid.'[msg]'.$msg."\n";
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'invitation_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+
+        $this->to_back(array('invitation_id'=>$invitation_id,'finish_task_info'=>$finish_task_info));
     }
 
     public function detail(){

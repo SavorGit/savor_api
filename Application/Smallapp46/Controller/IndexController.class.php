@@ -562,6 +562,7 @@ class IndexController extends CommonController{
         $is_annualmeeting = 0;
         $seckill_goods_id = 0;
         $hotel_id = 0;
+        $room_id = 0;
         $box_mac = '';
         $oss_host = get_oss_host();
         $seckill_banner = '';
@@ -767,6 +768,15 @@ class IndexController extends CommonController{
                 $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
             }
         }
+
+        if($hotel_id==7){
+            $hotel_seckill_goods_id=0;
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
+        $res_popup_params['source'] = 5;
+
+        $data['source'] = $res_popup_params;
         $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
         $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;
         $data['is_annualmeeting'] = $is_annualmeeting;

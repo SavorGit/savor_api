@@ -268,6 +268,8 @@ class CouponController extends CommonController{
         $res_coupon = $m_coupon->getUsercouponDatas($fields,$where,'a.id desc','');
         $coupon_info = $res_coupon[0];
 
+        $test_hotels = C('TEST_HOTEL');
+        $test_hotels_arr = explode(',',$test_hotels);
         $m_coupon_hotel = new \Common\Model\Smallapp\CouponHotelModel();
         $res_coupon_hotel = $m_coupon_hotel->getDataList('hotel_id',array('coupon_id'=>$coupon_info['coupon_id']),'id desc');
         $redis = new \Common\Lib\SavorRedis();
@@ -277,7 +279,7 @@ class CouponController extends CommonController{
         $hotel_stock = json_decode($res_cache,true);
         $now_hotel_ids = array();
         foreach ($res_coupon_hotel as $v){
-            if(isset($hotel_stock[$v['hotel_id']])){
+            if(isset($hotel_stock[$v['hotel_id']]) && !in_array($v['hotel_id'],$test_hotels_arr)){
                 $now_hotel_ids[]=$v['hotel_id'];
             }
         }

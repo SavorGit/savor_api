@@ -212,44 +212,32 @@ class UserIntegralrecordModel extends BaseModel{
                 return array('task_user_id'=>$task_user_id,'meal_stime'=>$meal_stime,'meal_etime'=>$meal_etime);
             }
 
-            if($invitation['hotel_id']==7 || $invitation['hotel_id']==1366){
-                $m_room = new \Common\Model\RoomModel();
-                $rwhere = array('hotel.id'=>$invitation['hotel_id'],'room.state'=>1,'room.flag'=>0);
-                $res_room = $m_room->getRoomByCondition('count(room.id) as num',$rwhere);
-                $hotel_room_num = intval($res_room[0]['num']);
-                $hotel_max_integral = $hotel_room_num*$hotel_max_rate*$now_task_integral;
+            $m_room = new \Common\Model\RoomModel();
+            $rwhere = array('hotel.id'=>$invitation['hotel_id'],'room.state'=>1,'room.flag'=>0);
+            $res_room = $m_room->getRoomByCondition('count(room.id) as num',$rwhere);
+            $hotel_room_num = intval($res_room[0]['num']);
+            $hotel_max_integral = $hotel_room_num*$hotel_max_rate*$now_task_integral;
 
-                $stime = date('Y-m-d 00:00:00');
-                $etime = date('Y-m-d 23:59:59');
-                $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type);
-                $where['add_time'] = array(array('egt',$stime),array('elt',$etime), 'and');
-                $fields = 'sum(integral) as total_integral';
-                $res_all_integral = $this->getALLDataList($fields,$where,'','','');
-                $now_all_integral = intval($res_all_integral[0]['total_integral']);
-                if($now_all_integral>=$hotel_max_integral){
-                    $now_integral = 0;
-                    return array('task_user_id'=>$task_user_id,'now_all_integral'=>$now_all_integral,'hotel_max_integral'=>$hotel_max_integral);
-                }
+            $stime = date('Y-m-d 00:00:00');
+            $etime = date('Y-m-d 23:59:59');
+            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type);
+            $where['add_time'] = array(array('egt',$stime),array('elt',$etime), 'and');
+            $fields = 'sum(integral) as total_integral';
+            $res_all_integral = $this->getALLDataList($fields,$where,'','','');
+            $now_all_integral = intval($res_all_integral[0]['total_integral']);
+            if($now_all_integral>=$hotel_max_integral){
+                $now_integral = 0;
+                return array('task_user_id'=>$task_user_id,'now_all_integral'=>$now_all_integral,'hotel_max_integral'=>$hotel_max_integral);
+            }
 
-                $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_id'=>$invitation['room_id']);
-                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
-                $fields = 'count(id) as num';
-                $res_room_num = $this->field($fields)->where($where)->find();
-                $now_room_num = intval($res_room_num['num']);
-                if($now_room_num>=$room_num){
-                    $now_integral = 0;
-                    return array('task_user_id'=>$task_user_id,'now_room_num'=>$now_room_num,'room_num'=>$room_num);
-                }
-            }else{
-                $where = array('openid'=>$invitation['openid'],'type'=>$type,'room_id'=>$invitation['room_id']);
-                $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
-                $fields = 'count(id) as num';
-                $res_room_num = $this->field($fields)->where($where)->find();
-                $now_room_num = intval($res_room_num['num']);
-                if($now_room_num>=$room_num){
-                    $now_integral = 0;
-                    return true;
-                }
+            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_id'=>$invitation['room_id']);
+            $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
+            $fields = 'count(id) as num';
+            $res_room_num = $this->field($fields)->where($where)->find();
+            $now_room_num = intval($res_room_num['num']);
+            if($now_room_num>=$room_num){
+                $now_integral = 0;
+                return array('task_user_id'=>$task_user_id,'now_room_num'=>$now_room_num,'room_num'=>$room_num);
             }
             $now_integral = $now_task_integral;
         }

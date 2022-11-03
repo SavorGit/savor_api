@@ -15,6 +15,8 @@ class Wechat{
     private $url_templatesend = 'https://api.weixin.qq.com/cgi-bin/message/template/send';
     private $url_customsend = 'https://api.weixin.qq.com/cgi-bin/message/custom/send';
     private $url_qrcodecreate = 'https://api.weixin.qq.com/cgi-bin/qrcode/create';
+    private $url_user_get = 'https://api.weixin.qq.com/cgi-bin/user/get';
+    private $url_tag_members_batchtag = 'https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging';
 
     public function __construct($config=array()){
         if(!empty($config)){
@@ -239,6 +241,48 @@ class Wechat{
         return $result;
     }
 
+    public function userGet(){
+        $access_token = $this->getWxAccessToken();
+        $url = $this->url_user_get."?access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,$url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $re = curl_exec($ch);
+
+        curl_close($ch);
+        $result = json_decode($re,true);
+        if(!is_array($result) || isset($result['errcode'])){
+            header("Location: $url");
+        }
+        return $result;
+    }
+
+    /*
+     * $data = array(
+            'openid_list'=>array("o5mZpw6StHwY0H68-Rso53FO7LsE","o5mZpw_2Nu9tvCxtVu5fHMbCxQts"),
+            'tagid'=>107,
+        );
+     */
+    public function membersBatchtag($data){
+        $access_token = $this->getWxAccessToken();
+        $url = $this->url_tag_members_batchtag."?access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+
+    }
 
     /**
      * 微信js签名算法

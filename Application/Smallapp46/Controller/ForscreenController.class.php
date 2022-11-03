@@ -98,9 +98,7 @@ class ForscreenController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid,avatarUrl,nickName',$where,'');
-        if(empty($user_info)){
-            $this->to_back(90116);
-        }
+        
         $now_time = date('Y-m-d H:i:s');
         $meal_time = C('MEAL_TIME');
         $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");

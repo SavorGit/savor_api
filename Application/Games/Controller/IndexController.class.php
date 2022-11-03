@@ -31,7 +31,8 @@ class IndexController extends CommonController{
         $m_games = new \Common\Model\Smallapp\GamesModel();
         $where['id'] = $game_id;
         $data = $m_games->getOne('status', $where);
-        $data['img_url'] = 'http://oss.littlehotspot.com/media/resource/6h5RQdmAKn.jpg';
+        $oss_host = get_oss_host();
+        $data['img_url'] = $oss_host.'media/resource/6h5RQdmAKn.jpg';
         $this->to_back($data);
     }
     /**
@@ -45,7 +46,7 @@ class IndexController extends CommonController{
         
         $limit = "limit $offset,$pagesize";
         $m_games = new \Common\Model\Smallapp\GamesModel();
-        $oss_host = 'http://'. C('OSS_HOST').'/';
+        $oss_host = get_oss_host();
         $fields = "a.id as game_id,a.name game_name,a.desc,url,game_url,game_m_url,concat('".$oss_host."',m.`oss_addr`) img_url";
         $where['status'] = 1;
         $now_version = '4.6.20';

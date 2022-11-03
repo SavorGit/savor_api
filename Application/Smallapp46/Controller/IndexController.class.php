@@ -771,9 +771,7 @@ class IndexController extends CommonController{
             }
         }
 
-        if($hotel_id==7){//上线后去掉
-            $hotel_seckill_goods_id=0;
-        }
+        $hotel_seckill_goods_id=0;
         $m_user = new \Common\Model\Smallapp\UserModel();
         $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
         $res_popup_params['source'] = 5;

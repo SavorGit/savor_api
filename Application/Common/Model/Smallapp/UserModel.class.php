@@ -71,7 +71,7 @@ class UserModel extends Model{
         }
         $data = array('openid'=>$openid,'vip_level'=>$vip_level,'coupon_money'=>$coupon_money,'coupon_end_time'=>$coupon_end_time,
             'coupon_unnum'=>$coupon_unnum,'mobile'=>$mobile,'is_wx_auth'=>$is_wx_auth,
-            'hotel_id'=>$hotel_id,'room_id'=>$hotel_id,'box_id'=>$box_id,'code_msg'=>'');
+            'hotel_id'=>$hotel_id,'room_id'=>$room_id,'box_id'=>$box_id,'code_msg'=>'');
         return $data;
     }
 }

@@ -568,6 +568,7 @@ class IndexController extends CommonController{
         $seckill_banner = '';
         $hotel_seckill_goods_id = 0;
         $hotel_seckill_goods_img = '';
+        $is_salehotel = 0;
         $m_media = new \Common\Model\MediaModel();
         if($box_id){
             $redis = new \Common\Lib\SavorRedis();
@@ -592,6 +593,7 @@ class IndexController extends CommonController{
 
                 $m_hotelext = new \Common\Model\HotelExtModel();
                 $res_ext = $m_hotelext->getOnerow(array('hotel_id'=>$hotel_id));
+                $is_salehotel = $res_ext['is_salehotel'];
 
                 $m_staff = new \Common\Model\Integral\StaffModel();
                 $staff_where = array('hotel_id'=>$hotel_id,'status'=>1);
@@ -769,14 +771,14 @@ class IndexController extends CommonController{
             }
         }
 
-        if($hotel_id==7){
+        if($hotel_id==7){//上线后去掉
             $hotel_seckill_goods_id=0;
         }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
         $res_popup_params['source'] = 5;
 
-        $data['source'] = $res_popup_params;
+        $data['params'] = $res_popup_params;
         $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
         $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;
         $data['is_annualmeeting'] = $is_annualmeeting;

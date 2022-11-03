@@ -184,7 +184,8 @@ class CouponController extends CommonController{
             if(!empty($res_sale_user)){
                 $this->to_back(93219);
             }
-        }elseif(!empty($user_info['mobile'])){
+        }
+        if(!empty($user_info['mobile'])){
             $where = array('mobile'=>$user_info['mobile'],'small_app_id'=>5);
             $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
             if(!empty($res_sale_user)){

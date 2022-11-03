@@ -260,7 +260,7 @@ class CouponController extends CommonController{
             );
             $total_fee = $res_usercoupon['money'];
             $m_order = new \Common\Model\Smallapp\ExchangeModel();
-            $add_data = array('openid'=>$openid,'goods_id'=>0,'price'=>0,'type'=>5,
+            $add_data = array('openid'=>$res_usercoupon['openid'],'goods_id'=>0,'price'=>0,'type'=>5,
                 'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
             $order_id = $m_order->add($add_data);
 

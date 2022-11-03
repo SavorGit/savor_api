@@ -196,7 +196,7 @@ class UserController extends CommonController{
         if($openid){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid);
-            $user_info = $m_user->getOne('id,avatarUrl,nickName,wx_mpopenid,is_subscribe',$where,'id desc');
+            $user_info = $m_user->getOne('id,avatarUrl,nickName,unionId,wx_mpopenid,is_subscribe',$where,'id desc');
             if(empty($user_info['wx_mpopenid'])){
                 $subscribe_status = 1;
             }else{
@@ -213,6 +213,15 @@ class UserController extends CommonController{
                     $m_user->updateInfo(array('id'=>$user_info['id']),array('is_subscribe'=>$is_subscribe));
                 }else{
                     $subscribe_status = 2;
+                }
+            }
+            if(empty($user_info['unionId'])){
+                $redis = \Common\Lib\SavorRedis::getInstance();
+                $redis->select(14);
+                $cache_key = C('SAPP_SALE').'openid:'.$openid;
+                $res_unionid = $redis->get($cache_key);
+                if(!empty($res_unionid)){
+                    $m_user->updateInfo(array('id'=>$user_info['id']),array('unionId'=>$res_unionid));
                 }
             }
         }
@@ -253,6 +262,12 @@ class UserController extends CommonController{
         $m_small_app = new Smallapp_api($flag = 5);
         $data  = $m_small_app->getSmallappOpenid($code);
         $data['official_account_article_url'] =C('OFFICIAL_ACCOUNT_ARTICLE_URL');
+        if(!empty($data['openid']) && !empty($data['unionid'])){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(14);
+            $cache_key = C('SAPP_SALE').'openid:'.$data['openid'];
+            $redis->set($cache_key,$data['unionid'],300);
+        }
         $this->to_back($data);
     }
     

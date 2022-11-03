@@ -184,6 +184,17 @@ class UserController extends CommonController{
         if($openid=='ofYZG42V8dkUo1A0g7b_Mff2ZYA4'){
             $data['userinfo']['is_interact'] = 0;
         }
+        $userinfo = $m_user->getOne('id,openid,unionId', $where);
+        if(empty($userinfo['unionId'])){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = 'openid:'.$openid;
+            $res_unionid = $redis->get($cache_key);
+            if(!empty($res_unionid)){
+                $m_user->updateInfo(array('id'=>$userinfo['id']),array('unionId'=>$res_unionid));
+            }
+        }
+
         $this->to_back($data);
     }
     

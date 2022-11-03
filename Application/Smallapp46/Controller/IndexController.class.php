@@ -134,6 +134,12 @@ class IndexController extends CommonController{
         $m_small_app = new Smallapp_api();
         $data  = $m_small_app->getSmallappOpenid($code);
         $data['official_account_article_url'] =C('OFFICIAL_ACCOUNT_ARTICLE_URL');
+        if(!empty($data['openid']) && !empty($data['unionid'])){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(5);
+            $cache_key = 'openid:'.$data['openid'];
+            $redis->set($cache_key,$data['unionid'],300);
+        }
         $this->to_back($data);
     }
 

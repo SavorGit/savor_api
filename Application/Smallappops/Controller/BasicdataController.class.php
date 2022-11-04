@@ -459,7 +459,9 @@ class BasicdataController extends CommonController{
             }
             $hotel_list = array_merge($hotel_list,$res_hotel_list);
         }
-        $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'hotel_list'=>$hotel_list,'stock_status'=>$stock_status);
+        $date_range = array('2022-06-21',date('Y-m-d',strtotime('-1day')));
+        $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range,
+            'hotel_list'=>$hotel_list,'stock_status'=>$stock_status);
         $this->to_back($res_data);
     }
 

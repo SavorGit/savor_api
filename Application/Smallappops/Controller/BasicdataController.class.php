@@ -41,7 +41,8 @@ class BasicdataController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
                 break;
             case 'filter':
-                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,
+                    'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002);
                 $this->is_verify = 1;
 
         }
@@ -381,6 +382,9 @@ class BasicdataController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
         $day = intval($this->params['day']);
+        $sdate = $this->params['sdate'];
+        $edate = $this->params['edate'];
+        $sell_openid = $this->params['sell_openid'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -391,19 +395,25 @@ class BasicdataController extends CommonController{
         if($type==0){
             $this->to_back(1001);
         }
-        $start_date = date('Y-m-d',strtotime('-1day'));
-        switch ($day){
-            case 1:
-                $start_date = date('Y-m-d',strtotime('-1day'));
-                break;
-            case 2:
-                $start_date = date('Y-m-d',strtotime('-6day'));
-                break;
-            case 3:
-                $start_date = date('Y-m-01');
-                break;
+        if($day>0){
+            $start_date = date('Y-m-d',strtotime('-1day'));
+            switch ($day){
+                case 1:
+                    $start_date = date('Y-m-d',strtotime('-1day'));
+                    break;
+                case 2:
+                    $start_date = date('Y-m-d',strtotime('-6day'));
+                    break;
+                case 3:
+                    $start_date = date('Y-m-01');
+                    break;
+            }
+            $end_date = date('Y-m-d',strtotime('-1day'));
+        }else{
+            $start_date = $sdate;
+            $end_date = $edate;
         }
-        $end_date = date('Y-m-d',strtotime('-1day'));
+
         $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
 
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -430,10 +440,23 @@ class BasicdataController extends CommonController{
                 $stock_status[]=array('name'=>$v,'status'=>$k);
             }
         }
-        $hotel_list = array(array('hotel_id'=>0,'hotel_name'=>'全部餐厅'));
+        $hotel_list = array(array('hotel_id'=>0,'hotel_name'=>'全部餐厅','is_check'=>0));
         if($is_data){
+            $hotel_id = 0;
+            if(!empty($sell_openid)){
+                $m_hotelstaff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_hotelstaff->getMerchantStaff('hotel.id as hotel_id',array('a.openid'=>$sell_openid,'a.status'=>1,'merchant.status'=>1));
+                $hotel_id = $res_staff[0]['hotel_id'];
+            }
             $merchant_fields = 'hotel.id as hotel_id,hotel.name as hotel_name';
             $res_hotel_list = $m_merchant->getMerchantInfo($merchant_fields,$merchant_where);
+            foreach ($res_hotel_list as $k=>$v){
+                $is_check = 0;
+                if($v['hotel_id']==$hotel_id){
+                    $is_check = 1;
+                }
+                $res_hotel_list[$k]['is_check'] = $is_check;
+            }
             $hotel_list = array_merge($hotel_list,$res_hotel_list);
         }
         $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'hotel_list'=>$hotel_list,'stock_status'=>$stock_status);

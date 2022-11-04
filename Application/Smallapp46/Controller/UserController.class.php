@@ -184,7 +184,7 @@ class UserController extends CommonController{
         if($openid=='ofYZG42V8dkUo1A0g7b_Mff2ZYA4'){
             $data['userinfo']['is_interact'] = 0;
         }
-        $userinfo = $m_user->getOne('id,openid,unionId', $where);
+        $userinfo = $m_user->getOne('id,openid,unionId', array('openid'=>$openid));
         if(empty($userinfo['unionId'])){
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(5);

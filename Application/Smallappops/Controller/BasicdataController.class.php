@@ -36,6 +36,10 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001);
                 break;
+            case 'data':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -265,6 +269,106 @@ class BasicdataController extends CommonController{
                 }
             }
             $res_data['desc'] = $desc;
+        }
+        $this->to_back($res_data);
+    }
+
+    public function statdata(){
+        $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $day = intval($this->params['day']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $type = $this->check_permission($res_staff,$area_id,$staff_id);
+        if($type==0){
+            $this->to_back(1001);
+        }
+        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
+
+        $start_time = date('Y-m-d 00:00:00',strtotime('-1day'));
+        switch ($day){
+            case 1:
+                $start_time = date('Y-m-d 00:00:00',strtotime('-1day'));
+                break;
+            case 2:
+                $start_time = date('Y-m-d 00:00:00',strtotime('-6day'));
+                break;
+            case 3:
+                $start_time = date('Y-m-01 00:00:00');
+                break;
+        }
+        $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
+        $is_data = 1;
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $merchant_fields = 'count(m.id) as hotel_num';
+        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
+        $merchant_where['m.add_time'] = array('elt',$end_time);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $staff_fields = 'count(a.id) as staff_num';
+        $staff_where = array('merchant.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
+        $staff_where['merchant.add_time'] = array('elt',$end_time);
+
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        $remain_maintainer_id = $remain_area_id = 0;
+
+        $m_statichotelstaffdata = new \Common\Model\Smallapp\StaticHotelstaffdataModel();
+        $static_maintainer_id = $static_area_id = 0;
+
+        $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+            if($area_id>0){
+                $merchant_where['hotel.area_id'] = $area_id;
+                $staff_where['hotel.area_id'] = $area_id;
+                $remain_area_id = $area_id;
+                $static_area_id = $area_id;
+            }
+        }elseif($area_id>0 && $staff_id>0){
+            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            $merchant_where['hotel.area_id'] = $area_id;
+            $staff_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            $staff_where['hotel.area_id'] = $area_id;
+            $remain_area_id = $area_id;
+            $remain_maintainer_id = $res_staff['sysuser_id'];
+            $static_area_id = $area_id;
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }elseif($area_id==0 && $staff_id>0){
+            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            $staff_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            $remain_maintainer_id = $res_staff['sysuser_id'];
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }else{
+            $is_data = 0;
+        }
+
+        $res_data = array();
+        if($is_data){
+            $res_merchant = $m_merchant->getMerchantInfo($merchant_fields,$merchant_where);
+            $hotel_num = intval($res_merchant[0]['hotel_num']);
+            $res_staff = $m_staff->getMerchantStaffInfo($staff_fields,$staff_where);
+            $staff_num = intval($res_staff[0]['staff_num']);
+            $res_remain = $m_userintegral->getRemainIntegral($remain_area_id,$remain_maintainer_id);
+            $remain_integral = 0;
+            if(!empty($res_remain)){
+                $remain_integral = $res_remain['total_integral'];
+            }
+            $res_staticdata = $m_statichotelstaffdata->getStaffData($static_area_id,$static_maintainer_id,$start_time,$end_time);
+            $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$start_time,$end_time);
+
+            $res_data = array('hotel_num'=>$hotel_num,'staff_num'=>$staff_num,'get_integral'=>$res_staticdata['get_integral'],
+                'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'task_data'=>$res_staticdata['task_data'],
+                'brand_num'=>$res_sell['brand_num'],'series_num'=>$res_sell['series_num'],'sell_num'=>$res_sell['sell_num']
+            );
+            $res_data['desc'] = array('1.获得积分：时间段内一共获得多少积分；','2.剩余积分：截止到昨天24:00，剩余积分总量（待核销+正常）；','3.提现金额：时间段内一共提现多少钱',
+                '一.奖券任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；','3.售酒数量：发布任务的餐厅范围内，每日核销数量加和；','4.领券人：发布任务的餐厅范围内，总共领取金卡优惠券人数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（待核销+正常）；',
+                '二.点播任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；','3.点播应操作次数：发布任务的餐厅范围内，正常版位数*1.8，每日加和，四舍五入；', '4.完成次数：发布任务的餐厅范围内，所以餐厅经理总共完成次数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（正常）；',
+                '三.邀请函任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；', '3.点播应操作次数：发布任务的餐厅范围内，正常版位数*1.6，每日加和，四舍五入；','4.完成次数：发布任务的餐厅范围内，所以餐厅经理总共完成次数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（正常）；',
+            );
         }
         $this->to_back($res_data);
     }

@@ -5,6 +5,16 @@ use Common\Model\BaseModel;
 class UserIntegralrecordModel extends BaseModel{
 	protected $tableName='smallapp_user_integralrecord';
 
+    public function getRecordlist($fileds,$where,$orderby){
+        $res = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_hotel_ext ext on a.hotel_id=ext.hotel_id','left')
+            ->where($where)
+            ->order($orderby)
+            ->select();
+        return $res;
+    }
+
     public function getFinishRecordlist($fileds,$where,$orderby,$start,$size){
         $res = $this->alias('a')
             ->field($fileds)

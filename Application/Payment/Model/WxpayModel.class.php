@@ -295,14 +295,14 @@ class WxpayModel extends Model{
         if($content['return_code']=='SUCCESS' && $content['result_code']=='SUCCESS'){
             $log = '订单号:'.$trade_info['trade_no'].'success支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
             $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
-            $info = array('code'=>10000,'msg'=>"支付零钱成功");
+            $info = array('code'=>10000,'msg'=>"支付零钱成功",'wxresult'=>$content);
         }else{
             $log = '订单号:'.$trade_info['trade_no'].'fail支付零钱'.$trade_info['money'].' openid:'.$trade_info['open_id'];
             $this->baseInc->paynotify_log($paylog_type,$trade_info['trade_no'],$log);
             if($content['err_code']=='NOTENOUGH'){
-                $info = array('code'=>10003,'msg'=>"支付零钱失败,失败原因零钱不足");
+                $info = array('code'=>10003,'msg'=>"支付零钱失败,失败原因零钱不足",'wxresult'=>$content);
             }else{
-                $info = array('code'=>10002,'msg'=>"支付零钱失败");
+                $info = array('code'=>10002,'msg'=>"支付零钱失败",'wxresult'=>$content);
             }
         }
         return $info;

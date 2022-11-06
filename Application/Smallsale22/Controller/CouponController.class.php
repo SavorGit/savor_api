@@ -270,7 +270,7 @@ class CouponController extends CommonController{
             $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
             if($res['code']==10000){
                 $m_order->updateData(array('id'=>$order_id),array('status'=>21));
-                $up_data = array('ustatus'=>2,'use_time'=>date('Y-m-d H:i:s'),'op_openid'=>$openid);
+                $up_data = array('wxpay_status'=>2,'ustatus'=>2,'use_time'=>date('Y-m-d H:i:s'),'op_openid'=>$openid);
                 if(!empty($idcode)){
                     $up_data['idcode'] = $idcode;
                 }
@@ -343,6 +343,8 @@ class CouponController extends CommonController{
                     $m_stock_record->add($add_data);
                 }
             }else{
+                $up_data = array('wxpay_status'=>1);
+                $m_user_coupon->updateData(array('id'=>$coupon_user_id),$up_data);
                 if($res['code']==10003){
                     //发送短信
                     $ucconfig = C('ALIYUN_SMS_CONFIG');
@@ -361,6 +363,10 @@ class CouponController extends CommonController{
                     }
                 }
             }
+            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+            $pay_data = array('coupon_user_id'=>$coupon_user_id,'wxorder_id'=>$order_id,'pay_result'=>json_encode($res));
+            $m_paylog->add($pay_data);
+
             $resp_data = array('incode'=>100,'message'=>'成功使用优惠券');
             $this->to_back($resp_data);
         }else{

@@ -6,6 +6,14 @@ class StatDataController extends CommonController{
     
     function _init_() {
         switch(ACTION_NAME) {
+            case 'sale':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'source'=>1001,'start_date'=>1002,'end_date'=>1002);
+                break;
+            case 'user':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1002,'end_date'=>1002);
+                break;
             case 'dataCenter':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1000,'end_date'=>1000,);
@@ -13,22 +21,153 @@ class StatDataController extends CommonController{
         }
         parent::_init_();
     }
-    public function dataCenter(){
-        
+
+    public function sale(){
+        $openid   = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $source = intval($this->params['source']);//来源 1酒楼详情页 2酒楼数据概况页
+        $start_date = $this->params['start_date'];
+        $end_date   = $this->params['end_date'];
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        if(empty($start_date) || empty($end_date)){
+            $start_date = date('Y-m-d',strtotime('-7 days'));
+            $end_date = date('Y-m-d',strtotime('-1 days'));
+        }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $staff_fields = 'a.id,a.level,user.openid,user.avatarUrl,user.nickName';
+        $staff_where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff($staff_fields,$staff_where);
+        $staff_num = count($res_staff);
+        $manager_name = '';
+        $all_staff = array();
+        foreach ($res_staff as $v){
+            if($v['level']==1 && empty($manager_name)){
+                $manager_name = $v['nickName'];
+            }
+            $all_staff[$v['openid']] = $v;
+        }
+        $remain_integral = 0;
+        if($source==1){
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $res_remain = $m_userintegral->getRemainIntegral(0,0,$hotel_id);
+            if(!empty($res_remain)){
+                $remain_integral = $res_remain['total_integral'];
+            }
+        }
+        $m_statichotelstaffdata = new \Common\Model\Smallapp\StaticHotelstaffdataModel();
+        $res_staticdata = $m_statichotelstaffdata->getStaffData(0,0,$hotel_id,$start_time,$end_time);
+        $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
+        $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
+
+        $date_range = array(date('Y-m-d',strtotime('-30day')),date('Y-m-d',strtotime('-1day')));
+        $stat_range_str= '(近七天,数据更新至'.date('Y/m/d',strtotime('-1 day')).')';
+        $stat_update_str = '数据更新至'.date('Y/m/d',strtotime('-1 day'));
+        $res_data = array('manager_name'=>$manager_name,'staff_num'=>$staff_num,'get_integral'=>$res_staticdata['get_integral'],
+            'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'forscreen_num'=>$res_staticdata['forscreen_num'],
+            'pub_num'=>$res_staticdata['pub_num'],'welcome_num'=>$res_staticdata['welcome_num'],'birthday_num'=>$res_staticdata['birthday_num'],
+            'signin_num'=>$res_staticdata['signin_num'],'task_data'=>$res_staticdata['task_data'],
+            'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+            'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
+        );
+        $staff_list = array();
+        if($source==2){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time,'a.op_openid');
+            $sell_openids = array();
+            foreach ($res_sell as $v){
+                $sell_openids[$v['op_openid']] = array('brand_num'=>intval($v['brand_num']),'series_num'=>intval($v['series_num']),'sell_num'=>intval($v['sell_num']));
+            }
+            $res_stat_staff = $m_statichotelstaffdata->getHotelStaffData($hotel_id,$start_time,$end_time);
+            foreach ($res_stat_staff as $v){
+                $brand_num = $series_num = $sell_num = 0;
+                if(isset($sell_openids[$v['openid']])){
+                    $brand_num = $sell_openids[$v['openid']]['brand_num'];
+                    $series_num = $sell_openids[$v['openid']]['series_num'];
+                    $sell_num = $sell_openids[$v['openid']]['sell_num'];
+                }
+                $v['brand_num'] = $brand_num;
+                $v['series_num'] = $series_num;
+                $v['sell_num'] = $sell_num;
+                if(isset($all_staff[$v['openid']])){
+                    $avatarUrl = $all_staff[$v['openid']]['avatarUrl'];
+                    $nickName = $all_staff[$v['openid']]['nickName'];
+                }else{
+                    $res_user = $m_user->getOne('id,avatarUrl,nickName',array('openid'=>$v['openid']),'id desc');
+                    $avatarUrl = $res_user['avatarUrl'];
+                    $nickName = $res_user['nickName'];
+                }
+                $v['avatarUrl'] = $avatarUrl;
+                $v['nickName'] = $nickName;
+                $staff_list[]=$v;
+            }
+        }
+        $res_data['staff_list'] = $staff_list;
+        $this->to_back($res_data);
+    }
+
+    public function user(){
         $openid   = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
         $start_date = $this->params['start_date'];
         $end_date   = $this->params['end_date'];
-        
-        
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        if(empty($start_date) || empty($end_date)){
+            $start_date = date('Y-m-d',strtotime('-7 days'));
+            $end_date = date('Y-m-d',strtotime('-1 days'));
+        }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+
+        $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
+        $fields = 'count(DISTINCT forscreen_id) as num';
+        $where = array('hotel_id'=>$hotel_id,'small_app_id'=>1);
+        $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $forscreen_data = $m_forscreen->getWhere($fields,$where, '', '','');
+        $hotel_forscreen_nums = intval($forscreen_data[0]['num']);
+        $fields = 'count(DISTINCT openid) as num';
+        $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', '');
+        $hotel_forscreen_user_nums = intval($forscreen_data[0]['num']);
+        $m_box = new \Common\Model\BoxModel();
+        $fields = 'a.id box_id,a.name box_name';
+        $box_list = $m_box->getBoxListByHotelid($fields,$hotel_id);
+        foreach($box_list as $key=>$v){
+            $fields = 'count(DISTINCT forscreen_id) as forscreen_num,count(DISTINCT openid) as user_num';
+            $where = array('hotel_id'=>$hotel_id,'box_id'=>$v['box_id'],'small_app_id'=>1);
+            $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', '');
+            $box_list[$key]['box_forscreen_num'] = intval($forscreen_data[0]['forscreen_num']);
+            $box_list[$key]['box_forscreen_user_num'] = intval($forscreen_data[0]['user_num']);
+        }
+        $date_range = array(date('Y-m-d',strtotime('-30day')),date('Y-m-d',strtotime('-1day')));
+
+        $res_data = array('hotel_forscreen_nums'=>$hotel_forscreen_nums,'hotel_forscreen_user_nums'=>$hotel_forscreen_user_nums,
+            'box_list'=>$box_list,'start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range);
+        $res_data['stat_range_str']= '(近七天,数据更新至'.date('Y/m/d',strtotime($end_time)).')';
+        $res_data['stat_update_str'] = '数据更新至'.date('Y/m/d',strtotime('-1 day'));
+        $this->to_back($res_data);
+    }
+
+    public function dataCenter(){
+        $openid   = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $start_date = $this->params['start_date'];
+        $end_date   = $this->params['end_date'];
         $start_time = !empty($start_date)? $start_date.' 00:00:00' : date('Y-m-d 00:00:00',strtotime('-7 days'));
-        
         $end_time   = !empty($end_date)? $end_date.' 23:59:59' : date('Y-m-d 23:59:59',strtotime('-1 days'));
-       
         if($start_time>$end_time){
             $this->to_back(93075);   
         }
-        
         $data = [];
         //销售端数据开始
         //开通人数
@@ -177,10 +316,7 @@ class StatDataController extends CommonController{
         $group  = 'openid' ;
         $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', $group);
         $hotel_forscreen_user_nums = count($forscreen_data);   //酒楼投屏总人数
-        
-        
-        
-        
+
         //获取当前酒楼的包间
         $m_box = new \Common\Model\BoxModel();
         $fields = 'a.id box_id,a.name box_name';

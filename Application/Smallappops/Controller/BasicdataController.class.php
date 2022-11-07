@@ -40,10 +40,6 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
                 break;
-            case 'filter':
-                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,
-                    'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002);
-                $this->is_verify = 1;
 
         }
         parent::_init_();
@@ -288,12 +284,11 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
-
         $start_time = date('Y-m-d 00:00:00',strtotime('-1day'));
         switch ($day){
             case 1:
@@ -315,7 +310,7 @@ class BasicdataController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $staff_fields = 'count(a.id) as staff_num';
-        $staff_where = array('merchant.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
+        $staff_where = array('merchant.status'=>1,'hotel.state'=>1,'hotel.flag'=>0,'a.status'=>1);
         $staff_where['merchant.add_time'] = array('elt',$end_time);
 
         $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
@@ -361,12 +356,12 @@ class BasicdataController extends CommonController{
             if(!empty($res_remain)){
                 $remain_integral = $res_remain['total_integral'];
             }
-            $res_staticdata = $m_statichotelstaffdata->getStaffData($static_area_id,$static_maintainer_id,$start_time,$end_time);
-            $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$start_time,$end_time);
+            $res_staticdata = $m_statichotelstaffdata->getStaffData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
+            $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
 
             $res_data = array('hotel_num'=>$hotel_num,'staff_num'=>$staff_num,'get_integral'=>$res_staticdata['get_integral'],
                 'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'task_data'=>$res_staticdata['task_data'],
-                'brand_num'=>$res_sell['brand_num'],'series_num'=>$res_sell['series_num'],'sell_num'=>$res_sell['sell_num']
+                'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num'])
             );
             $res_data['desc'] = array('1.获得积分：时间段内一共获得多少积分；','2.剩余积分：截止到昨天24:00，剩余积分总量（待核销+正常）；','3.提现金额：时间段内一共提现多少钱',
                 '一.奖券任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；','3.售酒数量：发布任务的餐厅范围内，每日核销数量加和；','4.领券人：发布任务的餐厅范围内，总共领取金卡优惠券人数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（待核销+正常）；',
@@ -374,94 +369,6 @@ class BasicdataController extends CommonController{
                 '三.邀请函任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；', '3.点播应操作次数：发布任务的餐厅范围内，正常版位数*1.6，每日加和，四舍五入；','4.完成次数：发布任务的餐厅范围内，所以餐厅经理总共完成次数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（正常）；',
             );
         }
-        $this->to_back($res_data);
-    }
-
-    public function filter(){
-        $openid = $this->params['openid'];
-        $area_id = intval($this->params['area_id']);
-        $staff_id = intval($this->params['staff_id']);
-        $day = intval($this->params['day']);
-        $sdate = $this->params['sdate'];
-        $edate = $this->params['edate'];
-        $sell_openid = $this->params['sell_openid'];
-
-        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
-        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
-        if(empty($res_staff)){
-            $this->to_back(94001);
-        }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
-            $this->to_back(1001);
-        }
-        if($day>0){
-            $start_date = date('Y-m-d',strtotime('-1day'));
-            switch ($day){
-                case 1:
-                    $start_date = date('Y-m-d',strtotime('-1day'));
-                    break;
-                case 2:
-                    $start_date = date('Y-m-d',strtotime('-6day'));
-                    break;
-                case 3:
-                    $start_date = date('Y-m-01');
-                    break;
-            }
-            $end_date = date('Y-m-d',strtotime('-1day'));
-        }else{
-            $start_date = $sdate;
-            $end_date = $edate;
-        }
-
-        $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
-
-        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
-        $merchant_where['m.add_time'] = array('elt',$end_time);
-        $is_data = 1;
-        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
-            if($area_id>0){
-                $merchant_where['hotel.area_id'] = $area_id;
-            }
-        }elseif($area_id>0 && $staff_id>0){
-            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
-            $merchant_where['hotel.area_id'] = $area_id;
-        }elseif($area_id==0 && $staff_id>0){
-            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
-        }else{
-            $is_data = 0;
-        }
-        $all_stock_status = C('STOCK_AUDIT_STATUS');
-        $stock_status = array(array('name'=>'全部核销状态','status'=>0));
-        foreach ($all_stock_status as $k=>$v){
-            if($k!=3){
-                $stock_status[]=array('name'=>$v,'status'=>$k);
-            }
-        }
-        $hotel_list = array(array('hotel_id'=>0,'hotel_name'=>'全部餐厅','is_check'=>0));
-        if($is_data){
-            $hotel_id = 0;
-            if(!empty($sell_openid)){
-                $m_hotelstaff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_hotelstaff->getMerchantStaff('hotel.id as hotel_id',array('a.openid'=>$sell_openid,'a.status'=>1,'merchant.status'=>1));
-                $hotel_id = $res_staff[0]['hotel_id'];
-            }
-            $merchant_fields = 'hotel.id as hotel_id,hotel.name as hotel_name';
-            $res_hotel_list = $m_merchant->getMerchantInfo($merchant_fields,$merchant_where);
-            foreach ($res_hotel_list as $k=>$v){
-                $is_check = 0;
-                if($v['hotel_id']==$hotel_id){
-                    $is_check = 1;
-                }
-                $res_hotel_list[$k]['is_check'] = $is_check;
-            }
-            $hotel_list = array_merge($hotel_list,$res_hotel_list);
-        }
-        $date_range = array('2022-06-21',date('Y-m-d',strtotime('-1day')));
-        $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range,
-            'hotel_list'=>$hotel_list,'stock_status'=>$stock_status);
         $this->to_back($res_data);
     }
 

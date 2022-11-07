@@ -5,16 +5,10 @@ class StaticHotelstaffdataModel extends BaseModel{
 
     protected $tableName='smallapp_static_hotelstaffdata';
 
-    public function getStaffData($area_id,$maintainer_id,$start_time,$end_time){
+    public function getStaffData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time){
         $start_date = date('Y-m-d',strtotime($start_time));
         $end_date = date('Y-m-d',strtotime($end_time));
-        $fields = 'sum(integral) as get_integral,sum(money) as money,sum(task_invitevip_release_num) as invitevip_release_num,
-        sum(task_invitevip_get_num) as invitevip_get_num,sum(task_invitevip_sale_num) as invitevip_sale_num,sum(task_invitevip_getcoupon_num) as invitevip_getcoupon_num,
-        sum(task_invitevip_rewardintegral_num) as invitevip_rewardintegral_num,sum(task_demand_release_num) as demand_release_num,sum(task_demand_get_num) as demand_get_num,
-        sum(task_demand_operate_num) as demand_operate_num,sum(task_demand_finish_num) as demand_finish_num,sum(task_demand_rewardintegral_num) as demand_rewardintegral_num,
-        sum(task_invitation_release_num) as invitation_release_num,sum(task_invitation_get_num) as invitation_get_num,sum(task_invitation_operate_num) as invitation_operate_num,
-        sum(task_invitation_finish_num) as invitation_finish_num,sum(task_invitation_rewardintegral_num) as invitation_rewardintegral_num
-        ';
+        $fields = $this->query_fields();
         $where = array();
         if($area_id){
             $where['area_id'] = $area_id;
@@ -22,13 +16,52 @@ class StaticHotelstaffdataModel extends BaseModel{
         if($maintainer_id){
             $where['maintainer_id'] = $maintainer_id;
         }
+        if($hotel_id){
+            $where['hotel_id'] = $hotel_id;
+        }
         $where['static_date'] = array(array('egt',$start_date),array('elt',$end_date));
         $stat_data = $this->getDataList($fields,$where,'id desc');
-        $get_integral = $money = 0;
+        $forscreen_num = $pub_num = $welcome_num = $birthday_num = $signin_num = $get_integral = $money = 0;
         if(!empty($stat_data)){
-            $get_integral = $stat_data[0]['get_integral'];
-            $money = $stat_data[0]['money'];
+            $get_integral = intval($stat_data[0]['get_integral']);
+            $money = intval($stat_data[0]['money']);
+            $forscreen_num = intval($stat_data[0]['forscreen_num']);
+            $pub_num = intval($stat_data[0]['pub_num']);
+            $welcome_num = intval($stat_data[0]['welcome_num']);
+            $birthday_num = intval($stat_data[0]['birthday_num']);
+            $signin_num = intval($stat_data[0]['signin_num']);
         }
+        $task_data = $this->taskdata($stat_data);
+        $res_data = array('forscreen_num'=>$forscreen_num,'pub_num'=>$pub_num,'welcome_num'=>$welcome_num,
+            'birthday_num'=>$birthday_num,'signin_num'=>$signin_num,'get_integral'=>$get_integral,'money'=>$money,
+            'task_data'=>$task_data);
+        return $res_data;
+    }
+
+    public function getHotelStaffData($hotel_id,$start_time,$end_time){
+        $start_date = date('Y-m-d',strtotime($start_time));
+        $end_date = date('Y-m-d',strtotime($end_time));
+        $fields = $this->query_fields();
+        $where = array('hotel_id'=>$hotel_id);
+        $where['static_date'] = array(array('egt',$start_date),array('elt',$end_date));
+        $res_stat_data = $this->getALLDataList($fields,$where,'get_integral desc','','openid');
+        $res_data = array();
+        if(!empty($res_stat_data)){
+            foreach ($res_stat_data as $v){
+                $stat_data = array($v);
+                $task_data = $this->taskdata($stat_data);
+                $forscreen_num = intval($stat_data[0]['forscreen_num']);
+                $get_integral = intval($stat_data[0]['get_integral']);
+                $money = intval($stat_data[0]['money']);
+                $info = array('openid'=>$v['openid'],'forscreen_num'=>$forscreen_num,'get_integral'=>$get_integral,'money'=>$money,
+                    'task_data'=>$task_data);
+                $res_data[] = $info;
+            }
+        }
+        return $res_data;
+    }
+
+    public function taskdata($stat_data){
         $stat_task_types = C('STAT_TASK_TYPES');
         $task_data = array();
         foreach ($stat_task_types as $k=>$v){
@@ -128,7 +161,18 @@ class StaticHotelstaffdataModel extends BaseModel{
             }
             $task_data[]=$info;
         }
-        $res_data = array('get_integral'=>$get_integral,'money'=>$money,'task_data'=>$task_data);
-        return $res_data;
+        return $task_data;
+    }
+
+    private function query_fields(){
+        $fields = 'sum(forscreen_num) as forscreen_num,sum(pub_num) as pub_num,sum(welcome_num) as welcome_num,sum(birthday_num) as birthday_num,
+        sum(signin_num) as signin_num,sum(integral) as get_integral,sum(money) as money,sum(task_invitevip_release_num) as invitevip_release_num,
+        sum(task_invitevip_get_num) as invitevip_get_num,sum(task_invitevip_sale_num) as invitevip_sale_num,sum(task_invitevip_getcoupon_num) as invitevip_getcoupon_num,
+        sum(task_invitevip_rewardintegral_num) as invitevip_rewardintegral_num,sum(task_demand_release_num) as demand_release_num,sum(task_demand_get_num) as demand_get_num,
+        sum(task_demand_operate_num) as demand_operate_num,sum(task_demand_finish_num) as demand_finish_num,sum(task_demand_rewardintegral_num) as demand_rewardintegral_num,
+        sum(task_invitation_release_num) as invitation_release_num,sum(task_invitation_get_num) as invitation_get_num,sum(task_invitation_operate_num) as invitation_operate_num,
+        sum(task_invitation_finish_num) as invitation_finish_num,sum(task_invitation_rewardintegral_num) as invitation_rewardintegral_num,openid
+        ';
+        return $fields;
     }
 }

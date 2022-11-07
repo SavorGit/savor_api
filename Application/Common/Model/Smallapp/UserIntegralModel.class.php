@@ -5,7 +5,7 @@ use Common\Model\BaseModel;
 class UserIntegralModel extends BaseModel{
 	protected $tableName='smallapp_user_integral';
 
-    public function getRemainIntegral($area_id,$maintainer_id){
+    public function getRemainIntegral($area_id,$maintainer_id,$hotel_id=0){
         $where = array('staff.status'=>1,'merchant.status'=>1);
         $freeze_where = array();
         if($area_id){
@@ -15,6 +15,10 @@ class UserIntegralModel extends BaseModel{
         if($maintainer_id){
             $where['ext.maintainer_id'] = $maintainer_id;
             $freeze_where['ext.maintainer_id'] = $maintainer_id;
+        }
+        if($hotel_id){
+            $where['merchant.hotel_id'] = $hotel_id;
+            $freeze_where['a.hotel_id'] = $hotel_id;
         }
         $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
         $where['a.update_time'] = array('elt',$end_time);

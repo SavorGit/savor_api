@@ -4,12 +4,13 @@ use Common\Model\BaseModel;
 class StaffModel extends BaseModel{
     protected $tableName = 'integral_merchant_staff';
 
-    public function getMerchantStaff($fileds,$where){
+    public function getMerchantStaff($fileds,$where,$orderby=''){
         $res = $this->alias('a')
             ->field($fileds)
             ->join('savor_integral_merchant merchant on a.merchant_id=merchant.id','left')
             ->join('savor_smallapp_user user on user.openid=a.openid','left')
             ->where($where)
+            ->order($orderby)
             ->select();
         return $res;
     }

@@ -63,4 +63,36 @@ class OpsstaffModel extends BaseModel{
         return $res_data;
     }
 
+    public function checkStaffpermission($staff_info,$area_id,$staff_id){
+        $permission = json_decode($staff_info['permission'],true);
+        switch ($permission['hotel_info']['type']) {
+            case 1:
+                $type = 1;
+                break;
+            case 2:
+                $type = 2;
+                if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
+                    $type = 1001;//系统报错码
+                }
+                break;
+            case 3:
+                $type = 3;
+                if($staff_id!=$staff_info['id']){
+                    $type = 1001;
+                }
+                break;
+            case 4:
+                $type = 4;
+                if($area_id>0){
+                    if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
+                        $type = 1001;
+                    }
+                }
+                break;
+            default:
+                $type = 0;
+        }
+        return $type;
+    }
+
 }

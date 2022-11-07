@@ -26,29 +26,22 @@ class StaffController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
-        $merchant_id = intval($res_merchant['id']);
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staffs = $m_staff->getDataList('id,openid,level',array('merchant_id'=>$merchant_id,'status'=>1),'level asc');
-        $datalist = array(array('openid'=>'','nickName'=>'全部销售经理','staff_id'=>0,'level'=>0,'is_check'=>0));
+        $fileds = 'a.id as staff_id,a.level,a.openid,user.nickName';
+        $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        $res_staffs = $m_staff->getMerchantStaff($fileds,$where);
+        $staff_list = array(array('openid'=>'','nickName'=>'全部销售经理','staff_id'=>0,'level'=>0,'is_check'=>0));
         if(!empty($res_staffs)){
-            $m_user = new \Common\Model\Smallapp\UserModel();
             foreach ($res_staffs as $v){
-                $where = array('openid'=>$v['openid']);
-                $fields = 'openid,nickName';
-                $res_user = $m_user->getOne($fields,$where);
-                $res_user['staff_id'] = $v['id'];
-                $res_user['level'] = intval($v['level']);
                 $is_check = 0;
                 if(!empty($sell_openid) && $sell_openid==$v['openid']){
                     $is_check = 1;
                 }
-                $res_user['is_check'] = $is_check;
-                $datalist[] = $res_user;
+                $v['is_check'] = $is_check;
+                $staff_list[] = $v;
             }
         }
-        $data = array('datalist'=>$datalist);
+        $data = array('datalist'=>$staff_list);
         $this->to_back($data);
     }
 

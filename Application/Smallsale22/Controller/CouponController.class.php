@@ -364,7 +364,8 @@ class CouponController extends CommonController{
                 }
             }
             $m_paylog = new \Common\Model\Smallapp\PaylogModel();
-            $pay_data = array('coupon_user_id'=>$coupon_user_id,'wxorder_id'=>$order_id,'pay_result'=>json_encode($res));
+            $pay_data = array('coupon_user_id'=>$coupon_user_id,'hotel_id'=>$hotel_id,'openid'=>$openid,
+                'idcode'=>$idcode,'wxorder_id'=>$order_id,'pay_result'=>json_encode($res));
             $m_paylog->add($pay_data);
 
             $resp_data = array('incode'=>100,'message'=>'成功使用优惠券');

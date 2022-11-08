@@ -778,10 +778,12 @@ class IndexController extends CommonController{
         }
 
         $hotel_seckill_goods_id=0;
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
-        $res_popup_params['source'] = 5;
-
+        $res_popup_params = array();
+        if($box_id>0){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
+            $res_popup_params['source'] = 5;
+        }
         $data['params'] = $res_popup_params;
         $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
         $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;

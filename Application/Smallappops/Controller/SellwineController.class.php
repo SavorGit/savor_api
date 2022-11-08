@@ -10,7 +10,7 @@ class SellwineController extends CommonController{
         switch(ACTION_NAME) {
             case 'filter':
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,
-                    'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002);
+                    'hotel_id'=>1002,'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'datalist':
@@ -28,6 +28,7 @@ class SellwineController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
         $day = intval($this->params['day']);
+        $hotel_id = intval($this->params['hotel_id']);
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
         $sell_openid = $this->params['sell_openid'];
@@ -41,7 +42,13 @@ class SellwineController extends CommonController{
         if($type==1001){
             $this->to_back(1001);
         }
+        $is_data = 1;
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
         if($day>0){
+            $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
+            $merchant_where['m.add_time'] = array('elt',$end_time);
+
             $start_date = date('Y-m-d',strtotime('-1day'));
             switch ($day){
                 case 1:
@@ -55,30 +62,32 @@ class SellwineController extends CommonController{
                     break;
             }
             $end_date = date('Y-m-d',strtotime('-1day'));
+            $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
+            if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+                if($area_id>0){
+                    $merchant_where['hotel.area_id'] = $area_id;
+                }
+            }elseif($area_id>0 && $staff_id>0){
+                $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+                $merchant_where['hotel.area_id'] = $area_id;
+            }elseif($area_id==0 && $staff_id>0){
+                $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            }else{
+                $is_data = 0;
+            }
         }else{
             $start_date = $sdate;
             $end_date = $edate;
-        }
 
-        $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
-
-        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
-        $merchant_where['m.add_time'] = array('elt',$end_time);
-        $is_data = 1;
-        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
-            if($area_id>0){
-                $merchant_where['hotel.area_id'] = $area_id;
+            $permission = json_decode($res_staff['permission'],true);
+            if($permission['hotel_info']['type']==2){
+                $merchant_where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
             }
-        }elseif($area_id>0 && $staff_id>0){
-            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
-            $merchant_where['hotel.area_id'] = $area_id;
-        }elseif($area_id==0 && $staff_id>0){
-            $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
-        }else{
-            $is_data = 0;
+            if($permission['hotel_info']['type']==3){
+                $merchant_where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+            }
         }
+
         $all_stock_status = C('STOCK_AUDIT_STATUS');
         $stock_status = array(array('name'=>'全部核销状态','status'=>0));
         foreach ($all_stock_status as $k=>$v){
@@ -89,10 +98,9 @@ class SellwineController extends CommonController{
         $hotel_list = array(array('hotel_id'=>0,'hotel_name'=>'全部餐厅','is_check'=>0));
         $staff_list = array(array('openid'=>'','nickName'=>'全部销售经理','staff_id'=>0,'level'=>0,'is_check'=>0));
         if($is_data){
-            $hotel_id = 0;
             if(!empty($sell_openid)){
                 $m_hotelstaff = new \Common\Model\Integral\StaffModel();
-                $res_staff = $m_hotelstaff->getMerchantStaff('hotel.id as hotel_id',array('a.openid'=>$sell_openid,'a.status'=>1,'merchant.status'=>1));
+                $res_staff = $m_hotelstaff->getMerchantStaff('merchant.hotel_id',array('a.openid'=>$sell_openid,'a.status'=>1,'merchant.status'=>1));
                 $hotel_id = $res_staff[0]['hotel_id'];
             }
             $merchant_fields = 'hotel.id as hotel_id,hotel.name as hotel_name';

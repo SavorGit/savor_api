@@ -41,7 +41,7 @@ class StatDataController extends CommonController{
         $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $staff_fields = 'a.id,a.level,user.openid,user.avatarUrl,user.nickName';
+        $staff_fields = 'a.id,a.level,merchant.name as mgr_name,user.openid,user.avatarUrl,user.nickName';
         $staff_where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
         $res_staff = $m_staff->getMerchantStaff($staff_fields,$staff_where);
         $staff_num = count($res_staff);
@@ -52,6 +52,9 @@ class StatDataController extends CommonController{
                 $manager_name = $v['nickName'];
             }
             $all_staff[$v['openid']] = $v;
+        }
+        if(empty($manager_name)){
+            $manager_name = $res_staff[0]['mgr_name'];
         }
         $remain_integral = 0;
         if($source==1){
@@ -66,7 +69,12 @@ class StatDataController extends CommonController{
         $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
         $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
 
-        $date_range = array(date('Y-m-d',strtotime('-30day')),date('Y-m-d',strtotime('-1day')));
+        $range_sdate = C('OPS_STAT_DATE');
+        $range_smdate = date('Y-m-d',strtotime('-30day'));
+        if($range_smdate>=$range_sdate){
+            $range_sdate = $range_smdate;
+        }
+        $date_range = array($range_sdate,date('Y-m-d',strtotime('-1day')));
         $stat_range_str= '(近七天,数据更新至'.date('Y/m/d',strtotime('-1 day')).')';
         $stat_update_str = '数据更新至'.date('Y/m/d',strtotime('-1 day'));
         $res_data = array('manager_name'=>$manager_name,'staff_num'=>$staff_num,'get_integral'=>$res_staticdata['get_integral'],

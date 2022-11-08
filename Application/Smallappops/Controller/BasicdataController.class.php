@@ -60,8 +60,8 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $check_type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($check_type==0){
+        $check_type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($check_type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -119,8 +119,8 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -160,8 +160,8 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -201,8 +201,8 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -242,8 +242,8 @@ class BasicdataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $type = $this->check_permission($res_staff,$area_id,$staff_id);
-        if($type==0){
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
             $this->to_back(1001);
         }
         $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
@@ -370,38 +370,6 @@ class BasicdataController extends CommonController{
             );
         }
         $this->to_back($res_data);
-    }
-
-    private function check_permission($staff_info,$area_id,$staff_id){
-        $permission = json_decode($staff_info['permission'],true);
-        switch ($permission['hotel_info']['type']) {
-            case 1:
-                $type = 1;
-                break;
-            case 2:
-                if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
-                    $this->to_back(1001);
-                }
-                $type = 2;
-                break;
-            case 3:
-                if($staff_id!=$staff_info['id']){
-                    $this->to_back(1001);
-                }
-                $type = 3;
-                break;
-            case 4:
-                if($area_id>0){
-                    if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
-                        $this->to_back(1001);
-                    }
-                }
-                $type = 4;
-                break;
-            default:
-                $type = 0;
-        }
-        return $type;
     }
 
 }

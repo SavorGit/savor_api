@@ -1087,7 +1087,7 @@ class IndexController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array('openid'=>$openid,'status'=>1);
         $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
-        $resp_data = array();
+        $resp_data = array('num'=>0,'datalist'=>array());
         if(empty($user_info)){
             $this->to_back($resp_data);
         }
@@ -1095,8 +1095,14 @@ class IndexController extends CommonController{
         $where['a.end_time'] = array('egt',date('Y-m-d H:i:s'));
         $fields = 'a.*,coupon.use_range,coupon.range_finance_goods_ids';
         $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+        $res_countcoupon = $m_coupon_user->getUsercouponDatas('count(a.id) as num',$where,'a.id desc','0,1');
+        $num = 0;
+        if(!empty($res_countcoupon)){
+            $num = intval($res_countcoupon[0]['num']);
+        }
         $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.money desc','0,2');
-        if(!empty($res_coupon)){
+        if($num>0){
+            $datalist = array();
             $m_hotel = new \Common\Model\HotelModel();
             foreach ($res_coupon as $v){
                 if($v['hotel_id']){
@@ -1120,8 +1126,10 @@ class IndexController extends CommonController{
                 $info = array('coupon_user_id'=>$v['id'],'money'=>$v['money'],'min_price'=>$min_price,'expire_time'=>"有效期至{$expire_time}",
                     'hotel_name'=>$hotel_name,'range_str'=>$range_str,'start_time'=>$start_time,'end_time'=>$expire_time
                 );
-                $resp_data[]=$info;
+                $datalist[]=$info;
             }
+            $resp_data['num'] = $num;
+            $resp_data['datalist'] = $datalist;
         }
         $this->to_back($resp_data);
     }

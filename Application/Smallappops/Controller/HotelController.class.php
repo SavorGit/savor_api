@@ -10,7 +10,7 @@ class HotelController extends CommonController{
         switch(ACTION_NAME) {
             case 'hotellist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'type'=>1002);
                 break;
             case 'search':
                 $this->is_verify = 1;
@@ -49,6 +49,7 @@ class HotelController extends CommonController{
     }
     public function hotellist(){
         $openid = $this->params['openid'];
+        $type = $this->params['type'];//1全部 2个人
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -65,6 +66,13 @@ class HotelController extends CommonController{
         if($permission['hotel_info']['type']==3){
             $where['b.maintainer_id'] = $res_staff['sysuser_id'];
         }
+        if(!empty($type) && $permission['hotel_info']['type']==4){
+            if($type==1){
+                $where['a.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            }elseif($type==2){
+                $where['b.maintainer_id'] = $res_staff['sysuser_id'];
+            }
+        }
         $fields = 'a.id,a.name,a.pinyin';
         $res_hotels = $m_hotel->getHotelLists($where,'a.pinyin asc','',$fields);
         $all_hotels = array();
@@ -77,6 +85,9 @@ class HotelController extends CommonController{
         foreach ($all_hotels as $k=>$v){
             $dinfo = array('id'=>ord("$k")-64,'region'=>$k,'items'=>$v);
             $data[]=$dinfo;
+        }
+        if($type==2 && in_array($permission['hotel_info']['type'],array('1','2'))){
+            $data = array();
         }
         $this->to_back($data);
     }
@@ -420,7 +431,7 @@ class HotelController extends CommonController{
             $m_hotel_drinks = new \Common\Model\HotelDrinksModel();
             $hwhere = array('hotel_id'=>$hotel_id,'type'=>2);
             $res_drinks = $m_hotel_drinks->getALLDataList('image,add_time',$hwhere,'id desc','0,1','');
-            $hotel_drinks_content = '当前餐厅无在售酒水';
+            $hotel_drinks_content = '无';
             $hotel_drinks_num = 0;
             if(!empty($res_drinks)){
                 if(!empty($res_drinks[0]['image'])){

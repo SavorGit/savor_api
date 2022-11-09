@@ -70,6 +70,10 @@ class IndexController extends CommonController{
             case 'happylist':
                 $this->is_verify = 0;
                 break;
+            case 'getMemberCouponPopup':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -1076,6 +1080,50 @@ class IndexController extends CommonController{
             $result[] = $v;
         }
         $this->to_back($result);
+    }
+
+    public function getMemberCouponPopup(){
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,mpopenid',$where,'');
+        $resp_data = array();
+        if(empty($user_info)){
+            $this->to_back($resp_data);
+        }
+        $where = array('a.openid'=>$openid,'a.status'=>1,'a.ustatus'=>1,'coupon.type'=>2);
+        $where['a.end_time'] = array('egt',date('Y-m-d H:i:s'));
+        $fields = 'a.*,coupon.use_range,coupon.range_finance_goods_ids';
+        $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+        $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.money desc','0,2');
+        if(!empty($res_coupon)){
+            $m_hotel = new \Common\Model\HotelModel();
+            foreach ($res_coupon as $v){
+                if($v['hotel_id']){
+                    $res_hotel = $m_hotel->getInfoById($v['hotel_id'],'name');
+                    $hotel_name = $res_hotel['name'];
+                }else{
+                    $hotel_name = '多餐厅可用';
+                }
+                $expire_time = date('Y.m.d H:i',strtotime($v['end_time']));
+                $start_time = date('Y.m.d H:i',strtotime($v['start_time']));
+                if($v['min_price']>0){
+                    $min_price = "满{$v['min_price']}可用";
+                }else{
+                    $min_price = '无门槛立减券';
+                }
+                if($v['use_range']==1){
+                    $range_str = '全部活动酒水';
+                }else{
+                    $range_str = '部分活动酒水';
+                }
+                $info = array('coupon_user_id'=>$v['id'],'money'=>$v['money'],'min_price'=>$min_price,'expire_time'=>"有效期至{$expire_time}",
+                    'hotel_name'=>$hotel_name,'range_str'=>$range_str,'start_time'=>$start_time,'end_time'=>$expire_time
+                );
+                $resp_data[]=$info;
+            }
+        }
+        $this->to_back($resp_data);
     }
 
     /**

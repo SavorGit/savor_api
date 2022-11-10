@@ -133,7 +133,7 @@ class CouponController extends CommonController{
                 if($v['min_price']>0){
                     $min_price = "满{$v['min_price']}可用";
                 }else{
-                    $min_price = '无门槛立减券';
+                    $min_price = '无门槛';
                 }
                 $range_goods = array();
                 if($v['use_range']==1){
@@ -235,7 +235,7 @@ class CouponController extends CommonController{
             if($coupon_info['min_price']>0){
                 $min_price = "满{$coupon_info['min_price']}可用";
             }else{
-                $min_price = '无门槛立减券';
+                $min_price = '无门槛';
             }
             $start_time = date('Y.m.d H:i',strtotime($coupon_info['start_time']));
             $end_time = date('Y.m.d H:i',strtotime($coupon_info['end_time']));

@@ -109,7 +109,7 @@ class LotterypoolController extends CommonController{
                         if($res_coupon['min_price']>0){
                             $min_price = "满{$res_coupon['min_price']}可用";
                         }else{
-                            $min_price = '无门槛立减券';
+                            $min_price = '无门槛';
                         }
                         $m_user_coupon = new \Common\Model\Smallapp\UserCouponModel();
                         $res_ucoupon = $m_user_coupon->getInfo(array('activity_id'=>$activity_id,'coupon_id'=>$coupon_id));
@@ -494,7 +494,7 @@ class LotterypoolController extends CommonController{
                         if($res_coupon['min_price']>0){
                             $min_price = "满{$res_coupon['min_price']}可用";
                         }else{
-                            $min_price = '无门槛立减券';
+                            $min_price = '无门槛';
                         }
 
                         $start_time = date('Y.m.d H:i',strtotime($start_time));

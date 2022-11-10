@@ -1116,7 +1116,7 @@ class IndexController extends CommonController{
                 if($v['min_price']>0){
                     $min_price = "满{$v['min_price']}可用";
                 }else{
-                    $min_price = '无门槛立减券';
+                    $min_price = '无门槛';
                 }
                 if($v['use_range']==1){
                     $range_str = '全部活动酒水';

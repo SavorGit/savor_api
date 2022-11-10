@@ -619,7 +619,7 @@ class HotelController extends CommonController{
         $all_drinks = $m_hotel_drinks->getALLDataList($fields,$where,'','',$group);
         $datalist = array();
         if(!empty($all_drinks)){
-            $oss_host = 'http://'.C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             foreach ($all_drinks as $v){
                 $imgs = array();
                 $re_imgs = $m_hotel_drinks->getALLDataList('image',array('id'=>array('in',$v['all_ids'])),'id desc','','');

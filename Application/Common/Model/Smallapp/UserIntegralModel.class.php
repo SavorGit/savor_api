@@ -7,7 +7,7 @@ class UserIntegralModel extends BaseModel{
 
     public function getRemainIntegral($area_id,$maintainer_id,$hotel_id=0){
         $where = array('staff.status'=>1,'merchant.status'=>1);
-        $freeze_where = array();
+        $freeze_where = array('a.status'=>2);
         if($area_id){
             $where['hotel.area_id'] = $area_id;
             $freeze_where['a.area_id'] = $area_id;

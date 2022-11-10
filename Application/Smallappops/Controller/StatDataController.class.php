@@ -54,7 +54,15 @@ class StatDataController extends CommonController{
             $all_staff[$v['openid']] = $v;
         }
         if(empty($manager_name)){
-            $manager_name = $res_staff[0]['mgr_name'];
+            if(!empty($res_staff)){
+                $manager_name = $res_staff[0]['mgr_name'];
+            }else{
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
+                if(!empty($res_merchant)){
+                    $manager_name = $res_merchant['name'];
+                }
+            }
         }
         $remain_integral = 0;
         if($source==1){

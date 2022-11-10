@@ -90,11 +90,11 @@ class StaticHotelstaffdataModel extends BaseModel{
                     $datas = array(
                         array('name'=>'发布','value'=>$release_num),
                         array('name'=>'领取','value'=>$get_num),
-                        array('name'=>'核销券','value'=>$sale_num),
+                        array('name'=>'售酒数','value'=>$sale_num),
                         array('name'=>'领券人','value'=>$getcoupon_num),
                         array('name'=>'奖励','value'=>$rewardintegral_num),
                     );
-                    $info = array('name'=>'奖券任务（只统计金卡）','task_type'=>26,'datas'=>$datas);
+                    $info = array('name'=>'优惠券任务（只统计金卡）','task_type'=>26,'datas'=>$datas);
                     break;
                 case 25:
                     $release_num = 0;

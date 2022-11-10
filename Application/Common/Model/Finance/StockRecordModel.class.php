@@ -37,7 +37,7 @@ class StockRecordModel extends BaseModel{
 
     public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group=''){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
-        $where = array();
+        $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')));
         if($area_id){
             $where['hotel.area_id'] = $area_id;
         }

@@ -453,7 +453,7 @@ return array(
     'smallapp_choose_enddate_error'=>'请选择大于当前时间的结束时间',
     'smallappsale_invitation_hotel_error'=>'当前酒楼暂未开通邀请函,请联系管理员',
     'smallappsale_finance_qrcode_type_error'=>'二维码单位和商品单位不一致',
-    'smallappsale_finance_qrcode_error'=>'二维码不存在',
+    'smallappsale_finance_qrcode_error'=>'请扫酒水二维码',
     'smallappsale_finance_stock_goods_hasin_exist'=>'扫码商品已入库',
     'smallappsale_finance_stock_goods_hasout_exist'=>'扫码商品已出库',
     'smallappsale_finance_stock_goods_hasin_noexist'=>'扫码商品未入库',

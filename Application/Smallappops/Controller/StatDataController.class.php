@@ -147,7 +147,7 @@ class StatDataController extends CommonController{
 
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
         $fields = 'count(DISTINCT forscreen_id) as num';
-        $where = array('hotel_id'=>$hotel_id,'small_app_id'=>1);
+        $where = array('hotel_id'=>$hotel_id,'small_app_id'=>array('in','1,2'),'mobile_brand'=>array('neq','devtools'));
         $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $forscreen_data = $m_forscreen->getWhere($fields,$where, '', '','');
         $hotel_forscreen_nums = intval($forscreen_data[0]['num']);
@@ -155,15 +155,15 @@ class StatDataController extends CommonController{
         $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', '');
         $hotel_forscreen_user_nums = intval($forscreen_data[0]['num']);
         $m_box = new \Common\Model\BoxModel();
-        $fields = 'a.id box_id,a.name box_name';
+        $fields = 'a.id box_id,a.name box_name,a.mac as box_mac';
         $box_list = $m_box->getBoxListByHotelid($fields,$hotel_id);
         foreach($box_list as $key=>$v){
             $fields = 'count(DISTINCT forscreen_id) as forscreen_num,count(DISTINCT openid) as user_num';
-            $where = array('hotel_id'=>$hotel_id,'box_id'=>$v['box_id'],'small_app_id'=>1);
+            $where = array('hotel_id'=>$hotel_id,'box_id'=>$v['box_id'],'small_app_id'=>array('in','1,2'),'mobile_brand'=>array('neq','devtools'));
             $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', '');
-            $box_list[$key]['box_forscreen_num'] = intval($forscreen_data[0]['forscreen_num']);
-            $box_list[$key]['box_forscreen_user_num'] = intval($forscreen_data[0]['user_num']);
+            $forscreenbox_data = $m_forscreen->getWhere($fields, $where, '', '', '');
+            $box_list[$key]['box_forscreen_num'] = intval($forscreenbox_data[0]['forscreen_num']);
+            $box_list[$key]['box_forscreen_user_num'] = intval($forscreenbox_data[0]['user_num']);
         }
         $date_range = array(date('Y-m-d',strtotime('-30day')),date('Y-m-d',strtotime('-1day')));
 

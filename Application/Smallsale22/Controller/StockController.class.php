@@ -1211,7 +1211,7 @@ class StockController extends CommonController{
                             case 1:
                             case 4:
                                 $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
-                                    'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'update_time'=>date('Y-m-d H:i:s')
+                                    'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'wo_time'=>date('Y-m-d H:i:s')
                                 );
                                 $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
                                 break;
@@ -1237,7 +1237,7 @@ class StockController extends CommonController{
                         $add_data['wo_data_imgs'] = $data_imgs;
                         $add_data['wo_status'] = 1;
                         $add_data['wo_num'] = 1;
-                        $add_data['update_time'] = date('Y-m-d H:i:s');
+                        $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
                         $m_stock_record->add($add_data);
                     }

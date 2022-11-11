@@ -186,7 +186,7 @@ class SellwineController extends CommonController{
             }
         }
 
-        $fields = 'a.idcode,a.add_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid';
+        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid';
         $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_records)){
@@ -197,6 +197,11 @@ class SellwineController extends CommonController{
             $fileds = 'a.idcode,a.price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
             spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
             foreach ($res_records as $v){
+                if($v['wo_time']=='0000-00-00 00:00:00'){
+                    $add_time = $v['add_time'];
+                }else{
+                    $add_time = $v['wo_time'];
+                }
                 $res_user = $m_user->getOne('*',array('openid'=>$v['op_openid']),'id desc');
                 $nickName = $res_user['nickName'];
                 $avatarUrl = $res_user['avatarUrl'];
@@ -210,7 +215,7 @@ class SellwineController extends CommonController{
                 $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
 
                 $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
-                    'num'=>count($res_goods),'add_time'=>$v['add_time'],'goods'=>$res_goods,'coupon'=>$res_coupon);
+                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon);
             }
         }
         $this->to_back($data_list);

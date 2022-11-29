@@ -14,7 +14,7 @@ class HotelController extends CommonController{
                 break;
             case 'search':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'keywords'=>1001);
+                $this->valid_fields = array('openid'=>1001,'keywords'=>1001,'source'=>1002);
                 break;
             case 'baseinfo':
                 $this->is_verify = 1;
@@ -95,24 +95,29 @@ class HotelController extends CommonController{
     public function search(){
         $openid = $this->params['openid'];
         $keywords = trim($this->params['keywords']);
+        $source = intval($this->params['source']);//来源1统计数据酒楼搜索 2添加联系人酒楼搜索
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $permission = json_decode($res_staff['permission'],true);
-        $hotel_types = C('HEART_HOTEL_BOX_TYPE');
-        $m_hotel = new \Common\Model\HotelModel();
-        $where = array('a.state'=>1,'a.flag'=>0,'a.hotel_box_type'=>array('in',array_keys($hotel_types)));
-        if($permission['hotel_info']['type']==2){
-            $where['a.area_id'] = array('in',$permission['hotel_info']['area_ids']);
-        }
-        if($permission['hotel_info']['type']==3){
-            $where['b.maintainer_id'] = $res_staff['sysuser_id'];
+        if($source==2){
+            $where = array('a.state'=>1,'a.flag'=>0);
+        }else{
+            $permission = json_decode($res_staff['permission'],true);
+            $hotel_types = C('HEART_HOTEL_BOX_TYPE');
+            $where = array('a.state'=>1,'a.flag'=>0,'a.hotel_box_type'=>array('in',array_keys($hotel_types)));
+            if($permission['hotel_info']['type']==2){
+                $where['a.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            }
+            if($permission['hotel_info']['type']==3){
+                $where['b.maintainer_id'] = $res_staff['sysuser_id'];
+            }
         }
         $where['a.name'] = array('like',"%$keywords%");
         $fields = 'a.id as hotel_id,a.name as hotel_name';
+        $m_hotel = new \Common\Model\HotelModel();
         $res_hotels = $m_hotel->getHotelLists($where,'a.pinyin asc','',$fields);
         $this->to_back($res_hotels);
     }

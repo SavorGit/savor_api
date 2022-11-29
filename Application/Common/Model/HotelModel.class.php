@@ -33,6 +33,18 @@ class HotelModel extends Model{
         return $data;
     }
 
+    public function getHotelDataList($fields,$where,$orderby,$limit=''){
+        $data = $this->alias('hotel')
+            ->field($fields)
+            ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+            ->join('savor_area_info area on area.id=hotel.area_id','left')
+            ->where($where)
+            ->order($orderby)
+            ->limit($limit)
+            ->select();
+        return $data;
+    }
+
     public function saveData($data, $where) {
         $bool = $this->where($where)->save($data);
         return $bool;

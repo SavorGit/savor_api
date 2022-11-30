@@ -2,8 +2,8 @@
 namespace Common\Model\Crm;
 use Common\Model\BaseModel;
 
-class UserModel extends BaseModel{
-	protected $tableName='crm_user';
+class ContactModel extends BaseModel{
+	protected $tableName='crm_contact';
 
 	public function getUserList($fields,$where,$orderby,$limit=''){
         $data = $this->alias('a')

@@ -150,7 +150,7 @@ class CrminfoController extends CommonController{
         if(!empty($keywords)){
             $where['a.name'] = array('like',"%$keywords%");
         }
-        $m_crmuser = new \Common\Model\Crm\UserModel();
+        $m_crmuser = new \Common\Model\Crm\ContactModel;
         $res_user = $m_crmuser->getUserList($fields,$where,'a.id desc',$limit);
 
         $res_data = array('datalist'=>$res_user);
@@ -166,7 +166,7 @@ class CrminfoController extends CommonController{
             $this->to_back(94001);
         }
 
-        $m_crmuser = new \Common\Model\Crm\UserModel();
+        $m_crmuser = new \Common\Model\Crm\ContactModel;
         $res_info = $m_crmuser->getInfo(array('id'=>$contact_id));
         if(!empty($res_info)){
             $oss_host = get_oss_host();
@@ -226,6 +226,11 @@ class CrminfoController extends CommonController{
         $email = $this->params['email'];
         $address = $this->params['address'];
 
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
         $data = array('openid'=>$openid,'name'=>$name,'gender'=>$gender,
             'hotel_id'=>$hotel_id,'job'=>$job,'department'=>$department,'province_id'=>$province_id,'city_id'=>$city_id,'area_id'=>$area_id,
             'mobile'=>$mobile,'type'=>1,'status'=>1);
@@ -245,7 +250,7 @@ class CrminfoController extends CommonController{
                 $data['type']=1;
             }
         }
-        $m_crmuser = new \Common\Model\Crm\UserModel();
+        $m_crmuser = new \Common\Model\Crm\ContactModel;
         if($id){
             $data['update_time'] = date('Y-m-d H:i:s');
             $m_crmuser->updateData(array('id'=>$id),$data);
@@ -325,6 +330,11 @@ class CrminfoController extends CommonController{
         $contractor = trim($this->params['contractor']);
         $mobile = $this->params['mobile'];
 
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
         $data = array('openid'=>$openid,'name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
             'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2
         );

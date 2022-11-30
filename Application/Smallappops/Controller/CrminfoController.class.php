@@ -176,8 +176,15 @@ class CrminfoController extends CommonController{
             }
             $res_info['img_avatar_url'] = $img_avatar_url;
             $m_hotel = new \Common\Model\HotelModel();
-            $res_hotel = $m_hotel->getInfoById($res_info['hotel_id']);
+            $res_hotel = $m_hotel->getHotelById('hotel.name,ext.maintainer_id',array('hotel.id'=>$res_info['hotel_id']));
             $res_info['hotel_name'] = $res_hotel['name'];
+            $maintainer = '';
+            if($res_hotel['maintainer_id']){
+                $m_sysuser = new \Common\Model\SysUserModel();
+                $res_sysuser = $m_sysuser->getUserInfo(array('id'=>$res_hotel['maintainer_id']) ,'remark');
+                $maintainer = $res_sysuser['remark'];
+            }
+            $res_info['maintainer'] = $maintainer;
             $type_str = '普通用户';
             if($res_info['type']==1){
                 $type_str = '销售端用户';
@@ -322,6 +329,11 @@ class CrminfoController extends CommonController{
             'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2
         );
         $m_hotel = new \Common\Model\HotelModel();
+        $hwhere = array('name'=>$name,'state'=>array('in',array(1,4)),'flag'=>0);
+        $res_hotel = $m_hotel->field('id,name')->where($hwhere)->find();
+        if(!empty($res_hotel)){
+            $this->to_back(94004);
+        }
         $hotel_id = $m_hotel->add($data);
         if($hotel_id){
             $m_media = new \Common\Model\MediaModel();

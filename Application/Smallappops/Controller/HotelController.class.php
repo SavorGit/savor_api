@@ -648,6 +648,77 @@ class HotelController extends CommonController{
         $this->to_back($res_data);
     }
 
+    public function nearby(){
+        $latitude = $this->params['latitude'];
+        $longitude = $this->params['longitude'];
+
+        $nearby_m = 1000;
+        $ret = getgeoByloa($latitude,$longitude);
+        $m_area = new \Common\Model\AreaModel();
+        if(empty($ret)){
+            $area_id = 1;
+        }else {
+            $city_name = $ret['addressComponent']['city'];
+            $fields = "id,region_name";
+            $where['region_name'] = $city_name;
+            $where['is_in_hotel'] = 1;
+            $where['is_valid']    = 1;
+            $city_info = $m_area->field($fields)->where($where)->order('id asc')->find();
+            if(empty($city_info)){
+                $area_id = 1;
+            }else{
+                $area_id = $city_info['id'];
+            }
+        }
+        $oss_host = get_oss_host();
+        $m_hotel = new \Common\Model\HotelModel();
+        $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps";
+        $where = array('a.area_id'=>$area_id,'a.state'=>1,'a.flag'=>0);
+        $test_hotel_ids = C('TEST_HOTEL');
+        $where['a.id'] = array('not in',"$test_hotel_ids");
+        $hotel_list = $m_hotel->alias('a')
+            ->join('savor_hotel_ext ext on a.id=ext.hotel_id','left')
+            ->join('savor_media media on ext.hotel_cover_media_id=media.id','left')
+            ->field($fields)->where($where)->select();
+        $nearby_data = array();
+        if($longitude>0 && $latitude>0){
+            $bd_lnglat = getgeoByTc($latitude, $longitude);
+            foreach($hotel_list as $k=>$v){
+                $v['dis'] = '';
+                if($v['gps']!='' && $longitude>0 && $latitude>0){
+                    $latitude = $bd_lnglat[0]['y'];
+                    $longitude = $bd_lnglat[0]['x'];
+
+                    $gps_arr = explode(',',$v['gps']);
+                    $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                    $v['dis_com'] = $dis;
+                    if($dis>1000){
+                        $tmp_dis = $dis/1000;
+                        $dis = sprintf('%0.2f',$tmp_dis);
+                        $dis = $dis.'km';
+                    }else{
+                        $dis = intval($dis);
+                        $dis = $dis.'m';
+                    }
+                    $v['dis'] = $dis;
+
+                    if($v['dis_com']<=$nearby_m){
+                        $nearby_data[]=$v;
+                    }
+                }
+            }
+            sortArrByOneField($nearby_data,'dis_com');
+        }
+        $datalist = array();
+        foreach ($nearby_data as $k=>$v){
+            $dis = $v['dis'];
+            if(empty($dis)){
+                $dis = '';
+            }
+            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis);
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
 
     private function changeadvList($res,$type=1){
         if($res){

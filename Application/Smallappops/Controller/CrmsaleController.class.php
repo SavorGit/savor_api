@@ -17,13 +17,17 @@ class CrmsaleController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'getContactUsers':
-                $this->valid_fields = array('openid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'keywords'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'addrecord':
                 $this->valid_fields = array('openid'=>1001,'visit_purpose'=>1001,'visit_type'=>1001,'contact_id'=>1001,
                     'type'=>1001,'content'=>1002,'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,
                     'signout_time'=>1002,'signout_hotel_id'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002);
+                $this->is_verify = 1;
+                break;
+            case 'recordinfo':
+                $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
                 $this->is_verify = 1;
                 break;
         }
@@ -75,28 +79,52 @@ class CrmsaleController extends CommonController{
             $lately = $all_lately[$type];
         }
         $fields = 'a.id as staff_id,su.remark as staff_name,user.avatarUrl,user.nickName';
-        $all_user = $m_opstaff->getStaffUserinfo($fields,array('a.status'=>1));
-        $res_data = array('lately'=>$lately,'all_user'=>$all_user);
+        $res_user = $m_opstaff->getStaffUserinfo($fields,array('a.status'=>1,'a.sysuser_id'=>array('gt',0)));
+        $all_user = array();
+        foreach ($res_user as $v){
+            $letter = getFirstCharter($v['staff_name']);
+            $all_user[$letter][]=$v;
+        }
+        ksort($all_user);
+        $user_data = array();
+        foreach ($all_user as $k=>$v){
+            $dinfo = array('id'=>ord("$k")-64,'region'=>$k,'items'=>$v);
+            $user_data[]=$dinfo;
+        }
+
+        $res_data = array('lately'=>$lately,'all_user'=>$user_data);
         $this->to_back($res_data);
     }
 
     public function getContactUsers(){
         $openid = $this->params['openid'];
+        $keywords = trim($this->params['keywords']);
         $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
         $m_crmuser = new \Common\Model\Crm\ContactModel;
-        $res_user = $m_crmuser->getDataList('*',array('status'=>1),'id desc');
+        $where = array('status'=>1);
+        if(!empty($keywords)){
+            $where['name'] = array('like',"%$keywords%");
+        }
+        $res_user = $m_crmuser->getDataList('*',$where,'id desc');
         $oss_host = get_oss_host();
         $all_user = array();
+        $m_hotel = new \Common\Model\HotelModel();
         foreach ($res_user as $v){
             $img_avatar_url = '';
             if(!empty($res_info['avatar_url'])){
                 $img_avatar_url = $oss_host.$res_info['avatar_url'];
             }
-            $info = array('contact_id'=>$v['id'],'name'=>$v['name'],'img_avatar_url'=>$img_avatar_url,'job'=>$v['job'],'department'=>$v['department']);
+            $hotel_name = '';
+            if($v['hotel_id']){
+                $res_hotel = $m_hotel->getOneById('name',$v['hotel_id']);
+                $hotel_name = $res_hotel['name'];
+            }
+            $info = array('contact_id'=>$v['id'],'name'=>$v['name'],'hotel_id'=>$v['hotel_id'],'hotel_name'=>$hotel_name,
+                'img_avatar_url'=>$img_avatar_url,'job'=>$v['job'],'department'=>$v['department']);
             $letter = getFirstCharter($v['name']);
             $all_user[$letter][]=$info;
         }
@@ -200,5 +228,95 @@ class CrmsaleController extends CommonController{
             $m_saleremind->addAll($add_remind);
         }
         $this->to_back(array('salerecord_id'=>$salerecord_id));
+    }
+
+    public function recordinfo(){
+        $openid = $this->params['openid'];
+        $salerecord_id = intval($this->params['salerecord_id']);
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id));
+
+        $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$res_info['ops_staff_id']));
+        $res_info['staff_id'] = $res_staff_user[0]['staff_id'];
+        $res_info['staff_name'] = $res_staff_user[0]['staff_name'];
+        $res_info['avatarUrl'] = $res_staff_user[0]['avatarUrl'];
+        $res_info['job'] = $res_staff_user[0]['job'];
+        $m_category = new \Common\Model\Smallapp\CategoryModel();
+        $visit_purpose = $res_info['visit_purpose'];
+        $visit_purpose_str = $visit_type_str = '';
+        if(!empty($visit_purpose)){
+            $visit_purpose = trim($visit_purpose,',');
+            $res_cate = $m_category->getDataList('id,name',array('id'=>array('in',$visit_purpose)),'');
+            foreach ($res_cate as $v){
+                $visit_purpose_str.="{$v['name']},";
+            }
+            $visit_purpose_str = trim($visit_purpose_str,',');
+        }
+        if($res_info['visit_type']){
+            $res_cate = $m_category->getInfo(array('id'=>$res_info['visit_type']));
+            $visit_type_str = $res_cate['name'];
+        }
+        $res_info['visit_purpose'] = $visit_purpose;
+        $res_info['visit_purpose_str'] = $visit_purpose_str;
+        $res_info['visit_type_str'] = $visit_type_str;
+        $images_path = $images_url = array();
+        if(!empty($res_info['images'])){
+            $arr_images_path = explode(',',$res_info['images']);
+            $oss_host = get_oss_host();
+            foreach ($arr_images_path as $v){
+                if(!empty($v)){
+                    $images_path[]=$v;
+                    $images_url[]=$oss_host.$v;
+                }
+            }
+        }
+        $res_info['images_path'] = $images_path;
+        $res_info['images_url'] = $images_url;
+        if($res_info['signin_time']=='0000-00-00 00:00:00'){
+            $res_info['signin_time'] = '';
+        }
+        if($res_info['signout_time']=='0000-00-00 00:00:00'){
+            $res_info['signout_time'] = '';
+        }
+        unset($res_info['status'],$res_info['update_time'],$res_info['add_time']);
+        $hotel_name = '';
+        if($res_info['signin_hotel_id']){
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('name',$res_info['signin_hotel_id']);
+            $hotel_name = $res_hotel['name'];
+        }
+        $res_info['hotel_name'] = $hotel_name;
+        $consume_time = '';
+        if(!empty($res_info['signin_time']) && !empty($res_info['signout_time'])){
+            $consume_time = round((strtotime($res_info['signout_time'])-strtotime($res_info['signin_time']))/60);
+            if($consume_time>0){
+                $consume_time.='分钟';
+            }
+        }
+        $res_info['consume_time'] = $consume_time;
+        $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
+        $fields = 'a.remind_user_id as staff_id,a.type,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_remind = $m_salerecord_remind->getList($fields,array('a.salerecord_id'=>$salerecord_id,'a.type'=>array('in','1,2')),'a.id desc');
+        $all_remind_user = array();
+        foreach ($res_remind as $v){
+            $all_remind_user[$v['type']][]=$v;
+        }
+        $cc_users = $review_users = array();
+        if(isset($all_remind_user[1])){
+            $review_users = $all_remind_user[1];
+        }
+        if(isset($all_remind_user[2])){
+            $cc_users = $all_remind_user[2];
+        }
+        $res_info['cc_users'] = $cc_users;
+        $res_info['review_users'] = $review_users;
+        $this->to_back($res_info);
     }
 }

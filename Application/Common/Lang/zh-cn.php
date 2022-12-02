@@ -500,6 +500,7 @@ return array(
     'smallappsale_forscreenuser_in_selluser'=>'请勿使用相同用户进行操作',
     'smallappsale_task_notin_get_time'=>'请在每天上午六点后领取任务',
     'smallappops_add_hotel_name_repeat'=>'餐厅名称不能重复',
+    'smallappops_salerecord_sign_inout_hotel_error'=>'签到签退的酒楼必须为同一酒楼',
 
 
 

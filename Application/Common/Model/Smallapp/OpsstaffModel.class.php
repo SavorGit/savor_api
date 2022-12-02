@@ -63,6 +63,16 @@ class OpsstaffModel extends BaseModel{
         return $res_data;
     }
 
+    public function getStaffUserinfo($fields,$where){
+        $res_data = $this->alias('a')
+            ->join('savor_smallapp_user user on a.openid=user.openid','left')
+            ->join('savor_sysuser su on a.sysuser_id=su.id','left')
+            ->field($fields)
+            ->where($where)
+            ->select();
+        return $res_data;
+    }
+
     public function checkStaffpermission($staff_info,$area_id,$staff_id){
         $permission = json_decode($staff_info['permission'],true);
         switch ($permission['hotel_info']['type']) {

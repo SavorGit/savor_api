@@ -8,6 +8,10 @@ class AreaController extends CommonController{
 
     function _init_() {
         switch(ACTION_NAME) {
+            case 'getAreaid':
+                $this->is_verify = 1;
+                $this->valid_fields = array('latitude'=>1001,'longitude'=>1001);
+                break;
             case 'getCityAreaCircleList':
                 $this->is_verify = 0;
                 break;
@@ -27,6 +31,49 @@ class AreaController extends CommonController{
         }
         parent::_init_();
     }
+
+    public function getAreaid(){
+        $latitude = $this->params['latitude'];  //纬度
+        $longitude= $this->params['longitude']; //经度
+
+        $ret = getgeoByloa($latitude,$longitude);
+        $m_area = new \Common\Model\AreaModel();
+        if(empty($ret)){
+            $area_id = 1;
+            $region_name = '北京';
+        }else {
+            $city_name = $ret['addressComponent']['city'];
+            $fields = "id,region_name";
+            $where['region_name'] = $city_name;
+            $where['is_in_hotel'] = 1;
+            $where['is_valid']    = 1;
+            $city_info = $m_area->field($fields)->where($where)->order('id asc')->find();
+            if(empty($city_info)){
+                $area_id = 1;
+                $region_name = '北京';
+            }else {
+                $area_id = $city_info['id'];
+                $region_name = str_replace('市', '', $city_info['region_name']);
+            }
+
+        }
+        $fields = "id,region_name";
+        $where['is_in_hotel'] = 1;
+        $where['is_valid']    = 1;
+        $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
+        $cityindex = 0;
+        foreach($city_list as $key=>$v){
+            if($v['id'] == $area_id){
+                $cityindex = $key;
+                break;
+            }
+        }
+        $data['area_id']     = $area_id;
+        $data['region_name'] = $region_name;
+        $data['cityindex']   = $cityindex;
+        $this->to_back($data);
+    }
+
     public function getCityAreaCircleList(){
         $m_area = new \Common\Model\AreaModel();
         $fields = "id,region_name as name";

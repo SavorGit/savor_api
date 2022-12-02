@@ -717,7 +717,8 @@ class HotelController extends CommonController{
             }
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis);
         }
-        $this->to_back(array('datalist'=>$datalist));
+        $range_str = "可选{$nearby_m}米范围内的地点";
+        $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str));
     }
 
     private function changeadvList($res,$type=1){

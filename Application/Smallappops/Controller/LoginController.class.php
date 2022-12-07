@@ -86,7 +86,11 @@ class LoginController extends CommonController{
             $m_user = new \Common\Model\Smallapp\UserModel();
             $where = array('openid'=>$openid,'small_app_id'=>6);
             $data = $m_user->getOne('id,openid,avatarUrl,nickName,mobile', $where);
+            $m_area = new \Common\Model\AreaModel();
+            $res_area = $m_area->getWhere('id,region_name',array('id'=>$res_staff['area_id']),'id desc','0,1');
             $data['staff_id'] = $res_staff['id'];
+            $data['job'] = $res_staff['job'];
+            $data['area_name'] = $res_area['region_name'];
             $data['permission_city'] = $m_staff->get_permission_city($res_staff);
             $this->to_back($data);
         }else{

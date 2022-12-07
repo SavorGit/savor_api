@@ -31,7 +31,7 @@ class CrmsaleController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'recordlist':
-                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002,'area_id'=>1002,'staff_id'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'addcomment':
@@ -224,15 +224,14 @@ class CrmsaleController extends CommonController{
         }
         $status = 1;
         if($type==2){
+            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id']);
             if($visit_type!=171){
                 unset($this->valid_fields['signin_time'],$this->valid_fields['signin_hotel_id'],
                     $this->valid_fields['signout_time'],$this->valid_fields['signout_hotel_id']);
             }
             foreach ($this->valid_fields as $k=>$v){
-                if($k!='images'){
-                    if(empty($this->params["$k"])){
-                        $this->to_back(1001);
-                    }
+                if(empty($this->params["$k"])){
+                    $this->to_back(1001);
                 }
             }
             $status = 2;
@@ -404,8 +403,11 @@ class CrmsaleController extends CommonController{
 
     public function recordlist(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);//类型1全部,2@我的
+        $type = intval($this->params['type']);//类型1全部,2@我的,3销售记录
         $page = intval($this->params['page']);
+        $pagesize = $this->params['pagesize'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
         if(empty($pagesize)){
             $pagesize = 10;
         }
@@ -418,32 +420,45 @@ class CrmsaleController extends CommonController{
         }
         $ops_staff_id = $res_staff['id'];
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
-        $where = array('remind_user_id'=>$ops_staff_id);
+        $where = array('a.remind_user_id'=>$ops_staff_id);
         if($type==2){
-            $where['type'] = array('in','1,2,3');
+            $where['a.type'] = array('in','1,2,3');
+            $where['record.status'] = 2;
         }
         if($type==3){
-            $where['type'] = 4;
+            $where['a.type'] = 4;
+            $where['record.status'] = 2;
+            if($area_id>0 || $staff_id>0){
+                if($area_id){
+                    $where['staff.area_id'] = $area_id;
+                }
+                if($staff_id>0){
+                    $where['record.ops_staff_id'] = $staff_id;
+                }
+            }else{
+                $permission = json_decode($res_staff['permission'],true);
+                if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
+                    $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                }
+                if($permission['hotel_info']['type']==3){
+                    $where['record.ops_staff_id'] = $ops_staff_id;
+                }
+            }
         }
-        $fields = 'salerecord_id,count(id) as num';
-        $res_mind = $m_salerecord_remind->getALLDataList($fields,$where,'salerecord_id desc',$limit,'salerecord_id');
+        $fields = 'a.salerecord_id,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_mind = $m_salerecord_remind->getList($fields,$where,'a.salerecord_id desc',$limit,'a.salerecord_id');
         $datalist = array();
         if(!empty($res_mind)){
             $m_category = new \Common\Model\Smallapp\CategoryModel();
-            $m_salerecord = new \Common\Model\Crm\SalerecordModel();
             foreach ($res_mind as $v){
                 $salerecord_id = $v['salerecord_id'];
-                $record_info = $m_salerecord->getInfo(array('id'=>$salerecord_id));
-
-                $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl,user.nickName';
-                $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$record_info['ops_staff_id']));
-                $staff_id = $res_staff_user[0]['staff_id'];
-                $staff_name = $res_staff_user[0]['staff_name'];
-                $avatarUrl = $res_staff_user[0]['avatarUrl'];
-                $job = $res_staff_user[0]['job'];
-
+                $record_info = $v;
+                $staff_id = $v['staff_id'];
+                $staff_name = $v['staff_name'];
+                $avatarUrl = $v['avatarUrl'];
+                $job = $v['job'];
                 $now = time();
-                $diff_time =  $now - strtotime($record_info['add_time']);
+                $diff_time = $now - strtotime($record_info['add_time']);
                 if($diff_time<=86400){
                     $add_time = viewTimes(strtotime($record_info['add_time']));
                 }else{
@@ -455,14 +470,19 @@ class CrmsaleController extends CommonController{
                     $res_hotel = $m_hotel->getOneById('name',$record_info['signin_hotel_id']);
                     $hotel_name = $res_hotel['name'];
                 }
-                $consume_time = '';
-                if(!empty($record_info['signin_time']) && !empty($record_info['signout_time'])){
-                    $consume_time = round((strtotime($record_info['signout_time'])-strtotime($record_info['signin_time']))/60);
+                $consume_time = $signin_time = $signout_time = '';
+                if($record_info['signin_time']!='0000-00-00 00:00:00'){
+                    $signin_time = $record_info['signin_time'];
+                }
+                if($record_info['signout_time']!='0000-00-00 00:00:00'){
+                    $signout_time = $record_info['signout_time'];
+                }
+                if(!empty($signin_time) && !empty($signout_time)){
+                    $consume_time = round((strtotime($signout_time)-strtotime($signin_time))/60);
                     if($consume_time>0){
                         $consume_time.='分钟';
                     }
                 }
-
                 $images_url = array();
                 if(!empty($record_info['images'])){
                     $arr_images_path = explode(',',$record_info['images']);
@@ -473,7 +493,6 @@ class CrmsaleController extends CommonController{
                         }
                     }
                 }
-
                 $visit_purpose = $record_info['visit_purpose'];
                 $visit_purpose_str = $visit_type_str = '';
                 if(!empty($visit_purpose)){
@@ -488,6 +507,12 @@ class CrmsaleController extends CommonController{
                     $res_cate = $m_category->getInfo(array('id'=>$record_info['visit_type']));
                     $visit_type_str = $res_cate['name'];
                 }
+                $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
+                    'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
+                    'images_url'=>$images_url,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
+                    'status'=>$record_info['status'],
+                );
+                $datalist[]=$info;
 
             }
         }

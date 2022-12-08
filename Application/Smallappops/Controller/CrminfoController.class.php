@@ -43,6 +43,14 @@ class CrminfoController extends CommonController{
                     'keywords'=>1002,'page'=>1001,'pagesize'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'addcard':
+                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001,'image'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'cardlist':
+                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -259,6 +267,43 @@ class CrminfoController extends CommonController{
             $user_id = $m_crmuser->add($data);
         }
         $this->to_back(array('crmuser_id'=>$user_id));
+    }
+
+    public function addcard(){
+        $openid = $this->params['openid'];
+        $contact_id = intval($this->params['contact_id']);
+        $image = $this->params['image'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_card = new \Common\Model\Crm\ContactCardModel();
+        $card_id = $m_card->add(array('contact_id'=>$contact_id,'image'=>$image));
+        $this->to_back(array('card_id'=>$card_id));
+    }
+
+    public function cardlist(){
+        $openid = $this->params['openid'];
+        $contact_id = intval($this->params['contact_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_card = new \Common\Model\Crm\ContactCardModel();
+        $res_data = $m_card->getDataList('*',array('contact_id'=>$contact_id),'id desc');
+        $datalist = array();
+        if(!empty($res_data)){
+            $oss_host = get_oss_host();
+            foreach ($res_data as $v){
+                $v['image'] = $oss_host.$v['image'];
+                $datalist[]=$v;
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
     public function hotellist(){

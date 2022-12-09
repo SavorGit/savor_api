@@ -258,18 +258,12 @@ class CrmsaleController extends CommonController{
         if($salerecord_id){
             $add_data['update_time'] = date('Y-m-d H:i:s');
             $m_salerecord->updateData(array('id'=>$salerecord_id),$add_data);
+
+            $m_saleremind->delData(array('salerecord_id'=>$salerecord_id,'type'=>array('in','1,2')));
             if(!empty($review_uid)){
-                $res_remind = $m_saleremind->getInfo(array('salerecord_id'=>$salerecord_id,'type'=>1));
-                if(!empty($res_remind)){
-                    $m_saleremind->delData(array('salerecord_id'=>$salerecord_id,'type'=>1));
-                }
                 $add_remind[] = array('salerecord_id'=>$salerecord_id,'type'=>1,'remind_user_id'=>$review_uid);
             }
             if(!empty($cc_uids)){
-                $res_remind = $m_saleremind->getInfo(array('salerecord_id'=>$salerecord_id,'type'=>2));
-                if(!empty($res_remind)){
-                    $m_saleremind->delData(array('salerecord_id'=>$salerecord_id,'type'=>2));
-                }
                 $arr_cc_uids = explode(',',$cc_uids);
                 foreach ($arr_cc_uids as $v){
                     $remind_user_id = intval($v);
@@ -361,7 +355,7 @@ class CrmsaleController extends CommonController{
             $res_contact = $m_contact->getUserList('a.name,hotel.name as hotel_name',array('a.id'=>$res_info['contact_id']),'a.id desc');
             $contact_uname = $res_contact[0]['name'];
             $contact_hotel_name = $res_contact[0]['hotel_name'];
-            $contact = array('id'=>$res_info['contact_id'],'name'=>$contact_uname,'hotel_name'=>$contact_hotel_name);
+            $contact = array('contact_id'=>$res_info['contact_id'],'name'=>$contact_uname,'hotel_name'=>$contact_hotel_name);
         }
         $res_info['contact'] = $contact;
         $res_info['add_time'] = date('m月d日 H:i',strtotime($res_info['add_time']));
@@ -450,6 +444,7 @@ class CrmsaleController extends CommonController{
         $datalist = array();
         if(!empty($res_mind)){
             $m_category = new \Common\Model\Smallapp\CategoryModel();
+            $m_comment = new \Common\Model\Crm\CommentModel();
             foreach ($res_mind as $v){
                 $salerecord_id = $v['salerecord_id'];
                 $record_info = $v;
@@ -507,10 +502,15 @@ class CrmsaleController extends CommonController{
                     $res_cate = $m_category->getInfo(array('id'=>$record_info['visit_type']));
                     $visit_type_str = $res_cate['name'];
                 }
+                $comment_num = 0;
+                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id),'');
+                if(!empty($res_comment[0]['num'])){
+                    $comment_num = intval($res_comment[0]['num']);
+                }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
-                    'status'=>$record_info['status'],
+                    'comment_num'=>$comment_num,'status'=>$record_info['status'],
                 );
                 $datalist[]=$info;
 

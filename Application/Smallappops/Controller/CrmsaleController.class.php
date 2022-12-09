@@ -420,8 +420,7 @@ class CrmsaleController extends CommonController{
             $where['record.status'] = 2;
         }
         if($type==3){
-            $where['a.type'] = 4;
-            $where['record.status'] = 2;
+            $where = array('a.type'=>4,'record.status'=>2);
             if($area_id>0 || $staff_id>0){
                 if($area_id){
                     $where['staff.area_id'] = $area_id;
@@ -440,12 +439,15 @@ class CrmsaleController extends CommonController{
             }
         }
         $fields = 'a.salerecord_id,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
-        $res_mind = $m_salerecord_remind->getList($fields,$where,'a.salerecord_id desc',$limit,'a.salerecord_id');
+        $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,'a.salerecord_id desc',$limit,'a.salerecord_id');
         $datalist = array();
         if(!empty($res_mind)){
             $m_category = new \Common\Model\Smallapp\CategoryModel();
             $m_comment = new \Common\Model\Crm\CommentModel();
             foreach ($res_mind as $v){
+                if($v['status']==1 && $v['ops_staff_id']!=$ops_staff_id){
+                    continue;
+                }
                 $salerecord_id = $v['salerecord_id'];
                 $record_info = $v;
                 $staff_id = $v['staff_id'];

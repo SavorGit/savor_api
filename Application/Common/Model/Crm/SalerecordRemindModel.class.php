@@ -19,4 +19,19 @@ class SalerecordRemindModel extends BaseModel{
             ->select();
         return $data;
     }
+
+    public function getRemindRecordList($fields,$where,$orderby,$limit='',$group=''){
+        $data = $this->alias('a')
+            ->field($fields)
+            ->join('savor_crm_salerecord record on a.salerecord_id=record.id','left')
+            ->join('savor_ops_staff staff on record.ops_staff_id=staff.id','left')
+            ->join('savor_smallapp_user user on staff.openid=user.openid','left')
+            ->join('savor_sysuser sysuser on staff.sysuser_id=sysuser.id','left')
+            ->where($where)
+            ->order($orderby)
+            ->limit($limit)
+            ->group($group)
+            ->select();
+        return $data;
+    }
 }

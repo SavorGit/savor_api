@@ -170,26 +170,37 @@ class CrmsaleController extends CommonController{
             $this->to_back(94001);
         }
         $m_crmuser = new \Common\Model\Crm\ContactModel;
-        $where = array('status'=>1);
+        $where = array('a.status'=>1);
         if(!empty($keywords)){
-            $where['name'] = array('like',"%$keywords%");
+            if($hotel_id>0){
+                $where['a.name'] = array('like',"%$keywords%");
+            }else{
+                $where['hotel.name'] = array('like',"%$keywords%");
+            }
         }
         if($hotel_id>0){
-            $where['hotel_id'] = $hotel_id;
+            $where['a.hotel_id'] = $hotel_id;
         }
-        $res_user = $m_crmuser->getDataList('*',$where,'id desc');
-        $oss_host = get_oss_host();
+        if(empty($hotel_id) && empty($keywords)){
+            $res_user = array();
+        }else{
+            $fields = 'a.id,a.name,a.job,a.department,a.hotel_id,a.avatar_url,hotel.name as hotel_name';
+            $res_user = $m_crmuser->getUserList($fields,$where,'a.id desc');
+        }
         $all_user = array();
-        $m_hotel = new \Common\Model\HotelModel();
+        $oss_host = get_oss_host();
         foreach ($res_user as $v){
-            $img_avatar_url = '';
-            if(!empty($res_info['avatar_url'])){
-                $img_avatar_url = $oss_host.$res_info['avatar_url'];
-            }
             $hotel_name = '';
-            if($v['hotel_id']){
-                $res_hotel = $m_hotel->getOneById('name',$v['hotel_id']);
-                $hotel_name = $res_hotel['name'];
+            if(!empty($v['hotel_name'])){
+                $hotel_name = $v['hotel_name'];
+            }
+            $img_avatar_url = '';
+            if(!empty($v['avatar_url'])){
+                if(substr($v['avatar_url'],0,4)!='http'){
+                    $img_avatar_url = $oss_host.$v['avatar_url'];
+                }else{
+                    $img_avatar_url = $v['avatar_url'];
+                }
             }
             $info = array('contact_id'=>$v['id'],'name'=>$v['name'],'hotel_id'=>$v['hotel_id'],'hotel_name'=>$hotel_name,
                 'img_avatar_url'=>$img_avatar_url,'job'=>$v['job'],'department'=>$v['department'],'checked'=>false);
@@ -502,7 +513,7 @@ class CrmsaleController extends CommonController{
                     }
                     if(!empty($signin_time) && !empty($signout_time)){
                         $consume_time = round((strtotime($signout_time)-strtotime($signin_time))/60);
-                        if($consume_time>0){
+                        if($consume_time>=0){
                             $consume_time.='分钟';
                         }
                     }
@@ -535,6 +546,9 @@ class CrmsaleController extends CommonController{
                 $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id),'');
                 if(!empty($res_comment[0]['num'])){
                     $comment_num = intval($res_comment[0]['num']);
+                }
+                if(!empty($record_info['content'])){
+                    $record_info['content'] = text_substr($record_info['content'], 100,'...');
                 }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],

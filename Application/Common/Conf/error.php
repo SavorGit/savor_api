@@ -506,6 +506,8 @@ return array(
         '94001'=>'smallappops_contact_admin_createuser',
         '94002'=>'smallappops_login_had_register',
         '94003'=>'smallappops_clean_resource_error',
+        '94004'=>'smallappops_add_hotel_name_repeat',
+        '94005'=>'smallappops_salerecord_sign_inout_hotel_error',
 	    '94100'=>'smallappops_not_entity_platform',
 	),
 );

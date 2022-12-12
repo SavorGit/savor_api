@@ -96,7 +96,7 @@ class CrminfoController extends CommonController{
             $data_list = array(array('id'=>0,'name'=>'全部城市','maintainers'=>array(array('maintainer_id'=>0,'name'=>'全部维护人'))));
             foreach ($citys as $v){
                 $fields = 'a.user_id as maintainer_id,user.remark as name';
-                $maintainers = $m_opuser_role->getList($fields,array('a.manage_city'=>$v['id'],'a.state'=>1,'a.role_id'=>1),'a.id desc','');
+                $maintainers = $m_opuser_role->getList($fields,array('a.manage_city'=>$v['id'],'a.state'=>1,'a.role_id'=>1,'user.status'=>1),'a.id desc','');
                 $f_maintainer = array(array('maintainer_id'=>0,'name'=>'全部维护人'));
                 $v['maintainers'] = array_merge($f_maintainer,$maintainers);
                 $data_list[]=$v;
@@ -180,7 +180,11 @@ class CrminfoController extends CommonController{
             $oss_host = get_oss_host();
             $img_avatar_url = '';
             if(!empty($res_info['avatar_url'])){
-                $img_avatar_url = $oss_host.$res_info['avatar_url'];
+                if(substr($res_info['avatar_url'],0,4)!='http'){
+                    $img_avatar_url = $oss_host.$res_info['avatar_url'];
+                }else{
+                    $img_avatar_url = $res_info['avatar_url'];
+                }
             }
             $res_info['img_avatar_url'] = $img_avatar_url;
             $m_hotel = new \Common\Model\HotelModel();
@@ -210,6 +214,9 @@ class CrminfoController extends CommonController{
             $res_area = $m_area->getWhere($fields,array('id'=>$res_info['area_id']),'','');
             if(!empty($res_area))   $native_place.=$res_area['name'];
             $res_info['native_place'] = $native_place;
+            if($res_info['birthday']=='0000-00-00'){
+                $res_info['birthday'] = '';
+            }
 
         }
         $this->to_back($res_info);
@@ -239,7 +246,7 @@ class CrminfoController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $data = array('openid'=>$openid,'name'=>$name,'gender'=>$gender,
+        $data = array('op_openid'=>$openid,'name'=>$name,'gender'=>$gender,
             'hotel_id'=>$hotel_id,'job'=>$job,'department'=>$department,'province_id'=>$province_id,'city_id'=>$city_id,'area_id'=>$area_id,
             'mobile'=>$mobile,'type'=>1,'status'=>1);
         if(!empty($avatar_url)) $data['avatar_url'] = $avatar_url;

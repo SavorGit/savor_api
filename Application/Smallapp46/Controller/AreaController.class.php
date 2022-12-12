@@ -56,10 +56,12 @@ class AreaController extends CommonController{
 
         }
         $fields = "id,region_name";
+        $where = [];
         $where['is_in_hotel'] = 1;
         $where['is_valid']    = 1;
         $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
         $cityindex = 0;
+        //sprint_r($city_list);exit;
         foreach($city_list as $key=>$v){
             if($v['id'] == $area_id){
                 $cityindex = $key;

@@ -7,6 +7,8 @@ class UserController extends CommonController{
     /**
      * 构造函数
      */
+    private $wxinfo = array('avatarUrl'=>'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'
+    ,'nickName'=>'微信用户');
     function _init_() {
         switch(ACTION_NAME) {
             case 'isRegister':
@@ -79,6 +81,11 @@ class UserController extends CommonController{
             case 'edit':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'avatar_url'=>1002,'name'=>1002,'mobile'=>1002,'idnumber'=>1002);
+                break;
+                
+            case 'perfect':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'avatar_url'=>1001,'name'=>1001,'mobile'=>1001,'idnumber'=>1002);
                 break;
             case 'assigntypes':
                 $this->is_verify = 1;
@@ -229,7 +236,20 @@ class UserController extends CommonController{
             $subscribe_status = 3;
         }
         $userinfo['subscribe_status'] = $subscribe_status;
+        $wxinfo = $this->wxinfo;
+        //判断用户基本信息是否完整
+        $userinfo['is_perfect'] = 1;
+        if($userinfo['avatarUrl']==$wxinfo['avatarUrl'] || $userinfo['avatarUrl']==''){
+            $userinfo['is_perfect'] = 0;
+        }
+        if($userinfo['nickName']==$wxinfo['nickName'] || $userinfo['nickName']==''){
+            $userinfo['is_perfect'] = 0;
+        }
+        if($userinfo['mobile']==''){
+            $userinfo['is_perfect'] = 0;
+        }
         $data['userinfo'] = $userinfo;
+        $data['wxinfo'] = $wxinfo;
         $this->to_back($data);
     }
     
@@ -696,6 +716,57 @@ class UserController extends CommonController{
             $data = array('message'=>'修改失败');
             $this->to_back($data);
         }
+    }
+    public function perfect(){
+        $openid = $this->params['openid'];
+        $name = $this->params['name'];
+        $avatar_url = $this->params['avatar_url'];
+        $mobile = $this->params['mobile'];
+        $idnumber = $this->params['idnumber'];
+        
+        
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array();
+        $where['openid'] = $openid;
+        $where['small_app_id'] = 5;
+        $fields = 'id,openid,avatarUrl,nickName,gender,status';
+        $res_user = $m_user->getOne($fields, $where);
+        if (empty($res_user)) {
+            $this->to_back(92010);
+        }
+        $wxinfo = $this->wxinfo;
+        if($name==$wxinfo['nickName']){
+            $data = array('message'=>'修改失败');
+            $this->to_back($data);
+        }
+        if($avatar_url==$wxinfo['avatarUrl']){
+            $data = array('message'=>'修改失败');
+            $this->to_back($data);
+        }
+        $data = array();
+        $data['name'] = $name;
+        $data['nickName'] = $name;
+        if(!empty($avatar_url)){
+            if(substr($avatar_url,0,5)=='https'){
+                $data['avatarUrl'] = $avatar_url;
+            }else{
+                $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
+                $data['avatarUrl'] = $avatar_url;
+            }
+        }
+        if(!empty($mobile)){
+            $data['mobile'] = $mobile;
+        }
+        if(!empty($idnumber)){
+            $data['idnumber'] = $idnumber;
+        }
+        $data['is_wx_auth'] = 3;
+        
+        $ret = $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+        $res_data = array('message'=>'修改成功');
+        $this->to_back($res_data);
+        
+        
     }
 
     public function integralrecord(){

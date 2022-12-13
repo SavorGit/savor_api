@@ -113,15 +113,23 @@ class CrmsaleController extends CommonController{
             }
         }
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
-        $res_late_remind = $m_salerecord_remind->getList('a.salerecord_id,a.comment_id',array('record.ops_staff_id'=>$res_staff['id'],'a.type'=>$type),'a.id desc','0,1','');
         $lately = array();
         $lately_staff_ids = array();
-        if(!empty($res_late_remind[0]['salerecord_id'])){
-            $fields = 'a.remind_user_id as staff_id,a.type,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
-            $rwhere = array('a.salerecord_id'=>$res_late_remind[0]['salerecord_id'],'a.type'=>$type);
-            if($type==3){
-                $rwhere = array('a.comment_id'=>$res_late_remind[0]['comment_id'],'a.type'=>$type);
+        $rwhere = array();
+        if($type==3){
+            $m_comment = new \Common\Model\Crm\CommentModel();
+            $res_comment = $m_comment->getALLDataList('id',array('ops_staff_id'=>$res_staff['id']),'id desc','0,1','');
+            if(!empty($res_comment[0]['id'])){
+                $rwhere = array('a.comment_id'=>$res_comment[0]['id'],'a.type'=>$type);
             }
+        }else{
+            $res_late_remind = $m_salerecord_remind->getList('a.salerecord_id',array('record.ops_staff_id'=>$res_staff['id'],'a.type'=>$type),'a.id desc','0,1','');
+            if(!empty($res_late_remind[0]['salerecord_id'])){
+                $rwhere = array('a.salerecord_id'=>$res_late_remind[0]['salerecord_id'],'a.type'=>$type);
+            }
+        }
+        if(!empty($rwhere)){
+            $fields = 'a.remind_user_id as staff_id,a.type,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
             $res_remind = $m_salerecord_remind->getList($fields,$rwhere,'a.id desc','','a.remind_user_id');
             foreach ($res_remind as $v){
                 $checked = false;
@@ -429,6 +437,7 @@ class CrmsaleController extends CommonController{
         }
         $ops_staff_id = $res_staff['id'];
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
+        $orderby = 'a.salerecord_id desc';
         switch ($type){
             case 1:
                 $where1 = array('a.type'=>4,'record.status'=>2);
@@ -441,6 +450,7 @@ class CrmsaleController extends CommonController{
                 }
                 $where2 = array('a.remind_user_id'=>$ops_staff_id);
                 $where['_complex'] = array($where1,$where2,'_logic'=>'or');
+                $orderby = 'record.status asc,a.salerecord_id desc';
                 break;
             case 2:
                 $where = array('a.remind_user_id'=>$ops_staff_id);
@@ -470,7 +480,7 @@ class CrmsaleController extends CommonController{
                 $where = array();
         }
         $fields = 'a.salerecord_id,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
-        $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,'a.salerecord_id desc',$limit,'a.salerecord_id');
+        $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,$limit,'a.salerecord_id');
         $datalist = array();
         if(!empty($res_mind)){
             $os = check_phone_os();

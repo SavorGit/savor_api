@@ -248,7 +248,7 @@ class CrminfoController extends CommonController{
         }
         $data = array('op_openid'=>$openid,'name'=>$name,'gender'=>$gender,
             'hotel_id'=>$hotel_id,'job'=>$job,'department'=>$department,'province_id'=>$province_id,'city_id'=>$city_id,'area_id'=>$area_id,
-            'mobile'=>$mobile,'type'=>1,'status'=>1);
+            'mobile'=>$mobile,'type'=>2,'status'=>1);
         if(!empty($avatar_url)) $data['avatar_url'] = $avatar_url;
         if(!empty($birthday))   $data['birthday'] = $birthday;
         if(!empty($mobile2))    $data['mobile2'] = $mobile2;
@@ -341,7 +341,7 @@ class CrminfoController extends CommonController{
         $start = ($page-1)*$pagesize;
         $limit = "$start,$pagesize";
         $fields = 'hotel.id as hotel_id,hotel.name as hotel_name,hotel.addr';
-        $where = array('hotel.state'=>1,'hotel.flag'=>0);
+        $where = array('hotel.state'=>array('in','1,4'),'hotel.flag'=>0);
         if($city_id){
             $where['hotel.area_id'] = $city_id;
         }else{

@@ -250,6 +250,36 @@ class UserController extends CommonController{
         }
         $data['userinfo'] = $userinfo;
         $data['wxinfo'] = $wxinfo;
+
+        if(!empty($userinfo['mobile'])){
+            $area_map = array(
+                '1'=>array('province_id'=>1,'city_id'=>35),
+                '9'=>array('province_id'=>9,'city_id'=>107),
+                '236'=>array('province_id'=>19,'city_id'=>236),
+                '246'=>array('province_id'=>19,'city_id'=>246),
+                '248'=>array('province_id'=>19,'city_id'=>248),
+            );
+            $m_crmuser = new \Common\Model\Crm\ContactModel;
+            $res_crmuser = $m_crmuser->getInfo(array('openid'=>$openid));
+            if(empty($res_crmuser)){
+                $data = array('openid'=>$openid,'hotel_id'=>$hotel_id,'job'=>'餐厅经理','mobile'=>$userinfo['mobile'],'type'=>1,'status'=>1);
+                if(!empty($userinfo['nickName'])){
+                    $data['name'] = $userinfo['nickName'];
+                }
+                if(!empty($userinfo['avatarUrl'])){
+                    $data['avatar_url'] = $userinfo['avatarUrl'];
+                }
+                if($hotel_id){
+                    $res_hotel = $m_hotel->getOneById('id,area_id',$hotel_id);
+                    if(isset($area_map[$res_hotel['area_id']])){
+                        $data['province_id'] = $area_map[$res_hotel['area_id']]['province_id'];
+                        $data['city_id'] = $area_map[$res_hotel['area_id']]['city_id'];
+                    }
+                }
+                $m_crmuser->add($data);
+            }
+        }
+
         $this->to_back($data);
     }
     

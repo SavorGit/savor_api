@@ -270,6 +270,15 @@ class CrminfoController extends CommonController{
             $data['update_time'] = date('Y-m-d H:i:s');
             $m_crmuser->updateData(array('id'=>$id),$data);
             $user_id = $id;
+            $res_info = $m_crmuser->getInfo(array('id'=>$id));
+            if(!empty($res_info['openid'])){
+                $up_user = array();
+                if($res_info['name']!=$name){
+                    $up_user['nickName'] = $name;
+                    $up_user['name'] = $name;
+                    $m_user->updateInfo(array('openid'=>$openid),$up_user);
+                }
+            }
         }else{
             $user_id = $m_crmuser->add($data);
         }

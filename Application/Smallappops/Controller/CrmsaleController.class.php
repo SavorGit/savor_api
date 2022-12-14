@@ -247,7 +247,7 @@ class CrmsaleController extends CommonController{
         }
         $status = 1;
         if($type==2){
-            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id']);
+            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id'],$this->valid_fields['contact_id']);
             if($visit_type!=171){
                 unset($this->valid_fields['signin_time'],$this->valid_fields['signin_hotel_id'],
                     $this->valid_fields['signout_time'],$this->valid_fields['signout_hotel_id']);

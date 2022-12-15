@@ -652,7 +652,7 @@ class HotelController extends CommonController{
         $latitude = $this->params['latitude'];
         $longitude = $this->params['longitude'];
 
-        $nearby_m = 1000;
+        $nearby_m = 200;
         $ret = getgeoByloa($latitude,$longitude);
         $m_area = new \Common\Model\AreaModel();
         if(empty($ret)){

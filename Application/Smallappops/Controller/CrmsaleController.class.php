@@ -497,7 +497,7 @@ class CrmsaleController extends CommonController{
                 $salerecord_id = $v['salerecord_id'];
                 $record_info = $v;
                 $staff_id = $v['staff_id'];
-                $staff_name = $v['staff_name'];
+                $staff_name = !empty($v['staff_name']) ? $v['staff_name'] :'小热点';
                 $avatarUrl = $v['avatarUrl'];
                 $job = $v['job'];
                 $now = time();

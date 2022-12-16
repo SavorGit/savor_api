@@ -441,13 +441,18 @@ class CrmsaleController extends CommonController{
         switch ($type){
             case 1:
                 $where1 = array('a.type'=>4,'record.status'=>2);
-                $permission = json_decode($res_staff['permission'],true);
-                if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
-                    $where1['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
-                }
-                if($permission['hotel_info']['type']==3){
+                if($res_staff['is_operrator']==0){
+                    $permission = json_decode($res_staff['permission'],true);
+                    if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
+                        $where1['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                    }
+                    if($permission['hotel_info']['type']==3){
+                        $where1['record.ops_staff_id'] = $ops_staff_id;
+                    }
+                }else{
                     $where1['record.ops_staff_id'] = $ops_staff_id;
                 }
+                
                 $where2 = array('a.remind_user_id'=>$ops_staff_id);
                 $where['_complex'] = array($where1,$where2,'_logic'=>'or');
                 $orderby = 'record.status asc,a.salerecord_id desc';
@@ -459,22 +464,27 @@ class CrmsaleController extends CommonController{
                 break;
             case 3:
                 $where = array('a.type'=>4,'record.status'=>2);
-                if($area_id>0 || $staff_id>0){
-                    if($area_id){
-                        $where['staff.area_id'] = $area_id;
-                    }
-                    if($staff_id>0){
-                        $where['record.ops_staff_id'] = $staff_id;
+                if($res_staff['is_operrator']==0){
+                    if($area_id>0 || $staff_id>0){
+                        if($area_id){
+                            $where['staff.area_id'] = $area_id;
+                        }
+                        if($staff_id>0){
+                            $where['record.ops_staff_id'] = $staff_id;
+                        }
+                    }else{
+                        $permission = json_decode($res_staff['permission'],true);
+                        if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
+                            $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }
+                        if($permission['hotel_info']['type']==3){
+                            $where['record.ops_staff_id'] = $ops_staff_id;
+                        }
                     }
                 }else{
-                    $permission = json_decode($res_staff['permission'],true);
-                    if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
-                        $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
-                    }
-                    if($permission['hotel_info']['type']==3){
-                        $where['record.ops_staff_id'] = $ops_staff_id;
-                    }
+                    $where['record.ops_staff_id'] = $ops_staff_id;
                 }
+                
                 break;
             default:
                 $where = array();

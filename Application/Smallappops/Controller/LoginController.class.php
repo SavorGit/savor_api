@@ -92,6 +92,12 @@ class LoginController extends CommonController{
             $data['job'] = $res_staff['job'];
             $data['area_name'] = $res_area['region_name'];
             $data['permission_city'] = $m_staff->get_permission_city($res_staff);
+            if($res_staff['is_operrator']==0){
+                $data['permission_work_city'] = $m_staff->get_permission_city($res_staff);
+            }else {
+                $data['permission_work_city'] = array();
+            }
+            
             $this->to_back($data);
         }else{
             $data = array('id'=>0);

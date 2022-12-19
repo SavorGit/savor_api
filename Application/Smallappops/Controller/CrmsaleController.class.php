@@ -459,7 +459,7 @@ class CrmsaleController extends CommonController{
                 break;
             case 2:
                 $where = array('a.remind_user_id'=>$ops_staff_id);
-                $where['a.type'] = array('in','1,2,3');
+                $where['a.type'] = 3;
                 $where['record.status'] = 2;
                 break;
             case 3:

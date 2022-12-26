@@ -498,7 +498,9 @@ class StockController extends CommonController{
                 $price = sprintf("%.2f",$total_fee/$total_amount);//单瓶价格
             }else{
                 $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-                $res_record = $m_stock_record->getALLDataList('price,total_fee',array('goods_id'=>$goods_id,'unit_id'=>$unit_id,'type'=>1),'id asc','0,1','');
+                $srwhere = array('goods_id'=>$goods_id,'unit_id'=>$unit_id,'type'=>1);
+                $srwhere['price'] = array('gt',0);
+                $res_record = $m_stock_record->getALLDataList('price,total_fee',$srwhere,'id asc','0,1','');
                 if(!empty($res_record)){
                     $price = $res_record[0]['price'];
                     $total_fee = $res_record[0]['total_fee'];

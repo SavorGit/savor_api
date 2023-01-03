@@ -525,6 +525,7 @@ class StockController extends CommonController{
                         $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1,'dstatus'=>1));
                         if(!empty($res_in)){
                             $data['price'] = -$res_in['price'];
+                            $data['avg_price'] = -$res_in['avg_price'];
                         }else{
                             $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                             $res_in = $m_stock_record->getInfo($where);
@@ -650,6 +651,36 @@ class StockController extends CommonController{
             $this->to_back(93001);
         }
         $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
+        if($res_stock['status']==1){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            if($res_stock['type']==10){
+                $rfields = 'goods_id,sum(total_amount) as total_num,price';
+                $rwhere = array('stock_id'=>$stock_id,'type'=>1,'dstatus'=>1);
+                $res_stock_num = $m_stock_record->getALLDataList($rfields,$rwhere,'','','goods_id');
+                $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
+                foreach ($res_stock_num as $v){
+                    $goods_id = $v['goods_id'];
+                    $num = $v['total_num'];
+                    $price = $v['price'];
+
+                    $res_avg_price = $m_goods_avg_price->getALLDataList('price',array('goods_id'=>$goods_id),'id desc','0,1','');
+                    $avg_price = $res_avg_price[0]['price'];
+
+                    $stock_fields = 'sum(total_amount) as total_num';
+                    $stock_where = array('goods_id'=>$goods_id,'type'=>array('in',array(1,2)),'dstatus'=>1);
+                    $res_goods_stock = $m_stock_record->getALLDataList($stock_fields,$stock_where,'','','');
+                    $stock_num = intval($res_goods_stock[0]['total_num']);
+                    $now_avg_price = ($num*$price+$stock_num*$avg_price)/($num+$stock_num);
+
+                    $m_goods_avg_price->add(array('goods_id'=>$goods_id,'price'=>$now_avg_price));
+                    $up_where = $rwhere;
+                    $up_where['goods_id'] = $goods_id;
+                    $m_stock_record->updateData($up_where,array('avg_price'=>$avg_price));
+                }
+            }
+        }
+
         $up_data = array('status'=>2,'op_openid'=>$openid);
         $m_stock->updateData(array('id'=>$stock_id),$up_data);
         $this->to_back(array());
@@ -1241,7 +1272,12 @@ class StockController extends CommonController{
                         $add_data['wo_num'] = 1;
                         $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
-                        $m_stock_record->add($add_data);
+                        $record_id = $m_stock_record->add($add_data);
+
+                        $stock_record_info = $add_data;
+                        $stock_record_info['id'] = $record_id;
+                        $m_sale = new \Common\Model\Finance\SaleModel();
+                        $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
                     }
                 }
             }

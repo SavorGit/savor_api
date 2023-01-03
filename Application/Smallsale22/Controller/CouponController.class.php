@@ -340,7 +340,12 @@ class CouponController extends CommonController{
                     $add_data['wo_num'] = 1;
                     $add_data['update_time'] = date('Y-m-d H:i:s');
                     $add_data['add_time'] = date('Y-m-d H:i:s');
-                    $m_stock_record->add($add_data);
+                    $record_id = $m_stock_record->add($add_data);
+
+                    $stock_record_info = $add_data;
+                    $stock_record_info['id'] = $record_id;
+                    $m_sale = new \Common\Model\Finance\SaleModel();
+                    $m_sale->addsale($stock_record_info,$hotel_id,$openid,$user_info);
                 }
             }else{
                 $up_data = array('wxpay_status'=>1);

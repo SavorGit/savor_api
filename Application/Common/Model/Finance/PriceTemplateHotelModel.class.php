@@ -31,7 +31,7 @@ class PriceTemplateHotelModel extends BaseModel{
                 $template_id = $result['template_id'];
                 $m_pricegoods = new \Common\Model\Finance\PriceTemplateGoodsModel();
                 $field = 'settlement_price';
-                $res_pgoods = $m_pricegoods->getAll($field,array('template_id'=>$template_id,'goods_id'=>$goods_id),0,1,'id desc');
+                $res_pgoods = $m_pricegoods->getALLDataList($field,array('template_id'=>$template_id,'goods_id'=>$goods_id),'id desc','0,1','');
                 if(!empty($res_pgoods[0]['settlement_price'])){
                     $settlement_price = $res_pgoods[0]['settlement_price'];
                 }

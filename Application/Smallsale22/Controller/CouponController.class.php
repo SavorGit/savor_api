@@ -345,7 +345,7 @@ class CouponController extends CommonController{
                     $stock_record_info = $add_data;
                     $stock_record_info['id'] = $record_id;
                     $m_sale = new \Common\Model\Finance\SaleModel();
-                    $m_sale->addsale($stock_record_info,$hotel_id,$openid,$user_info);
+                    $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,$user_info);
                 }
             }else{
                 $up_data = array('wxpay_status'=>1);

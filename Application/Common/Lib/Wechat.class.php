@@ -17,6 +17,7 @@ class Wechat{
     private $url_qrcodecreate = 'https://api.weixin.qq.com/cgi-bin/qrcode/create';
     private $url_user_get = 'https://api.weixin.qq.com/cgi-bin/user/get';
     private $url_tag_members_batchtag = 'https://api.weixin.qq.com/cgi-bin/tags/members/batchtagging';
+    private $url_generate_scheme = 'https://api.weixin.qq.com/wxa/generatescheme';
 
     public function __construct($config=array()){
         if(!empty($config)){
@@ -227,6 +228,31 @@ class Wechat{
     public function qrcodecreate($data){
         $access_token = $this->getWxAccessToken();
         $url = $this->url_qrcodecreate."?access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+
+    /*
+     * 生成可通过H5打开小程序的链接
+     * $data = array(
+            'jump_wxa'=>array('path'=>'/mall/pages/wine/post_book/index','query'=>'id=5333&status=0'),
+            'is_expire'=>true,
+            'expire_time'=>1673330722,
+        );
+     */
+    public function generatescheme($data){
+        $access_token = $this->getWxAccessToken();
+        $url = $this->url_customsend."?access_token=".$access_token;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头

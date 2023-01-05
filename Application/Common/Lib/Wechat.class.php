@@ -63,7 +63,7 @@ class Wechat{
      * @return Ambigous <mixed, string>
      */
     public function getWxAccessToken(){
-        $key_token = $this->cacheprefix.'savor_wxtoken';
+        $key_token = $this->cacheprefix;
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(15);
         $token = $redis->get($key_token);

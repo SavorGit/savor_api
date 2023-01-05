@@ -252,7 +252,7 @@ class Wechat{
      */
     public function generatescheme($data){
         $access_token = $this->getWxAccessToken();
-        $url = $this->url_customsend."?access_token=".$access_token;
+        $url = $this->url_generate_scheme."?access_token=".$access_token;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HEADER, 0); //过滤HTTP头

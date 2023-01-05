@@ -179,17 +179,23 @@ class GoodsController extends CommonController{
         }
         $datalist = array();
         if($res_goods['list']){
+            $oss_host = get_oss_host();
+            $m_media = new \Common\Model\MediaModel();
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
-                    $oss_host = "https://".C('OSS_HOST').'/';
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
+                $wine_img_url = '';
+                if(!empty($v['small_media_id'])){
+                    $res_media = $m_media->getMediaInfoById($v['small_media_id']);
+                    $wine_img_url = $res_media['oss_addr'];
+                }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),'type'=>$v['type'],
-                    'img_url'=>$img_url);
+                    'img_url'=>$img_url,'wine_img_url'=>$wine_img_url);
                 $datalist[] = $dinfo;
             }
         }

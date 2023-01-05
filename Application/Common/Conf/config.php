@@ -246,7 +246,7 @@ return array(
         'send_groupbuy_saleuser_templateid'=>'SMS_229648099',
         'send_invitation_to_user'=>'SMS_241067478',
         'send_invitation_to_user_has_mobile'=>'SMS_247680644',
-        'send_invitation_to_user_link'=>'SMS_241067478',
+        'send_invitation_to_user_link'=>'SMS_267410076',
         'send_invitation_to_user_has_mobile_link'=>'SMS_267035538',
     ),
     'WEIXIN_MONEY_NOTICE'=>array(13910825534,13811966726),

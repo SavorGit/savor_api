@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>打开小程序</title>
+    <style >
+        *{
+            margin:0;
+            border:0;
+            padding:0;
+        }
+        body{
+            width:100vw;
+            height:100vh;
+            background-image:url('https://oss.littlehotspot.com/Html5/images/jumpwx_bg.jpeg?x-oss-process=image/quality,q_50');
+            background-repeat:no-repeat;
+            background-position:0 0;
+            background-size:100% auto;
+        }
+        p{
+            width:100%;
+            position:absolute;
+            top:410px;
+            text-align:center;
+            color:#FFFFFF;
+        }
+    </style>
+</head>
+<body>
+</body>
+<script>
+    let tagName = 'body';
+    let weChartUrl = "{$jump_url}";
+    function jumpWeChart(){
+        location.href = weChartUrl;
+    }
+    (function(doc, win){
+        let pObjects = doc.getElementsByTagName(tagName);
+        console.log('type=' + typeof(pObjects), pObjects, pObjects instanceof HTMLCollection, Array.isArray(pObjects), pObjects.length);
+        if(typeof(pObjects) === 'object' && pObjects !== null && pObjects instanceof HTMLCollection && pObjects.length > 0){
+            for(let index = 0;index < pObjects.length;index++){
+                let pObject = pObjects[index];
+                pObject.addEventListener('click', function(e) {
+                    jumpWeChart();
+                    e.stopPropagation();//取消事件冒泡
+                });
+            }
+        }
+        doc.onLoad = jumpWeChart();
+    })(document, window);
+</script>
+</html>

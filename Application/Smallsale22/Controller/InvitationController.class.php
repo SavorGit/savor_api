@@ -12,7 +12,7 @@ class InvitationController extends CommonController{
                 break;
             case 'themes':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'version'=>1002);
                 break;
         }
         parent::_init_();
@@ -141,6 +141,7 @@ class InvitationController extends CommonController{
     public function themes(){
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
+        $version = $this->params['version'];
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,merchant.type';
@@ -151,9 +152,20 @@ class InvitationController extends CommonController{
         }
 
         $all_themes = C('INVITATION_THEME');
-        $all_data = array_values($all_themes);
-        foreach ($all_data as $k=>$v){
-            $all_data[$k]['bg_img'] = $v['bg_img'].'?x-oss-process=image/resize,p_50/quality,q_60';
+        $all_themes = array_values($all_themes);
+        $all_data = array();
+        foreach ($all_themes as $k=>$v){
+            if($version>='1.9.37'){
+                if($v['is_display']==1){
+                    $v['bg_img'] = $v['bg_img'].'?x-oss-process=image/resize,p_50/quality,q_60';
+                    $all_data[]=$v;
+                }
+            }else{
+                if($v['is_display']==0){
+                    $v['bg_img'] = $v['bg_img'].'?x-oss-process=image/resize,p_50/quality,q_60';
+                    $all_data[]=$v;
+                }
+            }
         }
         $this->to_back(array('datalist'=>$all_data));
     }

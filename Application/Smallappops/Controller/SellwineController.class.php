@@ -45,6 +45,8 @@ class SellwineController extends CommonController{
         $is_data = 1;
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0);
+        $test_hotels = C('TEST_HOTEL');
+        $merchant_where['hotel.id'] = array('not in',$test_hotels);
         if($day>0){
             $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
             $merchant_where['m.add_time'] = array('elt',$end_time);
@@ -131,7 +133,8 @@ class SellwineController extends CommonController{
             }
 
         }
-        $date_range = array(date('Y-m-d',strtotime('-30day')),date('Y-m-d',strtotime('-1day')));
+        $sell_date = '2022-05-19 08:40:10';
+        $date_range = array(date('Y-m-d',strtotime($sell_date)),date('Y-m-d',strtotime('-1day')));
         $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range,
             'hotel_list'=>$hotel_list,'staff_list'=>$staff_list,'stock_status'=>$stock_status);
         $this->to_back($res_data);

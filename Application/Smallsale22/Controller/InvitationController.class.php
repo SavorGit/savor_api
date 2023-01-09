@@ -122,10 +122,13 @@ class InvitationController extends CommonController{
         $alisms = new \Common\Lib\AliyunSms();
         $book_time = date('Y-m-d H点',strtotime($book_time));
         $params = array('book_time'=>$book_time,'hotel_name'=>$hotel_name,'room_name'=>$room_name);
+        $content_book = "【小热点】尊敬的贵宾您好！已为您预定[$book_time]在[$hotel_name]的[$room_name]用餐，恭候您的光临，";
         if(!empty($contact_mobile)){
             $params['tel'] = $contact_mobile;
+            $content_tel = "联系电话：{$contact_mobile}。";
             $template_code = $ucconfig['send_invitation_to_user_has_mobile_link'];
         }else{
+            $content_tel = '';
             $template_code = $ucconfig['send_invitation_to_user_link'];
         }
         $is_send = check_sendsms_content($mobile,$params,$template_code);
@@ -134,8 +137,7 @@ class InvitationController extends CommonController{
             $param_data = array(
                 'jump_wxa'=>array(
                     'path'=>'/mall/pages/wine/post_book/index',
-                    'query'=>"id=$invitation_id&status=0",
-                    'env_version'=>'trial'
+                    'query'=>"id=$invitation_id&status=1",
                 ),
                 'is_expire'=>true,
                 'expire_time'=>$expire_time,
@@ -158,12 +160,20 @@ class InvitationController extends CommonController{
             }
             $hash_ids_key = C('HASH_IDS_KEY');
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
-            $res_decode = $hashids->encode($p_invitation_id);
-            $params['code'] = $res_decode;
+            $res_encode = $hashids->encode($p_invitation_id);
+            $params['code'] = $res_encode;
+            $content_url = "本店有习酒、洋河、汾酒、剑南春等名酒平价供应，省去了您自带白酒的麻烦。详情请见https://mobile.littlehotspot.com/rds/$res_encode";
 
+            $emsms = new \Common\Lib\EmayMessage();
+            $content = $content_book.$content_tel.$content_url;
+            $res_data = $emsms->sendSMS($content,$mobile);
+            $resp_code = $res_data->code;
+            /*
             $res_data = $alisms::sendSms($mobile,$params,$template_code);
+            $resp_code = $res_data->Code;
+            */
             $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$res_data->Code,'msg_type'=>3
+                'url'=>join(',',$params),'tel'=>$mobile,'resp_code'=>$resp_code,'msg_type'=>3
             );
             $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
             $m_account_sms_log->addData($data);

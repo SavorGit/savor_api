@@ -1174,7 +1174,7 @@ class TaskController extends CommonController{
                 $timedata = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
                     'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
                     'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'ads_id'=>$ads_id,'timing'=>$play_time,
-                    'status'=>1
+                    'status'=>1,'mobile_brand'=>$mobile_brand,'mobile_model'=>$mobile_model
                 );
                 $add_datas[]=$timedata;
             }

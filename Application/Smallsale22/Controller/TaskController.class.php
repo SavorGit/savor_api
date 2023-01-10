@@ -57,6 +57,11 @@ class TaskController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'ads_id'=>1001,'task_id'=>1001);
                 break;
+            case 'demandadvTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'ads_id'=>1001,'task_id'=>1001,
+                    'dtype'=>1001,'box_mac'=>1002,'play_time'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002,);
+                break;
         }
         parent::_init_();
     }
@@ -896,7 +901,6 @@ class TaskController extends CommonController{
             }
         }
         if($now_box_finish_num>=$box_finish_num){
-//            $this->to_back(93217);
             $msg = '当前电视此任务已被完成，请使用其他电视。';
             $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
             $this->to_back($res_pdata);
@@ -909,7 +913,6 @@ class TaskController extends CommonController{
             $countdown_time = $last_demand_time - $now_time;
             $mtime = round($countdown_time/60);
             $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
-            //$res_pdata = array('code'=>93218,'msg'=>$msg);
             $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
             $this->to_back($res_pdata);
         }
@@ -950,6 +953,234 @@ class TaskController extends CommonController{
             'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
         );
         $m_usertask_record->add($usertask_record);
+        $this->to_back(array('is_pop_tips_wind'=>0));
+    }
+
+    public function demandadvTask(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $ads_id = $this->params['ads_id'];
+        $hotel_id = $this->params['hotel_id'];
+        $task_id = $this->params['task_id'];
+        $dtype = $this->params['dtype'];//1立即播放 2定时播放
+        $play_time = $this->params['play_time'];
+        $mobile_brand = $this->params['mobile_brand'];
+        $mobile_model = $this->params['mobile_model'];
+        if($dtype==2){
+            if(empty($play_time)){
+                $this->to_back(1001);
+            }
+            $t_time = strtotime(date("Y-m-d $play_time"));
+            $now_paly_time = date('Y-m-d H:i:00',$t_time);
+        }else{
+            $now_paly_time = date('Y-m-d H:i:s');
+        }
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_task = new \Common\Model\Integral\TaskuserModel();
+        $task_where = array('a.openid'=>$openid,'a.task_id'=>$task_id,'a.status'=>1,'task.type'=>2,'task.task_type'=>25);
+        $task_where['task.end_time'] = array('EGT',date('Y-m-d H:i:s'));
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time   = date('Y-m-d 23:59:59');
+        $task_where['a.add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
+        $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $task_user_id = $res_task[0]['id'];
+        $task_content = json_decode($res_task[0]['task_info'],true);
+        $lunch_start_time = $task_content['lunch_start_time'];
+        $lunch_end_time = $task_content['lunch_end_time'];
+        $dinner_start_time = $task_content['dinner_start_time'];
+        $dinner_end_time = $task_content['dinner_end_time'];
+        $box_finish_num = $task_content['box_finish_num'];
+        $interval_time = $task_content['interval_time'];
+
+        if($ads_id!=$task_content['ads_id']){
+            $this->to_back(93215);
+        }
+
+        $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
+        $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
+        $dinner_stime = date("Y-m-d {$dinner_start_time}:00");
+        $dinner_etime = date("Y-m-d {$dinner_end_time}:59");
+        $meal_stime = $meal_etime = '';
+        if($now_paly_time>=$lunch_stime && $now_paly_time<=$lunch_etime){
+            $meal_stime = $lunch_stime;
+            $meal_etime = $lunch_etime;
+        }elseif($now_paly_time>=$dinner_stime && $now_paly_time<=$dinner_etime){
+            $meal_stime = $dinner_stime;
+            $meal_etime = $dinner_etime;
+        }
+        if(empty($meal_stime) && empty($meal_etime)){
+            $this->to_back(93216);
+        }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res_duser = $m_user->getOne('*',array('openid'=>$openid),'');
+        $m_ads = new \Common\Model\AdsModel();
+        $res_ads = $m_ads->getWhere(array('id'=>$ads_id), '*');
+        $m_media = new \Common\Model\MediaModel();
+        $media_info = $m_media->getMediaInfoById($res_ads[0]['media_id']);
+        $url = $media_info['oss_path'];
+        $oss_path_info = pathinfo($url);
+        $filename = $oss_path_info['basename'];
+        $resource_type = 2;
+        $duration = $media_info['duration'];
+        $resource_size = $media_info['oss_filesize'];
+        $m_box = new \Common\Model\BoxModel();
+        if($dtype==1){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
+            if(!empty($box_mac)){
+                $nowtime = getMillisecond();
+                $message = array('action'=>5,'url'=>$url,'filename'=>$filename,'openid'=>$openid,'resource_type'=>$resource_type,
+                    'avatarUrl'=>$res_duser['avatarUrl'],'nickName'=>$res_duser['nickName'],'forscreen_id'=>$nowtime,
+                    'resource_size'=>$resource_size);
+                $m_netty = new \Common\Model\NettyModel();
+                $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
+                if(isset($res_netty['error_code'])){
+                    $this->to_back($res_netty['error_code']);
+                }
+                $imgs = array($url);
+                $data = array('action'=>59,'box_mac'=>$box_mac,'duration'=>$duration,'forscreen_char'=>'','forscreen_id'=>$nowtime,
+                    'imgs'=>json_encode($imgs),'mobile_brand'=>$mobile_brand,'mobile_model'=>$mobile_model,
+                    'openid'=>$openid,'resource_id'=>$nowtime,'resource_size'=>$resource_size,'create_time'=>date('Y-m-d H:i:s'),
+                    'small_app_id'=>5);
+                $redis->select(5);
+                $cache_key = C('SAPP_SCRREN').":".$box_mac;
+                $redis->rpush($cache_key, json_encode($data));
+
+                $where = array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'box_mac'=>$box_mac);
+                $where['add_time'] = array(array('EGT',$meal_stime),array('ELT',$meal_etime));
+                $res_record = $m_usertask_record->getALLDataList('openid,add_time',$where,'id asc','','');
+                $now_box_finish_num = 0;
+                $last_demand_time = 0;
+                $demand_openid = '';
+                if(!empty($res_record)){
+                    foreach ($res_record as $k=>$v){
+                        $str_demand_time = strtotime($v['add_time']);
+                        if($k==0){
+                            $demand_openid = $v['openid'];
+                            $now_box_finish_num++;
+                            $last_demand_time = $str_demand_time + $interval_time*60;
+                        }else{
+                            if($str_demand_time>=$last_demand_time){
+                                $demand_openid = $v['openid'];
+                                $now_box_finish_num++;
+                                $last_demand_time = $str_demand_time + $interval_time*60;
+                            }
+                        }
+                    }
+                }
+                if($now_box_finish_num>=$box_finish_num){
+                    $msg = '当前电视此任务已被完成，请使用其他电视。';
+                    $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+                    $this->to_back($res_pdata);
+                }
+                $now_time = time();
+                if($last_demand_time>$now_time){
+                    $res_user = $m_user->getOne('*',array('openid'=>$demand_openid),'');
+                    $uname = $res_user['nickName'];
+                    $countdown_time = $last_demand_time - $now_time;
+                    $mtime = round($countdown_time/60);
+                    $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
+                    $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+                    $this->to_back($res_pdata);
+                }
+                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+                $rets = $m_box->getBoxInfo($fields, $where);
+                $hotel_id = $rets[0]['hotel_id'];
+                $hotel_name = $rets[0]['hotel_name'];
+                $room_id = $rets[0]['room_id'];
+                $room_name = $rets[0]['room_name'];
+                $box_id = $rets[0]['box_id'];
+                $box_name = $rets[0]['box_name'];
+
+                $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
+                    'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
+                    'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
+                );
+                $m_usertask_record->add($usertask_record);
+            }else{
+                $where = array('d.id'=>$hotel_id,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $fields = 'a.id as box_id,a.name as box_name,a.mac,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+                $res_boxs = $m_box->getBoxInfo($fields, $where);
+                $error_code = 0;
+                $is_send = 0;
+                foreach ($res_boxs as $bv){
+                    $box_mac = $bv['mac'];
+                    $nowtime = getMillisecond();
+                    $message = array('action'=>5,'url'=>$url,'filename'=>$filename,'openid'=>$openid,'resource_type'=>$resource_type,
+                        'avatarUrl'=>$res_duser['avatarUrl'],'nickName'=>$res_duser['nickName'],'forscreen_id'=>$nowtime,
+                        'resource_size'=>$resource_size);
+                    $m_netty = new \Common\Model\NettyModel();
+                    $res_netty = $m_netty->pushBox($box_mac,json_encode($message));
+                    if(isset($res_netty['error_code'])){
+                        $error_code = $res_netty['error_code'];
+                        continue;
+                    }else{
+                        $is_send = 1;
+                    }
+
+                    $imgs = array($url);
+                    $data = array('action'=>59,'box_mac'=>$box_mac,'duration'=>$duration,'forscreen_char'=>'','forscreen_id'=>$nowtime,
+                        'imgs'=>json_encode($imgs),'mobile_brand'=>$mobile_brand,'mobile_model'=>$mobile_model,
+                        'openid'=>$openid,'resource_id'=>$nowtime,'resource_size'=>$resource_size,'create_time'=>date('Y-m-d H:i:s'),
+                        'small_app_id'=>5);
+                    $redis->select(5);
+                    $cache_key = C('SAPP_SCRREN').":".$box_mac;
+                    $redis->rpush($cache_key, json_encode($data));
+
+                    $hotel_id = $bv['hotel_id'];
+                    $hotel_name = $bv['hotel_name'];
+                    $room_id = $bv['room_id'];
+                    $room_name = $bv['room_name'];
+                    $box_id = $bv['box_id'];
+                    $box_name = $bv['box_name'];
+                    $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
+                        'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
+                        'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
+                    );
+                    $m_usertask_record->add($usertask_record);
+                }
+                if($is_send==0 && $error_code>0){
+                    $this->to_back($error_code);
+                }
+            }
+        }else{
+            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+            if(!empty($box_mac)){
+                $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $res_boxs = $m_box->getBoxInfo($fields, $where);
+            }else{
+                $where = array('d.id'=>$hotel_id,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+                $res_boxs = $m_box->getBoxInfo($fields, $where);
+            }
+            $add_datas = array();
+            foreach ($res_boxs as $bv){
+                $hotel_id = $bv['hotel_id'];
+                $hotel_name = $bv['hotel_name'];
+                $room_id = $bv['room_id'];
+                $room_name = $bv['room_name'];
+                $box_id = $bv['box_id'];
+                $box_name = $bv['box_name'];
+                $timedata = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
+                    'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
+                    'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'ads_id'=>$ads_id,'timing'=>$play_time,
+                    'status'=>1
+                );
+                $add_datas[]=$timedata;
+            }
+            $m_timeplay = new \Common\Model\Smallapp\TimeplayModel();
+            $m_timeplay->addAll($add_datas);
+        }
         $this->to_back(array('is_pop_tips_wind'=>0));
     }
 

@@ -120,9 +120,9 @@ class InvitationController extends CommonController{
         //发送短信
         $ucconfig = C('ALIYUN_SMS_CONFIG');
         $alisms = new \Common\Lib\AliyunSms();
-        $book_time = date('Y-m-d H点',strtotime($book_time));
+        $book_time = date('Y.m.d-H:00',strtotime($book_time));
         $params = array('book_time'=>$book_time,'hotel_name'=>$hotel_name,'room_name'=>$room_name);
-        $content_book = "【小热点】尊敬的贵宾您好！已为您预定[$book_time]在[$hotel_name]的[$room_name]用餐，恭候您的光临，";
+        $content_book = "【小热点】{$hotel_name} ---尊敬的贵宾您好！已为您预定{$book_time}在本餐厅的[$room_name]用餐，恭候您的光临，";
         if(!empty($contact_mobile)){
             $params['tel'] = $contact_mobile;
             $content_tel = "联系电话：{$contact_mobile}。";

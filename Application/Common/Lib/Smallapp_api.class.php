@@ -115,7 +115,7 @@ class Smallapp_api {
 	    
 		$key_token = $smallapp_config['cache_key'];
 		$redis = SavorRedis::getInstance();
-		$redis->select(5);
+		$redis->select(15);
 		$token = $redis->get($key_token);
 		if(empty($token)){
 

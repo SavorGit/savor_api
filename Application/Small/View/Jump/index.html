@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>打开小程序</title>
+    <style>*{margin:0;border:0;padding:0;}body{width:100vw;height:100vh;background-image:url('https://oss.littlehotspot.com/Html5/images/jumpwx_bg.jpeg?x-oss-process=image/quality,q_50');background-repeat:no-repeat;background-position:0 0;background-size:100% auto;}p{width:100%;position:absolute;top:410px;text-align:center;color:rgba(255,255,255,0);}log{width:calc(100% - 20px);position:absolute;top:0;padding:10px;color:rgba(0,0,0,1);word-break:break-all;}</style>
+</head>
+<body>
+<log></log>
+</body>
+<script>let weChartUrl="{$jump_url}";let tagName='body';let clickTimesMax=30;function foreach(objects,Fn){for(let index=0;index<objects.length;index++){let obj=objects[index];if(typeof(Fn)==='function'){Fn(obj, index);};};};function elementsCss(elements,cssName,cssValue){foreach(elements,function(element,elementIndex){element.style.setProperty(cssName,cssValue);});}let logTagName='log',tabHTML='&nbsp;&nbsp;&nbsp;&nbsp;',logTagObjects;function jumpWeChart(){logInfo('jumpWeChart');location.href=weChartUrl;};function logInfo(){let logHTMLMessage='';console.log(arguments);foreach(arguments,function(argString,argIndex){if(argIndex>0){logHTMLMessage+=tabHTML;};logHTMLMessage+=argString;});logTagObjects=document.getElementsByTagName(logTagName);if(typeof(logTagObjects)==='object'&&logTagObjects!==null&&logTagObjects instanceof HTMLCollection&&logTagObjects.length>0){foreach(logTagObjects,function(logTagObject,logTagObjectIndex){let logTagInnerHTML=logTagObject.innerHTML;if(typeof(logTagInnerHTML)==='string'&&logTagInnerHTML.length>0){logTagInnerHTML+=tabHTML;};logTagInnerHTML+=logHTMLMessage;logTagObject.innerHTML=logTagInnerHTML;logTagObject.addEventListener('click',function(e){e.stopPropagation();/*取消事件冒泡*/});});};};function onLoad(e){elementsCss(logTagObjects,'display','none');jumpWeChart();};(function(doc, win){let tagObjects=doc.getElementsByTagName(tagName);logInfo('type='+typeof(tagObjects),tagObjects,tagObjects instanceof HTMLCollection,Array.isArray(tagObjects),tagObjects.length);if(typeof(tagObjects)==='object'&&tagObjects!==null&&tagObjects instanceof HTMLCollection&&tagObjects.length>0){foreach(tagObjects,function(tagObject,tagObjectIndex){tagObject.addEventListener('click', function(e){jumpWeChart();e.stopPropagation();/*取消事件冒泡*/});});};let pClickTimes=0;let pElements=doc.getElementsByTagName('p');foreach(pElements,function(pElement,pElementIndex){pElement.addEventListener('click', function(e){pClickTimes++;if(pClickTimes>clickTimesMax){elementsCss(logTagObjects,'display','block');};e.stopPropagation();});});doc.onLoad=onLoad();})(document, window);</script>
+</html>

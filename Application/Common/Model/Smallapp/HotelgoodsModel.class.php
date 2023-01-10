@@ -38,7 +38,7 @@ class HotelgoodsModel extends BaseModel{
         if(!empty($res_cache)){
             $hotel_stock = json_decode($res_cache,true);
             if(isset($hotel_stock[$hotel_id])){
-                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
+                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.small_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
                 $order = 'g.wine_type asc';
                 $res_data = $this->getGoodsList($fields,$where,$order,'','');

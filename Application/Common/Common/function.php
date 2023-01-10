@@ -143,7 +143,7 @@ function wx_sec_check($url,$duration=0){
 function getWxAccessToken($app_config){
     $key_token = $app_config['cache_key'];
     $redis = SavorRedis::getInstance();
-    $redis->select(5);
+    $redis->select(15);
     $token = $redis->get($key_token);
     if(empty($token)){
         $url_access_token = 'https://api.weixin.qq.com/cgi-bin/token';

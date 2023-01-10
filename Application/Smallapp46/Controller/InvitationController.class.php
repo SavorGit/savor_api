@@ -212,7 +212,10 @@ class InvitationController extends CommonController{
                 $theme_info = $themes[$res_info['theme_id']];
                 $res_data['backgroundImage'] = $oss_host.$theme_info['bg_img'];
                 $res_data['themeColor'] = $theme_info['themeColor'];
+                $res_data['themeColor2'] = $theme_info['themeColor2'];
                 $res_data['themeContrastColor'] = $theme_info['themeContrastColor'];
+                $res_data['backgroundColor'] = $theme_info['backgroundColor'];
+                $res_data['buttonBackgroundColor'] = $theme_info['buttonBackgroundColor'];
                 $res_data['painColor'] = $theme_info['painColor'];
                 $res_data['weakColor'] = $theme_info['weakColor'];
                 $res_data['is_open_sellplatform'] = intval($res_invitation['is_open_sellplatform']);
@@ -233,6 +236,13 @@ class InvitationController extends CommonController{
                     $res_data['is_open_sellplatform'] = $invitation_hotels['is_open_sellplatform'];
                 }
             }
+            $book_date = date("Y/m/d",strtotime($res_info['book_time']));
+            $weekarray = array("星期日","星期一","星期二","星期三","星期四","星期五","星期六");
+            $book_day = $weekarray[date("w",strtotime($res_info['book_time']))];
+            $book_hour = date("H:i",strtotime($res_info['book_time']));
+            $res_data['book_date'] = $book_date;
+            $res_data['book_day'] = $book_day;
+            $res_data['book_hour'] = $book_hour;
         }
         $this->to_back($res_data);
     }

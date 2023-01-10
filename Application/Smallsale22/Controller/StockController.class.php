@@ -669,6 +669,7 @@ class StockController extends CommonController{
 
                     $stock_fields = 'sum(total_amount) as total_num';
                     $stock_where = array('goods_id'=>$goods_id,'type'=>array('in',array(1,2)),'dstatus'=>1);
+                    $stock_where['stock_id'] = array('neq',$stock_id);
                     $res_goods_stock = $m_stock_record->getALLDataList($stock_fields,$stock_where,'','','');
                     $stock_num = intval($res_goods_stock[0]['total_num']);
                     $now_avg_price = ($num*$price+$stock_num*$avg_price)/($num+$stock_num);
@@ -676,7 +677,7 @@ class StockController extends CommonController{
                     $m_goods_avg_price->add(array('goods_id'=>$goods_id,'price'=>$now_avg_price));
                     $up_where = $rwhere;
                     $up_where['goods_id'] = $goods_id;
-                    $m_stock_record->updateData($up_where,array('avg_price'=>$avg_price));
+                    $m_stock_record->updateData($up_where,array('avg_price'=>$now_avg_price));
                 }
             }
         }

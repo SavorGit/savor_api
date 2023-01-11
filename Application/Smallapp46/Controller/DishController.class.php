@@ -307,13 +307,13 @@ class DishController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'type'=>24);
         $orderby = 'id desc';
-        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,3);
+        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,5);
         $datalist = array();
         if($res_goods['total']){
             $m_media = new \Common\Model\MediaModel();
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
             $hotel_goods = $m_hotelgoods->getStockGoodsList($hotel_id,0,100);
-            $oss_host = "https://".C('OSS_HOST').'/';
+            $oss_host = get_oss_host();
             foreach ($res_goods['list'] as $k=>$v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){

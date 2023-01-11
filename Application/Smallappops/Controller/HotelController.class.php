@@ -307,7 +307,7 @@ class HotelController extends CommonController{
             $apk_update_info = $m_device_update->getNewSmallApkInfo($hotel_id,'',2);
 
             $m_ads = new \Common\Model\AdsModel();
-            $adv_proid_info = $m_ads->getWhere(array('hotel_id'=>$hotel_id,'type'=>3),'max(update_time) as max_update_time');
+            $adv_proid_info = $m_ads->getWhere(array('hotel_id'=>$hotel_id,'type'=>3,'state'=>1),'max(update_time) as max_update_time');
             if($adv_proid_info[0]['max_update_time']){
                 $adv_proid = date('YmdHis',strtotime($adv_proid_info[0]['max_update_time']));
             }else{
@@ -322,7 +322,7 @@ class HotelController extends CommonController{
             $fields='box.id as box_id,box.mac,box.name as box_name,box.box_type';
             $where = array('hotel.id'=>$hotel_id,'box.state'=>1,'box.flag'=>0,'room.is_device'=>1);
             $res_box = $m_box->getBoxByCondition($fields,$where);
-            //$ads_proid = '';
+            $ads_proid = '';
             foreach ($res_box as $k=>$v){
                 //获取机顶盒的广告期号
                 if($res_hotel['mac_addr'] =='000000000000'){//虚拟小平台
@@ -428,6 +428,9 @@ class HotelController extends CommonController{
                 $res_box[$k]['uptips']=$box_uptips;
                 $res_box[$k]['box_type_str']=$all_hotel_box_types[$v['box_type']];
                 $res_box[$k]['heart_time']=$heart_time;
+                $res_box[$k]['server_adv_period']=$adv_proid.$menu_num;
+                $res_box[$k]['server_pro_period']=$menu_num;
+                $res_box[$k]['server_ads_proid']=$ads_proid;
             }
             sortArrByOneField($res_box,'heart_time',true);
             $desc = array('粉色标签为酒楼网络类型，棕色为酒楼设备类型；','底色说明：','1.灰底色代表机顶盒内存正常','2.红底色代表机顶盒内存异常',
@@ -477,7 +480,7 @@ class HotelController extends CommonController{
                 'small_platform_status'=>$small_platform_status,'small_platform_uptips'=>$small_platform_uptips,'box_list'=>$res_box,
                 'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,
                 'box_num'=>$box_num,'room_num'=>$room_num,'box_type'=>$box_type,'box_info'=>$box_info,'stock_num'=>$stock_num,
-                'hotel_drinks_num'=>$hotel_drinks_num,'hotel_drinks_content'=>$hotel_drinks_content
+                'hotel_drinks_num'=>$hotel_drinks_num,'hotel_drinks_content'=>$hotel_drinks_content,
             );
         }
         $this->to_back($data);

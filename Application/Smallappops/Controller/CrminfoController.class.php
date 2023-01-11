@@ -38,6 +38,14 @@ class CrminfoController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'stafflist':
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'staffchangelist':
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'hotellist':
                 $this->valid_fields = array('openid'=>1001,'city_id'=>1002,'maintainer_id'=>1002,
                     'keywords'=>1002,'page'=>1001,'pagesize'=>1002);
@@ -52,7 +60,7 @@ class CrminfoController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'addtag':
-                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001,'name'=>1001);
+                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001,'names'=>1002,'del_ids'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'taglist':
@@ -333,21 +341,49 @@ class CrminfoController extends CommonController{
     public function addtag(){
         $openid = $this->params['openid'];
         $contact_id = intval($this->params['contact_id']);
-        $name = $this->params['name'];
+        $del_ids = $this->params['del_ids'];
+        $names = $this->params['names'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $data = array('contact_id'=>$contact_id,'name'=>$name);
         $m_tag = new \Common\Model\Crm\ContactTagModel();
-        $res_data = $m_tag->getInfo($data);
-        $tag_id = 0;
-        if(empty($res_data)){
-            $tag_id = $m_tag->add($data);
+        if(!empty($del_ids)){
+            $arr_ids = explode(',',$del_ids);
+            $dids = array();
+            foreach ($arr_ids as $v){
+                $del_id = intval($v);
+                if($del_id>0){
+                    $dids[]=$del_id;
+                }
+            }
+            if(!empty($dids)){
+                $m_tag->delData(array('id'=>array('in',$dids)));
+            }
         }
-        $this->to_back(array('tag_id'=>$tag_id));
+        if(!empty($names)){
+            $json_names = stripslashes(html_entity_decode($names));
+            $arr_names = json_decode($json_names,true);
+            if(is_array($arr_names)){
+                $name_data = array();
+                foreach ($arr_names as $v){
+                    $n = trim($v);
+                    if(!empty($n)){
+                        $data = array('contact_id'=>$contact_id,'name'=>$n);
+                        $res_data = $m_tag->getInfo($data);
+                        if(empty($res_data)){
+                            $name_data[]=$data;
+                        }
+                    }
+                }
+                if(!empty($name_data)){
+                    $m_tag->addAll($name_data);
+                }
+            }
+        }
+        $this->to_back(array());
     }
 
     public function taglist(){
@@ -475,7 +511,7 @@ class CrminfoController extends CommonController{
             $this->to_back(94001);
         }
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.id,hotel.name,hotel.addr,hotel.contractor,hotel.mobile,ext.maintainer_id';
+        $field = 'hotel.id,hotel.name,hotel.addr,hotel.contractor,hotel.mobile,ext.maintainer_id,ext.is_salehotel,ext.trade_area_type';
         $res_hotel = $m_hotel->getHotelById($field,array('hotel.id'=>$hotel_id));
         $maintainer = '';
         if($res_hotel['maintainer_id']){
@@ -484,6 +520,102 @@ class CrminfoController extends CommonController{
             $maintainer = $res_sysuser['remark'];
         }
         $res_hotel['maintainer'] = $maintainer;
+        $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
+        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc','0,4');
+        if(!empty($staff_list)){
+            $oss_host = C('OSS_HOST');
+            foreach ($staff_list as $k=>$v){
+                if(strpos($v['avatarUrl'],$oss_host)){
+                    $staff_list[$k]['avatarUrl'] = $v['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
+                }
+            }
+        }
+        $res_hotel['staff_list'] = $staff_list;
+
         $this->to_back($res_hotel);
     }
+
+    public function stafflist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
+        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc','');
+        if(!empty($staff_list)){
+            $oss_host = C('OSS_HOST');
+            $staff_level = C('STAFF_LEVEL');
+            foreach ($staff_list as $k=>$v){
+                if(strpos($v['avatarUrl'],$oss_host)){
+                    $staff_list[$k]['avatarUrl'] = $v['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
+                }
+                $job = '';
+                if(isset($staff_level[$v['level']])){
+                    $job = $staff_level[$v['level']];
+                }
+                $staff_list[$k]['job'] = $job;
+            }
+        }
+        $this->to_back($staff_list);
+    }
+
+    public function staffchangelist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $fields = 'a.id,a.parent_id,a.openid,a.level,a.add_time,user.avatarUrl,user.nickName,merchant.sysuser_id';
+        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.id desc','');
+        $res_data = array();
+        if(!empty($staff_list)){
+            $oss_host = C('OSS_HOST');
+            $staff_level = C('STAFF_LEVEL');
+            $all_staff = array();
+            foreach ($staff_list as $k=>$v){
+                if(strpos($v['avatarUrl'],$oss_host)){
+                    $v['avatarUrl'] = $v['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
+                }
+                $job = '';
+                if(isset($staff_level[$v['level']])){
+                    $job = $staff_level[$v['level']];
+                }
+                $all_staff[$v['id']] = array('openid'=>$v['openid'],'avatarUrl'=>$v['avatarUrl'],'nickName'=>$v['nickName'],'job'=>$job);
+            }
+            $m_sysuser = new \Common\Model\SysUserModel();
+            foreach ($staff_list as $k=>$v){
+                if($v['level']==1){
+                    $res_sysuser = $m_sysuser->getUserInfo(array('id'=>$staff_list[0]['sysuser_id']));
+                    $invate_username = $res_sysuser['remark'];
+                    $invate_userimg = '';
+                    $job_info = '指定为当前餐厅店长';
+                }else{
+                    $invate_username = $all_staff[$v['parent_id']]['nickName'];
+                    $invate_userimg = $all_staff[$v['parent_id']]['avatarUrl'];
+                    $job_info = '邀请成为'.$all_staff[$v['id']]['job'];
+                }
+                $info = array('id'=>$v['id'],'openid'=>$v['openid'],'nickName'=>$v['nickName'],'avatarUrl'=>$all_staff[$v['id']]['avatarUrl'],
+                    'invate_username'=>$invate_username,'invate_userimg'=>$invate_userimg,'job_info'=>$job_info,'add_time'=>$v['add_time']);
+                $res_data[]=$info;
+            }
+        }
+        $this->to_back($res_data);
+    }
+
+
+
+
+
+
 }

@@ -35,6 +35,28 @@ class StockRecordModel extends BaseModel{
         return $res;
     }
 
+    public function getHotelStaffStaticData($hotel_id,$openid){
+        $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
+        $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')));
+        if($hotel_id){
+            $where['stock.hotel_id'] = $hotel_id;
+        }
+        if(!empty($openid)){
+            $where['a.op_openid'] = $openid;
+        }
+        $res_data = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_finance_stock stock on a.stock_id=stock.id','left')
+            ->join('savor_hotel hotel on stock.hotel_id=hotel.id','left')
+            ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+            ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
+            ->join('savor_finance_brand brand on goods.brand_id=brand.id','left')
+            ->join('savor_finance_series series on goods.series_id=series.id','left')
+            ->where($where)
+            ->select();
+        return $res_data;
+    }
+
     public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group=''){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
         $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')));

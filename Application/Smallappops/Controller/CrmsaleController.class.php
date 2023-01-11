@@ -34,6 +34,10 @@ class CrmsaleController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002,'area_id'=>1002,'staff_id'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'hotelcontactlist':
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002,'hotel_id'=>1002,'contact_id'=>1002);
+                $this->is_verify = 1;
+                break;
             case 'addcomment':
                 $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001,'content'=>1001,'comment_id'=>1002,'cc_uids'=>1002);
                 $this->is_verify = 1;
@@ -661,6 +665,128 @@ class CrmsaleController extends CommonController{
             $info = array('comment_id'=>$v['id'],'content'=>$v['content'],'staff_id'=>$res_staff_user[0]['staff_id'],'cc_users'=>$cc_users,
                 'replay_user'=>$replay_user,'staff_name'=>$res_staff_user[0]['staff_name'],'avatarUrl'=>$res_staff_user[0]['avatarUrl'],'add_time'=>$add_time);
             $datalist[]=$info;
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function hotelcontactlist(){
+        $openid = $this->params['openid'];
+        $type = intval($this->params['type']);//类型1酒楼 2个人
+        $page = intval($this->params['page']);
+        $pagesize = $this->params['pagesize'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $contact_id = intval($this->params['contact_id']);
+        if(empty($pagesize)){
+            $pagesize = 10;
+        }
+        $start = ($page-1)*$pagesize;
+        $limit = "$start,$pagesize";
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $where = array();
+        if($type==1){
+            if(empty($hotel_id)){
+                $this->to_back(1001);
+            }
+            $where['record.signin_hotel_id'] = $hotel_id;
+        }else{
+            if(empty($contact_id)){
+                $this->to_back(1001);
+            }
+            $where['record.contact_id'] = $hotel_id;
+        }
+        $where['record.status'] = 2;
+
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $fields = 'record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_salerecord = $m_salerecord->getRecordList($fields,$where,'id desc',$limit,'');
+        $datalist = array();
+        if(!empty($res_salerecord)){
+            $os = check_phone_os();
+            $format_webp = '';
+            if($os==1){
+                $format_webp = '/format,webp';
+            }
+            $m_category = new \Common\Model\Smallapp\CategoryModel();
+            $m_comment = new \Common\Model\Crm\CommentModel();
+            $m_hotel = new \Common\Model\HotelModel();
+            foreach ($res_salerecord as $v){
+                $salerecord_id = $v['id'];
+                $record_info = $v;
+                $staff_id = $v['staff_id'];
+                $staff_name = !empty($v['staff_name']) ? $v['staff_name'] :'小热点';
+                $avatarUrl = $v['avatarUrl'];
+                $job = $v['job'];
+                $now = time();
+                $diff_time = $now - strtotime($record_info['add_time']);
+                if($diff_time<=86400){
+                    $add_time = viewTimes(strtotime($record_info['add_time']));
+                }else{
+                    $add_time = date('m月d日 H:i',strtotime($record_info['add_time']));
+                }
+                $hotel_name = '';
+                $consume_time = $signin_time = $signout_time = '';
+                if($record_info['visit_type']==171){
+                    if($record_info['signin_hotel_id']){
+                        $res_hotel = $m_hotel->getOneById('name',$record_info['signin_hotel_id']);
+                        $hotel_name = $res_hotel['name'];
+                    }
+                    if($record_info['signin_time']!='0000-00-00 00:00:00'){
+                        $signin_time = $record_info['signin_time'];
+                    }
+                    if($record_info['signout_time']!='0000-00-00 00:00:00'){
+                        $signout_time = $record_info['signout_time'];
+                    }
+                    if(!empty($signin_time) && !empty($signout_time)){
+                        $consume_time = round((strtotime($signout_time)-strtotime($signin_time))/60);
+                        if($consume_time>=0){
+                            $consume_time.='分钟';
+                        }
+                    }
+                }
+                $images_url = array();
+                if(!empty($record_info['images'])){
+                    $arr_images_path = explode(',',$record_info['images']);
+                    $oss_host = get_oss_host();
+                    foreach ($arr_images_path as $iv){
+                        if(!empty($iv)){
+                            $images_url[]=$oss_host.$iv."?x-oss-process=image/resize,m_mfit,h_300,w_300$format_webp";
+                        }
+                    }
+                }
+                $visit_purpose = $record_info['visit_purpose'];
+                $visit_purpose_str = $visit_type_str = '';
+                if(!empty($visit_purpose)){
+                    $visit_purpose = trim($visit_purpose,',');
+                    $res_cate = $m_category->getDataList('id,name',array('id'=>array('in',$visit_purpose)),'');
+                    foreach ($res_cate as $cv){
+                        $visit_purpose_str.="{$cv['name']},";
+                    }
+                    $visit_purpose_str = trim($visit_purpose_str,',');
+                }
+                if($record_info['visit_type']){
+                    $res_cate = $m_category->getInfo(array('id'=>$record_info['visit_type']));
+                    $visit_type_str = $res_cate['name'];
+                }
+                $comment_num = 0;
+                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id),'');
+                if(!empty($res_comment[0]['num'])){
+                    $comment_num = intval($res_comment[0]['num']);
+                }
+                if(!empty($record_info['content'])){
+                    $record_info['content'] = text_substr($record_info['content'], 100,'...');
+                }
+                $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
+                    'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
+                    'images_url'=>$images_url,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
+                    'comment_num'=>$comment_num,'status'=>$record_info['status'],
+                );
+                $datalist[]=$info;
+
+            }
         }
         $this->to_back(array('datalist'=>$datalist));
     }

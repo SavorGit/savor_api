@@ -971,6 +971,9 @@ class TaskController extends CommonController{
                 $this->to_back(1001);
             }
             $t_time = strtotime(date("Y-m-d $play_time"));
+            if($t_time<time()){
+                $this->to_back(93024);
+            }
             $now_paly_time = date('Y-m-d H:i:00',$t_time);
         }else{
             $now_paly_time = date('Y-m-d H:i:s');
@@ -1155,7 +1158,7 @@ class TaskController extends CommonController{
                 }
             }
         }else{
-            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+            $fields = 'a.id as box_id,a.name as box_name,a.mac,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
             if(!empty($box_mac)){
                 $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
                 $res_boxs = $m_box->getBoxInfo($fields, $where);
@@ -1170,10 +1173,11 @@ class TaskController extends CommonController{
                 $room_id = $bv['room_id'];
                 $room_name = $bv['room_name'];
                 $box_id = $bv['box_id'];
+                $box_mac = $bv['mac'];
                 $box_name = $bv['box_name'];
                 $timedata = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
                     'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
-                    'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'ads_id'=>$ads_id,'timing'=>$play_time,
+                    'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'ads_id'=>$ads_id,'timing'=>$now_paly_time,
                     'status'=>1,'mobile_brand'=>$mobile_brand,'mobile_model'=>$mobile_model
                 );
                 $add_datas[]=$timedata;

@@ -385,12 +385,15 @@ class CrmsaleController extends CommonController{
 
         unset($res_info['status'],$res_info['update_time']);
         $hotel_name = '';
+        $hotel_id   = 0;
         if($res_info['signin_hotel_id']){
             $m_hotel = new \Common\Model\HotelModel();
-            $res_hotel = $m_hotel->getOneById('name',$res_info['signin_hotel_id']);
+            $res_hotel = $m_hotel->getOneById('id,name',$res_info['signin_hotel_id']);
             $hotel_name = $res_hotel['name'];
+            $hotel_id   = $res_hotel['id'];
         }
         $res_info['hotel_name'] = $hotel_name;
+        $res_info['hotel_id']   = $hotel_id;
         $consume_time = '';
         if(!empty($res_info['signin_time']) && !empty($res_info['signout_time'])){
             $consume_time = round((strtotime($res_info['signout_time'])-strtotime($res_info['signin_time']))/60);
@@ -518,12 +521,14 @@ class CrmsaleController extends CommonController{
                     $add_time = date('m月d日 H:i',strtotime($record_info['add_time']));
                 }
                 $hotel_name = '';
+                $hotel_id   = 0;
                 $consume_time = $signin_time = $signout_time = '';
                 if($record_info['visit_type']==171){
                     if($record_info['signin_hotel_id']){
                         $m_hotel = new \Common\Model\HotelModel();
-                        $res_hotel = $m_hotel->getOneById('name',$record_info['signin_hotel_id']);
+                        $res_hotel = $m_hotel->getOneById('id,name',$record_info['signin_hotel_id']);
                         $hotel_name = $res_hotel['name'];
+                        $hotel_id   = $res_hotel['id'];
                     }
                     if($record_info['signin_time']!='0000-00-00 00:00:00'){
                         $signin_time = $record_info['signin_time'];
@@ -572,7 +577,7 @@ class CrmsaleController extends CommonController{
                 }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
-                    'images_url'=>$images_url,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
+                    'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],
                 );
                 $datalist[]=$info;

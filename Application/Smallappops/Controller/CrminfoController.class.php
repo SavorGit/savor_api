@@ -51,6 +51,14 @@ class CrminfoController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'contact_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'addtag':
+                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001,'name'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'taglist':
+                $this->valid_fields = array('openid'=>1001,'contact_id'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -317,6 +325,46 @@ class CrminfoController extends CommonController{
             foreach ($res_data as $v){
                 $v['image'] = $oss_host.$v['image'];
                 $datalist[]=$v;
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function addtag(){
+        $openid = $this->params['openid'];
+        $contact_id = intval($this->params['contact_id']);
+        $name = $this->params['name'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $data = array('contact_id'=>$contact_id,'name'=>$name);
+        $m_tag = new \Common\Model\Crm\ContactTagModel();
+        $res_data = $m_tag->getInfo($data);
+        $tag_id = 0;
+        if(empty($res_data)){
+            $tag_id = $m_tag->add($data);
+        }
+        $this->to_back(array('tag_id'=>$tag_id));
+    }
+
+    public function taglist(){
+        $openid = $this->params['openid'];
+        $contact_id = intval($this->params['contact_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_tag = new \Common\Model\Crm\ContactTagModel();
+        $res_data = $m_tag->getDataList('*',array('contact_id'=>$contact_id),'id desc');
+        $datalist = array();
+        if(!empty($res_data)){
+            foreach ($res_data as $v){
+                $datalist[]=array('id'=>$v['id'],'name'=>$v['name']);
             }
         }
         $this->to_back(array('datalist'=>$datalist));

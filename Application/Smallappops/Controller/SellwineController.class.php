@@ -269,19 +269,19 @@ class SellwineController extends CommonController{
         $data_list = array();
         $sell_num = $brand_num = $series_num = 0;
         if($is_query){
+            if($type==1){
+                $sell_openid = '';
+            }else{
+                $hotel_id = 0;
+            }
+            $res_sell = $m_stock_record->getHotelStaffStaticData($hotel_id,$sell_openid);
+            $sell_num = intval($res_sell[0]['sell_num']);
+            $brand_num = intval($res_sell[0]['brand_num']);
+            $series_num = intval($res_sell[0]['series_num']);
+
             $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid';
             $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
             if(!empty($res_records)){
-                if($type==1){
-                    $sell_openid = '';
-                }else{
-                    $hotel_id = 0;
-                }
-                $res_sell = $m_stock_record->getHotelStaffStaticData($hotel_id,$sell_openid);
-                $sell_num = intval($res_sell[0]['sell_num']);
-                $brand_num = intval($res_sell[0]['brand_num']);
-                $series_num = intval($res_sell[0]['series_num']);
-
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
                 $all_reasons = C('STOCK_REASON');

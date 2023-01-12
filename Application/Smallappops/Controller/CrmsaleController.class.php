@@ -149,7 +149,7 @@ class CrmsaleController extends CommonController{
                 $lately_staff_ids[]=$v['staff_id'];
             }
         }
-        $fields = 'a.id as staff_id,su.remark as staff_name,user.avatarUrl,user.nickName';
+        $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl,user.nickName';
         $res_user = $m_opstaff->getStaffUserinfo($fields,array('a.status'=>1,'a.sysuser_id'=>array('gt',0)));
         $all_user = array();
         foreach ($res_user as $v){

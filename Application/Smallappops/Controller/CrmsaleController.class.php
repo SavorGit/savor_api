@@ -511,6 +511,7 @@ class CrmsaleController extends CommonController{
             }
             $m_category = new \Common\Model\Smallapp\CategoryModel();
             $m_comment = new \Common\Model\Crm\CommentModel();
+            $m_hotel = new \Common\Model\HotelModel();
             foreach ($res_mind as $v){
                 if($v['status']==1 && $v['ops_staff_id']!=$ops_staff_id){
                     continue;
@@ -533,7 +534,6 @@ class CrmsaleController extends CommonController{
                 $consume_time = $signin_time = $signout_time = '';
                 if($record_info['visit_type']==171){
                     if($record_info['signin_hotel_id']){
-                        $m_hotel = new \Common\Model\HotelModel();
                         $res_hotel = $m_hotel->getOneById('id,name',$record_info['signin_hotel_id']);
                         $hotel_name = $res_hotel['name'];
                         $hotel_id   = $res_hotel['id'];
@@ -730,7 +730,7 @@ class CrmsaleController extends CommonController{
             if(empty($contact_id)){
                 $this->to_back(1001);
             }
-            $where['record.contact_id'] = $hotel_id;
+            $where['record.contact_id'] = $contact_id;
         }
         $where['record.status'] = 2;
 
@@ -815,7 +815,7 @@ class CrmsaleController extends CommonController{
                 }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
-                    'images_url'=>$images_url,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
+                    'images_url'=>$images_url,'hotel_id'=>$record_info['signin_hotel_id'],'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],
                 );
                 $datalist[]=$info;

@@ -46,6 +46,10 @@ class CrmsaleController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'delcomment':
+                $this->valid_fields = array('openid'=>1001,'comment_id'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -572,7 +576,7 @@ class CrmsaleController extends CommonController{
                     $visit_type_str = $res_cate['name'];
                 }
                 $comment_num = 0;
-                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id),'');
+                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id,'status'=>1),'');
                 if(!empty($res_comment[0]['num'])){
                     $comment_num = intval($res_comment[0]['num']);
                 }
@@ -636,8 +640,9 @@ class CrmsaleController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $ops_staff_id = $res_staff['id'];
         $m_comment = new \Common\Model\Crm\CommentModel();
-        $res_comment = $m_comment->getDataList('*',array('salerecord_id'=>$salerecord_id),'id desc');
+        $res_comment = $m_comment->getDataList('*',array('salerecord_id'=>$salerecord_id,'status'=>1),'id desc');
         $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $m_saleremind = new \Common\Model\Crm\SalerecordRemindModel();
         $datalist = array();
@@ -662,11 +667,40 @@ class CrmsaleController extends CommonController{
             $add_time = date('m月d日 H:i',strtotime($v['add_time']));
             $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl';
             $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$v['ops_staff_id']));
+            $is_delcomment = 0;
+            if($v['ops_staff_id']==$ops_staff_id){
+                $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$v['id']));
+                if(empty($res_replaycomment)){
+                    $is_delcomment = 1;
+                }
+            }
             $info = array('comment_id'=>$v['id'],'content'=>$v['content'],'staff_id'=>$res_staff_user[0]['staff_id'],'cc_users'=>$cc_users,
-                'replay_user'=>$replay_user,'staff_name'=>$res_staff_user[0]['staff_name'],'avatarUrl'=>$res_staff_user[0]['avatarUrl'],'add_time'=>$add_time);
+                'replay_user'=>$replay_user,'staff_name'=>$res_staff_user[0]['staff_name'],'avatarUrl'=>$res_staff_user[0]['avatarUrl'],
+                'is_delcomment'=>$is_delcomment,'add_time'=>$add_time);
             $datalist[]=$info;
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function delcomment(){
+        $openid = $this->params['openid'];
+        $comment_id = intval($this->params['comment_id']);
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $ops_staff_id = $res_staff['id'];
+        $m_comment = new \Common\Model\Crm\CommentModel();
+        $res_comment = $m_comment->getInfo(array('id'=>$comment_id));
+        if(!empty($res_comment) && $res_comment['ops_staff_id']==$ops_staff_id){
+            $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$comment_id));
+            if(empty($res_replaycomment)){
+                $m_comment->updateData(array('id'=>$comment_id,'ops_staff_id'=>$ops_staff_id),array('status'=>2));
+            }
+        }
+        $this->to_back(array());
     }
 
     public function hotelcontactlist(){
@@ -772,7 +806,7 @@ class CrmsaleController extends CommonController{
                     $visit_type_str = $res_cate['name'];
                 }
                 $comment_num = 0;
-                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id),'');
+                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id,'status'=>1),'');
                 if(!empty($res_comment[0]['num'])){
                     $comment_num = intval($res_comment[0]['num']);
                 }

@@ -552,6 +552,7 @@ class CrminfoController extends CommonController{
         if(!empty($staff_list)){
             $oss_host = C('OSS_HOST');
             $staff_level = C('STAFF_LEVEL');
+            $m_contact = new \Common\Model\Crm\ContactModel();
             foreach ($staff_list as $k=>$v){
                 if(strpos($v['avatarUrl'],$oss_host)){
                     $staff_list[$k]['avatarUrl'] = $v['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
@@ -560,6 +561,10 @@ class CrminfoController extends CommonController{
                 if(isset($staff_level[$v['level']])){
                     $job = $staff_level[$v['level']];
                 }
+                $res_contact = $m_contact->getInfo(array('openid'=>$v['openid']));
+                $contact_id = intval($res_contact['id']);
+
+                $staff_list[$k]['contact_id'] = $contact_id;
                 $staff_list[$k]['job'] = $job;
             }
         }
@@ -593,6 +598,7 @@ class CrminfoController extends CommonController{
                 }
                 $all_staff[$v['id']] = array('openid'=>$v['openid'],'avatarUrl'=>$v['avatarUrl'],'nickName'=>$v['nickName'],'job'=>$job);
             }
+            $m_contact = new \Common\Model\Crm\ContactModel();
             $m_sysuser = new \Common\Model\SysUserModel();
             foreach ($staff_list as $k=>$v){
                 if($v['level']==1){
@@ -605,7 +611,9 @@ class CrminfoController extends CommonController{
                     $invate_userimg = $all_staff[$v['parent_id']]['avatarUrl'];
                     $job_info = '邀请成为'.$all_staff[$v['id']]['job'];
                 }
-                $info = array('id'=>$v['id'],'openid'=>$v['openid'],'nickName'=>$v['nickName'],'avatarUrl'=>$all_staff[$v['id']]['avatarUrl'],
+                $res_contact = $m_contact->getInfo(array('openid'=>$v['openid']));
+                $contact_id = intval($res_contact['id']);
+                $info = array('id'=>$v['id'],'openid'=>$v['openid'],'contact_id'=>$contact_id,'nickName'=>$v['nickName'],'avatarUrl'=>$all_staff[$v['id']]['avatarUrl'],
                     'invate_username'=>$invate_username,'invate_userimg'=>$invate_userimg,'job_info'=>$job_info,'add_time'=>$v['add_time']);
                 $res_data[]=$info;
             }

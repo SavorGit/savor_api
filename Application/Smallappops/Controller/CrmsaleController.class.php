@@ -669,7 +669,7 @@ class CrmsaleController extends CommonController{
             $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$v['ops_staff_id']));
             $is_delcomment = 0;
             if($v['ops_staff_id']==$ops_staff_id){
-                $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$v['id']));
+                $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$v['id'],'status'=>1));
                 if(empty($res_replaycomment)){
                     $is_delcomment = 1;
                 }
@@ -695,7 +695,7 @@ class CrmsaleController extends CommonController{
         $m_comment = new \Common\Model\Crm\CommentModel();
         $res_comment = $m_comment->getInfo(array('id'=>$comment_id));
         if(!empty($res_comment) && $res_comment['ops_staff_id']==$ops_staff_id){
-            $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$comment_id));
+            $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$comment_id,'status'=>1));
             if(empty($res_replaycomment)){
                 $m_comment->updateData(array('id'=>$comment_id,'ops_staff_id'=>$ops_staff_id),array('status'=>2));
             }

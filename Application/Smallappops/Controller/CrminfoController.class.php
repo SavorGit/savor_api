@@ -39,7 +39,7 @@ class CrminfoController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'stafflist':
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1002,'pagesize'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'staffchangelist':
@@ -283,16 +283,17 @@ class CrminfoController extends CommonController{
         }
         $m_crmuser = new \Common\Model\Crm\ContactModel;
         if($id){
+            $res_info = $m_crmuser->getInfo(array('id'=>$id));
+
             $data['update_time'] = date('Y-m-d H:i:s');
             $m_crmuser->updateData(array('id'=>$id),$data);
             $user_id = $id;
-            $res_info = $m_crmuser->getInfo(array('id'=>$id));
             if(!empty($res_info['openid'])){
                 $up_user = array();
                 if($res_info['name']!=$name){
                     $up_user['nickName'] = $name;
                     $up_user['name'] = $name;
-                    $m_user->updateInfo(array('openid'=>$openid),$up_user);
+                    $m_user->updateInfo(array('openid'=>$res_info['openid']),$up_user);
                 }
             }
         }else{
@@ -511,7 +512,8 @@ class CrminfoController extends CommonController{
             $this->to_back(94001);
         }
         $m_hotel = new \Common\Model\HotelModel();
-        $field = 'hotel.id,hotel.name,hotel.addr,hotel.contractor,hotel.mobile,ext.maintainer_id,ext.is_salehotel,ext.trade_area_type';
+        $field = 'hotel.id,hotel.name,hotel.addr,hotel.contractor,hotel.mobile,hotel.type,ext.cooperate_status,ext.maintainer_id,
+        ext.is_salehotel,ext.trade_area_type,ext.food_style_id,ext.avg_expense';
         $res_hotel = $m_hotel->getHotelById($field,array('hotel.id'=>$hotel_id));
         $maintainer = '';
         if($res_hotel['maintainer_id']){
@@ -520,19 +522,36 @@ class CrminfoController extends CommonController{
             $maintainer = $res_sysuser['remark'];
         }
         $res_hotel['maintainer'] = $maintainer;
-        $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
-        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc','0,4');
-        if(!empty($staff_list)){
-            $oss_host = C('OSS_HOST');
-            foreach ($staff_list as $k=>$v){
-                if(strpos($v['avatarUrl'],$oss_host)){
-                    $staff_list[$k]['avatarUrl'] = $v['avatarUrl']."?x-oss-process=image/resize,m_mfit,h_300,w_300";
-                }
-            }
+        $m_foodstyle = new \Common\Model\FoodStyleModel();
+        $res_food = $m_foodstyle->getOne('name',array('id'=>$res_hotel['food_style_id']),'');
+        $food_style = '';
+        if(!empty($res_food)){
+            $food_style = $res_food['name'];
         }
-        $res_hotel['staff_list'] = $staff_list;
+        $res_hotel['food_style'] = $food_style;
+        $hotel_type_maps = array('1'=>'正常酒楼','2'=>'正常酒楼','3'=>'自主注册酒楼','4'=>'无设备酒楼','5'=>'测试酒楼');
+        $cooperate_status_maps = array('1'=>'合作中','2'=>'已中止合作','0'=>'未开始合作');
+        $res_hotel['type_str'] = $hotel_type_maps[$res_hotel['type']];
+        $res_hotel['cooperate_status_str'] = $cooperate_status_maps[$res_hotel['cooperate_status']];
+
+        $where = array('m.hotel_id'=>$hotel_id,'m.status'=>1);
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $res_merchant = $m_merchant->getMerchantInfo('m.*',$where);
+        $merchant_type_str = '';
+        $merchant_is_integral = 0;
+        $merchant_is_shareprofit = 0;
+        $merchant_name = $merchant_job = $merchant_mobile = '';
+        if(!empty($res_merchant)){
+            $merchant_type_str = '正常';
+            $merchant_is_integral = $res_merchant[0]['is_integral'];
+            $merchant_is_shareprofit = $res_merchant[0]['is_shareprofit'];
+            $merchant_name = $res_merchant[0]['name'];
+            $merchant_job = $res_merchant[0]['job'];
+            $merchant_mobile = $res_merchant[0]['mobile'];
+        }
+        $res_hotel['merchant_id'] = intval($res_merchant[0]['id']);
+        $res_hotel['merchant'] = array('type_str'=>$merchant_type_str,'is_integral'=>$merchant_is_integral,
+            'is_shareprofit'=>$merchant_is_shareprofit,'name'=>$merchant_name,'job'=>$merchant_job,'mobile'=>$merchant_mobile);
 
         $this->to_back($res_hotel);
     }
@@ -540,6 +559,9 @@ class CrminfoController extends CommonController{
     public function stafflist(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
+        $page = $this->params['page'];
+        $pagesize = $this->params['pagesize'];
+
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -548,7 +570,15 @@ class CrminfoController extends CommonController{
         $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
-        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc','');
+        if(!empty($page) && !empty($pagesize)){
+            $start = ($page-1)*$pagesize;
+            $limit = "$start,$pagesize";
+        }elseif(!empty($pagesize)){
+            $limit = "0,$pagesize";
+        }else{
+            $limit = '';
+        }
+        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc',$limit);
         if(!empty($staff_list)){
             $oss_host = C('OSS_HOST');
             $staff_level = C('STAFF_LEVEL');

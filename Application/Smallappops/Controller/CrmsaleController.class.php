@@ -469,7 +469,7 @@ class CrmsaleController extends CommonController{
                 $orderby = 'record.status asc,a.salerecord_id desc';
                 break;
             case 2:
-                $where = array('a.remind_user_id'=>$ops_staff_id);
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1);
                 $where['a.type'] = 3;
                 $where['record.status'] = 2;
                 break;
@@ -697,7 +697,9 @@ class CrmsaleController extends CommonController{
         if(!empty($res_comment) && $res_comment['ops_staff_id']==$ops_staff_id){
             $res_replaycomment = $m_comment->getInfo(array('comment_id'=>$comment_id,'status'=>1));
             if(empty($res_replaycomment)){
-                $m_comment->updateData(array('id'=>$comment_id,'ops_staff_id'=>$ops_staff_id),array('status'=>2));
+                $m_comment->updateData(array('id'=>$comment_id),array('status'=>2));
+                $m_record_remind = new \Common\Model\Crm\SalerecordRemindModel();
+                $m_record_remind->updateData(array('type'=>3,'comment_id'=>$comment_id),array('status'=>2));
             }
         }
         $this->to_back(array());

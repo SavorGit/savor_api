@@ -64,6 +64,7 @@ class UserModel extends Model{
             }
         }else{
             $where = array('a.openid'=>$openid,'a.ustatus'=>1,'a.status'=>1,'coupon.type'=>2);
+            $where['a.end_time'] = array('egt',date('Y-m-d H:i:s'));
             $fields = 'count(a.id) as num';
             $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
             $res_coupon = $m_coupon_user->getUsercouponDatas($fields,$where,'a.id desc','');

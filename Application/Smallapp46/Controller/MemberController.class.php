@@ -176,7 +176,9 @@ class MemberController extends CommonController{
             $now_vip_level = 1;
             if(!empty($vip_coupons) && !empty($vip_coupons[$now_vip_level])){
                 $m_coupon = new \Common\Model\Smallapp\CouponModel();
-                $res_all_coupon = $m_coupon->getALLDataList('*',array('id'=>array('in',$vip_coupons[$now_vip_level])),'end_time desc','','');
+                $where = array('id'=>array('in',$vip_coupons[$now_vip_level]));
+                $where['end_time'] = array('egt',date('Y-m-d H:i:s'));
+                $res_all_coupon = $m_coupon->getALLDataList('*',$where,'end_time desc','','');
                 $end_time = date('Y年m月d日',strtotime($res_all_coupon[0]['end_time']));
                 $coupon_end_time = $end_time.'到期';
                 foreach ($res_all_coupon as $v){

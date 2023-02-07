@@ -306,7 +306,7 @@ class DishController extends CommonController{
         }
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'type'=>24);
-        $orderby = 'id desc';
+        $orderby = 'sort desc,id desc';
         $res_goods = $m_goods->getDataList('*',$where,$orderby,0,5);
         $datalist = array();
         if($res_goods['total']){

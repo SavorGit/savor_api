@@ -437,7 +437,7 @@ class CrmsaleController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
         if(empty($pagesize)){
-            $pagesize = 10;
+            $pagesize = 20;
         }
         $start = ($page-1)*$pagesize;
         $limit = "$start,$pagesize";
@@ -713,7 +713,7 @@ class CrmsaleController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $contact_id = intval($this->params['contact_id']);
         if(empty($pagesize)){
-            $pagesize = 10;
+            $pagesize = 20;
         }
         $start = ($page-1)*$pagesize;
         $limit = "$start,$pagesize";

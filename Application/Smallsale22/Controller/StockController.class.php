@@ -525,7 +525,7 @@ class StockController extends CommonController{
                         $res_in = $m_stock_record->getInfo(array('idcode'=>$idcode,'type'=>1,'dstatus'=>1));
                         if(!empty($res_in)){
                             $data['price'] = -$res_in['price'];
-                            $data['avg_price'] = -$res_in['avg_price'];
+                            $data['avg_price'] = $res_in['avg_price'];
                         }else{
                             $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                             $res_in = $m_stock_record->getInfo($where);
@@ -654,8 +654,9 @@ class StockController extends CommonController{
         $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
         if($res_stock['status']==1){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-            if($res_stock['type']==10){
-                $rfields = 'goods_id,sum(total_amount) as total_num,price';
+            $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
+            if($res_stock['type']==10 && $res_stock['io_type']==11){
+                $rfields = 'goods_id,stock_detail_id,sum(total_amount) as total_num,price';
                 $rwhere = array('stock_id'=>$stock_id,'type'=>1,'dstatus'=>1);
                 $res_stock_num = $m_stock_record->getALLDataList($rfields,$rwhere,'','','goods_id');
                 $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
@@ -663,18 +664,40 @@ class StockController extends CommonController{
                     $goods_id = $v['goods_id'];
                     $num = $v['total_num'];
                     $price = $v['price'];
+                    $stock_detail_id = $v['stock_detail_id'];
+                    $res_sdetail = $m_stock_detail->getInfo(array('id'=>$stock_detail_id));
+                    $purchase_detail_id = $res_sdetail['purchase_detail_id'];
 
                     $res_avg_price = $m_goods_avg_price->getALLDataList('price',array('goods_id'=>$goods_id),'id desc','0,1','');
                     $avg_price = $res_avg_price[0]['price'];
 
                     $stock_fields = 'sum(total_amount) as total_num';
-                    $stock_where = array('goods_id'=>$goods_id,'type'=>array('in',array(1,2)),'dstatus'=>1);
+                    $stock_where = array('goods_id'=>$goods_id,'type'=>1,'dstatus'=>1);
                     $stock_where['stock_id'] = array('neq',$stock_id);
                     $res_goods_stock = $m_stock_record->getALLDataList($stock_fields,$stock_where,'','','');
-                    $stock_num = intval($res_goods_stock[0]['total_num']);
+                    $stock_innum = intval($res_goods_stock[0]['total_num']);
+
+                    $stock_where['type']=7;
+                    $stock_where['wo_status']= array('in',array(1,2,4));
+                    $res_goods_stock = $m_stock_record->getALLDataList($stock_fields,$stock_where,'','','');
+                    $wo_num = 0;
+                    if(!empty($res_goods_stock[0]['total_num'])){
+                        $wo_num = abs($res_goods_stock[0]['total_num']);
+                    }
+                    $stock_where['type']=6;
+                    unset($stock_where['wo_status']);
+                    $stock_where['status']= array('in',array(1,2));
+                    $res_goods_stock = $m_stock_record->getALLDataList($stock_fields,$stock_where,'','','');
+                    $report_num = 0;
+                    if(!empty($res_goods_stock[0]['total_num'])){
+                        $report_num = abs($res_goods_stock[0]['total_num']);
+                    }
+
+                    $stock_num = $stock_innum-$wo_num-$report_num;
                     $now_avg_price = ($num*$price+$stock_num*$avg_price)/($num+$stock_num);
 
-                    $m_goods_avg_price->add(array('goods_id'=>$goods_id,'price'=>$now_avg_price));
+                    $avg_data = array('goods_id'=>$goods_id,'price'=>$now_avg_price,'stock_detail_id'=>$stock_detail_id,'purchase_detail_id'=>$purchase_detail_id);
+                    $m_goods_avg_price->add($avg_data);
                     $up_where = $rwhere;
                     $up_where['goods_id'] = $goods_id;
                     $m_stock_record->updateData($up_where,array('avg_price'=>$now_avg_price));

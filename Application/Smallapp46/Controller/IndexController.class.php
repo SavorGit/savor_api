@@ -695,7 +695,8 @@ class IndexController extends CommonController{
                 }
                 $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
                 $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
-                $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
+//                $res_hgoods = $m_hotel_goods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$seckill_goods_id));
+                $res_hgoods = '';
                 if(empty($res_hgoods)){
                     $seckill_goods_id = 0;
                 }else{
@@ -744,7 +745,8 @@ class IndexController extends CommonController{
             */
             $is_open_simplehistory = 1;
         }
-        $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
+        $taste_wine_data = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
+        $taste_wine = $taste_wine_data;
         $syslottery_activity_id = 0;
         $is_sale_page = 0;
         if(!empty($openid)){
@@ -788,10 +790,20 @@ class IndexController extends CommonController{
             $res_popup_params = $m_user->getMemberPopupinfo($openid,$hotel_id,$room_id,$box_id);
             $res_popup_params['source'] = 5;
         }
+        $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
+        $sellwine_popup = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,1);
+        if(!empty($sellwine_popup)){
+            $data['is_open_popcomment'] = 0;
+            $seckill_goods_id = 0;
+            $hotel_seckill_goods_id = 0;
+            $res_popup_params = array();
+            $taste_wine = $taste_wine_data;
+        }
+
+        $data['sellwine_popup'] = $sellwine_popup;
         $data['params'] = $res_popup_params;
         $data['hotel_seckill_goods_id'] = $hotel_seckill_goods_id;
         $data['hotel_seckill_goods_img'] = $hotel_seckill_goods_img;
-        $data['is_annualmeeting'] = $is_annualmeeting;
         $data['meeting_banner'] = $oss_host.'media/resource/pkNdszmrtN.png';
         $data['meeting_signin_img'] = $oss_host.C('MEETING_SIGNIN_IMG').'?x-oss-process=image/resize,p_30';
         $data['meeting_signin_play_times'] = C('MEETING_SIGNIN_PLAY_TIMES');

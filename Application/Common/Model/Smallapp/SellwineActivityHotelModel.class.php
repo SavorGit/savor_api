@@ -1,0 +1,109 @@
+<?php
+namespace Common\Model\Smallapp;
+use Common\Model\BaseModel;
+
+class SellwineActivityHotelModel extends BaseModel{
+	protected $tableName='sellwine_activity_hotel';
+
+	public function getSellwineActivity($hotel_id,$openid,$source=1){
+	    //$source 1弹框 2获取当前饭点内活动数据
+        $now_time = date('Y-m-d H:i:s');
+        $fields = 'a.activity_id,activity.start_date,activity.end_date,activity.lunch_start_time,activity.lunch_end_time,
+        activity.dinner_start_time,activity.dinner_end_time,activity.daily_money_limit,activity.money_limit,activity.media_id';
+        $where = array('a.hotel_id'=>$hotel_id,'a.status'=>1,'activity.status'=>1);
+        $where['activity.start_date'] = array('elt',$now_time);
+        $where['activity.end_date'] = array('egt',$now_time);
+        $res_data = $this->alias('a')
+            ->join('savor_sellwine_activity activity on a.activity_id=activity.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order('a.activity_id desc')
+            ->limit('0,1')
+            ->select();
+        $activity_data = array();
+        if(!empty($res_data)){
+            $activity_id = $res_data[0]['activity_id'];
+
+            $lunch_stime = date("Y-m-d {$res_data[0]['lunch_start_time']}");
+            $lunch_etime = date("Y-m-d {$res_data[0]['lunch_end_time']}");
+            $dinner_stime = date("Y-m-d {$res_data[0]['dinner_start_time']}");
+            $dinner_etime = date("Y-m-d {$res_data[0]['dinner_end_time']}");
+            $meal_type = '';
+            $meal_stime = $meal_etime = '';
+            if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
+                $meal_type = 'lunch';
+                $meal_stime = $lunch_stime;
+                $meal_etime = $lunch_etime;
+            }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+                $meal_type = 'dinner';
+                $meal_stime = $dinner_stime;
+                $meal_etime = $dinner_etime;
+            }
+            if($meal_type){
+                if($source==1){
+                    $m_order = new \Common\Model\Smallapp\OrderModel();
+                    $where = array('openid'=>$openid,'otype'=>9,'sellwine_activity_id'=>$activity_id,'bind_idcode_time'=>'0000-00-00 00:00:00');
+                    $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+                    $res_order = $m_order->getALLDataList('id',$where,'id desc','0,1','');
+                    if(!empty($res_order)){
+                        $order_id = $res_order[0]['id'];
+                        $activity_data = array('type'=>2,'order_id'=>$order_id,'message'=>'您有待领取的现金红包');
+                    }else{
+                        $m_sell_activity_goods = new \Common\Model\Smallapp\SellwineActivityGoodsModel();
+                        $where = array('activity_id'=>$activity_id,'status'=>1);
+                        $res_goods = $m_sell_activity_goods->getALLDataList('finance_goods_id,money',$where,'money desc','','');
+                        $redis = new \Common\Lib\SavorRedis();
+                        $redis->select(9);
+                        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+                        $res_cache = $redis->get($key);
+                        if(!empty($res_cache)) {
+                            $hotel_stock = json_decode($res_cache, true);
+                            $is_has_stock = 0;
+                            foreach ($res_goods as $v){
+                                if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
+                                    $is_has_stock = 1;
+                                    break;
+                                }
+                            }
+                            if($is_has_stock){
+                                $money = intval($res_goods[0]['money']);
+                                $tips = date('H:i',strtotime($meal_etime)).'之前下单';
+                                $message = "每瓶酒最多可获得{$money}元现金红包";
+                                $activity_data = array('type'=>1,'activity_id'=>$activity_id,'tips'=>$tips,'message'=>$message);
+                            }
+                        }
+                    }
+                }else{
+                    $m_sell_activity_goods = new \Common\Model\Smallapp\SellwineActivityGoodsModel();
+                    $where = array('activity_id'=>$activity_id,'status'=>1);
+                    $res_goods = $m_sell_activity_goods->getALLDataList('finance_goods_id,money',$where,'money desc','','');
+                    $redis = new \Common\Lib\SavorRedis();
+                    $redis->select(9);
+                    $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+                    $res_cache = $redis->get($key);
+                    $message = '';
+                    $goods_data = array();
+                    if(!empty($res_cache)) {
+                        $hotel_stock = json_decode($res_cache, true);
+                        foreach ($res_goods as $v){
+                            if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
+                                $goods_data[]=$v;
+                            }
+                        }
+                        if(!empty($goods_data)){
+                            $money = intval($res_goods[0]['money']);
+                            $message = date('H:i',strtotime($meal_etime)).'之前下单'."每瓶酒最多可获得{$money}元现金红包";
+
+                        }
+                    }
+                    $activity_data = $res_data[0];
+                    $activity_data['goods_data'] = $goods_data;
+                    $activity_data['message'] = $message;
+                }
+
+            }
+        }
+        return $activity_data;
+    }
+
+}

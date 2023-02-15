@@ -14,7 +14,8 @@ class GoodsController extends CommonController{
                 break;
             case 'hotdrinklist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'hotel_id'=>1002,'page'=>1001,'pagesize'=>1002);
+                $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'hotel_id'=>1002,
+                    'page'=>1001,'pagesize'=>1002,'version'=>1002,'openid'=>1002);
                 break;
         }
         parent::_init_();
@@ -147,6 +148,8 @@ class GoodsController extends CommonController{
         $room_id = intval($this->params['room_id']);
         $jump_hotel_id = intval($this->params['hotel_id']);
         $pagesize = $this->params['pagesize'];
+        $version = $this->params['version'];
+        $openid = $this->params['openid'];
         if(empty($pagesize)){
             $pagesize = 10;
         }
@@ -198,6 +201,11 @@ class GoodsController extends CommonController{
                     'img_url'=>$img_url,'wine_img_url'=>$wine_img_url);
                 $datalist[] = $dinfo;
             }
+        }
+        if(!empty($version) && $version>='4.6.69'){
+            $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
+            $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
+            $datalist = array('datalist'=>$datalist,'message'=>$sellwine_activity['message']);
         }
         $this->to_back($datalist);
     }

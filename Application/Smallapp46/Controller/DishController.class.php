@@ -273,6 +273,20 @@ class DishController extends CommonController{
             $data['coupon_info'] = $coupon_info;
             $data['discount_price'] = $discount_price;
         }
+        $message = '';
+        if($res_goods['finance_goods_id']>0){
+            $fields = "hotel.id as hotel_id,hotel.area_id";
+            if(!empty($box_mac)){
+                $m_box = new \Common\Model\BoxModel();
+                $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+                $box_info = $m_box->getBoxByCondition($fields,$where);
+                $hotel_id = $box_info[0]['hotel_id'];
+                $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
+                $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2,$res_goods['finance_goods_id']);
+                $message = $sellwine_activity['message'];
+            }
+        }
+        $data['message'] = $message;
 
         $this->to_back($data);
     }

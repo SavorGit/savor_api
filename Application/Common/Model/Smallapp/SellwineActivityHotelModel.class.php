@@ -5,7 +5,7 @@ use Common\Model\BaseModel;
 class SellwineActivityHotelModel extends BaseModel{
 	protected $tableName='sellwine_activity_hotel';
 
-	public function getSellwineActivity($hotel_id,$openid,$source=1){
+	public function getSellwineActivity($hotel_id,$openid,$source=1,$finance_goods_id=0){
 	    //$source 1弹框 2获取当前饭点内活动数据
         $now_time = date('Y-m-d H:i:s');
         $fields = 'a.activity_id,activity.start_date,activity.end_date,activity.lunch_start_time,activity.lunch_end_time,
@@ -89,13 +89,20 @@ class SellwineActivityHotelModel extends BaseModel{
                         $hotel_stock = json_decode($res_cache, true);
                         foreach ($res_goods as $v){
                             if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
-                                $goods_data[]=$v;
+                                $goods_data[$v['finance_goods_id']]=$v;
                             }
                         }
-                        if(!empty($goods_data)){
-                            $money = intval($res_goods[0]['money']);
-                            $message = date('H:i',strtotime($meal_etime)).'之前下单'."每瓶酒最多可获得{$money}元现金红包";
 
+                        if(!empty($goods_data)){
+                            if($finance_goods_id){
+                                if(isset($goods_data[$finance_goods_id])){
+                                    $money = intval($goods_data[$finance_goods_id]['money']);
+                                    $message = date('H:i',strtotime($meal_etime)).'之前下单'."每瓶可获得{$money}元现金红包";
+                                }
+                            }else{
+                                $money = intval($res_goods[0]['money']);
+                                $message = date('H:i',strtotime($meal_etime)).'之前下单'."每瓶酒最多可获得{$money}元现金红包";
+                            }
                         }
                     }
                     $activity_data = $res_data[0];

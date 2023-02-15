@@ -69,7 +69,9 @@ class SellwineActivityHotelModel extends BaseModel{
                                 $money = intval($res_goods[0]['money']);
                                 $tips = date('H:i',strtotime($meal_etime)).'之前下单';
                                 $message = "每瓶酒最多可获得{$money}元现金红包";
-                                $activity_data = array('type'=>1,'activity_id'=>$activity_id,'tips'=>$tips,'message'=>$message);
+                                $m_media = new \Common\Model\MediaModel();
+                                $res_media = $m_media->getMediaInfoById($res_data[0]['media_id']);
+                                $activity_data = array('type'=>1,'activity_id'=>$activity_id,'image_url'=>$res_media['oss_addr'],'tips'=>$tips,'message'=>$message);
                             }
                         }
                     }

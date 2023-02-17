@@ -325,6 +325,10 @@ return array(
         '90189'=>'smallapp_choose_date_notday',
         '90190'=>'smallapp_singin_time_error',
         '90191'=>'smallapp_choose_enddate_error',
+        '90192'=>'smallapp_sellwine_activity_choose_same_goods',
+        '90193'=>'smallapp_sellwine_activity_get_money_limit',
+        '90194'=>'smallapp_sellwine_activity_get_dailymoney_limit',
+        '90195'=>'smallapp_sellwine_activity_order_has_get_money',
 
 
         '91015'=>'smallapp_user_add_failed',

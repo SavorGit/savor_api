@@ -501,6 +501,10 @@ return array(
     'smallappsale_task_notin_get_time'=>'请在每天上午六点后领取任务',
     'smallappops_add_hotel_name_repeat'=>'餐厅名称不能重复',
     'smallappops_salerecord_sign_inout_hotel_error'=>'签到签退的酒楼必须为同一酒楼',
+    'smallapp_sellwine_activity_choose_same_goods'=>'请选择同一商品',
+    'smallapp_sellwine_activity_get_money_limit'=>'领取红包金额已达上限',
+    'smallapp_sellwine_activity_get_dailymoney_limit'=>'领取每日红包已达上限',
+    'smallapp_sellwine_activity_order_has_get_money'=>'当前订单已领取过红包',
 
 
 

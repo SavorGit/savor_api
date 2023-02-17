@@ -43,7 +43,8 @@ class OrderController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('uid'=>1002,'openid'=>1001,'carts'=>1002,'goods_id'=>1002,'amount'=>1002,
                     'address_id'=>1002,'remark'=>1002,'pay_type'=>1001,'title_type'=>1002,'company'=>1002,'credit_code'=>1002,
-                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002,'task_user_id'=>1002,'usercoupon_id'=>1002);
+                    'email'=>1002,'box_id'=>1002,'box_mac'=>1002,'task_user_id'=>1002,'usercoupon_id'=>1002,'otype'=>1002,
+                    'sellwine_activity_id'=>1002);
                 break;
             case 'addGiftorder':
                 $this->is_verify = 1;
@@ -401,6 +402,8 @@ class OrderController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $task_user_id = intval($this->params['task_user_id']);
         $usercoupon_id = intval($this->params['usercoupon_id']);
+        $params_otype = intval($this->params['otype']);//订单类型9售酒活动
+        $sellwine_activity_id = intval($this->params['sellwine_activity_id']);
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
         }
@@ -480,8 +483,11 @@ class OrderController extends CommonController{
                 $this->to_back(1001);
             }
         }else{
-            if(empty($address_id)){
-                $this->to_back(1001);
+            if($params_otype==9){
+            }else{
+                if(empty($address_id)){
+                    $this->to_back(1001);
+                }
             }
         }
         if(!empty($address_id)){
@@ -493,7 +499,11 @@ class OrderController extends CommonController{
             $address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
             $phone = $res_address['phone'];
         }
-        $otype = 5;
+        if($params_otype>0){
+            $otype = $params_otype;
+        }else{
+            $otype = 5;
+        }
         $goods = array();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         if($goods_id){
@@ -642,6 +652,12 @@ class OrderController extends CommonController{
             if($task_user_id>0){
                 $add_data['task_user_id'] = $task_user_id;
             }
+            if($params_otype==9){
+                if($sellwine_activity_id>0){
+                    $add_data['sellwine_activity_id'] = $sellwine_activity_id;
+                }
+                $add_data['goods_id'] = $goods_id;
+            }
             if(!empty($order_location)){
                 $add_data['box_mac'] = $order_location['box_mac'];
             }
@@ -698,6 +714,21 @@ class OrderController extends CommonController{
                 $params = array('hotel_name'=>$order_location['hotel_name'],'room_name'=>$order_location['room_name'],'amount'=>1,'order_id'=>$oid);
                 $alisms::sendSms(13811966726,$params,$template_code);
             }
+        }elseif($params_otype==9){
+            $now_pay_type = $pay_type;
+            if(!empty($res_user['mobile'])){
+                $end_mobile = substr($res_user['mobile'],-4);
+                $emsms = new \Common\Lib\EmayMessage();
+                $sms_params = array('room_name'=>$order_location['room_name'],'amount'=>$amount,'goods_name'=>$trade_name);
+                $content = "您好，{$order_location['room_name']}包间手机尾号{$end_mobile}的客人需要{$amount}瓶{$trade_name}，请及时处理。";
+                $res_data = $emsms->sendSMS($content,$res_user['mobile']);
+                $resp_code = $res_data->code;
+                $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                    'url'=>join(',',$sms_params),'tel'=>$res_user['mobile'],'resp_code'=>$resp_code,'msg_type'=>3
+                );
+                $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+                $m_account_sms_log->addData($data);
+            }
         }else{
             $now_pay_type = 10;
         }
@@ -720,9 +751,15 @@ class OrderController extends CommonController{
             $payinfo = json_decode($wxpay,true);
         }
         $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type);
-        if($goods_id==C('LAIMAO_SECKILL_GOODS_ID') && $now_pay_type==20){
-            $resp_data['tips'] = '已获得秒杀资格';
-            $resp_data['message'] = '请凭此页面直接向餐厅服务员购买！截图也有效哦~';
+        if($now_pay_type==20){
+            if($goods_id==C('LAIMAO_SECKILL_GOODS_ID')){
+                $resp_data['tips'] = '已获得秒杀资格';
+                $resp_data['message'] = '请凭此页面直接向餐厅服务员购买！截图也有效哦~';
+            }
+            if($params_otype==9){
+                $resp_data['tips'] = '下单成功';
+                $resp_data['message'] = '已通知餐厅为您取酒，请耐心等待。为了节省您的等待时间，也可询问服务员～';
+            }
         }
         $this->to_back($resp_data);
     }

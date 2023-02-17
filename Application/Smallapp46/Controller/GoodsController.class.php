@@ -205,7 +205,11 @@ class GoodsController extends CommonController{
         if(!empty($version) && $version>='4.6.69'){
             $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
             $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
-            $datalist = array('datalist'=>$datalist,'message'=>$sellwine_activity['message']);
+            $message = '';
+            if(!empty($sellwine_activity)){
+                $message = $sellwine_activity['message'];
+            }
+            $datalist = array('datalist'=>$datalist,'message'=>$message);
         }
         $this->to_back($datalist);
     }

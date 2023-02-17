@@ -274,6 +274,7 @@ class DishController extends CommonController{
             $data['discount_price'] = $discount_price;
         }
         $message = '';
+        $sellwine_activity_id = 0;
         if($res_goods['finance_goods_id']>0){
             $fields = "hotel.id as hotel_id,hotel.area_id";
             if(!empty($box_mac)){
@@ -283,9 +284,13 @@ class DishController extends CommonController{
                 $hotel_id = $box_info[0]['hotel_id'];
                 $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
                 $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2,$res_goods['finance_goods_id']);
-                $message = $sellwine_activity['message'];
+                if(!empty($sellwine_activity)){
+                    $message = $sellwine_activity['message'];
+                    $sellwine_activity_id = $sellwine_activity['activity_id'];
+                }
             }
         }
+        $data['sellwine_activity_id'] = $sellwine_activity_id;
         $data['message'] = $message;
 
         $this->to_back($data);

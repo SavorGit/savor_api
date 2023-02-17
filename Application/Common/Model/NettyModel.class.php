@@ -15,6 +15,9 @@ class NettyModel extends Model{
         $result = $this->curlPost($balance_url, $post_data);
         $result = json_decode($result,true);
         if(is_array($result)){
+            if(empty($message)){
+                return $result;
+            }
             if($result['code'] ==10000){
                 $netty_push_url = 'http://'.$result['result'].'/push/box';
                 $req_id  = getMillisecond();

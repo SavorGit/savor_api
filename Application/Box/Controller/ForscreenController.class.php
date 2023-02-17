@@ -166,7 +166,10 @@ class ForscreenController extends CommonController{
 			}
 			//$data['qrcode_tip']  = array('扫码投屏','扫码有礼','扫码抽奖');
 			$data['qrcode_tip']  = array('扫码投屏','扫码有礼');
-			
+
+            $sellwine_activity = C('SELLWINE_ACTIVITY');
+            $sellwine_activity['url'] = $oss_host.'/'.$sellwine_activity['url'];
+            $data['sellwine_activity'] = $sellwine_activity;
 
             $this->to_back($data);
         }

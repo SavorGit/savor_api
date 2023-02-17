@@ -870,4 +870,10 @@ return array(
         '2'=>'销售经理',
         '3'=>'服务员',
     ),
+    'SELLWINE_ACTIVITY' =>array(
+        'url'=>'media/resource/ZntWp83Ghb.mp4',
+        'filename'=>'ZntWp83Ghb.mp4',
+        'md5'=>'76cab8082192f43a2e0a076f258dfc43',
+        'is_offline'=>0,
+    ),
 );

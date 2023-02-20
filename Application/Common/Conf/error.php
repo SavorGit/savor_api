@@ -329,6 +329,7 @@ return array(
         '90193'=>'smallapp_sellwine_activity_get_money_limit',
         '90194'=>'smallapp_sellwine_activity_get_dailymoney_limit',
         '90195'=>'smallapp_sellwine_activity_order_has_get_money',
+        '90196'=>'smallapp_sellwine_activity_idcode_has_bind',
 
 
         '91015'=>'smallapp_user_add_failed',

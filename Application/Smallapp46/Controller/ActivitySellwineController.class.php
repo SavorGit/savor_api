@@ -60,6 +60,10 @@ class ActivitySellwineController extends CommonController{
         if(empty($res_order) || $res_order['openid']!=$openid){
             $this->to_back(90134);
         }
+        $res_bindorder = $m_order->getInfo(array('otype'=>9,'idcode'=>$idcode));
+        if(!empty($res_bindorder)){
+            $this->to_back(90196);
+        }
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $gfields = 'goods.id as goods_id,goods.finance_goods_id';
         $res_ordergoods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');

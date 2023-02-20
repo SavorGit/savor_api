@@ -505,6 +505,7 @@ return array(
     'smallapp_sellwine_activity_get_money_limit'=>'领取红包金额已达上限',
     'smallapp_sellwine_activity_get_dailymoney_limit'=>'领取每日红包已达上限',
     'smallapp_sellwine_activity_order_has_get_money'=>'当前订单已领取过红包',
+    'smallapp_sellwine_activity_idcode_has_bind'=>'商品码不能重复使用',
 
 
 

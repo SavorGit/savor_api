@@ -198,18 +198,22 @@ class GoodsController extends CommonController{
                     $wine_img_url = $res_media['oss_addr'];
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),'type'=>$v['type'],
-                    'img_url'=>$img_url,'wine_img_url'=>$wine_img_url);
+                    'img_url'=>$img_url,'wine_img_url'=>$wine_img_url,'finance_goods_id'=>$v['finance_goods_id']);
                 $datalist[] = $dinfo;
             }
         }
         if(!empty($version) && $version>='4.6.69'){
             $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
             $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
-            $message = '';
-            if(!empty($sellwine_activity)){
-                $message = $sellwine_activity['message'];
+            foreach ($datalist as $k=>$v){
+                $message = '';
+                if(isset($sellwine_activity['goods_data'][$v['finance_goods_id']])){
+                    $money = intval($sellwine_activity['goods_data'][$v['finance_goods_id']]['money']);
+                    $message = "下单得{$money}元红包";
+                }
+                $datalist[$k]['message'] = $message;
             }
-            $datalist = array('datalist'=>$datalist,'message'=>$message);
+            $datalist = array('datalist'=>$datalist);
         }
         $this->to_back($datalist);
     }

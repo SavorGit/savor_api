@@ -85,7 +85,7 @@ class ActivitySellwineController extends CommonController{
         }
         $m_order->updateData(array('id'=>$order_id),array('idcode'=>$idcode,'bind_idcode_time'=>date('Y-m-d H:i:s')));
 
-        $receive_types = array(array('id'=>10,'name'=>'微信零钱','is_check'=>1));
+        $receive_types = array(array('id'=>10,'name'=>'自己独吞-微信零钱','is_check'=>0));
         $m_netty = new \Common\Model\NettyModel();
         $req_id = getMillisecond();
         $res_netty = $m_netty->pushBox($box_mac,'',$req_id);
@@ -94,7 +94,9 @@ class ActivitySellwineController extends CommonController{
             $res_goods = $m_sellwine_activity_goods->getInfo(array('activity_id'=>$res_order['sellwine_activity_id'],'finance_goods_id'=>$goods_id,'status'=>1));
             $red_money = intval($res_goods['money']);
             $num = intval($red_money/0.3);
-            $receive_types[]=array('id'=>20,'name'=>'电视红包','is_check'=>0,'redpacket_num'=>$num);
+            array_unshift($receive_types,array('id'=>20,'name'=>'与包间朋友分享-电视红包','is_check'=>1,'redpacket_num'=>$num));
+        }else{
+            $receive_types[0]['is_check'] = 1;
         }
         $res_data = array('order_id'=>$order_id,'receive_types'=>$receive_types);
         $this->to_back($res_data);

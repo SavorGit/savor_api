@@ -30,7 +30,7 @@ class MessageController extends CommonController{
         }
 
         $m_message = new \Common\Model\Smallapp\MessageModel();
-        $where = array('hotel_id'=>$hotel_id,'type'=>array('in',array(8,9)));
+        $where = array('hotel_id'=>$hotel_id,'type'=>array('in',array(8,9,10)));
         $offset = ($page-1)*$pagesize;
         $res_message = $m_message->getDatas('*',$where,'id desc',"$offset,$pagesize",'');
         $datalist = array();
@@ -38,6 +38,9 @@ class MessageController extends CommonController{
             $all_prizes = array('1'=>'一等奖','2'=>'二等奖','3'=>'三等奖','0'=>'');
             $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
             $m_activityprize = new \Common\Model\Smallapp\ActivityprizeModel();
+            $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+            $m_orderlocal = new \Common\Model\Smallapp\OrderlocationModel();
+            $m_order = new \Common\Model\Smallapp\OrderModel();
             foreach ($res_message as $v){
                 switch ($v['type']){
                     case 8:
@@ -61,6 +64,21 @@ class MessageController extends CommonController{
                         $add_time = date('Y.m.d H:i',strtotime($res_user['invite_time']));
 
                         $info = array('id'=>$v['id'],'name'=>'注册会员','content'=>$content,'nickName'=>$res_user['nickName'],
+                            'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
+                        $datalist[]=$info;
+                        break;
+                    case 10:
+                        $order_id = $v['content_id'];
+                        $gfields = 'goods.id as goods_id,goods.name as goods_name';
+                        $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+                        $res_local = $m_orderlocal->getInfo(array('order_id'=>$order_id));
+                        $content = "{$res_local['room_name']}包间客人要购买酒水“{$res_goods[0]['goods_name']}“，请及时处理。";
+                        $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
+
+                        $res_order = $m_order->getInfo(array('id'=>$order_id));
+                        $where = array('openid'=>$res_order['openid']);
+                        $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
+                        $info = array('id'=>$v['id'],'name'=>'酒水订单','content'=>$content,'nickName'=>$res_user['nickName'],
                             'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
                         $datalist[]=$info;
                         break;

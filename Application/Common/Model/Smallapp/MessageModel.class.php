@@ -32,7 +32,6 @@ class MessageModel extends BaseModel{
                 break;
             case 4:
             case 5:
-            case 10:
                 $data = array('openid'=>$openid,'content_id'=>$content_id,'type'=>$type,'read_status'=>1);
                 $this->add($data);
                 break;
@@ -47,6 +46,12 @@ class MessageModel extends BaseModel{
                 $res_staff = $m_staff->getMerchantStaff($fields,$where);
                 $data = array('staff_openid'=>$openid,'hotel_id'=>$res_staff[0]['hotel_id'],'content_id'=>$content_id,
                     'type'=>$type,'read_status'=>1);
+                $this->add($data);
+                break;
+            case 10:
+                $m_orderlocal = new \Common\Model\Smallapp\OrderlocationModel();
+                $res_olocal = $m_orderlocal->getInfo(array('order_id'=>$content_id));
+                $data = array('openid'=>$openid,'content_id'=>$content_id,'hotel_id'=>$res_olocal['hotel_id'],'type'=>$type,'read_status'=>1);
                 $this->add($data);
                 break;
         }

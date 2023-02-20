@@ -729,6 +729,8 @@ class OrderController extends CommonController{
                 );
                 $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
                 $m_account_sms_log->addData($data);
+                $m_message = new \Common\Model\Smallapp\MessageModel();
+                $m_message->recordMessage($openid,$oid,10);
             }
         }else{
             $now_pay_type = 10;

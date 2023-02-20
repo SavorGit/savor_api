@@ -660,6 +660,7 @@ class OrderController extends CommonController{
             }
             if(!empty($order_location)){
                 $add_data['box_mac'] = $order_location['box_mac'];
+                $add_data['hotel_id'] = $order_location['hotel_id'];
             }
             if(!empty($coupon_info) && $is_use_coupon==0){
                 $is_use_coupon = 1;

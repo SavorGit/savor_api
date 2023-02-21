@@ -401,6 +401,7 @@ class UserController extends CommonController{
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $fields = 'count(id) as num';
         $unwhere = array('openid'=>$openid,'read_status'=>1);
+        $unwhere['type'] = array('neq',10);
         $res_unmessage = $m_message->getDatas($fields,$unwhere,'','','');
         if(!empty($res_unmessage)){
             $unread_num = $res_unmessage[0]['num'];

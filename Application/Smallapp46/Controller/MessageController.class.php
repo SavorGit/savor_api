@@ -94,7 +94,7 @@ class MessageController extends CommonController{
                         }else{
                             $gname = $res_ordergoods[0]['name'];
                         }
-                        $content = "您已成功购买“{$gname}“，请等待发货";
+                        $content = "您已成功购买“{$gname}”，请等待发货";
                         break;
                     case 6:
                         $res_ordergoods = $m_ordergoods->getOrdergoodsList('goods.name,goods.parent_id',array('og.order_id'=>$res_mdata['list'][0]['content_id']),'og.id asc',0,1);
@@ -104,7 +104,7 @@ class MessageController extends CommonController{
                         }else{
                             $gname = $res_ordergoods[0]['name'];
                         }
-                        $content = "您购买的“{$gname}“，已发货，请注意查收";
+                        $content = "您购买的“{$gname}”，已发货，请注意查收";
                         break;
                     default:
                         $content = '';

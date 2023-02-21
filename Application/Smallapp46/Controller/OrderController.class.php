@@ -675,7 +675,7 @@ class OrderController extends CommonController{
                 $m_orderlocation->add($location_data);
             }
 
-//            $redis->set($order_space_key,$order_id,60);
+            $redis->set($order_space_key,$order_id,60);
             $user_order[] = $order_id;
             $redis->set($order_cache_key,json_encode($user_order),86400);
             $order_goods = $gifts = array();

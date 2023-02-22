@@ -40,6 +40,8 @@ class SellwineActivityHotelModel extends BaseModel{
         $activity_data = array();
         if(!empty($res_data)){
             $activity_id = $res_data[0]['activity_id'];
+            $daily_money_limit = $res_data[0]['daily_money_limit'];
+            $money_limit = $res_data[0]['money_limit'];
 
             $lunch_stime = date("Y-m-d {$res_data[0]['lunch_start_time']}");
             $lunch_etime = date("Y-m-d {$res_data[0]['lunch_end_time']}");
@@ -59,13 +61,38 @@ class SellwineActivityHotelModel extends BaseModel{
             if($meal_type){
                 if($source==1){
                     $m_order = new \Common\Model\Smallapp\OrderModel();
-                    $where = array('openid'=>$openid,'otype'=>9,'sellwine_activity_id'=>$activity_id,'bind_idcode_time'=>'0000-00-00 00:00:00');
+                    $where = array('openid'=>$openid,'otype'=>9,'sellwine_activity_id'=>$activity_id);
                     $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-                    $res_order = $m_order->getALLDataList('id',$where,'id desc','0,1','');
+                    $res_order = $m_order->getALLDataList('id,idcode',$where,'id desc','0,1','');
+                    $is_new_order = 1;
+                    $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
                     if(!empty($res_order)){
                         $order_id = $res_order[0]['id'];
-                        $activity_data = array('type'=>2,'order_id'=>$order_id,'message'=>'您有待领取的现金红包');
-                    }else{
+                        if(empty($res_order[0]['idcode'])){
+                            $is_new_order = 0;
+                            $activity_data = array('type'=>2,'order_id'=>$order_id,'message'=>'您有待领取的现金红包');
+
+                            $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$activity_id,'status'=>array('in','11,21'));
+                            $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
+                            $total_money = intval($res_data[0]['total_money']);
+                            if($total_money>=$money_limit){
+                                $activity_data = array();
+                            }else{
+                                $rwhere['DATE(add_time)'] = date('Y-m-d');
+                                $daily_money = intval($res_data[0]['total_money']);
+                                if($daily_money>=$daily_money_limit){
+                                    $activity_data = array();
+                                }
+                            }
+                        }else{
+                            $res_sellwine_redpacket = $m_sellwine_redpacket->getInfo(array('order_id'=>$order_id));
+                            if(empty($res_sellwine_redpacket)){
+                                $is_new_order = 0;
+                                $activity_data = array('type'=>3,'order_id'=>$order_id,'idcode'=>$res_order[0]['idcode']);
+                            }
+                        }
+                    }
+                    if($is_new_order==1){
                         $m_sell_activity_goods = new \Common\Model\Smallapp\SellwineActivityGoodsModel();
                         $where = array('activity_id'=>$activity_id,'status'=>1);
                         $res_goods = $m_sell_activity_goods->getALLDataList('finance_goods_id,money',$where,'money desc','','');
@@ -92,6 +119,7 @@ class SellwineActivityHotelModel extends BaseModel{
                             }
                         }
                     }
+
                 }else{
                     $m_sell_activity_goods = new \Common\Model\Smallapp\SellwineActivityGoodsModel();
                     $where = array('activity_id'=>$activity_id,'status'=>1);

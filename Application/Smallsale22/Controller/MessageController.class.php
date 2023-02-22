@@ -52,7 +52,7 @@ class MessageController extends CommonController{
                         $where = array('openid'=>$res_apply[0]['openid']);
                         $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
                         $res_prize = $m_activityprize->getInfo(array('id'=>$res_apply[0]['prize_id']));
-                        $content = "{$res_apply[0]['box_name']}包间抽中了{$all_prizes[$res_prize['level']]}“{$res_prize['name']}“，请及时处理。";
+                        $content = "{$res_apply[0]['box_name']}包间抽中了{$all_prizes[$res_prize['level']]}“{$res_prize['name']}”，请及时处理。";
 
                         $info = array('id'=>$v['id'],'name'=>$res_apply[0]['name'],'content'=>$content,'nickName'=>$res_user['nickName'],
                             'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
@@ -72,7 +72,7 @@ class MessageController extends CommonController{
                         $gfields = 'goods.id as goods_id,goods.name as goods_name';
                         $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
                         $res_local = $m_orderlocal->getInfo(array('order_id'=>$order_id));
-                        $content = "{$res_local['room_name']}包间客人要购买酒水“{$res_goods[0]['goods_name']}“，请及时处理。";
+                        $content = "{$res_local['room_name']}包间客人要购买酒水“{$res_goods[0]['goods_name']}”，请及时处理。";
                         $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
 
                         $res_order = $m_order->getInfo(array('id'=>$order_id));

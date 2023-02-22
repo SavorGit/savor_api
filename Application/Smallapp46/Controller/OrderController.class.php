@@ -385,7 +385,7 @@ class OrderController extends CommonController{
     }
 
     public function addShoporder(){
-        $addorder_num = 30;
+        $addorder_num = 10;
         $uid = $this->params['uid'];
         $openid = $this->params['openid'];
         $goods_id= intval($this->params['goods_id']);
@@ -421,7 +421,7 @@ class OrderController extends CommonController{
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
-        $fields = 'id user_id,openid,mobile,avatarUrl,nickName,role_id,gender,status,is_wx_auth';
+        $fields = 'id user_id,openid,unionId,mobile,avatarUrl,nickName,role_id,gender,status,is_wx_auth';
         $res_user = $m_user->getOne($fields, $where);
         if(empty($res_user)){
             $this->to_back(92010);
@@ -484,6 +484,20 @@ class OrderController extends CommonController{
             }
         }else{
             if($params_otype==9){
+                if(!empty($res_user['unionId'])){
+                    $where = array('unionId'=>$res_user['unionId'],'small_app_id'=>5);
+                    $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+                    if(!empty($res_sale_user)){
+                        $this->to_back(90197);
+                    }
+                }
+                if(!empty($res_user['mobile'])){
+                    $where = array('mobile'=>$res_user['mobile'],'small_app_id'=>5);
+                    $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+                    if(!empty($res_sale_user)){
+                        $this->to_back(90197);
+                    }
+                }
             }else{
                 if(empty($address_id)){
                     $this->to_back(1001);
@@ -506,6 +520,7 @@ class OrderController extends CommonController{
         }
         $goods = array();
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $now_merchant_id = 0;
         if($goods_id){
             $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
             if($res_goods['type']==42){
@@ -522,6 +537,12 @@ class OrderController extends CommonController{
             if($res_goods['gtype']==3){
                 $res_pgoods = $m_goods->getInfo(array('id'=>$res_goods['parent_id']));
                 $goods_name = $res_pgoods['name'];
+            }
+            if($params_otype==9){
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$order_location['hotel_id'],'status'=>1));
+                $res_goods['merchant_id'] = $res_merchant['id'];
+                $now_merchant_id = $res_merchant['id'];
             }
             $ginfo = array('goods_id'=>$goods_id,'price'=>$res_goods['price'],'name'=>$goods_name,
                 'type'=>$res_goods['type'],'is_localsale'=>$res_goods['is_localsale'],'merchant_id'=>$res_goods['merchant_id'],
@@ -657,6 +678,7 @@ class OrderController extends CommonController{
                     $add_data['sellwine_activity_id'] = $sellwine_activity_id;
                 }
                 $add_data['goods_id'] = $goods_id;
+                $add_data['status'] = 13;
             }
             if(!empty($order_location)){
                 $add_data['box_mac'] = $order_location['box_mac'];
@@ -719,18 +741,37 @@ class OrderController extends CommonController{
             $now_pay_type = $pay_type;
             if(!empty($res_user['mobile'])){
                 $end_mobile = substr($res_user['mobile'],-4);
+                $m_staff = new \Common\Model\Integral\StaffModel();
+                $res_staff = $m_staff->getMerchantStaff('user.mobile',array('a.merchant_id'=>$now_merchant_id,'a.status'=>1,'user.status'=>1),'a.id desc');
+                $all_mobiles = array();
+                foreach ($res_staff as $sv){
+                    if(!empty($sv['mobile'])){
+                        $all_mobiles[]=$sv['mobile'];
+                    }
+                }
+                $mobiles = join(',',$all_mobiles);
                 $emsms = new \Common\Lib\EmayMessage();
-                $sms_params = array('room_name'=>$order_location['room_name'],'amount'=>$amount,'goods_name'=>$trade_name);
+                $sms_params = array('room_name'=>$order_location['room_name'],'amount'=>$amount,'goods_name'=>$trade_name,'mobiles'=>$mobiles);
                 $content = "您好，{$order_location['room_name']}包间手机尾号{$end_mobile}的客人需要{$amount}瓶{$trade_name}，请及时处理。";
-                $res_data = $emsms->sendSMS($content,$res_user['mobile']);
+                $res_data = $emsms->sendSMS($content,$mobiles);
                 $resp_code = $res_data->code;
                 $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
-                    'url'=>join(',',$sms_params),'tel'=>$res_user['mobile'],'resp_code'=>$resp_code,'msg_type'=>3
+                    'url'=>join(',',$sms_params),'tel'=>$all_mobiles[0],'resp_code'=>$resp_code,'msg_type'=>3
                 );
                 $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
                 $m_account_sms_log->addData($data);
                 $m_message = new \Common\Model\Smallapp\MessageModel();
                 $m_message->recordMessage($openid,$oid,10);
+
+                $sms_params = array('goods_name'=>$trade_name);
+                $user_content = "您好，您已成功订购{$trade_name}，已通知餐厅为您取酒，请耐心等待。为了节省您的等待时间，也可询问服务员～";
+                $res_data = $emsms->sendSMS($user_content,$res_user['mobile']);
+                $resp_code = $res_data->code;
+                $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+                    'url'=>join(',',$sms_params),'tel'=>$res_user['mobile'],'resp_code'=>$resp_code,'msg_type'=>3
+                );
+                $m_account_sms_log->addData($data);
+
             }
         }else{
             $now_pay_type = 10;
@@ -1358,7 +1399,11 @@ class OrderController extends CommonController{
         $where = array('openid'=>$openid);
         if($type){
             if($type==5){
-                $where['otype'] = array('in',array(5,8));
+                $otypes = '5,8';
+                if($status==0){
+                    $otypes = '5,8,9';
+                }
+                $where['otype'] = array('in',$otypes);
             }else{
                 $where['otype'] = $type;
             }
@@ -1403,7 +1448,7 @@ class OrderController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_order = new \Common\Model\Smallapp\OrderModel();
-        $fields = 'id as order_id,gift_oid,merchant_id,price,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time,usercoupon_id';
+        $fields = 'id as order_id,gift_oid,merchant_id,price,box_mac,amount,otype,total_fee,status,contact,phone,address,delivery_time,remark,add_time,finish_time,usercoupon_id';
         $res_order = $m_order->getDataList($fields,$where,'id desc',0,$all_nums);
         $datalist = array();
         if($res_order['total']){
@@ -1411,6 +1456,7 @@ class OrderController extends CommonController{
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $m_merchant = new \Common\Model\Integral\MerchantModel();
             $m_media = new \Common\Model\MediaModel();
+            $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
             $datalist = $res_order['list'];
             $oss_host = get_oss_host();
             $all_status = C('ORDER_STATUS');
@@ -1474,7 +1520,18 @@ class OrderController extends CommonController{
                 $datalist[$k]['give_type'] = $give_type;
                 $share_wx = $m_order->shareWeixin($user_info['nickName'],$datalist[$k]['goods'][0]['name']);
                 $datalist[$k]['share_title'] = $share_wx['title'];
-
+                $is_scan_goods = 0;
+                if($v['otype']==9){
+                    $datalist[$k]['status_str'] = '';
+                    if(date('Y-m-d',strtotime($v['add_time'])) == date('Y-m-d')){
+                        $res_sellwine_redpacket = $m_sellwine_redpacket->getInfo(array('order_id'=>$order_id));
+                        if(empty($res_sellwine_redpacket)){
+                            $datalist[$k]['status_str'] = '扫码领红包';
+                            $is_scan_goods = 1;
+                        }
+                    }
+                }
+                $datalist[$k]['is_scan_goods'] = $is_scan_goods;
                 unset($datalist[$k]['gift_oid']);
 
             }

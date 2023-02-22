@@ -160,7 +160,7 @@ class WxPayController extends BaseController{
     public function reissueredpacket(){
         $start_time = date('Y-m-d H:i:s',strtotime("-20 minutes"));
         $end_time = date('Y-m-d H:i:s',strtotime("-10 minutes"));
-        $where = array('status'=>6);
+        $where = array('status'=>6,'operate_type'=>array('neq',3));
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time), 'and');
         $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
         $res = $m_redpacket->getDataList('*',$where,'id asc');

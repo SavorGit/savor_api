@@ -61,8 +61,16 @@ class ActivitySellwineController extends CommonController{
             $this->to_back(90134);
         }
         $res_bindorder = $m_order->getInfo(array('otype'=>9,'idcode'=>$idcode));
+        $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
         if(!empty($res_bindorder)){
-            $this->to_back(90196);
+            if($res_bindorder['id']==$order_id){
+                $res_sellwine_redpacket = $m_sellwine_redpacket->getInfo(array('order_id'=>$order_id));
+                if(!empty($res_sellwine_redpacket)){
+                    $this->to_back(90196);
+                }
+            }else{
+                $this->to_back(90196);
+            }
         }
         $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
         $gfields = 'goods.id as goods_id,goods.finance_goods_id';
@@ -75,7 +83,6 @@ class ActivitySellwineController extends CommonController{
         $daily_money_limit = $res_activity['daily_money_limit'];
         $money_limit = $res_activity['money_limit'];
 
-        $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
         $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id'],'status'=>array('in','11,21'));
         $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
         $total_money = intval($res_data[0]['total_money']);

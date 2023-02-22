@@ -766,4 +766,112 @@ class OrderController extends Controller {
         }
         echo $nowdtime." finish\r\n";
     }
+
+    public function sellwinefailmoney(){
+        $fail_date = date('Y-m-d 00:00:00',strtotime("-1 hour" ));
+        $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
+        $where = array('status'=>array('in','12,21,22'));//状态11领取成功,12领取失败,21发送成功,22发送失败,23已抢完
+        $where['add_time'] = array('elt',$fail_date);
+        $res_data = $m_sellwine_redpacket->getDataList('*',$where,'id asc');
+
+        if(!empty($res_data)){
+            $smallapp_config = C('SMALLAPP_CONFIG');
+            $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
+            $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
+            $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
+            $payconfig = array(
+                'appid'=>$smallapp_config['appid'],
+                'partner'=>$pay_wx_config['partner'],
+                'key'=>$pay_wx_config['key'],
+                'sslcert_path'=>$sslcert_path,
+                'sslkey_path'=>$sslkey_path,
+            );
+            $m_order = new \Common\Model\Smallapp\OrderModel();
+            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+            $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
+            $m_redpacket_receive = new \Common\Model\Smallapp\RedpacketReceiveModel();
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            foreach ($res_data as $v){
+                $activity_redpacket_id = $v['id'];
+                $order_id = $v['order_id'];
+                $total_fee = intval($v['money']);
+                $openid = $v['openid'];
+                if($v['type']==10){//10微信零钱,20电视红包
+                    $ewhere = array('openid'=>$openid,'order_id'=>$order_id,'type'=>6);
+                    $res_exchange = $m_exchange->getInfo($ewhere);
+                    if(!empty($res_exchange)){
+                        $order_exchange_id = $res_exchange['id'];
+                    }else{
+                        $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
+                            'amount'=>1,'total_fee'=>$total_fee,'status'=>20);
+                        $order_exchange_id = $m_exchange->add($add_data);
+                    }
+                    $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$total_fee,'open_id'=>$openid);
+                    $res_pay = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    if($res_pay['code']==10000){
+                        $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+                        $m_sellwine_redpacket->updateData(array('id'=>$activity_redpacket_id),array('status'=>11,'update_time'=>date('Y-m-d H:i:s')));
+                    }
+                    $res_order = $m_order->getInfo(array('id'=>$v['order_id']));
+                    $pay_result = json_encode($res_pay);
+                    $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'idcode'=>$res_order['idcode'],
+                        'wxorder_id'=>$order_exchange_id,'pay_result'=>$pay_result);
+                    $m_paylog->add($pay_data);
+
+                    echo "activity_redpacket_id:$activity_redpacket_id payresult:$pay_result \r\n";
+                }elseif($v['type']==20){
+                    $res_redpacket = $m_redpacket->getInfo(array('order_id'=>$order_id,'operate_type'=>3));
+                    $redpacket_id = $res_redpacket['id'];
+                    $fields = 'a.id,a.redpacket_id,a.user_id,a.money,a.status,user.openid';
+                    $where = "a.redpacket_id=$redpacket_id";
+                    $res_receive = $m_redpacket_receive->getList($fields,$where,'a.id asc');
+                    $receive_money = 0;
+                    $is_up = 1;
+                    if(!empty($res_receive)){
+                        foreach ($res_receive as $rv){
+                            $receive_money+=$rv['money'];
+                            if($rv['status']==0){
+                                $trade_info = array('trade_no'=>$rv['redpacket_id'],'money'=>$rv['money'],'open_id'=>$rv['openid']);
+                                $res_rpay = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                                if($res_rpay['code']==10000){
+                                    $condition = array('id'=>$rv['id']);
+                                    $m_redpacket_receive->updateData($condition,array('status'=>1,'receive_time'=>date('Y-m-d H:i:s')));
+                                }else{
+                                    $is_up = 0;
+                                }
+                                $pay_result = json_encode($res_rpay);
+                                echo "activity_redpacket_id:$activity_redpacket_id,redpacket_id:$redpacket_id,receive_id:{$rv['id']} payresult:$pay_result \r\n";
+                            }
+                        }
+                    }
+                    $no_get_money = $total_fee-$receive_money;
+                    if($no_get_money>0){
+                        $m_redpacket->updateData(array('id'=>$redpacket_id),array('status'=>5,'grab_time'=>date('Y-m-d H:i:s')));
+
+                        $trade_info = array('trade_no'=>$redpacket_id,'money'=>$no_get_money,'open_id'=>$openid);
+                        $res_rpay = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                        $res_user = $m_user->getOne('id',array('openid'=>$openid),'');
+                        $receive_data = array('redpacket_id'=>$redpacket_id,'user_id'=>$res_user['id'],'money'=>$no_get_money,'operate_type'=>1);
+                        if($res_rpay['code']==10000){
+                            $receive_data['status'] = 1;
+                            $receive_data['receive_time'] = date('Y-m-d H:i:s');
+                        }else{
+                            $is_up = 0;
+                        }
+                        $receive_id = $m_redpacket_receive->add($receive_data);
+                        $pay_result = json_encode($res_rpay);
+                        echo "activity_redpacket_id:$activity_redpacket_id,redpacket_id:$redpacket_id,receive_id:{$receive_id} payresult:$pay_result \r\n";
+                    }
+                    if($is_up==1){
+                        $m_sellwine_redpacket->updateData(array('id'=>$activity_redpacket_id),array('status'=>23,'update_time'=>date('Y-m-d H:i:s')));
+                    }
+                }
+
+            }
+
+        }
+
+    }
 }

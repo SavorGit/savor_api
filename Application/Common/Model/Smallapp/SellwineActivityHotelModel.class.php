@@ -72,7 +72,7 @@ class SellwineActivityHotelModel extends BaseModel{
                             $is_new_order = 0;
                             $activity_data = array('type'=>2,'order_id'=>$order_id,'message'=>'您有待领取的现金红包');
 
-                            $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$activity_id,'status'=>array('in','11,21'));
+                            $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$activity_id);
                             $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
                             $total_money = intval($res_data[0]['total_money']);
                             if($total_money>=$money_limit){

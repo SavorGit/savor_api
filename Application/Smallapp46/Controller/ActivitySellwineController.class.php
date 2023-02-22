@@ -83,7 +83,7 @@ class ActivitySellwineController extends CommonController{
         $daily_money_limit = $res_activity['daily_money_limit'];
         $money_limit = $res_activity['money_limit'];
 
-        $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id'],'status'=>array('in','11,21'));
+        $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id']);
         $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
         $total_money = intval($res_data[0]['total_money']);
         if($total_money>=$money_limit){
@@ -139,7 +139,7 @@ class ActivitySellwineController extends CommonController{
         $money_limit = $res_activity['money_limit'];
 
         $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
-        $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id'],'status'=>array('in','11,21'));
+        $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id']);
         $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
         $total_money = intval($res_data[0]['total_money']);
         if($total_money>=$money_limit){
@@ -151,9 +151,8 @@ class ActivitySellwineController extends CommonController{
             $this->to_back(90194);
         }
 
-        $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
         $rwhere = array('openid'=>$openid,'sellwine_activity_id'=>$res_order['sellwine_activity_id'],
-            'order_id'=>$order_id,'status'=>array('in','11,21'));
+            'order_id'=>$order_id);
         $res_data = $m_sellwine_redpacket->getDataList('sum(money) as total_money',$rwhere,'');
         $total_money = intval($res_data[0]['total_money']);
         if($total_money>0){
@@ -190,7 +189,8 @@ class ActivitySellwineController extends CommonController{
 
             $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$total_fee,'open_id'=>$openid);
             $m_wxpay = new \Payment\Model\WxpayModel();
-            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+//            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            $res = array('code'=>10002);
             if($res['code']==10000){
                 $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
                 $activity_redpacket_data['status'] = 11;

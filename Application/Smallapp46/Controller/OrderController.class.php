@@ -498,6 +498,11 @@ class OrderController extends CommonController{
                         $this->to_back(90197);
                     }
                 }
+                $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
+                $res_invalids = $m_invalidlist->getInfo(array('invalidid'=>$openid));
+                if(!empty($res_invalids)){
+                    $this->to_back(90197);
+                }
             }else{
                 if(empty($address_id)){
                     $this->to_back(1001);

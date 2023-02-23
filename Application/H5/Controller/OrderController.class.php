@@ -768,12 +768,14 @@ class OrderController extends Controller {
     }
 
     public function sellwinefailmoney(){
-        $fail_date = date('Y-m-d 00:00:00',strtotime("-1 hour" ));
+        $now_time = date('Y-m-d H:i:s');
+        echo "sellwinefailmoney start_time:$now_time \r\n";
+
+        $fail_date = date('Y-m-d H:00:00',strtotime("-1 hour" ));
         $m_sellwine_redpacket = new \Common\Model\Smallapp\SellwineActivityRedpacketModel();
         $where = array('status'=>array('in','12,21,22'));//状态11领取成功,12领取失败,21发送成功,22发送失败,23已抢完
         $where['add_time'] = array('elt',$fail_date);
         $res_data = $m_sellwine_redpacket->getDataList('*',$where,'id asc');
-
         if(!empty($res_data)){
             $smallapp_config = C('SMALLAPP_CONFIG');
             $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');

@@ -124,7 +124,7 @@ class ActivitySellwineController extends CommonController{
         $rtype_map = array('10'=>'微信零钱','20'=>'电视红包');
         $where = array('openid'=>$openid);
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $res_user = $m_user->getOne('id,mobile', $where);
+        $res_user = $m_user->getOne('id,mobile,avatarUrl,nickName', $where);
         if(empty($res_user)){
             $this->to_back(92010);
         }
@@ -189,8 +189,7 @@ class ActivitySellwineController extends CommonController{
 
             $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$total_fee,'open_id'=>$openid);
             $m_wxpay = new \Payment\Model\WxpayModel();
-//            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-            $res = array('code'=>10002);
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
             if($res['code']==10000){
                 $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
                 $activity_redpacket_data['status'] = 11;
@@ -211,8 +210,7 @@ class ActivitySellwineController extends CommonController{
             $activity_redpacket_data['num'] = $num;
             $activity_redpacket_data['status'] = 21;
 
-            $op_userid = 42996;
-            $redpacket = array('user_id'=>$op_userid,'total_fee'=>$red_money,'amount'=>$num,'surname'=>'小热点',
+            $redpacket = array('user_id'=>$res_user['id'],'total_fee'=>$red_money,'amount'=>$num,'surname'=>'小热点',
                 'sex'=>1,'bless_id'=>163,'scope'=>3,'mac'=>$box_mac,'pay_fee'=>$red_money,'order_id'=>$order_id,
                 'pay_time'=>date('Y-m-d H:i:s'),'pay_type'=>10,'status'=>4,'operate_type'=>3);
             $m_redpacket = new \Common\Model\Smallapp\RedpacketModel();
@@ -232,13 +230,22 @@ class ActivitySellwineController extends CommonController{
                 $redis->rpush($key_queue,$mv);
             }
             //end
-            $user_info = array('nickName'=>'小热点','avatarUrl'=>get_oss_host().'media/resource/btCfRRhHkn.jpg');
-            $m_user->updateInfo(array('id'=>$op_userid),array('nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl']));
-
             $qrinfo =  $trade_no.'_'.$box_mac;
             $mpcode = http_host().'/h5/qrcode/mpQrcode?qrinfo='.$qrinfo;
-            $message = array('action'=>121,'nickName'=>$user_info['nickName'],'avatarUrl'=>$user_info['avatarUrl'],
-                'codeUrl'=>$mpcode);
+            if(!empty($res_user['mobile'])){
+                $end_mobile = substr($res_user['mobile'],-4);
+                $nickName = "手机尾号{$end_mobile}的客人 发了一个电视红包";
+            }else{
+                $nickName = $res_user['nickName'];
+            }
+            $avatarUrl = $res_user['avatarUrl'];
+            if(empty($nickName)){
+                $nickName = '微信用户';
+            }
+            if(empty($avatarUrl)){
+                $avatarUrl = get_oss_host().'media/resource/btCfRRhHkn.jpg';
+            }
+            $message = array('action'=>121,'nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'codeUrl'=>$mpcode);
             $m_netty = new \Common\Model\NettyModel();
             $res_push = $m_netty->pushBox($box_mac,json_encode($message));
             if($res_push['error_code']){

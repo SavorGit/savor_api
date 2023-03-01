@@ -29,103 +29,82 @@ class ActivityapplyModel extends BaseModel{
         if($hotel_id==0 || empty($box_mac) || empty($openid)){
             return $taste_wine;
         }
-        $now_time = date('Y-m-d H:i:s');
 
         $m_activityhotel = new \Common\Model\Smallapp\ActivityhotelModel();
-        $fields = 'a.activity_id,activity.image_url,activity.portrait_image_url,activity.lunch_start_time,activity.lunch_end_time,
-        activity.dinner_start_time,activity.dinner_end_time,activity.meal_get_num,activity.box_get_num,activity.bottle_num,activity.people_num,activity.join_num,activity.finance_goods_id';
-        $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6,'activity.status'=>1);
-        $where['activity.start_time'] = array('elt',date('Y-m-d H:i:s'));
-        $where['activity.end_time'] = array('egt',date('Y-m-d H:i:s'));
-        $res_activityhotel = $m_activityhotel->getActivityhotelDatas($fields,$where,'a.id desc','0,1','');
-        if(empty($res_activityhotel[0]['activity_id'])){
-           return $taste_wine;
+        $res_taste = $m_activityhotel->getHotelTastewineActivity($hotel_id);
+        if(empty($res_taste)){
+            return $taste_wine;
         }
-        $lunch_stime = date("Y-m-d {$res_activityhotel[0]['lunch_start_time']}");
-        $lunch_etime = date("Y-m-d {$res_activityhotel[0]['lunch_end_time']}");
-        $dinner_stime = date("Y-m-d {$res_activityhotel[0]['dinner_start_time']}");
-        $dinner_etime = date("Y-m-d {$res_activityhotel[0]['dinner_end_time']}");
-        $meal_type = '';
-        $meal_stime = $meal_etime = '';
-        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
-            $meal_type = 'lunch';
-            $meal_stime = $lunch_stime;
-            $meal_etime = $lunch_etime;
-        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
-            $meal_type = 'dinner';
-            $meal_stime = $dinner_stime;
-            $meal_etime = $dinner_etime;
-        }
-        if($meal_type){
-            $taste_wine_activity_id = $res_activityhotel[0]['activity_id'];
-            $people_num = $res_activityhotel[0]['people_num'];
-            $bottle_num = $res_activityhotel[0]['bottle_num'];
-            $join_num = $res_activityhotel[0]['join_num'];
-            $meal_get_num = $res_activityhotel[0]['meal_get_num'];
-            $box_get_num = $res_activityhotel[0]['box_get_num'];
-
-            $where = array('activity_id'=>$taste_wine_activity_id,'openid'=>$openid);
-            $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-            $res_activity_apply = $this->getApplylist('*',$where,'id desc','');
-            if(!empty($res_activity_apply)){
-                if($res_activity_apply[0]['status']==1){
-                    $taste_wine['activity_id'] = $taste_wine_activity_id;
-                    $taste_wine['is_pop_wind'] = true;
-                    $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_activityhotel[0]['image_url'];
-                    $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_activityhotel[0]['portrait_image_url'];
-                    $taste_wine['status'] = 2;
-                    $taste_wine['message'] = '恭喜您领到本饭局品鉴酒';
-                    $taste_wine['join_time'] = date('Y.m.d H:i:s',strtotime($res_activityhotel[0]['add_time']));
-                    $taste_wine['tips'] = '已通知餐厅为您送酒，为节省等待时间，您可直接向服务员询问';
-                }
-            }else{
-                $hotel_all_num = $bottle_num*$people_num;
-                $bwhere = array('activity_id'=>$taste_wine_activity_id,'hotel_id'=>$hotel_id);
-                $res_activity_allhotel_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
-                $taste_wine_all_hotel_num = 0;
-                if(!empty($res_activity_allhotel_apply)){
-                    $taste_wine_all_hotel_num = $res_activity_allhotel_apply[0]['num'];
-                }
-                if($taste_wine_all_hotel_num>=$hotel_all_num){
-                    return $taste_wine;
-                }
-
-                $bwhere['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-                $res_activity_hotel_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
-                $taste_wine_hotel_num = 0;
-                if(!empty($res_activity_hotel_apply)){
-                    $taste_wine_hotel_num = $res_activity_hotel_apply[0]['num'];
-                }
-                if($taste_wine_hotel_num>=$meal_get_num){
-                    return $taste_wine;
-                }
-                $bwhere['box_mac'] = $box_mac;
-                $res_activity_box_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
-                $taste_wine_box_num = 0;
-                if(!empty($res_activity_box_apply)){
-                    $taste_wine_box_num = $res_activity_box_apply[0]['num'];
-                }
-                if($taste_wine_box_num>=$box_get_num){
-                    return $taste_wine;
-                }
-
-                $u_fields = 'count(a.id) as num';
-                $u_where = array('a.openid'=>$openid,'activity.type'=>6);
-                $u_where['a.add_time'] = array('egt','2023-03-01 00:00:00');
-                $res_activity_user_apply = $this->getApplyDatas($u_fields,$u_where,'a.id desc','','');
-                $taste_user_wine_apply_num = 0;
-                if(!empty($res_activity_user_apply)){
-                    $taste_user_wine_apply_num = $res_activity_user_apply[0]['num'];
-                }
-                if($taste_user_wine_apply_num>=$join_num){
-                    return $taste_wine;
-                }
+        $taste_wine_activity_id = $res_taste['activity']['activity_id'];
+        $people_num = $res_taste['activity']['people_num'];
+        $bottle_num = $res_taste['activity']['bottle_num'];
+        $join_num = $res_taste['activity']['join_num'];
+        $meal_get_num = $res_taste['activity']['meal_get_num'];
+        $box_get_num = $res_taste['activity']['box_get_num'];
+        $meal_stime = $res_taste['meal_stime'];
+        $meal_etime = $res_taste['meal_etime'];
+        $where = array('activity_id'=>$taste_wine_activity_id,'openid'=>$openid);
+        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+        $res_activity_apply = $this->getApplylist('*',$where,'id desc','');
+        if(!empty($res_activity_apply)){
+            if($res_activity_apply[0]['status']==1){
                 $taste_wine['activity_id'] = $taste_wine_activity_id;
                 $taste_wine['is_pop_wind'] = true;
-                $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_activityhotel[0]['image_url'];
-                $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_activityhotel[0]['portrait_image_url'];
+                $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['image_url'];
+                $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['portrait_image_url'];
+                $taste_wine['status'] = 2;
+                $taste_wine['message'] = '恭喜您领到本饭局品鉴酒';
+                $taste_wine['join_time'] = date('Y.m.d H:i:s',strtotime($res_activity_apply[0]['add_time']));
+                $taste_wine['tips'] = '已通知餐厅为您送酒，为节省等待时间，您可直接向服务员询问';
             }
+        }else{
+            $hotel_all_num = $bottle_num*$people_num;
+            $bwhere = array('activity_id'=>$taste_wine_activity_id,'hotel_id'=>$hotel_id);
+            $res_activity_allhotel_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
+            $taste_wine_all_hotel_num = 0;
+            if(!empty($res_activity_allhotel_apply)){
+                $taste_wine_all_hotel_num = $res_activity_allhotel_apply[0]['num'];
+            }
+            if($taste_wine_all_hotel_num>=$hotel_all_num){
+                return $taste_wine;
+            }
+
+            $bwhere['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+            $res_activity_hotel_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
+            $taste_wine_hotel_num = 0;
+            if(!empty($res_activity_hotel_apply)){
+                $taste_wine_hotel_num = $res_activity_hotel_apply[0]['num'];
+            }
+            if($taste_wine_hotel_num>=$meal_get_num){
+                return $taste_wine;
+            }
+            $bwhere['box_mac'] = $box_mac;
+            $res_activity_box_apply = $this->getApplylist('count(*) as num',$bwhere,'id desc','');
+            $taste_wine_box_num = 0;
+            if(!empty($res_activity_box_apply)){
+                $taste_wine_box_num = $res_activity_box_apply[0]['num'];
+            }
+            if($taste_wine_box_num>=$box_get_num){
+                return $taste_wine;
+            }
+
+            $u_fields = 'count(a.id) as num';
+            $u_where = array('a.openid'=>$openid,'activity.type'=>6);
+            $u_where['a.add_time'] = array('egt','2023-03-01 00:00:00');
+            $res_activity_user_apply = $this->getApplyDatas($u_fields,$u_where,'a.id desc','','');
+            $taste_user_wine_apply_num = 0;
+            if(!empty($res_activity_user_apply)){
+                $taste_user_wine_apply_num = $res_activity_user_apply[0]['num'];
+            }
+            if($taste_user_wine_apply_num>=$join_num){
+                return $taste_wine;
+            }
+            $taste_wine['activity_id'] = $taste_wine_activity_id;
+            $taste_wine['is_pop_wind'] = true;
+            $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['image_url'];
+            $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['portrait_image_url'];
         }
+
         return $taste_wine;
     }
 

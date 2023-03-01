@@ -6,25 +6,6 @@ class SellwineActivityHotelModel extends BaseModel{
 	protected $tableName='sellwine_activity_hotel';
 
 	public function getSellwineActivity($hotel_id,$openid,$source=1,$finance_goods_id=0){
-	    /*
-        $m_user = new \Common\Model\Smallapp\UserModel();
-        $where = array('openid'=>$openid,'status'=>1);
-        $user_info = $m_user->getOne('id,openid,unionId,mobile',$where,'');
-        if(!empty($user_info['unionId'])){
-            $where = array('unionId'=>$user_info['unionId'],'small_app_id'=>5);
-            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
-            if(!empty($res_sale_user)){
-                return array();
-            }
-        }
-        if(!empty($user_info['mobile'])){
-            $where = array('mobile'=>$user_info['mobile'],'small_app_id'=>5);
-            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
-            if(!empty($res_sale_user)){
-                return array();
-            }
-        }
-	    */
 	    //$source 1弹框 2获取当前饭点内活动数据
         $now_time = date('Y-m-d H:i:s');
         $fields = 'a.activity_id,activity.start_date,activity.end_date,activity.lunch_start_time,activity.lunch_end_time,

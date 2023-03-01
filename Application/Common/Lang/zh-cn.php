@@ -428,7 +428,7 @@ return array(
     'smallapp_tasklottery_not_exist'=>'抽奖活动正在维护中，请稍后再试。',
     'smallapp_tastwine_not_meal_time'=>'请在饭局时间内参加品鉴酒活动',
     'smallapp_tastwine_room_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
-    'smallapp_tastwine_join_uplimit'=>'免费品鉴酒已领完，您下次要快点哦～',
+    'smallapp_tastwine_join_uplimit'=>'您已参与过此活动，不可重复参与',
     'smallapp_tastwine_had_join'=>'当前饭局已参加过品鉴酒活动',
     'smallapp_tasklottery_had_join'=>'当前饭局已参加过抽奖活动',
     'smallapp_tastwine_join_first'=>'请先参加品鉴酒活动',
@@ -507,6 +507,7 @@ return array(
     'smallapp_sellwine_activity_order_has_get_money'=>'当前订单已领取过红包',
     'smallapp_sellwine_activity_idcode_has_bind'=>'商品码不能重复使用',
     'smallapp_hotel_staff_not_join_activity'=>'餐厅人员不可参与此活动',
+    'smallappsale_task_had_other_people_recevie'=>'当前任务已被其他人领取',
 
 
 

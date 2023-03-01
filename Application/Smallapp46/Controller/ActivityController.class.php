@@ -1115,22 +1115,40 @@ class ActivityController extends CommonController{
             $this->to_back(90116);
         }
         $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
-        $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid,'type'=>2));
+        $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid));
         if(!empty($res_invalid)){
             $resp_data = array('message'=>'无法领取','tips'=>'请联系管理员');
             $this->to_back($resp_data);
         }
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,unionId,mobile',$where,'');
+        if(!empty($user_info['unionId'])){
+            $where = array('unionId'=>$user_info['unionId'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $resp_data = array('message'=>'无法领取','tips'=>'请联系管理员');
+                $this->to_back($resp_data);
+            }
+        }
+        if(!empty($user_info['mobile'])){
+            $where = array('mobile'=>$user_info['mobile'],'small_app_id'=>5);
+            $res_sale_user = $m_user->getOne('id,openid,unionId',$where,'');
+            if(!empty($res_sale_user)){
+                $resp_data = array('message'=>'无法领取','tips'=>'请联系管理员');
+                $this->to_back($resp_data);
+            }
+        }
+
         $m_activity = new \Common\Model\Smallapp\ActivityModel();
         $res_activity = $m_activity->getInfo(array('id'=>$activity_id,'status'=>1));
         if(empty($res_activity)){
             $this->to_back(90175);
         }
-        $people_num = $res_activity['people_num'];
         $now_time = date('Y-m-d H:i:s');
         if($res_activity['start_time']>$now_time || $res_activity['end_time']<$now_time){
-            $this->to_back(90175);
+            $this->to_back(90182);
         }
-
         $m_box = new \Common\Model\BoxModel();
         $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
         if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
@@ -1165,18 +1183,17 @@ class ActivityController extends CommonController{
         if(empty($res_ahotel)){
             $this->to_back(90175);
         }
-
-        $meal_time = C('ACTIVITY_MEAL_TIME');
-        $lunch_stime = date("Y-m-d {$meal_time['lunch'][0]}:00");
-        $lunch_etime = date("Y-m-d {$meal_time['lunch'][1]}:00");
-        $dinner_stime = date("Y-m-d {$meal_time['dinner'][0]}:00");
-        $dinner_etime = date("Y-m-d {$meal_time['dinner'][1]}:59");
-        $meal_type = $meal_stime = $meal_etime = '';
-        if($now_time >= $lunch_stime && $now_time <= $lunch_etime){
+        $lunch_stime = date("Y-m-d {$res_activity['lunch_start_time']}");
+        $lunch_etime = date("Y-m-d {$res_activity['lunch_end_time']}");
+        $dinner_stime = date("Y-m-d {$res_activity['dinner_start_time']}");
+        $dinner_etime = date("Y-m-d {$res_activity['dinner_end_time']}");
+        $meal_type = '';
+        $meal_stime = $meal_etime = '';
+        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
             $meal_type = 'lunch';
             $meal_stime = $lunch_stime;
             $meal_etime = $lunch_etime;
-        }elseif($now_time >= $dinner_stime && $now_time <= $dinner_etime){
+        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
             $meal_type = 'dinner';
             $meal_stime = $dinner_stime;
             $meal_etime = $dinner_etime;
@@ -1184,54 +1201,105 @@ class ActivityController extends CommonController{
         if(empty($meal_type)){
             $this->to_back(90176);
         }
-        $where = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'box_mac'=>$box_mac);
-        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
-        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
-        if($res_activity_apply[0]['num']>=$people_num){
-            $this->to_back(90177);
+        $people_num = $res_activity['people_num'];
+        $bottle_num = $res_activity['bottle_num'];
+        $join_num = $res_activity['join_num'];
+        $meal_get_num = $res_activity['meal_get_num'];
+        $box_get_num = $res_activity['box_get_num'];
+        if(empty($meal_type)){
+            $this->to_back(90176);
         }
         $u_fields = 'count(a.id) as num';
         $u_where = array('a.openid'=>$openid,'activity.type'=>6);
+        $u_where['a.add_time'] = array('egt','2023-03-01 00:00:00');
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         $res_activity_apply = $m_activityapply->getApplyDatas($u_fields,$u_where,'a.id desc','','');
-        if($res_activity_apply[0]['num']>3){
+        if($res_activity_apply[0]['num']>$join_num){
             $this->to_back(90178);
         }
+
+        $where = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id);
+        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        $all_hotel_num = $people_num*$bottle_num;
+        if($res_activity_apply[0]['num']>=$all_hotel_num){
+            $this->to_back(90177);
+        }
+        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
+        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        if($res_activity_apply[0]['num']>=$meal_get_num){
+            $this->to_back(90177);
+        }
+        $where['box_mac'] = $box_mac;
+        $res_activity_apply = $m_activityapply->getApplylist('count(*) as num',$where,'id desc','');
+        if($res_activity_apply[0]['num']>=$box_get_num){
+            $this->to_back(90177);
+        }
+
         $where = array('activity_id'=>$activity_id,'openid'=>$openid);
         $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
         $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id desc','');
         if($res_activity_apply[0]['status']==1){
             $this->to_back(90179);
         }
+        $join_time = date('Y-m-d H:i:s');
         $data = array('activity_id'=>$activity_id,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'room_id'=>$room_id,
             'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,'mobile'=>$mobile,
-            'add_time'=>date('Y-m-d H:i:s')
+            'add_time'=>$join_time
         );
         $m_activityapply->addData($data);
 
-        $where = array('activity_id'=>$activity_id,'box_mac'=>$box_mac);
-        $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime));
-        $res_activity_apply = $m_activityapply->getApplylist('*',$where,'id asc','');
-        $get_position = 0;
-        foreach($res_activity_apply as $k=>$v){
-            if($v['openid'] == $openid){
-                $get_position = $k + 1;
-                break;
-            }
-        }
         $m_netty = new \Common\Model\NettyModel();
         $message = array('action'=>153,'nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),
             'url'=>$res_activity['image_url']);
         $m_netty->pushBox($box_mac,json_encode($message));
 
         $all_box = $m_netty->getPushBox(2,$box_mac);
-        $barrage = $box_name.'包间免费领取了一份品鉴酒';
+        $barrage = $box_name.'包间成功领取了一份小热点赠送的品鉴酒';
         foreach ($all_box as $box){
             $user_barrages = array(array('nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),'barrage'=>$barrage));
             $message = array('action'=>122,'userBarrages'=>$user_barrages);
             $m_netty->pushBox($box,json_encode($message));
         }
-        $resp_data = array('message'=>"恭喜您领到本饭局第{$get_position}份(75mL)品鉴酒",'tips'=>'请向服务员出示此页面领取');
+
+        $wine_ml = $res_activity['wine_ml'];
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $fields = 'g.id,g.finance_goods_id,g.name,g.detail_imgs';
+        $res_goods = $m_hotelgoods->getGoodsList($fields,array('h.hotel_id'=>$hotel_id,'g.finance_goods_id'=>$res_activity['finance_goods_id']),'','0,1');
+        $goods_name = $res_goods[0]['name'];
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
+        $end_mobile = substr($mobile,-4);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('user.mobile',array('a.merchant_id'=>$res_merchant['id'],'a.status'=>1,'user.status'=>1),'a.id desc');
+        $all_mobiles = array();
+        foreach ($res_staff as $sv){
+            if(!empty($sv['mobile'])){
+                $all_mobiles[]=$sv['mobile'];
+            }
+        }
+        $mobiles = join(',',$all_mobiles);
+        $emsms = new \Common\Lib\EmayMessage();
+        $sms_params = array('box_name'=>$box_name,'end_mobile'=>$end_mobile,'goods_name'=>$goods_name,'mobiles'=>$mobiles);
+        $content = "{$box_name}包间手机尾号{$end_mobile}的客人成功领取了品鉴酒{$goods_name}{$res_activity['wine_ml']}ml。请及时领取任务，为客人斟酒。";
+        $res_data = $emsms->sendSMS($content,$mobiles);
+        $resp_code = $res_data->code;
+        $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>join(',',$sms_params),'tel'=>$all_mobiles[0],'resp_code'=>$resp_code,'msg_type'=>3
+        );
+        $m_account_sms_log = new \Common\Model\AccountMsgLogModel();
+        $m_account_sms_log->addData($data);
+
+        $sms_params = array('goods_name'=>$goods_name,'wine_ml'=>$wine_ml);
+        $user_content = "恭喜您成功领取品鉴酒{$goods_name}{$res_activity['wine_ml']}ml，已通知餐厅经理为您斟酒，请稍后。为节省您的时间，您也可向服务员询问。";
+        $res_data = $emsms->sendSMS($user_content,$mobile);
+        $resp_code = $res_data->code;
+        $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),
+            'url'=>join(',',$sms_params),'tel'=>$mobile,'resp_code'=>$resp_code,'msg_type'=>3
+        );
+        $m_account_sms_log->addData($data);
+
+        $resp_data = array('message'=>"恭喜您领到本饭局品鉴酒",'tips'=>'已通知餐厅为您送酒，为节省等待时间，您可直接向服务员询问','join_time'=>$join_time);
         $this->to_back($resp_data);
     }
 }

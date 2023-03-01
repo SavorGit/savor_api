@@ -749,12 +749,12 @@ class IndexController extends CommonController{
         $taste_wine = $taste_wine_data;
         $syslottery_activity_id = 0;
         $is_sale_page = 0;
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
         if(!empty($openid)){
             $fields = 'activity.id as activity_id,activity.start_time,activity.end_time,a.status';
             $where = array('a.openid'=>$openid,'activity.type'=>3);
             $order = 'a.id desc';
             $limit = '0,1';
-            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
             $res_activity_apply = $m_activityapply->getApplyDatas($fields,$where,$order,$limit,'');
             $now_time = date('Y-m-d H:i:s');
             if(!empty($res_activity_apply)){
@@ -778,11 +778,7 @@ class IndexController extends CommonController{
             if($res_user[0]['sale_user']==1){
                 $is_sale_page = 1;
             }
-            if($hotel_id){
-                $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
-            }
         }
-
         $hotel_seckill_goods_id=0;
         $res_popup_params = array();
         if($box_id>0){
@@ -797,7 +793,14 @@ class IndexController extends CommonController{
             $seckill_goods_id = 0;
             $hotel_seckill_goods_id = 0;
             $res_popup_params = array();
-            $taste_wine = $taste_wine_data;
+        }
+        $taste_wine = $m_activityapply->receiveTastewine($hotel_id,$box_mac,$openid);
+        if($taste_wine['is_pop_wind']){
+            $data['is_open_popcomment'] = 0;
+            $seckill_goods_id = 0;
+            $hotel_seckill_goods_id = 0;
+            $res_popup_params = array();
+            $sellwine_popup = array();
         }
 
         $data['sellwine_popup'] = $sellwine_popup;

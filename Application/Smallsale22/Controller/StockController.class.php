@@ -1480,10 +1480,9 @@ class StockController extends CommonController{
         $is_pop_time = 0;
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
-        $cache_key = C('FINANCE_HOTELSTOCK');
-        $result  = $redis->get($cache_key);
-        $hotel_arr = json_decode($result,true);
-        if(!empty($hotel_arr[$hotel_id])){
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)) {
             $now_time = time();
             $s_time = strtotime(date('Y-m-d 18:45:00'));
             $end_time = strtotime(date('Y-m-d 19:15:00'));

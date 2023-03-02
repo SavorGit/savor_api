@@ -508,6 +508,12 @@ return array(
     'smallapp_sellwine_activity_idcode_has_bind'=>'商品码不能重复使用',
     'smallapp_hotel_staff_not_join_activity'=>'餐厅人员不可参与此活动',
     'smallappsale_task_had_other_people_recevie'=>'当前任务已被其他人领取',
+    'smallappsale_task_had_finish_scan_tastewine'=>'请勿重复倒酒',
+    'smallappsale_task_tastewine_notin_meal'=>'请在饭局时间内给客人倒酒',
+    'smallappsale_task_tastewine_goods_error'=>'请选择活动用的品鉴酒',
+    'smallappsale_task_tastewine_hotel_had_finish'=>'当前酒楼品鉴酒已消耗完毕',
+    'smallappsale_task_tastewine_not_use_openbottle'=>'扫码失败，请使用已经开瓶的品鉴酒进行品鉴。',
+    'smallappsale_task_tastewine_use_tastewine_over'=>'当前品鉴酒已用完',
 
 
 

@@ -31,7 +31,7 @@ class TaskController extends CommonController{
                 break;
             case 'receiveCashTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1001,'task_id'=>1001,'openid'=>1001);
+                $this->valid_fields = array('hotel_id'=>1001,'task_id'=>1001,'openid'=>1001,'activityapply_id'=>1002);
                 break;
             case 'getInProgressCashTask':
                 $this->is_verify = 1;
@@ -53,6 +53,10 @@ class TaskController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'task_user_id'=>1001,'openid'=>1001);
                 break;
+            case 'scanTastewine':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'task_user_id'=>1001,'openid'=>1001,'idcode'=>1001);
+                break;
             case 'finishDemandadvTask':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1001,'ads_id'=>1001,'task_id'=>1001);
@@ -61,6 +65,10 @@ class TaskController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'ads_id'=>1001,'task_id'=>1001,
                     'dtype'=>1001,'box_mac'=>1002,'play_time'=>1002,'mobile_brand'=>1002,'mobile_model'=>1002,);
+                break;
+            case 'getPopupTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('hotel_id'=>1001,'openid'=>1001);
                 break;
         }
         parent::_init_();
@@ -80,7 +88,7 @@ class TaskController extends CommonController{
         $m_task_user = new \Common\Model\Integral\TaskuserModel();
         $oss_host = get_oss_host();
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
-        task.desc,task.is_shareprofit,task.type,task.task_type,task.task_info,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum";
+        task.desc,task.is_shareprofit,task.type,task.task_type,task.task_info,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum,a.activityapply_id,a.idcode";
         $where = array('a.openid'=>$openid,'a.status'=>1);
         $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
         $m_media = new \Common\Model\MediaModel();
@@ -94,6 +102,10 @@ class TaskController extends CommonController{
             $end_time   = date('Y-m-d 23:59:59');
             $m_activity = new \Common\Model\Smallapp\ActivityModel();
             $m_ads = new \Common\Model\AdsModel();
+            $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $m_activityhotel = new \Common\Model\Smallapp\ActivityhotelModel();
+            $m_activitytaste = new \Common\Model\Smallapp\ActivityTastewineModel();
+            $m_finance_goods_config = new \Common\Model\Finance\GoodsConfigModel();
             foreach ($res_inprogress_task as $k=>$v){
                 $task_info = json_decode($v['task_info'],true);
                 unset($v['task_info']);
@@ -216,6 +228,45 @@ class TaskController extends CommonController{
                             $invalid_task[]=$tinfo;
                         }
                         break;
+                    case 27:
+                        if($v['status']==1 && $v['flag']==1){
+                            $res_applay_info = $m_activityapply->getInfo(array('id'=>$v['activityapply_id']));
+                            $res_ahotel = $m_activityhotel->getHotelTastewineActivity($hotel_id,$res_applay_info['add_time']);
+                            if(!empty($res_ahotel)){
+                                if($res_applay_info['status']==5){
+                                    $end_mobile = substr($res_applay_info['mobile'],-4);
+                                    $tinfo['message'] = "{$res_applay_info['box_name']} 手机尾号{$end_mobile}";
+                                    $inprogress_task[]=$tinfo;
+                                }
+                            }else{
+                                $tinfo['itype'] = 1;
+                                $invalid_task[]=$tinfo;
+                            }
+                        }else{
+                            $tinfo['itype'] = 1;
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
+                    case 28:
+                        if($v['status']==1 && $v['flag']==1){
+                            $res_ataste = $m_activitytaste->getInfo(array('idcode'=>$v['idcode']));
+                            $res_gconfig = $m_finance_goods_config->getDataList('name',array('goods_id'=>$res_ataste['finance_goods_id']),'id asc');
+                            $gconfig = array();
+                            foreach ($res_gconfig as $gv){
+                                $gconfig[]=$gv['name'];
+                            }
+                            $message = '';
+                            if(!empty($gconfig)){
+                                $message = join('、',$gconfig);
+                            }
+                            $tinfo['message'] = $message;
+                            $tinfo['remark'] = '物料回收成功后，任务自动完成';
+                            $inprogress_task[]=$tinfo;
+                        }else{
+                            $tinfo['itype'] = 1;
+                            $invalid_task[]=$tinfo;
+                        }
+                        break;
                     case 6:
                         if($v['status']==1 && $v['flag']==1){
                             $inprogress_task[$v['task_id']]=$tinfo;
@@ -256,6 +307,7 @@ class TaskController extends CommonController{
             $redis->select(14);
             $all_people_num = 1000;
             $now_time = date('Y-m-d H:i:s');
+
             foreach ($rescanreceive_task as $k=>$v){
                 $task_info = json_decode($v['task_info'],true);
                 unset($v['task_info']);
@@ -263,6 +315,7 @@ class TaskController extends CommonController{
                 if($now_time>$v['task_expire_time']){
                     continue;
                 }
+
                 $send_num_cache_key = $send_num_key.$v['task_id'];
                 $res_send_num = $redis->get($send_num_cache_key);
                 if(!empty($res_send_num)){
@@ -301,6 +354,21 @@ class TaskController extends CommonController{
                         $v['integral'] = $task_info['invite_vip_reward_saler'];
                         $canreceive_task[]=$v;
                         break;
+                    case 27:
+                        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+                        $res_apply = $m_activityapply->getTastewine($hotel_id);
+                        if(!empty($res_apply) && $v['goods_id']==$res_apply['goods']['finance_goods_id']){
+                            foreach ($res_apply['apply_list'] as $av){
+                                $v['activityapply_id'] = $av['activityapply_id'];
+                                $end_mobile = substr($av['mobile'],-4);
+                                $intro = "{$av['box_name']} 手机尾号{$end_mobile}";
+                                $v['message'] = $intro;
+                                $canreceive_task[]=$v;
+                            }
+                        }
+                        break;
+                    case 28:
+                        break;
                     default:
                         $canreceive_task[]=$v;
                 }
@@ -314,6 +382,7 @@ class TaskController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $openid = $this->params['openid'];
         $task_id = $this->params['task_id'];
+        $activityapply_id = intval($this->params['activityapply_id']);
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,a.level,merchant.type,merchant.id as merchant_id,merchant.is_integral';
@@ -327,16 +396,9 @@ class TaskController extends CommonController{
         if($get_start_task_time>$now_time){
             $this->to_back(93220);
         }
-        $m_usertask = new \Common\Model\Integral\TaskuserModel();
-        $where = array('openid'=>$openid,'task_id'=>$task_id,'status'=>1);
-        $where["DATE_FORMAT(add_time,'%Y-%m-%d')"] = date('Y-m-d');
-        $res_usertask = $m_usertask->getInfo($where);
-        if(!empty($res_usertask)){
-            $this->to_back(93069);
-        }
         $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
         $where = array('a.task_id'=>$task_id,'a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1);
-        $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral,task.task_type';
+        $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral,task.task_type,task.integral';
         $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
         if(empty($res_task)){
             $this->to_back(93070);
@@ -344,7 +406,29 @@ class TaskController extends CommonController{
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
         }
+
+        $m_usertask = new \Common\Model\Integral\TaskuserModel();
+        $where = array('openid'=>$openid,'task_id'=>$task_id,'status'=>1);
+        $where["DATE_FORMAT(add_time,'%Y-%m-%d')"] = date('Y-m-d');
+        if($res_task[0]['task_type']==27){
+            if(empty($activityapply_id)){
+                $this->to_back(1001);
+            }
+            $where['activityapply_id'] = $activityapply_id;
+            $res_has_task = $m_usertask->getInfo(array('task_id'=>$task_id,'activityapply_id'=>$activityapply_id));
+            if(!empty($res_has_task) && $res_has_task['openid']!=$openid){
+                $this->to_back(93221);
+            }
+        }
+        $res_usertask = $m_usertask->getInfo($where);
+        if(!empty($res_usertask)){
+            $this->to_back(93069);
+        }
+
         $data = array('openid'=>$openid,'task_id'=>$task_id,'hotel_id'=>$hotel_id,'integral'=>$res_task[0]['task_integral']);
+        if(!empty($activityapply_id)){
+            $data['activityapply_id'] = $activityapply_id;
+        }
         $user_task_id = $m_usertask->add($data);
         if(in_array($res_task[0]['task_type'],array(22,23))){
             //增加积分
@@ -379,7 +463,31 @@ class TaskController extends CommonController{
             $m_userintegralrecord->add($integralrecord_data);
             //end
         }
-        $this->to_back(array('user_task_id'=>$user_task_id));
+        $res_data = array('user_task_id'=>$user_task_id);
+        if($res_task[0]['task_type']==27){
+            $m_acitvityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+            $m_acitvityapply->updateData(array('id'=>$activityapply_id),array('status'=>5));
+
+            $res_activity_apply = $m_acitvityapply->getInfo(array('id'=>$activityapply_id));
+            $m_activity = new \Common\Model\Smallapp\ActivityModel();
+            $res_activity = $m_activity->getInfo(array('id'=>$res_activity_apply['activity_id']));
+            $wine_ml = $res_activity['wine_ml'];
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $fields = 'g.id,g.finance_goods_id,g.name,g.detail_imgs';
+            $res_goods = $m_hotelgoods->getGoodsList($fields,array('h.hotel_id'=>$hotel_id,'g.finance_goods_id'=>$res_activity['finance_goods_id']),'','0,1');
+            $detail_imgs_info = explode(',',$res_goods[0]['detail_imgs']);
+            $img_url = '';
+            if(!empty($detail_imgs_info)){
+                $img_url = get_oss_host().$detail_imgs_info[0]."?x-oss-process=image/quality,Q_60";
+            }
+            $end_mobile = substr($res_activity_apply['mobile'],-4);
+            $res_data['message'] = "请及时为{$res_activity_apply['box_name']}包间手机尾号{$end_mobile}的客人送酒";
+            $res_data['goods_name'] = $res_goods[0]['name'];
+            $res_data['wine_ml'] = $wine_ml;
+            $res_data['integral'] = $res_task[0]['integral'];
+            $res_data['img_url'] = $img_url;
+        }
+        $this->to_back($res_data);
     }
 
     public function delTask(){
@@ -402,6 +510,175 @@ class TaskController extends CommonController{
         }
         $m_usertask->updateData(array('id'=>$task_id),array('status'=>2));
         $this->to_back(array());
+    }
+
+    public function getPopupTask(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
+        $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1,'task.task_type'=>27);
+        $where['task.end_time'] = array('EGT',date('Y-m-d H:i:s'));
+        $fileds = 'task.id as task_id,task.name,task.media_id,task.end_time,task.task_integral,task.task_type,task.integral';
+        $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+        $res_data = array('is_popup'=>0);
+        if(empty($res_task)){
+            $this->to_back($res_data);
+        }
+        $m_activityapply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $res_apply = $m_activityapply->getTastewine($hotel_id);
+        if(!empty($res_apply)){
+            $task_id = $res_task[0]['task_id'];
+            $activityapply_id = $res_apply['apply_list'][0]['activityapply_id'];
+            $integral = $res_task[0]['integral'];
+            $box_name = $res_apply['apply_list'][0]['box_name'];
+            $end_mobile = substr($res_apply['apply_list'][0]['mobile'],-4);
+            $wine_ml = $res_apply['activity']['wine_ml'];
+            $message= "{$box_name}包间手机尾号{$end_mobile}的客人";
+
+            $detail_imgs_info = explode(',',$res_apply['goods']['detail_imgs']);
+            $img_url = '';
+            if(!empty($detail_imgs_info)){
+                $img_url = get_oss_host().$detail_imgs_info[0]."?x-oss-process=image/quality,Q_60";
+            }
+            $res_data = array('is_popup'=>1,'box_name'=>$box_name,'message'=>$message,'goods_name'=>$res_apply['goods']['name'],
+                'wine_ml'=>$wine_ml,'integral'=>$integral,'img_url'=>$img_url,'task_id'=>$task_id,'activityapply_id'=>$activityapply_id);
+        }
+        $this->to_back($res_data);
+    }
+
+    public function scanTastewine(){
+        $openid = $this->params['openid'];
+        $hotel_id = $this->params['hotel_id'];
+        $task_id = $this->params['task_user_id'];
+        $idcode = $this->params['idcode'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type,merchant.is_integral';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_usertask = new \Common\Model\Integral\TaskuserModel();
+        $where = array('id'=>$task_id,'openid'=>$openid);
+        $res_usertask = $m_usertask->getInfo($where);
+        if(empty($res_usertask)){
+            $this->to_back(93069);
+        }
+        $apply_id = $res_usertask['activityapply_id'];
+        $m_activity_apply = new \Common\Model\Smallapp\ActivityapplyModel();
+        $res_apply = $m_activity_apply->getInfo(array('id'=>$apply_id));
+        if($res_apply['status']==6){
+            $this->to_back(93222);
+        }
+        $m_activity_hotel = new \Common\Model\Smallapp\ActivityhotelModel();
+        $res_activity = $m_activity_hotel->getHotelTastewineActivity($hotel_id,$res_apply['add_time']);
+        if(empty($res_activity)){
+            $this->to_back(93223);
+        }
+
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($idcode,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(empty($res_qrcode)){
+            $this->to_back(93080);
+        }
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $record_info = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+        if($record_info[0]['type']<5){
+            $this->to_back(93096);
+        }elseif($record_info[0]['type']==6){
+            $this->to_back(93095);
+        }elseif($record_info[0]['type']==7){
+            $this->to_back(93098);
+        }
+        if($res_activity['activity']['finance_goods_id']!=$record_info[0]['goods_id']){
+            $this->to_back(93224);
+        }
+        $bottle_num = $res_activity['activity']['bottle_num'];
+        $m_activity_tastewine = new \Common\Model\Smallapp\ActivityTastewineModel();
+        $res_tastewine = $m_activity_tastewine->getInfo(array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],'status'=>1));
+        $is_finish = 0;
+        if(empty($res_tastewine)){
+            $res_num = $m_activity_tastewine->getALLDataList('count(id) as num',array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id']),'','','');
+            $taste_num = intval($res_num[0]['num']);
+            if($taste_num>=$bottle_num){
+                $this->to_back(93225);
+            }
+            $add_data = array('task_id'=>$res_usertask['task_id'],'hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],
+                'idcode'=>$idcode,'num'=>$res_activity['activity']['people_num'],'join_num'=>1,'status'=>1);
+            $m_activity_tastewine->add($add_data);
+        }else{
+            if($res_tastewine['idcode']!=$idcode){
+                $this->to_back(93226);
+            }
+            $join_num = $res_tastewine['join_num']+1;
+            if($join_num>$res_tastewine['num']){
+                $this->to_back(93227);
+            }
+            $updata = array('join_num'=>$join_num);
+            if($join_num==$res_tastewine['num']){
+                $updata['status'] = 2;
+                $updata['finish_time'] = date('Y-m-d H:i:s');
+                $is_finish = 1;
+            }
+            $m_activity_tastewine->updateData(array('id'=>$res_tastewine['id']),$updata);
+        }
+        $m_activity_apply->updateData(array('id'=>$apply_id),array('status'=>6,'idcode'=>$idcode,'op_openid'=>$openid,'wo_time'=>date('Y-m-d H:i:s')));
+
+        //增加积分
+        $m_task = new \Common\Model\Integral\TaskModel();
+        $res_task = $m_task->getInfo(array('id'=>$res_usertask['task_id']));
+        if($res_staff[0]['is_integral']==1){
+            $integralrecord_openid = $openid;
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
+            if(!empty($res_integral)){
+                $userintegral = $res_integral['integral']+$res_task['integral'];
+                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $uidata = array('openid'=>$openid,'integral'=>$res_task['integral']);
+                $m_userintegral->add($uidata);
+            }
+        }else{
+            $integralrecord_openid = $hotel_id;
+            $m_merchant = new \Common\Model\Integral\MerchantModel();
+            $where = array('id'=>$res_staff[0]['merchant_id']);
+            $m_merchant->where($where)->setInc('integral',$res_task['integral']);
+        }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+        $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
+            'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'integral'=>$res_task['integral'],'content'=>1,'type'=>22,'integral_time'=>date('Y-m-d H:i:s'));
+        $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+        $m_userintegralrecord->add($integralrecord_data);
+        //end
+        $message = "你已经完成为{$res_apply['box_name']}包间的客人送完品鉴酒的任务，积分奖励将发送至你的积分帐户";
+        $remark = '';
+        if($is_finish){
+            $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
+            $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1,'task.task_type'=>28);
+            $where['task.end_time'] = array('EGT',date('Y-m-d H:i:s'));
+            $fileds = 'task.id as task_id,task.name,task.integral';
+            $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
+            if(!empty($res_task)){
+                $remark = "此瓶品鉴酒已消耗完，已为您领取商品物料回收任务，完成后获得额外{$res_task[0]['integral']}积分奖励。";
+                $data = array('openid'=>$openid,'task_id'=>$res_task[0]['task_id'],'hotel_id'=>$hotel_id,'idcode'=>$idcode);
+                $user_task_id = $m_usertask->add($data);
+            }
+        }
+        $this->to_back(array('message'=>$message,'remark'=>$remark));
     }
 
     public function checkStock(){
@@ -826,136 +1103,6 @@ class TaskController extends CommonController{
         $this->to_back(array('user_task_id'=>$user_task_id));
     }
 
-    public function finishDemandadvTask(){
-        $openid = $this->params['openid'];
-        $box_mac = $this->params['box_mac'];
-        $ads_id = $this->params['ads_id'];
-        $hotel_id = $this->params['hotel_id'];
-        $task_id = $this->params['task_id'];
-
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
-        $field_staff = 'a.openid,a.level,merchant.type';
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
-        if(empty($res_staff)){
-            $this->to_back(93014);
-        }
-        $m_task = new \Common\Model\Integral\TaskuserModel();
-        $task_where = array('a.openid'=>$openid,'a.task_id'=>$task_id,'a.status'=>1,'task.type'=>2,'task.task_type'=>25);
-        $start_time = date('Y-m-d 00:00:00');
-        $end_time   = date('Y-m-d 23:59:59');
-        $task_where['a.add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
-        $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
-        if(empty($res_task)){
-            $this->to_back(93070);
-        }
-        $task_user_id = $res_task[0]['id'];
-        $task_content = json_decode($res_task[0]['task_info'],true);
-        $lunch_start_time = $task_content['lunch_start_time'];
-        $lunch_end_time = $task_content['lunch_end_time'];
-        $dinner_start_time = $task_content['dinner_start_time'];
-        $dinner_end_time = $task_content['dinner_end_time'];
-        $box_finish_num = $task_content['box_finish_num'];
-        $interval_time = $task_content['interval_time'];
-
-        if($ads_id!=$task_content['ads_id']){
-            $this->to_back(93215);
-        }
-        $now_time = date('Y-m-d H:i:s');
-        $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
-        $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
-        $dinner_stime = date("Y-m-d {$dinner_start_time}:00");
-        $dinner_etime = date("Y-m-d {$dinner_end_time}:59");
-        $meal_stime = $meal_etime = '';
-        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
-            $meal_stime = $lunch_stime;
-            $meal_etime = $lunch_etime;
-        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
-            $meal_stime = $dinner_stime;
-            $meal_etime = $dinner_etime;
-        }
-        if(empty($meal_stime) && empty($meal_etime)){
-            $this->to_back(93216);
-        }
-        $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
-        $where = array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'box_mac'=>$box_mac);
-        $where['add_time'] = array(array('EGT',$meal_stime),array('ELT',$meal_etime));
-        $res_record = $m_usertask_record->getALLDataList('openid,add_time',$where,'id asc','','');
-        $now_box_finish_num = 0;
-        $last_demand_time = 0;
-        $demand_openid = '';
-        if(!empty($res_record)){
-            foreach ($res_record as $k=>$v){
-                $str_demand_time = strtotime($v['add_time']);
-                if($k==0){
-                    $demand_openid = $v['openid'];
-                    $now_box_finish_num++;
-                    $last_demand_time = $str_demand_time + $interval_time*60;
-                }else{
-                    if($str_demand_time>=$last_demand_time){
-                        $demand_openid = $v['openid'];
-                        $now_box_finish_num++;
-                        $last_demand_time = $str_demand_time + $interval_time*60;
-                    }
-                }
-            }
-        }
-        if($now_box_finish_num>=$box_finish_num){
-            $msg = '当前电视此任务已被完成，请使用其他电视。';
-            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
-            $this->to_back($res_pdata);
-        }
-        $now_time = time();
-        if($last_demand_time>$now_time){
-            $m_user = new \Common\Model\Smallapp\UserModel();
-            $res_user = $m_user->getOne('*',array('openid'=>$demand_openid),'');
-            $uname = $res_user['nickName'];
-            $countdown_time = $last_demand_time - $now_time;
-            $mtime = round($countdown_time/60);
-            $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
-            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
-            $this->to_back($res_pdata);
-        }
-
-        $m_box = new \Common\Model\BoxModel();
-        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
-        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(15);
-            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
-            $redis_box_info = $redis->get($cache_key);
-            $box_info = json_decode($redis_box_info, true);
-            $cache_key = 'savor_room_' . $box_info['room_id'];
-            $redis_room_info = $redis->get($cache_key);
-            $room_info = json_decode($redis_room_info, true);
-            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
-            $redis_hotel_info = $redis->get($cache_key);
-            $hotel_info = json_decode($redis_hotel_info, true);
-            $hotel_id = $room_info['hotel_id'];
-            $hotel_name = $hotel_info['name'];
-            $room_id = $box_info['room_id'];
-            $room_name = $room_info['name'];
-            $box_id = $forscreen_info['box_id'];
-            $box_name = $box_info['name'];
-        }else{
-            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
-            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
-            $rets = $m_box->getBoxInfo($fields, $where);
-            $hotel_id = $rets[0]['hotel_id'];
-            $hotel_name = $rets[0]['hotel_name'];
-            $room_id = $rets[0]['room_id'];
-            $room_name = $rets[0]['room_name'];
-            $box_id = $rets[0]['box_id'];
-            $box_name = $rets[0]['box_name'];
-        }
-        $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
-            'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
-            'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
-        );
-        $m_usertask_record->add($usertask_record);
-        $this->to_back(array('is_pop_tips_wind'=>0));
-    }
-
     public function demandadvTask(){
         $openid = $this->params['openid'];
         $box_mac = $this->params['box_mac'];
@@ -1185,6 +1332,136 @@ class TaskController extends CommonController{
             $m_timeplay = new \Common\Model\Smallapp\TimeplayModel();
             $m_timeplay->addAll($add_datas);
         }
+        $this->to_back(array('is_pop_tips_wind'=>0));
+    }
+
+    public function finishDemandadvTask(){
+        $openid = $this->params['openid'];
+        $box_mac = $this->params['box_mac'];
+        $ads_id = $this->params['ads_id'];
+        $hotel_id = $this->params['hotel_id'];
+        $task_id = $this->params['task_id'];
+
+        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_task = new \Common\Model\Integral\TaskuserModel();
+        $task_where = array('a.openid'=>$openid,'a.task_id'=>$task_id,'a.status'=>1,'task.type'=>2,'task.task_type'=>25);
+        $start_time = date('Y-m-d 00:00:00');
+        $end_time   = date('Y-m-d 23:59:59');
+        $task_where['a.add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));
+        $res_task = $m_task->getUserTaskList('a.id,task.id as task_id,task.task_info,task.integral',$task_where,'a.id desc');
+        if(empty($res_task)){
+            $this->to_back(93070);
+        }
+        $task_user_id = $res_task[0]['id'];
+        $task_content = json_decode($res_task[0]['task_info'],true);
+        $lunch_start_time = $task_content['lunch_start_time'];
+        $lunch_end_time = $task_content['lunch_end_time'];
+        $dinner_start_time = $task_content['dinner_start_time'];
+        $dinner_end_time = $task_content['dinner_end_time'];
+        $box_finish_num = $task_content['box_finish_num'];
+        $interval_time = $task_content['interval_time'];
+
+        if($ads_id!=$task_content['ads_id']){
+            $this->to_back(93215);
+        }
+        $now_time = date('Y-m-d H:i:s');
+        $lunch_stime = date("Y-m-d {$lunch_start_time}:00");
+        $lunch_etime = date("Y-m-d {$lunch_end_time}:00");
+        $dinner_stime = date("Y-m-d {$dinner_start_time}:00");
+        $dinner_etime = date("Y-m-d {$dinner_end_time}:59");
+        $meal_stime = $meal_etime = '';
+        if($now_time>=$lunch_stime && $now_time<=$lunch_etime){
+            $meal_stime = $lunch_stime;
+            $meal_etime = $lunch_etime;
+        }elseif($now_time>=$dinner_stime && $now_time<=$dinner_etime){
+            $meal_stime = $dinner_stime;
+            $meal_etime = $dinner_etime;
+        }
+        if(empty($meal_stime) && empty($meal_etime)){
+            $this->to_back(93216);
+        }
+        $m_usertask_record = new \Common\Model\Smallapp\UserTaskRecordModel();
+        $where = array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'box_mac'=>$box_mac);
+        $where['add_time'] = array(array('EGT',$meal_stime),array('ELT',$meal_etime));
+        $res_record = $m_usertask_record->getALLDataList('openid,add_time',$where,'id asc','','');
+        $now_box_finish_num = 0;
+        $last_demand_time = 0;
+        $demand_openid = '';
+        if(!empty($res_record)){
+            foreach ($res_record as $k=>$v){
+                $str_demand_time = strtotime($v['add_time']);
+                if($k==0){
+                    $demand_openid = $v['openid'];
+                    $now_box_finish_num++;
+                    $last_demand_time = $str_demand_time + $interval_time*60;
+                }else{
+                    if($str_demand_time>=$last_demand_time){
+                        $demand_openid = $v['openid'];
+                        $now_box_finish_num++;
+                        $last_demand_time = $str_demand_time + $interval_time*60;
+                    }
+                }
+            }
+        }
+        if($now_box_finish_num>=$box_finish_num){
+            $msg = '当前电视此任务已被完成，请使用其他电视。';
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
+        }
+        $now_time = time();
+        if($last_demand_time>$now_time){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_user = $m_user->getOne('*',array('openid'=>$demand_openid),'');
+            $uname = $res_user['nickName'];
+            $countdown_time = $last_demand_time - $now_time;
+            $mtime = round($countdown_time/60);
+            $msg = '本次任务已被'.$uname.'完成，新任务'.$mtime.'分钟后开始';
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
+        }
+
+        $m_box = new \Common\Model\BoxModel();
+        $forscreen_info = $m_box->checkForscreenTypeByMac($box_mac);
+        if(isset($forscreen_info['box_id']) && $forscreen_info['box_id']>0){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(15);
+            $cache_key = 'savor_box_' . $forscreen_info['box_id'];
+            $redis_box_info = $redis->get($cache_key);
+            $box_info = json_decode($redis_box_info, true);
+            $cache_key = 'savor_room_' . $box_info['room_id'];
+            $redis_room_info = $redis->get($cache_key);
+            $room_info = json_decode($redis_room_info, true);
+            $cache_key = 'savor_hotel_' . $room_info['hotel_id'];
+            $redis_hotel_info = $redis->get($cache_key);
+            $hotel_info = json_decode($redis_hotel_info, true);
+            $hotel_id = $room_info['hotel_id'];
+            $hotel_name = $hotel_info['name'];
+            $room_id = $box_info['room_id'];
+            $room_name = $room_info['name'];
+            $box_id = $forscreen_info['box_id'];
+            $box_name = $box_info['name'];
+        }else{
+            $where = array('a.mac'=>$box_mac,'a.flag'=>0,'a.state'=>1,'d.flag'=>0,'d.state'=>1);
+            $fields = 'a.id as box_id,a.name as box_name,c.id as room_id,c.name as room_name,d.id as hotel_id,d.name as hotel_name';
+            $rets = $m_box->getBoxInfo($fields, $where);
+            $hotel_id = $rets[0]['hotel_id'];
+            $hotel_name = $rets[0]['hotel_name'];
+            $room_id = $rets[0]['room_id'];
+            $room_name = $rets[0]['room_name'];
+            $box_id = $rets[0]['box_id'];
+            $box_name = $rets[0]['box_name'];
+        }
+        $usertask_record = array('openid'=>$openid,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,
+            'room_id'=>$room_id,'room_name'=>$room_name,'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,
+            'usertask_id'=>$task_user_id,'task_id'=>$task_id,'task_type'=>25,'type'=>1
+        );
+        $m_usertask_record->add($usertask_record);
         $this->to_back(array('is_pop_tips_wind'=>0));
     }
 

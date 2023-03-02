@@ -485,7 +485,6 @@ return array(
         '93101'=>'smallappsale_finance_qrcode_has_nouse',
         '93102'=>'smallappsale_finance_unpack_repeat',
         '93103'=>'smallappsale_finance_stock_goods_hasout_exist',
-        '93104'=>'smallappsale_task_had_other_people_recevie',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',
@@ -508,6 +507,13 @@ return array(
         '93218'=>'smallappsale_demand_task_box_has_finish_plase_next',
         '93219'=>'smallappsale_forscreenuser_in_selluser',
         '93220'=>'smallappsale_task_notin_get_time',
+        '93221'=>'smallappsale_task_had_other_people_recevie',
+        '93222'=>'smallappsale_task_had_finish_scan_tastewine',
+        '93223'=>'smallappsale_task_tastewine_notin_meal',
+        '93224'=>'smallappsale_task_tastewine_goods_error',
+        '93225'=>'smallappsale_task_tastewine_hotel_had_finish',
+        '93226'=>'smallappsale_task_tastewine_not_use_openbottle',
+        '93227'=>'smallappsale_task_tastewine_use_tastewine_over',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

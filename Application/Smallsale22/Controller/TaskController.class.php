@@ -250,7 +250,7 @@ class TaskController extends CommonController{
                     case 28:
                         if($v['status']==1 && $v['flag']==1){
                             $res_ataste = $m_activitytaste->getInfo(array('idcode'=>$v['idcode']));
-                            $res_gconfig = $m_finance_goods_config->getDataList('name',array('goods_id'=>$res_ataste['finance_goods_id']),'id asc');
+                            $res_gconfig = $m_finance_goods_config->getDataList('name',array('goods_id'=>$res_ataste['finance_goods_id'],'type'=>20,'status'=>1),'id asc');
                             $gconfig = array();
                             foreach ($res_gconfig as $gv){
                                 $gconfig[]=$gv['name'];
@@ -557,7 +557,7 @@ class TaskController extends CommonController{
     public function scanTastewine(){
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
-        $task_id = $this->params['task_user_id'];
+        $task_user_id = $this->params['task_user_id'];
         $idcode = $this->params['idcode'];
 
         $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
@@ -568,7 +568,7 @@ class TaskController extends CommonController{
             $this->to_back(93014);
         }
         $m_usertask = new \Common\Model\Integral\TaskuserModel();
-        $where = array('id'=>$task_id,'openid'=>$openid);
+        $where = array('id'=>$task_user_id,'openid'=>$openid);
         $res_usertask = $m_usertask->getInfo($where);
         if(empty($res_usertask)){
             $this->to_back(93069);
@@ -635,7 +635,7 @@ class TaskController extends CommonController{
             $m_activity_tastewine->updateData(array('id'=>$res_tastewine['id']),$updata);
         }
         $m_activity_apply->updateData(array('id'=>$apply_id),array('status'=>6,'idcode'=>$idcode,'op_openid'=>$openid,'wo_time'=>date('Y-m-d H:i:s')));
-
+        $m_usertask->updateData(array('id'=>$task_user_id),array('idcode'=>$idcode));
         //增加积分
         $m_task = new \Common\Model\Integral\TaskModel();
         $res_task = $m_task->getInfo(array('id'=>$res_usertask['task_id']));
@@ -658,13 +658,13 @@ class TaskController extends CommonController{
         }
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
-        $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_id,'area_name'=>$res_hotel['area_name'],
+        $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_user_id,'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
             'integral'=>$res_task['integral'],'content'=>1,'type'=>22,'integral_time'=>date('Y-m-d H:i:s'));
         $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $m_userintegralrecord->add($integralrecord_data);
         //end
-        $message = "你已经完成为{$res_apply['box_name']}包间的客人送完品鉴酒的任务，积分奖励将发送至你的积分帐户";
+        $message = "你已经完成为{$res_apply['box_name']}包间的客人送完品鉴酒";
         $remark = '';
         if($is_finish){
             $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
@@ -673,7 +673,7 @@ class TaskController extends CommonController{
             $fileds = 'task.id as task_id,task.name,task.integral';
             $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
             if(!empty($res_task)){
-                $remark = "此瓶品鉴酒已消耗完，已为您领取商品物料回收任务，完成后获得额外{$res_task[0]['integral']}积分奖励。";
+                $remark = "回收任务，完成后获得额外{$res_task[0]['integral']}积分奖励。";
                 $data = array('openid'=>$openid,'task_id'=>$res_task[0]['task_id'],'hotel_id'=>$hotel_id,'idcode'=>$idcode);
                 $user_task_id = $m_usertask->add($data);
             }

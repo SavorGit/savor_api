@@ -47,7 +47,16 @@ class ActivityhotelModel extends BaseModel{
                 $meal_etime = $dinner_etime;
             }
             if($meal_type){
-                $res_data = array('meal_type'=>$meal_type,'meal_stime'=>$meal_stime,'meal_etime'=>$meal_etime,'activity'=>$res_activityhotel[0]);
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(9);
+                $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+                $res_cache = $redis->get($key);
+                if(!empty($res_cache)) {
+                    $hotel_stock = json_decode($res_cache, true);
+                    if(in_array($res_activityhotel[0]['finance_goods_id'],$hotel_stock['goods_ids'])){
+                        $res_data = array('meal_type'=>$meal_type,'meal_stime'=>$meal_stime,'meal_etime'=>$meal_etime,'activity'=>$res_activityhotel[0]);
+                    }
+                }
             }
         }
         return $res_data;

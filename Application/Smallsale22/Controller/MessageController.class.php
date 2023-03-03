@@ -41,6 +41,7 @@ class MessageController extends CommonController{
             $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
             $m_orderlocal = new \Common\Model\Smallapp\OrderlocationModel();
             $m_order = new \Common\Model\Smallapp\OrderModel();
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
             foreach ($res_message as $v){
                 switch ($v['type']){
                     case 8:
@@ -79,6 +80,22 @@ class MessageController extends CommonController{
                         $where = array('openid'=>$res_order['openid']);
                         $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
                         $info = array('id'=>$v['id'],'name'=>'酒水订单','content'=>$content,'nickName'=>$res_user['nickName'],
+                            'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
+                        $datalist[]=$info;
+                        break;
+                    case 11:
+                        $where = array('a.id'=>$v['content_id']);
+                        $fields = 'activity.name,activity.finance_goods_id,a.id,a.openid,a.box_mac,a.box_name,a.status,a.add_time';
+                        $res_apply = $m_activityapply->getApplyDatas($fields,$where,'a.id desc','0,1','');
+                        $add_time = date('Y.m.d H:i',strtotime($res_apply[0]['add_time']));
+                        $fields = 'g.id,g.finance_goods_id,g.name,g.detail_imgs';
+                        $res_goods = $m_hotelgoods->getGoodsList($fields,array('h.hotel_id'=>$hotel_id,'g.finance_goods_id'=>$res_apply[0]['finance_goods_id']),'','0,1');
+                        $goods_name = $res_goods[0]['name'];
+
+                        $content = "{$res_apply[0]['box_name']}包间客人成功领取了品鉴酒“{$goods_name}”，请及时处理。";
+                        $where = array('openid'=>$res_apply[0]['openid']);
+                        $res_user = $m_user->getOne('id,openid,avatarUrl,nickName', $where,'id desc');
+                        $info = array('id'=>$v['id'],'name'=>'品鉴酒领取','content'=>$content,'nickName'=>$res_user['nickName'],
                             'avatarUrl'=>$res_user['avatarUrl'],'add_time'=>$add_time);
                         $datalist[]=$info;
                         break;

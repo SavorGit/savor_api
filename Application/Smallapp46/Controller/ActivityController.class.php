@@ -1114,6 +1114,7 @@ class ActivityController extends CommonController{
         if(empty($user_info)){
             $this->to_back(90116);
         }
+
         $m_invalidlist = new \Common\Model\Smallapp\ForscreenInvalidlistModel();
         $res_invalid = $m_invalidlist->getInfo(array('invalidid'=>$openid));
         if(!empty($res_invalid)){
@@ -1246,7 +1247,7 @@ class ActivityController extends CommonController{
             'box_id'=>$box_id,'box_name'=>$box_name,'box_mac'=>$box_mac,'openid'=>$openid,'status'=>1,'mobile'=>$mobile,
             'add_time'=>$join_time
         );
-        $m_activityapply->addData($data);
+        $apply_id = $m_activityapply->addData($data);
 
         $m_netty = new \Common\Model\NettyModel();
         $message = array('action'=>153,'nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),
@@ -1298,6 +1299,9 @@ class ActivityController extends CommonController{
             'url'=>join(',',$sms_params),'tel'=>$mobile,'resp_code'=>$resp_code,'msg_type'=>3
         );
         $m_account_sms_log->addData($data);
+
+        $m_message = new \Common\Model\Smallapp\MessageModel();
+        $m_message->recordMessage($openid,$apply_id,11);
 
         $resp_data = array('message'=>"恭喜您领到本饭局品鉴酒",'tips'=>'已通知餐厅为您送酒，为节省等待时间，您可直接向服务员询问','join_time'=>$join_time);
         $this->to_back($resp_data);

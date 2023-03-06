@@ -30,7 +30,7 @@ class MessageController extends CommonController{
         }
 
         $m_message = new \Common\Model\Smallapp\MessageModel();
-        $where = array('hotel_id'=>$hotel_id,'type'=>array('in',array(8,9,10)));
+        $where = array('hotel_id'=>$hotel_id,'type'=>array('in',array(8,9,10,11)));
         $offset = ($page-1)*$pagesize;
         $res_message = $m_message->getDatas('*',$where,'id desc',"$offset,$pagesize",'');
         $datalist = array();

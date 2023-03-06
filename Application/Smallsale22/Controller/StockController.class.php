@@ -1214,6 +1214,11 @@ class StockController extends CommonController{
         if($res_stock['io_type']!=22){
             $this->to_back(93093);
         }
+        $m_activity_taste = new \Common\Model\Smallapp\ActivityTastewineModel();
+        $res_taste = $m_activity_taste->getInfo(array('idcode'=>$idcode));
+        if(!empty($res_taste) && $res_taste['status']==1){
+            $this->to_back(93104);
+        }
         if($record_info[0]['type']==5){
             if($goods_id>0 && $goods_id!=$record_info[0]['goods_id']){
                 $this->to_back(93097);
@@ -1255,6 +1260,7 @@ class StockController extends CommonController{
         $all_idcodes = explode(',',$goods_codes);
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $m_sale = new \Common\Model\Finance\SaleModel();
             $batch_no = getMillisecond();
             foreach ($all_idcodes as $v){
                 $idcode = $v;
@@ -1300,7 +1306,6 @@ class StockController extends CommonController{
 
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
-                        $m_sale = new \Common\Model\Finance\SaleModel();
                         $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
                     }
                 }

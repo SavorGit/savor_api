@@ -485,6 +485,7 @@ return array(
         '93101'=>'smallappsale_finance_qrcode_has_nouse',
         '93102'=>'smallappsale_finance_unpack_repeat',
         '93103'=>'smallappsale_finance_stock_goods_hasout_exist',
+        '93104'=>'smallappsale_finance_stock_goods_hastaste_writeoff_error',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

@@ -24,7 +24,7 @@ class ActivityapplyModel extends BaseModel{
     }
 
     public function receiveTastewine($hotel_id,$box_mac,$openid){
-        $oss_host = C('OSS_HOST');
+        $oss_host = get_oss_host();
         $taste_wine = array('is_pop_wind'=>false,'status'=>0,'height_img'=>'','width_img'=>'','message'=>'','tips'=>'');
         if($hotel_id==0 || empty($box_mac) || empty($openid)){
             return $taste_wine;
@@ -50,8 +50,8 @@ class ActivityapplyModel extends BaseModel{
             if($res_activity_apply[0]['status']==1){
                 $taste_wine['activity_id'] = $taste_wine_activity_id;
                 $taste_wine['is_pop_wind'] = true;
-                $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['image_url'];
-                $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['portrait_image_url'];
+                $taste_wine['width_img'] = $oss_host.$res_taste['activity']['image_url'];
+                $taste_wine['height_img'] = $oss_host.$res_taste['activity']['portrait_image_url'];
                 $taste_wine['status'] = 2;
                 $taste_wine['message'] = '恭喜您领到本饭局品鉴酒';
                 $taste_wine['join_time'] = date('Y.m.d H:i:s',strtotime($res_activity_apply[0]['add_time']));
@@ -101,8 +101,8 @@ class ActivityapplyModel extends BaseModel{
             }
             $taste_wine['activity_id'] = $taste_wine_activity_id;
             $taste_wine['is_pop_wind'] = true;
-            $taste_wine['width_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['image_url'];
-            $taste_wine['height_img'] = 'http://'.$oss_host.'/'.$res_taste['activity']['portrait_image_url'];
+            $taste_wine['width_img'] = $oss_host.$res_taste['activity']['image_url'];
+            $taste_wine['height_img'] = $oss_host.$res_taste['activity']['portrait_image_url'];
         }
 
         return $taste_wine;

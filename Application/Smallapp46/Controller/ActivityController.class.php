@@ -1292,7 +1292,7 @@ class ActivityController extends CommonController{
         $m_account_sms_log->addData($data);
 
         $sms_params = array('goods_name'=>$goods_name,'wine_ml'=>$wine_ml);
-        $user_content = "恭喜您成功领取品鉴酒{$goods_name}{$res_activity['wine_ml']}ml，已通知餐厅经理为您斟酒，请稍后。为节省您的时间，您也可向服务员询问。";
+        $user_content = "恭喜您成功领取品鉴酒{$goods_name}{$res_activity['wine_ml']}ml，已通知餐厅经理为您斟酒，请稍候。为节省您的时间，您也可向服务员询问。";
         $res_data = $emsms->sendSMS($user_content,$mobile);
         $resp_code = $res_data->code;
         $data = array('type'=>15,'status'=>1,'create_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'),

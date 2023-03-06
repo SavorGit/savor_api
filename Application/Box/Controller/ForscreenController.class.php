@@ -168,6 +168,17 @@ class ForscreenController extends CommonController{
 			$data['qrcode_tip']  = array('扫码投屏','扫码有礼');
 
             $sellwine_activity = C('SELLWINE_ACTIVITY');
+            $where = array('a.hotel_id'=>$hotel_id,'activity.type'=>6,'activity.status'=>1);
+            $where['activity.start_time'] = array('elt',date('Y-m-d H:i:s'));
+            $where['activity.end_time'] = array('egt',date('Y-m-d H:i:s'));
+            $m_acticity_hotel = new \Common\Model\Smallapp\ActivityhotelModel();
+            $res_activityhotel = $m_acticity_hotel->getActivityhotelDatas('a.id',$where,'a.id desc','0,1','');
+            if(!empty($res_activityhotel[0]['id'])){
+                $offline_filename = $sellwine_activity['filename'];
+                $sellwine_activity = C('SELL_TASTE_WINE_ACTIVITY');
+                $sellwine_activity['offline_filename'] = $offline_filename;
+            }
+
             $sellwine_activity['url'] = $oss_host.'/'.$sellwine_activity['url'];
             $data['sellwine_activity'] = $sellwine_activity;
 

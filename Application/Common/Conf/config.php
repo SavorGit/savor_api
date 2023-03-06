@@ -553,6 +553,8 @@ return array(
         19=>'会员购买奖励',
         20=>'广告点播',
         21=>'奖励',
+        22=>'品鉴酒',
+        23=>'物料回收',
     ),
     'SALE_DATE'=>'2019-08',
     'PK_TYPE'=>2,//1走线上原来逻辑 2走新的支付方式
@@ -875,5 +877,14 @@ return array(
         'filename'=>'iWzxhCKCDN.mp4',
         'md5'=>'785c9ed61d2118b46a18028d772d2955',
         'is_offline'=>0,
+        'offline_filename'=>''
     ),
+    'SELL_TASTE_WINE_ACTIVITY' =>array(
+        'url'=>'media/resource/CDeRfecCWd.mp4',
+        'filename'=>'CDeRfecCWd.mp4',
+        'md5'=>'f4c6c52a45788d7d4349ab55dcb58153',
+        'is_offline'=>0,
+        'offline_filename'=>''
+    ),
+
 );

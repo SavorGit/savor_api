@@ -658,8 +658,12 @@ class TaskController extends CommonController{
         }
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+        $m_box = new \Common\Model\BoxModel();
+        $res_box = $m_box->getOnerow(array('id'=>$res_apply['box_id']));
+
         $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_user_id,'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'room_id'=>$res_apply['room_id'],'room_name'=>$res_apply['room_name'],'box_id'=>$res_apply['box_id'],'box_mac'=>$res_apply['box_mac'],'box_type'=>$res_box['box_type'],
             'integral'=>$res_task['integral'],'content'=>1,'type'=>22,'integral_time'=>date('Y-m-d H:i:s'));
         $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $m_userintegralrecord->add($integralrecord_data);

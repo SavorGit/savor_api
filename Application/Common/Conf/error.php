@@ -486,6 +486,7 @@ return array(
         '93102'=>'smallappsale_finance_unpack_repeat',
         '93103'=>'smallappsale_finance_stock_goods_hasout_exist',
         '93104'=>'smallappsale_finance_stock_goods_hastaste_writeoff_error',
+        '93105'=>'smallappsale_task_tastewine_use_tastewine_hotel_error',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

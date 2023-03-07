@@ -230,9 +230,9 @@ class TaskController extends CommonController{
                         break;
                     case 27:
                         if($v['status']==1 && $v['flag']==1){
-                            $res_applay_info = $m_activityapply->getInfo(array('id'=>$v['activityapply_id']));
-                            $res_ahotel = $m_activityhotel->getHotelTastewineActivity($hotel_id,$res_applay_info['add_time']);
+                            $res_ahotel = $m_activityhotel->getHotelTastewineActivity($hotel_id);
                             if(!empty($res_ahotel)){
+                                $res_applay_info = $m_activityapply->getInfo(array('id'=>$v['activityapply_id']));
                                 if($res_applay_info['status']==5){
                                     $end_mobile = substr($res_applay_info['mobile'],-4);
                                     $tinfo['message'] = "{$res_applay_info['box_name']} 手机尾号{$end_mobile}";
@@ -602,18 +602,27 @@ class TaskController extends CommonController{
         }elseif($record_info[0]['type']==7){
             $this->to_back(93098);
         }
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$record_info[0]['stock_id']));
+        if($res_stock['hotel_id']!=$hotel_id){
+            $this->to_back(93105);
+        }
         if($res_activity['activity']['finance_goods_id']!=$record_info[0]['goods_id']){
             $this->to_back(93224);
         }
         $bottle_num = $res_activity['activity']['bottle_num'];
         $m_activity_tastewine = new \Common\Model\Smallapp\ActivityTastewineModel();
-        $res_tastewine = $m_activity_tastewine->getInfo(array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id']));
+        $res_tastewine = $m_activity_tastewine->getInfo(array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],'status'=>1));
         $is_finish = 0;
         if(empty($res_tastewine)){
-            $res_num = $m_activity_tastewine->getALLDataList('count(id) as num',array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id']),'','','');
+            $res_num = $m_activity_tastewine->getALLDataList('count(id) as num',array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],'status'=>2),'','','');
             $taste_num = intval($res_num[0]['num']);
             if($taste_num>=$bottle_num){
                 $this->to_back(93225);
+            }
+            $res_tastewine = $m_activity_tastewine->getInfo(array('idcode'=>$idcode));
+            if(!empty($res_tastewine)){
+                $this->to_back(93227);
             }
             $add_data = array('task_id'=>$res_usertask['task_id'],'hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],
                 'idcode'=>$idcode,'num'=>$res_activity['activity']['people_num'],'join_num'=>1,'status'=>1);

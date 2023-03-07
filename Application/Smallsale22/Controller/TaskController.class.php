@@ -607,7 +607,7 @@ class TaskController extends CommonController{
         }
         $bottle_num = $res_activity['activity']['bottle_num'];
         $m_activity_tastewine = new \Common\Model\Smallapp\ActivityTastewineModel();
-        $res_tastewine = $m_activity_tastewine->getInfo(array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id'],'status'=>1));
+        $res_tastewine = $m_activity_tastewine->getInfo(array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id']));
         $is_finish = 0;
         if(empty($res_tastewine)){
             $res_num = $m_activity_tastewine->getALLDataList('count(id) as num',array('hotel_id'=>$hotel_id,'finance_goods_id'=>$res_activity['activity']['finance_goods_id']),'','','');
@@ -621,6 +621,9 @@ class TaskController extends CommonController{
         }else{
             if($res_tastewine['idcode']!=$idcode){
                 $this->to_back(93226);
+            }
+            if($res_tastewine['status']==2){
+                $this->to_back(93227);
             }
             $join_num = $res_tastewine['join_num']+1;
             if($join_num>$res_tastewine['num']){
@@ -663,7 +666,7 @@ class TaskController extends CommonController{
 
         $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'task_id'=>$task_user_id,'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-            'room_id'=>$res_apply['room_id'],'room_name'=>$res_apply['room_name'],'box_id'=>$res_apply['box_id'],'box_mac'=>$res_apply['box_mac'],'box_type'=>$res_box['box_type'],
+            'room_id'=>$res_apply['room_id'],'room_name'=>$res_apply['box_name'],'box_id'=>$res_apply['box_id'],'box_mac'=>$res_apply['box_mac'],'box_type'=>$res_box['box_type'],
             'integral'=>$res_task['integral'],'content'=>1,'type'=>22,'integral_time'=>date('Y-m-d H:i:s'));
         $m_userintegralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
         $m_userintegralrecord->add($integralrecord_data);
@@ -674,12 +677,16 @@ class TaskController extends CommonController{
             $m_hoteltask = new \Common\Model\Integral\TaskHotelModel();
             $where = array('a.hotel_id'=>$hotel_id,'task.status'=>1,'task.flag'=>1,'task.task_type'=>28);
             $where['task.end_time'] = array('EGT',date('Y-m-d H:i:s'));
-            $fileds = 'task.id as task_id,task.name,task.integral';
+            $fileds = 'task.id as task_id,task.name,task.integral,task.goods_id';
             $res_task = $m_hoteltask->getHotelTasks($fileds,$where);
             if(!empty($res_task)){
-                $remark = "回收任务，完成后获得额外{$res_task[0]['integral']}积分奖励。";
-                $data = array('openid'=>$openid,'task_id'=>$res_task[0]['task_id'],'hotel_id'=>$hotel_id,'idcode'=>$idcode);
-                $user_task_id = $m_usertask->add($data);
+                $m_finance_goods_config = new \Common\Model\Finance\GoodsConfigModel();
+                $res_gconfig = $m_finance_goods_config->getDataList('name',array('goods_id'=>$res_task[0]['goods_id'],'type'=>20,'status'=>1),'id asc');
+                if(!empty($res_gconfig)){
+                    $remark = "回收任务，完成后获得额外{$res_task[0]['integral']}积分奖励。";
+                    $data = array('openid'=>$openid,'task_id'=>$res_task[0]['task_id'],'hotel_id'=>$hotel_id,'idcode'=>$idcode,'activityapply_id'=>$apply_id);
+                    $user_task_id = $m_usertask->add($data);
+                }
             }
         }
         $this->to_back(array('message'=>$message,'remark'=>$remark));

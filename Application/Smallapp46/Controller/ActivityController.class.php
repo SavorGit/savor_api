@@ -1207,9 +1207,7 @@ class ActivityController extends CommonController{
         $join_num = $res_activity['join_num'];
         $meal_get_num = $res_activity['meal_get_num'];
         $box_get_num = $res_activity['box_get_num'];
-        if(empty($meal_type)){
-            $this->to_back(90176);
-        }
+
         $u_fields = 'count(a.id) as num';
         $u_where = array('a.openid'=>$openid,'activity.type'=>6);
         $u_where['a.add_time'] = array('egt','2023-03-01 00:00:00');
@@ -1249,6 +1247,7 @@ class ActivityController extends CommonController{
         );
         $apply_id = $m_activityapply->addData($data);
 
+        $user_info['nickName'] = '手机尾号'.substr($mobile,-4);
         $m_netty = new \Common\Model\NettyModel();
         $message = array('action'=>153,'nickName'=>$user_info['nickName'],'headPic'=>base64_encode($user_info['avatarUrl']),
             'url'=>$res_activity['image_url']);
@@ -1280,6 +1279,7 @@ class ActivityController extends CommonController{
             }
         }
         $mobiles = join(',',$all_mobiles);
+
         $emsms = new \Common\Lib\EmayMessage();
         $sms_params = array('box_name'=>$box_name,'end_mobile'=>$end_mobile,'goods_name'=>$goods_name,'mobiles'=>$mobiles);
         $content = "{$box_name}包间手机尾号{$end_mobile}的客人成功领取了品鉴酒{$goods_name}{$res_activity['wine_ml']}ml。请及时领取任务，为客人斟酒。";
@@ -1299,7 +1299,7 @@ class ActivityController extends CommonController{
             'url'=>join(',',$sms_params),'tel'=>$mobile,'resp_code'=>$resp_code,'msg_type'=>3
         );
         $m_account_sms_log->addData($data);
-
+        
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $m_message->recordMessage($openid,$apply_id,11);
 

@@ -407,7 +407,13 @@ class UserController extends CommonController{
             $unread_num = $res_unmessage[0]['num'];
         }
         $user_info['unread_num'] = $unread_num;
-
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid));
+        $distribution_level = 0;
+        if(!empty($res_duser)){
+            $distribution_level = intval($res_duser['level']);
+        }
+        $user_info['distribution_level'] = $distribution_level;
         $data['user_info'] = $user_info;
         $this->to_back($data);
     }

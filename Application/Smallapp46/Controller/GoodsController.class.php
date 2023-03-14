@@ -218,4 +218,36 @@ class GoodsController extends CommonController{
         $this->to_back($datalist);
     }
 
+    public function distributionGoodsList(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = $this->params['pagesize'];
+        if(empty($pagesize)){
+            $pagesize = 10;
+        }
+        $datalist = array();
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid));
+        if(!empty($res_duser)){
+            $start = ($page-1)*$pagesize;
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,intro',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+            if($res_goods['list']){
+                $oss_host = get_oss_host();
+                foreach ($res_goods['list'] as $v){
+                    $img_url = '';
+                    if(!empty($v['cover_imgs'])){
+                        $cover_imgs_info = explode(',',$v['cover_imgs']);
+                        if(!empty($cover_imgs_info[0])){
+                            $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        }
+                    }
+                    $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),
+                        'img_url'=>$img_url,'intro'=>$v['intro']);
+                    $datalist[] = $dinfo;
+                }
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
 }

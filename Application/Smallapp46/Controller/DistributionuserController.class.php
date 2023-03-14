@@ -16,6 +16,10 @@ class DistributionuserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'sale_uid'=>1001);
                 break;
+            case 'invite':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'invite_uid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -54,6 +58,29 @@ class DistributionuserController extends CommonController{
             $m_distuser->updateData(array('id'=>$sale_uid),array('status'=>2));
         }
         $this->to_back(array());
+    }
+
+    public function invite(){
+        $openid = $this->params['openid'];
+        $invite_uid = $this->params['invite_uid'];
+
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_duser)){
+            $res_invite_user = $m_distuser->getInfo(array('id'=>$invite_uid));
+            if($openid!=$res_invite_user['openid']){
+                $add_data = array('openid'=>$openid,'parent_id'=>$invite_uid,'beinvited_time'=>date('Y-m-d H:i:s'),'level'=>2,'status'=>1);
+                $m_distuser->add($add_data);
+            }
+        }
+        $init_wx_user = C('INIT_WX_USER');
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res_user = $m_user->getOne('avatarUrl,nickName,mobile',array('openid'=>$openid,'status'=>1),'id desc');
+        $status = 2;
+        if(empty($res_user['avatarUrl']) || empty($res_user['nickName']) || empty($res_user['mobile']) || $res_user['nickName']==$init_wx_user['nickName'] || $res_user['avatarUrl']==$init_wx_user['avatarUrl']){
+            $status = 1;
+        }
+        $this->to_back(array('info_status'=>$status));
     }
 
 

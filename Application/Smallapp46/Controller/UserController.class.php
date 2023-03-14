@@ -66,6 +66,10 @@ class UserController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,
                     'job'=>1002,'company'=>1002,'qrcode_img'=>1001);
 			    break;
+            case 'perfect':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,'avatar_url'=>1001);
+                break;
             case 'lotterylist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1000);
@@ -252,6 +256,50 @@ class UserController extends CommonController{
         }
         $this->to_back(array());
     }
+
+    public function perfect(){
+        $openid = $this->params['openid'];
+        $name = $this->params['name'];
+        $avatar_url = $this->params['avatar_url'];
+        $mobile = $this->params['mobile'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>1,'status'=>1);
+        $fields = 'id,openid,avatarUrl,nickName,gender,status';
+        $res_user = $m_user->getOne($fields, $where);
+        if(empty($res_user)) {
+            $this->to_back(90116);
+        }
+        $wxinfo = C('INIT_WX_USER');
+        if($name==$wxinfo['nickName']){
+            $data = array('message'=>'修改失败');
+            $this->to_back($data);
+        }
+        if($avatar_url==$wxinfo['avatarUrl']){
+            $data = array('message'=>'修改失败');
+            $this->to_back($data);
+        }
+
+        $data = array();
+        $data['name'] = $name;
+        $data['nickName'] = $name;
+        if(!empty($avatar_url)){
+            if(substr($avatar_url,0,5)=='https'){
+                $data['avatarUrl'] = $avatar_url;
+            }else{
+                $avatar_url = 'https://'.C('OSS_HOST').'/'.$avatar_url;
+                $data['avatarUrl'] = $avatar_url;
+            }
+        }
+        if(!empty($mobile)){
+            $data['mobile'] = $mobile;
+        }
+        $data['is_wx_auth'] = 3;
+        $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+        $res_data = array('message'=>'修改成功');
+        $this->to_back($res_data);
+    }
+
     public function refuseRegister(){
         $openid = $this->params['openid'];
         $m_user = new \Common\Model\Smallapp\UserModel();

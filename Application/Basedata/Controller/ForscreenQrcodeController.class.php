@@ -65,6 +65,22 @@ class ForscreenQrcodeController extends CommonController{
                 $short_urls = C('SHORT_URLS');
                 $content = $short_urls['BOX_QR'].$s;
                 break;
+            case 51:
+                $goods_id = $box_id;
+                $sale_uid = $data_id;
+                $encode_key = "$type{$sale_uid}{$goods_id}";
+                $redis  =  \Common\Lib\SavorRedis::getInstance();
+                $redis->select(5);
+                $scene = ''.'_'.$type.'_'.$sale_uid.'_'.$goods_id;
+                $cache_key = C('SAPP_QRCODE').$encode_key;
+                $redis->set($cache_key,$scene);
+
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $s = $hashids->encode($encode_key);
+                $short_urls = C('SHORT_URLS');
+                $content = $short_urls['BOX_QR'].$s;
+                break;
             default:
                 $code_url = $short_urls['SHARE_FILE_QR'];
                 $content = $code_url.'file_'.$data_id.'_'.$type.'_'.$box_id.'_'.$times;

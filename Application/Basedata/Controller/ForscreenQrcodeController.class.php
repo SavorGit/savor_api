@@ -71,7 +71,11 @@ class ForscreenQrcodeController extends CommonController{
                 $encode_key = "$type{$sale_uid}{$goods_id}";
                 $redis  =  \Common\Lib\SavorRedis::getInstance();
                 $redis->select(5);
-                $scene = ''.'_'.$type.'_'.$sale_uid.'_'.$goods_id;
+                $times = getMillisecond();
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $sale_uid = $hashids->encode($sale_uid);
+                $scene = ''.'_'.$type.'_'.$times.'_'.$sale_uid.'_'.$goods_id;
                 $cache_key = C('SAPP_QRCODE').$encode_key;
                 $redis->set($cache_key,$scene);
 

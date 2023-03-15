@@ -250,8 +250,11 @@ class GoodsController extends CommonController{
         $qrcode_url = '';
         if(!empty($res_duser)){
             $sale_uid = $res_duser['id'];
-            $host_name = C('HOST_NAME');
-            $qrcode_url = $host_name."/smallapp46/forscreenQrcode/getBoxQrcode?type=51&data_id={$sale_uid}&box_id=0";
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $sale_uid = $hashids->encode($sale_uid);
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $qrcode_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?type=51&data_id={$res_duser['id']}&box_id=0";
         }
         $this->to_back(array('datalist'=>$datalist,'sale_uid'=>$sale_uid,'qrcode_url'=>$qrcode_url));
     }

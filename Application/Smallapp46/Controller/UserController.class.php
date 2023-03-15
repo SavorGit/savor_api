@@ -444,7 +444,7 @@ class UserController extends CommonController{
         $openid = $this->params['openid'];
         //获取用户信息
         $m_user = new \Common\Model\Smallapp\UserModel();
-        $user_info = $m_user->getOne('id,avatarUrl,nickName', array('openid'=>$openid,'status'=>1));
+        $user_info = $m_user->getOne('id,avatarUrl,nickName,mobile', array('openid'=>$openid,'status'=>1),'id desc');
         $unread_num = 0;
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $fields = 'count(id) as num';
@@ -462,6 +462,13 @@ class UserController extends CommonController{
             $distribution_level = intval($res_duser['level']);
         }
         $user_info['distribution_level'] = $distribution_level;
+        $init_wx_user = C('INIT_WX_USER');
+        $info_status = 2;
+        if(empty($user_info['avatarUrl']) || empty($user_info['nickName']) || empty($user_info['mobile']) || $user_info['nickName']==$init_wx_user['nickName'] || $user_info['avatarUrl']==$init_wx_user['avatarUrl']){
+            $info_status = 1;
+        }
+        $user_info['info_status'] = $info_status;
+
         $data['user_info'] = $user_info;
         $this->to_back($data);
     }

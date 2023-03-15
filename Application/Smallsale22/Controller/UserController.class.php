@@ -7,8 +7,6 @@ class UserController extends CommonController{
     /**
      * 构造函数
      */
-    private $wxinfo = array('avatarUrl'=>'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'
-    ,'nickName'=>'微信用户');
     function _init_() {
         switch(ACTION_NAME) {
             case 'isRegister':
@@ -236,7 +234,7 @@ class UserController extends CommonController{
             $subscribe_status = 3;
         }
         $userinfo['subscribe_status'] = $subscribe_status;
-        $wxinfo = $this->wxinfo;
+        $wxinfo = C('INIT_WX_USER');
         //判断用户基本信息是否完整
         $userinfo['is_perfect'] = 1;
         if($userinfo['avatarUrl']==$wxinfo['avatarUrl'] || $userinfo['avatarUrl']==''){
@@ -763,7 +761,7 @@ class UserController extends CommonController{
         if (empty($res_user)) {
             $this->to_back(92010);
         }
-        $wxinfo = $this->wxinfo;
+        $wxinfo = C('INIT_WX_USER');
         if($name==$wxinfo['nickName']){
             $data = array('message'=>'修改失败');
             $this->to_back($data);

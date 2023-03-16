@@ -11,7 +11,8 @@ class UserController extends CommonController{
         switch(ACTION_NAME) {
             case 'isRegister':
                 $this->is_verify =1;
-                $this->valid_fields = array('openid'=>1001,'page_id'=>1000,'box_mac'=>1000,'is_have_link'=>1000,'unionid'=>1000);
+                $this->valid_fields = array('openid'=>1001,'page_id'=>1002,'box_mac'=>1002,'is_have_link'=>1002,
+                    'unionid'=>1002,'sale_uid'=>1002);
                 break;
             case 'refuseRegister':
                 $this->is_verify =1;
@@ -83,6 +84,7 @@ class UserController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $is_have_link = $this->params['is_have_link'];
         $unionid = $this->params['unionid'] ? $this->params['unionid']: "";
+        $sale_uid = $this->params['sale_uid'];
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;
@@ -188,7 +190,7 @@ class UserController extends CommonController{
         if($openid=='ofYZG42V8dkUo1A0g7b_Mff2ZYA4'){
             $data['userinfo']['is_interact'] = 0;
         }
-        $userinfo = $m_user->getOne('id,openid,unionId', array('openid'=>$openid));
+        $userinfo = $m_user->getOne('id,openid,unionId,role_id', array('openid'=>$openid));
         if(empty($userinfo['unionId'])){
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(5);
@@ -198,7 +200,15 @@ class UserController extends CommonController{
                 $m_user->updateInfo(array('id'=>$userinfo['id']),array('unionId'=>$res_unionid));
             }
         }
-
+        if($userinfo['role_id']!=4 && !empty($sale_uid)) {
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $decode_info = $hashids->decode($sale_uid);
+            if (!empty($decode_info)) {
+                $sale_uid = intval($decode_info[0]);
+                $m_user->updateInfo(array('id'=>$userinfo['id']),array('sale_uid'=>$sale_uid,'role_id'=>4,'customer_time'=>date('Y-m-d H:i:s')));
+            }
+        }
         $this->to_back($data);
     }
     

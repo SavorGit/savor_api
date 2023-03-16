@@ -200,13 +200,17 @@ class UserController extends CommonController{
                 $m_user->updateInfo(array('id'=>$userinfo['id']),array('unionId'=>$res_unionid));
             }
         }
-        if($userinfo['role_id']!=4 && !empty($sale_uid)) {
-            $hash_ids_key = C('HASH_IDS_KEY');
-            $hashids = new \Common\Lib\Hashids($hash_ids_key);
-            $decode_info = $hashids->decode($sale_uid);
-            if (!empty($decode_info)) {
-                $sale_uid = intval($decode_info[0]);
-                $m_user->updateInfo(array('id'=>$userinfo['id']),array('sale_uid'=>$sale_uid,'role_id'=>4,'customer_time'=>date('Y-m-d H:i:s')));
+        if(!empty($sale_uid) && $userinfo['role_id']!=4){
+            $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+            $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
+            if(empty($res_duser)){
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $decode_info = $hashids->decode($sale_uid);
+                if (!empty($decode_info)) {
+                    $sale_uid = intval($decode_info[0]);
+                    $m_user->updateInfo(array('id'=>$userinfo['id']),array('sale_uid'=>$sale_uid,'role_id'=>4,'customer_time'=>date('Y-m-d H:i:s')));
+                }
             }
         }
         $this->to_back($data);

@@ -463,7 +463,7 @@ class UserController extends CommonController{
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $fields = 'count(id) as num';
         $unwhere = array('openid'=>$openid,'read_status'=>1);
-        $unwhere['type'] = array('not in','10,11');
+        $unwhere['type'] = array('not in','10,11,12');
         $res_unmessage = $m_message->getDatas($fields,$unwhere,'','','');
         if(!empty($res_unmessage)){
             $unread_num = $res_unmessage[0]['num'];
@@ -472,16 +472,45 @@ class UserController extends CommonController{
         $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
         $res_duser = $m_distuser->getInfo(array('openid'=>$openid));
         $distribution_level = 0;
+        $group_order_num = 0;
+        $distribution_order_num = 0;
+        $distribution_user_num = 0;
+        $distribution_unread_num = 0;
         if(!empty($res_duser)){
             $distribution_level = intval($res_duser['level']);
+            $m_order = new \Common\Model\Smallapp\OrderModel();
+            $owhere = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51),'otype'=>10);
+            $res_order = $m_order->getDataList('count(id) as num',$owhere,'id desc');
+            $group_order_num = intval($res_order[0]['num']);
+            if($distribution_level==1){
+                $sale_uids = array();
+                $res_uids = $m_distuser->getDataList('id',array('parent_id'=>$res_duser['id'],'status'=>1),'id desc');
+                foreach ($res_uids as $v){
+                    $sale_uids[]=$v['id'];
+                }
+                if(!empty($sale_uids)){
+                    $distribution_user_num = count($sale_uids);
+                    $fxwhere = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51),'otype'=>10);
+                    $res_order = $m_order->getDataList('count(id) as num',$fxwhere,'id desc');
+                    $distribution_order_num = intval($res_order[0]['num']);
+                }
+                $mwhere = array('openid'=>$openid,'type'=>12,'read_status'=>1);
+                $res_unmessage = $m_message->getDatas('count(id) as num',$mwhere,'','','');
+                $distribution_unread_num = intval($res_unmessage[0]['num']);
+            }
         }
         $user_info['distribution_level'] = $distribution_level;
+        $user_info['group_order_num'] = $group_order_num;
+        $user_info['distribution_order_num'] = $distribution_order_num;
+        $user_info['distribution_unread_num'] = $distribution_unread_num;
+        $user_info['distribution_user_num'] = $distribution_user_num;
         $init_wx_user = C('INIT_WX_USER');
         $info_status = 2;
         if(empty($user_info['avatarUrl']) || empty($user_info['nickName']) || empty($user_info['mobile']) || $user_info['nickName']==$init_wx_user['nickName'] || $user_info['avatarUrl']==$init_wx_user['avatarUrl']){
             $info_status = 1;
         }
         $user_info['info_status'] = $info_status;
+
 
         $data['user_info'] = $user_info;
         $this->to_back($data);

@@ -238,7 +238,7 @@ class OrderController extends Controller {
                 $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
             }
             $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
-            $data = array('order_id'=>$order_id,'openid'=>$openid,'money'=>$money,'pay_status'=>$pay_status);
+            $data = array('order_id'=>$order_id,'openid'=>$openid,'distribution_user_id'=>$res_duser['id'],'money'=>$money,'pay_status'=>$pay_status);
             $m_ordersettlement->add($data);
 
             $m_paylog = new \Common\Model\Smallapp\PaylogModel();
@@ -256,7 +256,7 @@ class OrderController extends Controller {
                     $pay_status = 1;
                     $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
                 }
-                $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'money'=>$admin_money,'pay_status'=>$pay_status);
+                $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'distribution_user_id'=>$res_duser['parent_id'],'money'=>$admin_money,'pay_status'=>$pay_status);
                 $m_ordersettlement->add($data);
                 $pay_data = array('order_id'=>$order_id,'openid'=>$admin_openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
                 $m_paylog->add($pay_data);

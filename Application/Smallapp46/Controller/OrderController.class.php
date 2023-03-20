@@ -287,7 +287,7 @@ class OrderController extends CommonController{
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_media = new \Common\Model\MediaModel();
-            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale,is_usecoupon";
+            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale,is_usecoupon,price_list";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -322,10 +322,20 @@ class OrderController extends CommonController{
                     }
                 }
                 $num = $id_amount[$v['id']];
-                if($num>$v['amount']){
-                    $num = $v['amount'];
+                $price = $v['price'];
+                if($v['type']==45){
+                    $price_list = json_decode($v['price_list'],true);
+                    foreach ($price_list as $pv){
+                        if($num>=$pv['min'] && $num<=$pv['max']){
+                            $price = $pv['price'];
+                        }
+                    }
+                }else{
+                    if($num>$v['amount']){
+                        $num = $v['amount'];
+                    }
                 }
-                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$v['price'],'amount'=>$num,'stock_num'=>$v['amount'],
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'amount'=>$num,'stock_num'=>$v['amount'],
                     'attr_name'=>$v['attr_name'],'type'=>$v['type'],'gtype'=>$v['gtype'],'is_localsale'=>$v['is_localsale'],
                     'img_url'=>$img_url,'status'=>intval($v['status']));
                 if($v['gtype']==3){
@@ -402,7 +412,7 @@ class OrderController extends CommonController{
         $box_mac = $this->params['box_mac'];
         $task_user_id = intval($this->params['task_user_id']);
         $usercoupon_id = intval($this->params['usercoupon_id']);
-        $params_otype = intval($this->params['otype']);//订单类型9售酒活动
+        $params_otype = intval($this->params['otype']);//订单类型9售酒活动10分销销售订单
         $sellwine_activity_id = intval($this->params['sellwine_activity_id']);
         if(empty($goods_id) && empty($carts)){
             $this->to_back(1001);
@@ -527,14 +537,24 @@ class OrderController extends CommonController{
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
         $now_merchant_id = 0;
         if($goods_id){
+            $amount = $amount>0?$amount:1;
+
             $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
             if($res_goods['type']==42){
                 $otype = 8;
+            }elseif($res_goods['type']==45){
+                $otype = 10;
+                $res_goods['amount'] = 99999;
+                $price_list = json_decode($res_goods['price_list'],true);
+                foreach ($price_list as $pv){
+                    if($amount>=$pv['min'] && $amount<=$pv['max']){
+                        $res_goods['price'] = $pv['price'];
+                    }
+                }
             }
             if(empty($res_goods) || $res_goods['amount']==0 || $res_goods['status']==2){
                 $this->to_back(90144);
             }
-            $amount = $amount>0?$amount:1;
             if($amount>$res_goods['amount']){
                 $this->to_back(90143);
             }
@@ -678,11 +698,13 @@ class OrderController extends CommonController{
             if($task_user_id>0){
                 $add_data['task_user_id'] = $task_user_id;
             }
+            if(!empty($goods_id)){
+                $add_data['goods_id'] = $goods_id;
+            }
             if($params_otype==9){
                 if($sellwine_activity_id>0){
                     $add_data['sellwine_activity_id'] = $sellwine_activity_id;
                 }
-                $add_data['goods_id'] = $goods_id;
                 $add_data['status'] = 13;
             }
             if(!empty($order_location)){
@@ -1404,9 +1426,9 @@ class OrderController extends CommonController{
         $where = array('openid'=>$openid);
         if($type){
             if($type==5){
-                $otypes = '5,8';
+                $otypes = '5,8,10';
                 if($status==0){
-                    $otypes = '5,8,9';
+                    $otypes = '5,8,9,10';
                 }
                 $where['otype'] = array('in',$otypes);
             }else{

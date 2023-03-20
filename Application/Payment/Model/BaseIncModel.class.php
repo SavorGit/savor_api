@@ -418,93 +418,96 @@ class BaseIncModel extends Model{
                 }else{
                     $order_ids[] = $result_order[0];
                 }
-                $m_income = new \Common\Model\Smallapp\UserincomeModel();
-                $m_config = new \Common\Model\SysConfigModel();
-                $res_config = $m_config->getAllconfig();
-                $profit = $res_config['distribution_profit'];
-                $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
-                $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
-                foreach ($order_ids as $v){
-                    $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit,goods.name';
-                    $where = array('og.order_id'=>$v['id']);
-                    $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
-                    $income_data = array();
-                    foreach ($res_goods as $gv){
-                        $goods_id = $gv['goods_id'];
-                        $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
-                        $upsql = "update savor_smallapp_dishgoods set amount=$amount";
-                        if($amount==0){
-                            $upsql.=",status=2";
-                        }
-                        $sql_goods = "$upsql where id=$goods_id ";
-                        $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
-                        $this->execute($sql_goods);
-                        if($v['sale_uid'] && $otype!=8){
-                            if($gv['distribution_profit']>0){
-                                $profit = $gv['distribution_profit'];
-                            }
-                            $income_fee = 0;
-                            if($gv['price']>$gv['supply_price']){
-                                $income_fee = ($gv['price']-$gv['supply_price'])*$profit*$gv['amount'];
-                                $income_fee = sprintf("%.2f",$income_fee);
-                            }
-                            $total_fee = sprintf("%.2f",$gv['price']*$gv['amount']);
-                            $income_data[] = array('user_id'=>$v['sale_uid'],'openid'=>$v['openid'],'order_id'=>$v['id'],
-                                'goods_id'=>$gv['goods_id'],'price'=>$gv['price'],'supply_price'=>$gv['supply_price'],'amount'=>$gv['amount'],
-                                'total_fee'=>$total_fee,'income_fee'=>$income_fee, 'profit'=>$profit
-                            );
-                        }
-                    }
-                    if(!empty($income_data)){
-                        $m_income->addAll($income_data);
-                        $sql_income = $m_income->getLastSql();
-                    }else{
-                        $sql_income = '';
-                    }
-                    $this->paynotify_log($paylog_type, $serial_no, "income:$sql_income");
-                    if($v['usercoupon_id']){
-                        $m_coupon_user->updateData(array('id'=>$v['usercoupon_id']),array('order_id'=>$v['id'],'ustatus'=>2));
-                    }
-                }
 
-//                $is_notify_merchant = $m_order->sendMessage($trade_no);
-//                $log_notify = "order_id:$trade_no sms notify merchant status:".$is_notify_merchant;
-//                $this->paynotify_log($paylog_type, $serial_no, $log_notify);
-                $is_notify_merchant = 1;
-                if($is_notify_merchant){
-                    $m_order->updateData(array('id'=>$trade_no),array('status'=>51));
-                    $sql_uporder = $m_order->getLastSql();
-                    $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+                $m_order->updateData(array('id'=>$trade_no),array('status'=>51));
+                $sql_uporder = $m_order->getLastSql();
+                $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
+
+                if($otype==10){
+                    sendTopicMessage($trade_no,60);
+                }else{
+                    $m_income = new \Common\Model\Smallapp\UserincomeModel();
+                    $m_config = new \Common\Model\SysConfigModel();
+                    $res_config = $m_config->getAllconfig();
+                    $profit = $res_config['distribution_profit'];
+                    $m_coupon_user = new \Common\Model\Smallapp\UserCouponModel();
+                    $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+                    foreach ($order_ids as $v){
+                        $fields = 'og.goods_id,og.price,og.amount,goods.amount as gamount,goods.supply_price,goods.distribution_profit,goods.name';
+                        $where = array('og.order_id'=>$v['id']);
+                        $res_goods = $m_ordergoods->getOrdergoodsList($fields,$where,'og.id desc');
+                        $income_data = array();
+                        foreach ($res_goods as $gv){
+                            $goods_id = $gv['goods_id'];
+                            $amount = $gv['gamount']-$gv['amount']>0?$gv['gamount']-$gv['amount']:0;
+                            $upsql = "update savor_smallapp_dishgoods set amount=$amount";
+                            if($amount==0){
+                                $upsql.=",status=2";
+                            }
+                            $sql_goods = "$upsql where id=$goods_id ";
+                            $this->paynotify_log($paylog_type, $serial_no, $sql_goods);
+                            $this->execute($sql_goods);
+                            if($v['sale_uid'] && $otype!=8){
+                                if($gv['distribution_profit']>0){
+                                    $profit = $gv['distribution_profit'];
+                                }
+                                $income_fee = 0;
+                                if($gv['price']>$gv['supply_price']){
+                                    $income_fee = ($gv['price']-$gv['supply_price'])*$profit*$gv['amount'];
+                                    $income_fee = sprintf("%.2f",$income_fee);
+                                }
+                                $total_fee = sprintf("%.2f",$gv['price']*$gv['amount']);
+                                $income_data[] = array('user_id'=>$v['sale_uid'],'openid'=>$v['openid'],'order_id'=>$v['id'],
+                                    'goods_id'=>$gv['goods_id'],'price'=>$gv['price'],'supply_price'=>$gv['supply_price'],'amount'=>$gv['amount'],
+                                    'total_fee'=>$total_fee,'income_fee'=>$income_fee, 'profit'=>$profit
+                                );
+                            }
+                        }
+                        if(!empty($income_data)){
+                            $m_income->addAll($income_data);
+                            $sql_income = $m_income->getLastSql();
+                        }else{
+                            $sql_income = '';
+                        }
+                        $this->paynotify_log($paylog_type, $serial_no, "income:$sql_income");
+                        if($v['usercoupon_id']){
+                            $m_coupon_user->updateData(array('id'=>$v['usercoupon_id']),array('order_id'=>$v['id'],'ustatus'=>2));
+                        }
+                    }
                 }
                 $m_message = new \Common\Model\Smallapp\MessageModel();
                 $m_message->recordMessage($result_order[0]['openid'],$trade_no,5);
 
-                if($otype==8 && $result_order[0]['sale_uid'] && $result_order[0]['task_user_id']){
-                    $sms_config = C('ALIYUN_SMS_CONFIG');
-                    $alisms = new \Common\Lib\AliyunSms();
-                    $template_code = $sms_config['send_groupbuy_user_templateid'];
-                    $send_mobiles = C('GROUP_BUY_USER_MOBILE');
-                    if(!empty($send_mobiles)){
-                        foreach ($send_mobiles as $v){
-                            $alisms::sendSms($v,'',$template_code);
+                switch ($otype){
+                    case 5:
+                        $sms_config = C('ALIYUN_SMS_CONFIG');
+                        $alisms = new \Common\Lib\AliyunSms();
+                        $template_code = $sms_config['send_groupbuy_user_templateid'];
+                        $send_mobiles = C('GROUP_BUY_USER_MOBILE');
+                        if(!empty($send_mobiles)){
+                            foreach ($send_mobiles as $v){
+                                $alisms::sendSms($v,'',$template_code);
+                            }
                         }
-                    }
-                    $template_code = $sms_config['send_groupbuy_saleuser_templateid'];
-                    $m_user = new \Common\Model\Smallapp\UserModel();
-                    $res_user = $m_user->getOne('*',array('id'=>$result_order[0]['sale_uid']),'');
-                    $params = array('uname'=>$result_order[0]['contact'],'name'=>$res_goods[0]['name'],'hour'=>48);
-                    $alisms::sendSms($res_user['mobile'],$params,$template_code);
-                }
-                if($otype==5){
-                    $sms_config = C('ALIYUN_SMS_CONFIG');
-                    $alisms = new \Common\Lib\AliyunSms();
-                    $template_code = $sms_config['send_groupbuy_user_templateid'];
-                    $send_mobiles = C('GROUP_BUY_USER_MOBILE');
-                    if(!empty($send_mobiles)){
-                        foreach ($send_mobiles as $v){
-                            $alisms::sendSms($v,'',$template_code);
+                        break;
+                    case 8:
+                        if($result_order[0]['sale_uid'] && $result_order[0]['task_user_id']){
+                            $sms_config = C('ALIYUN_SMS_CONFIG');
+                            $alisms = new \Common\Lib\AliyunSms();
+                            $template_code = $sms_config['send_groupbuy_user_templateid'];
+                            $send_mobiles = C('GROUP_BUY_USER_MOBILE');
+                            if(!empty($send_mobiles)){
+                                foreach ($send_mobiles as $v){
+                                    $alisms::sendSms($v,'',$template_code);
+                                }
+                            }
+                            $template_code = $sms_config['send_groupbuy_saleuser_templateid'];
+                            $m_user = new \Common\Model\Smallapp\UserModel();
+                            $res_user = $m_user->getOne('*',array('id'=>$result_order[0]['sale_uid']),'');
+                            $params = array('uname'=>$result_order[0]['contact'],'name'=>$res_goods[0]['name'],'hour'=>48);
+                            $alisms::sendSms($res_user['mobile'],$params,$template_code);
                         }
-                    }
+                        break;
                 }
             }
         }else{

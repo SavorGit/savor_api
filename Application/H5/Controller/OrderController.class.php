@@ -175,6 +175,99 @@ class OrderController extends Controller {
         }
     }
 
+    public function saleorder(){
+        $content = file_get_contents('php://input');
+        $orders = array();
+        if(!empty($content)) {
+            $res = json_decode($content, true);
+            if (!empty($res['Message'])) {
+                $message = base64_decode($res['Message']);
+                $orders = json_decode($message,true);
+            }
+        }
+        $log_content = date("Y-m-d H:i:s").'[order_id]'.$orders[0]['order_id'].'[content]'.$content."\n";
+        $this->record_log($log_content);
+
+        if(empty($orders[0]['order_id'])){
+            return true;
+        }
+        $order_id = intval($orders[0]['order_id']);
+        $m_order = new \Common\Model\Smallapp\OrderModel();
+        $res_order = $m_order->getInfo(array('id'=>$order_id));
+        if($res_order['status']==51 && $res_order['is_settlement']==0){
+            $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+            $res_goods = $m_dishgoods->getInfo(array('id'=>$res_order['goods_id']));
+
+            $sale_uid = $res_order['sale_uid'];
+            $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+            $res_duser = $m_distuser->getInfo(array('id'=>$sale_uid));
+            $admin_openid = $admin_money = '';
+            if($res_duser['level']==1){
+                $buy_type = 1;
+                $openid = $res_duser['openid'];
+                $money = $res_goods['reward_money'];
+            }else{
+                $buy_type = 2;
+                $openid = $res_duser['openid'];
+                $res_admin = $m_distuser->getInfo(array('id'=>$res_duser['parent_id']));
+                $admin_openid = $res_admin['openid'];
+
+                $distribution_reward_money = $res_goods['distribution_reward_money'];
+                $distribution_config = json_decode($res_goods['distribution_config'],true);
+                $duser_id = $res_goods['duser_id'];
+                if($res_duser['parent_id']==$duser_id){
+                    $distribution = $distribution_config['ts'];
+                }else{
+                    $distribution = $distribution_config['ty'];
+                }
+                $money = sprintf("%.2f",($distribution[1]/100)*$distribution_reward_money);
+                $admin_money = $distribution_reward_money-$money;
+            }
+            $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
+            $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
+                'amount'=>1,'total_fee'=>$money,'status'=>20);
+            $order_exchange_id = $m_exchange->add($add_data);
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig();
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$money,'open_id'=>$openid);
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            $pay_status = 2;
+            if($res['code']==10000){
+                $pay_status = 1;
+                $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+            }
+            $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
+            $data = array('order_id'=>$order_id,'openid'=>$openid,'money'=>$money,'pay_status'=>$pay_status);
+            $m_ordersettlement->add($data);
+
+            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+            $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
+            $m_paylog->add($pay_data);
+            if(!empty($admin_openid) && !empty($admin_money)){
+                $add_data = array('openid'=>$admin_openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
+                    'amount'=>1,'total_fee'=>$admin_money,'status'=>20);
+                $order_exchange_id = $m_exchange->add($add_data);
+
+                $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$admin_money,'open_id'=>$admin_openid);
+                $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                $pay_status = 2;
+                if($res['code']==10000){
+                    $pay_status = 1;
+                    $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+                }
+                $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'money'=>$admin_money,'pay_status'=>$pay_status);
+                $m_ordersettlement->add($data);
+                $pay_data = array('order_id'=>$order_id,'openid'=>$admin_openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
+                $m_paylog->add($pay_data);
+            }
+            $m_order->updateData(array('id'=>$order_id),array('is_settlement'=>1,'buy_type'=>$buy_type));
+        }else{
+            $log_content = date("Y-m-d H:i:s").'[order_id]'.$orders[0]['order_id'].'[status]'.$res_order['status'].'[is_settlement]'.$res_order['is_settlement']."\n";
+            $this->record_log($log_content);
+        }
+    }
+
     public function prizemoney(){
         $content = file_get_contents('php://input');
         $orders = array();
@@ -872,8 +965,12 @@ class OrderController extends Controller {
                 }
 
             }
-
         }
+    }
 
+    private function record_log($log_content){
+        $log_file_name = APP_PATH.'Runtime/Logs/'.'saleorder_'.date("Ymd").".log";
+        @file_put_contents($log_file_name, $log_content, FILE_APPEND);
+        return true;
     }
 }

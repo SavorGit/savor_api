@@ -245,6 +245,9 @@ class OrderController extends Controller {
             $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
             $m_paylog->add($pay_data);
             if(!empty($admin_openid) && !empty($admin_money)){
+                $m_message = new \Common\Model\Smallapp\MessageModel();
+                $m_message->recordMessage($admin_openid,$order_id,12);
+
                 $add_data = array('openid'=>$admin_openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
                     'amount'=>1,'total_fee'=>$admin_money,'status'=>20);
                 $order_exchange_id = $m_exchange->add($add_data);

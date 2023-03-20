@@ -32,6 +32,7 @@ class MessageModel extends BaseModel{
                 break;
             case 4:
             case 5:
+            case 12:
                 $data = array('openid'=>$openid,'content_id'=>$content_id,'type'=>$type,'read_status'=>1);
                 $this->add($data);
                 break;

@@ -107,21 +107,27 @@ class DistributionuserController extends CommonController{
                 }
                 switch ($type){
                     case 1:
-                        $where = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51));
+                        $where = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51),'otype'=>10);
                         break;
                     case 2:
                         if(!empty($sale_uids)){
-                            $where = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51));
+                            $where = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51),'otype'=>10);
+                            $m_message = new \Common\Model\Smallapp\MessageModel();
+                            $mwhere = array('openid'=>$openid,'type'=>12,'read_status'=>1);
+                            $res_message = $m_message->getInfo($mwhere);
+                            if(!empty($res_message)){
+                                $m_message->updateData($mwhere,array('read_status'=>2));
+                            }
                         }else{
                             $where = array();
                         }
                         break;
                     default:
                         $sale_uids[]=$res_duser['id'];
-                        $where = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51));
+                        $where = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51),'otype'=>10);
                 }
             }else{
-                $where = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51));
+                $where = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51),'otype'=>10);
             }
             $fields = 'id as order_id,goods_id,price,amount,otype,total_fee,status,contact,buy_type,sale_uid,add_time';
             if(!empty($where)){

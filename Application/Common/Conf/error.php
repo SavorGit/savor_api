@@ -331,6 +331,7 @@ return array(
         '90195'=>'smallapp_sellwine_activity_order_has_get_money',
         '90196'=>'smallapp_sellwine_activity_idcode_has_bind',
         '90197'=>'smallapp_hotel_staff_not_join_activity',
+        '90198'=>'smallapp_use_edit_error',
 
 
         '91015'=>'smallapp_user_add_failed',

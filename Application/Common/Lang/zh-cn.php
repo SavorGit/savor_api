@@ -516,6 +516,7 @@ return array(
     'smallappsale_task_tastewine_not_use_openbottle'=>'扫码失败，请使用已经开瓶的品鉴酒进行品鉴。',
     'smallappsale_task_tastewine_use_tastewine_over'=>'当前品鉴酒已用完',
     'smallappsale_task_tastewine_use_tastewine_hotel_error'=>'请使用当前酒楼的品鉴酒',
+    'smallapp_use_edit_error'=>'请完善个人信息',
 
 
 

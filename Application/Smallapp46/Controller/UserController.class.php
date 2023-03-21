@@ -286,12 +286,10 @@ class UserController extends CommonController{
         }
         $wxinfo = C('INIT_WX_USER');
         if($name==$wxinfo['nickName']){
-            $data = array('message'=>'请完善个人信息');
-            $this->to_back($data);
+            $this->to_back(90198);
         }
         if($avatar_url==$wxinfo['avatarUrl']){
-            $data = array('message'=>'请完善个人信息');
-            $this->to_back($data);
+            $this->to_back(90198);
         }
 
         $data = array();

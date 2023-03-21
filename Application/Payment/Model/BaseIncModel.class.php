@@ -424,7 +424,8 @@ class BaseIncModel extends Model{
                 $this->paynotify_log($paylog_type, $serial_no, $sql_uporder);
 
                 if($otype==10){
-                    sendTopicMessage($trade_no,60);
+                    $res_send_topic = sendTopicMessage($trade_no,60);
+                    $this->paynotify_log($paylog_type, $serial_no, 'send topic message:'.$res_send_topic);
                 }else{
                     $m_income = new \Common\Model\Smallapp\UserincomeModel();
                     $m_config = new \Common\Model\SysConfigModel();

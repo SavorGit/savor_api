@@ -240,7 +240,7 @@ class GoodsController extends CommonController{
                     }
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),
-                    'img_url'=>$img_url,'intro'=>$v['intro']);
+                    'img_url'=>$img_url,'intro'=>html_entity_decode($v['intro']));
                 $datalist[] = $dinfo;
             }
         }

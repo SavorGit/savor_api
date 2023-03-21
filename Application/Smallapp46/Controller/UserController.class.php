@@ -308,6 +308,14 @@ class UserController extends CommonController{
         }
         $data['is_wx_auth'] = 3;
         $m_user->updateInfo(array('id'=>$res_user['id']),$data);
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
+        if(!empty($res_duser) && (empty($res_duser['name']) || empty($res_duser['mobile']))){
+            $ddata = array();
+            if(empty($res_duser['name']))   $ddata['name']=$name;
+            if(empty($res_duser['mobile']))   $ddata['mobile']=$mobile;
+            $m_distuser->updateData(array('id'=>$res_duser['id']),$ddata);
+        }
         $res_data = array('message'=>'修改成功');
         $this->to_back($res_data);
     }

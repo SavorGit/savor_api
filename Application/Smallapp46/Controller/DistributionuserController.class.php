@@ -22,7 +22,7 @@ class DistributionuserController extends CommonController{
                 break;
             case 'orderlist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'sale_uid'=>1002);
                 break;
         }
         parent::_init_();
@@ -91,17 +91,18 @@ class DistributionuserController extends CommonController{
         $openid = $this->params['openid'];
         $type = $this->params['type'];//售卖类型0全部,1直接售卖,2分销售卖
         $page = $this->params['page'];
+        $sale_uid = intval($this->params['sale_uid']);
         $pagesize = 10;
 
         $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
-        $res_duser = $m_distuser->getInfo(array('openid'=>$openid));
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
         $datalist = array();
         $total_income_money = 0;
         if(!empty($res_duser)){
             $start = ($page-1)*$pagesize;
             if($res_duser['level']==1){
                 $sale_uids = array();
-                $res_uids = $m_distuser->getDataList('id',array('parent_id'=>$res_duser['id'],'status'=>1),'id desc');
+                $res_uids = $m_distuser->getDataList('id',array('parent_id'=>$res_duser['id']),'id desc');
                 foreach ($res_uids as $v){
                     $sale_uids[]=$v['id'];
                 }
@@ -127,7 +128,10 @@ class DistributionuserController extends CommonController{
                         $where = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51),'otype'=>10);
                 }
             }else{
-                $where = array('sale_uid'=>$res_duser['id'],'status'=>array('egt',51),'otype'=>10);
+                if(empty($sale_uid)){
+                    $sale_uid = $res_duser['id'];
+                }
+                $where = array('sale_uid'=>$sale_uid,'status'=>array('egt',51),'otype'=>10);
             }
             $fields = 'id as order_id,goods_id,price,amount,otype,total_fee,status,contact,buy_type,sale_uid,add_time';
             if(!empty($where)){

@@ -476,7 +476,7 @@ class UserController extends CommonController{
         }
         $user_info['unread_num'] = $unread_num;
         $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
-        $res_duser = $m_distuser->getInfo(array('openid'=>$openid));
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
         $distribution_level = 0;
         $group_order_num = 0;
         $distribution_order_num = 0;
@@ -490,12 +490,14 @@ class UserController extends CommonController{
             $group_order_num = intval($res_order[0]['num']);
             if($distribution_level==1){
                 $sale_uids = array();
-                $res_uids = $m_distuser->getDataList('id',array('parent_id'=>$res_duser['id'],'status'=>1),'id desc');
+                $res_uids = $m_distuser->getDataList('id,status',array('parent_id'=>$res_duser['id']),'id desc');
                 foreach ($res_uids as $v){
                     $sale_uids[]=$v['id'];
+                    if($v['status']==1){
+                        $distribution_user_num++;
+                    }
                 }
                 if(!empty($sale_uids)){
-                    $distribution_user_num = count($sale_uids);
                     $fxwhere = array('sale_uid'=>array('in',$sale_uids),'status'=>array('egt',51),'otype'=>10);
                     $res_order = $m_order->getDataList('count(id) as num',$fxwhere,'id desc');
                     $distribution_order_num = intval($res_order[0]['num']);

@@ -18,7 +18,7 @@ class DistributionuserController extends CommonController{
                 break;
             case 'invite':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'invite_uid'=>1001);
+                $this->valid_fields = array('openid'=>1001,'invite_uid'=>1001,'itime'=>1001);
                 break;
             case 'orderlist':
                 $this->is_verify = 1;
@@ -67,6 +67,19 @@ class DistributionuserController extends CommonController{
     public function invite(){
         $openid = $this->params['openid'];
         $invite_uid = $this->params['invite_uid'];
+        $itime = $this->params['itime'];
+
+        $old_itime = intval($itime / 1000); // 将毫秒转换为秒
+        $diff_time = 48*3600;
+        $now_time = time();
+        if($now_time-$old_itime>$diff_time){
+            $this->to_back(90199);
+        }
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_invite_user = $m_distuser->getInfo(array('id'=>$invite_uid));
+        if($res_invite_user['status']==2){
+            $this->to_back(90200);
+        }
 
         $init_wx_user = C('INIT_WX_USER');
         $m_user = new \Common\Model\Smallapp\UserModel();
@@ -76,10 +89,8 @@ class DistributionuserController extends CommonController{
             $status = 1;
         }
 
-        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
         $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_duser)){
-            $res_invite_user = $m_distuser->getInfo(array('id'=>$invite_uid));
             if($openid!=$res_invite_user['openid']){
                 $add_data = array('openid'=>$openid,'parent_id'=>$invite_uid,'beinvited_time'=>date('Y-m-d H:i:s'),'level'=>2,'status'=>1);
                 if(!empty($res_user['mobile'])){

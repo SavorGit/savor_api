@@ -517,6 +517,8 @@ return array(
     'smallappsale_task_tastewine_use_tastewine_over'=>'当前品鉴酒已用完',
     'smallappsale_task_tastewine_use_tastewine_hotel_error'=>'请使用当前酒楼的品鉴酒',
     'smallapp_use_edit_error'=>'请完善个人信息',
+    'smallapp_invite_sale_user_time_error'=>'邀请链接已失效',
+    'smallapp_invite_user_disable'=>'邀请人已失效',
 
 
 

@@ -17,6 +17,10 @@ class GoodsController extends CommonController{
                 $this->valid_fields = array('box_mac'=>1002,'type'=>1001,'room_id'=>1002,'hotel_id'=>1002,
                     'page'=>1001,'pagesize'=>1002,'version'=>1002,'openid'=>1002);
                 break;
+            case 'distributionGoodsList':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -228,9 +232,9 @@ class GoodsController extends CommonController{
         $datalist = array();
         $start = ($page-1)*$pagesize;
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,intro',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+        $oss_host = get_oss_host();
         if($res_goods['list']){
-            $oss_host = get_oss_host();
             foreach ($res_goods['list'] as $v){
                 $img_url = '';
                 if(!empty($v['cover_imgs'])){
@@ -240,7 +244,7 @@ class GoodsController extends CommonController{
                     }
                 }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),
-                    'img_url'=>$img_url,'intro'=>html_entity_decode($v['intro']));
+                    'img_url'=>$img_url,'desc'=>html_entity_decode($v['desc']));
                 $datalist[] = $dinfo;
             }
         }
@@ -256,6 +260,7 @@ class GoodsController extends CommonController{
             $host_name = 'https://'.$_SERVER['HTTP_HOST'];
             $qrcode_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?type=51&data_id={$res_duser['id']}&box_id=0";
         }
-        $this->to_back(array('datalist'=>$datalist,'sale_uid'=>$sale_uid,'qrcode_url'=>$qrcode_url));
+        $img_poster = $oss_host.'WeChat/MiniProgram/images/poster-head.png';
+        $this->to_back(array('datalist'=>$datalist,'sale_uid'=>$sale_uid,'qrcode_url'=>$qrcode_url,'img_poster'=>$img_poster));
     }
 }

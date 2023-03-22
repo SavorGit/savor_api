@@ -194,7 +194,7 @@ class OrderController extends Controller {
         $order_id = intval($orders[0]['order_id']);
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
-        if($res_order['status']==51 && $res_order['is_settlement']==0){
+        if($res_order['status']==51 && $res_order['sale_uid']>0 && $res_order['is_settlement']==0){
             $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
             $res_goods = $m_dishgoods->getInfo(array('id'=>$res_order['goods_id']));
 
@@ -266,7 +266,7 @@ class OrderController extends Controller {
             }
             $m_order->updateData(array('id'=>$order_id),array('is_settlement'=>1,'buy_type'=>$buy_type));
         }else{
-            $log_content = date("Y-m-d H:i:s").'[order_id]'.$orders[0]['order_id'].'[status]'.$res_order['status'].'[is_settlement]'.$res_order['is_settlement']."\n";
+            $log_content = date("Y-m-d H:i:s").'[order_id]'.$orders[0]['order_id'].'[sale_uid]'.$res_order['sale_uid'].'[status]'.$res_order['status'].'[is_settlement]'.$res_order['is_settlement']."\n";
             $this->record_log($log_content);
         }
     }

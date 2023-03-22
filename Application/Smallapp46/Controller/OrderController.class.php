@@ -551,6 +551,13 @@ class OrderController extends CommonController{
                         $res_goods['price'] = $pv['price'];
                     }
                 }
+                if(!empty($sale_uid)){
+                    $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+                    $res_duser = $m_distuser->getInfo(array('id'=>$sale_uid));
+                    if($res_duser['status']==2){
+                        $sale_uid = 0;
+                    }
+                }
             }
             if(empty($res_goods) || $res_goods['amount']==0 || $res_goods['status']==2){
                 $this->to_back(90144);

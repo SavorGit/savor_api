@@ -99,7 +99,13 @@ class DistributionuserController extends CommonController{
                 if(!empty($res_user['nickName']) && $res_user['nickName']!=$init_wx_user['nickName']){
                     $add_data['name'] = $res_user['nickName'];
                 }
-                $m_distuser->add($add_data);
+                $old_where = array('openid'=>$openid,'parent_id'=>$invite_uid,'level'=>2);
+                $res_old_duser = $m_distuser->getInfo($old_where);
+                if(!empty($res_old_duser)){
+                    $m_distuser->updateData(array('id'=>$res_old_duser['id']),$add_data);
+                }else{
+                    $m_distuser->add($add_data);
+                }
             }
         }
         $this->to_back(array('info_status'=>$status));

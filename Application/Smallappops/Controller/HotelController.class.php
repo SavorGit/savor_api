@@ -451,18 +451,18 @@ class HotelController extends CommonController{
             }
             $stock_num = 0;
             $redis->select(9);
-            $key = C('FINANCE_HOTELSTOCK');
+            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
             $res_cache = $redis->get($key);
             if(!empty($res_cache)) {
                 $hotel_stock = json_decode($res_cache, true);
                 $stock_goods = array();
-                foreach ($hotel_stock[$hotel_id]['goods_list'] as $v){
+                foreach ($hotel_stock['goods_list'] as $v){
                     $stock_goods[$v['id']] = $v;
                 }
-                if(isset($hotel_stock[$hotel_id])){
+                if(!empty($hotel_stock['goods_ids'])){
                     $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
                     $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-                    $where['g.finance_goods_id'] = array('in',$hotel_stock[$hotel_id]['goods_ids']);
+                    $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
                     $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
                     $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','');
                     foreach ($res_data as $v){

@@ -617,6 +617,22 @@ function getgeoByTc($lat,$lon,$type=1){
     }
 }
 
+function convertBdToTxCoord($lng, $lat) {
+    $tx_pi = 3.1415926535897932384626;
+    $tx_a = 6378245.0;
+    $tx_ee = 0.00669342162296594323;
+
+    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+    $x = $lng;
+    $y = $lat;
+    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $tx_pi);
+    $theta = atan2($y, $x) + 0.000003 * cos($x * $tx_pi);
+    $bd_lng = $z * cos($theta) + 0.0065;
+    $bd_lat = $z * sin($theta) + 0.006;
+    return array($bd_lng, $bd_lat);
+}
+
+
 function getGDgeocodeByAddress($address){
     $key = C('GAODE_KEY');
     $url = "https://restapi.amap.com/v3/geocode/geo?address=$address&output=json&key=$key";

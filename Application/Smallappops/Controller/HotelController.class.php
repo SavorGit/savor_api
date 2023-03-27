@@ -43,6 +43,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'stockidcodelist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'goods_id'=>1001,'page'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -549,19 +553,18 @@ class HotelController extends CommonController{
         $datalist = array();
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK');
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
         $res_cache = $redis->get($key);
         if(!empty($res_cache)){
             $hotel_stock = json_decode($res_cache,true);
-            if(isset($hotel_stock[$hotel_id])){
-                $stock_goods = array();
-                foreach ($hotel_stock[$hotel_id]['goods_list'] as $v){
-                    $stock_goods[$v['id']] = $v;
-                }
-
+            $stock_goods = array();
+            foreach ($hotel_stock['goods_list'] as $v){
+                $stock_goods[$v['id']] = $v;
+            }
+            if(!empty($hotel_stock['goods_ids'])){
                 $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-                $where['g.finance_goods_id'] = array('in',$hotel_stock[$hotel_id]['goods_ids']);
+                $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
                 $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
                 $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','');
                 $oss_host = get_oss_host();
@@ -578,12 +581,33 @@ class HotelController extends CommonController{
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
                     $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'type'=>$v['type'],
-                        'img_url'=>$img_url,'stock_num'=>$stock_num);
+                        'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id']);
                     $datalist[] = $dinfo;
                 }
             }
+
         }
         $this->to_back($datalist);
+    }
+
+    public function stockidcodelist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $goods_id = intval($this->params['goods_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 20;
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $start = ($page-1)*$pagesize;
+        $limit = "$start,$pagesize";
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $res_stock = $m_stock_record->getStockIdcodeList($hotel_id,$goods_id,$limit);
+        $this->to_back(array('datalist'=>$res_stock));
     }
 
     public function addhoteldrinks(){
@@ -676,7 +700,7 @@ class HotelController extends CommonController{
         $oss_host = get_oss_host();
         $m_hotel = new \Common\Model\HotelModel();
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps";
-        $where = array('a.area_id'=>$area_id,'a.state'=>1,'a.flag'=>0);
+        $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0);
         $test_hotel_ids = C('TEST_HOTEL');
         $where['a.id'] = array('not in',"$test_hotel_ids");
         $hotel_list = $m_hotel->alias('a')

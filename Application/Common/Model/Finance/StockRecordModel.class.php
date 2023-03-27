@@ -83,4 +83,45 @@ class StockRecordModel extends BaseModel{
             ->select();
         return $res_data;
     }
+
+    public function getStockIdcodeList($hotel_id,$goods_id,$limit){
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+        $res_cache = $redis->get($key);
+        $res_stock = array();
+        if(!empty($res_cache)){
+            $hotel_stock = json_decode($res_cache,true);
+            if(!empty($hotel_stock['goods_ids']) && in_array($goods_id,$hotel_stock['goods_ids'])){
+                $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'stock.io_type'=>22,'a.goods_id'=>$goods_id,'a.dstatus'=>1);
+                $where['a.type']=7;
+                $where['a.wo_status']= array('in',array(1,2,4));
+                $res_worecord = $this->getStockRecordList('a.idcode',$where,'a.id desc','','');
+                $use_idcode = array();
+                if(!empty($res_worecord)){
+                    foreach ($res_worecord as $v){
+                        $use_idcode[]=$v['idcode'];
+                    }
+                }
+                $where['a.type']=6;
+                unset($where['a.wo_status']);
+                $where['a.status']= array('in',array(1,2));
+                $res_rlrecord = $this->getStockRecordList('a.idcode',$where,'a.id desc','','');
+                if(!empty($res_rlrecord)){
+                    foreach ($res_rlrecord as $v){
+                        $use_idcode[]=$v['idcode'];
+                    }
+                }
+
+                $where['a.type'] = 2;
+                unset($where['a.status']);
+                if(!empty($use_idcode)){
+                    $where['a.idcode'] = array('not in',$use_idcode);
+                }
+                $fileds = 'a.idcode';
+                $res_stock = $this->getStockRecordList($fileds,$where,'a.id desc',$limit,'');
+            }
+        }
+        return $res_stock;
+    }
 }

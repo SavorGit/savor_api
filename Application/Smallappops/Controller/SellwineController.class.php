@@ -10,7 +10,7 @@ class SellwineController extends CommonController{
         switch(ACTION_NAME) {
             case 'filter':
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,
-                    'hotel_id'=>1002,'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002);
+                    'hotel_id'=>1002,'day'=>1002,'sdate'=>1002,'edate'=>1002,'sell_openid'=>1002,'version'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'datalist':
@@ -36,6 +36,7 @@ class SellwineController extends CommonController{
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
         $sell_openid = $this->params['sell_openid'];
+        $version = $this->params['version'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -54,11 +55,20 @@ class SellwineController extends CommonController{
         if($day>0){
             $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
             $merchant_where['m.add_time'] = array('elt',$end_time);
-
+            $v_date = '';
+            if(!empty($version) && $version>='1.9.10'){
+                $v_date = date('Y-m-d');
+            }
             $start_date = date('Y-m-d',strtotime('-1day'));
+            if(!empty($v_date)){
+                $start_date = $v_date;
+            }
             switch ($day){
                 case 1:
                     $start_date = date('Y-m-d',strtotime('-1day'));
+                    if(!empty($v_date)){
+                        $start_date = $v_date;
+                    }
                     break;
                 case 2:
                     $start_date = date('Y-m-d',strtotime('-6day'));
@@ -68,6 +78,9 @@ class SellwineController extends CommonController{
                     break;
             }
             $end_date = date('Y-m-d',strtotime('-1day'));
+            if(!empty($v_date)){
+                $end_date = $v_date;
+            }
             $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
             if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
                 if($area_id>0){
@@ -138,7 +151,12 @@ class SellwineController extends CommonController{
 
         }
         $sell_date = '2022-05-19 08:40:10';
-        $date_range = array(date('Y-m-d',strtotime($sell_date)),date('Y-m-d',strtotime('-1day')));
+        if(!empty($version) && $version>='1.9.10'){
+            $range_end_date = date('Y-m-d');
+        }else{
+            $range_end_date = date('Y-m-d',strtotime('-1day'));
+        }
+        $date_range = array(date('Y-m-d',strtotime($sell_date)),$range_end_date);
         $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range,
             'hotel_list'=>$hotel_list,'staff_list'=>$staff_list,'stock_status'=>$stock_status);
         $this->to_back($res_data);
@@ -193,7 +211,7 @@ class SellwineController extends CommonController{
             }
         }
 
-        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid';
+        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name';
         $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_records)){
@@ -222,7 +240,7 @@ class SellwineController extends CommonController{
                 $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
 
                 $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
-                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon);
+                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$v['hotel_name']);
             }
         }
         $this->to_back($data_list);

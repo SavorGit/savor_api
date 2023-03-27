@@ -40,6 +40,10 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
                 break;
+            case 'sellwine':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -368,6 +372,60 @@ class BasicdataController extends CommonController{
                 '二.点播任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；','3.点播应操作次数：发布任务的餐厅范围内，正常版位数*1.8，每日加和，四舍五入；', '4.完成次数：发布任务的餐厅范围内，所以餐厅经理总共完成次数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（正常）；',
                 '三.邀请函任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；', '3.点播应操作次数：发布任务的餐厅范围内，正常包间数*1.6，每日加和，四舍五入；','4.完成次数：发布任务的餐厅范围内，所以餐厅经理总共完成次数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（正常）；',
             );
+        }
+        $this->to_back($res_data);
+    }
+
+    public function sellwine(){
+        $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $day = intval($this->params['day']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
+            $this->to_back(1001);
+        }
+        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
+        $start_time = date('Y-m-d 00:00:00');
+        switch ($day){
+            case 1:
+                $start_time = date('Y-m-d 00:00:00');
+                break;
+            case 2:
+                $start_time = date('Y-m-d 00:00:00',strtotime('-6day'));
+                break;
+            case 3:
+                $start_time = date('Y-m-01 00:00:00');
+                break;
+        }
+        $end_time = date('Y-m-d 23:59:59');
+        $static_maintainer_id = $static_area_id = 0;
+        $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
+        $is_data = 1;
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+            if($area_id>0){
+                $static_area_id = $area_id;
+            }
+        }elseif($area_id>0 && $staff_id>0){
+            $static_area_id = $area_id;
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }elseif($area_id==0 && $staff_id>0){
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }else{
+            $is_data = 0;
+        }
+
+        $res_data = array();
+        if($is_data){
+            $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
+            $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']));
+            $res_data['desc'] = array();
         }
         $this->to_back($res_data);
     }

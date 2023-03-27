@@ -545,7 +545,7 @@ class OrderController extends CommonController{
             }elseif($res_goods['type']==45){
                 $otype = 10;
                 $res_goods['amount'] = 99999;
-                $price_list = json_decode($res_goods['price_list'],true);
+                $price_list = json_decode($res_goods['distribution_config'],true);
                 foreach ($price_list as $pv){
                     if($amount>=$pv['min'] && $amount<=$pv['max']){
                         $res_goods['price'] = $pv['price'];

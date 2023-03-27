@@ -197,6 +197,13 @@ class OrderController extends Controller {
         if($res_order['status']==51 && $res_order['sale_uid']>0 && $res_order['is_settlement']==0){
             $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
             $res_goods = $m_dishgoods->getInfo(array('id'=>$res_order['goods_id']));
+            $distribution_config = json_decode($res_goods['distribution_config'],true);
+            $order_distribution_config = array();
+            foreach ($distribution_config as $k=>$v){
+                if($res_order['amount']>=$v['min'] && $res_order['amount']<=$v['max']){
+                    $order_distribution_config = $v;
+                }
+            }
 
             $sale_uid = $res_order['sale_uid'];
             $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
@@ -205,23 +212,21 @@ class OrderController extends Controller {
             if($res_duser['level']==1){
                 $buy_type = 1;
                 $openid = $res_duser['openid'];
-                $money = $res_goods['reward_money'];
+                $money = $order_distribution_config['reward_money'];
             }else{
                 $buy_type = 2;
                 $openid = $res_duser['openid'];
                 $res_admin = $m_distuser->getInfo(array('id'=>$res_duser['parent_id']));
                 $admin_openid = $res_admin['openid'];
 
-                $distribution_reward_money = $res_goods['distribution_reward_money'];
-                $distribution_config = json_decode($res_goods['distribution_config'],true);
                 $duser_id = $res_goods['duser_id'];
                 if($res_duser['parent_id']==$duser_id){
                     $distribution = $distribution_config['ts'];
                 }else{
                     $distribution = $distribution_config['ty'];
                 }
-                $money = sprintf("%.2f",($distribution[1]/100)*$distribution_reward_money);
-                $admin_money = $distribution_reward_money-$money;
+                $money = $distribution[1];
+                $admin_money = $distribution[0];
             }
             $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
             $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,

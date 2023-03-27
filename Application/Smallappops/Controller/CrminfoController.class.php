@@ -31,6 +31,7 @@ class CrminfoController extends CommonController{
             case 'addhotel':
                 $this->valid_fields = array('openid'=>1001,'name'=>1001,'hotel_cover_img'=>1001,
                     'area_id'=>1001,'county_id'=>1001,'addr'=>1001,'contractor'=>1002,'mobile'=>1002,
+                    'latitude'=>1002,'longitude'=>1002
                 );
                 $this->is_verify = 1;
                 break;
@@ -475,6 +476,8 @@ class CrminfoController extends CommonController{
         $addr = trim($this->params['addr']);
         $contractor = trim($this->params['contractor']);
         $mobile = $this->params['mobile'];
+        $latitude = $this->params['latitude'];
+        $longitude = $this->params['longitude'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -484,6 +487,13 @@ class CrminfoController extends CommonController{
         $data = array('openid'=>$openid,'name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
             'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2
         );
+        if($longitude>0 && $latitude>0 ) {
+            $bd_lnglat = getgeoByTc($latitude, $longitude);
+            if(!empty($bd_lnglat[0]['x']) && !empty($bd_lnglat[0]['y'])){
+                $data['gps'] = "{$bd_lnglat[0]['x']},{$bd_lnglat[0]['y']}";
+            }
+        }
+
         $m_hotel = new \Common\Model\HotelModel();
         $hwhere = array('name'=>$name,'state'=>array('in',array(1,4)),'flag'=>0);
         $res_hotel = $m_hotel->field('id,name')->where($hwhere)->find();

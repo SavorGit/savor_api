@@ -189,6 +189,7 @@ class InvitationController extends CommonController{
             $res_data['book_time'] = $res_info['book_time'];
             $res_data['people_num'] = $res_info['people_num'];
             $res_data['contact_name'] = $res_info['contact_name'];
+            $res_data['desc'] = $res_info['desc'];
             $res_data['share_img_url'] = $oss_host.$invitation_hotels['share_img'];
             $res_data['calendar'] = array(
                 'title'=>$res_info['name'].'的饭局',

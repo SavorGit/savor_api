@@ -221,9 +221,9 @@ class OrderController extends Controller {
 
                 $duser_id = $res_goods['duser_id'];
                 if($res_duser['parent_id']==$duser_id){
-                    $distribution = $distribution_config['ts'];
+                    $distribution = $order_distribution_config['ts'];
                 }else{
-                    $distribution = $distribution_config['ty'];
+                    $distribution = $order_distribution_config['ty'];
                 }
                 $money = $distribution[1];
                 $admin_money = $distribution[0];

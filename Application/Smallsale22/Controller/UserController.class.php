@@ -565,6 +565,8 @@ class UserController extends CommonController{
         $res = $m_box->getBoxListByHotelRelation($fields,$hotel_id);
         $m_usersign = new \Common\Model\Smallapp\UserSigninModel();
         $box_list = array();
+        $redis = new \Common\Lib\SavorRedis();
+        $online_time = 900;
         foreach ($res as $v){
             $info = array('name'=>$v['name'],'box_mac'=>$v['mac'],'status'=>1,'user'=>array());
             $where = array('box_mac'=>$v['mac']);
@@ -590,6 +592,21 @@ class UserController extends CommonController{
                     $info['user'] = $res_user;
                 }
             }
+
+            $redis->select(13);
+            $cache_key  = 'heartbeat:2:'.$v['mac'];
+            $res_cache = $redis->get($cache_key);
+            $box_status='black';
+            if(!empty($res_cache)){
+                $now_time = time();
+                $cache_data = json_decode($res_cache,true);
+                $report_time = strtotime($cache_data['date']);
+                $diff_time = $now_time - $report_time;
+                if($diff_time<=$online_time){
+                    $box_status='green';
+                }
+            }
+            $info['box_status'] = $box_status;
             $box_list[] = $info;
         }
         $this->to_back($box_list);

@@ -287,7 +287,7 @@ class OrderController extends CommonController{
         if(!empty($ids)){
             $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
             $m_media = new \Common\Model\MediaModel();
-            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale,is_usecoupon,price_list";
+            $fields = "id,name,attr_name,price,amount,cover_imgs,type,gtype,status,merchant_id,parent_id,model_media_id,is_localsale,is_usecoupon,distribution_config";
             $where = array('id'=>array('in',$ids));
             $res_goods = $m_goods->getDataList($fields,$where,'id desc');
             $res_online = array();
@@ -324,8 +324,8 @@ class OrderController extends CommonController{
                 $num = $id_amount[$v['id']];
                 $price = $v['price'];
                 if($v['type']==45){
-                    $price_list = json_decode($v['price_list'],true);
-                    foreach ($price_list as $pv){
+                    $distribution_config = json_decode($v['distribution_config'],true);
+                    foreach ($distribution_config as $pv){
                         if($num>=$pv['min'] && $num<=$pv['max']){
                             $price = $pv['price'];
                         }

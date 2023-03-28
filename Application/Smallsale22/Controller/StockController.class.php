@@ -15,6 +15,10 @@ class StockController extends CommonController{
                 $this->params = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'idcodelist':
+                $this->params = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'goods_id'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'stocklist':
                 $this->params = array('openid'=>1001,'area_id'=>1001,'type'=>1001);
                 $this->is_verify = 1;
@@ -176,6 +180,28 @@ class StockController extends CommonController{
         }
         $res_data['goods_list'] = $goods_list;
         $this->to_back($res_data);
+    }
+
+    public function idcodelist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $goods_id = intval($this->params['goods_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 20;
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+
+        $start = ($page-1)*$pagesize;
+        $limit = "$start,$pagesize";
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $res_stock = $m_stock_record->getStockIdcodeList($hotel_id,$goods_id,$limit);
+        $this->to_back(array('datalist'=>$res_stock));
     }
 
     public function stocklist(){

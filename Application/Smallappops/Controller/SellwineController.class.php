@@ -56,7 +56,7 @@ class SellwineController extends CommonController{
             $end_time = date('Y-m-d 23:59:59',strtotime('-1day'));
             $merchant_where['m.add_time'] = array('elt',$end_time);
             $v_date = '';
-            if(!empty($version) && $version>='1.9.10'){
+            if(!empty($version) && $version>='1.0.10'){
                 $v_date = date('Y-m-d');
             }
             $start_date = date('Y-m-d',strtotime('-1day'));
@@ -151,7 +151,7 @@ class SellwineController extends CommonController{
 
         }
         $sell_date = '2022-05-19 08:40:10';
-        if(!empty($version) && $version>='1.9.10'){
+        if(!empty($version) && $version>='1.0.10'){
             $range_end_date = date('Y-m-d');
         }else{
             $range_end_date = date('Y-m-d',strtotime('-1day'));

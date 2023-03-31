@@ -74,6 +74,7 @@ class StatDataController extends CommonController{
         }
         $m_statichotelstaffdata = new \Common\Model\Smallapp\StaticHotelstaffdataModel();
         $res_staticdata = $m_statichotelstaffdata->getStaffData(0,0,$hotel_id,$start_time,$end_time);
+
         $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
         $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
 
@@ -121,6 +122,63 @@ class StatDataController extends CommonController{
                 }
                 $v['avatarUrl'] = $avatarUrl;
                 $v['nickName'] = $nickName;
+                $staff_list[]=$v;
+            }
+        }
+        $res_data['staff_list'] = $staff_list;
+        $this->to_back($res_data);
+    }
+
+    public function salesellwine(){
+        $openid   = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $source = intval($this->params['source']);//来源 1酒楼详情页 2酒楼数据概况页
+        $start_date = $this->params['start_date'];
+        $end_date   = $this->params['end_date'];
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        if(empty($start_date) || empty($end_date)){
+            $start_date = date('Y-m-d',strtotime('-6 days'));
+            $end_date = date('Y-m-d');
+        }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+
+        $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
+        $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
+        $date_range = array(date('Y-m-d',strtotime('-6 days')),date('Y-m-d'));
+        $stat_range_str= '(近七天,数据更新至'.date('Y/m/d').')';
+        $stat_update_str = '数据更新至'.date('Y/m/d');
+        $res_data = array(
+            'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+            'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
+        );
+        $staff_list = array();
+        if($source==2){
+            $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time,'a.op_openid');
+            $sell_openids = array();
+            foreach ($res_sell as $v){
+                $sell_openids[$v['op_openid']] = array('brand_num'=>intval($v['brand_num']),'series_num'=>intval($v['series_num']),'sell_num'=>intval($v['sell_num']));
+            }
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $staff_fields = 'a.id,a.level,user.openid,user.avatarUrl,user.nickName';
+            $staff_where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+            $res_stat_staff = $m_staff->getMerchantStaff($staff_fields,$staff_where);
+            foreach ($res_stat_staff as $v){
+                $brand_num = $series_num = $sell_num = 0;
+                if(isset($sell_openids[$v['openid']])){
+                    $brand_num = $sell_openids[$v['openid']]['brand_num'];
+                    $series_num = $sell_openids[$v['openid']]['series_num'];
+                    $sell_num = $sell_openids[$v['openid']]['sell_num'];
+                }
+                $v['brand_num'] = $brand_num;
+                $v['series_num'] = $series_num;
+                $v['sell_num'] = $sell_num;
+                $v['avatarUrl'] = $v['avatarUrl'];
+                $v['nickName'] = $v['nickName'];
                 $staff_list[]=$v;
             }
         }

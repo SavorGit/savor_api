@@ -142,7 +142,7 @@ class OpsstaffModel extends BaseModel{
                 break;
             case 2:
                 $type = 2;
-                if(!in_array($area_id,$permission['hotel_info']['area_ids'])){
+                if($area_id>0 && !in_array($area_id,$permission['hotel_info']['area_ids'])){
                     $type = 1001;//系统报错码
                 }
                 break;

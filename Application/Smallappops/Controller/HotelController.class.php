@@ -31,6 +31,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
                 break;
+            case 'nearby':
+                $this->is_verify = 1;
+                $this->valid_fields = array('latitude'=>1001,'longitude'=>1001,'openid'=>1002);
+                break;
             case 'addhoteldrinks':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'is_nosell'=>1001,'images'=>1002);
@@ -678,6 +682,7 @@ class HotelController extends CommonController{
     public function nearby(){
         $latitude = $this->params['latitude'];
         $longitude = $this->params['longitude'];
+        $openid = $this->params['openid'];
 
         $nearby_m = 200;
         $ret = getgeoByloa($latitude,$longitude);

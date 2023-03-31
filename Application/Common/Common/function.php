@@ -600,12 +600,22 @@ function getgeoByloa($lat,$lon){
     }
 }
 function getgeoByTc($lat,$lon,$type=1){
-    if($type==1){//1转百度坐标,2百度转腾讯
-        $from = 1;
-        $to = 5;
-    }else{
-        $from = 5;
-        $to = 3;
+    switch ($type){//1GPS转百度坐标,2百度转腾讯,3腾讯/高德转百度
+        case 1:
+            $from = 1;
+            $to = 5;
+            break;
+        case 2:
+            $from = 5;
+            $to = 3;
+            break;
+        case 3:
+            $from = 3;
+            $to = 5;
+            break;
+        default:
+            $from = 5;
+            $to = 3;
     }
     $ak = C('BAIDU_GEO_KEY');
     $url = 'http://api.map.baidu.com/geoconv/v1/?coords='.$lon.','.$lat."&from=$from&to=$to&ak=".$ak;
@@ -631,6 +641,18 @@ function convertBdToTxCoord($lng, $lat) {
     $bd_lat = $z * sin($theta) + 0.006;
     return array($bd_lng, $bd_lat);
 }
+
+function convertTxToBdCoord($lng, $lat) {
+    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+    $x = $lng;
+    $y = $lat;
+    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $x_pi);
+    $theta = atan2($y, $x) + 0.000003 * cos($x * $x_pi);
+    $lng = $z * cos($theta) + 0.0065;
+    $lat = $z * sin($theta) + 0.006;
+    return array('lng' => $lng, 'lat' => $lat);
+}
+
 
 
 function getGDgeocodeByAddress($address){

@@ -211,12 +211,13 @@ class SellwineController extends CommonController{
             }
         }
 
-        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name';
+        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id';
         $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_records)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
+            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
             $fileds = 'a.idcode,a.price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
@@ -236,11 +237,16 @@ class SellwineController extends CommonController{
                 }
                 $where = array('a.idcode'=>$v['idcode'],'a.type'=>7);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
-                $res_goods[0]['price'] = abs($res_goods[0]['price']);
+                $price = abs($res_goods[0]['price']);
+                $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($v['hotel_id'],$res_goods[0]['goods_id'],1);
+                if(!empty($settlement_price)){
+                    $price = intval($settlement_price);
+                }
+                $res_goods[0]['price'] = $price;
                 $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
 
                 $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
-                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$v['hotel_name']);
+                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$v['hotel_name'],'hotel_id'=>$v['hotel_id']);
             }
         }
         $this->to_back($data_list);
@@ -297,11 +303,12 @@ class SellwineController extends CommonController{
             $brand_num = intval($res_sell[0]['brand_num']);
             $series_num = intval($res_sell[0]['series_num']);
 
-            $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid';
+            $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.id as hotel_id';
             $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
             if(!empty($res_records)){
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
+                $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
                 $all_reasons = C('STOCK_REASON');
                 $all_status = C('STOCK_AUDIT_STATUS');
                 $fileds = 'a.idcode,a.price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
@@ -321,7 +328,13 @@ class SellwineController extends CommonController{
                     }
                     $where = array('a.idcode'=>$v['idcode'],'a.type'=>7);
                     $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
-                    $res_goods[0]['price'] = abs($res_goods[0]['price']);
+                    $price = abs($res_goods[0]['price']);
+                    $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($v['hotel_id'],$res_goods[0]['goods_id'],1);
+                    if($settlement_price>0){
+                        $price = intval($settlement_price);
+                    }
+                    $res_goods[0]['price'] = $price;
+
                     $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
 
                     $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],

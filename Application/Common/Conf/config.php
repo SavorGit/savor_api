@@ -366,6 +366,7 @@ return array(
     'SAPP_PRIZEPOOL_MONEYQUEUE'=>'smallapp:prizepool:moneyqueue:',
     'SAPP_VIP_LEVEL_COUPON'=>'smallapp:viplevelcoupon:',
     'SAPP_SENDSMS'=>'smallapp:sendsms:',
+    'FINANCE_HOTELGOODS_PRICE'=>'finance:hotelgoods:price',//酒楼售卖酒商品结算价
 
     'BOX_LANHOTEL_DOWNLOAD'=>'lanhotel:download:',
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',

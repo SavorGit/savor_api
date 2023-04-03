@@ -229,10 +229,25 @@ class GoodsController extends CommonController{
         if(empty($pagesize)){
             $pagesize = 10;
         }
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
+        $sale_uid = 0;
+        $qrcode_url = '';
+        $level = 0;
+        if(!empty($res_duser)){
+            $level = $res_duser['level'];
+            $sale_uid = $res_duser['id'];
+            $hash_ids_key = C('HASH_IDS_KEY');
+            $hashids = new \Common\Lib\Hashids($hash_ids_key);
+            $sale_uid = $hashids->encode($sale_uid);
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $qrcode_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?type=51&data_id={$res_duser['id']}&box_id=0";
+        }
+
         $datalist = array();
         $start = ($page-1)*$pagesize;
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc,desc2',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
         $oss_host = get_oss_host();
         if($res_goods['list']){
             foreach ($res_goods['list'] as $v){
@@ -243,23 +258,19 @@ class GoodsController extends CommonController{
                         $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
                     }
                 }
+                if($level==2){
+                    $v['desc'] = $v['desc2'];
+                }
+                $desc = '';
+                if(!empty($v['desc'])){
+                    $desc = html_entity_decode($v['desc']);
+                }
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),
-                    'img_url'=>$img_url,'desc'=>html_entity_decode($v['desc']));
+                    'img_url'=>$img_url,'desc'=>$desc);
                 $datalist[] = $dinfo;
             }
         }
-        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
-        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
-        $sale_uid = 0;
-        $qrcode_url = '';
-        if(!empty($res_duser)){
-            $sale_uid = $res_duser['id'];
-            $hash_ids_key = C('HASH_IDS_KEY');
-            $hashids = new \Common\Lib\Hashids($hash_ids_key);
-            $sale_uid = $hashids->encode($sale_uid);
-            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
-            $qrcode_url = $host_name."/basedata/forscreenQrcode/getBoxQrcode?type=51&data_id={$res_duser['id']}&box_id=0";
-        }
+
         $img_poster = $oss_host.'WeChat/MiniProgram/images/poster-head.png';
         $this->to_back(array('datalist'=>$datalist,'sale_uid'=>$sale_uid,'qrcode_url'=>$qrcode_url,'img_poster'=>$img_poster));
     }

@@ -723,8 +723,9 @@ class UserController extends CommonController{
         $avatar_url = $this->params['avatar_url'];
         $mobile = $this->params['mobile'];
         $idnumber = $this->params['idnumber'];
-
-
+        if(strlen($openid)>=36 || substr($openid,0,4)!='o9GS'){
+            $this->to_back(1001);
+        }
         $m_user = new \Common\Model\Smallapp\UserModel();
         $where = array();
         $where['openid'] = $openid;

@@ -76,12 +76,14 @@ class LoginController extends CommonController{
 
     public function login(){
         $mobile = $this->params['mobile'];
-
         $openid = $this->params['openid'];
         $verify_code = trim($this->params['verify_code']);
         $invite_code = trim($this->params['invite_code']);//邀请码
         if(!check_mobile($mobile)){//验证手机格式
             $this->to_back(92001);
+        }
+        if(strlen($openid)>=36 || substr($openid,0,4)!='o9GS'){
+            $this->to_back(1001);
         }
         $redis = \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);

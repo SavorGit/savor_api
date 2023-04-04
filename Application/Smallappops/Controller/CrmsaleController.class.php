@@ -34,6 +34,10 @@ class CrmsaleController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002,'area_id'=>1002,'staff_id'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'unreadnum':
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'area_id'=>1002,'staff_id'=>1002);
+                $this->is_verify = 1;
+                break;
             case 'hotelcontactlist':
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'pagesize'=>1002,'hotel_id'=>1002,'contact_id'=>1002);
                 $this->is_verify = 1;
@@ -337,6 +341,9 @@ class CrmsaleController extends CommonController{
         $m_salerecord = new \Common\Model\Crm\SalerecordModel();
         $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id));
 
+        $m_salerecord_read = new \Common\Model\Crm\SalerecordReadModel();
+        $m_salerecord_read->readRecord($res_staff,$res_info);
+
         $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl,user.nickName';
         $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$res_info['ops_staff_id']));
         $res_info['staff_id'] = $res_staff_user[0]['staff_id'];
@@ -472,9 +479,10 @@ class CrmsaleController extends CommonController{
                 $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1);
                 $where['a.type'] = 3;
                 $where['record.status'] = 2;
+//                $orderby = 'a.read_status asc,a.salerecord_id desc';
                 break;
             case 3:
-                $where = array('a.type'=>4,'record.status'=>2);
+                $where = array('a.type'=>4,'a.status'=>1,'record.status'=>2);
                 if($res_staff['is_operrator']==0){
                     if($area_id>0 || $staff_id>0){
                         if($area_id){
@@ -495,12 +503,12 @@ class CrmsaleController extends CommonController{
                 }else{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
-                
+//                $orderby = 'a.read_status asc,a.salerecord_id desc';
                 break;
             default:
                 $where = array();
         }
-        $fields = 'a.salerecord_id,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $fields = 'a.salerecord_id,a.read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
         $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,$limit,'a.salerecord_id');
         $datalist = array();
         if(!empty($res_mind)){
@@ -586,13 +594,66 @@ class CrmsaleController extends CommonController{
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
-                    'comment_num'=>$comment_num,'status'=>$record_info['status'],
+                    'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status']
                 );
                 $datalist[]=$info;
 
             }
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function unreadnum(){
+        $openid = $this->params['openid'];
+        $type = intval($this->params['type']);//类型2@我的,3销售记录
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $ops_staff_id = $res_staff['id'];
+        $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
+        $orderby = 'a.salerecord_id desc';
+        switch ($type){
+            case 2:
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1,'a.read_status'=>1);
+                $where['a.type'] = 3;
+                $where['record.status'] = 2;
+                break;
+            case 3:
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.type'=>array('in','1,2'),'a.status'=>1,'record.status'=>2,'a.read_status'=>1);
+                if($res_staff['is_operrator']==0){
+                    if($area_id>0 || $staff_id>0){
+                        if($area_id){
+                            $where['staff.area_id'] = $area_id;
+                        }
+                        if($staff_id>0){
+                            $where['record.ops_staff_id'] = $staff_id;
+                        }
+                    }else{
+                        $permission = json_decode($res_staff['permission'],true);
+                        if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
+                            $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }
+                    }
+                }else{
+                    $where['record.ops_staff_id'] = $ops_staff_id;
+                }
+                break;
+            default:
+                $where = array();
+        }
+        if($res_staff['hotel_role_type']==3){
+            $unread_num = 0;
+        }else{
+            $fields = 'count(DISTINCT a.salerecord_id) as num';
+            $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,'','');
+            $unread_num = intval($res_mind[0]['num']);
+        }
+        $this->to_back(array('unread_num'=>$unread_num));
     }
 
     public function addcomment(){

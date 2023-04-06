@@ -50,6 +50,10 @@ class CrmsaleController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'getReadList':
+                $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'delcomment':
                 $this->valid_fields = array('openid'=>1001,'comment_id'=>1001);
                 $this->is_verify = 1;
@@ -654,6 +658,25 @@ class CrmsaleController extends CommonController{
             $unread_num = intval($res_mind[0]['num']);
         }
         $this->to_back(array('unread_num'=>$unread_num));
+    }
+
+    public function getReadList(){
+        $openid = $this->params['openid'];
+        $salerecord_id = intval($this->params['salerecord_id']);
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $ops_staff_id = $res_staff['id'];
+        $m_read = new \Common\Model\Crm\SalerecordReadModel();
+        $fields = 'a.user_id,sysuser.remark,user.nickName,user.avatarUrl,a.add_time';
+        $datalist = $m_read->getReadDataList($fields,array('a.user_id'=>$ops_staff_id,'a.salerecord_id'=>$salerecord_id),'a.id desc','0,10');
+        foreach ($datalist as $k=>$v){
+            $datalist[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
     public function addcomment(){

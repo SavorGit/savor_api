@@ -487,7 +487,7 @@ class CrmsaleController extends CommonController{
                 $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1);
                 $where['a.type'] = 3;
                 $where['record.status'] = 2;
-//                $orderby = 'a.read_status asc,a.salerecord_id desc';
+                $orderby = 'read_status asc,a.salerecord_id desc';
                 break;
             case 3:
                 $where = array('a.type'=>4,'a.status'=>1,'record.status'=>2);
@@ -511,12 +511,12 @@ class CrmsaleController extends CommonController{
                 }else{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
-//                $orderby = 'a.read_status asc,a.salerecord_id desc';
+                $orderby = 'read_status asc,a.salerecord_id desc';
                 break;
             default:
                 $where = array();
         }
-        $fields = 'a.salerecord_id,a.read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $fields = 'a.salerecord_id,min(a.read_status) as read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
         $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,$limit,'a.salerecord_id');
         $datalist = array();
         if(!empty($res_mind)){
@@ -696,10 +696,9 @@ class CrmsaleController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $ops_staff_id = $res_staff['id'];
         $m_read = new \Common\Model\Crm\SalerecordReadModel();
         $fields = 'a.user_id,sysuser.remark,user.nickName,user.avatarUrl,a.add_time';
-        $datalist = $m_read->getReadDataList($fields,array('a.user_id'=>$ops_staff_id,'a.salerecord_id'=>$salerecord_id),'a.id desc','0,10');
+        $datalist = $m_read->getReadDataList($fields,array('a.salerecord_id'=>$salerecord_id),'a.id desc','0,10');
         foreach ($datalist as $k=>$v){
             $datalist[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
         }

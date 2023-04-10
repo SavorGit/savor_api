@@ -344,10 +344,6 @@ class CrmsaleController extends CommonController{
         }
         $m_salerecord = new \Common\Model\Crm\SalerecordModel();
         $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id));
-
-        $m_salerecord_read = new \Common\Model\Crm\SalerecordReadModel();
-        $m_salerecord_read->readRecord($res_staff,$res_info);
-
         $fields = 'a.id as staff_id,a.job,su.remark as staff_name,user.avatarUrl,user.nickName';
         $res_staff_user = $m_opstaff->getStaffUserinfo($fields,array('a.id'=>$res_info['ops_staff_id']));
         $res_info['staff_id'] = $res_staff_user[0]['staff_id'];
@@ -437,6 +433,14 @@ class CrmsaleController extends CommonController{
         }
         $res_info['cc_users'] = $cc_users;
         $res_info['review_users'] = $review_users;
+
+        $m_salerecord_read = new \Common\Model\Crm\SalerecordReadModel();
+        $m_salerecord_read->readRecord($res_staff,$res_info);
+        $is_read_button = 1;
+        if($res_staff['id']==$res_info['ops_staff_id'] || $res_staff['hotel_role_type']==3){
+            $is_read_button = 0;
+        }
+        $res_info['is_read_button'] = $is_read_button;
         $this->to_back($res_info);
     }
 
@@ -658,6 +662,29 @@ class CrmsaleController extends CommonController{
             $unread_num = intval($res_mind[0]['num']);
         }
         $this->to_back(array('unread_num'=>$unread_num));
+    }
+
+    public function readRecord(){
+        $openid = $this->params['openid'];
+        $salerecord_id = intval($this->params['salerecord_id']);
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $record = $m_salerecord->getInfo(array('id'=>$salerecord_id));
+        if($res_staff['id']==$record['ops_staff_id'] || $res_staff['hotel_role_type']==3){
+            $this->to_back(array());
+        }
+        $m_read_record = new \Common\Model\Crm\SalerecordReadModel();
+        $res_read = $m_read_record->getInfo(array('salerecord_id'=>$salerecord_id,'user_id'=>$res_staff['id']));
+        if(empty($res_read)){
+            $add_data = array('salerecord_id'=>$salerecord_id,'user_id'=>$res_staff['id'],'add_time'=>date('Y-m-d H:i:s'));
+            $m_read_record->add($add_data);
+        }
+        $this->to_back(array());
     }
 
     public function getReadList(){

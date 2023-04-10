@@ -28,12 +28,6 @@ class SalerecordReadModel extends BaseModel{
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
         $rwhere = array('salerecord_id'=>$salerecord_id,'remind_user_id'=>$user_id,'status'=>1);
         $m_salerecord_remind->updateData($rwhere,array('read_status'=>2,'read_time'=>date('Y-m-d H:i:s')));
-
-        $res_read = $this->getInfo(array('salerecord_id'=>$salerecord_id,'user_id'=>$user_id));
-        if(empty($res_read)){
-            $add_data = array('salerecord_id'=>$salerecord_id,'user_id'=>$user_id,'add_time'=>date('Y-m-d H:i:s'));
-            $this->add($add_data);
-        }
         return true;
     }
 }

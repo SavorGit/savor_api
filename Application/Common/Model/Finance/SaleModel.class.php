@@ -6,6 +6,7 @@ class SaleModel extends BaseModel{
 	protected $tableName='finance_sale';
 
 	public function addsale($stock_record_info,$hotel_id,$sale_openid,$user){
+	    /*
 	    $index_voucher_no = 10001;
 	    $res_data = $this->getALLDataList('id,jd_voucher_no',array(),'id desc','0,1','');
 	    if(!empty($res_data[0]['jd_voucher_no'])){
@@ -13,6 +14,8 @@ class SaleModel extends BaseModel{
         }else{
             $jd_voucher_no = $index_voucher_no;
         }
+	    */
+        $jd_voucher_no = 0;
         $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
         $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
 

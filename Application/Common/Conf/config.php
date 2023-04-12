@@ -864,7 +864,7 @@ return array(
     'STOCK_RECYCLE_STATUS'=>array('1'=>'待回收物料','2'=>'已回收物料'),
     'VIP_3_BUY_WINDE_NUM'=>1200,
     'STAT_TASK_TYPES'=>array(
-        '26'=>'会员邀请(奖券任务)',
+//        '26'=>'会员邀请(奖券任务)',
         '25'=>'广告点播',
         '6'=>'邀请函',
     ),

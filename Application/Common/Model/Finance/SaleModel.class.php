@@ -16,9 +16,11 @@ class SaleModel extends BaseModel{
         }
 	    */
         $jd_voucher_no = 0;
-        $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
-        $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
-
+        $settlement_price = 0;
+        if($stock_record_info['wo_reason_type']==1){
+            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
+            $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
+        }
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $res_ext = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotel_id));
 

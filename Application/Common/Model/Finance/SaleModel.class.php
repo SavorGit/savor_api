@@ -15,6 +15,11 @@ class SaleModel extends BaseModel{
             $jd_voucher_no = $index_voucher_no;
         }
 	    */
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$stock_record_info['stock_id']));
+        if(!empty($res_stock['hotel_id'])){
+            $hotel_id = $res_stock['hotel_id'];
+        }
         $jd_voucher_no = 0;
         $settlement_price = 0;
         if($stock_record_info['wo_reason_type']==1){

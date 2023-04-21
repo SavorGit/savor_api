@@ -441,6 +441,12 @@ class CrmsaleController extends CommonController{
             $is_read_button = 0;
         }
         $res_info['is_read_button'] = $is_read_button;
+        $stock_check_percent='';
+        if(!empty($res_info['stock_check_num']) && !empty($res_info['stock_check_hadnum'])){
+            $stock_check_percent = intval(($res_info['stock_check_hadnum']/$res_info['stock_check_num'])*100);
+            $stock_check_percent = $stock_check_percent.'%';
+        }
+        $res_info['stock_check_percent'] = $stock_check_percent;
         $this->to_back($res_info);
     }
 

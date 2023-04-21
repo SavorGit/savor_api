@@ -519,6 +519,8 @@ return array(
     'smallapp_use_edit_error'=>'请完善个人信息',
     'smallapp_invite_sale_user_time_error'=>'邀请链接已失效',
     'smallapp_invite_user_disable'=>'邀请人已失效',
+    'smallappops_stock_check_hotel_error'=>'扫码酒楼不一致',
+    'smallappops_stock_check_local_error'=>'定位失败，请在餐厅200m范围内操作',
 
 
 

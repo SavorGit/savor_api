@@ -452,7 +452,7 @@ class CrmsaleController extends CommonController{
 
     public function recordlist(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);//类型1全部,2@我的,3销售记录
+        $type = intval($this->params['type']);//类型1全部,2@我的,3销售记录,4盘点记录
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
         $area_id = intval($this->params['area_id']);
@@ -519,6 +519,29 @@ class CrmsaleController extends CommonController{
                 }
                 $orderby = 'read_status asc,a.salerecord_id desc';
                 break;
+            case 4:
+                $where = array('a.type'=>5,'a.status'=>1,'record.status'=>2);
+                if($res_staff['is_operrator']==0){
+                    if($area_id>0 || $staff_id>0){
+                        if($area_id){
+                            $where['staff.area_id'] = $area_id;
+                        }
+                        if($staff_id>0){
+                            $where['record.ops_staff_id'] = $staff_id;
+                        }
+                    }else{
+                        $permission = json_decode($res_staff['permission'],true);
+                        if(in_array($permission['hotel_info']['type'],array(2,4,6))){
+                            $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }elseif($permission['hotel_info']['type']==3){
+                            $where['record.ops_staff_id'] = $ops_staff_id;
+                        }
+                    }
+                }else{
+                    $where['record.ops_staff_id'] = $ops_staff_id;
+                }
+                $orderby = 'read_status asc,a.salerecord_id desc';
+                break;
             default:
                 $where = array();
         }
@@ -554,12 +577,14 @@ class CrmsaleController extends CommonController{
                 $hotel_name = '';
                 $hotel_id   = 0;
                 $consume_time = $signin_time = $signout_time = '';
-                if($record_info['visit_type']==171){
-                    if($record_info['signin_hotel_id']){
-                        $res_hotel = $m_hotel->getOneById('id,name',$record_info['signin_hotel_id']);
+                if($record_info['visit_type']==171 || $record_info['type']==2){
+                    if ($record_info['signin_hotel_id']) {
+                        $res_hotel = $m_hotel->getOneById('id,name', $record_info['signin_hotel_id']);
                         $hotel_name = $res_hotel['name'];
-                        $hotel_id   = $res_hotel['id'];
+                        $hotel_id = $res_hotel['id'];
                     }
+                }
+                if($record_info['visit_type']==171){
                     if($record_info['signin_time']!='0000-00-00 00:00:00'){
                         $signin_time = $record_info['signin_time'];
                     }
@@ -605,10 +630,18 @@ class CrmsaleController extends CommonController{
                 if(!empty($record_info['content'])){
                     $record_info['content'] = text_substr($record_info['content'], 100,'...');
                 }
+
+                $stock_check_percent='';
+                if(!empty($record_info['stock_check_num']) && !empty($record_info['stock_check_hadnum'])){
+                    $stock_check_percent = intval(($record_info['stock_check_hadnum']/$record_info['stock_check_num'])*100);
+                    $stock_check_percent = $stock_check_percent.'%';
+                }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
-                    'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status']
+                    'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],
+                    'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
+                    'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],
                 );
                 $datalist[]=$info;
 

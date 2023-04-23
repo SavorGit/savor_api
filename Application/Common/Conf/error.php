@@ -528,6 +528,7 @@ return array(
         '94005'=>'smallappops_salerecord_sign_inout_hotel_error',
         '94006'=>'smallappops_stock_check_hotel_error',
         '94007'=>'smallappops_stock_check_local_error',
+        '94008'=>'smallappops_stock_check_month_finish',
 	    '94100'=>'smallappops_not_entity_platform',
 	),
 );

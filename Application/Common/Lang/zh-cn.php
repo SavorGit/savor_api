@@ -521,6 +521,7 @@ return array(
     'smallapp_invite_user_disable'=>'邀请人已失效',
     'smallappops_stock_check_hotel_error'=>'扫码酒楼不一致',
     'smallappops_stock_check_local_error'=>'定位失败，请在餐厅200m范围内操作',
+    'smallappops_stock_check_month_finish'=>'扫码所在酒楼当前月份已盘点完成',
 
 
 

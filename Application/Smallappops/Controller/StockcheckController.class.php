@@ -29,6 +29,14 @@ class StockcheckController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
                 break;
+            case 'statcheckdata':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'stat_date'=>1002);
+                break;
+            case 'hotelchecklist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'pagesize'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -86,14 +94,20 @@ class StockcheckController extends CommonController{
         $fileds = 'a.id,stock.hotel_id';
         $res_stock = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $hotel_id = intval($res_stock[0]['hotel_id']);
-
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $checkwhere = array('signin_hotel_id'=>$hotel_id,'type'=>2);
+        $checkwhere["date_format(add_time,'%Y-%m')"] = date('Y-m');
+        $res_salerecord = $m_salerecord->getInfo($checkwhere);
+        if(!empty($res_salerecord)){
+            $this->to_back(94008);
+        }
         $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
         $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
         $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
         $datalist = array();
         foreach ($res_allidcodes as $v){
             $all_types = explode(',',$v['all_type']);
-            if(in_array(5,$all_types) && !in_array(7,$all_types)){
+            if(!in_array(6,$all_types) && !in_array(7,$all_types)){
                 $checked=false;
                 if($v['idcode']==$idcode){
                     $checked=true;
@@ -160,7 +174,7 @@ class StockcheckController extends CommonController{
         $stock_check_num=$stock_check_hadnum=0;
         foreach ($res_allidcodes as $v){
             $all_types = explode(',',$v['all_type']);
-            if(in_array(5,$all_types) && !in_array(7,$all_types)){
+            if(!in_array(6,$all_types) && !in_array(7,$all_types)){
                 $stock_check_num++;
                 $is_check = 0;
                 if(in_array($v['idcode'],$now_idcodes)){
@@ -197,7 +211,7 @@ class StockcheckController extends CommonController{
             $m_stock_check_record->addAll($check_list);
         }
 
-        $add_remind = array(array('salerecord_id'=>$salerecord_id,'type'=>4,'remind_user_id'=>$ops_staff_id));
+        $add_remind = array(array('salerecord_id'=>$salerecord_id,'type'=>5,'remind_user_id'=>$ops_staff_id));
         if(!empty($review_uid)){
             $add_remind[] = array('salerecord_id'=>$salerecord_id,'type'=>1,'remind_user_id'=>$review_uid);
         }
@@ -230,6 +244,11 @@ class StockcheckController extends CommonController{
         $res_list = $m_stock_check_record->getCheckRecordList($fields,array('record.salerecord_id'=>$salerecord_id),'record.id desc');
         $idcodes = $other_idcodes = array();
         foreach ($res_list as $v){
+            $checked = false;
+            if($v['is_check']){
+                $checked = true;
+            }
+            $v['checked'] = $checked;
             if($v['type']==1){
                 $idcodes[]=$v;
             }else{
@@ -237,5 +256,157 @@ class StockcheckController extends CommonController{
             }
         }
         $this->to_back(array('idcodes'=>$idcodes,'other_idcodes'=>$other_idcodes));
+    }
+
+    public function statcheckdata(){
+        $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
+        $stat_date = $this->params['stat_date'];
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        if(empty($stat_date)){
+            $stat_date = date('Y-m');
+        }
+        $m_hotel = new \Common\Model\HotelModel();
+        $fields = 'count(hotel.id) as num';
+        $hotel_where = array('hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1);
+        if($area_id){
+            $hotel_where['hotel.area_id'] = $area_id;
+        }
+        $res_hotel = $m_hotel->getHotelDataList($fields,$hotel_where,'hotel.id desc');
+        $hotel_num = intval($res_hotel[0]['num']);
+        $m_sale_record = new \Common\Model\Crm\SalerecordModel();
+        $fields = 'COUNT(DISTINCT record.signin_hotel_id) as num';
+        $check_where = $hotel_where;
+        $check_where['record.type'] = 2;
+        $check_where['record.stock_check_status'] = 2;
+        $start_time = $stat_date.'-01 00:00:00';
+        $end_time = $stat_date.'-31 23:59:59';
+        $check_where['record.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $res_check_hotel = $m_sale_record->getStockCheckRecordList($fields,$check_where,'');
+        $check_hotel_num = intval($res_check_hotel[0]['num']);
+        $hotel_finish_percent = intval(($check_hotel_num/$hotel_num)*100).'%';
+
+        $m_finance_goods = new \Common\Model\Finance\GoodsModel();
+        $res_goods = $m_finance_goods->getDataList('id,name,brand_id',array(),'id desc');
+        $goods_ids = $test_goods_ids = array();
+        foreach ($res_goods as $v){
+            if($v['brand_id']==11){
+                $test_goods_ids[]=$v['id'];
+            }else{
+                $goods_ids[]=$v['id'];
+            }
+        }
+
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $goods_num = 0;
+        if($area_id==0){
+            $cache_key = C('FINANCE_GOODSSTOCK');
+            $res_goods_stock = $redis->get($cache_key);
+            $goods_stock = json_decode($res_goods_stock,true);
+            foreach ($goods_stock as $v){
+                $goods_num+=$v['stock_num'];
+            }
+        }else{
+            $hcache_key = C('FINANCE_HOTELSTOCK');
+            $res_hotel = $m_hotel->getHotelDataList('hotel.id',$hotel_where,'hotel.id desc');
+            foreach ($res_hotel as $v){
+                $hotel_key = $hcache_key.':'.$v['id'];
+                $res_cache_stock = $redis->get($hotel_key);
+                if(!empty($res_cache_stock)){
+                    $hotel_stock = json_decode($res_cache_stock,true);
+                    foreach ($hotel_stock['goods_list'] as $gv){
+                        $goods_num+=$gv['stock_num'];
+                    }
+                }
+            }
+        }
+        $fields = 'sum(record.stock_check_num) as num';
+        $res_check_hotel = $m_sale_record->getStockCheckRecordList($fields,$check_where,'','','record.signin_hotel_id');
+        $goods_check_num = intval($res_check_hotel[0]['num']);
+        $goods_finish_percent = intval(($goods_check_num/$goods_num)*100).'%';
+
+        $month_list = array(array('name'=>'本月','value'=>date('Y-m')));
+        for($i=1;$i<12;$i++){
+            $name = date('Y年m月',strtotime("-$i month"));
+            $value = date('Y-m',strtotime("-$i month"));
+            $month_list[]=array('name'=>$name,'value'=>$value);
+        }
+
+        $this->to_back(array('month_list'=>$month_list,'hotel_num'=>$hotel_num,'check_hotel_num'=>$check_hotel_num,'hotel_finish_percent'=>$hotel_finish_percent,
+                'goods_num'=>$goods_num,'goods_check_num'=>$goods_check_num,'goods_finish_percent'=>$goods_finish_percent)
+        );
+    }
+
+    public function hotelchecklist(){
+        $openid = $this->params['openid'];
+        $page = intval($this->params['page']);
+        $pagesize = $this->params['pagesize'];
+        $hotel_id = intval($this->params['hotel_id']);
+        if(empty($pagesize)){
+            $pagesize = 20;
+        }
+        $start = ($page-1)*$pagesize;
+        $limit = "$start,$pagesize";
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $where = array('record.signin_hotel_id'=>$hotel_id,'record.type'=>2);
+
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $fields = 'record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_salerecord = $m_salerecord->getRecordList($fields,$where,'record.id desc',$limit,'');
+        $datalist = array();
+        if(!empty($res_salerecord)){
+            $m_comment = new \Common\Model\Crm\CommentModel();
+            $m_hotel = new \Common\Model\HotelModel();
+            foreach ($res_salerecord as $v){
+                $salerecord_id = $v['id'];
+                $record_info = $v;
+                $staff_id = $v['staff_id'];
+                $staff_name = !empty($v['staff_name']) ? $v['staff_name'] :'小热点';
+                $avatarUrl = $v['avatarUrl'];
+                $job = $v['job'];
+                $now = time();
+                $diff_time = $now - strtotime($record_info['add_time']);
+                if($diff_time<=86400){
+                    $add_time = viewTimes(strtotime($record_info['add_time']));
+                }else{
+                    $add_time = date('m月d日 H:i',strtotime($record_info['add_time']));
+                }
+                $res_hotel = $m_hotel->getOneById('name',$record_info['signin_hotel_id']);
+                $hotel_name = $res_hotel['name'];
+
+                $comment_num = 0;
+                $res_comment = $m_comment->getDataList('count(*) as num',array('salerecord_id'=>$salerecord_id,'status'=>1),'');
+                if(!empty($res_comment[0]['num'])){
+                    $comment_num = intval($res_comment[0]['num']);
+                }
+                if(!empty($record_info['content'])){
+                    $record_info['content'] = text_substr($record_info['content'], 100,'...');
+                }
+                $stock_check_percent='';
+                if(!empty($record_info['stock_check_num']) && !empty($record_info['stock_check_hadnum'])){
+                    $stock_check_percent = intval(($record_info['stock_check_hadnum']/$record_info['stock_check_num'])*100);
+                    $stock_check_percent = $stock_check_percent.'%';
+                }
+
+                $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
+                    'add_time'=>$add_time,'content'=>$record_info['content'],'hotel_id'=>$record_info['signin_hotel_id'],
+                    'hotel_name'=>$hotel_name,'comment_num'=>$comment_num,
+                    'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
+                    'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],
+                );
+                $datalist[]=$info;
+
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 }

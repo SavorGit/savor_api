@@ -126,6 +126,8 @@ class ForscreenController extends CommonController{
             $cache_key = 'savor_room_' . $box_info['room_id'];
             $redis_room_info = $redis->get($cache_key);
             $room_info = json_decode($redis_room_info, true);
+            $left_pop_wind = 1;
+            $marquee = 1;
             if(!empty($room_info)){
                 $hotel_id = $room_info['hotel_id'];
                 $wifi_hotel = C('RD_WIFI_HOTEL');
@@ -137,6 +139,11 @@ class ForscreenController extends CommonController{
                     $data['qrcode_gif_md5']            = '56b18556d2d79e111f4bffcbc7d4defa';
                     $data['isShowAnimQRcode'] = true;
                 }
+                $cache_key = 'savor_hotel_ext_' . $hotel_id;
+                $redis_hotel_ext = $redis->get($cache_key);
+                $ext_info = json_decode($redis_hotel_ext,true);
+                $left_pop_wind = intval($ext_info['is_goods_leftpop_wind']);
+                $marquee = intval($ext_info['is_goods_roll_content']);
                 /*
                 $seckill_goods_id = C('LAIMAO_SECKILL_GOODS_ID');
                 $m_hotel_goods = new \Common\Model\Smallapp\HotelgoodsModel();
@@ -149,8 +156,8 @@ class ForscreenController extends CommonController{
                 }
                 */
             }
-			//$data['left_pop_wind'] = 1;    //左侧弹窗
-			//$data['marquee']       = 1;    //跑马灯
+			$data['left_pop_wind'] = $left_pop_wind;
+			$data['marquee']       = $marquee;
 			$hotel_id = $room_info['hotel_id'];
 			$m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
             $nowtime = date('Y-m-d H:i:s');

@@ -361,11 +361,9 @@ class BasicdataController extends CommonController{
                 $remain_integral = $res_remain['total_integral'];
             }
             $res_staticdata = $m_statichotelstaffdata->getStaffData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
-            $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
 
             $res_data = array('hotel_num'=>$hotel_num,'staff_num'=>$staff_num,'get_integral'=>$res_staticdata['get_integral'],
-                'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'task_data'=>$res_staticdata['task_data'],
-                'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num'])
+                'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'task_data'=>$res_staticdata['task_data']
             );
             $res_data['desc'] = array('1.获得积分：时间段内一共获得多少积分；','2.剩余积分：截止到昨天24:00，剩余积分总量（待核销+正常）；','3.提现金额：时间段内一共提现多少钱',
 //                '一.奖券任务','1.发布次数：发布任务的餐厅范围内，餐厅经理数量每日加和；','2.领取次数：发布任务的餐厅范围内，餐厅经理领取任务次数每日加和；','3.售酒数量：发布任务的餐厅范围内，每日核销数量加和；','4.领券人：发布任务的餐厅范围内，总共领取金卡优惠券人数；','5.奖励：发布任务的餐厅范围内，本任务共产生多少积分奖励（待核销+正常）；',

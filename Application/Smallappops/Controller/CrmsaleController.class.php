@@ -472,9 +472,12 @@ class CrmsaleController extends CommonController{
         $orderby = 'a.salerecord_id desc';
         switch ($type){
             case 1:
-                $where1 = array('a.type'=>4,'record.status'=>2);
+                $where1 = array('a.type'=>array('in','4,5'),'record.status'=>2);
+                $permission = json_decode($res_staff['permission'],true);
+                if(in_array($res_staff['hotel_role_type'],array(5,6))){
+                    $where1 = array('a.type'=>5,'record.status'=>2,'record.type'=>2);
+                }
                 if($res_staff['is_operrator']==0){
-                    $permission = json_decode($res_staff['permission'],true);
                     if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
                         $where1['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
                     }
@@ -490,9 +493,11 @@ class CrmsaleController extends CommonController{
                 $orderby = 'record.status asc,a.salerecord_id desc';
                 break;
             case 2:
-                $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1);
+                $where = array('a.remind_user_id'=>$ops_staff_id,'record.status'=>2,'a.status'=>1);
+                if(in_array($res_staff['hotel_role_type'],array(5,6))){
+                    $where = array('a.remind_user_id'=>$ops_staff_id,'record.status'=>2,'a.status'=>1,'record.type'=>2);
+                }
                 $where['a.type'] = 3;
-                $where['record.status'] = 2;
                 $orderby = 'read_status asc,a.salerecord_id desc';
                 break;
             case 3:
@@ -520,7 +525,7 @@ class CrmsaleController extends CommonController{
                 $orderby = 'read_status asc,a.salerecord_id desc';
                 break;
             case 4:
-                $where = array('a.type'=>5,'a.status'=>1,'record.status'=>2);
+                $where = array('record.type'=>2,'a.status'=>1,'record.status'=>2);
                 if($res_staff['is_operrator']==0){
                     if($area_id>0 || $staff_id>0){
                         if($area_id){
@@ -629,6 +634,16 @@ class CrmsaleController extends CommonController{
                 }
                 if(!empty($record_info['content'])){
                     $record_info['content'] = text_substr($record_info['content'], 100,'...');
+                }
+                if($record_info['read_status']==1){
+                    $res_data = $m_salerecord_remind->getALLDataList('id,read_status',array('remind_user_id'=>$ops_staff_id,'salerecord_id'=>$record_info['id'],'status'=>1),'id desc','0,1','');
+                    if(!empty($res_data)){
+                        if($res_data[0]['read_status']==2){
+                            $record_info['read_status']=2;
+                        }
+                    }else{
+                        $record_info['read_status']=2;
+                    }
                 }
 
                 $stock_check_percent='';

@@ -95,13 +95,13 @@ class StockcheckController extends CommonController{
         $res_stock = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $hotel_id = intval($res_stock[0]['hotel_id']);
         $m_salerecord = new \Common\Model\Crm\SalerecordModel();
-        $checkwhere = array('signin_hotel_id'=>$hotel_id,'type'=>2);
+        $checkwhere = array('signin_hotel_id'=>$hotel_id,'type'=>2,'stock_check_status'=>2);
         $checkwhere["date_format(add_time,'%Y-%m')"] = date('Y-m');
         $res_salerecord = $m_salerecord->getInfo($checkwhere);
         if(!empty($res_salerecord)){
             $this->to_back(94008);
         }
-        $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
+        $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'a.dstatus'=>1);
         $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
         $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
         $datalist = array();

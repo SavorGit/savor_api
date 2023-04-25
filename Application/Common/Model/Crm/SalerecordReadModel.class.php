@@ -19,10 +19,6 @@ class SalerecordReadModel extends BaseModel{
     }
 
 	public function readRecord($staff,$record){
-	    $dev_max_uid = 7;
-	    if($staff['id']==$record['ops_staff_id'] || $staff['hotel_role_type']==3){
-	        return true;
-        }
 	    $user_id = $staff['id'];
 	    $salerecord_id = $record['id'];
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();

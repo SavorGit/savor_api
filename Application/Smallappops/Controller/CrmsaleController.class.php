@@ -667,7 +667,7 @@ class CrmsaleController extends CommonController{
 
     public function unreadnum(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);//类型2@我的,3销售记录
+        $type = intval($this->params['type']);//类型2@我的,3销售记录,4盘点记录
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
 
@@ -699,6 +699,28 @@ class CrmsaleController extends CommonController{
                         $permission = json_decode($res_staff['permission'],true);
                         if($permission['hotel_info']['type']==2 || $permission['hotel_info']['type']==4){
                             $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }
+                    }
+                }else{
+                    $where['record.ops_staff_id'] = $ops_staff_id;
+                }
+                break;
+            case 4:
+                $where = array('a.remind_user_id'=>$ops_staff_id,'record.type'=>2,'a.status'=>1,'record.status'=>2);
+                if($res_staff['is_operrator']==0){
+                    if($area_id>0 || $staff_id>0){
+                        if($area_id){
+                            $where['staff.area_id'] = $area_id;
+                        }
+                        if($staff_id>0){
+                            $where['record.ops_staff_id'] = $staff_id;
+                        }
+                    }else{
+                        $permission = json_decode($res_staff['permission'],true);
+                        if(in_array($permission['hotel_info']['type'],array(2,4,6))){
+                            $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }elseif($permission['hotel_info']['type']==3){
+                            $where['record.ops_staff_id'] = $ops_staff_id;
                         }
                     }
                 }else{

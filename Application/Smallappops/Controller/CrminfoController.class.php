@@ -86,11 +86,13 @@ class CrminfoController extends CommonController{
         $maintainers = array();
         switch ($permission['hotel_info']['type']){
             case 1:
+            case 5:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1);
                 $citys = $m_area->field($area_fields)->where($where)->order('id asc')->select();
                 break;
             case 2:
             case 4:
+            case 6:
                 $area_ids = $permission['hotel_info']['area_ids'];
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$area_ids));
                 $citys = $m_area->field($area_fields)->where($where)->order('id asc')->select();

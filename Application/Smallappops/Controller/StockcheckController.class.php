@@ -64,10 +64,6 @@ class StockcheckController extends CommonController{
         $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
         $fileds = 'a.id,stock.hotel_id,goods.id as goods_id,goods.name as goods_name';
         $res_stock = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
-        $idcode_hotel_id = intval($res_stock[0]['hotel_id']);
-        if($hotel_id!=$idcode_hotel_id){
-            $this->to_back(94006);
-        }
         $this->to_back(array('idcode'=>$idcode,'goods_id'=>$res_stock[0]['goods_id'],'goods_name'=>$res_stock[0]['goods_name']));
     }
 
@@ -101,21 +97,29 @@ class StockcheckController extends CommonController{
         if(!empty($res_salerecord)){
             $this->to_back(94008);
         }
-        $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'a.dstatus'=>1);
-        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
-        $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
-        $datalist = array();
-        foreach ($res_allidcodes as $v){
-            $all_types = explode(',',$v['all_type']);
-            if(!in_array(6,$all_types) && !in_array(7,$all_types)){
-                $checked=false;
-                if($v['idcode']==$idcode){
-                    $checked=true;
+        $idcodes = array();
+        $other_idcodes = array();
+        if($hotel_id>0){
+            $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'a.dstatus'=>1);
+            $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
+            $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
+            foreach ($res_allidcodes as $v){
+                $all_types = explode(',',$v['all_type']);
+                if(!in_array(6,$all_types) && !in_array(7,$all_types)){
+                    $checked=false;
+                    if($v['idcode']==$idcode){
+                        $checked=true;
+                    }
+                    $idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                }else{
+                    if($v['idcode']==$idcode){
+                        $checked=true;
+                        $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                    }
                 }
-                $datalist[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
             }
         }
-        $res_data = array('hotel_id'=>$hotel_id,'datalist'=>$datalist);
+        $res_data = array('hotel_id'=>$hotel_id,'idcodes'=>$idcodes,'other_idcodes'=>$other_idcodes);
         $this->to_back($res_data);
     }
 
@@ -181,12 +185,20 @@ class StockcheckController extends CommonController{
                     $is_check = 1;
                     $stock_check_hadnum++;
                 }
-                $check_list[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'is_check'=>$is_check,'type'=>1);
-            }
-            if(in_array($v['idcode'],$now_other_idcodes)){
-                $check_list[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'is_check'=>0,'type'=>2);
+                $check_list[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'hotel_id'=>$hotel_id,'idcode_hotel_id'=>$hotel_id,
+                    'is_check'=>$is_check,'type'=>1);
             }
         }
+        if(!empty($now_other_idcodes)){
+            foreach ($now_other_idcodes as $v){
+                $where = array('a.idcode'=>$v,'a.dstatus'=>1);
+                $fileds = 'a.id,stock.hotel_id,goods.id as goods_id';
+                $res_srecord = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+                $check_list[]=array('idcode'=>$v,'goods_id'=>$res_srecord[0]['goods_id'],'hotel_id'=>$hotel_id,
+                    'idcode_hotel_id'=>$res_srecord[0]['hotel_id'],'is_check'=>0,'type'=>2);
+            }
+        }
+
         $stock_check_status = 1;
         if($stock_check_num==$stock_check_hadnum){
             $stock_check_status = 2;
@@ -206,7 +218,6 @@ class StockcheckController extends CommonController{
             $m_stock_check_record = new \Common\Model\Crm\StockcheckRecordModel();
             foreach ($check_list as $k=>$v){
                 $check_list[$k]['salerecord_id']=$salerecord_id;
-                $check_list[$k]['hotel_id']=$hotel_id;
             }
             $m_stock_check_record->addAll($check_list);
         }

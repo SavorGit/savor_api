@@ -62,6 +62,7 @@ class OpsstaffModel extends BaseModel{
         $permission = json_decode($staff_info['permission'],true);
         switch ($permission['hotel_info']['type']){
             case 1:
+            case 5:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1);
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 $tmp = array('area_id'=>0,'area_name'=>'全部');
@@ -87,6 +88,7 @@ class OpsstaffModel extends BaseModel{
                 break;
             case 2:
             case 4:
+            case 6:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 foreach ($permission_city as $k=>$v){

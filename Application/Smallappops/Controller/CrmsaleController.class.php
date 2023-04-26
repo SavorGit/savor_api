@@ -470,6 +470,7 @@ class CrmsaleController extends CommonController{
         $ops_staff_id = $res_staff['id'];
         $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
         $orderby = 'a.salerecord_id desc';
+        $unread_where = array();
         switch ($type){
             case 1:
                 $where1 = array('a.type'=>array('in','4,5'),'record.status'=>2);
@@ -522,7 +523,10 @@ class CrmsaleController extends CommonController{
                 }else{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
-                $orderby = 'read_status asc,a.salerecord_id desc';
+                $orderby = 'a.salerecord_id desc';
+                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
+                    $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>4,'a.status'=>1,'record.status'=>2);
+                }
                 break;
             case 4:
                 $where = array('record.type'=>2,'a.status'=>1,'record.status'=>2);
@@ -545,13 +549,28 @@ class CrmsaleController extends CommonController{
                 }else{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
-                $orderby = 'read_status asc,a.salerecord_id desc';
+                $orderby = 'a.salerecord_id desc';
+                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
+                    $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.status'=>1,'record.type'=>2,'record.status'=>2);
+                }
                 break;
             default:
                 $where = array();
         }
+        $res_unread_mind = array();
+        $unread_ids = array();
+        if(!empty($unread_where)){
+            $unread_fields = 'a.salerecord_id,min(a.read_status) as read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+            $res_unread_mind = $m_salerecord_remind->getRemindRecordList($unread_fields,$unread_where,'a.salerecord_id desc','','a.salerecord_id');
+            foreach ($res_unread_mind as $v){
+                $unread_ids[]=$v['salerecord_id'];
+            }
+        }
         $fields = 'a.salerecord_id,min(a.read_status) as read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
         $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,$limit,'a.salerecord_id');
+        if(!empty($res_unread_mind)){
+            $res_mind = array_merge($res_unread_mind,$res_mind);
+        }
         $datalist = array();
         if(!empty($res_mind)){
             $os = check_phone_os();
@@ -635,14 +654,12 @@ class CrmsaleController extends CommonController{
                 if(!empty($record_info['content'])){
                     $record_info['content'] = text_substr($record_info['content'], 100,'...');
                 }
-                if($record_info['read_status']==1){
+                if(in_array($type,array(3,4)) && !in_array($salerecord_id,$unread_ids)){
                     $res_data = $m_salerecord_remind->getALLDataList('id,read_status',array('remind_user_id'=>$ops_staff_id,'salerecord_id'=>$record_info['id'],'status'=>1),'id desc','0,1','');
                     if(!empty($res_data)){
-                        if($res_data[0]['read_status']==2){
-                            $record_info['read_status']=2;
-                        }
+                        $record_info['read_status'] = $res_data[0]['read_status'];
                     }else{
-                        $record_info['read_status']=2;
+                        $record_info['read_status'] = 0;
                     }
                 }
 
@@ -659,7 +676,6 @@ class CrmsaleController extends CommonController{
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],
                 );
                 $datalist[]=$info;
-
             }
         }
         $this->to_back(array('datalist'=>$datalist));
@@ -682,6 +698,9 @@ class CrmsaleController extends CommonController{
         switch ($type){
             case 2:
                 $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1,'a.read_status'=>1);
+                if(in_array($res_staff['hotel_role_type'],array(5,6))){
+                    $where = array('a.remind_user_id'=>$ops_staff_id,'a.status'=>1,'a.read_status'=>1,'record.type'=>2);
+                }
                 $where['a.type'] = 3;
                 $where['record.status'] = 2;
                 break;

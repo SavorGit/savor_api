@@ -275,18 +275,35 @@ class DishController extends CommonController{
         }
         $message = '';
         $sellwine_activity_id = 0;
-        if($res_goods['finance_goods_id']>0){
-            $fields = "hotel.id as hotel_id,hotel.area_id";
-            if(!empty($box_mac)){
-                $m_box = new \Common\Model\BoxModel();
-                $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
-                $box_info = $m_box->getBoxByCondition($fields,$where);
-                $hotel_id = $box_info[0]['hotel_id'];
-                $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
-                $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2,$res_goods['finance_goods_id']);
-                if(!empty($sellwine_activity)){
-                    $message = $sellwine_activity['message'];
-                    $sellwine_activity_id = $sellwine_activity['activity_id'];
+        if($res_goods['type']==45){
+            $distribution_config = json_decode($res_goods['distribution_config'],true);
+            $prices = array();
+            $now_price = intval($res_goods['price']);
+            $price_list = array("原价：￥{$now_price}/箱");
+            foreach ($distribution_config as $ck=>$cv){
+                $prices[]=$cv['price'];
+                if($ck<2){
+                    $price_list[]="{$cv['min']}-{$cv['max']}箱到手价：￥{$cv['price']}/箱";
+                }
+
+            }
+            $min_price = min($prices);
+            $data['min_price'] = $min_price;
+            $data['price_list'] = $price_list;
+        }else{
+            if($res_goods['finance_goods_id']>0){
+                $fields = "hotel.id as hotel_id,hotel.area_id";
+                if(!empty($box_mac)){
+                    $m_box = new \Common\Model\BoxModel();
+                    $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
+                    $box_info = $m_box->getBoxByCondition($fields,$where);
+                    $hotel_id = $box_info[0]['hotel_id'];
+                    $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
+                    $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2,$res_goods['finance_goods_id']);
+                    if(!empty($sellwine_activity)){
+                        $message = $sellwine_activity['message'];
+                        $sellwine_activity_id = $sellwine_activity['activity_id'];
+                    }
                 }
             }
         }

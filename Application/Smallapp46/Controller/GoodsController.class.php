@@ -247,7 +247,7 @@ class GoodsController extends CommonController{
         $datalist = array();
         $start = ($page-1)*$pagesize;
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc,desc2',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc,desc2,distribution_config',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
         $oss_host = get_oss_host();
         if($res_goods['list']){
             foreach ($res_goods['list'] as $v){
@@ -265,8 +265,14 @@ class GoodsController extends CommonController{
                 if(!empty($v['desc'])){
                     $desc = html_entity_decode($v['desc']);
                 }
+                $distribution_config = json_decode($v['distribution_config'],true);
+                $price_list = array();
+                foreach ($distribution_config as $cv){
+                    $price_list[]=$cv['price'];
+                }
+                $min_price = min($price_list);
                 $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'line_price'=>intval($v['line_price']),
-                    'img_url'=>$img_url,'desc'=>$desc);
+                    'img_url'=>$img_url,'desc'=>$desc,'min_price'=>$min_price);
                 $datalist[] = $dinfo;
             }
         }

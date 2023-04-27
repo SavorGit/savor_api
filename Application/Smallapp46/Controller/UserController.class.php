@@ -69,7 +69,7 @@ class UserController extends CommonController{
 			    break;
             case 'perfect':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,'avatar_url'=>1001);
+                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1002,'avatar_url'=>1001);
                 break;
             case 'lotterylist':
                 $this->is_verify = 1;

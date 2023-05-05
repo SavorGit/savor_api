@@ -24,6 +24,7 @@ class StockRecordModel extends BaseModel{
     public function getHotelStaffRecordList($fields,$where,$order,$limit,$group=''){
         $res = $this->alias('a')
             ->field($fields)
+            ->join('savor_finance_sale sale on a.id=sale.stock_record_id','left')
             ->join('savor_finance_stock stock on a.stock_id=stock.id','left')
             ->join('savor_hotel hotel on stock.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
@@ -57,9 +58,24 @@ class StockRecordModel extends BaseModel{
         return $res_data;
     }
 
-    public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group=''){
+    public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype=''){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
-        $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')));
+        $where = array('a.type'=>7);
+        if($wo_status){
+            $where['a.wo_status'] = $wo_status;
+        }else{
+            $where['a.wo_status'] = array('in','1,2,4');
+        }
+        if(!empty($goods_id)){
+            $where['a.goods_id'] = $goods_id;
+        }
+        if(!empty($ptype) && $ptype<99){
+            if($ptype==10){
+                $where['sale.ptype'] = 0;
+            }else{
+                $where['sale.ptype'] = $ptype;
+            }
+        }
         if($area_id){
             $where['hotel.area_id'] = $area_id;
         }
@@ -72,6 +88,7 @@ class StockRecordModel extends BaseModel{
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $res_data = $this->alias('a')
             ->field($fileds)
+            ->join('savor_finance_sale sale on a.id=sale.stock_record_id','left')
             ->join('savor_finance_stock stock on a.stock_id=stock.id','left')
             ->join('savor_hotel hotel on stock.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')

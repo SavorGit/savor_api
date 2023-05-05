@@ -78,6 +78,9 @@ class StatDataController extends CommonController{
         $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
         $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
 
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $res_saledata = $m_sale->getStaticSaleData(0,0,$hotel_id,$start_time,$end_time);
+
         $range_sdate = C('OPS_STAT_DATE');
         $range_smdate = date('Y-m-d',strtotime('-30day'));
         if($range_smdate>=$range_sdate){
@@ -91,6 +94,7 @@ class StatDataController extends CommonController{
             'pub_num'=>$res_staticdata['pub_num'],'welcome_num'=>$res_staticdata['welcome_num'],'birthday_num'=>$res_staticdata['birthday_num'],
             'signin_num'=>$res_staticdata['signin_num'],'task_data'=>$res_staticdata['task_data'],
             'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+            'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money'],
             'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
         );
         $staff_list = array();

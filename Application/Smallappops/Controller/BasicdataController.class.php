@@ -422,10 +422,15 @@ class BasicdataController extends CommonController{
         $res_data = array();
         if($is_data){
             $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
-            $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']));
+            $m_sale = new \Common\Model\Finance\SaleModel();
+            $res_saledata = $m_sale->getStaticSaleData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
+            $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+                'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money']);
             $res_data['desc'] = array();
         }
         $this->to_back($res_data);
     }
+
+
 
 }

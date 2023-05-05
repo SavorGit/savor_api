@@ -42,4 +42,81 @@ class SaleModel extends BaseModel{
 	    $sale_id = $this->add($add_data);
 	    return $sale_id;
     }
+
+    public function getStaticSaleData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype=''){
+        $fileds = 'sum(a.settlement_price) as sale_money';
+        $where = array();
+        if($wo_status){
+            $where['record.wo_status'] = $wo_status;
+        }else{
+            $where['record.wo_status'] = array('in','1,2,4');
+        }
+        if(!empty($goods_id)){
+            $where['record.goods_id'] = $goods_id;
+        }
+        if(!empty($ptype) && $ptype<99){
+            if($ptype==10){
+                $where['a.ptype'] = 0;
+            }else{
+                $where['a.ptype'] = $ptype;
+            }
+        }
+
+        if($area_id){
+            $where['hotel.area_id'] = $area_id;
+        }
+        if($maintainer_id){
+            $where['ext.maintainer_id'] = $maintainer_id;
+        }
+        if($hotel_id){
+            $where['a.hotel_id'] = $hotel_id;
+        }
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $res_sale = $this->getSaleStockRecordList($fileds,$where);
+        $sale_money = abs(intval($res_sale[0]['sale_money']));
+        $qk_money = 0;
+        $cqqk_money = 0;
+
+        $end_date = date('Y-m-d',strtotime($end_time));
+        if($end_date==date('Y-m-d')){
+            if(!isset($where['a.ptype'])){
+                $where['a.ptype'] = array('in','0,2');
+            }
+            $res_sale_qk = $this->getSaleStockRecordList('a.id as sale_id,a.settlement_price,a.ptype,a.add_time',$where);
+            if(!empty($res_sale_qk)){
+                $m_sale_payment_record = new \Common\Model\Finance\SalePaymentRecordModel();
+                $expire_time = 7*86400;
+                foreach ($res_sale_qk as $v){
+                    if($v['ptype']==0){
+                        $now_money = $v['settlement_price'];
+                    }else{
+                        $res_had_pay = $m_sale_payment_record->getDataList('sum(pay_money) as total_pay_money',array('sale_id'=>$v['sale_id']),'');
+                        $had_pay_money = intval($res_had_pay[0]['total_pay_money']);
+                        $now_money = $v['settlement_price']-$had_pay_money;
+                    }
+                    $qk_money+=$now_money;
+
+                    $sale_time = strtotime($v['add_time']);
+                    $now_time = time();
+                    if($now_time-$sale_time>=$expire_time){
+                        $cqqk_money+=$now_money;
+                    }
+                }
+            }
+            $cqqk_money = abs($cqqk_money);
+        }
+        return array('sale_money'=>$sale_money,'qk_money'=>$qk_money,'cqqk_money'=>$cqqk_money);
+    }
+
+    public function getSaleStockRecordList($fileds,$where,$group=''){
+        $res_data = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_finance_stock_record record on a.stock_record_id=record.id','left')
+            ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
+            ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+            ->where($where)
+            ->group($group)
+            ->select();
+        return $res_data;
+    }
 }

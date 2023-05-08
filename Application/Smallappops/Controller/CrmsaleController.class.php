@@ -705,7 +705,7 @@ class CrmsaleController extends CommonController{
                 $where['record.status'] = 2;
                 break;
             case 3:
-                $where = array('a.remind_user_id'=>$ops_staff_id,'a.type'=>array('in','1,2'),'a.status'=>1,'record.status'=>2,'a.read_status'=>1);
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>array('in','1,2'),'a.status'=>1,'record.status'=>2);
                 if($res_staff['is_operrator']==0){
                     if($area_id>0 || $staff_id>0){
                         if($area_id){
@@ -725,7 +725,7 @@ class CrmsaleController extends CommonController{
                 }
                 break;
             case 4:
-                $where = array('a.remind_user_id'=>$ops_staff_id,'record.type'=>2,'a.status'=>1,'record.status'=>2);
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'record.type'=>2,'a.status'=>1,'record.status'=>2);
                 if($res_staff['is_operrator']==0){
                     if($area_id>0 || $staff_id>0){
                         if($area_id){

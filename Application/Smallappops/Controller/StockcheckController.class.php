@@ -284,6 +284,7 @@ class StockcheckController extends CommonController{
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'count(hotel.id) as num';
         $hotel_where = array('hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1);
+        $hotel_where['hotel.id'] = array('not in',C('TEST_HOTEL'));
         if($area_id){
             $hotel_where['hotel.area_id'] = $area_id;
         }
@@ -320,6 +321,9 @@ class StockcheckController extends CommonController{
             $res_goods_stock = $redis->get($cache_key);
             $goods_stock = json_decode($res_goods_stock,true);
             foreach ($goods_stock as $v){
+                if(in_array($v['id'],$test_goods_ids)){
+                    continue;
+                }
                 $goods_num+=$v['stock_num'];
             }
         }else{

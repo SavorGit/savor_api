@@ -18,6 +18,10 @@ class StatDataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1000,'end_date'=>1000,);
                 break;
+            case 'salesellwine':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'source'=>1001,'day'=>1002,'start_date'=>1002,'end_date'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -75,12 +79,6 @@ class StatDataController extends CommonController{
         $m_statichotelstaffdata = new \Common\Model\Smallapp\StaticHotelstaffdataModel();
         $res_staticdata = $m_statichotelstaffdata->getStaffData(0,0,$hotel_id,$start_time,$end_time);
 
-        $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
-        $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
-
-        $m_sale = new \Common\Model\Finance\SaleModel();
-        $res_saledata = $m_sale->getStaticSaleData(0,0,$hotel_id,$start_time,$end_time);
-
         $range_sdate = C('OPS_STAT_DATE');
         $range_smdate = date('Y-m-d',strtotime('-30day'));
         if($range_smdate>=$range_sdate){
@@ -93,43 +91,9 @@ class StatDataController extends CommonController{
             'remain_integral'=>$remain_integral,'money'=>$res_staticdata['money'],'forscreen_num'=>$res_staticdata['forscreen_num'],
             'pub_num'=>$res_staticdata['pub_num'],'welcome_num'=>$res_staticdata['welcome_num'],'birthday_num'=>$res_staticdata['birthday_num'],
             'signin_num'=>$res_staticdata['signin_num'],'task_data'=>$res_staticdata['task_data'],
-            'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
-            'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money'],
             'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
         );
-        $staff_list = array();
-        if($source==2){
-            $m_user = new \Common\Model\Smallapp\UserModel();
-            $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time,'a.op_openid');
-            $sell_openids = array();
-            foreach ($res_sell as $v){
-                $sell_openids[$v['op_openid']] = array('brand_num'=>intval($v['brand_num']),'series_num'=>intval($v['series_num']),'sell_num'=>intval($v['sell_num']));
-            }
-            $res_stat_staff = $m_statichotelstaffdata->getHotelStaffData($hotel_id,$start_time,$end_time);
-            foreach ($res_stat_staff as $v){
-                $brand_num = $series_num = $sell_num = 0;
-                if(isset($sell_openids[$v['openid']])){
-                    $brand_num = $sell_openids[$v['openid']]['brand_num'];
-                    $series_num = $sell_openids[$v['openid']]['series_num'];
-                    $sell_num = $sell_openids[$v['openid']]['sell_num'];
-                }
-                $v['brand_num'] = $brand_num;
-                $v['series_num'] = $series_num;
-                $v['sell_num'] = $sell_num;
-                if(isset($all_staff[$v['openid']])){
-                    $avatarUrl = $all_staff[$v['openid']]['avatarUrl'];
-                    $nickName = $all_staff[$v['openid']]['nickName'];
-                }else{
-                    $res_user = $m_user->getOne('id,avatarUrl,nickName',array('openid'=>$v['openid']),'id desc');
-                    $avatarUrl = $res_user['avatarUrl'];
-                    $nickName = $res_user['nickName'];
-                }
-                $v['avatarUrl'] = $avatarUrl;
-                $v['nickName'] = $nickName;
-                $staff_list[]=$v;
-            }
-        }
-        $res_data['staff_list'] = $staff_list;
+        $res_data['staff_list'] = array();
         $this->to_back($res_data);
     }
 
@@ -137,6 +101,7 @@ class StatDataController extends CommonController{
         $openid   = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
         $source = intval($this->params['source']);//来源 1酒楼详情页 2酒楼数据概况页
+        $day = intval($this->params['day']);//1今日,2近7天,3本月
         $start_date = $this->params['start_date'];
         $end_date   = $this->params['end_date'];
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -144,20 +109,39 @@ class StatDataController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        if(empty($start_date) || empty($end_date)){
-            $start_date = date('Y-m-d',strtotime('-6 days'));
+        if($day>0){
+            switch ($day){
+                case 1:
+                    $start_date = date('Y-m-d');
+                    break;
+                case 2:
+                    $start_date = date('Y-m-d',strtotime('-6day'));
+                    break;
+                case 3:
+                    $start_date = date('Y-m-01');
+                    break;
+            }
             $end_date = date('Y-m-d');
+        }else{
+            if(empty($start_date) || empty($end_date)){
+                $start_date = date('Y-m-d',strtotime('-6 days'));
+                $end_date = date('Y-m-d');
+            }
         }
         $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
         $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
         $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
         $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time);
+
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $res_saledata = $m_sale->getStaticSaleData(0,0,$hotel_id,$start_time,$end_time);
         $date_range = array(date('Y-m-d',strtotime('-6 days')),date('Y-m-d'));
         $stat_range_str= '(近七天,数据更新至'.date('Y/m/d').')';
         $stat_update_str = '数据更新至'.date('Y/m/d');
         $res_data = array(
             'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+            'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money'],
             'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
         );
         $staff_list = array();

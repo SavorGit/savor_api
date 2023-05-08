@@ -60,7 +60,7 @@ class StockRecordModel extends BaseModel{
 
     public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype=''){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
-        $where = array('a.type'=>7);
+        $where = array('a.type'=>7,'a.wo_reason_type'=>1);
         if($wo_status){
             $where['a.wo_status'] = $wo_status;
         }else{

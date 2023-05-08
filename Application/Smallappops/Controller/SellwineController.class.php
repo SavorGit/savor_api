@@ -281,13 +281,12 @@ class SellwineController extends CommonController{
             }
         }
 
-        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id,sale.ptype';
+        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id,sale.ptype,sale.settlement_price';
         $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_records)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
-            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
             $all_pay_types = C('STOCK_PAY_TYPES');
@@ -308,17 +307,16 @@ class SellwineController extends CommonController{
                 }
                 $where = array('a.idcode'=>$v['idcode'],'a.type'=>7);
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1','');
-                $price = abs($res_goods[0]['price']);
-                $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($v['hotel_id'],$res_goods[0]['goods_id'],1);
-                if(!empty($settlement_price)){
-                    $price = intval($settlement_price);
-                }
-                $res_goods[0]['price'] = $price;
+
+                $res_goods[0]['price'] = intval($v['settlement_price']);
                 $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
-                if($v['ptype']==0){
-                    $ptype_str = $all_pay_types[10];
-                }else{
-                    $ptype_str = $all_pay_types[$v['ptype']];
+                $ptype_str='';
+                if($v['reason_type']==1){
+                    if($v['ptype']==0){
+                        $ptype_str = $all_pay_types[10];
+                    }else{
+                        $ptype_str = $all_pay_types[$v['ptype']];
+                    }
                 }
                 $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
                     'ptype'=>$v['ptype'],'ptype_str'=>$ptype_str,

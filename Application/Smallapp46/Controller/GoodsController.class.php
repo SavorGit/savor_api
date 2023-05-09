@@ -19,7 +19,7 @@ class GoodsController extends CommonController{
                 break;
             case 'distributionGoodsList':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1002,'page'=>1001);
                 break;
         }
         parent::_init_();

@@ -18,7 +18,7 @@ class CustomerController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'datalist':
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'keywords'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'detail':
@@ -44,6 +44,14 @@ class CustomerController extends CommonController{
                 break;
             case 'recordinfo':
                 $this->valid_fields = array('openid'=>1001,'expense_record_id'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'editRemark':
+                $this->valid_fields = array('openid'=>1001,'customer_id'=>1001,'remark'=>1002);
+                $this->is_verify = 1;
+                break;
+            case 'editLabels':
+                $this->valid_fields = array('openid'=>1001,'customer_id'=>1001,'labels'=>1002);
                 $this->is_verify = 1;
                 break;
         }
@@ -227,6 +235,7 @@ class CustomerController extends CommonController{
     public function datalist(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
+        $keywords = trim($this->params['keywords']);
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -236,7 +245,11 @@ class CustomerController extends CommonController{
         }
 
         $m_customer = new \Common\Model\Smallapp\CustomerModel();
-        $res_data = $m_customer->getDataList('id,name,mobile,mobile1,avatar_url',array('hotel_id'=>$hotel_id),'id desc');
+        $where = array('hotel_id'=>$hotel_id);
+        if(!empty($keywords)){
+            $where['CONCAT(name,mobile,mobile1,mobile2)'] = array('like',"%$keywords%");
+        }
+        $res_data = $m_customer->getDataList('id,name,mobile,mobile1,avatar_url',$where,'id desc');
         $datalist = array();
         $total_num = 0;
         if(!empty($res_data)){
@@ -300,9 +313,9 @@ class CustomerController extends CommonController{
         if(empty($customer_id)){
             $this->to_back(1001);
         }
+        $m_label = new \Common\Model\Smallapp\CustomerLabelModel();
         if(!empty($labels)){
             $all_label = explode(',',$labels);
-            $m_label = new \Common\Model\Smallapp\CustomerLabelModel();
             $label_data = array();
             if($is_new_customer==1){
                 foreach ($all_label as $v){
@@ -329,6 +342,10 @@ class CustomerController extends CommonController{
             }
             if(!empty($label_data)){
                 $m_label->addAll($label_data);
+            }
+        }else{
+            if($is_new_customer==0){
+                $m_label->delData(array('customer_id'=>$customer_id));
             }
         }
 
@@ -463,6 +480,62 @@ class CustomerController extends CommonController{
             $datalist[]=array('expense_record_id'=>$v['id'],'room_name'=>$v['room_name'],'image'=>$image,'add_time'=>$add_time);
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function editRemark(){
+        $openid = $this->params['openid'];
+        $customer_id = intval($this->params['customer_id']);
+        $remark = !empty($this->params['remark'])?trim($this->params['remark']):'';
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_customer = new \Common\Model\Smallapp\CustomerModel();
+        $m_customer->updateData(array('id'=>$customer_id),array('remark'=>$remark,'op_openid'=>$openid,'update_time'=>date('Y-m-d H:i:s')));
+        $this->to_back(array('customer_id'=>$customer_id));
+    }
+
+    public function editLabels(){
+        $openid = $this->params['openid'];
+        $customer_id = intval($this->params['customer_id']);
+        $labels = $this->params['labels'];
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_label = new \Common\Model\Smallapp\CustomerLabelModel();
+        if(!empty($labels)){
+            $label_data = array();
+            $label_ids = array();
+            $all_label = explode(',',$labels);
+            foreach ($all_label as $v){
+                if(!empty($v)){
+                    $ldata = array('customer_id'=>$customer_id,'name'=>trim($v));
+                    $res_label = $m_label->getInfo($ldata);
+                    if(!empty($res_label)){
+                        $label_ids[]=$res_label['id'];
+                    }else{
+                        $label_data[]=$ldata;
+                    }
+                }
+            }
+            if(!empty($label_ids)){
+                $m_label->delData(array('customer_id'=>$customer_id,'id'=>array('not in',$label_ids)));
+            }
+            if(!empty($label_data)){
+                $m_label->addAll($label_data);
+            }
+        }else{
+            $m_label->delData(array('customer_id'=>$customer_id));
+        }
+
+        $this->to_back(array('customer_id'=>$customer_id));
     }
 
 }

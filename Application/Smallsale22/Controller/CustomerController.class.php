@@ -13,8 +13,12 @@ class CustomerController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'addCustomer':
-                $this->valid_fields = array('openid'=>1001,'name'=>1001,'mobile'=>1001,'mobile1'=>1002,'mobile2'=>1002,'gender'=>1002,
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'mobile'=>1001,'mobile1'=>1002,'mobile2'=>1002,'gender'=>1002,
                     'avg_expense'=>1002,'avatar_url'=>1002,'birthday'=>1002,'native_place'=>1002,'customer_id'=>1002);
+                $this->is_verify = 1;
+                break;
+            case 'datalist':
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
                 break;
             case 'detail':
@@ -69,11 +73,8 @@ class CustomerController extends CommonController{
             $m_customer_record = new \Common\Model\Smallapp\CustomerExpenseRecordModel();
             foreach ($res_data as $v){
                 $mobile = $v['mobile'];
-                $cwhere['mobile']=$mobile;
-                $cwhere['mobile1']=$mobile;
-                $cwhere['mobile2']=$mobile;
-                $cmap['_complex']=$cwhere;
-                $res_customer = $m_customer->getInfo($cmap);
+                $where = array('CONCAT(mobile,mobile1,mobile2)'=>array('like',"%$mobile%"));
+                $res_customer = $m_customer->getInfo($where);
                 if(!empty($res_customer)){
                     $customer_id = $res_customer['id'];
                     $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id,'room_id'=>$v['room_id']);
@@ -155,6 +156,7 @@ class CustomerController extends CommonController{
 
     public function addCustomer(){
         $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
         $name = trim($this->params['name']);
         $mobile = trim($this->params['mobile']);
         $mobile1 = trim($this->params['mobile1']);
@@ -186,7 +188,7 @@ class CustomerController extends CommonController{
         }
         $avatar_url = !empty($avatar_url)?$avatar_url:'';
         $native_place = !empty($native_place)?$native_place:'';
-        $data = array('name'=>$name,'mobile'=>$mobile,'mobile1'=>$mobile1,'mobile2'=>$mobile2,
+        $data = array('hotel_id'=>$hotel_id,'name'=>$name,'mobile'=>$mobile,'mobile1'=>$mobile1,'mobile2'=>$mobile2,
             'gender'=>$gender,'avg_expense'=>$avg_expense,'avatar_url'=>$avatar_url,'native_place'=>$native_place);
         if(!empty($birthday)){
             $data['birthday'] = $birthday;
@@ -211,13 +213,55 @@ class CustomerController extends CommonController{
                 $this->to_back(93228);
             }
         }
-
+        $m_customerlog = new \Common\Model\Smallapp\CustomerLogModel();
         if($customer_id>0){
             $m_customer->updateData(array('id'=>$customer_id),$data);
+            $m_customerlog->add(array('hotel_id'=>$hotel_id,'customer_id'=>$customer_id,'action'=>3,'action_name'=>'修改'));
         }else{
             $customer_id = $m_customer->add($data);
+            $m_customerlog->add(array('hotel_id'=>$hotel_id,'customer_id'=>$customer_id,'action'=>2,'action_name'=>'新增'));
         }
         $this->to_back(array('customer_id'=>$customer_id));
+    }
+
+    public function datalist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+
+        $m_customer = new \Common\Model\Smallapp\CustomerModel();
+        $res_data = $m_customer->getDataList('id,name,mobile,mobile1,avatar_url',array('hotel_id'=>$hotel_id),'id desc');
+        $datalist = array();
+        $total_num = 0;
+        if(!empty($res_data)){
+            $total_num = count($res_data);
+            $oss_host = get_oss_host();
+            $all_customer = array();
+            foreach ($res_data as $v){
+                $letter = getFirstCharter($v['name']);
+                $phone = $v['mobile'];
+                if(!empty($v['mobile1'])){
+                    $phone = $phone.'/'.$v['mobile1'];
+                }
+                $avatar_url = '';
+                if(!empty($v['avatar_url'])){
+                    $avatar_url = $oss_host.$v['avatar_url'];
+                }
+                $all_customer[$letter][]=array('id'=>$v['id'],'name'=>$v['name'],'phone'=>$phone,'avatarUrl'=>$avatar_url);
+            }
+            ksort($all_customer);
+            foreach ($all_customer as $k=>$v){
+                $dinfo = array('id'=>ord("$k")-64,'region'=>$k,'items'=>$v);
+                $datalist[]=$dinfo;
+            }
+        }
+        $this->to_back(array('total_num'=>$total_num,'datalist'=>$datalist));
     }
 
     public function addExpenseRecord(){
@@ -239,12 +283,17 @@ class CustomerController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
+        $m_room = new \Common\Model\RoomModel();
+        $fields = 'room.id as room_id,room.name as room_name,hotel.id as hotel_id,hotel.name as hotel_name';
+        $res_room = $m_room->getRoomByCondition($fields,array('room.id'=>$room_id));
 
         $m_customer = new \Common\Model\Smallapp\CustomerModel();
         $is_new_customer = 0;
         if(empty($customer_id)){
             if(!empty($name) && !empty($mobile)){
-                $customer_id = $m_customer->add(array('openid'=>$openid,'name'=>$name,'mobile'=>$mobile));
+                $customer_id = $m_customer->add(array('openid'=>$openid,'hotel_id'=>$res_room[0]['hotel_id'],'name'=>$name,'mobile'=>$mobile));
+                $m_customerlog = new \Common\Model\Smallapp\CustomerLogModel();
+                $m_customerlog->add(array('hotel_id'=>$res_room[0]['hotel_id'],'customer_id'=>$customer_id,'action'=>2,'action_name'=>'新增'));
                 $is_new_customer = 1;
             }
         }
@@ -282,10 +331,6 @@ class CustomerController extends CommonController{
                 $m_label->addAll($label_data);
             }
         }
-
-        $m_room = new \Common\Model\RoomModel();
-        $fields = 'room.id as room_id,room.name as room_name,hotel.id as hotel_id,hotel.name as hotel_name';
-        $res_room = $m_room->getRoomByCondition($fields,array('room.id'=>$room_id));
 
         $add_data = array('customer_id'=>$customer_id,'hotel_id'=>$res_room[0]['hotel_id'],'hotel_name'=>$res_room[0]['hotel_name'],
             'room_id'=>$res_room[0]['room_id'],'room_name'=>$res_room[0]['room_name'],'meal_time'=>$meal_time,'people_num'=>$people_num,
@@ -382,6 +427,9 @@ class CustomerController extends CommonController{
         $res_detail['oss_avatar_url'] = $oss_avatar_url;
         $res_detail['expense_num'] = $expense_num;
         $res_detail['expense_msg'] = $expense_msg;
+
+        $m_customerlog = new \Common\Model\Smallapp\CustomerLogModel();
+        $m_customerlog->add(array('hotel_id'=>$res_detail['hotel_id'],'customer_id'=>$customer_id,'action'=>1,'action_name'=>'查看'));
 
         $this->to_back($res_detail);
     }

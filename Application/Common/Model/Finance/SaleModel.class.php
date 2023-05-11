@@ -87,6 +87,7 @@ class SaleModel extends BaseModel{
                 if(!isset($where['a.ptype'])){
                     $where['a.ptype'] = array('in','0,2');
                 }
+                unset($where['a.add_time']);
                 $res_sale_qk = $this->getSaleStockRecordList('a.id as sale_id,a.settlement_price,a.ptype,a.add_time',$where);
                 if(!empty($res_sale_qk)){
                     $m_sale_payment_record = new \Common\Model\Finance\SalePaymentRecordModel();

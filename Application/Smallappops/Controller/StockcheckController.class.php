@@ -340,9 +340,14 @@ class StockcheckController extends CommonController{
                 }
             }
         }
-        $fields = 'sum(record.stock_check_num) as num';
+        $fields = 'record.stock_check_num as num';
         $res_check_hotel = $m_sale_record->getStockCheckRecordList($fields,$check_where,'','','record.signin_hotel_id');
-        $goods_check_num = intval($res_check_hotel[0]['num']);
+        $goods_check_num = 0;
+        if(!empty($res_check_hotel)){
+            foreach ($res_check_hotel as $chv){
+                $goods_check_num+=$chv['num'];
+            }
+        }
         $goods_finish_percent = intval(($goods_check_num/$goods_num)*100).'%';
 
         $month_list = array(array('name'=>'本月','value'=>date('Y-m')));

@@ -1240,6 +1240,10 @@ class StockController extends CommonController{
         if($res_stock['io_type']!=22){
             $this->to_back(93093);
         }
+        if($res_staff[0]['hotel_id']!=$res_stock['hotel_id']){
+            $this->to_back(93106);
+        }
+
         $m_activity_taste = new \Common\Model\Smallapp\ActivityTastewineModel();
         $res_taste = $m_activity_taste->getInfo(array('idcode'=>$idcode));
         if(!empty($res_taste) && $res_taste['status']==1){

@@ -523,6 +523,7 @@ return array(
     'smallappops_stock_check_local_error'=>'定位失败，请在餐厅200m范围内操作',
     'smallappops_stock_check_month_finish'=>'扫码所在酒楼当前月份已盘点完成',
     'smallappsale_add_customer_mobile_repeat'=>'手机号码已重复',
+    'smallappsale_finance_stock_writeoff_hotel_error'=>'酒水所在酒楼不一致,无法核销',
 
 
 

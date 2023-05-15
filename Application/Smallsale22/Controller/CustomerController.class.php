@@ -54,6 +54,10 @@ class CustomerController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'customer_id'=>1001,'labels'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'getOplogs':
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -124,11 +128,8 @@ class CustomerController extends CommonController{
             $m_customer_record = new \Common\Model\Smallapp\CustomerExpenseRecordModel();
             foreach ($res_data as $v){
                 $mobile = $v['mobile'];
-                $cwhere['mobile']=$mobile;
-                $cwhere['mobile1']=$mobile;
-                $cwhere['mobile2']=$mobile;
-                $cmap['_complex']=$cwhere;
-                $res_customer = $m_customer->getInfo($cmap);
+                $where = array('CONCAT(mobile,mobile1,mobile2)'=>array('like',"%$mobile%"));
+                $res_customer = $m_customer->getInfo($where);
                 if(!empty($res_customer)){
                     $customer_id = $res_customer['id'];
                     $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id,'room_id'=>$v['room_id']);
@@ -209,14 +210,11 @@ class CustomerController extends CommonController{
         }
         $m_customer = new \Common\Model\Smallapp\CustomerModel();
         foreach ($q_mobiles as $v){
-            $mwhere['mobile']=$v;
-            $mwhere['mobile1']=$v;
-            $mwhere['mobile2']=$v;
-            $map['_complex']=$mwhere;
+            $mwhere = array('CONCAT(mobile,mobile1,mobile2)'=>array('like',"%$v%"));
             if($customer_id>0){
-                $map['id']=array('neq',$customer_id);
+                $mwhere['id']=array('neq',$customer_id);
             }
-            $res_customer = $m_customer->getInfo($map);
+            $res_customer = $m_customer->getInfo($mwhere);
             if(!empty($res_customer)){
                 $this->to_back(93228);
             }
@@ -304,10 +302,16 @@ class CustomerController extends CommonController{
         $is_new_customer = 0;
         if(empty($customer_id)){
             if(!empty($name) && !empty($mobile)){
-                $customer_id = $m_customer->add(array('openid'=>$openid,'hotel_id'=>$res_room[0]['hotel_id'],'name'=>$name,'mobile'=>$mobile));
-                $m_customerlog = new \Common\Model\Smallapp\CustomerLogModel();
-                $m_customerlog->add(array('hotel_id'=>$res_room[0]['hotel_id'],'customer_id'=>$customer_id,'action'=>2,'action_name'=>'新增'));
-                $is_new_customer = 1;
+                $mwhere = array('CONCAT(mobile,mobile1,mobile2)'=>array('like',"%$mobile%"));
+                $res_customer = $m_customer->getInfo($mwhere);
+                if(!empty($res_customer)){
+                    $customer_id = $res_customer['id'];
+                }else{
+                    $customer_id = $m_customer->add(array('openid'=>$openid,'hotel_id'=>$res_room[0]['hotel_id'],'name'=>$name,'mobile'=>$mobile));
+                    $m_customerlog = new \Common\Model\Smallapp\CustomerLogModel();
+                    $m_customerlog->add(array('hotel_id'=>$res_room[0]['hotel_id'],'customer_id'=>$customer_id,'action'=>2,'action_name'=>'新增'));
+                    $is_new_customer = 1;
+                }
             }
         }
         if(empty($customer_id)){
@@ -339,6 +343,8 @@ class CustomerController extends CommonController{
             }
             if(!empty($label_ids)){
                 $m_label->delData(array('customer_id'=>$customer_id,'id'=>array('not in',$label_ids)));
+            }else{
+                $m_label->delData(array('customer_id'=>$customer_id));
             }
             if(!empty($label_data)){
                 $m_label->addAll($label_data);
@@ -371,7 +377,7 @@ class CustomerController extends CommonController{
             $this->to_back(93014);
         }
         $m_expense_record = new \Common\Model\Smallapp\CustomerExpenseRecordModel();
-        $res_info = $m_expense_record->getInfo($expense_record_id);
+        $res_info = $m_expense_record->getInfo(array('id'=>$expense_record_id));
         $images = explode(',',$res_info['images']);
         $all_images = array();
         $oss_host = get_oss_host();
@@ -379,6 +385,9 @@ class CustomerController extends CommonController{
             $all_images[]=$oss_host.$v;
         }
         $res_info['images'] = $all_images;
+        if($res_info['meal_time']=='0000-00-00 00:00:00'){
+
+        }
         $this->to_back($res_info);
     }
 
@@ -527,6 +536,8 @@ class CustomerController extends CommonController{
             }
             if(!empty($label_ids)){
                 $m_label->delData(array('customer_id'=>$customer_id,'id'=>array('not in',$label_ids)));
+            }else{
+                $m_label->delData(array('customer_id'=>$customer_id));
             }
             if(!empty($label_data)){
                 $m_label->addAll($label_data);
@@ -536,6 +547,32 @@ class CustomerController extends CommonController{
         }
 
         $this->to_back(array('customer_id'=>$customer_id));
+    }
+
+    public function getOplogs(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.openid,merchant.hotel_id',$where);
+        if(empty($res_staff)){
+            $this->to_back(93014);
+        }
+        $m_customer_log = new \Common\Model\Smallapp\CustomerLogModel();
+        $fileds = 'a.customer_id,max(a.id) as last_id,customer.name,customer.mobile';
+        $where = array('a.hotel_id'=>$hotel_id);
+        $where['a.add_time'] = array('egt',date('Y-m-d H:i:s',strtotime('-3 day')));
+        $res_log = $m_customer_log->getCustomerLogs($fileds,$where,'last_id desc','0,10','a.customer_id');
+        $datalist = array();
+        foreach ($res_log as $v){
+            $res_linfo = $m_customer_log->getInfo(array('id'=>$v['last_id']));
+            $add_time = $res_linfo['add_time'];
+            $time_str = viewTimes(strtotime($res_linfo['add_time']));
+            $datalist[]=array('customer_id'=>$v['customer_id'],'name'=>$v['name'],'mobile'=>$v['mobile'],
+                'action'=>$res_linfo['action_name'],'add_time'=>$add_time,'time_str'=>$time_str);
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
 }

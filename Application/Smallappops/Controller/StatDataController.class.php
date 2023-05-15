@@ -118,6 +118,7 @@ class StatDataController extends CommonController{
                     $start_date = date('Y-m-d',strtotime('-6day'));
                     break;
                 case 3:
+                case 7:
                     $start_date = date('Y-m-01');
                     break;
             }

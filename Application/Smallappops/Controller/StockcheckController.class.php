@@ -105,6 +105,9 @@ class StockcheckController extends CommonController{
             $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
             foreach ($res_allidcodes as $v){
                 $all_types = explode(',',$v['all_type']);
+                if(count($all_types)==1 && $all_types[0]==3){
+                    continue;
+                }
                 if(!in_array(6,$all_types) && !in_array(7,$all_types)){
                     $checked=false;
                     if($v['idcode']==$idcode){
@@ -112,10 +115,22 @@ class StockcheckController extends CommonController{
                     }
                     $idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
                 }else{
+                    $checked=false;
                     if($v['idcode']==$idcode){
                         $checked=true;
+                    }
+                    if(in_array(7,$all_types)){
+                        $cwhere = array('a.idcode'=>$v['idcode'],'a.dstatus'=>1);
+                        $res_code = $m_stock_record->getStockRecordList('a.type,a.wo_status',$cwhere,'a.id desc','0,1');
+                        if($res_code[0]['wo_status']==3){
+                            $idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                        }else{
+                            $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                        }
+                    }else{
                         $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
                     }
+
                 }
             }
         }

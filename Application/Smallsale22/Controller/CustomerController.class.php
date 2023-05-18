@@ -75,7 +75,7 @@ class CustomerController extends CommonController{
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $start_time = date('Y-m-d H:i:s',strtotime('-3 hour'));
         $end_time = date('Y-m-d H:i:s');
-        $where = array('hotel_id'=>$hotel_id,'book_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+        $where = array('hotel_id'=>$hotel_id,'openid'=>$openid,'book_time'=>array(array('egt',$start_time),array('elt',$end_time)));
         $fields = 'id,openid,name,mobile,room_id,room_name,book_time';
         $res_data = $m_invitation->getDataList($fields,$where,'id desc');
         $is_popup = 0;
@@ -89,7 +89,7 @@ class CustomerController extends CommonController{
                 $res_customer = $m_customer->getInfo($where);
                 if(!empty($res_customer)){
                     $customer_id = $res_customer['id'];
-                    $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id,'room_id'=>$v['room_id']);
+                    $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id);
                     $rwhere['add_time'] = array('egt',$start_time);
                     $res_record = $m_customer_record->getInfo($rwhere);
                     if(empty($res_record)){
@@ -119,7 +119,7 @@ class CustomerController extends CommonController{
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $start_time = date('Y-m-d H:i:s',strtotime('-3 hour'));
         $end_time = date('Y-m-d H:i:s');
-        $where = array('hotel_id'=>$hotel_id,'book_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+        $where = array('hotel_id'=>$hotel_id,'openid'=>$openid,'book_time'=>array(array('egt',$start_time),array('elt',$end_time)));
         $fields = 'id,openid,name,mobile,room_id,room_name,book_time';
         $res_data = $m_invitation->getDataList($fields,$where,'id desc');
         $datalist = array();
@@ -132,7 +132,7 @@ class CustomerController extends CommonController{
                 $res_customer = $m_customer->getInfo($where);
                 if(!empty($res_customer)){
                     $customer_id = $res_customer['id'];
-                    $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id,'room_id'=>$v['room_id']);
+                    $rwhere = array('customer_id'=>$customer_id,'hotel_id'=>$hotel_id);
                     $rwhere['add_time'] = array('egt',$start_time);
                     $res_record = $m_customer_record->getInfo($rwhere);
                     if(empty($res_record)){
@@ -243,7 +243,7 @@ class CustomerController extends CommonController{
         }
 
         $m_customer = new \Common\Model\Smallapp\CustomerModel();
-        $where = array('hotel_id'=>$hotel_id);
+        $where = array('hotel_id'=>$hotel_id,'openid'=>$openid);
         if(!empty($keywords)){
             $where['CONCAT(name,mobile,mobile1,mobile2)'] = array('like',"%$keywords%");
         }
@@ -385,9 +385,6 @@ class CustomerController extends CommonController{
             $all_images[]=$oss_host.$v;
         }
         $res_info['images'] = $all_images;
-        if($res_info['meal_time']=='0000-00-00 00:00:00'){
-
-        }
         $this->to_back($res_info);
     }
 
@@ -434,7 +431,7 @@ class CustomerController extends CommonController{
             }else{
                 $rwhere['add_time'] = array(array('egt',date('Y-m-d 00:00:00',strtotime('-90 day'))),array('elt',date('Y-m-d 23:59:59',strtotime('-31 day'))));
                 $res_record = $m_expense_record->getDataList('count(id) as num',$rwhere,'');
-                if($res_record[0]['num']>0){
+                if($res_record[0]['num']>1){
                     $expense_msg = "近3个月内消费{$res_record[0]['num']}次";
                 }else{
                     $rwhere['add_time'] = array('egt',date('Y-m-d 00:00:00',strtotime('-90 day')));
@@ -478,14 +475,14 @@ class CustomerController extends CommonController{
         $start = ($page-1)*$pagesize;
         $m_expense_record = new \Common\Model\Smallapp\CustomerExpenseRecordModel();
         $rwhere = array('customer_id'=>$customer_id);
-        $res_record = $m_expense_record->getDataList('id,room_name,images,add_time',$rwhere,'id desc',$start,$pagesize);
+        $res_record = $m_expense_record->getDataList('id,room_name,images,meal_time,add_time',$rwhere,'id desc',$start,$pagesize);
         $datalist = array();
         $oss_host = get_oss_host();
         foreach ($res_record['list'] as $v){
             $images = explode(',',$v['images']);
             $image = $oss_host.$images[0];
 
-            $add_time = date('Y-m-d H:i',strtotime($v['add_time']));
+            $add_time = date('Y-m-d H:i',strtotime($v['meal_time']));
             $datalist[]=array('expense_record_id'=>$v['id'],'room_name'=>$v['room_name'],'image'=>$image,'add_time'=>$add_time);
         }
         $this->to_back(array('datalist'=>$datalist));
@@ -561,7 +558,7 @@ class CustomerController extends CommonController{
         }
         $m_customer_log = new \Common\Model\Smallapp\CustomerLogModel();
         $fileds = 'a.customer_id,max(a.id) as last_id,customer.name,customer.mobile';
-        $where = array('a.hotel_id'=>$hotel_id);
+        $where = array('a.hotel_id'=>$hotel_id,'customer.openid'=>$openid);
         $where['a.add_time'] = array('egt',date('Y-m-d H:i:s',strtotime('-3 day')));
         $res_log = $m_customer_log->getCustomerLogs($fileds,$where,'last_id desc','0,10','a.customer_id');
         $datalist = array();

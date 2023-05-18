@@ -491,7 +491,7 @@ class CrmsaleController extends CommonController{
                 
                 $where2 = array('a.remind_user_id'=>$ops_staff_id);
                 $where['_complex'] = array($where1,$where2,'_logic'=>'or');
-                $orderby = 'record.status asc,a.salerecord_id desc';
+                $orderby = 'a.salerecord_id desc,record.status asc';
                 break;
             case 2:
                 $where = array('a.remind_user_id'=>$ops_staff_id,'record.status'=>2,'a.status'=>1);

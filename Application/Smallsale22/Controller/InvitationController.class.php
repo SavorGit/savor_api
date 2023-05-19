@@ -16,6 +16,7 @@ class InvitationController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'version'=>1002);
                 break;
         }
+
         parent::_init_();
     }
 

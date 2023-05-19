@@ -200,7 +200,7 @@ class CommentController extends CommonController{
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.room_ids';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
-        if(empty($res_staff) || $res_staff[0]['type']!=2){
+        if(empty($res_staff)){
             $this->to_back(93001);
         }
 

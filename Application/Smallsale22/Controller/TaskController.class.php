@@ -78,7 +78,7 @@ class TaskController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $openid   = trim($this->params['openid']);
 
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.hotel_id'=>$hotel_id,'merchant.status'=>1);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $field_staff = 'a.openid,a.level,a.id as staff_id,merchant.type';
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
@@ -516,7 +516,7 @@ class TaskController extends CommonController{
         $openid = $this->params['openid'];
         $hotel_id = $this->params['hotel_id'];
 
-        $where = array('a.openid'=>$openid,'merchant.hotel_id'=>$hotel_id,'a.status'=>1,'merchant.status'=>1);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,a.level,merchant.type';
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);

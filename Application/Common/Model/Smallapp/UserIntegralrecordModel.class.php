@@ -179,6 +179,8 @@ class UserIntegralrecordModel extends BaseModel{
             $week_num = $task_content['user_reward']['week_num'];
             $room_num = $task_content['user_reward']['room_num'];
             $hotel_max_rate = $task_content['user_reward']['hotel_max_rate'];
+            $hotel_table_max_rate = $task_content['user_reward']['hotel_table_max_rate'];
+            $not_wine_integral = $task_content['user_reward']['not_wine_integral'];
 
             $week = date('w') == 0 ? 7 : date('w');
             $week_start = strtotime('today -' . ($week - 1) . 'day');
@@ -227,10 +229,17 @@ class UserIntegralrecordModel extends BaseModel{
             $res_room = $m_room->getRoomByCondition('count(room.id) as num',$rwhere);
             $hotel_room_num = intval($res_room[0]['num']);
             $hotel_max_integral = $hotel_room_num*$hotel_max_rate*$now_task_integral;
+            $hotel_table_max_integral = $hotel_max_integral*$hotel_table_max_rate;
+            if($invitation['is_sellwine']==2){
+                $now_task_integral = $not_wine_integral;
+            }
+            if($invitation['room_type']==2){
+                $hotel_max_integral = $hotel_table_max_integral;
+            }
 
             $stime = date('Y-m-d 00:00:00');
             $etime = date('Y-m-d 23:59:59');
-            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type);
+            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_type'=>$invitation['room_type']);
             $where['add_time'] = array(array('egt',$stime),array('elt',$etime), 'and');
             $fields = 'sum(integral) as total_integral';
             $res_all_integral = $this->getALLDataList($fields,$where,'','','');
@@ -240,7 +249,12 @@ class UserIntegralrecordModel extends BaseModel{
                 return array('task_user_id'=>$task_user_id,'now_all_integral'=>$now_all_integral,'hotel_max_integral'=>$hotel_max_integral);
             }
 
-            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_id'=>$invitation['room_id']);
+            $where = array('hotel_id'=>$invitation['hotel_id'],'type'=>$type,'room_type'=>$invitation['room_type']);
+            if($invitation['room_type']==1){
+                $where['room_id']=$invitation['room_id'];
+            }else{
+                $where['room_name']=$invitation['room_name'];
+            }
             $where['add_time'] = array(array('egt',$meal_stime),array('elt',$meal_etime), 'and');
             $fields = 'count(id) as num';
             $res_room_num = $this->field($fields)->where($where)->find();
@@ -324,14 +338,14 @@ class UserIntegralrecordModel extends BaseModel{
                         }
                         $integralrecord_data = array('openid'=>$admin_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
                             'hotel_id'=>$invitation['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-                            'room_id'=>$invitation['room_id'],'room_name'=>$invitation['room_name'],'integral'=>$admin_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
+                            'room_id'=>$invitation['room_id'],'room_name'=>$invitation['room_name'],'room_type'=>$invitation['room_type'],'integral'=>$admin_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
                             'source'=>4,'task_id'=>$task_id,'integral_time'=>date('Y-m-d H:i:s'));
                         $this->add($integralrecord_data);
                     }
                 }
                 $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
                     'hotel_id'=>$invitation['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-                    'room_id'=>$invitation['room_id'],'room_name'=>$invitation['room_name'],'integral'=>$now_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
+                    'room_id'=>$invitation['room_id'],'room_name'=>$invitation['room_name'],'room_type'=>$invitation['room_type'],'integral'=>$now_integral,'jdorder_id'=>$invitation['id'],'content'=>1,'type'=>$type,
                     'task_id'=>$task_id,'integral_time'=>date('Y-m-d H:i:s'));
                 $record_id = $this->add($integralrecord_data);
                 return array('task_user_id'=>$task_user_id,'record_id'=>$record_id,'now_integral'=>$now_integral);

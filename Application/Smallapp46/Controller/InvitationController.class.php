@@ -21,6 +21,10 @@ class InvitationController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('invitation_id'=>1001,'openid'=>1002);
                 break;
+            case 'send':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'invitation_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -190,6 +194,7 @@ class InvitationController extends CommonController{
             $res_data['people_num'] = $res_info['people_num'];
             $res_data['contact_name'] = $res_info['contact_name'];
             $res_data['desc'] = $res_info['desc'];
+            $res_data['is_sellwine'] = $res_info['is_sellwine'];
             $res_data['share_img_url'] = $oss_host.$invitation_hotels['share_img'];
             $res_data['calendar'] = array(
                 'title'=>$res_info['name'].'的饭局',
@@ -248,5 +253,21 @@ class InvitationController extends CommonController{
         $this->to_back($res_data);
     }
 
+    public function send(){
+        $invitation_id = intval($this->params['invitation_id']);
+        $openid = $this->params['openid'];
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'status'=>1);
+        $user_info = $m_user->getOne('id,openid,avatarUrl,nickName,mpopenid', $where, '');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_invitation = new \Common\Model\Smallapp\InvitationModel();
+        $res_data = $m_invitation->getInfo(array('id'=>$invitation_id));
+        if($res_data['send_time']=='0000-00-00 00:00:00'){
+            $m_invitation->updateData(array('id'=>$invitation_id),array('send_time'=>date('Y-m-d H:i:s')));
+        }
+        $this->to_back(array());
+    }
 
 }

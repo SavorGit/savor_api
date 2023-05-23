@@ -18,7 +18,7 @@ class DishController extends CommonController{
                 break;
             case 'invitationgoods':
                 $this->is_verify = 1;
-                $this->valid_fields = array('hotel_id'=>1002);
+                $this->valid_fields = array('hotel_id'=>1001,'invitation_id'=>1002);
                 break;
         }
         parent::_init_();
@@ -334,16 +334,36 @@ class DishController extends CommonController{
 
     public function invitationgoods(){
         $hotel_id = intval($this->params['hotel_id']);
+        $invitation_id = intval($this->params['invitation_id']);
 
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));
         if(empty($res_merchant) || $res_merchant['status']!=1){
             $this->to_back(93035);
         }
-        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'type'=>24);
-        $orderby = 'sort desc,id desc';
-        $res_goods = $m_goods->getDataList('*',$where,$orderby,0,5);
+        $res_goods = array('total'=>0);
+        if($invitation_id>0){
+            $m_invitation = new \Common\Model\Smallapp\InvitationModel();
+            $res_data = $m_invitation->getInfo(array('id'=>$invitation_id));
+            if(!empty($res_data['images'])){
+                $all_images = explode(',',$res_data['images']);
+                $list = array();
+                foreach ($all_images as $v){
+                    if(!empty($v)){
+                        $img_url = $v.'?x-oss-process=image/resize,m_mfit,h_200,w_300';
+                        $list[]=array('id'=>0,'name'=>'','intro'=>'','img_url'=>$img_url);
+                    }
+                }
+                $res_goods['total'] = count($list);
+                $res_goods['list'] = $list;
+            }
+        }
+        if($res_goods['total']==0){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $where = array('merchant_id'=>$res_merchant['id'],'status'=>1,'type'=>24);
+            $orderby = 'sort desc,id desc';
+            $res_goods = $m_goods->getDataList('*',$where,$orderby,0,5);
+        }
         $datalist = array();
         if($res_goods['total']){
             $m_media = new \Common\Model\MediaModel();
@@ -352,7 +372,9 @@ class DishController extends CommonController{
             $oss_host = get_oss_host();
             foreach ($res_goods['list'] as $k=>$v){
                 $img_url = '';
-                if(!empty($v['cover_imgs'])){
+                if(!empty($v['img_url'])){
+                    $img_url = $oss_host.$v['img_url'];
+                }elseif(!empty($v['cover_imgs'])){
                     $cover_imgs_info = explode(',',$v['cover_imgs']);
                     if(!empty($cover_imgs_info[0])){
                         $img_url = $oss_host.$cover_imgs_info[0];

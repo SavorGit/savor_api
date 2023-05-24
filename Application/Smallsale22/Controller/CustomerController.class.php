@@ -80,6 +80,7 @@ class CustomerController extends CommonController{
         $res_data = $m_invitation->getDataList($fields,$where,'id desc');
         $is_popup = 0;
         $message='';
+        $res_data = array();
         if(!empty($res_data)){
             $m_customer = new \Common\Model\Smallapp\CustomerModel();
             $m_customer_record = new \Common\Model\Smallapp\CustomerExpenseRecordModel();

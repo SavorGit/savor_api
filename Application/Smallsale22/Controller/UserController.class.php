@@ -113,6 +113,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1002,'page'=>1001);
                 break;
+            case 'getSessionkey':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -309,14 +313,32 @@ class UserController extends CommonController{
         $code = $this->params['code'];
         $m_small_app = new Smallapp_api($flag = 5);
         $data  = $m_small_app->getSmallappOpenid($code);
-        $data['official_account_article_url'] =C('OFFICIAL_ACCOUNT_ARTICLE_URL');
+        $data['official_account_article_url']=C('OFFICIAL_ACCOUNT_ARTICLE_URL');
         if(!empty($data['openid']) && !empty($data['unionid'])){
             $redis = \Common\Lib\SavorRedis::getInstance();
             $redis->select(14);
             $cache_key = C('SAPP_SALE').'openid:'.$data['openid'];
             $redis->set($cache_key,$data['unionid'],300);
+
+            $cache_key = C('SAPP_SALE').'session_openid:'.$data['openid'];
+            $redis->set($cache_key,$data['session_key'],86400);
         }
         $this->to_back($data);
+    }
+
+    public function getSessionkey(){
+        $openid = $this->params['openid'];
+        $cache_key = C('SAPP_SALE').'session_openid:'.$openid;
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $res_session = $redis->get($cache_key);
+        $session_key = '';
+        $official_account_article_url = '';
+        if(!empty($res_session)){
+            $session_key = $res_session;
+            $official_account_article_url = C('OFFICIAL_ACCOUNT_ARTICLE_URL');
+        }
+        $this->to_back(array('session_key'=>$session_key,'official_account_article_url'=>$official_account_article_url));
     }
     
     public function registerCom(){

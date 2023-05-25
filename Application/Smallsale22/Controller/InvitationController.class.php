@@ -249,7 +249,9 @@ class InvitationController extends CommonController{
         }
         $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
         $res_iconfig = $m_hotelinvitation->getInfo(array('hotel_id'=>$hotel_id));
-        $this->to_back(array('images'=>$images,'is_open_sellplatform'=>$res_iconfig['is_open_sellplatform']));
+        //$this->to_back(array('images'=>$images,'is_open_sellplatform'=>$res_iconfig['is_open_sellplatform']));
+        $this->to_back(array('images'=>$images,'is_open_sellplatform'=>$res_iconfig['is_open_sellplatform'],
+                             'is_view_wine_switch'=>$res_iconfig['is_view_wine_switch']));
     }
 
     public function datalist(){

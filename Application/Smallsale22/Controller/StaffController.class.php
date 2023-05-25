@@ -496,6 +496,16 @@ class StaffController extends CommonController{
             $now_integral = $total_integral - $integral;
             $m_merchant->updateData(array('id'=>$res_staff[0]['merchant_id']),array('integral'=>$now_integral));
             $total_integral = $now_integral;
+
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+            $res_integral = $m_userintegral->getInfo(array('openid'=>$res_data['openid']));
+            if(!empty($res_integral)){
+                $userintegral = $res_integral['integral']+$integral;
+                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $uidata = array('openid'=>$res_data['openid'],'integral'=>$integral);
+                $m_userintegral->add($uidata);
+            }
         }
         $res = array('money'=>intval($total_money),'integral'=>intval($total_integral));
         $this->to_back($res);

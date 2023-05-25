@@ -74,8 +74,12 @@ class StaffController extends CommonController{
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff[0]['type']!=2){
+        if(empty($res_staff)){
             $this->to_back(93001);
+        }
+        if($res_staff[0]['type']!=2){
+            $data = array('datalist'=>array(),'user'=>array());
+            $this->to_back($data);
         }
         $all_nums = 10000;
         if($hotel_id){
@@ -177,8 +181,12 @@ class StaffController extends CommonController{
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $res_staff = $m_staff->getMerchantStaff('a.id,a.openid,a.level,a.permission,a.merchant_id,merchant.type,merchant.hotel_id',$where);
-        if(empty($res_staff) || $res_staff[0]['type']!=3){
+        if(empty($res_staff)){
             $this->to_back(93001);
+        }
+        if($res_staff[0]['type']!=3){
+            $data = array('datalist'=>array());
+            $this->to_back($data);
         }
         $m_merchant = new \Common\Model\Integral\MerchantModel();
         $res_merchant = $m_merchant->getInfo(array('hotel_id'=>$hotel_id,'status'=>1));

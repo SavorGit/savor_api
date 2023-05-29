@@ -524,7 +524,7 @@ class CrmsaleController extends CommonController{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
                 $orderby = 'a.salerecord_id desc';
-                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
+                if(in_array($res_staff['hotel_role_type'],array(1,2,4,6)) && $area_id==0){
                     $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>4,'a.status'=>1,'record.status'=>2);
                 }
                 break;
@@ -550,7 +550,7 @@ class CrmsaleController extends CommonController{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
                 $orderby = 'a.salerecord_id desc';
-                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
+                if(in_array($res_staff['hotel_role_type'],array(1,2,4,6)) && $area_id==0){
                     $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.status'=>1,'record.type'=>2,'record.status'=>2);
                 }
                 break;

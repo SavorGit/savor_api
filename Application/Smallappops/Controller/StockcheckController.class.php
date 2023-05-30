@@ -23,9 +23,17 @@ class StockcheckController extends CommonController{
             case 'addcheckrecord':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'idcodes'=>1001,'other_idcodes'=>1002,
-                    'content'=>1002,'review_uid'=>1002,'cc_uids'=>1002);
+                    'content'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'is_check_error'=>1002,'type'=>1002);
                 break;
             case 'getrecordcodelist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
+                break;
+            case 'detail':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001,'content'=>1002,'review_uid'=>1002,'cc_uids'=>1002);
+                break;
+            case 'edit':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'salerecord_id'=>1001);
                 break;
@@ -62,9 +70,19 @@ class StockcheckController extends CommonController{
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
-        $fileds = 'a.id,stock.hotel_id,goods.id as goods_id,goods.name as goods_name';
+        $fileds = 'a.id,a.type,stock.hotel_id,goods.id as goods_id,goods.name as goods_name';
         $res_stock = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
-        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$res_stock[0]['goods_id'],'goods_name'=>$res_stock[0]['goods_name']));
+        $desc = '';
+        if($res_stock[0]['type']==1){
+            $desc = '未出库到餐厅';
+        }elseif($res_stock[0]['type']==7){
+            $desc = '酒水已经核销';
+        }elseif($res_stock[0]['hotel_id']!=$hotel_id){
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('id,name',$res_stock[0]['hotel_id']);
+            $desc = "属于{$res_hotel['name']}的酒水";
+        }
+        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$res_stock[0]['goods_id'],'goods_name'=>$res_stock[0]['goods_name'],'desc'=>$desc));
     }
 
 
@@ -123,10 +141,12 @@ class StockcheckController extends CommonController{
                             if($res_code[0]['wo_status']==3){
                                 $idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
                             }else{
-                                $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                                $desc = '酒水已经核销';
+                                $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked,'desc'=>$desc);
                             }
                         }else{
-                            $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked);
+                            $desc = '';
+                            $other_idcodes[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'checked'=>$checked,'desc'=>$desc);
                         }
                     }else{
                         if(in_array(7,$all_types)){
@@ -178,6 +198,11 @@ class StockcheckController extends CommonController{
         $content = $this->params['content'];
         $review_uid = $this->params['review_uid'];
         $cc_uids = $this->params['cc_uids'];
+        $type = intval($this->params['type']);//类型1保存2提交
+        $is_check_error = intval($this->params['is_check_error']);
+        if(empty($type)){
+            $type = 2;
+        }
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -230,24 +255,53 @@ class StockcheckController extends CommonController{
             }
         }
         if(!empty($now_other_idcodes)){
+            $m_hotel = new \Common\Model\HotelModel();
             foreach ($now_other_idcodes as $v){
                 $where = array('a.idcode'=>$v,'a.dstatus'=>1);
-                $fileds = 'a.id,stock.hotel_id,goods.id as goods_id';
+                $fileds = 'a.id,a.type,stock.hotel_id,goods.id as goods_id';
                 $res_srecord = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
+                $desc = '';
+                if($res_srecord[0]['type']==1){
+                    $desc = '未出库到餐厅';
+                }elseif($res_srecord[0]['type']==7){
+                    $desc = '酒水已经核销';
+                }elseif($res_srecord[0]['hotel_id']!=$hotel_id){
+                    $res_hotel = $m_hotel->getOneById('id,name',$res_srecord[0]['hotel_id']);
+                    $desc = "属于{$res_hotel['name']}的酒水";
+                }
                 $check_list[]=array('idcode'=>$v,'goods_id'=>$res_srecord[0]['goods_id'],'hotel_id'=>$hotel_id,
-                    'idcode_hotel_id'=>$res_srecord[0]['hotel_id'],'is_check'=>0,'type'=>2);
+                    'idcode_hotel_id'=>$res_srecord[0]['hotel_id'],'is_check'=>0,'type'=>2,'desc'=>$desc);
+            }
+        }
+        $stock_check_errornum = count($now_other_idcodes);
+        $stock_check_success_status = 0;
+        $stock_check_status = 1;
+        if($is_check_error==1){
+            $stock_check_status = 2;
+            if($stock_check_errornum==0){
+                $stock_check_success_status = 23;
+            }else{
+                $stock_check_success_status = 24;
+            }
+        }else{
+            if($stock_check_num==$stock_check_hadnum){
+                $stock_check_status = 2;
+                if($stock_check_errornum==0){
+                    $stock_check_success_status = 21;
+                }else{
+                    $stock_check_success_status = 22;
+                }
             }
         }
 
-        $stock_check_status = 1;
-        if($stock_check_num==$stock_check_hadnum){
-            $stock_check_status = 2;
+        if($type==2){
+            $status = 2;
+        }else{
+            $status = 1;
         }
-        $stock_check_errornum = count($now_other_idcodes);
-
         $ops_staff_id = $res_staff['id'];
         $add_data = array('ops_staff_id'=>$ops_staff_id,'signin_hotel_id'=>$hotel_id,'signin_time'=>date('Y-m-d H:i:s'),
-            'status'=>2,'stock_check_num'=>$stock_check_num,'stock_check_hadnum'=>$stock_check_hadnum,'stock_check_status'=>$stock_check_status,
+            'status'=>$status,'stock_check_num'=>$stock_check_num,'stock_check_hadnum'=>$stock_check_hadnum,'stock_check_status'=>$stock_check_status,'stock_check_success_status'=>$stock_check_success_status,
             'stock_check_error'=>$stock_check_error,'stock_check_errornum'=>$stock_check_errornum,'type'=>2);
         if(!empty($content)){
             $add_data['content'] = $content;
@@ -307,6 +361,88 @@ class StockcheckController extends CommonController{
             }
         }
         $this->to_back(array('idcodes'=>$idcodes,'other_idcodes'=>$other_idcodes));
+    }
+
+    public function detail(){
+        $openid = $this->params['openid'];
+        $salerecord_id = intval($this->params['salerecord_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id));
+
+        $m_stock_check_record = new \Common\Model\Crm\StockcheckRecordModel();
+        $fields = 'record.goods_id,record.idcode,record.is_check,record.type,goods.name as goods_name';
+        $res_list = $m_stock_check_record->getCheckRecordList($fields,array('record.salerecord_id'=>$salerecord_id),'record.id desc');
+        $idcodes = $other_idcodes = array();
+        foreach ($res_list as $v){
+            if($v['type']==1){
+                $idcodes[]=$v;
+            }else{
+                $other_idcodes[]=$v;
+            }
+        }
+        $m_salerecord_remind = new \Common\Model\Crm\SalerecordRemindModel();
+        $fields = 'a.remind_user_id as staff_id,a.type,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
+        $res_remind = $m_salerecord_remind->getList($fields,array('a.salerecord_id'=>$salerecord_id,'a.type'=>array('in','1,2')),'a.id desc');
+        $all_remind_user = array();
+        foreach ($res_remind as $v){
+            $all_remind_user[$v['type']][]=$v;
+        }
+        $cc_users = $review_users = array();
+        if(isset($all_remind_user[1])){
+            $review_users = $all_remind_user[1];
+        }
+        if(isset($all_remind_user[2])){
+            $cc_users = $all_remind_user[2];
+        }
+        $resp_data = array('hotel_id'=>$res_info['signin_hotel_id'],'content'=>$res_info['content'],'idcodes'=>$idcodes,
+            'other_idcodes'=>$other_idcodes,'cc_users'=>$cc_users,'review_users'=>$review_users);
+        $this->to_back($resp_data);
+    }
+
+    public function edit(){
+        $openid = $this->params['openid'];
+        $salerecord_id = intval($this->params['salerecord_id']);
+        $review_uid = intval($this->params['review_uid']);
+        $cc_uids = $this->params['cc_uids'];
+        $content = trim($this->params['content']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id,'ops_staff_id'=>$res_staff['id']));
+        $res_data = array('status'=>1,'salerecord_id'=>$salerecord_id);
+        if(!empty($res_info)){
+            $res_data['status'] = 2;
+            $m_salerecord->updateData(array('id'=>$salerecord_id),array('content'=>$content,'status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+
+            $m_saleremind = new \Common\Model\Crm\SalerecordRemindModel();
+            $m_saleremind->delData(array('salerecord_id'=>$salerecord_id,'type'=>array('in','1,2')));
+            if(!empty($review_uid)){
+                $add_remind[] = array('salerecord_id'=>$salerecord_id,'type'=>1,'remind_user_id'=>$review_uid);
+            }
+            if(!empty($cc_uids)){
+                $arr_cc_uids = explode(',',$cc_uids);
+                foreach ($arr_cc_uids as $v){
+                    $remind_user_id = intval($v);
+                    if($remind_user_id>0){
+                        $add_remind[] = array('salerecord_id'=>$salerecord_id,'type'=>2,'remind_user_id'=>$remind_user_id);
+                    }
+                }
+            }
+            if(!empty($add_remind)){
+                $m_saleremind->addAll($add_remind);
+            }
+        }
+        $this->to_back($res_data);
     }
 
     public function statcheckdata(){

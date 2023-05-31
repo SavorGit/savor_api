@@ -566,6 +566,9 @@ class CrmsaleController extends CommonController{
                 $unread_ids[]=$v['salerecord_id'];
             }
         }
+        if(!empty($unread_ids)){
+            $where['a.salerecord_id'] = array('not in',$unread_ids);
+        }
         $fields = 'a.salerecord_id,min(a.read_status) as read_status,count(a.id) as num,record.*,staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName';
         $res_mind = $m_salerecord_remind->getRemindRecordList($fields,$where,$orderby,$limit,'a.salerecord_id');
         if(!empty($res_unread_mind)){
@@ -673,7 +676,7 @@ class CrmsaleController extends CommonController{
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
-                    'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],
+                    'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],'stock_check_success_status'=>$record_info['stock_check_success_status'],
                 );
                 $datalist[]=$info;
             }

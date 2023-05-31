@@ -45,6 +45,14 @@ class StockcheckController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1001,'pagesize'=>1002);
                 break;
+            case 'hotelfilter':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1002,'stat_date'=>1002,'hotel_id'=>1002,'check_status'=>1002);
+                break;
+            case 'stathotellist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'stat_date'=>1001,'page'=>1001,'area_id'=>1002,'hotel_id'=>1002,'check_status'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -203,7 +211,6 @@ class StockcheckController extends CommonController{
         if(empty($type)){
             $type = 2;
         }
-
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -236,7 +243,7 @@ class StockcheckController extends CommonController{
                     $stock_check_hadnum++;
                 }
                 $check_list[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'hotel_id'=>$hotel_id,'idcode_hotel_id'=>$hotel_id,
-                    'is_check'=>$is_check,'type'=>1);
+                    'is_check'=>$is_check,'type'=>1,'desc'=>'');
             }else{
                 if(in_array(7,$all_types)){
                     $cwhere = array('a.idcode'=>$v['idcode'],'a.dstatus'=>1);
@@ -249,7 +256,7 @@ class StockcheckController extends CommonController{
                             $stock_check_hadnum++;
                         }
                         $check_list[]=array('idcode'=>$v['idcode'],'goods_id'=>$v['goods_id'],'hotel_id'=>$hotel_id,'idcode_hotel_id'=>$hotel_id,
-                            'is_check'=>$is_check,'type'=>1);
+                            'is_check'=>$is_check,'type'=>1,'desc'=>'');
                     }
                 }
             }
@@ -276,29 +283,29 @@ class StockcheckController extends CommonController{
         $stock_check_errornum = count($now_other_idcodes);
         $stock_check_success_status = 0;
         $stock_check_status = 1;
-        if($is_check_error==1){
-            $stock_check_status = 2;
-            if($stock_check_errornum==0){
-                $stock_check_success_status = 23;
-            }else{
-                $stock_check_success_status = 24;
-            }
-        }else{
-            if($stock_check_num==$stock_check_hadnum){
+        if($type==2){
+            if($is_check_error==1){
                 $stock_check_status = 2;
                 if($stock_check_errornum==0){
-                    $stock_check_success_status = 21;
+                    $stock_check_success_status = 23;
                 }else{
-                    $stock_check_success_status = 22;
+                    $stock_check_success_status = 24;
+                }
+            }else{
+                if($stock_check_num==$stock_check_hadnum){
+                    $stock_check_status = 2;
+                    if($stock_check_errornum==0){
+                        $stock_check_success_status = 21;
+                    }else{
+                        $stock_check_success_status = 22;
+                    }
                 }
             }
-        }
-
-        if($type==2){
             $status = 2;
         }else{
             $status = 1;
         }
+
         $ops_staff_id = $res_staff['id'];
         $add_data = array('ops_staff_id'=>$ops_staff_id,'signin_hotel_id'=>$hotel_id,'signin_time'=>date('Y-m-d H:i:s'),
             'status'=>$status,'stock_check_num'=>$stock_check_num,'stock_check_hadnum'=>$stock_check_hadnum,'stock_check_status'=>$stock_check_status,'stock_check_success_status'=>$stock_check_success_status,
@@ -345,7 +352,7 @@ class StockcheckController extends CommonController{
             $this->to_back(94001);
         }
         $m_stock_check_record = new \Common\Model\Crm\StockcheckRecordModel();
-        $fields = 'record.goods_id,record.idcode,record.is_check,record.type,goods.name as goods_name';
+        $fields = 'record.goods_id,record.idcode,record.is_check,record.type,record.desc,goods.name as goods_name';
         $res_list = $m_stock_check_record->getCheckRecordList($fields,array('record.salerecord_id'=>$salerecord_id),'record.id desc');
         $idcodes = $other_idcodes = array();
         foreach ($res_list as $v){
@@ -380,6 +387,11 @@ class StockcheckController extends CommonController{
         $res_list = $m_stock_check_record->getCheckRecordList($fields,array('record.salerecord_id'=>$salerecord_id),'record.id desc');
         $idcodes = $other_idcodes = array();
         foreach ($res_list as $v){
+            $checked = false;
+            if($v['is_check']){
+                $checked = true;
+            }
+            $v['checked'] = $checked;
             if($v['type']==1){
                 $idcodes[]=$v;
             }else{
@@ -411,6 +423,8 @@ class StockcheckController extends CommonController{
         $review_uid = intval($this->params['review_uid']);
         $cc_uids = $this->params['cc_uids'];
         $content = trim($this->params['content']);
+        $type = intval($this->params['type']);//类型1保存2提交
+        $is_check_error = intval($this->params['is_check_error']);//是否确认盘亏 1是 0否
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -421,8 +435,37 @@ class StockcheckController extends CommonController{
         $res_info = $m_salerecord->getInfo(array('id'=>$salerecord_id,'ops_staff_id'=>$res_staff['id']));
         $res_data = array('status'=>1,'salerecord_id'=>$salerecord_id);
         if(!empty($res_info)){
+            $updata = array('content'=>$content,'update_time'=>date('Y-m-d H:i:s'));
             $res_data['status'] = 2;
-            $m_salerecord->updateData(array('id'=>$salerecord_id),array('content'=>$content,'status'=>2,'update_time'=>date('Y-m-d H:i:s')));
+            if($type==2){
+                $stock_check_errornum = $res_info['stock_check_errornum'];
+                $stock_check_success_status = 0;
+                $stock_check_status = 1;
+                if($is_check_error==1){
+                    $stock_check_status = 2;
+                    if($stock_check_errornum==0){
+                        $stock_check_success_status = 23;
+                    }else{
+                        $stock_check_success_status = 24;
+                    }
+                }else{
+                    if($res_info['stock_check_num']==$res_info['stock_check_hadnum']){
+                        $stock_check_status = 2;
+                        if($stock_check_errornum==0){
+                            $stock_check_success_status = 21;
+                        }else{
+                            $stock_check_success_status = 22;
+                        }
+                    }
+                }
+                $updata['stock_check_status'] = $stock_check_status;
+                $updata['stock_check_success_status'] = $stock_check_success_status;
+                $status = 2;
+            }else{
+                $status = 1;
+            }
+            $updata['status']=$status;
+            $m_salerecord->updateData(array('id'=>$salerecord_id),$updata);
 
             $m_saleremind = new \Common\Model\Crm\SalerecordRemindModel();
             $m_saleremind->delData(array('salerecord_id'=>$salerecord_id,'type'=>array('in','1,2')));
@@ -528,14 +571,131 @@ class StockcheckController extends CommonController{
 
         $month_list = array(array('name'=>'本月','value'=>date('Y-m')));
         for($i=1;$i<12;$i++){
-            $name = date('Y年m月',strtotime("-$i month"));
-            $value = date('Y-m',strtotime("-$i month"));
+            $name = date('Y年m月',strtotime("last day of -$i month"));
+            $value = date('Y-m',strtotime("last day of -$i month"));
             $month_list[]=array('name'=>$name,'value'=>$value);
         }
 
         $this->to_back(array('month_list'=>$month_list,'hotel_num'=>$hotel_num,'check_hotel_num'=>$check_hotel_num,'hotel_finish_percent'=>$hotel_finish_percent,
                 'goods_num'=>$goods_num,'goods_check_num'=>$goods_check_num,'goods_finish_percent'=>$goods_finish_percent)
         );
+    }
+
+    public function hotelfilter(){
+        $openid = $this->params['openid'];
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        $permission = json_decode($res_staff['permission'],true);
+
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
+        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1,'ext.is_salehotel_stock'=>1);
+        $test_hotels = C('TEST_HOTEL');
+        $merchant_where['hotel.id'] = array('not in',$test_hotels);
+        if(in_array($hotel_role_type,array(2,4,6))){
+            $merchant_where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+        }elseif($hotel_role_type==3){
+            $merchant_where['hotel.area_id'] = $res_staff['area_id'];
+        }
+        $merchant_fields = 'hotel.id as hotel_id,hotel.name as hotel_name';
+        $hotel_list = $m_merchant->getMerchantInfo($merchant_fields,$merchant_where);
+
+        $month_list = array(array('name'=>'本月','value'=>date('Y-m')));
+        for($i=1;$i<12;$i++){
+            $name = date('Y年m月',strtotime("last day of -$i month"));
+            $value = date('Y-m',strtotime("last day of -$i month"));
+            $month_list[]=array('name'=>$name,'value'=>$value);
+        }
+        $check_status = array(
+            array('name'=>'全部','value'=>0),
+            array('name'=>'盘点完成','value'=>2),
+            array('name'=>'盘点完成(异常)','value'=>3),
+            array('name'=>'盘点未完成','value'=>1),
+        );
+        $this->to_back(array('hotel_list'=>$hotel_list,'check_status'=>$check_status,'month_list'=>$month_list));
+    }
+
+    public function stathotellist(){
+        $openid = $this->params['openid'];
+        $stat_date = $this->params['stat_date'];
+        $page = intval($this->params['page']);
+        $pagesize = $this->params['pagesize'];
+        $area_id = intval($this->params['area_id']);
+        $hotel_id = intval($this->params['hotel_id']);
+        $check_status = intval($this->params['check_status']);
+
+        if(empty($pagesize)){
+            $pagesize = 10;
+        }
+        $start = ($page-1)*$pagesize;
+        $limit = "$start,$pagesize";
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        $permission = json_decode($res_staff['permission'],true);
+
+        $start_time = $stat_date.'-01 00:00:00';
+        $end_time = $stat_date.'-31 23:59:59';
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $id_where = array('record.type'=>2,'record.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+        $test_hotels = C('TEST_HOTEL');
+        $id_where['hotel.id'] = array('not in',$test_hotels);
+        if($area_id){
+            $id_where['hotel.area_id'] = $area_id;
+        }else{
+            if(in_array($hotel_role_type,array(2,4,6))){
+                $id_where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            }elseif($hotel_role_type==3){
+                $id_where['hotel.area_id'] = $res_staff['area_id'];
+            }
+        }
+
+        $res_ids = $m_salerecord->getStockCheckRecordList('max(record.id) as id',$id_where,'','','record.signin_hotel_id');
+        $datalist = array();
+        if(!empty($res_ids)){
+            $ids = array();
+            foreach ($res_ids as $v){
+                $ids[]=$v['id'];
+            }
+            $where = array('record.id'=>array('in',$ids));
+            if($hotel_id){
+                $where['record.signin_hotel_id'] = $hotel_id;
+            }
+            switch ($check_status){
+                case 1:
+                    $where['record.stock_check_status'] = 1;
+                    break;
+                case 2:
+                    $where['record.stock_check_status'] = 2;
+                    $where['record.stock_check_success_status'] = array('in','0,21');
+                    break;
+                case 3:
+                    $where['record.stock_check_status'] = 2;
+                    $where['record.stock_check_success_status'] = array('in','22,23,24');
+                    break;
+            }
+            $rfields = 'hotel.id as hotel_id,hotel.name as hotel_name,record.id as salerecord_id,record.stock_check_num,record.stock_check_hadnum,record.stock_check_errornum as ying_num';
+            $res_data = $m_salerecord->getStockCheckRecordList($rfields,$where,'record.id desc',$limit,'');
+            foreach ($res_data as $v){
+                $kui_num = $v['stock_check_num'] - $v['stock_check_hadnum'];
+                $stock_check_percent='';
+                if(!empty($v['stock_check_num']) && !empty($v['stock_check_hadnum'])){
+                    $stock_check_percent = intval(($v['stock_check_hadnum']/$v['stock_check_num'])*100);
+                    $stock_check_percent = $stock_check_percent.'%';
+                }
+                $v['kui_num'] = $kui_num;
+                $v['stock_check_percent'] = $stock_check_percent;
+                $datalist[]=$v;
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 
     public function hotelchecklist(){
@@ -595,7 +755,7 @@ class StockcheckController extends CommonController{
 
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'content'=>$record_info['content'],'hotel_id'=>$record_info['signin_hotel_id'],
-                    'hotel_name'=>$hotel_name,'comment_num'=>$comment_num,
+                    'hotel_name'=>$hotel_name,'comment_num'=>$comment_num,'stock_check_success_status'=>$record_info['stock_check_success_status'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],
                 );

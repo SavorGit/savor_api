@@ -930,7 +930,7 @@ class CrmsaleController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $where = array();
+        $where = array('record.type'=>1);
         if($type==1){
             if(empty($hotel_id)){
                 $this->to_back(1001);

@@ -119,6 +119,34 @@ class OpsstaffModel extends BaseModel{
         return $permission_city;
     }
 
+    public function get_check_city($staff_info){
+        $m_area = new \Common\Model\AreaModel();
+        $fields = "id as area_id,region_name as area_name";
+        $permission = json_decode($staff_info['permission'],true);
+        switch ($permission['hotel_info']['type']){
+            case 1:
+            case 5:
+                $where = array('is_in_hotel'=>1,'is_valid'=>1);
+                $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
+                $tmp = array('area_id'=>0,'area_name'=>'全部');
+                array_unshift($permission_city, $tmp);
+                break;
+            case 2:
+            case 4:
+            case 6:
+                $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
+                $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
+                break;
+            case 3:
+                $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>$staff_info['area_id']);
+                $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
+                break;
+            default:
+                $permission_city = array();
+        }
+        return $permission_city;
+    }
+
     public function getStaffinfo($fields,$where){
         $res_data = $this->alias('a')
             ->join('savor_sysuser su on a.sysuser_id=su.id','left')

@@ -98,6 +98,7 @@ class LoginController extends CommonController{
             }else {
                 $data['permission_work_city'] = array();
             }
+            $data['check_city'] = $m_staff->get_check_city($res_staff);
             
             $this->to_back($data);
         }else{

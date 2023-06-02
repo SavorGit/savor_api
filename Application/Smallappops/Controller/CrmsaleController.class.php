@@ -674,7 +674,7 @@ class CrmsaleController extends CommonController{
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
-                    'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],
+                    'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],'is_handle_stock_check'=>$record_info['is_handle_stock_check'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],'stock_check_success_status'=>$record_info['stock_check_success_status'],
                 );
@@ -708,7 +708,7 @@ class CrmsaleController extends CommonController{
                 $where['record.status'] = 2;
                 break;
             case 3:
-                $where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>array('in','1,2'),'a.status'=>1,'record.status'=>2);
+                $where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'record.type'=>1,'a.type'=>array('in','1,2'),'a.status'=>1,'record.status'=>2);
                 if($res_staff['is_operrator']==0){
                     if($area_id>0 || $staff_id>0){
                         if($area_id){

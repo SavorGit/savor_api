@@ -357,7 +357,7 @@ class StockcheckController extends CommonController{
         $idcodes = $other_idcodes = array();
         foreach ($res_list as $v){
             $checked = false;
-            if($v['is_check']){
+            if($v['is_check'] || $v['type']==2){
                 $checked = true;
             }
             $v['checked'] = $checked;

@@ -81,7 +81,7 @@ class StockcheckController extends CommonController{
         $fileds = 'a.id,a.type,stock.hotel_id,goods.id as goods_id,goods.name as goods_name';
         $res_stock = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $desc = '';
-        if($res_stock[0]['type']==1){
+        if(empty($res_stock) || $res_stock[0]['type']==1){
             $desc = '未出库到餐厅';
         }elseif($res_stock[0]['type']==7){
             $desc = '酒水已经核销';
@@ -90,7 +90,15 @@ class StockcheckController extends CommonController{
             $res_hotel = $m_hotel->getOneById('id,name',$res_stock[0]['hotel_id']);
             $desc = "属于{$res_hotel['name']}的酒水";
         }
-        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$res_stock[0]['goods_id'],'goods_name'=>$res_stock[0]['goods_name'],'desc'=>$desc));
+        $goods_id = 0;
+        if(!empty($res_stock[0]['goods_id'])){
+            $goods_id = $res_stock[0]['goods_id'];
+        }
+        $goods_name = '';
+        if(!empty($res_stock[0]['goods_name'])){
+            $goods_name = $res_stock[0]['goods_name'];
+        }
+        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$goods_id,'goods_name'=>$goods_name,'desc'=>$desc));
     }
 
 
@@ -502,7 +510,7 @@ class StockcheckController extends CommonController{
         }
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'count(hotel.id) as num';
-        $hotel_where = array('hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1);
+        $hotel_where = array('hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1,'ext.is_salehotel_stock'=>1);
         $hotel_where['hotel.id'] = array('not in',C('TEST_HOTEL'));
         if($area_id){
             $hotel_where['hotel.area_id'] = $area_id;
@@ -592,17 +600,17 @@ class StockcheckController extends CommonController{
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
 
-        $m_merchant = new \Common\Model\Integral\MerchantModel();
-        $merchant_where = array('m.status'=>1,'hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1,'ext.is_salehotel_stock'=>1);
+        $m_hotel = new \Common\Model\HotelModel();
+        $hotel_where = array('hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1,'ext.is_salehotel_stock'=>1);
         $test_hotels = C('TEST_HOTEL');
-        $merchant_where['hotel.id'] = array('not in',$test_hotels);
+        $hotel_where['hotel.id'] = array('not in',$test_hotels);
         if(in_array($hotel_role_type,array(2,4,6))){
-            $merchant_where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            $hotel_where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
         }elseif($hotel_role_type==3){
-            $merchant_where['hotel.area_id'] = $res_staff['area_id'];
+            $hotel_where['hotel.area_id'] = $res_staff['area_id'];
         }
-        $merchant_fields = 'hotel.id as hotel_id,hotel.name as hotel_name';
-        $hotel_list = $m_merchant->getMerchantInfo($merchant_fields,$merchant_where);
+        $fields = 'hotel.id as hotel_id,hotel.name as hotel_name';
+        $hotel_list = $m_hotel->getHotelDataList($fields,$hotel_where,'hotel.id desc');
 
         $month_list = array(array('name'=>'本月','value'=>date('Y-m')));
         for($i=1;$i<12;$i++){
@@ -644,7 +652,7 @@ class StockcheckController extends CommonController{
         $start_time = $stat_date.'-01 00:00:00';
         $end_time = $stat_date.'-31 23:59:59';
         $m_salerecord = new \Common\Model\Crm\SalerecordModel();
-        $id_where = array('record.type'=>2,'record.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+        $id_where = array('record.type'=>2,'record.add_time'=>array(array('egt',$start_time),array('elt',$end_time)),'hotel.state'=>1,'hotel.flag'=>0,'ext.is_salehotel'=>1,'ext.is_salehotel_stock'=>1);
         $test_hotels = C('TEST_HOTEL');
         $id_where['hotel.id'] = array('not in',$test_hotels);
         if($area_id){

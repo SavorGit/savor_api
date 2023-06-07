@@ -93,7 +93,40 @@ class StatDataController extends CommonController{
             'signin_num'=>$res_staticdata['signin_num'],'task_data'=>$res_staticdata['task_data'],
             'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
         );
-        $res_data['staff_list'] = array();
+        $staff_list = array();
+        if($source==2){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
+            $res_sell = $m_finance_stockrecord->getStaticData(0,0,$hotel_id,$start_time,$end_time,'a.op_openid');
+            $sell_openids = array();
+            foreach ($res_sell as $v){
+                $sell_openids[$v['op_openid']] = array('brand_num'=>intval($v['brand_num']),'series_num'=>intval($v['series_num']),'sell_num'=>intval($v['sell_num']));
+            }
+            $res_stat_staff = $m_statichotelstaffdata->getHotelStaffData($hotel_id,$start_time,$end_time);
+            foreach ($res_stat_staff as $v){
+                $brand_num = $series_num = $sell_num = 0;
+                if(isset($sell_openids[$v['openid']])){
+                    $brand_num = $sell_openids[$v['openid']]['brand_num'];
+                    $series_num = $sell_openids[$v['openid']]['series_num'];
+                    $sell_num = $sell_openids[$v['openid']]['sell_num'];
+                }
+                $v['brand_num'] = $brand_num;
+                $v['series_num'] = $series_num;
+                $v['sell_num'] = $sell_num;
+                if(isset($all_staff[$v['openid']])){
+                    $avatarUrl = $all_staff[$v['openid']]['avatarUrl'];
+                    $nickName = $all_staff[$v['openid']]['nickName'];
+                }else{
+                    $res_user = $m_user->getOne('id,avatarUrl,nickName',array('openid'=>$v['openid']),'id desc');
+                    $avatarUrl = $res_user['avatarUrl'];
+                    $nickName = $res_user['nickName'];
+                }
+                $v['avatarUrl'] = $avatarUrl;
+                $v['nickName'] = $nickName;
+                $staff_list[]=$v;
+            }
+        }
+        $res_data['staff_list'] = $staff_list;
         $this->to_back($res_data);
     }
 

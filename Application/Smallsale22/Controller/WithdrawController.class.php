@@ -396,7 +396,7 @@ class WithdrawController extends CommonController{
 
             $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
             $fields = 'sum(total_fee) as total_fee';
-            $where = array('openid'=>$openid,'type'=>1,'status'=>21);
+            $where = array('openid'=>$openid,'type'=>1);
             $start_time = date('Y-m-01 00:00:00');
             $end_time = date('Y-m-31 23:59:59');
             $where['add_time'] = array(array('EGT',$start_time),array('ELT',$end_time));

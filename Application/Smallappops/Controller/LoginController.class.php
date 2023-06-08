@@ -111,6 +111,12 @@ class LoginController extends CommonController{
         $code = $this->params['code'];
         $m_small_app = new Smallapp_api(6);
         $data  = $m_small_app->getSmallappOpenid($code);
+        if(!empty($data['openid']) && !empty($data['session_key'])){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(14);
+            $cache_key = C('SAPP_OPS').'session_openid:'.$data['openid'];
+            $redis->set($cache_key,$data['session_key'],86400);
+        }
         $this->to_back($data);
     }
 

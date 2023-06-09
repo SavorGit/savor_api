@@ -23,7 +23,8 @@ class CrmsaleController extends CommonController{
             case 'addrecord':
                 $this->valid_fields = array('openid'=>1001,'visit_purpose'=>1001,'visit_type'=>1001,'contact_id'=>1002,
                     'type'=>1001,'content'=>1002,'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,
-                    'signout_time'=>1002,'signout_hotel_id'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002);
+                    'signout_time'=>1002,'signout_hotel_id'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002,
+                    'sign_progress_id'=>1002,'contractor'=>1002,'mobile'=>1002,'job'=>1002,'gender'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'recordinfo':
@@ -255,6 +256,11 @@ class CrmsaleController extends CommonController{
         $review_uid = intval($this->params['review_uid']);
         $cc_uids = $this->params['cc_uids'];
         $salerecord_id = intval($this->params['salerecord_id']);
+        $sign_progress_id = intval($this->params['sign_progress_id']);
+        $contractor = trim($this->params['contractor']);
+        $mobile = trim($this->params['mobile']);
+        $job = trim($this->params['job']);
+        $gender = $this->params['gender'];
 
         $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -263,7 +269,10 @@ class CrmsaleController extends CommonController{
         }
         $status = 1;
         if($type==2){
-            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id'],$this->valid_fields['contact_id']);
+            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id'],$this->valid_fields['contact_id'],
+                $this->valid_fields['sign_progress_id'],$this->valid_fields['contractor'],$this->valid_fields['mobile'],
+                $this->valid_fields['job'],$this->valid_fields['gender']
+            );
             if($visit_type!=171){
                 unset($this->valid_fields['signin_time'],$this->valid_fields['signin_hotel_id'],
                     $this->valid_fields['signout_time'],$this->valid_fields['signout_hotel_id']);
@@ -280,6 +289,11 @@ class CrmsaleController extends CommonController{
             'contact_id'=>$contact_id,'status'=>$status);
         if(!empty($content))    $add_data['content'] = $content;
         if(!empty($images))     $add_data['images'] = $images;
+        if(!empty($sign_progress_id)){
+            $add_data['sign_progress_id'] = $sign_progress_id;
+            $all_process = C('SIGN_PROCESS');
+            $add_data['sign_progress'] = $all_process[$sign_progress_id]['percent'];
+        }
         if(!empty($signin_time) && !empty($signin_hotel_id)){
             $add_data['signin_time'] = $signin_time;
             $add_data['signin_hotel_id'] = $signin_hotel_id;
@@ -330,6 +344,40 @@ class CrmsaleController extends CommonController{
         if(!empty($add_remind)){
             $m_saleremind->addAll($add_remind);
         }
+        $m_hotel = new \Common\Model\HotelModel();
+        $hotel_data = array();
+        if(!empty($contractor))     $hotel_data['contractor'] = $contractor;
+        if(!empty($mobile))         $hotel_data['mobile'] = $mobile;
+        if(!empty($job))            $hotel_data['job'] = $job;
+        if(!empty($gender))         $hotel_data['gender'] = $gender;
+        if(!empty($hotel_data)){
+            $m_hotel->saveData($hotel_data,array('id'=>$signin_hotel_id));
+        }
+        if($status==2 && $sign_progress_id>0){
+            $m_hotel->saveData(array('no_work_type'=>22),array('id'=>$signin_hotel_id));
+
+            $m_signhotel = new \Common\Model\Crm\SignhotelModel();
+            $res_sign = $m_signhotel->getInfo(array('hotel_id'=>$signin_hotel_id));
+            if(!empty($res_sign)){
+                $updata = array('sign_progress_id'=>$sign_progress_id);
+                if($res_sign['sign_progress_id']<7){
+                    $visit_num = $res_sign['visit_num']+1;
+                    $updata['visit_num'] = $visit_num;
+                }
+                if($sign_progress_id==7){
+                    if($res_sign['ops_staff_id']==0){
+                        $updata['ops_staff_id'] = $ops_staff_id;
+                        $updata['end_time'] = date('Y-m-d H:i:s');
+                    }
+                }
+                $m_signhotel->updateData(array('id'=>$res_sign['id']),$updata);
+            }else{
+                $add_data = array('hotel_id'=>$signin_hotel_id,'visit_num'=>1,
+                    'sign_progress_id'=>$sign_progress_id,'start_time'=>date('Y-m-d H:i:s'));
+                $m_signhotel->add($add_data);
+            }
+        }
+
         $this->to_back(array('salerecord_id'=>$salerecord_id));
     }
 
@@ -447,6 +495,19 @@ class CrmsaleController extends CommonController{
             $stock_check_percent = $stock_check_percent.'%';
         }
         $res_info['stock_check_percent'] = $stock_check_percent;
+
+        $percent = '';
+        if($res_info['sign_progress']>0){
+            $percent = '已达成'.$res_info['sign_progress'].'%';
+        }
+        $sign_progress = array();
+        if($res_info['sign_progress_id']>0){
+            $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+            $sign_progress = $m_salerecord->getSignProcess($hotel_id,$salerecord_id);
+        }
+        $res_info['sign_progress_percent'] = $percent;
+        $res_info['sign_progress'] = $sign_progress;
+
         $this->to_back($res_info);
     }
 
@@ -671,12 +732,20 @@ class CrmsaleController extends CommonController{
                     $stock_check_percent = intval(($record_info['stock_check_hadnum']/$record_info['stock_check_num'])*100);
                     $stock_check_percent = $stock_check_percent.'%';
                 }
+                $sign_progress = '';
+                if($record_info['sign_progress']>0){
+                    $sign_progress = '签约进度'.$record_info['sign_progress'].'%';
+                    if($record_info['sign_progress']>=90){
+                        $sign_progress = '签约已完成';
+                    }
+                }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],'is_handle_stock_check'=>$record_info['is_handle_stock_check'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],'stock_check_success_status'=>$record_info['stock_check_success_status'],
+                    'sign_progress'=>$sign_progress,
                 );
                 $datalist[]=$info;
             }
@@ -1034,5 +1103,4 @@ class CrmsaleController extends CommonController{
         }
         $this->to_back(array('datalist'=>$datalist));
     }
-
 }

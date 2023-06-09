@@ -487,7 +487,7 @@ class CrminfoController extends CommonController{
             $this->to_back(94001);
         }
         $data = array('openid'=>$openid,'name'=>$name,'area_id'=>$area_id,'county_id'=>$county_id,
-            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2
+            'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2,'htype'=>20,'no_work_type'=>21
         );
         if($longitude>0 && $latitude>0 ) {
             $bd_lnglat = getgeoByTc($latitude, $longitude,3);

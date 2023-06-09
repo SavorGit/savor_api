@@ -364,15 +364,17 @@ class CrmsaleController extends CommonController{
                     $visit_num = $res_sign['visit_num']+1;
                     $updata['visit_num'] = $visit_num;
                 }
+                if($sign_progress_id!=$res_sign['sign_progress_id']){
+                    $updata['ops_staff_id'] = $ops_staff_id;
+                }
                 if($sign_progress_id==7){
-                    if($res_sign['ops_staff_id']==0){
-                        $updata['ops_staff_id'] = $ops_staff_id;
+                    if($res_sign['end_time']=='0000-00-00 00:00:00'){
                         $updata['end_time'] = date('Y-m-d H:i:s');
                     }
                 }
                 $m_signhotel->updateData(array('id'=>$res_sign['id']),$updata);
             }else{
-                $add_data = array('hotel_id'=>$signin_hotel_id,'visit_num'=>1,
+                $add_data = array('hotel_id'=>$signin_hotel_id,'visit_num'=>1,'ops_staff_id'=>$ops_staff_id,
                     'sign_progress_id'=>$sign_progress_id,'start_time'=>date('Y-m-d H:i:s'));
                 $m_signhotel->add($add_data);
             }

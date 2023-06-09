@@ -51,6 +51,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'goods_id'=>1001,'page'=>1001);
                 break;
+            case 'getsignprogress':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -752,6 +756,21 @@ class HotelController extends CommonController{
         $range_str = "可选{$nearby_m}米范围内的地点";
         $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str));
     }
+
+    public function getsignprogress(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_salerecord = new \Common\Model\Crm\SalerecordModel();
+        $sign_progress = $m_salerecord->getSignProcess($hotel_id);
+        $this->to_back($sign_progress);
+    }
+
 
     private function changeadvList($res,$type=1){
         if($res){

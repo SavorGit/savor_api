@@ -894,4 +894,14 @@ return array(
       'avatarUrl'=>'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132',
       'nickName'=>'微信用户'
     ),
+    'SIGN_PROCESS'=>array(
+        '1'=>array('id'=>1,'name'=>'陌拜完成','percent'=>0),
+        '2'=>array('id'=>2,'name'=>'见到店长或其他关键人','percent'=>10),
+        '3'=>array('id'=>3,'name'=>'宣讲演示完成','percent'=>20),
+        '4'=>array('id'=>4,'name'=>'对方对平价酒模式无异议','percent'=>30),
+        '5'=>array('id'=>5,'name'=>'对方了解并认可价格体系','percent'=>40),
+        '6'=>array('id'=>6,'name'=>'认可7天回款','percent'=>70),
+        '7'=>array('id'=>7,'name'=>'签合同','percent'=>90),
+        '8'=>array('id'=>8,'name'=>'进酒并和驻店人员交接','percent'=>100),
+    ),
 );

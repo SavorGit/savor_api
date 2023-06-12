@@ -709,7 +709,7 @@ class HotelController extends CommonController{
         $oss_host = get_oss_host();
         $m_hotel = new \Common\Model\HotelModel();
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps";
-        $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0);
+        $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0,'a.gps'=>array('neq',''));
         $test_hotel_ids = C('TEST_HOTEL');
         $where['a.id'] = array('not in',"$test_hotel_ids");
         $hotel_list = $m_hotel->alias('a')

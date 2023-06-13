@@ -588,7 +588,7 @@ class CrmsaleController extends CommonController{
                 }
                 $orderby = 'a.salerecord_id desc';
                 if(in_array($res_staff['hotel_role_type'],array(1,2,4,6)) && $area_id==0){
-                    $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>4,'a.status'=>1,'record.status'=>2);
+                    $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>array('in','1,2'),'a.status'=>1,'record.type'=>1,'record.status'=>2);
                 }
                 break;
             case 4:

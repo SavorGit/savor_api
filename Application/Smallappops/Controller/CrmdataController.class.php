@@ -41,7 +41,6 @@ class CrmdataController extends CommonController{
         $month_list = array(
             array('name'=>'本月','start_time'=>date('Y-m-01'),'end_time'=>date('Y-m-d')),
             array('name'=>'上月','start_time'=>date('Y-m-01',strtotime("last day of -1 month")),'end_time'=>date('Y-m-31',strtotime("last day of -1 month"))),
-            array('name'=>'近3个月','start_time'=>date('Y-m-01',strtotime("- 90 day")),'end_time'=>date('Y-m-d')),
         );
         $calender = array('start_time'=>'2022-12-15','end_time'=>date('Y-m-d'));
         $this->to_back(array('month_list'=>$month_list,'calender'=>$calender));
@@ -161,7 +160,7 @@ class CrmdataController extends CommonController{
         $permission = json_decode($res_staff['permission'],true);
 
         $test_hotels = C('TEST_HOTEL');
-        $sign_where = array('a.sign_progress_id'=>array('in','7,8'),'hotel.id'=>array('not in',$test_hotels),'hotel.htype'=>20);
+        $sign_where = array('hotel.id'=>array('not in',$test_hotels),'hotel.htype'=>20);
         if($area_id){
             $sign_where['hotel.area_id'] = $area_id;
         }else{
@@ -175,7 +174,7 @@ class CrmdataController extends CommonController{
             $sign_where['a.ops_staff_id'] = $staff_id;
         }
         $m_signhotel = new \Common\Model\Crm\SignhotelModel();
-        $fields = 'count(a.id) as hotel_num';
+        $fields = 'a.sign_progress_id,count(a.id) as hotel_num';
         $res_data = $m_signhotel->getSignData($fields,$sign_where,'','','a.sign_progress_id');
         $sign_hotel = array();
         foreach ($res_data as $v){

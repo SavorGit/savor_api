@@ -499,11 +499,9 @@ class CrmsaleController extends CommonController{
         $res_info['stock_check_percent'] = $stock_check_percent;
 
         $percent = '';
-        if($res_info['sign_progress']>0){
-            $percent = '已达成'.$res_info['sign_progress'].'%';
-        }
         $sign_progress = array();
         if($res_info['sign_progress_id']>0){
+            $percent = '已达成'.$res_info['sign_progress'].'%';
             $m_salerecord = new \Common\Model\Crm\SalerecordModel();
             $sign_progress = $m_salerecord->getSignProcess($hotel_id,$salerecord_id);
         }
@@ -735,11 +733,8 @@ class CrmsaleController extends CommonController{
                     $stock_check_percent = $stock_check_percent.'%';
                 }
                 $sign_progress = '';
-                if($record_info['sign_progress']>0){
+                if($record_info['sign_progress_id']>0){
                     $sign_progress = '签约进度'.$record_info['sign_progress'].'%';
-                    if($record_info['sign_progress']>=90){
-                        $sign_progress = '签约已完成';
-                    }
                 }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],

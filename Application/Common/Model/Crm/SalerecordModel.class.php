@@ -57,16 +57,30 @@ class SalerecordModel extends BaseModel{
             }else{
                 $where = array('signin_hotel_id'=>$hotel_id,'type'=>1,'sign_progress_id'=>array('gt',0));
             }
-            $res_salereocrd = $m_salerecord->getALLDataList('id,sign_progress_id,sign_progress',$where,'id desc','0,1','');
+            $res_salereocrd = $m_salerecord->getALLDataList('id,status,sign_progress_id,sign_progress',$where,'id desc','0,1','');
             $sign_progress_id = 0;
+            $status = 0;
             if(!empty($res_salereocrd)){
                 $sign_progress_id = $res_salereocrd[0]['sign_progress_id'];
+                $status = $res_salereocrd[0]['status'];
+            }
+            $hotel_sign_progress_id = 0;
+            $is_can_back = 0;
+            if($salerecord_id && $status==1){
+                $m_sign_hotel = new \Common\Model\Crm\SignhotelModel();
+                $res_sign_hotel = $m_sign_hotel->getInfo(array('hotel_id'=>$hotel_id));
+                $hotel_sign_progress_id = $res_sign_hotel['sign_progress_id'];
+                $is_can_back = 1;
             }
             $m_hotelcontract = new \Common\Model\Finance\ContractHotelModel();
             foreach ($confsign_progress as $v){
                 $is_check = 0;
                 if($sign_progress_id>=$v['id']){
                     $is_check = 1;
+                }
+                $is_back = 0;
+                if($is_can_back && $is_check==1 && $v['id']>$hotel_sign_progress_id){
+                    $is_back = 1;
                 }
                 if($v['id']==2){
                     $v['user'] = array('contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'job'=>$res_hotel['job'],'gender'=>$res_hotel['gender']);
@@ -80,6 +94,7 @@ class SalerecordModel extends BaseModel{
                     $v['tips'] = $tips;
                 }
                 $v['is_check'] = $is_check;
+                $v['is_back'] = $is_back;
                 $sign_progress[]=$v;
             }
         }

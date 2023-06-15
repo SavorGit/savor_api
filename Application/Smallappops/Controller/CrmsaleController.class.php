@@ -451,11 +451,13 @@ class CrmsaleController extends CommonController{
         unset($res_info['status'],$res_info['update_time']);
         $hotel_name = '';
         $hotel_id   = 0;
+        $htype = 0;
         if($res_info['signin_hotel_id']){
             $m_hotel = new \Common\Model\HotelModel();
-            $res_hotel = $m_hotel->getOneById('id,name',$res_info['signin_hotel_id']);
+            $res_hotel = $m_hotel->getOneById('id,name,htype',$res_info['signin_hotel_id']);
             $hotel_name = $res_hotel['name'];
             $hotel_id   = $res_hotel['id'];
+            $htype = $res_hotel['htype'];
         }
         $res_info['hotel_name'] = $hotel_name;
         $res_info['hotel_id']   = $hotel_id;
@@ -502,6 +504,8 @@ class CrmsaleController extends CommonController{
         $sign_progress = array();
         if($res_info['sign_progress_id']>0){
             $percent = '已达成'.$res_info['sign_progress'].'%';
+        }
+        if($htype==20){
             $m_salerecord = new \Common\Model\Crm\SalerecordModel();
             $sign_progress = $m_salerecord->getSignProcess($hotel_id,$salerecord_id);
         }
@@ -585,7 +589,7 @@ class CrmsaleController extends CommonController{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
                 $orderby = 'a.salerecord_id desc';
-                if(in_array($res_staff['hotel_role_type'],array(1,2,4,6)) && $area_id==0){
+                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
                     $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.type'=>array('in','1,2'),'a.status'=>1,'record.type'=>1,'record.status'=>2);
                 }
                 break;
@@ -611,7 +615,7 @@ class CrmsaleController extends CommonController{
                     $where['record.ops_staff_id'] = $ops_staff_id;
                 }
                 $orderby = 'a.salerecord_id desc';
-                if(in_array($res_staff['hotel_role_type'],array(1,2,4,6)) && $area_id==0){
+                if(in_array($res_staff['hotel_role_type'],array(2,4,6)) && $area_id==0){
                     $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.status'=>1,'record.type'=>2,'record.status'=>2);
                 }
                 break;

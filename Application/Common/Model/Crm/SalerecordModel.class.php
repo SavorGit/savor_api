@@ -70,6 +70,9 @@ class SalerecordModel extends BaseModel{
                 $m_sign_hotel = new \Common\Model\Crm\SignhotelModel();
                 $res_sign_hotel = $m_sign_hotel->getInfo(array('hotel_id'=>$hotel_id));
                 $hotel_sign_progress_id = $res_sign_hotel['sign_progress_id'];
+                if($hotel_sign_progress_id>$sign_progress_id){
+                    $sign_progress_id = $hotel_sign_progress_id;
+                }
                 $is_can_back = 1;
             }
             $m_hotelcontract = new \Common\Model\Finance\ContractHotelModel();
@@ -79,7 +82,7 @@ class SalerecordModel extends BaseModel{
                     $is_check = 1;
                 }
                 $is_back = 0;
-                if($is_can_back && $is_check==1 && $v['id']>$hotel_sign_progress_id){
+                if($is_can_back && $v['id']>$hotel_sign_progress_id){
                     $is_back = 1;
                 }
                 if($v['id']==2){

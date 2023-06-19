@@ -40,7 +40,7 @@ class CrminfoController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'stafflist':
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1002,'pagesize'=>1002);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1002,'pagesize'=>1002,'version'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'staffchangelist':
@@ -565,6 +565,52 @@ class CrminfoController extends CommonController{
         $res_hotel['merchant'] = array('type_str'=>$merchant_type_str,'is_integral'=>$merchant_is_integral,
             'is_shareprofit'=>$merchant_is_shareprofit,'name'=>$merchant_name,'job'=>$merchant_job,'mobile'=>$merchant_mobile);
 
+        $m_hotelcontract = new \Common\Model\Finance\ContractHotelModel();
+        $contract_fields = 'contract.id,contract.oss_addr,contract.sign_user_id,contract.sign_time,contract.archive_time,contract.contract_stime,
+        contract.contract_etime,contract.status,contract.hotel_signer,contract.hotel_signer_phone1';
+        $res_contract = $m_hotelcontract->getContractData($contract_fields,array('a.hotel_id'=>$hotel_id,'contract.type'=>20),'a.id desc');
+        $proxysale_contract_id = 0;
+        $contract = array();
+        if(!empty($res_contract)){
+            $contract = $res_contract[0];
+            $proxysale_contract_id = intval($contract['id']);
+            if($contract['contract_stime']=='0000-00-00'){
+                $contract['contract_stime'] = '';
+            }
+            if($contract['contract_etime']=='0000-00-00'){
+                $contract['contract_etime'] = '';
+            }
+            $sign_user = '';
+            if($contract['sign_user_id']){
+                $m_sign_user = new \Common\Model\Finance\SignuserModel();
+                $res_signuser = $m_sign_user->getInfo(array('id'=>$contract['sign_user_id']));
+                $sign_user = $res_signuser['uname'];
+            }
+            $contract['sign_user'] = $sign_user;
+            $now_date = date('Y-m-d');
+            $status_str = '';
+            if($contract['status']==4){
+                $status_str =  "已终止";
+            }else{
+                if($contract['contract_stime']>$now_date){
+                    $status_str =  '待生效';
+                }elseif($now_date>=$contract['contract_stime'] && $now_date<=$contract['contract_etime']){
+                    $status_str =  '进行中';
+                }elseif($contract['contract_etime']<$now_date){
+                    $status_str =  '已到期';
+                }
+            }
+            $contract['status_str'] = $status_str;
+            $contract['type_str'] = '商品代销合同';
+            $oss_addr = '';
+            if(!empty($res_contract[0]['oss_addr'])){
+                $oss_host = get_oss_host();
+                $oss_addr = $oss_host.$res_contract[0]['oss_addr'];
+            }
+            $contract['oss_addr'] = $oss_addr;
+        }
+        $res_hotel['proxysale_contract_id'] = $proxysale_contract_id;
+        $res_hotel['contract'] = $contract;
         $this->to_back($res_hotel);
     }
 
@@ -573,12 +619,14 @@ class CrminfoController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $page = $this->params['page'];
         $pagesize = $this->params['pagesize'];
+        $version = $this->params['version'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+
         $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
         $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
@@ -610,7 +658,15 @@ class CrminfoController extends CommonController{
                 $staff_list[$k]['job'] = $job;
             }
         }
-        $this->to_back($staff_list);
+        if(!empty($version) && $version>='1.0.15'){
+            $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+            $permission = json_decode($res_staff['permission'],true);
+
+            $res_data = array('datalist'=>$staff_list);
+        }else{
+            $res_data = $staff_list;
+        }
+        $this->to_back($res_data);
     }
 
     public function staffchangelist(){

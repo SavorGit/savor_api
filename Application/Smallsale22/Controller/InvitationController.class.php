@@ -167,7 +167,7 @@ class InvitationController extends CommonController{
             $hashids = new \Common\Lib\Hashids($hash_ids_key);
             $res_encode = $hashids->encode($p_invitation_id);
             $params['code'] = $res_encode;
-            $content_url = "本店有多种知名白酒,平价销售,酒水预定请咨询店内。更多优惠活动、招牌菜、地址导航，请点击查看。邀请函也可转发给您的朋友赴约。https://mobile.littlehotspot.com/rds/$res_encode";
+            $content_url = "本店有多种知名白酒平价供应，省去了您自带白酒的麻烦。详情请见https://mobile.littlehotspot.com/rds/$res_encode";
 
             $emsms = new \Common\Lib\EmayMessage();
             $content = $content_book.$content_tel.$content_url;

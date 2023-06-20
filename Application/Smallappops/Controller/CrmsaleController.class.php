@@ -376,6 +376,9 @@ class CrmsaleController extends CommonController{
             }else{
                 $add_data = array('hotel_id'=>$signin_hotel_id,'visit_num'=>1,'ops_staff_id'=>$ops_staff_id,
                     'sign_progress_id'=>$sign_progress_id,'start_time'=>date('Y-m-d H:i:s'));
+                if($sign_progress_id>=7){
+                    $add_data['end_time'] = date('Y-m-d H:i:s');
+                }
                 $m_signhotel->add($add_data);
             }
         }

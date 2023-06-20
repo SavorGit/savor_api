@@ -645,7 +645,7 @@ class CrminfoController extends CommonController{
         }else{
             $limit = '';
         }
-        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc',$limit);
+        $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.level asc',$limit,'a.openid');
         if(!empty($staff_list)){
             $oss_host = C('OSS_HOST');
             $staff_level = C('STAFF_LEVEL');
@@ -693,7 +693,7 @@ class CrminfoController extends CommonController{
         if($is_edit_staff){
             $m_staff = new \Common\Model\Integral\StaffModel();
             $updata = array('status'=>$status,'edit_status_staff_id'=>$res_staff['id'],'edit_time'=>date('Y-m-d H:i:s'));
-            $m_staff->updateData(array('id'=>$status),$updata);
+            $m_staff->updateData(array('id'=>$staff_id),$updata);
             $res_data['status'] = $status;
         }
         $this->to_back($res_data);

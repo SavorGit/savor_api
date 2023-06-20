@@ -224,10 +224,8 @@ class LoginController extends CommonController{
         }
         $decode_info = explode('&',$de_qrcode);
         $manage_id = intval($decode_info[0]); //商家管理员id
-        $ops_staff_id = 0;
-        if(isset($decode_info[2])){
-            $ops_staff_id = intval($decode_info[2]);
-        }
+        $ops_staff_id = intval($decode_info[2]);
+
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.id'=>$manage_id,'a.status'=>1,'mt.status'=>1);
         $fields = 'mt.id mt_id,mt.hotel_id,mt.service_model_id,a.id,a.level';

@@ -4,7 +4,7 @@ use Common\Model\BaseModel;
 class StaffModel extends BaseModel{
     protected $tableName = 'integral_merchant_staff';
 
-    public function getMerchantStaff($fileds,$where,$orderby='',$limit=''){
+    public function getMerchantStaff($fileds,$where,$orderby='',$limit='',$group=''){
         $res = $this->alias('a')
             ->field($fileds)
             ->join('savor_integral_merchant merchant on a.merchant_id=merchant.id','left')
@@ -12,6 +12,7 @@ class StaffModel extends BaseModel{
             ->where($where)
             ->order($orderby)
             ->limit($limit)
+            ->group($group)
             ->select();
         return $res;
     }

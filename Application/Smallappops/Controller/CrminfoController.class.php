@@ -43,6 +43,10 @@ class CrminfoController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'page'=>1002,'pagesize'=>1002,'version'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'editstaffstatus':
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'staff_id'=>1001,'status'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'staffchangelist':
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 $this->is_verify = 1;
@@ -669,6 +673,28 @@ class CrminfoController extends CommonController{
             $res_data = array('datalist'=>$staff_list,'is_edit_staff'=>$is_edit_staff);
         }else{
             $res_data = $staff_list;
+        }
+        $this->to_back($res_data);
+    }
+
+    public function editstaffstatus(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $status = intval($this->params['status']);
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $is_edit_staff = $m_opsstaff->check_edit_salestaff($res_staff,$hotel_id);
+        $res_data = array('staff_id'=>$staff_id);
+        if($is_edit_staff){
+            $m_staff = new \Common\Model\Integral\StaffModel();
+            $updata = array('status'=>$status,'edit_status_staff_id'=>$res_staff['id'],'edit_time'=>date('Y-m-d H:i:s'));
+            $m_staff->updateData(array('id'=>$status),$updata);
+            $res_data['status'] = $status;
         }
         $this->to_back($res_data);
     }

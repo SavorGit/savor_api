@@ -621,15 +621,18 @@ class CrminfoController extends CommonController{
         $pagesize = $this->params['pagesize'];
         $version = $this->params['version'];
 
-        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
-        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
 
         $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+        if(!empty($version) && $version>='1.0.15'){
+            unset($where['a.status']);
+        }
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $fields = 'a.openid,a.level,user.avatarUrl,user.nickName';
+        $fields = 'a.openid,a.level,a.id as staff_id,a.status,user.avatarUrl,user.nickName';
         if(!empty($page) && !empty($pagesize)){
             $start = ($page-1)*$pagesize;
             $limit = "$start,$pagesize";
@@ -659,10 +662,11 @@ class CrminfoController extends CommonController{
             }
         }
         if(!empty($version) && $version>='1.0.15'){
-            $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
-            $permission = json_decode($res_staff['permission'],true);
-
-            $res_data = array('datalist'=>$staff_list);
+            $is_edit_staff = 0;
+            if(!empty($staff_list) && $staff_list[0]['level']==1){
+                $is_edit_staff = $m_opsstaff->check_edit_salestaff($res_staff,$hotel_id);
+            }
+            $res_data = array('datalist'=>$staff_list,'is_edit_staff'=>$is_edit_staff);
         }else{
             $res_data = $staff_list;
         }

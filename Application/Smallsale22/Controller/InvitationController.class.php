@@ -8,8 +8,9 @@ class InvitationController extends CommonController{
             case 'confirmdata':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'box_mac'=>1002,'name'=>1001,'book_time'=>1001,
-                    'people_num'=>1002,'mobile'=>1001,'room_id'=>1002,'contact_name'=>1002,'contact_mobile'=>1002,
-                    'theme_id'=>1002,'desc'=>1002,'is_sellwine'=>1002,'images'=>1002,'room_type'=>1002,'table_name'=>1002);
+                    'people_num'=>1002,'mobile'=>1002,'room_id'=>1002,'contact_name'=>1002,'contact_mobile'=>1002,
+                    'theme_id'=>1002,'desc'=>1002,'is_sellwine'=>1002,'images'=>1002,'room_type'=>1002,'table_name'=>1002,
+                    'version'=>1002);
                 break;
             case 'themes':
                 $this->is_verify = 1;
@@ -49,7 +50,8 @@ class InvitationController extends CommonController{
         $images = $this->params['images'];
         $room_type = intval($this->params['room_type']);//1包间、2大厅
         $table_name = trim($this->params['table_name']);
-        $send_type = intval($this->params['send_type']);//1短信发送,2微信和短信发送
+        $send_type = intval($this->params['send_type']);//1短信发送,2微信和短信发送,3微信发送
+        $version = $this->params['version'];
 
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,merchant.type';
@@ -137,37 +139,41 @@ class InvitationController extends CommonController{
             $template_code = $ucconfig['send_invitation_to_user_link'];
         }
         $is_send = check_sendsms_content($mobile,$params,$template_code);
-        if($is_send==0){
-            $expire_time = strtotime($adata['book_time']) + 86400*7;
-            $param_data = array(
-                'jump_wxa'=>array(
-                    'path'=>'/mall/pages/wine/post_book/index',
-                    'query'=>"id=$invitation_id&status=1",
-                ),
-                'is_expire'=>true,
-                'expire_time'=>$expire_time,
-            );
-            $config = C('SMALLAPP_CONFIG');
-            $wechat = new \Common\Lib\Wechat($config);
-            $res_generate = $wechat->generatescheme(json_encode($param_data,JSON_UNESCAPED_UNICODE));
-            $res_info = json_decode($res_generate,true);
-            if($res_info['errcode']!=0){
+        if($is_send==0 && $send_type!=3 && !empty($mobile)){
+            if($version>='1.9.44'){
+                $content_url = '';
+            }else{
+                $expire_time = strtotime($adata['book_time']) + 86400*7;
+                $param_data = array(
+                    'jump_wxa'=>array(
+                        'path'=>'/mall/pages/wine/post_book/index',
+                        'query'=>"id=$invitation_id&status=1",
+                    ),
+                    'is_expire'=>true,
+                    'expire_time'=>$expire_time,
+                );
+                $config = C('SMALLAPP_CONFIG');
+                $wechat = new \Common\Lib\Wechat($config);
                 $res_generate = $wechat->generatescheme(json_encode($param_data,JSON_UNESCAPED_UNICODE));
                 $res_info = json_decode($res_generate,true);
+                if($res_info['errcode']!=0){
+                    $res_generate = $wechat->generatescheme(json_encode($param_data,JSON_UNESCAPED_UNICODE));
+                    $res_info = json_decode($res_generate,true);
+                }
+                $p_invitation_id = 1;
+                if($res_info['openlink']){
+                    $p_invitation_id = $invitation_id;
+                    $redis = new \Common\Lib\SavorRedis();
+                    $redis->select(14);
+                    $invite_key = C('SAPP_SALE_INVITATION_JUMP_URL').$invitation_id;
+                    $redis->set($invite_key,$res_info['openlink'],86400*30);
+                }
+                $hash_ids_key = C('HASH_IDS_KEY');
+                $hashids = new \Common\Lib\Hashids($hash_ids_key);
+                $res_encode = $hashids->encode($p_invitation_id);
+                $params['code'] = $res_encode;
+                $content_url = "本店有多种知名白酒平价供应，省去了您自带白酒的麻烦。详情请见https://mobile.littlehotspot.com/rds/$res_encode";
             }
-            $p_invitation_id = 1;
-            if($res_info['openlink']){
-                $p_invitation_id = $invitation_id;
-                $redis = new \Common\Lib\SavorRedis();
-                $redis->select(14);
-                $invite_key = C('SAPP_SALE_INVITATION_JUMP_URL').$invitation_id;
-                $redis->set($invite_key,$res_info['openlink'],86400*30);
-            }
-            $hash_ids_key = C('HASH_IDS_KEY');
-            $hashids = new \Common\Lib\Hashids($hash_ids_key);
-            $res_encode = $hashids->encode($p_invitation_id);
-            $params['code'] = $res_encode;
-            $content_url = "本店有多种知名白酒平价供应，省去了您自带白酒的麻烦。详情请见https://mobile.littlehotspot.com/rds/$res_encode";
 
             $emsms = new \Common\Lib\EmayMessage();
             $content = $content_book.$content_tel.$content_url;
@@ -249,7 +255,6 @@ class InvitationController extends CommonController{
         }
         $m_hotelinvitation = new \Common\Model\Smallapp\HotelInvitationConfigModel();
         $res_iconfig = $m_hotelinvitation->getInfo(array('hotel_id'=>$hotel_id));
-        //$this->to_back(array('images'=>$images,'is_open_sellplatform'=>$res_iconfig['is_open_sellplatform']));
         $this->to_back(array('images'=>$images,'is_open_sellplatform'=>$res_iconfig['is_open_sellplatform'],
                              'is_view_wine_switch'=>$res_iconfig['is_view_wine_switch']));
     }
@@ -295,9 +300,14 @@ class InvitationController extends CommonController{
         $m_invitation = new \Common\Model\Smallapp\InvitationModel();
         $res_data = $m_invitation->getInfo(array('id'=>$invitation_id));
 
+        $all_send_types = array('1'=>'短信','2'=>'同时发送','3'=>'微信');
+        $send_type_str = '';
+        if(isset($all_send_types[$res_data['send_type']])){
+            $send_type_str = $all_send_types[$res_data['send_type']];
+        }
         $book_time = date('m.d H:i',strtotime($res_data['book_time']));
         $data = array('id'=>$invitation_id,'room_name'=>$res_data['room_name'],'book_time'=>$book_time,'people_num'=>$res_data['people_num'],
-            'name'=>$res_data['name'],'mobile'=>$res_data['mobile']);
+            'name'=>$res_data['name'],'mobile'=>$res_data['mobile'],'send_type_str'=>$send_type_str);
         $this->to_back($data);
     }
 }

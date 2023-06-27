@@ -330,7 +330,7 @@ class TaskController extends CommonController{
                 $v['get_num'] = $send_num;
                 $v['remain_num'] = $all_people_num-$send_num;
                 $v['percent'] = round(($send_num/$all_people_num)*100,2);
-                $v['remain_percent'] = 100-$v['percent'];
+                $v['remain_percent'] = round(100-$v['percent'],2);
 
                 switch ($v['task_type']){
                     case 23:

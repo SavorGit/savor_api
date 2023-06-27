@@ -128,11 +128,11 @@ class InvitationController extends CommonController{
         $params = array('book_time'=>$book_time,'hotel_name'=>$hotel_name,'room_name'=>$room_name);
         $content_book = "【小热点】{$hotel_name} ---尊敬的贵宾您好！已为您预定{$book_time}在本餐厅的[$room_name]用餐，恭候您的光临。";
         if(!empty($contact_name)){
-            $content_book .= "{$contact_name}为您服务，";
+            $content_book .= "{$contact_name}为您服务";
         }
         if(!empty($contact_mobile)){
             $params['tel'] = $contact_mobile;
-            $content_tel = "联系电话：{$contact_mobile}。";
+            $content_tel = "，联系电话：{$contact_mobile}。";
             $template_code = $ucconfig['send_invitation_to_user_has_mobile_link'];
         }else{
             $content_tel = '';

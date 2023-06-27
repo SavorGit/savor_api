@@ -204,28 +204,35 @@ class OpsstaffModel extends BaseModel{
         $permission = json_decode($staff['permission'],true);
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelById('hotel.area_id,ext.maintainer_id',array('hotel.id'=>$hotel_id));
-        switch ($hotel_role_type){
-            case 1:
+        if($staff['is_operrator']==1){
+            if($staff['sysuser_id']==$res_hotel['maintainer_id']){
                 $is_edit_staff = 1;
-                break;
-            case 2:
-                if(in_array($res_hotel['area_id'],$permission['hotel_info']['area_ids'])){
+            }
+        }else{
+            switch ($hotel_role_type){
+                case 1:
                     $is_edit_staff = 1;
-                }
-                break;
-            case 3:
-                if($staff['sysuser_id']==$res_hotel['maintainer_id']){
-                    $is_edit_staff = 1;
-                }
-                break;
-            case 4:
-                if(in_array($res_hotel['area_id'],$permission['hotel_info']['area_ids'])){
-                    $is_edit_staff = 1;
-                }elseif($staff['sysuser_id']==$res_hotel['maintainer_id']){
-                    $is_edit_staff = 1;
-                }
-                break;
+                    break;
+                case 2:
+                    if(in_array($res_hotel['area_id'],$permission['hotel_info']['area_ids'])){
+                        $is_edit_staff = 1;
+                    }
+                    break;
+                case 3:
+                    if($staff['sysuser_id']==$res_hotel['maintainer_id']){
+                        $is_edit_staff = 1;
+                    }
+                    break;
+                case 4:
+                    if(in_array($res_hotel['area_id'],$permission['hotel_info']['area_ids'])){
+                        $is_edit_staff = 1;
+                    }elseif($staff['sysuser_id']==$res_hotel['maintainer_id']){
+                        $is_edit_staff = 1;
+                    }
+                    break;
+            }
         }
+
         return $is_edit_staff;
     }
 

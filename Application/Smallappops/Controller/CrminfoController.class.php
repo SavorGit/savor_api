@@ -702,14 +702,14 @@ class CrminfoController extends CommonController{
     public function staffchangelist(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
-        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
-        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
         $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
         $m_staff = new \Common\Model\Integral\StaffModel();
-        $fields = 'a.id,a.parent_id,a.openid,a.level,a.add_time,user.avatarUrl,user.nickName,merchant.sysuser_id';
+        $fields = 'a.id,a.parent_id,a.openid,a.level,a.ops_staff_id,a.add_time,user.avatarUrl,user.nickName,merchant.sysuser_id';
         $staff_list = $m_staff->getMerchantStaff($fields,$where,'a.id desc','');
         $res_data = array();
         if(!empty($staff_list)){
@@ -737,6 +737,12 @@ class CrminfoController extends CommonController{
                 }else{
                     $invate_username = $all_staff[$v['parent_id']]['nickName'];
                     $invate_userimg = $all_staff[$v['parent_id']]['avatarUrl'];
+                    if($v['ops_staff_id']>0){
+                        $ops_fields = 'user.avatarUrl,su.remark as nickName';
+                        $res_ops = $m_opsstaff->getStaffUserinfo($ops_fields,array('a.id'=>$v['ops_staff_id']));
+                        $invate_username = $res_ops[0]['nickName'];
+                        $invate_userimg = $res_ops[0]['avatarUrl'];
+                    }
                     $job_info = '邀请成为'.$all_staff[$v['id']]['job'];
                 }
                 $res_contact = $m_contact->getInfo(array('openid'=>$v['openid']));

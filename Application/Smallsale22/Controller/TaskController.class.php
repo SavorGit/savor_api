@@ -268,6 +268,7 @@ class TaskController extends CommonController{
                         }
                         break;
                     case 6:
+                    case 29:
                         if($v['status']==1 && $v['flag']==1){
                             $inprogress_task[$v['task_id']]=$tinfo;
                         }else{

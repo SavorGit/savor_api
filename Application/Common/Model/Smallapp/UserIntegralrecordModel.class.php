@@ -584,4 +584,68 @@ class UserIntegralrecordModel extends BaseModel{
         }
         return array('task_user_id'=>$task_user_id,'task_integral'=>$task_integral);
     }
+
+    public function finishStockCheckTask($openid,$stockcheck_id){
+        $now_integral = 0;
+        $task_id = 0;
+        $task_user_id = 0;
+        $m_task_user = new \Common\Model\Integral\TaskuserModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>29,'task.status'=>1,'task.flag'=>1);
+        $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
+        $fields = "a.id as task_user_id,task.id task_id,task.task_info,task.integral";
+        $res_utask = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+        if(!empty($res_utask)){
+            $task_id = $res_utask[0]['task_id'];
+            $task_user_id = $res_utask[0]['task_user_id'];
+            $now_integral = intval($res_utask[0]['integral']);
+        }
+
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff('a.level,merchant.id as merchant_id,merchant.is_integral,merchant.hotel_id,merchant.is_shareprofit,merchant.shareprofit_config',$where);
+        if(!empty($res_staff) && $now_integral>0){
+            $admin_integral = 0;
+            if($res_staff[0]['is_integral']==1){
+                $integralrecord_openid = $openid;
+                if($task_user_id>0){
+                    $m_task_user->where(array('id'=>$task_user_id))->setInc('integral',$now_integral);
+                }
+                if($res_staff[0]['is_shareprofit']==1 && $res_staff[0]['level']==2){
+                    $shareprofit_config = json_decode($res_staff[0]['shareprofit_config'],true);
+                    if(!empty($shareprofit_config['jspd'])){
+                        $staff_integral = ($shareprofit_config['jspd'][1]/100)*$now_integral;
+                        if($staff_integral>1){
+                            $staff_integral = round($staff_integral);
+                        }else{
+                            $staff_integral = 1;
+                        }
+                        $admin_integral = $now_integral - $staff_integral;
+                        $now_integral = $staff_integral;
+                    }
+                }
+            }else{
+                $integralrecord_openid = $res_staff[0]['hotel_id'];
+            }
+
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
+            if($admin_integral>0){
+                $adminwhere = array('merchant_id'=>$res_staff[0]['merchant_id'],'level'=>1,'status'=>1);
+                $res_admin_staff = $m_staff->getALLDataList('id,openid',$adminwhere,'id desc','0,1','');
+                if(!empty($res_admin_staff)){
+                    $admin_openid = $res_admin_staff[0]['openid'];
+                    $integralrecord_data = array('openid'=>$admin_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                        'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                        'task_id'=>$task_id,'integral'=>$admin_integral,'content'=>1,'jdorder_id'=>$stockcheck_id,'status'=>1,'type'=>34,'source'=>4);
+                    $this->add($integralrecord_data);
+                }
+            }
+
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'task_id'=>$task_id,'integral'=>$now_integral,'content'=>1,'jdorder_id'=>$stockcheck_id,'status'=>1,'type'=>34);
+            $this->add($integralrecord_data);
+        }
+        return $now_integral;
+    }
 }

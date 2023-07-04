@@ -400,8 +400,8 @@ class SellwineController extends CommonController{
                     if(isset($all_reasons[$v['reason_type']])){
                         $reason = $all_reasons[$v['reason_type']]['name'];
                     }
-                    $where = array('a.idcode'=>$v['idcode'],'a.type'=>7);
-                    $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
+                    $where = array('a.idcode'=>$v['idcode'],'a.type'=>7,'a.dstatus'=>1);
+                    $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','a.idcode');
                     $price = abs($res_goods[0]['price']);
                     $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($v['hotel_id'],$res_goods[0]['goods_id'],1);
                     if($settlement_price>0){

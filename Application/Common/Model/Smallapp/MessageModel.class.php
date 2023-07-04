@@ -65,4 +65,15 @@ class MessageModel extends BaseModel{
 
         return true;
     }
+
+    public function getMessageInfo($fields,$where,$order,$limit){
+        $res_data = $this->alias('a')
+            ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($limit)
+            ->select();
+        return $res_data;
+    }
 }

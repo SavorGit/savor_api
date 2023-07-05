@@ -369,6 +369,7 @@ class TaskController extends CommonController{
                         }
                         break;
                     case 28:
+                    case 29:
                         break;
                     default:
                         $canreceive_task[]=$v;

@@ -296,7 +296,8 @@ class StockcheckController extends CommonController{
                 $stock_check_success_status = 23;
             }
         }
-        $add_data = array('staff_id'=>$res_staff[0]['id'],'hotel_id'=>$hotel_id,'task_user_id'=>$res_usertask['id'],'task_id'=>$task_id,
+        $task_user_id = $res_usertask['id'];
+        $add_data = array('staff_id'=>$res_staff[0]['id'],'hotel_id'=>$hotel_id,'task_user_id'=>$task_user_id,'task_id'=>$task_id,
             'stock_check_num'=>$stock_check_num,'stock_check_hadnum'=>$stock_check_hadnum,'stock_check_status'=>$stock_check_status,'stock_check_success_status'=>$stock_check_success_status,
             'stock_check_error'=>$stock_check_error,'stock_check_errornum'=>$stock_check_errornum);
         $stockcheck_id = $m_stock_check->add($add_data);
@@ -311,7 +312,7 @@ class StockcheckController extends CommonController{
         }
         if($stock_check_success_status==21){
             $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $now_integral = $m_userintegral->finishStockCheckTask($openid,$stockcheck_id);
+            $now_integral = $m_userintegral->finishStockCheckTask($openid,$stockcheck_id,$task_user_id);
             if($now_integral>0){
                 $m_stock_check->updateData(array('id'=>$stockcheck_id),array('integral'=>$now_integral,'is_get_integral'=>1,
                     'get_time'=>date('Y-m-d H:i:s')));

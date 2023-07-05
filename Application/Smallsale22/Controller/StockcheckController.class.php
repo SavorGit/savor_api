@@ -73,7 +73,7 @@ class StockcheckController extends CommonController{
             $this->to_back(93001);
         }
         $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
-        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'is_get_integral'=>1));
+        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$task_id));
         if(!empty($res_check)){
             $where = array('a.id'=>$res_check['staff_id']);
             $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,user.nickName';
@@ -174,7 +174,7 @@ class StockcheckController extends CommonController{
             $this->to_back(93001);
         }
         $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
-        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$task_id,'is_get_integral'=>1));
+        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$task_id));
         if(!empty($res_check)){
             $where = array('a.id'=>$res_check['staff_id']);
             $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,user.nickName';

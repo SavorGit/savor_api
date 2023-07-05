@@ -88,10 +88,9 @@ class MessageController extends CommonController{
                     $tmp_datas[$day] = $day_msg;
                 }else{
                     $tmp_datas[$day][] = $msg;
+                    krsort($tmp_datas);
                 }
             }
-
-
             foreach ($tmp_datas as $k=>$v){
                 $day = isset($date_map[$k])?$date_map[$k]:$k;
                 $datalist[]=array('day'=>$day,'list'=>$v);

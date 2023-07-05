@@ -302,6 +302,13 @@ class LoginController extends CommonController{
             }
         }
         $userinfo = $this->getServiceModel($userinfo,$manage_info['service_model_id']);
+
+        $m_crmuser = new \Common\Model\Crm\ContactModel;
+        $res_crmuser = $m_crmuser->getInfo(array('openid'=>$openid));
+        if(!empty($res_crmuser) && $manage_info['hotel_id']!=$res_crmuser['hotel_id']){
+            $m_crmuser->updateData(array('id'=>$res_crmuser['id']),array('hotel_id'=>$manage_info['hotel_id']));
+        }
+
         $this->to_back($userinfo);
     }
 

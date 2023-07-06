@@ -302,6 +302,7 @@ class TaskController extends CommonController{
         $canreceive_task = array();
         $all_prizes = array('1'=>'一等奖','2'=>'二等奖','3'=>'三等奖');
         if(!empty($rescanreceive_task)){
+            $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
             $m_taskprize = new \Common\Model\Integral\TaskPrizeModel();
             $send_num_key = C('SAPP_SALE_TASK_SENDNUM');
             $redis = new \Common\Lib\SavorRedis();
@@ -369,7 +370,15 @@ class TaskController extends CommonController{
                         }
                         break;
                     case 28:
+                        break;
                     case 29:
+                        $res_utask = $m_task_user->getInfo(array('openid'=>$openid,'task_id'=>$v['task_id']));
+                        if(empty($res_utask)){
+                            $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$v['task_id']));
+                            if(empty($res_check)){
+                                $canreceive_task[]=$v;
+                            }
+                        }
                         break;
                     default:
                         $canreceive_task[]=$v;

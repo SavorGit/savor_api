@@ -10,7 +10,7 @@ class StockcheckController extends CommonController{
         switch(ACTION_NAME) {
             case 'scancode':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'idcode'=>1001,'hotel_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'idcode'=>1001,'hotel_id'=>1001,'task_id'=>1001);
                 break;
             case 'checkidcodes':
                 $this->is_verify = 1;
@@ -27,6 +27,8 @@ class StockcheckController extends CommonController{
     public function scancode(){
         $openid = $this->params['openid'];
         $idcode = $this->params['idcode'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $task_id = intval($this->params['task_id']);
 
         $key = C('QRCODE_SECRET_KEY');
         $qrcode_id = decrypt_data($idcode,false,$key);
@@ -44,6 +46,16 @@ class StockcheckController extends CommonController{
             $this->to_back(93001);
         }
 
+        $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
+        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$task_id));
+        if(!empty($res_check)){
+            $where = array('a.id'=>$res_check['staff_id']);
+            $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,user.nickName';
+            $res_staff = $m_staff->getMerchantStaff($fields,$where);
+            $msg = "任务已失效!盘点任务已被{$res_staff[0]['nickName']}完成，下次要快点哦~";
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
+        }
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
         $fileds = 'a.id,a.type,stock.hotel_id,goods.id as goods_id,goods.name as goods_name';
@@ -56,7 +68,7 @@ class StockcheckController extends CommonController{
         if(!empty($res_stock[0]['goods_name'])){
             $goods_name = $res_stock[0]['goods_name'];
         }
-        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$goods_id,'goods_name'=>$goods_name));
+        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$goods_id,'goods_name'=>$goods_name,'is_pop_tips_wind'=>0));
     }
 
     public function checkidcodes(){
@@ -101,63 +113,80 @@ class StockcheckController extends CommonController{
             $this->to_back(93071);
         }
 
-        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $srwhere = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1,'a.type'=>7,'a.wo_status'=>array('in','1,2,4'));
-        $res_wo = $m_stock_record->getStockRecordList('a.idcode',$srwhere,'','','a.idcode');
-        $writeoff_idcodes = array();
-        foreach ($res_wo as $v){
-            $writeoff_idcodes[]=$v['idcode'];
-        }
-        $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
-        if(!empty($writeoff_idcodes)){
-            $where['a.idcode'] = array('not in',$writeoff_idcodes);
-        }
-        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
-        $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
-        $stock_check_num=$stock_check_hadnum=0;
-        $now_idcodes = explode(',',$idcodes);
-        $no_check_list = array();
-        foreach ($res_allidcodes as $v){
-            $all_types = explode(',',$v['all_type']);
-            if(count($all_types)==1 && $all_types[0]==3){
-                continue;
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'tasklock:'.$hotel_id.'_'.$task_id;
+
+        $task_completed_key = $cache_key.':completed';
+        $redis->set($task_completed_key, 0);
+        $task_lock_key = $cache_key.':lock';
+        $isLocked = $redis->setnx($task_lock_key, 1);
+        if($isLocked){
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $srwhere = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1,'a.type'=>7,'a.wo_status'=>array('in','1,2,4'));
+            $res_wo = $m_stock_record->getStockRecordList('a.idcode',$srwhere,'','','a.idcode');
+            $writeoff_idcodes = array();
+            foreach ($res_wo as $v){
+                $writeoff_idcodes[]=$v['idcode'];
             }
-            if(!in_array(6,$all_types) && !in_array(7,$all_types)){
-                $stock_check_num++;
-                $is_check = 0;
-                if(in_array($v['idcode'],$now_idcodes)){
-                    $is_check = 1;
-                    $stock_check_hadnum++;
+            $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
+            if(!empty($writeoff_idcodes)){
+                $where['a.idcode'] = array('not in',$writeoff_idcodes);
+            }
+            $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
+            $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
+            $stock_check_num=$stock_check_hadnum=0;
+            $now_idcodes = explode(',',$idcodes);
+            $no_check_list = array();
+            foreach ($res_allidcodes as $v){
+                $all_types = explode(',',$v['all_type']);
+                if(count($all_types)==1 && $all_types[0]==3){
+                    continue;
                 }
-                if($is_check==0){
-                    $no_check_list[$v['goods_id']][]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'idcode'=>$v['idcode']);
-                }
-            }else{
-                if(in_array(7,$all_types)){
-                    $cwhere = array('a.idcode'=>$v['idcode'],'a.dstatus'=>1);
-                    $res_code = $m_stock_record->getStockRecordList('a.type,a.wo_status',$cwhere,'a.id desc','0,1');
-                    if($res_code[0]['wo_status']==3){
-                        $stock_check_num++;
-                        $is_check = 0;
-                        if(in_array($v['idcode'],$now_idcodes)){
-                            $is_check = 1;
-                            $stock_check_hadnum++;
-                        }
-                        if($is_check==0){
-                            $no_check_list[$v['goods_id']][]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'idcode'=>$v['idcode']);
+                if(!in_array(6,$all_types) && !in_array(7,$all_types)){
+                    $stock_check_num++;
+                    $is_check = 0;
+                    if(in_array($v['idcode'],$now_idcodes)){
+                        $is_check = 1;
+                        $stock_check_hadnum++;
+                    }
+                    if($is_check==0){
+                        $no_check_list[$v['goods_id']][]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'idcode'=>$v['idcode']);
+                    }
+                }else{
+                    if(in_array(7,$all_types)){
+                        $cwhere = array('a.idcode'=>$v['idcode'],'a.dstatus'=>1);
+                        $res_code = $m_stock_record->getStockRecordList('a.type,a.wo_status',$cwhere,'a.id desc','0,1');
+                        if($res_code[0]['wo_status']==3){
+                            $stock_check_num++;
+                            $is_check = 0;
+                            if(in_array($v['idcode'],$now_idcodes)){
+                                $is_check = 1;
+                                $stock_check_hadnum++;
+                            }
+                            if($is_check==0){
+                                $no_check_list[$v['goods_id']][]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'idcode'=>$v['idcode']);
+                            }
                         }
                     }
                 }
             }
+            $no_check_num = 0;
+            $datalist = array();
+            foreach ($no_check_list as $k=>$v){
+                $num = count($v);
+                $no_check_num+=$num;
+                $datalist[]=array('goods_id'=>$k,'goods_name'=>$v[0]['goods_name'],'num'=>$num);
+            }
+            $redis->set($task_completed_key, $openid,86400);
+            $redis->remove($task_lock_key);
+
+            $this->to_back(array('no_check_num'=>$no_check_num,'datalist'=>$datalist,'is_pop_tips_wind'=>0));
+        }else{
+            $msg = "任务已失效!盘点任务已被其他人完成，下次要快点哦~";
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
         }
-        $no_check_num = 0;
-        $datalist = array();
-        foreach ($no_check_list as $k=>$v){
-            $num = count($v);
-            $no_check_num+=$num;
-            $datalist[]=array('goods_id'=>$k,'goods_name'=>$v[0]['goods_name'],'num'=>$num);
-        }
-        $this->to_back(array('no_check_num'=>$no_check_num,'datalist'=>$datalist,'is_pop_tips_wind'=>0));
     }
 
     public function addcheckrecord(){
@@ -200,6 +229,19 @@ class StockcheckController extends CommonController{
         $now_time = date('Y-m-d H:i:s');
         if($res_task[0]['end_time']<$now_time){
             $this->to_back(93071);
+        }
+
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_SALE').'tasklock:'.$hotel_id.'_'.$task_id;
+        $task_completed_key = $cache_key.':completed';
+        $cache_finish_user = $redis->get($task_completed_key);
+        if(!empty($cache_finish_user) && $openid!=$cache_finish_user){
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $res_user = $m_user->getOne('nickName',array('openid'=>$cache_finish_user),'');
+            $msg = "任务已失效!盘点任务已被{$res_user['nickName']}完成，下次要快点哦~";
+            $res_pdata = array('is_pop_tips_wind'=>1,'msg'=>$msg);
+            $this->to_back($res_pdata);
         }
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();

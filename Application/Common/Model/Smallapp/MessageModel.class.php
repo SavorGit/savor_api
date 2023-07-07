@@ -76,4 +76,15 @@ class MessageModel extends BaseModel{
             ->select();
         return $res_data;
     }
+
+    public function getStockCheckMessage($fields,$where,$order,$limit){
+        $res_data = $this->alias('a')
+            ->join('savor_smallapp_stockcheck sc on a.content_id=sc.id','left')
+            ->field($fields)
+            ->where($where)
+            ->order($order)
+            ->limit($limit)
+            ->select();
+        return $res_data;
+    }
 }

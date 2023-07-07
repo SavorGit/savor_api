@@ -322,10 +322,14 @@ class StockcheckController extends CommonController{
         $stock_check_success_status = 0;
         $stock_check_status = 2;
         if($stock_check_error==2){
-            if($stock_check_errornum==0){
-                $stock_check_success_status = 23;
+            if($stock_check_num==$stock_check_hadnum){
+                $stock_check_success_status = 22;
             }else{
-                $stock_check_success_status = 24;
+                if($stock_check_errornum==0){
+                    $stock_check_success_status = 23;
+                }else{
+                    $stock_check_success_status = 24;
+                }
             }
         }else{
             if($stock_check_num==$stock_check_hadnum){

@@ -115,7 +115,7 @@ class MessageController extends CommonController{
         $res_info = $m_stock_check->getInfo(array('id'=>$stockcheck_id));
 
         $m_stock_check_record = new \Common\Model\Smallapp\StockcheckRecordModel();
-        $fields = 'record.goods_id,record.idcode,record.is_check,record.type,goods.name as goods_name';
+        $fields = 'record.goods_id,record.idcode,record.is_check,record.type,record.desc,goods.name as goods_name';
         $res_list = $m_stock_check_record->getCheckRecordList($fields,array('record.stockcheck_id'=>$stockcheck_id),'record.id desc');
         $idcodes = $other_idcodes = array();
         foreach ($res_list as $v){
@@ -159,11 +159,22 @@ class MessageController extends CommonController{
         $res_msghotel = $redis->get($cache_key);
         $datalist = array();
         if(!empty($res_msghotel)){
+            $m_message = new \Common\Model\Smallapp\MessageModel();
             $start = ($page-1)*$pagesize;
             $limit = $start.','.$pagesize;
             $m_hotels = new \Common\Model\HotelModel();
             $fields = 'hotel.id as hotel_id,hotel.name as hotel_name,hotel.addr';
             $datalist = $m_hotels->getHotelDataList($fields,array('hotel.id'=>array('in',$res_msghotel)),'',$limit);
+            foreach ($datalist as $k=>$v){
+                $hotel_id = $v['hotel_id'];
+                $mwhere = array('a.type'=>13,'sc.hotel_id'=>$hotel_id,'sc.stock_check_success_status'=>array('in','22,23,24'));
+                $res_msg = $m_message->getStockCheckMessage('a.id',$mwhere,'a.id desc','0,1');
+                $message_id = 0;
+                if(!empty($res_msg)){
+                    $message_id = $res_msg[0]['id'];
+                }
+                $datalist[$k]['message_id'] = $message_id;
+            }
         }
         $this->to_back(array('datalist'=>$datalist));
     }

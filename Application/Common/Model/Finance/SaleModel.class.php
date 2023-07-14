@@ -22,14 +22,21 @@ class SaleModel extends BaseModel{
         }
         $jd_voucher_no = 0;
         $settlement_price = 0;
+        $sale_price = 0;
         if($stock_record_info['wo_reason_type']==1){
             $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
             $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
+            $res_data = $m_hotelgoods->getGoodsList('g.id,g.price',$where,'g.id desc',"0,1");
+            if(!empty($res_data[0]['price'])){
+                $sale_price = $res_data[0]['price'];
+            }
         }
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $res_ext = $m_hotel_ext->getOnerow(array('hotel_id'=>$hotel_id));
 
-	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],
+	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,
             'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,
             'hotel_id'=>$hotel_id,'maintainer_id'=>intval($res_ext['maintainer_id']),'type'=>1,'jd_voucher_no'=>$jd_voucher_no);
 	    if(!empty($sale_openid)){

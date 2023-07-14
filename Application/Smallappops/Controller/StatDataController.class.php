@@ -16,11 +16,19 @@ class StatDataController extends CommonController{
                 break;
             case 'dataCenter':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1000,'end_date'=>1000,);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1002,'end_date'=>1002,);
                 break;
             case 'salesellwine':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'source'=>1001,'day'=>1002,'start_date'=>1002,'end_date'=>1002);
+                break;
+            case 'docketdate':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'report':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1002,'end_date'=>1002);
                 break;
         }
         parent::_init_();
@@ -459,5 +467,162 @@ class StatDataController extends CommonController{
         $data['select_end_date']   = date('Y-m-d',strtotime('-1 day'));
         $this->to_back($data);
     }
-    
+
+    public function docketdate(){
+        $openid   = $this->params['openid'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $data = array(
+            'report'=>array(
+                'start_time'=>'2022-10',
+                'end_time'=>date('Y-m'),
+                'desc'=>array(
+                    '1.财务报告时间段：可以选择自然月（可选多月，不可跨年），选择后下方自动计算出对应的财务报告；',
+                    '2.销售额：时间段内，销售商品的售价总和；',
+                    '3.净增利润：时间段内，销售酒水获得了多少利润（售酒毛利+售酒金额*0.1）；',
+                    '4.销量：时间段内，餐厅内共核销了多少瓶酒水；',
+                    '5.当前库存：查询财务报告时，餐厅内库存多少瓶酒水；',
+                    '6.库存价值：查询财务报告时，餐厅内库存酒水合计价值（结算价）；',
+                    '7.欠款：查询财务报告时，当前餐厅总欠款数数额；',
+                    '8.超期欠款：查询财务报告时，当前餐厅欠款超过7天的部分；',
+                )
+            ),
+            'statements'=>array(
+                'start_time'=>'2022-10-01',
+                'end_time'=>date('Y-m-d'),
+                'desc'=>array(
+                    '1.财务报告时间段：可以选择自然月（可选多月，不可跨年），选择后下方自动计算出对应的财务报告；',
+                    '2.销售额：时间段内，销售商品的售价总和；',
+                    '3.净增利润：时间段内，销售酒水获得了多少利润（售酒毛利+售酒金额*0.1）；',
+                    '4.销量：时间段内，餐厅内共核销了多少瓶酒水；',
+                    '5.当前库存：查询财务报告时，餐厅内库存多少瓶酒水；',
+                    '6.库存价值：查询财务报告时，餐厅内库存酒水合计价值（结算价）；',
+                    '7.欠款：查询财务报告时，当前餐厅总欠款数数额；',
+                    '8.超期欠款：查询财务报告时，当前餐厅欠款超过7天的部分；',
+                )
+            )
+        );
+        $this->to_back($data);
+    }
+
+    public function report(){
+        $openid   = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $start_date = $this->params['start_date'];
+        $end_date   = $this->params['end_date'];
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.settlement_price) as sale_money,count(a.id) as sale_num,sum(a.sale_price) as hotel_sale_money,hotel.name as hotel_name';
+        $res_saledata = $m_sale->getSaleStockRecordList($fileds,$where);
+        $res_data = array();
+        if(!empty($res_saledata)){
+            $sale_money=$res_saledata[0]['sale_money'];
+            $sale_num=$res_saledata[0]['sale_num'];
+            $sale_profit=$res_saledata[0]['hotel_sale_money']-$res_saledata[0]['sale_money']+$res_saledata[0]['hotel_sale_money']*0.1;
+
+            $stock_num = 0;
+            $stock_money = 0;
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(9);
+            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+            $res_cache = $redis->get($key);
+            if(!empty($res_cache)){
+                $hotel_stock = json_decode($res_cache,true);
+                $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
+                foreach ($hotel_stock['goods_list'] as $v){
+                    $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$v['id']);
+                    $stock_num+=$v['stock_num'];
+                    $stock_money+=$v['stock_num']*$settlement_price;
+                }
+            }
+
+            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
+            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+            $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+            $qk_money = $bf_qk_money = 0;
+            if(!empty($res_qksaledata)){
+                foreach ($res_qksaledata as $v){
+                    if($v['ptype']==0){
+                        $qk_money = $v['sale_money'];
+                    }elseif($v['ptype']==2){
+                        $bf_qk_money = $v['sale_money'];
+                    }
+                }
+            }
+            if($bf_qk_money>0){
+                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
+                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+                $fileds = 'sum(a.pay_money) as has_pay_money';
+                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+                $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
+            }
+
+            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
+            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+            $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+            $cqqk_money = $bf_cqqk_money = 0;
+            if(!empty($res_cqqksaledata)){
+                foreach ($res_cqqksaledata as $v){
+                    if($v['ptype']==0){
+                        $cqqk_money = $v['sale_money'];
+                    }elseif($v['ptype']==2){
+                        $bf_cqqk_money = $v['sale_money'];
+                    }
+                }
+            }
+            if($bf_cqqk_money>0){
+                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
+                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+                $fileds = 'sum(a.pay_money) as has_pay_money';
+                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+                $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
+            }
+
+            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'count(a.id) as num,a.settlement_price,a.goods_id,goods.name as goods_name';
+            $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where,'a.goods_id,a.settlement_price');
+            $datalist = array();
+            foreach ($res_detaildata as $v){
+                $price = intval($v['settlement_price']);
+                $datalist[]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>$v['num'].'瓶',
+                    'price'=>$price.'元');
+            }
+
+            $sub_title = date('Y年m月',strtotime($start_time));
+            if($start_date!=$end_date){
+                $sub_title.='-'.date('Y年m月',strtotime($end_time));
+            }
+            $res_data = array('title'=>'财务报告','sub_title'=>$sub_title,
+                'sale'=>array('money'=>$sale_money.'元','num'=>$sale_num.'瓶','sale_profit'=>$sale_profit.'元'),
+                'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
+                'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
+                'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
+                'detail'=>$datalist
+            );
+        }
+        $this->to_back($res_data);
+    }
+
+
+
 }

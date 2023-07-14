@@ -127,6 +127,7 @@ class SaleModel extends BaseModel{
         $res_data = $this->alias('a')
             ->field($fileds)
             ->join('savor_finance_stock_record record on a.stock_record_id=record.id','left')
+            ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
             ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
             ->where($where)

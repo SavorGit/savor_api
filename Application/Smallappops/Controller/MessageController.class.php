@@ -107,7 +107,7 @@ class MessageController extends CommonController{
                     'hotel_id'=>$v['hotel_id'],'ops_staff_id'=>$v['ops_staff_id'],'content'=>$content,'icon'=>$icon,'add_time'=>date('H:i',strtotime($v['add_time'])));
             }
 
-            if($type==13){
+            if($type==13 && $page==1){
                 $redis = new \Common\Lib\SavorRedis();
                 $redis->select(22);
                 $cache_key = C('SAPP_OPS').'msgschotels:'.$res_staff['id'];
@@ -131,7 +131,7 @@ class MessageController extends CommonController{
 
             foreach ($tmp_datas as $k=>$v){
                 $day = isset($date_map[$k])?$date_map[$k]:$k;
-                $datalist[]=array('day'=>$day,'list'=>$v);
+                $datalist[]=array('day'=>$day,'day_date'=>$k,'list'=>$v);
             }
         }
         $this->to_back(array('datalist'=>$datalist));

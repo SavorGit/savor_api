@@ -26,7 +26,7 @@ class MessageController extends CommonController{
 
     public function datalist(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);
+        $type = intval($this->params['type']);//13盘点记录,14收款,15超期欠款,16酒水售卖,17积分到账,18积分提现(运维端)
         $page = intval($this->params['page']);
         $pagesize = 20;
 
@@ -40,7 +40,7 @@ class MessageController extends CommonController{
 
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $where = array('a.ops_staff_id'=>$res_staff['id'],'a.type'=>$type);
-        $fields = 'a.id,a.staff_openid,a.ops_staff_id,a.hotel_id,a.content_id,a.read_status,a.add_time,hotel.name as hotel_name';
+        $fields = 'a.id,a.staff_openid,a.ops_staff_id,a.hotel_id,a.content_id,a.read_status,a.add_time,a.money,a.qk_day,a.integral,hotel.name as hotel_name';
         $res_message = $m_message->getMessageInfo($fields,$where,'a.id desc',"$offset,$pagesize");
         if(!empty($res_message)){
             $day = date('Y.m.d');
@@ -52,45 +52,83 @@ class MessageController extends CommonController{
                 '23'=>array('name'=>'盘亏','color'=>'red'),
                 '24'=>array('name'=>'盘赢+盘亏','color'=>'red'),
             );
+
+            $oss_url = get_oss_host().'WeChat/resource/opsmsg-icons/';
+            $type_icons = array('14'=>'shoukuan.png','15'=>'qiankuan.png','16'=>'shoumai.png','17'=>'jf-daozhang.png','18'=>'jf-tixian.png');
+            $icon = isset($type_icons[$type])?$oss_url.$type_icons[$type]:'';
+
             $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
+            $m_user = new \Common\Model\Smallapp\UserModel();
+            $m_stockrecord = new \Common\Model\Finance\StockRecordModel();
             $tmp_datas = array();
+            $all_types = C('INTEGRAL_TYPES');
             foreach ($res_message as $v){
                 $mdate = date('Y.m.d',strtotime($v['add_time']));
-
                 $hotel_name = $v['hotel_name'];
-                $stockcheck_id = $v['content_id'];
-                $res_stock_check = $m_stock_check->getInfo(array('id'=>$stockcheck_id));
                 $color = '';
                 $content = '';
-                if(isset($color_stock_check_status[$res_stock_check['stock_check_success_status']])){
-                    $color = $color_stock_check_status[$res_stock_check['stock_check_success_status']]['color'];
-                    $content = '盘点任务已完成';
-                    if(!empty($color_stock_check_status[$res_stock_check['stock_check_success_status']]['name'])){
-                        $content.="，{$color_stock_check_status[$res_stock_check['stock_check_success_status']]['name']}，请尽快处理";
-                    }
+                $stockcheck_id = 0;
+                switch ($type){
+                    case 13:
+                        $stockcheck_id = $v['content_id'];
+                        $res_stock_check = $m_stock_check->getInfo(array('id'=>$stockcheck_id));
+                        if(isset($color_stock_check_status[$res_stock_check['stock_check_success_status']])){
+                            $color = $color_stock_check_status[$res_stock_check['stock_check_success_status']]['color'];
+                            $content = '盘点任务已完成';
+                            if(!empty($color_stock_check_status[$res_stock_check['stock_check_success_status']]['name'])){
+                                $content.="，{$color_stock_check_status[$res_stock_check['stock_check_success_status']]['name']}，请尽快处理";
+                            }
+                        }
+                        break;
+                    case 14:
+                        $content = $v['money'].'元欠款'.$v['qk_day'].'天后超期，请尽快收款';
+                        break;
+                    case 15:
+                        $content = $v['money'].'元欠款'.'，请尽快处理';
+                        break;
+                    case 16:
+                        $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
+                        $res_stock_record = $m_stockrecord->getStockRecordList('a.idcode,goods.name',array('a.id'=>$v['content_id']),'a.id desc','0,1');
+                        $content = $res_user['nickName'].'售卖了一瓶';
+                        if(!empty($res_stock_record[0]['name'])){
+                            $content.=$res_stock_record[0]['name'];
+                        }
+                        break;
+                    case 17:
+                        $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
+                        $content = $res_user['nickName'].$all_types[$v['type']].'的'.$v['integral'].'积分已到账';
+                        break;
+                    case 18:
+                        $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
+                        $content = $res_user['nickName'].'使用积分兑换的'.$v['money'].'元已到账';
+                        break;
                 }
                 $tmp_datas[$mdate][]=array('message_id'=>$v['id'],'name'=>$hotel_name,'stockcheck_id'=>$stockcheck_id,'color'=>$color,'read_status'=>$v['read_status'],
-                    'ops_staff_id'=>$v['ops_staff_id'],'content'=>$content,'add_time'=>date('H:i',strtotime($v['add_time'])));
+                    'hotel_id'=>$v['hotel_id'],'ops_staff_id'=>$v['ops_staff_id'],'content'=>$content,'icon'=>$icon,'add_time'=>date('H:i',strtotime($v['add_time'])));
             }
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(22);
-            $cache_key = C('SAPP_OPS').'msgschotels:'.$res_staff['id'];
-            $res_msghotel = $redis->get($cache_key);
-            if(!empty($res_msghotel)){
-                $hotel_ids = explode(',',$res_msghotel);
-                $num = count($hotel_ids);
-                $content = "{$num}家餐厅盘点异常，请及时处理";
-                $msg = array('message_id'=>0,'name'=>'异常盘点汇总','stockcheck_id'=>0,'color'=>'green','read_status'=>1,
-                    'ops_staff_id'=>$res_staff['id'],'content'=>$content,'add_time'=>'9:00');
-                if(isset($tmp_datas[$day])){
-                    $day_msg = $tmp_datas[$day];
-                    array_unshift($day_msg,$msg);
-                    $tmp_datas[$day] = $day_msg;
-                }else{
-                    $tmp_datas[$day][] = $msg;
-                    krsort($tmp_datas);
+
+            if($type==13){
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(22);
+                $cache_key = C('SAPP_OPS').'msgschotels:'.$res_staff['id'];
+                $res_msghotel = $redis->get($cache_key);
+                if(!empty($res_msghotel)){
+                    $hotel_ids = explode(',',$res_msghotel);
+                    $num = count($hotel_ids);
+                    $content = "{$num}家餐厅盘点异常，请及时处理";
+                    $msg = array('message_id'=>0,'name'=>'异常盘点汇总','stockcheck_id'=>0,'color'=>'green','read_status'=>1,
+                        'ops_staff_id'=>$res_staff['id'],'content'=>$content,'add_time'=>'9:00');
+                    if(isset($tmp_datas[$day])){
+                        $day_msg = $tmp_datas[$day];
+                        array_unshift($day_msg,$msg);
+                        $tmp_datas[$day] = $day_msg;
+                    }else{
+                        $tmp_datas[$day][] = $msg;
+                        krsort($tmp_datas);
+                    }
                 }
             }
+
             foreach ($tmp_datas as $k=>$v){
                 $day = isset($date_map[$k])?$date_map[$k]:$k;
                 $datalist[]=array('day'=>$day,'list'=>$v);

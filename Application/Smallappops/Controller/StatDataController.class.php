@@ -505,99 +505,99 @@ class StatDataController extends CommonController{
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,count(a.id) as sale_num,sum(a.sale_price) as hotel_sale_money,hotel.name as hotel_name';
         $res_saledata = $m_sale->getSaleStockRecordList($fileds,$where);
-        $res_data = array();
-        if(!empty($res_saledata[0]['sale_num'])){
-            $sale_money=$res_saledata[0]['sale_money'];
-            $sale_num=$res_saledata[0]['sale_num'];
-            $sale_profit=$res_saledata[0]['hotel_sale_money']-$res_saledata[0]['sale_money']+$res_saledata[0]['hotel_sale_money']*0.1;
-
-            $stock_num = 0;
-            $stock_money = 0;
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(9);
-            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
-            $res_cache = $redis->get($key);
-            if(!empty($res_cache)){
-                $hotel_stock = json_decode($res_cache,true);
-                $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
-                foreach ($hotel_stock['goods_list'] as $v){
-                    $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$v['id']);
-                    $stock_num+=$v['stock_num'];
-                    $stock_money+=$v['stock_num']*$settlement_price;
-                }
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
-            $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
-            $qk_money = $bf_qk_money = 0;
-            if(!empty($res_qksaledata)){
-                foreach ($res_qksaledata as $v){
-                    if($v['ptype']==0){
-                        $qk_money = $v['sale_money'];
-                    }elseif($v['ptype']==2){
-                        $bf_qk_money = $v['sale_money'];
-                    }
-                }
-            }
-            if($bf_qk_money>0){
-                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
-                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-                $fileds = 'sum(a.pay_money) as has_pay_money';
-                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
-                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
-                $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
-            $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
-            $cqqk_money = $bf_cqqk_money = 0;
-            if(!empty($res_cqqksaledata)){
-                foreach ($res_cqqksaledata as $v){
-                    if($v['ptype']==0){
-                        $cqqk_money = $v['sale_money'];
-                    }elseif($v['ptype']==2){
-                        $bf_cqqk_money = $v['sale_money'];
-                    }
-                }
-            }
-            if($bf_cqqk_money>0){
-                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
-                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-                $fileds = 'sum(a.pay_money) as has_pay_money';
-                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
-                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
-                $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $fileds = 'count(a.id) as num,a.settlement_price,a.goods_id,goods.name as goods_name';
-            $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where,'a.goods_id,a.settlement_price');
-            $datalist = array();
-            foreach ($res_detaildata as $v){
-                $price = intval($v['settlement_price']);
-                $datalist[]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>$v['num'].'瓶',
-                    'price'=>$price.'元');
-            }
-
-            $sub_title = date('Y年m月',strtotime($start_time));
-            if($start_date!=$end_date){
-                $sub_title.='-'.date('Y年m月',strtotime($end_time));
-            }
-            $res_data = array('title'=>'财务报告','sub_title'=>$sub_title,
-                'sale'=>array('money'=>$sale_money.'元','num'=>$sale_num.'瓶','sale_profit'=>$sale_profit.'元'),
-                'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
-                'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
-                'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
-                'detail'=>$datalist
-            );
+        if(empty($res_saledata[0]['sale_num'])){
+            $this->to_back(93107);
         }
+        $sale_money=$res_saledata[0]['sale_money'];
+        $sale_num=$res_saledata[0]['sale_num'];
+        $sale_profit=$res_saledata[0]['hotel_sale_money']-$res_saledata[0]['sale_money']+$res_saledata[0]['hotel_sale_money']*0.1;
+
+        $stock_num = 0;
+        $stock_money = 0;
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $hotel_stock = json_decode($res_cache,true);
+            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
+            foreach ($hotel_stock['goods_list'] as $v){
+                $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$v['id']);
+                $stock_num+=$v['stock_num'];
+                $stock_money+=$v['stock_num']*$settlement_price;
+            }
+        }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+        $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+        $qk_money = $bf_qk_money = 0;
+        if(!empty($res_qksaledata)){
+            foreach ($res_qksaledata as $v){
+                if($v['ptype']==0){
+                    $qk_money = $v['sale_money'];
+                }elseif($v['ptype']==2){
+                    $bf_qk_money = $v['sale_money'];
+                }
+            }
+        }
+        if($bf_qk_money>0){
+            $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
+            $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'sum(a.pay_money) as has_pay_money';
+            $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+            $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+            $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
+        }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+        $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+        $cqqk_money = $bf_cqqk_money = 0;
+        if(!empty($res_cqqksaledata)){
+            foreach ($res_cqqksaledata as $v){
+                if($v['ptype']==0){
+                    $cqqk_money = $v['sale_money'];
+                }elseif($v['ptype']==2){
+                    $bf_cqqk_money = $v['sale_money'];
+                }
+            }
+        }
+        if($bf_cqqk_money>0){
+            $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
+            $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'sum(a.pay_money) as has_pay_money';
+            $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+            $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+            $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
+        }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'count(a.id) as num,a.settlement_price,a.goods_id,goods.name as goods_name';
+        $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where,'a.goods_id,a.settlement_price');
+        $datalist = array();
+        foreach ($res_detaildata as $v){
+            $price = intval($v['settlement_price']);
+            $datalist[]=array('goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>$v['num'].'瓶',
+                'price'=>$price.'元');
+        }
+
+        $sub_title = date('Y年m月',strtotime($start_time));
+        if($start_date!=$end_date){
+            $sub_title.='-'.date('Y年m月',strtotime($end_time));
+        }
+        $res_data = array('title'=>'财务报告','sub_title'=>$sub_title,
+            'sale'=>array('money'=>$sale_money.'元','num'=>$sale_num.'瓶','sale_profit'=>$sale_profit.'元'),
+            'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
+            'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
+            'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
+            'detail'=>$datalist
+        );
         $this->to_back($res_data);
     }
 
@@ -620,113 +620,113 @@ class StatDataController extends CommonController{
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,count(a.id) as sale_num,hotel.name as hotel_name';
         $res_saledata = $m_sale->getSaleStockRecordList($fileds,$where);
-        $res_data = array();
-        if(!empty($res_saledata[0]['sale_num'])){
-            $sale_money=$res_saledata[0]['sale_money'];
-            $sale_num=$res_saledata[0]['sale_num'];
+        if(empty($res_saledata[0]['sale_num'])){
+            $this->to_back(93107);
+        }
+        $sale_money=$res_saledata[0]['sale_money'];
+        $sale_num=$res_saledata[0]['sale_num'];
 
+        $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+        $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.pay_money) as has_pay_money';
+        $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+        $sale_has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+
+        $stock_num = 0;
+        $stock_money = 0;
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $hotel_stock = json_decode($res_cache,true);
+            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
+            foreach ($hotel_stock['goods_list'] as $v){
+                $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$v['id']);
+                $stock_num+=$v['stock_num'];
+                $stock_money+=$v['stock_num']*$settlement_price;
+            }
+        }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+        $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+        $qk_money = $bf_qk_money = 0;
+        if(!empty($res_qksaledata)){
+            foreach ($res_qksaledata as $v){
+                if($v['ptype']==0){
+                    $qk_money = $v['sale_money'];
+                }elseif($v['ptype']==2){
+                    $bf_qk_money = $v['sale_money'];
+                }
+            }
+        }
+        if($bf_qk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
-            $sale_has_pay_money = intval($res_payrecord[0]['has_pay_money']);
-
-            $stock_num = 0;
-            $stock_money = 0;
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(9);
-            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
-            $res_cache = $redis->get($key);
-            if(!empty($res_cache)){
-                $hotel_stock = json_decode($res_cache,true);
-                $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
-                foreach ($hotel_stock['goods_list'] as $v){
-                    $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$v['id']);
-                    $stock_num+=$v['stock_num'];
-                    $stock_money+=$v['stock_num']*$settlement_price;
-                }
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
-            $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
-            $qk_money = $bf_qk_money = 0;
-            if(!empty($res_qksaledata)){
-                foreach ($res_qksaledata as $v){
-                    if($v['ptype']==0){
-                        $qk_money = $v['sale_money'];
-                    }elseif($v['ptype']==2){
-                        $bf_qk_money = $v['sale_money'];
-                    }
-                }
-            }
-            if($bf_qk_money>0){
-                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
-                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-                $fileds = 'sum(a.pay_money) as has_pay_money';
-                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
-                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
-                $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
-            $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
-            $cqqk_money = $bf_cqqk_money = 0;
-            if(!empty($res_cqqksaledata)){
-                foreach ($res_cqqksaledata as $v){
-                    if($v['ptype']==0){
-                        $cqqk_money = $v['sale_money'];
-                    }elseif($v['ptype']==2){
-                        $bf_cqqk_money = $v['sale_money'];
-                    }
-                }
-            }
-            if($bf_cqqk_money>0){
-                $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-                $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
-                $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-                $fileds = 'sum(a.pay_money) as has_pay_money';
-                $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
-                $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
-                $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
-            }
-
-            $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
-            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            if($type==2){
-                $where['a.ptype'] = array('in','0,2');
-            }
-            $fileds = 'a.id,a.settlement_price,a.goods_id,goods.name as goods_name,record.add_time,a.status';
-            $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where);
-            $datalist = array();
-            foreach ($res_detaildata as $v){
-                $price = intval($v['settlement_price']);
-                $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
-                if($v['status']==2){
-                    $status = '';
-                }else{
-                    $status = '未结算';
-                }
-                $datalist[]=array('sale_id'=>$v['id'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>'1瓶',
-                    'price'=>$price.'元','status'=>$status,'add_time'=>$add_time);
-            }
-            $sub_title = date('Y年m月d日',strtotime($start_time));
-            if($start_date!=$end_date){
-                $sub_title.='-'.date('Y年m月d日',strtotime($end_time));
-            }
-            $res_data = array('title'=>'对账单','sub_title'=>$sub_title,
-                'sale'=>array('money'=>$sale_money.'元','num'=>$sale_num.'瓶','has_pay_money'=>$sale_has_pay_money.'元'),
-                'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
-                'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
-                'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
-                'detail'=>$datalist
-            );
+            $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+            $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
         }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
+        $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
+        $cqqk_money = $bf_cqqk_money = 0;
+        if(!empty($res_cqqksaledata)){
+            foreach ($res_cqqksaledata as $v){
+                if($v['ptype']==0){
+                    $cqqk_money = $v['sale_money'];
+                }elseif($v['ptype']==2){
+                    $bf_cqqk_money = $v['sale_money'];
+                }
+            }
+        }
+        if($bf_cqqk_money>0){
+            $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
+            $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $fileds = 'sum(a.pay_money) as has_pay_money';
+            $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
+            $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
+            $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
+        }
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        if($type==2){
+            $where['a.ptype'] = array('in','0,2');
+        }
+        $fileds = 'a.id,a.settlement_price,a.goods_id,goods.name as goods_name,record.add_time,a.status';
+        $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where);
+        $datalist = array();
+        foreach ($res_detaildata as $v){
+            $price = intval($v['settlement_price']);
+            $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
+            if($v['status']==2){
+                $status = '';
+            }else{
+                $status = '未结算';
+            }
+            $datalist[]=array('sale_id'=>$v['id'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>'1瓶',
+                'price'=>$price.'元','status'=>$status,'add_time'=>$add_time);
+        }
+        $sub_title = date('Y年m月d日',strtotime($start_time));
+        if($start_date!=$end_date){
+            $sub_title.='-'.date('Y年m月d日',strtotime($end_time));
+        }
+        $res_data = array('title'=>'对账单','sub_title'=>$sub_title,
+            'sale'=>array('money'=>$sale_money.'元','num'=>$sale_num.'瓶','has_pay_money'=>$sale_has_pay_money.'元'),
+            'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
+            'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
+            'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
+            'detail'=>$datalist
+        );
         $this->to_back($res_data);
     }
 

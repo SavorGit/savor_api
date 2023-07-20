@@ -20,6 +20,10 @@ class MessageController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 break;
+            case 'read':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'message_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -60,6 +64,7 @@ class MessageController extends CommonController{
             $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_stockrecord = new \Common\Model\Finance\StockRecordModel();
+            $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $tmp_datas = array();
             $all_types = C('INTEGRAL_TYPES');
             foreach ($res_message as $v){
@@ -95,8 +100,9 @@ class MessageController extends CommonController{
                         }
                         break;
                     case 17:
+                        $res_integral_record = $m_userintegral->getInfo(array('id'=>$v['content_id']));
                         $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
-                        $content = $res_user['nickName'].$all_types[$v['type']].'的'.$v['integral'].'积分已到账';
+                        $content = $res_user['nickName'].$all_types[$res_integral_record['type']].'的'.$v['integral'].'积分已到账';
                         break;
                     case 18:
                         $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
@@ -179,6 +185,20 @@ class MessageController extends CommonController{
             'nickName'=>$res_staff[0]['nickName'],'add_time'=>$res_info['add_time'],'idcodes'=>$idcodes,'other_idcodes'=>$other_idcodes);
         $m_message->updateData(array('id'=>$message_id),array('read_status'=>2));
         $this->to_back($resp_data);
+    }
+
+    public function read(){
+        $openid = $this->params['openid'];
+        $message_id = intval($this->params['message_id']);
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_message = new \Common\Model\Smallapp\MessageModel();
+        $m_message->updateData(array('id'=>$message_id),array('read_status'=>2));
+        $this->to_back(array());
     }
 
     public function hotels(){

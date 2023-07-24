@@ -130,6 +130,7 @@ class SaleModel extends BaseModel{
             ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
             ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
+            ->join('savor_smallapp_user user on record.op_openid=user.openid','left')
             ->where($where)
             ->group($group)
             ->select();

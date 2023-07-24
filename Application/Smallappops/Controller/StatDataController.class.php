@@ -34,6 +34,10 @@ class StatDataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1001,'end_date'=>1001,'type'=>1001);
                 break;
+            case 'downloadstatements':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1001,'end_date'=>1001,'type'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -702,10 +706,13 @@ class StatDataController extends CommonController{
         if($type==2){
             $where['a.ptype'] = array('in','0,2');
         }
-        $fileds = 'a.id,a.settlement_price,a.goods_id,goods.name as goods_name,record.add_time,a.status';
-        $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where);
         $datalist = array();
+        $detail_url ='';
+        $fileds = 'a.id,a.settlement_price,a.goods_id,goods.name as goods_name,record.add_time,a.status,user.nickName,user.avatarUrl';
+        $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where);
+        $d_num = 0;
         foreach ($res_detaildata as $v){
+            $d_num++;
             $price = intval($v['settlement_price']);
             $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
             if($v['status']==2){
@@ -714,7 +721,12 @@ class StatDataController extends CommonController{
                 $status = '未结算';
             }
             $datalist[]=array('sale_id'=>$v['id'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>'1瓶',
-                'price'=>$price.'元','status'=>$status,'add_time'=>$add_time);
+                'price'=>$price.'元','status'=>$status,'add_time'=>$add_time,'nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl']);
+        }
+        if($d_num>20){
+            $datalist = array();
+            $host_name = 'https://'.$_SERVER['HTTP_HOST'];
+            $detail_url = $host_name."/smallappops/statData/downloadstatements?openid=$openid&hotel_id=$hotel_id&type=$type&start_date=$start_date&end_date=$end_date";
         }
         $sub_title = date('Y年m月d日',strtotime($start_time));
         if($start_date!=$end_date){
@@ -725,9 +737,59 @@ class StatDataController extends CommonController{
             'stock'=>array('money'=>$stock_money.'元','num'=>$stock_num.'瓶'),
             'arrears'=>array('qk_money'=>$qk_money.'元','cqqk_money'=>$cqqk_money.'元'),
             'hotel_name'=>$res_saledata[0]['hotel_name'],'date'=>date('Y年m月d日'),
-            'detail'=>$datalist
+            'detail'=>$datalist,'detail_url'=>$detail_url
         );
         $this->to_back($res_data);
+    }
+
+    public function downloadstatements(){
+        $openid   = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $start_date = $this->params['start_date'];
+        $end_date   = $this->params['end_date'];
+        $type = $this->params['type'];//1全部销售 2未付款
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        if($type==2){
+            $where['a.ptype'] = array('in','0,2');
+        }
+        $datalist = array();
+        $fileds = 'a.id,a.settlement_price,a.goods_id,goods.name as goods_name,record.add_time,a.status,
+        hotel.name as hotel_name,user.nickName,user.avatarUrl';
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where);
+        foreach ($res_detaildata as $v){
+            $price = intval($v['settlement_price']);
+            $add_time = date('Y.m.d H:i',strtotime($v['add_time']));
+            if($v['status']==2){
+                $status = '';
+            }else{
+                $status = '未结算';
+            }
+            $datalist[]=array('sale_id'=>$v['id'],'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],'num'=>'1瓶',
+                'price'=>$price.'元','status'=>$status,'add_time'=>$add_time,'nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],
+                'hotel_name'=>$v['hotel_name']);
+        }
+        $cell = array(
+            array('add_time','核销时间'),
+            array('nickName','核销人名称'),
+            array('goods_name','酒水名称'),
+            array('num','酒水数量'),
+            array('price','结算价'),
+            array('status','结算状态'),
+            array('hotel_name','餐厅名称'),
+        );
+        $filename = '对账单明细';
+        $this->exportToExcel($cell,$datalist,$filename);
+
     }
 
 }

@@ -220,14 +220,14 @@ class CommonController extends Controller {
         }
         if($type==1){
             header('pragma:public');
-            header('Content-type:application/vnd.ms-excel;charset=utf-8;name="' . $fileName . '.xls"');
-            header("Content-Disposition:attachment;filename=$fileName.xls");//attachment新窗口打印inline本窗口打印
+            header('Content-type:application/vnd.ms-excel;charset=utf-8;name="' . $fileName . '.xlsx"');
+            header("Content-Disposition:attachment;filename=$fileName.xlsx");//attachment新窗口打印inline本窗口打印
             $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
             $objWriter->save('php://output');
             exit;
         }else{
             $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-            $file_path = "/Public/content/$fileName.xls";
+            $file_path = "/Public/content/$fileName.xlsx";
             $file_rootpath =  SITE_TP_PATH.$file_path;
             $objWriter->save($file_rootpath);
             return $file_path;

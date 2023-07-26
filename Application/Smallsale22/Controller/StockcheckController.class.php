@@ -362,6 +362,7 @@ class StockcheckController extends CommonController{
             if($now_integral>0){
                 $m_stock_check->updateData(array('id'=>$stockcheck_id),array('integral'=>$now_integral,'is_get_integral'=>1,
                     'get_time'=>date('Y-m-d H:i:s')));
+                $m_usertask->updateData(array('id'=>$res_usertask['id']),array('status'=>3));
             }
         }
         $m_hotel = new \Common\Model\HotelModel();

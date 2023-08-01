@@ -762,8 +762,9 @@ class ApiController extends CommonController{
         if(!empty($upgrade_info)){
             $m_device_version = new \Common\Model\DeviceVersionModel();
             
-            $device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],$device_type);
+            //$device_version_info = $m_device_version->getOneByVersionAndDevice($upgrade_info['version'],$device_type);
             //print_r($device_version_info);exit;
+            $device_version_info = $m_device_version->getOneByVersionAndDeviceInfo($upgrade_info['version'],$device_type);
             if(!empty($device_version_info)){
                 $result['period'] = $device_version_info['version_code'];
                 

@@ -10,4 +10,12 @@ class DeviceVersionModel extends Model{
 	    $result = $this->where($map)->find();
 	    return $result;
 	}
+	
+	public function getOneByVersionAndDeviceInfo($versionCode,$device_type){
+	    $map['version_code'] = $versionCode;
+	    $map['device_type']  = $device_type;
+	    $map['model']        = 0;
+	    $result = $this->where($map)->find();
+	    return $result;
+	}
 }

@@ -174,7 +174,7 @@ class MessageController extends CommonController{
                 $other_idcodes[]=$v;
             }
         }
-        $where = array('a.id'=>$res_info['staff_id'],'merchant.status'=>1);
+        $where = array('a.id'=>$res_info['staff_id']);
         $fields = 'a.id,user.nickName';
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff($fields,$where);

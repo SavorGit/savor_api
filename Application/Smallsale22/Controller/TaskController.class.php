@@ -89,12 +89,18 @@ class TaskController extends CommonController{
         $oss_host = get_oss_host();
         $fields = "a.id as task_user_id,task.id task_id,task.name task_name,task.goods_id,task.integral,concat('".$oss_host."',media.`oss_addr`) img_url,concat('".$oss_host."',task.`image_url`) wimg_url,
         task.desc,task.is_shareprofit,task.type,task.task_type,task.task_info,task.people_num,task.status,task.flag,task.end_time as task_expire_time,a.people_num as join_peoplenum,a.activityapply_id,a.idcode";
-        $where = array('a.openid'=>$openid,'a.status'=>1);
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>array('not in','29'));
         $where["DATE_FORMAT(a.add_time,'%Y-%m-%d')"] = date('Y-m-d');
         $m_media = new \Common\Model\MediaModel();
         $res_inprogress_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc');
+        $where = array('a.openid'=>$openid,'a.status'=>1,'task.task_type'=>29,'task.status'=>1);
+        $res_inprogress_check_task = $m_task_user->getUserTaskList($fields,$where,'a.id desc','0,1');
+        if(!empty($res_inprogress_check_task)){
+            $res_inprogress_task = array_merge($res_inprogress_check_task,$res_inprogress_task);
+        }
         $inprogress_task = $invalid_task = $finish_task = array();
         $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
+        $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
         if(!empty($res_inprogress_task)){
             $host_name = C('HOST_NAME');
             $now_time = date('Y-m-d H:i:s');
@@ -268,12 +274,22 @@ class TaskController extends CommonController{
                         }
                         break;
                     case 6:
-                    case 29:
                         if($v['status']==1 && $v['flag']==1){
                             $inprogress_task[$v['task_id']]=$tinfo;
                         }else{
                             $tinfo['itype'] = 1;
                             $invalid_task[]=$tinfo;
+                        }
+                        break;
+                    case 29:
+                        $res_check = $m_stock_check->getInfo(array('hotel_id'=>$hotel_id,'task_id'=>$v['task_id']));
+                        if(empty($res_check)){
+                            if($v['status']==1 && $v['flag']==1){
+                                $inprogress_task[$v['task_id']]=$tinfo;
+                            }else{
+                                $tinfo['itype'] = 1;
+                                $invalid_task[]=$tinfo;
+                            }
                         }
                         break;
                 }
@@ -302,7 +318,6 @@ class TaskController extends CommonController{
         $canreceive_task = array();
         $all_prizes = array('1'=>'一等奖','2'=>'二等奖','3'=>'三等奖');
         if(!empty($rescanreceive_task)){
-            $m_stock_check = new \Common\Model\Smallapp\StockcheckModel();
             $m_taskprize = new \Common\Model\Integral\TaskPrizeModel();
             $send_num_key = C('SAPP_SALE_TASK_SENDNUM');
             $redis = new \Common\Lib\SavorRedis();

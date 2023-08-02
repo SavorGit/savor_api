@@ -580,6 +580,12 @@ class StockController extends CommonController{
                 $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
                 $m_stock = new \Common\Model\Finance\StockModel();
                 $m_stock->updateData(array('id'=>$stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
+
+                $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
+                if($res_stock['area_id']>0){
+                    sendTopicMessage($res_stock['area_id'],70);
+                }
+
             }
         }
         $this->to_back(array('stock_detail_id'=>$stock_detail_id));

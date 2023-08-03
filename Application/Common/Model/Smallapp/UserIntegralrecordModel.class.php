@@ -605,9 +605,7 @@ class UserIntegralrecordModel extends BaseModel{
             $admin_integral = 0;
             if($res_staff[0]['is_integral']==1){
                 $integralrecord_openid = $openid;
-                if($task_user_id>0){
-                    $m_task_user->where(array('id'=>$task_user_id))->setInc('integral',$now_integral);
-                }
+
                 if($res_staff[0]['is_shareprofit']==1 && $res_staff[0]['level']==2){
                     $shareprofit_config = json_decode($res_staff[0]['shareprofit_config'],true);
                     if(!empty($shareprofit_config['jspd'])){
@@ -621,8 +619,22 @@ class UserIntegralrecordModel extends BaseModel{
                         $now_integral = $staff_integral;
                     }
                 }
+                $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$openid));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$now_integral;
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $m_userintegral->add(array('openid'=>$openid,'integral'=>$now_integral));
+                }
+                if($task_user_id>0){
+                    $m_task_user->where(array('id'=>$task_user_id))->setInc('integral',$now_integral);
+                }
             }else{
                 $integralrecord_openid = $res_staff[0]['hotel_id'];
+                $m_merchant = new \Common\Model\Integral\MerchantModel();
+                $where = array('id'=>$res_staff[0]['merchant_id']);
+                $m_merchant->where($where)->setInc('integral',$now_integral);
             }
 
             $m_hotel = new \Common\Model\HotelModel();
@@ -632,6 +644,15 @@ class UserIntegralrecordModel extends BaseModel{
                 $res_admin_staff = $m_staff->getALLDataList('id,openid',$adminwhere,'id desc','0,1','');
                 if(!empty($res_admin_staff)){
                     $admin_openid = $res_admin_staff[0]['openid'];
+
+                    $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                    $res_integral = $m_userintegral->getInfo(array('openid'=>$admin_openid));
+                    if(!empty($res_integral)){
+                        $userintegral = $res_integral['integral']+$now_integral;
+                        $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                    }else{
+                        $m_userintegral->add(array('openid'=>$admin_openid,'integral'=>$now_integral));
+                    }
                     $integralrecord_data = array('openid'=>$admin_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
                         'hotel_id'=>$res_staff[0]['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
                         'task_id'=>$task_id,'integral'=>$admin_integral,'content'=>1,'jdorder_id'=>$stockcheck_id,'status'=>1,'integral_time'=>date('Y-m-d H:i:s'),'type'=>24,'source'=>4);

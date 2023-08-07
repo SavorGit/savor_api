@@ -20,6 +20,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'version'=>1002);
                 break;
+            case 'center':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -151,5 +155,32 @@ class UserController extends CommonController{
             $datalist[]=$v;
         }
         $this->to_back(array('datalist'=>$datalist));
+    }
+
+    public function center(){
+        $openid = $this->params['openid'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $residenter_id = $res_staff['sysuser_id'];
+        $m_hotel = new \Common\Model\HotelModel();
+        $hwhere = array('hotel.state'=>1,'hotel.flag'=>0,'ext.residenter_id'=>$residenter_id);
+        $res_hotel = $m_hotel->getHotelDataList('count(hotel.id) as num',$hwhere,'');
+        $zd_hotel_num = intval($res_hotel[0]['num']);
+
+        $fields = 'sum(a.settlement_price) as sale_money,count(a.id) as num';
+        $where = array('record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2,'ext.residenter_id'=>$residenter_id);
+        $start_time = date('Y-m-01 00:00:00');
+        $end_time = date('Y-m-31 23:59:59');
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $res_sale = $m_sale->getSaleStockRecordList($fields,$where);
+        $sale_num = intval($res_sale[0]['num']);
+        $sale_money = intval($res_sale[0]['sale_money']);
+
+        $this->to_back(array('sale_money'=>$sale_money,'sale_num'=>$sale_num,'zd_hotel_num'=>$zd_hotel_num));
     }
 }

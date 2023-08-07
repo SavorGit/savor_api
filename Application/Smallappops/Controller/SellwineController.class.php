@@ -29,6 +29,14 @@ class SellwineController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'contact_id'=>1002,'hotel_id'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'mysalefilter':
+                $this->valid_fields = array('openid'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'mysale':
+                $this->valid_fields = array('openid'=>1001,'month'=>1001,'status'=>1001,'page'=>1001,'hotel_name'=>1002);
+                $this->is_verify = 1;
+                break;
         }
         parent::_init_();
     }
@@ -281,12 +289,14 @@ class SellwineController extends CommonController{
             }
         }
 
-        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id,sale.ptype,sale.settlement_price';
+        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,
+        a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id,sale.ptype,sale.settlement_price,ext.residenter_id';
         $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_records)){
             $m_user = new \Common\Model\Smallapp\UserModel();
             $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
+            $m_sysuser = new \Common\Model\SysUserModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
             $all_pay_types = C('STOCK_PAY_TYPES');
@@ -318,9 +328,14 @@ class SellwineController extends CommonController{
                         $ptype_str = $all_pay_types[$v['ptype']];
                     }
                 }
+                $res_sysuser = $m_sysuser->getUserInfo(array('id'=>$v['residenter_id']));
+                $hotel_name = $v['hotel_name'];
+                if(!empty($res_sysuser)){
+                    $hotel_name = $res_sysuser['remark'].'：'.$hotel_name;
+                }
                 $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
                     'ptype'=>$v['ptype'],'ptype_str'=>$ptype_str,
-                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$v['hotel_name'],'hotel_id'=>$v['hotel_id']);
+                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$hotel_name,'hotel_id'=>$v['hotel_id']);
             }
         }
         $this->to_back($data_list);
@@ -420,4 +435,80 @@ class SellwineController extends CommonController{
         $this->to_back($res_data);
     }
 
+    public function mysalefilter(){
+        $openid = $this->params['openid'];
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $months = array();
+        $now_month = date('n');
+        for($i=$now_month;$i>0;$i--){
+            if($i==$now_month){
+                $name = '当月';
+            }else{
+                $name = $i.'月';
+            }
+            $m_value = str_pad($i,2,0,STR_PAD_LEFT);
+            $months[]=array('name'=>$name,'value'=>date("Y-$m_value"));
+        }
+        $sale_status = array(
+            array('name'=>'全部','status'=>0),
+            array('name'=>'已收款','status'=>1),
+            array('name'=>'未收款','status'=>2),
+
+        );
+        $this->to_back(array('month'=>$months,'all_sale_status'=>$sale_status));
+    }
+
+    public function mysale(){
+        $openid = $this->params['openid'];
+        $month = $this->params['month'];
+        $status = intval($this->params['status']);//1已收款 2未收款
+        $hotel_name = trim($this->params['hotel_name']);
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $residenter_id = $res_staff['sysuser_id'];
+        $where = array('record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2,'ext.residenter_id'=>$residenter_id);
+        if($status){
+            if($status==1){
+                $where['a.ptype'] = 1;
+            }elseif($status==2){
+                $where['a.ptype'] = array('in','0,2');
+            }
+        }
+        if(!empty($hotel_name)){
+            $where['hotel.name'] = array('like',"%$hotel_name%");
+        }
+        $start_time = date("$month-01 00:00:00");
+        $end_time = date("$month-31 23:59:59");
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $offset = ($page-1)*$pagesize;
+        $limit = "$offset,$pagesize";
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $m_sale_record = new \Common\Model\Finance\SalePaymentRecordModel();
+        $fields = 'a.hotel_id,hotel.name as hotel_name,count(a.id) as num,sum(a.settlement_price) as sale_money,GROUP_CONCAT(a.id) as sale_ids';
+        $res_sale = $m_sale->getSaleStockRecordList($fields,$where,'a.hotel_id',$limit);
+        $datalist = array();
+        foreach ($res_sale as $v){
+            $ys_money = 0;
+            $payfields = 'sum(pay_money) as has_pay_money';
+            $res_pay_money = $m_sale_record->getALLDataList($payfields,array('sale_id'=>array('in',$v['sale_ids'])),'','','');
+            if($res_pay_money[0]['has_pay_money']>0){
+                $ys_money = $v['sale_money']-$res_pay_money[0]['has_pay_money'];
+            }
+            $datalist[]=array('hotel_id'=>$v['hotel_id'],'hotel_name'=>$v['hotel_name'],'num'=>$v['num'],
+                'sale_money'=>$v['sale_money'],'ys_money'=>$ys_money);
+        }
+        $this->to_back(array('datalist'=>$datalist));
+    }
 }

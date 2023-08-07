@@ -708,7 +708,7 @@ class HotelController extends CommonController{
         }
         $oss_host = get_oss_host();
         $m_hotel = new \Common\Model\HotelModel();
-        $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps";
+        $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps,a.htype";
         $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0,'a.gps'=>array('neq',''));
         $test_hotel_ids = C('TEST_HOTEL');
         $where['a.id'] = array('not in',"$test_hotel_ids");
@@ -751,7 +751,12 @@ class HotelController extends CommonController{
             if(empty($dis)){
                 $dis = '';
             }
-            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis);
+            if($v['htype']==10){
+                $htype_str = '已签约';
+            }else{
+                $htype_str = '';
+            }
+            $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis,'htype_str'=>$htype_str);
         }
         $range_str = "可选{$nearby_m}米范围内的地点";
         $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str));

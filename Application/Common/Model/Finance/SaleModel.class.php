@@ -123,7 +123,7 @@ class SaleModel extends BaseModel{
         return array('sale_money'=>$sale_money,'qk_money'=>$qk_money,'cqqk_money'=>$cqqk_money);
     }
 
-    public function getSaleStockRecordList($fileds,$where,$group=''){
+    public function getSaleStockRecordList($fileds,$where,$group='',$limit=''){
         $res_data = $this->alias('a')
             ->field($fileds)
             ->join('savor_finance_stock_record record on a.stock_record_id=record.id','left')
@@ -132,6 +132,7 @@ class SaleModel extends BaseModel{
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
             ->join('savor_smallapp_user user on record.op_openid=user.openid','left')
             ->where($where)
+            ->limit($limit)
             ->group($group)
             ->select();
         return $res_data;

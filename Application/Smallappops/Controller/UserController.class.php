@@ -172,7 +172,7 @@ class UserController extends CommonController{
         $zd_hotel_num = intval($res_hotel[0]['num']);
 
         $fields = 'sum(a.settlement_price) as sale_money,count(a.id) as num';
-        $where = array('record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2,'ext.residenter_id'=>$residenter_id);
+        $where = array('a.residenter_id'=>$residenter_id,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);
         $start_time = date('Y-m-01 00:00:00');
         $end_time = date('Y-m-31 23:59:59');
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));

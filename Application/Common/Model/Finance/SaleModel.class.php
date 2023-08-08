@@ -38,7 +38,8 @@ class SaleModel extends BaseModel{
 
 	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,
             'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,
-            'hotel_id'=>$hotel_id,'maintainer_id'=>intval($res_ext['maintainer_id']),'type'=>1,'jd_voucher_no'=>$jd_voucher_no);
+            'hotel_id'=>$hotel_id,'maintainer_id'=>intval($res_ext['maintainer_id']),'residenter_id'=>intval($res_ext['residenter_id']),
+            'type'=>1,'jd_voucher_no'=>$jd_voucher_no);
 	    if(!empty($sale_openid)){
 	        $add_data['sale_openid'] = $sale_openid;
         }

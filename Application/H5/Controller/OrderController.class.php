@@ -194,13 +194,14 @@ class OrderController extends Controller {
         $order_id = intval($orders[0]['order_id']);
         $m_order = new \Common\Model\Smallapp\OrderModel();
         $res_order = $m_order->getInfo(array('id'=>$order_id));
+        $order_amount = $res_order['amount'];
         if($res_order['status']==51 && $res_order['sale_uid']>0 && $res_order['is_settlement']==0){
             $m_dishgoods = new \Common\Model\Smallapp\DishgoodsModel();
             $res_goods = $m_dishgoods->getInfo(array('id'=>$res_order['goods_id']));
             $distribution_config = json_decode($res_goods['distribution_config'],true);
             $order_distribution_config = array();
             foreach ($distribution_config as $k=>$v){
-                if($res_order['amount']>=$v['min'] && $res_order['amount']<=$v['max']){
+                if($order_amount>=$v['min'] && $order_amount<=$v['max']){
                     $order_distribution_config = $v;
                 }
             }
@@ -208,7 +209,8 @@ class OrderController extends Controller {
             $sale_uid = $res_order['sale_uid'];
             $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
             $res_duser = $m_distuser->getInfo(array('id'=>$sale_uid));
-            $admin_openid = $admin_money = '';
+            $admin_openid = '';
+            $admin_money = 0;
             if($res_duser['level']==1){
                 $buy_type = 1;
                 $openid = $res_duser['openid'];
@@ -228,9 +230,12 @@ class OrderController extends Controller {
                 $money = $distribution[1];
                 $admin_money = $distribution[0];
             }
+            $money = intval($money*$order_amount);
+            $admin_money = intval($admin_money*$order_amount);
+
             $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
             $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
-                'amount'=>1,'total_fee'=>$money,'status'=>20);
+                'amount'=>$order_amount,'total_fee'=>$money,'status'=>20);
             $order_exchange_id = $m_exchange->add($add_data);
             $m_baseinc = new \Payment\Model\BaseIncModel();
             $payconfig = $m_baseinc->getPayConfig();

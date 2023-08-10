@@ -591,14 +591,15 @@ function viewTimes($strtime){
     return $view_time;
 }
 function getgeoByloa($lat,$lon){
-    $ak = C('BAIDU_GEO_KEY');
-    $url = 'http://api.map.baidu.com/geocoder/v2/?location='.$lat.','.$lon.'&output=json&pois=0&ak='.$ak;
+    $ak = C('BAIDU_SAPP_OPS_KEY');
+    $url = "https://api.map.baidu.com/reverse_geocoding/v3/?ak=$ak&output=json&coordtype=wgs84ll&location=$lat,$lon";
     $result = file_get_contents($url);
     $re = json_decode($result,true);
     if($re && $re['status'] == 0){
         return $re['result'];
     }
 }
+
 function getgeoByTc($lat,$lon,$type=1){
     switch ($type){//1GPS转百度坐标,2百度转腾讯,3腾讯/高德转百度
         case 1:
@@ -651,6 +652,17 @@ function convertTxToBdCoord($lng, $lat) {
     $lng = $z * cos($theta) + 0.0065;
     $lat = $z * sin($theta) + 0.006;
     return array('lng' => $lng, 'lat' => $lat);
+}
+
+function convertGPSToBaidu($latitude, $longitude) {
+    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+    $x = $longitude;
+    $y = $latitude;
+    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $x_pi);
+    $theta = atan2($y, $x) + 0.000003 * cos($x * $x_pi);
+    $bd_longitude = $z * cos($theta) + 0.0065;
+    $bd_latitude = $z * sin($theta) + 0.006;
+    return array('latitude' => $bd_latitude, 'longitude' => $bd_longitude);
 }
 
 

@@ -665,8 +665,6 @@ function convertGPSToBaidu($latitude, $longitude) {
     return array('latitude' => $bd_latitude, 'longitude' => $bd_longitude);
 }
 
-
-
 function getGDgeocodeByAddress($address){
     $key = C('GAODE_KEY');
     $url = "https://restapi.amap.com/v3/geocode/geo?address=$address&output=json&key=$key";
@@ -734,24 +732,24 @@ function getRandNums($min=0,$max=100,$num=10){
 }
 
 function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true){
- $pi80 = M_PI / 180;
- $lat1 *= $pi80;
- $lng1 *= $pi80;
- $lat2 *= $pi80;
- $lng2 *= $pi80;
- $r = 6372.797; // mean radius of Earth in km
- $dlat = $lat2 - $lat1;
- $dlng = $lng2 - $lng1;
- $a = sin($dlat/2)*sin($dlat/2)+cos($lat1)*cos($lat2)*sin($dlng/2)*sin($dlng/2);
- $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
- $km = $r * $c;
- $dis = round(($miles ? ($km * 0.621371192) : $km),2);
- return $dis;
- if($dis<1){
-     return ($dis*1000).'m';
- } else {
-     return $dis.'km';
- }
+     $pi80 = M_PI / 180;
+     $lat1 *= $pi80;
+     $lng1 *= $pi80;
+     $lat2 *= $pi80;
+     $lng2 *= $pi80;
+     $r = 6372.797; // mean radius of Earth in km
+     $dlat = $lat2 - $lat1;
+     $dlng = $lng2 - $lng1;
+     $a = sin($dlat/2)*sin($dlat/2)+cos($lat1)*cos($lat2)*sin($dlng/2)*sin($dlng/2);
+     $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+     $km = $r * $c;
+     $dis = round(($miles ? ($km * 0.621371192) : $km),2);
+     return $dis;
+     if($dis<1){
+         return ($dis*1000).'m';
+     } else {
+         return $dis.'km';
+     }
 }
 
 function formatBytes($size) {

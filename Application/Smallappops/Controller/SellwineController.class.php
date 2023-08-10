@@ -478,7 +478,7 @@ class SellwineController extends CommonController{
             $this->to_back(94001);
         }
         $residenter_id = $res_staff['sysuser_id'];
-        $where = array('record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2,'ext.residenter_id'=>$residenter_id);
+        $where = array('a.residenter_id'=>$residenter_id,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);
         if($status){
             if($status==1){
                 $where['a.ptype'] = 1;

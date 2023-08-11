@@ -628,43 +628,6 @@ function getgeoByTc($lat,$lon,$type=1){
     }
 }
 
-function convertBdToTxCoord($lng, $lat) {
-    $tx_pi = 3.1415926535897932384626;
-    $tx_a = 6378245.0;
-    $tx_ee = 0.00669342162296594323;
-
-    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
-    $x = $lng;
-    $y = $lat;
-    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $tx_pi);
-    $theta = atan2($y, $x) + 0.000003 * cos($x * $tx_pi);
-    $bd_lng = $z * cos($theta) + 0.0065;
-    $bd_lat = $z * sin($theta) + 0.006;
-    return array($bd_lng, $bd_lat);
-}
-
-function convertTxToBdCoord($lng, $lat) {
-    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
-    $x = $lng;
-    $y = $lat;
-    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $x_pi);
-    $theta = atan2($y, $x) + 0.000003 * cos($x * $x_pi);
-    $lng = $z * cos($theta) + 0.0065;
-    $lat = $z * sin($theta) + 0.006;
-    return array('lng' => $lng, 'lat' => $lat);
-}
-
-function convertGPSToBaidu($latitude, $longitude) {
-    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
-    $x = $longitude;
-    $y = $latitude;
-    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $x_pi);
-    $theta = atan2($y, $x) + 0.000003 * cos($x * $x_pi);
-    $bd_longitude = $z * cos($theta) + 0.0065;
-    $bd_latitude = $z * sin($theta) + 0.006;
-    return array('latitude' => $bd_latitude, 'longitude' => $bd_longitude);
-}
-
 function getGDgeocodeByAddress($address){
     $key = C('GAODE_KEY');
     $url = "https://restapi.amap.com/v3/geocode/geo?address=$address&output=json&key=$key";
@@ -750,6 +713,49 @@ function getDistance($lat1, $lng1, $lat2, $lng2, $miles = true){
      } else {
          return $dis.'km';
      }
+}
+
+function gcj02ToBd09($longitude, $latitude) {
+    $x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+    $x = $longitude;
+    $y = $latitude;
+    $z = sqrt($x * $x + $y * $y) + 0.00002 * sin($y * $x_pi);
+    $theta = atan2($y, $x) + 0.000003 * cos($x * $x_pi);
+    $bd_lon = $z * cos($theta) + 0.0065;
+    $bd_lat = $z * sin($theta) + 0.006;
+    return array('longitude' => $bd_lon, 'latitude' => $bd_lat);
+}
+
+function gpsToBaidu($longitude, $latitude) {
+    $a = 6378245.0;
+    $ee = 0.00669342162296594323;
+    $dlat = $this->transformLat($longitude - 105.0, $latitude - 35.0);
+    $dlng = $this->transformLng($longitude - 105.0, $latitude - 35.0);
+    $radLat = $latitude / 180.0 * pi();
+    $magic = sin($radLat);
+    $magic = 1 - $ee * $magic * $magic;
+    $sqrtMagic = sqrt($magic);
+    $dlat = ($dlat * 180.0) / (($a * (1 - $ee)) / ($magic * $sqrtMagic) * pi());
+    $dlng = ($dlng * 180.0) / ($a / $sqrtMagic * cos($radLat) * pi());
+    $mglat = $latitude + $dlat;
+    $mglng = $longitude + $dlng;
+    return gcj02ToBd09($mglng, $mglat);
+}
+
+function transformLat($x, $y) {
+    $ret = -100.0 + 2.0 * $x + 3.0 * $y + 0.2 * $y * $y + 0.1 * $x * $y + 0.2 * sqrt(abs($x));
+    $ret += (20.0 * sin(6.0 * $x * pi()) + 20.0 * sin(2.0 * $x * pi())) * 2.0 / 3.0;
+    $ret += (20.0 * sin($y * pi()) + 40.0 * sin($y / 3.0 * pi())) * 2.0 / 3.0;
+    $ret += (160.0 * sin($y / 12.0 * pi()) + 320 * sin($y * pi() / 30.0)) * 2.0 / 3.0;
+    return $ret;
+}
+
+function transformLng($x, $y) {
+    $ret = 300.0 + $x + 2.0 * $y + 0.1 * $x * $x + 0.1 * $x * $y + 0.1 * sqrt(abs($x));
+    $ret += (20.0 * sin(6.0 * $x * pi()) + 20.0 * sin(2.0 * $x * pi())) * 2.0 / 3.0;
+    $ret += (20.0 * sin($x * pi()) + 40.0 * sin($x / 3.0 * pi())) * 2.0 / 3.0;
+    $ret += (150.0 * sin($x / 12.0 * pi()) + 300.0 * sin($x / 30.0 * pi())) * 2.0 / 3.0;
+    return $ret;
 }
 
 function formatBytes($size) {

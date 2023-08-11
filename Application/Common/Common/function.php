@@ -729,8 +729,8 @@ function gcj02ToBd09($longitude, $latitude) {
 function gpsToBaidu($longitude, $latitude) {
     $a = 6378245.0;
     $ee = 0.00669342162296594323;
-    $dlat = $this->transformLat($longitude - 105.0, $latitude - 35.0);
-    $dlng = $this->transformLng($longitude - 105.0, $latitude - 35.0);
+    $dlat = transformLat($longitude - 105.0, $latitude - 35.0);
+    $dlng = transformLng($longitude - 105.0, $latitude - 35.0);
     $radLat = $latitude / 180.0 * pi();
     $magic = sin($radLat);
     $magic = 1 - $ee * $magic * $magic;

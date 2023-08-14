@@ -525,6 +525,7 @@ return array(
     'smallappsale_add_customer_mobile_repeat'=>'手机号码已重复',
     'smallappsale_finance_stock_writeoff_hotel_error'=>'酒水所在酒楼不一致,无法核销',
     'smallappsale_finance_create_data_error'=>'所选时间段内无数据,无法生成',
+    'smallappsale_finance_threshold_error'=>'暂时无法兑换，请联系热点工作人员',
 
 
 

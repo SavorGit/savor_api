@@ -103,6 +103,11 @@ class WithdrawController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93014);
         }
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $is_out = $m_stock->checkHotelThreshold($hotel_id);
+        if($is_out==0){
+            $this->to_back(93108);
+        }
 
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $res_hotelgoods = $m_hotelgoods->getInfo(array('hotel_id'=>$hotel_id,'goods_id'=>$id));

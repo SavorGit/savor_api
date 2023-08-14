@@ -492,6 +492,7 @@ return array(
         '93105'=>'smallappsale_task_tastewine_use_tastewine_hotel_error',
         '93106'=>'smallappsale_finance_stock_writeoff_hotel_error',
         '93107'=>'smallappsale_finance_create_data_error',
+        '93108'=>'smallappsale_finance_threshold_error',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

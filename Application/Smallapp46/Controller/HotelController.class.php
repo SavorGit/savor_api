@@ -58,13 +58,15 @@ class HotelController extends CommonController{
         $m_store = new \Common\Model\Smallapp\StoreModel();
         $res_store = $m_store->getHotelStore($area_id,$county_id,$food_style_id,$avg_id);
         if($longitude>0 && $latitude>0){
-            $bd_lnglat = getgeoByTc($latitude, $longitude);
+//            $bd_lnglat = getgeoByTc($latitude, $longitude);
+//            $latitude = $bd_lnglat[0]['y'];
+//            $longitude = $bd_lnglat[0]['x'];
+            $bd_lnglat = gpsToBaidu($longitude, $latitude);
+            $latitude = $bd_lnglat['latitude'];
+            $longitude = $bd_lnglat['longitude'];
             foreach($res_store as $key=>$v){
                 $res_store[$key]['dis'] = '';
                 if($v['gps']!='' && $longitude>0 && $latitude>0){
-                    $latitude = $bd_lnglat[0]['y'];
-                    $longitude = $bd_lnglat[0]['x'];
-
                     $gps_arr = explode(',',$v['gps']);
                     $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
                     $res_store[$key]['dis_com'] = $dis;

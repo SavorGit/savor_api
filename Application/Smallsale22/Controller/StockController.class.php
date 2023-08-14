@@ -313,7 +313,7 @@ class StockController extends CommonController{
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $where = array('idcode'=>$idcode,'dstatus'=>1);
-        $res_stock_record_type = $m_stock_record->getALLDataList('type',$where,'id desc','0,1','');
+        $res_stock_record_type = $m_stock_record->getALLDataList('type,stock_detail_id',$where,'id desc','0,1','');
         if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']>3){
             $type_error_codes = array('4'=>93088,'5'=>93089,'6'=>93095,'7'=>93094);
             if(in_array($io_type,array(12,13))){
@@ -329,7 +329,10 @@ class StockController extends CommonController{
         $now_unit_id = 0;
         if($type==10){
             if(in_array($io_type,array(12,13))){
-                if(!empty($res_stock_record_type[0]['type'])){
+                if($stock_detail_id>0 && $stock_detail_id==$res_stock_record_type[0]['stock_detail_id']){
+                    $this->to_back(93081);
+                }
+                if(!empty($res_stock_record_type[0]['type']) && $stock_detail_id!=$res_stock_record_type[0]['stock_detail_id']){
                     $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));
                 }
             }else{

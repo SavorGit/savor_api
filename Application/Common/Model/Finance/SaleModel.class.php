@@ -74,7 +74,7 @@ class SaleModel extends BaseModel{
             $where['hotel.area_id'] = $area_id;
         }
         if($maintainer_id){
-            $where['ext.maintainer_id'] = $maintainer_id;
+            $where['a.maintainer_id'] = $maintainer_id;
         }
         if($hotel_id){
             $where['a.hotel_id'] = $hotel_id;
@@ -83,7 +83,7 @@ class SaleModel extends BaseModel{
         $res_sale = $this->getSaleStockRecordList($fileds,$where);
         $sale_money = abs(intval($res_sale[0]['sale_money']));
 
-        if($where['a.ptype']==1){
+        if($where['a.ptype']==1 || in_array($wo_status,array(1,4))){
             $qk_money = 0;
             $cqqk_money = 0;
         }else{
@@ -96,7 +96,8 @@ class SaleModel extends BaseModel{
                     $where['a.ptype'] = array('in','0,2');
                 }
                 unset($where['a.add_time']);
-                $res_sale_qk = $this->getSaleStockRecordList('a.id as sale_id,a.settlement_price,a.ptype,a.add_time',$where);
+                $where['record.wo_status'] = 2;
+                $res_sale_qk = $this->getSaleStockRecordList('a.id as sale_id,a.settlement_price,a.ptype,a.add_time,a.is_expire',$where);
                 if(!empty($res_sale_qk)){
                     $m_sale_payment_record = new \Common\Model\Finance\SalePaymentRecordModel();
                     $expire_time = 7*86400;
@@ -110,9 +111,14 @@ class SaleModel extends BaseModel{
                         }
                         $qk_money+=$now_money;
 
+                        /*
                         $sale_time = strtotime($v['add_time']);
                         $now_time = time();
                         if($now_time-$sale_time>=$expire_time){
+                            $cqqk_money+=$now_money;
+                        }
+                        */
+                        if($v['is_expire']==1){
                             $cqqk_money+=$now_money;
                         }
                     }

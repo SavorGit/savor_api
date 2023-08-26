@@ -1,0 +1,396 @@
+<?php
+namespace Smallappops\Controller;
+use \Common\Controller\CommonController as CommonController;
+
+class TaskController extends CommonController{
+    /**
+     * 构造函数
+     */
+    function _init_() {
+        switch(ACTION_NAME) {
+            case 'getSalerecordTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'salerecord_id'=>1002);
+                break;
+            case 'filterconditions':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
+            case 'datalist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'task_id'=>1001,'page'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002);
+                break;
+            case 'getHotelTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002,'is_overdue'=>1002);
+                break;
+            case 'handletask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'task_record_id'=>1001,'status'=>1001,'content'=>1002,'img'=>1002);
+                break;
+            case 'pendingTasks':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001);
+                break;
+            case 'getOverdueTasks':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
+                break;
+            case 'handleRefuseTask':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'task_record_id'=>1001,'status'=>1001);
+                break;
+        }
+        parent::_init_();
+    }
+
+    public function getSalerecordTask(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $salerecord_id = intval($this->params['salerecord_id']);
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_hotel = new \Common\Model\HotelExtModel();
+        $res_hotel = $m_hotel->getOnerow(array('hotel_id'=>$hotel_id));
+        $is_salehotel = intval($res_hotel['is_salehotel']);
+
+        if($salerecord_id>0){
+            $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
+            $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
+            $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
+        }else{
+            $residenter_id = $res_staff['sysuser_id'];
+            $fileds = 'a.id as task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
+            $where = array('a.hotel_id'=>$hotel_id,'a.residenter_id'=>$residenter_id,'a.handle_status'=>array('in','0,1'),
+                'a.audit_handle_status'=>array('in','0,1'));
+            $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+            $task_list = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
+        }
+        $is_has_task = 0;
+        if(!empty($task_list)){
+            $is_has_task = 1;
+        }
+        $res_data = array('is_has_task'=>$is_has_task,'task_list'=>$task_list,'is_salehotel'=>$is_salehotel,
+            'content_default'=>C('CONTENT_DEFAULT'));
+        $this->to_back($res_data);
+    }
+
+    public function filterconditions(){
+        $openid = $this->params['openid'];
+
+        $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+
+        $month_list = array(array('name'=>'本月','value'=>date('Y-m')));
+        for($i=1;$i<12;$i++){
+            $name = date('Y年m月',strtotime("last day of -$i month"));
+            $value = date('Y-m',strtotime("last day of -$i month"));
+            $month_list[]=array('name'=>$name,'value'=>$value);
+        }
+        $m_task = new \Common\Model\Crm\TaskModel();
+        $task_list = $m_task->getDataList('id,name',array('status'=>1),'id desc');
+        array_unshift($task_list,array('id'=>0,'name'=>'全部任务'));
+
+        $pending_task_num = 0;
+        if(in_array($hotel_role_type,array(2,4))){
+            $permission = json_decode($res_staff['permission'],true);
+            $area_ids = $permission['hotel_info']['area_ids'];
+            $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0),'a.is_trigger'=>1,
+                'a.status'=>array('in','0,1'));
+            $fileds = "count(a.id) as num";
+            $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+            $res_task_num = $m_crmtask_record->getTaskRecords($fileds,$where);
+            $pending_task_num = intval($res_task_num[0]['num']);
+        }
+        $this->to_back(array('task_list'=>$task_list,'month_list'=>$month_list,'pending_task_num'=>$pending_task_num));
+    }
+
+    public function datalist(){
+        $openid = $this->params['openid'];
+        $task_id = $this->params['task_id'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+        $stat_date = $this->params['stat_date'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        $permission = json_decode($res_staff['permission'],true);
+        $where = array();
+        if($task_id>0){
+            $where['a.task_id'] = $task_id;
+        }
+        if(in_array($hotel_role_type,array(2,4,6))){
+            $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+        }elseif($hotel_role_type==3){
+            $where['a.residenter_id'] = $res_staff['sysuser_id'];
+        }
+        if($area_id>0){
+            $where['hotel.area_id'] = $area_id;
+        }
+        if($staff_id>0){
+            if($staff_id==99999){
+                $where['a.residenter_id'] = 0;
+            }else{
+                $res_residenter = $m_staff->getInfo(array('id'=>$staff_id));
+                $where['a.residenter_id'] = $res_residenter['sysuser_id'];
+            }
+        }
+        if(empty($stat_date)){
+            $stat_date = date('Y-m');
+        }
+        $start_time = $stat_date.'-01 00:00:00';
+        $end_time = $stat_date.'-31 23:59:59';
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $fileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(a.id,'-',a.status,'-',task.type Separator ',') as gtype";
+        $res_data = $m_crmtask_record->getTaskRecords($fileds,$where,'hotel.pinyin asc','','a.hotel_id');
+        $head_data = array();
+        $other_data = array();
+        $all_types = C('CRM_TASK_TYPES');
+        foreach ($res_data as $v){
+            $is_head = 0;
+            $task_type_name = '';
+            $gtype_arr = explode(',',$v['gtype']);
+            foreach ($gtype_arr as $gv){
+                $garr = explode('-',$gv);
+                if(in_array($garr[2],array(3,4)) && $garr[1]!=3){
+                    $is_head = 1;
+                    $task_type_name = $all_types[$garr[2]];
+                    break;
+                }
+            }
+            $v['task_type_name'] = $task_type_name;
+            unset($v['gtype']);
+            if($is_head){
+                $head_data[]=$v;
+            }else{
+                $other_data[]=$v;
+            }
+        }
+        $all_datas = array_merge($head_data,$other_data);
+        $offset = ($page-1)*$pagesize;
+        $data_list = array_slice($all_datas,$offset,$pagesize);
+        $this->to_back(array('datalist'=>$data_list));
+    }
+
+    public function getHotelTask(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $task_id = $this->params['task_id'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $is_overdue = intval($this->params['is_overdue']);
+        $stat_date = $this->params['stat_date'];
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        $permission = json_decode($res_staff['permission'],true);
+        $where = array('a.hotel_id'=>$hotel_id);
+        if($is_overdue==0){
+            if($task_id>0){
+                $where['a.task_id'] = $task_id;
+            }
+            if(in_array($hotel_role_type,array(2,4,6))){
+                $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            }elseif($hotel_role_type==3){
+                $where['a.residenter_id'] = $res_staff['sysuser_id'];
+            }
+            if($area_id>0){
+                $where['hotel.area_id'] = $area_id;
+            }
+            if($staff_id>0){
+                if($staff_id==99999){
+                    $where['a.residenter_id'] = 0;
+                }else{
+                    $res_residenter = $m_opsstaff->getInfo(array('id'=>$staff_id));
+                    $where['a.residenter_id'] = $res_residenter['sysuser_id'];
+                }
+            }
+            if(empty($stat_date)){
+                $stat_date = date('Y-m');
+            }
+            $start_time = $stat_date.'-01 00:00:00';
+            $end_time = $stat_date.'-31 23:59:59';
+            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        }else{
+            $where['a.is_trigger'] = 1;
+            $where['a.status'] = array('in','0,1');
+        }
+
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.remind_content,a.handle_time,a.finish_time,task.type,task.desc';
+        $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
+        $unhandle_list = $handle_list = array();
+        $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
+        foreach ($res_task as $v){
+            $status_str = '';
+            if(isset($all_status_map[$v['status']])){
+                $status_str = $all_status_map[$v['status']];
+            }
+            if($v['handle_time']=='0000-00-00 00:00:00'){
+                $v['handle_time'] = '';
+            }
+            if($v['finish_time']=='0000-00-00 00:00:00'){
+                $v['finish_time'] = '';
+            }
+            $v['status_str'] = $status_str;
+            if($v['status']==0){
+                $unhandle_list[]=$v;
+            }else{
+                $handle_list[]=$v;
+            }
+        }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getOneById('name',$hotel_id);
+        $res_data = array('hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['name'],'unhandle_list'=>$unhandle_list,'handle_list'=>$handle_list);
+        $this->to_back($res_data);
+    }
+
+    public function handletask(){
+        $openid = $this->params['openid'];
+        $task_record_id = intval($this->params['task_record_id']);
+        $handle_status = intval($this->params['status']);
+        $content = trim($this->params['content']);
+        $img = $this->params['img'];
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $residenter_id = $res_staff['sysuser_id'];
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $res_data = $m_crmtask_record->getInfo(array('id'=>$task_record_id));
+        if($res_data['residenter_id']==$residenter_id){
+            if($handle_status==2){
+                $status = 1;
+            }else{
+                $status = 0;
+            }
+            $updata = array('status'=>$status,'handle_status'=>$handle_status,'handle_time'=>date('Y-m-d H:i:s'));
+            if(!empty($content)){
+                $updata['content'] = $content;
+            }
+            if(!empty($img)){
+                $updata['img'] = $img;
+            }
+            $m_crmtask_record->updateData(array('id'=>$task_record_id),$updata);
+        }else{
+            $task_record_id = 0;
+        }
+        $this->to_back(array('task_record_id'=>$task_record_id));
+    }
+
+
+    public function pendingTasks(){
+        $openid = $this->params['openid'];
+        $type = intval($this->params['type']);//1超期,2拒绝申请
+        $page = $this->params['page'];
+        $pagesize = 10;
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        if(!in_array($hotel_role_type,array(2,4))){
+            $this->to_back(array());
+        }
+        $permission = json_decode($res_staff['permission'],true);
+        $area_ids = $permission['hotel_info']['area_ids'];
+        $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0));
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $datalist = array();
+        $offset = ($page-1)*$pagesize;
+        if($type==1){
+            $where['a.is_trigger'] = 1;
+            $where['a.status'] = array('in','0,1');
+            $fileds = "a.residenter_id,a.residenter_name,count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as num,group_concat(a.id) as tids";
+            $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
+            $all_types = C('CRM_TASK_TYPES');
+            foreach ($res_task as $v){
+                $hfileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(task.type) as types";
+                $res_hoteltask = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'','','a.hotel_id');
+                $hotel_list = array();
+                foreach ($res_hoteltask as $tv){
+                    $types_arr = explode(',',$tv['types']);
+                    $task_type_name = '';
+                    if(in_array(3,$types_arr)){
+                        $task_type_name = $all_types[3];
+                    }elseif(in_array(4,$types_arr)){
+                        $task_type_name = $all_types[4];
+                    }
+                    $hotel_list[]=array('hotel_id'=>$tv['hotel_id'],'hotel_name'=>$tv['hotel_name'],'hotel_task_num'=>$tv['num'],'task_type_name'=>$task_type_name);
+                }
+                $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
+                    'hotel_num'=>$v['hotel_num'],'task_num'=>$v['num'],'task_list'=>$hotel_list);
+                $datalist[]=$dinfo;
+            }
+        }elseif($type==2){
+            $where['a.handle_status'] = 1;
+            $where['a.audit_handle_status'] = 0;
+            $fileds = "a.residenter_id,a.residenter_name,count(a.id) as num,group_concat(a.id) as tids";
+            $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
+            foreach ($res_task as $v){
+                $hfileds = "a.id as task_record_id,hotel.name as hotel_name,task.name as task_name,a.remind_content";
+                $task_list = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'','','a.hotel_id');
+                $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
+                    'task_num'=>$v['num'],'task_list'=>$task_list);
+                $datalist[]=$dinfo;
+            }
+        }
+        $this->to_back(array('type'=>$type,'datalist'=>$datalist));
+    }
+
+    public function handleRefuseTask(){
+        $openid = $this->params['openid'];
+        $task_record_id = intval($this->params['task_record_id']);
+        $audit_handle_status = intval($this->params['status']);//审核处理状态1拒绝,2同意
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        if(!in_array($hotel_role_type,array(2,4))){
+            $this->to_back(array());
+        }
+        $updata = array('audit_handle_status'=>$audit_handle_status,'audit_time'=>date('Y-m-d H:i:s'));
+        if($audit_handle_status==1){
+            $updata['handle_status'] = 0;
+        }elseif($audit_handle_status==2){
+            $updata['handle_status'] = 1;
+            $updata['status'] = 2;
+        }
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $m_crmtask_record->updateData(array('id'=>$task_record_id),$updata);
+
+    }
+
+
+
+
+
+
+}

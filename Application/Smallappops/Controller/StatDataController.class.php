@@ -38,6 +38,9 @@ class StatDataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1001,'end_date'=>1001,'type'=>1001);
                 break;
+            case 'taskdata':
+                $this->valid_fields = array('openid'=>1001,'task_id'=>1002,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -792,4 +795,76 @@ class StatDataController extends CommonController{
 
     }
 
+    public function taskdata(){
+        $openid = $this->params['openid'];
+        $task_id = $this->params['task_id'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $stat_date = $this->params['stat_date'];
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
+        $permission = json_decode($res_staff['permission'],true);
+        $where = array();
+        if($task_id>0){
+            $where['a.task_id'] = $task_id;
+        }
+        if(in_array($hotel_role_type,array(2,4,6))){
+            $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+        }elseif($hotel_role_type==3){
+            $where['a.residenter_id'] = $res_staff['sysuser_id'];
+        }
+        if($area_id>0){
+            $where['hotel.area_id'] = $area_id;
+        }
+        if($staff_id>0){
+            if($staff_id==99999){
+                $where['a.residenter_id'] = 0;
+            }else{
+                $res_residenter = $m_opsstaff->getInfo(array('id'=>$staff_id));
+                $where['a.residenter_id'] = $res_residenter['sysuser_id'];
+            }
+        }
+        if(empty($stat_date)){
+            $stat_date = date('Y-m');
+        }
+        $start_time = $stat_date.'-01 00:00:00';
+        $end_time = $stat_date.'-31 23:59:59';
+        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        $fileds = 'count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as release_num';
+        $res_task = $m_crmtask_record->getTaskRecords($fileds,$where);
+        $hotel_num = intval($res_task[0]['hotel_num']);
+        $release_num = intval($res_task[0]['release_num']);
+
+        $fileds = 'count(a.id) as num,a.handle_status';
+        $where['a.handle_status'] = array('gt',0);
+        $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'','','a.handle_status');
+        $handle_num = $refuse_num = 0;
+        foreach ($res_task as $v){
+            if($v['handle_status']==1){
+                $refuse_num = intval($v['num']);
+            }
+            if($v['handle_status']==2){
+                $handle_num = intval($v['num']);
+            }
+        }
+        $where['a.status'] = 3;
+        $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
+        $finish_num = intval($res_task[0]['num']);
+
+        $where['a.status'] = 2;
+        $where['a.is_trigger'] = 1;
+        $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
+        $overdue_not_finish_num = intval($res_task[0]['num']);
+
+        $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,
+            'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num);
+        $this->to_back($res_data);
+    }
 }

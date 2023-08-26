@@ -24,7 +24,9 @@ class CrmsaleController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'visit_purpose'=>1001,'visit_type'=>1001,'contact_id'=>1002,
                     'type'=>1001,'content'=>1002,'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,
                     'signout_time'=>1002,'signout_hotel_id'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002,
-                    'sign_progress_id'=>1002,'contractor'=>1002,'mobile'=>1002,'job'=>1002,'gender'=>1002);
+                    'sign_progress_id'=>1002,'contractor'=>1002,'mobile'=>1002,'job'=>1002,'gender'=>1002,'task_data'=>1002,
+                    'hcontent1'=>1002,'hcontent2'=>1002,'hcontent3'=>1002,'hcontent4'=>1002
+                    );
                 $this->is_verify = 1;
                 break;
             case 'recordinfo':
@@ -248,6 +250,10 @@ class CrmsaleController extends CommonController{
         $contact_id = intval($this->params['contact_id']);
         $type = intval($this->params['type']);//类型1保存2提交
         $content = trim($this->params['content']);
+        $hcontent1 = trim($this->params['hcontent1']);
+        $hcontent2 = trim($this->params['hcontent2']);
+        $hcontent3 = trim($this->params['hcontent3']);
+        $hcontent4 = trim($this->params['hcontent4']);
         $images = $this->params['images'];
         $signin_time = $this->params['signin_time'];
         $signin_hotel_id = intval($this->params['signin_hotel_id']);
@@ -261,18 +267,25 @@ class CrmsaleController extends CommonController{
         $mobile = trim($this->params['mobile']);
         $job = trim($this->params['job']);
         $gender = $this->params['gender'];
+        $task_data = $this->params['task_data'];
 
         $m_opstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+
         $status = 1;
         if($type==2){
+            if(!empty($task_data)){
+                unset($this->valid_fields['content']);
+            }else{
+                unset($this->valid_fields['task_data'],$this->valid_fields['hcontent1'],$this->valid_fields['hcontent2'],
+                    $this->valid_fields['hcontent3'],$this->valid_fields['hcontent4']);
+            }
             unset($this->valid_fields['images'],$this->valid_fields['salerecord_id'],$this->valid_fields['contact_id'],
                 $this->valid_fields['sign_progress_id'],$this->valid_fields['contractor'],$this->valid_fields['mobile'],
-                $this->valid_fields['job'],$this->valid_fields['gender']
-            );
+                $this->valid_fields['job'],$this->valid_fields['gender']);
             if($visit_type!=171){
                 unset($this->valid_fields['signin_time'],$this->valid_fields['signin_hotel_id'],
                     $this->valid_fields['signout_time'],$this->valid_fields['signout_hotel_id']);
@@ -288,6 +301,10 @@ class CrmsaleController extends CommonController{
         $add_data = array('ops_staff_id'=>$ops_staff_id,'visit_purpose'=>",$visit_purpose,",'visit_type'=>$visit_type,
             'contact_id'=>$contact_id,'status'=>$status);
         if(!empty($content))    $add_data['content'] = $content;
+        if(!empty($hcontent1))  $add_data['hcontent1'] = $hcontent1;
+        if(!empty($hcontent2))  $add_data['hcontent2'] = $hcontent2;
+        if(!empty($hcontent3))  $add_data['hcontent3'] = $hcontent3;
+        if(!empty($hcontent4))  $add_data['hcontent4'] = $hcontent4;
         if(!empty($images))     $add_data['images'] = $images;
         if(!empty($sign_progress_id)){
             $add_data['sign_progress_id'] = $sign_progress_id;
@@ -380,6 +397,48 @@ class CrmsaleController extends CommonController{
                     $add_data['end_time'] = date('Y-m-d H:i:s');
                 }
                 $m_signhotel->add($add_data);
+            }
+        }
+        if(!empty($task_data)){
+            $json_str = stripslashes(html_entity_decode($task_data));
+            $task_data_arr = json_decode($json_str,true);
+
+            $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
+            $add_task = array();
+            foreach ($task_data_arr as $v){
+                $res_utask = $m_salerecord_task->getInfo(array('salerecord_id'=>$salerecord_id,'task_record_id'=>$v['id']));
+                $content = '';
+                $img = '';
+                if(!empty($v['content'])){
+                    $content = $v['content'];
+                }
+                if(!empty($v['img'])){
+                    $img = $v['img'];
+                }
+                $info = array('salerecord_id'=>$salerecord_id,'task_record_id'=>$v['id'],'handle_status'=>$v['status'],'content'=>$content,'img'=>$img);
+
+                if(empty($res_utask)){
+                    $add_task[]=$info;
+                }else{
+                    $m_salerecord_task->updateData(array('id'=>$res_utask['id']),$info);
+                }
+            }
+            if(!empty($add_task)){
+                $m_salerecord_task->addAll($add_task);
+            }
+            if($status==2){
+                $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+                foreach ($task_data_arr as $v){
+                    if($v['status']>0){
+                        $rdata = array('status'=>1,'handle_status'=>$v['status'],'handle_time'=>date('Y-m-d H:i:s'),'content'=>$v['content']);
+                        if(!empty($v['img'])){
+                            $rdata['img'] = $v['img'];
+                        }
+                    }else{
+                        $rdata = array('status'=>0,'handle_status'=>$v['status'],'handle_time'=>'0000-00-00 00:00:00','content'=>'');
+                    }
+                    $m_crmtask_record->updateData(array('id'=>$v['id']),$rdata);
+                }
             }
         }
 
@@ -514,6 +573,7 @@ class CrmsaleController extends CommonController{
         }
         $res_info['sign_progress_percent'] = $percent;
         $res_info['sign_progress'] = $sign_progress;
+        $res_info['hcontent'] = array($res_info['hcontent1'],$res_info['hcontent2'],$res_info['hcontent3'],$res_info['hcontent4']);
 
         $this->to_back($res_info);
     }

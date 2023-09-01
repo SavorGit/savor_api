@@ -63,10 +63,13 @@ class TaskController extends CommonController{
             $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
             $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
         }else{
+            $start_time = date('Y-m-01 00:00:00');
+            $end_time = date('Y-m-31 23:59:59');
             $residenter_id = $res_staff['sysuser_id'];
             $fileds = 'a.id as task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
             $where = array('a.hotel_id'=>$hotel_id,'a.residenter_id'=>$residenter_id,'a.handle_status'=>array('in','0,1'),
                 'a.audit_handle_status'=>array('in','0,1'));
+            $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
             $task_list = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
         }
@@ -119,7 +122,7 @@ class TaskController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
         $page = intval($this->params['page']);
-        $pagesize = 10;
+        $pagesize = 20;
         $stat_date = $this->params['stat_date'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();

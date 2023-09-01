@@ -667,7 +667,9 @@ class CrminfoController extends CommonController{
         }
         if(!empty($version) && $version>='1.0.15'){
             $is_edit_staff = 0;
-            if(!empty($staff_list) && $staff_list[0]['level']==1){
+            $where = array('merchant.hotel_id'=>$hotel_id,'merchant.status'=>1,'a.status'=>1);
+            $res_onestaff = $m_staff->getMerchantStaff($fields,$where,'a.level asc','0,1','');
+            if(!empty($res_onestaff) && $res_onestaff[0]['level']==1){
                 $is_edit_staff = $m_opsstaff->check_edit_salestaff($res_staff,$hotel_id);
             }
             $res_data = array('datalist'=>$staff_list,'is_edit_staff'=>$is_edit_staff);

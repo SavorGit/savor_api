@@ -23,10 +23,60 @@ class LoginController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('code'=>1001);
                 break;
+            case 'userLogin':
+                $this->is_verify = 1;
+                $this->valid_fields = array('mobile'=>1001,'verify_code'=>1001,'openid'=>1001);
+                break;
         }
         parent::_init_();
     }
-
+    public function userLogin(){
+        $mobile = $this->params['mobile'];
+        $verify_code = trim($this->params['verify_code']);
+        $openid = $this->params['openid'];
+        
+        if(!check_mobile($mobile)){//验证手机格式
+            $this->to_back(92001);
+        }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_OPS').'register:'.$mobile;
+        $cache_verify_code = $redis->get($cache_key);
+        if($verify_code != $cache_verify_code){
+            $this->to_back(92006);
+        }
+        
+        
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_mobilestaff = $m_staff->getInfo(array('mobile'=>$mobile,'status'=>1));
+        if(empty($res_mobilestaff)){
+            $this->to_back(94001);
+        }
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(!empty($res_staff)){
+            $this->to_back(94002);
+        }
+        
+        $staff_data = array('openid'=>$openid,'update_time'=>date('Y-m-d H:i:s'));
+        $m_staff->updateData(array('id'=>$res_mobilestaff['id']),$staff_data);
+        
+        
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>6);
+        $userinfo = $m_user->getOne('id,openid,mobile,role_id', $where);
+        $data = array('openid'=>$openid,'avatarUrl'=>'','nickName'=>'','gender'=>0,'mobile'=>$mobile,
+            'is_wx_auth'=>0,'small_app_id'=>6,'status'=>1);
+        
+        if(empty($userinfo)){
+            $m_user->addInfo($data);
+        }else{
+            $m_user->updateInfo(array('id'=>$userinfo['id']), $data);
+        }
+        $data['staff_id'] = $res_staff['id'];
+        $data['permission_city'] = $m_staff->get_permission_city($res_staff);
+        $this->to_back($data);
+        
+    }
     public function registerLogin(){
         $mobile = $this->params['mobile'];
         $verify_code = trim($this->params['verify_code']);

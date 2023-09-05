@@ -430,12 +430,24 @@ class CrmsaleController extends CommonController{
                 $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
                 foreach ($task_data_arr as $v){
                     if($v['status']>0){
-                        $rdata = array('status'=>1,'handle_status'=>$v['status'],'handle_time'=>date('Y-m-d H:i:s'),'content'=>$v['content']);
-                        if(!empty($v['img'])){
-                            $rdata['img'] = $v['img'];
+                        $img = '';
+                        $location_hotel_id = 0;
+                        $res_tinfo = $m_crmtask_record->getTaskRecords('a.id,task.type',array('a.id'=>$v['id']),'a.id desc','0,1');
+                        if($res_tinfo[0]['type']==11){
+                            if(!empty($images)){
+                                $img = $images;
+                            }
+                            $location_hotel_id = $signout_hotel_id;
+                        }else{
+                            if(!empty($v['img'])){
+                                $img = $v['img'];
+                            }
                         }
+                        $rdata = array('status'=>1,'handle_status'=>$v['status'],'handle_time'=>date('Y-m-d H:i:s'),
+                            'content'=>$v['content'],'img'=>$img,'location_hotel_id'=>$location_hotel_id);
                     }else{
-                        $rdata = array('status'=>0,'handle_status'=>$v['status'],'handle_time'=>'0000-00-00 00:00:00','content'=>'');
+                        $rdata = array('status'=>0,'handle_status'=>$v['status'],'handle_time'=>'0000-00-00 00:00:00',
+                            'content'=>'','img'=>'','location_hotel_id'=>0);
                     }
                     $m_crmtask_record->updateData(array('id'=>$v['id']),$rdata);
                 }
@@ -510,7 +522,7 @@ class CrmsaleController extends CommonController{
         $res_info['contact'] = $contact;
         $res_info['add_time'] = date('m月d日 H:i',strtotime($res_info['add_time']));
 
-        unset($res_info['status'],$res_info['update_time']);
+        unset($res_info['update_time']);
         $hotel_name = '';
         $hotel_id   = 0;
         $htype = 0;
@@ -574,7 +586,13 @@ class CrmsaleController extends CommonController{
         $res_info['sign_progress_percent'] = $percent;
         $res_info['sign_progress'] = $sign_progress;
         $res_info['hcontent'] = array($res_info['hcontent1'],$res_info['hcontent2'],$res_info['hcontent3'],$res_info['hcontent4']);
-
+        $task_list = array();
+        if($res_info['status']==2){
+            $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
+            $fileds = 'a.task_record_id,task.name as task_name,tr.handle_status,a.content,task.desc,task.type,a.img';
+            $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
+        }
+        $res_info['task_list'] = $task_list;
         $this->to_back($res_info);
     }
 
@@ -803,13 +821,26 @@ class CrmsaleController extends CommonController{
                 if($record_info['sign_progress_id']>0){
                     $sign_progress = '签约进度'.$record_info['sign_progress'].'%';
                 }
+                $task_handle_num = $task_nohandle_num = 0;
+                if($record_info['type']==1 && $record_info['status']==2){
+                    $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
+                    $fileds = 'count(a.id) as num,tr.handle_status';
+                    $res_tasks_num = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id),'','','tr.handle_status');
+                    foreach ($res_tasks_num as $tv){
+                        if($tv['handle_status']==2){
+                            $task_handle_num+=$tv['num'];
+                        }else{
+                            $task_nohandle_num+=$tv['num'];
+                        }
+                    }
+                }
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
                     'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],'is_handle_stock_check'=>$record_info['is_handle_stock_check'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],'stock_check_success_status'=>$record_info['stock_check_success_status'],
-                    'sign_progress'=>$sign_progress,
+                    'sign_progress'=>$sign_progress,'task_handle_num'=>$task_handle_num,'task_nohandle_num'=>$task_nohandle_num
                 );
                 $datalist[]=$info;
             }

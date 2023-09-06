@@ -38,7 +38,7 @@ class TaskController extends CommonController{
                 break;
             case 'handleRefuseTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'task_record_id'=>1001,'status'=>1001);
+                $this->valid_fields = array('openid'=>1001,'task_record_id'=>1001,'content'=>1002);
                 break;
         }
         parent::_init_();
@@ -72,13 +72,22 @@ class TaskController extends CommonController{
             $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
             $task_list = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
+            foreach ($task_list as $k=>$v){
+                if($v['handle_status']==1){
+                    $task_list[$k]['handle_status'] = 0;
+                }
+            }
         }
         $is_has_task = 0;
         if(!empty($task_list)){
             $is_has_task = 1;
         }
+        $content_default = array();
+        if($is_salehotel){
+            $content_default = C('CONTENT_DEFAULT');
+        }
         $res_data = array('is_has_task'=>$is_has_task,'task_list'=>$task_list,'is_salehotel'=>$is_salehotel,
-            'content_default'=>C('CONTENT_DEFAULT'));
+            'content_default'=>$content_default);
         $this->to_back($res_data);
     }
 
@@ -106,12 +115,19 @@ class TaskController extends CommonController{
         if(in_array($hotel_role_type,array(2,4))){
             $permission = json_decode($res_staff['permission'],true);
             $area_ids = $permission['hotel_info']['area_ids'];
-            $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0),'a.is_trigger'=>1,
-                'a.status'=>array('in','0,1'));
+            $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0));
+            $where['a.is_trigger'] = 1;
+            $where['a.status'] = array('in','0,1');
             $fileds = "count(a.id) as num";
             $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
             $res_task_num = $m_crmtask_record->getTaskRecords($fileds,$where);
-            $pending_task_num = intval($res_task_num[0]['num']);
+            $pending_task_num1 = intval($res_task_num[0]['num']);
+            unset($where['a.is_trigger'],$where['a.status']);
+            $where['a.handle_status'] = 1;
+            $where['a.audit_handle_status'] = 0;
+            $res_task_num = $m_crmtask_record->getTaskRecords($fileds,$where);
+            $pending_task_num2 = intval($res_task_num[0]['num']);
+            $pending_task_num = $pending_task_num1+$pending_task_num2;
         }
         $this->to_back(array('task_list'=>$task_list,'month_list'=>$month_list,'pending_task_num'=>$pending_task_num));
     }
@@ -132,12 +148,16 @@ class TaskController extends CommonController{
         }
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
-        $where = array();
+        $where = array('a.off_state'=>1,'a.status'=>array('in','0,1,2'));
         if($task_id>0){
             $where['a.task_id'] = $task_id;
         }
         if(in_array($hotel_role_type,array(2,4,6))){
-            $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            if($res_staff['is_operrator']==1){
+                $where['a.residenter_id'] = $res_staff['sysuser_id'];
+            }else{
+                $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+            }
         }elseif($hotel_role_type==3){
             $where['a.residenter_id'] = $res_staff['sysuser_id'];
         }
@@ -171,7 +191,7 @@ class TaskController extends CommonController{
             $gtype_arr = explode(',',$v['gtype']);
             foreach ($gtype_arr as $gv){
                 $garr = explode('-',$gv);
-                if(in_array($garr[2],array(3,4)) && $garr[1]!=3){
+                if($garr[2]==4 && $garr[1]!=3){
                     $is_head = 1;
                     $task_type_name = $all_types[$garr[2]];
                     break;
@@ -207,13 +227,17 @@ class TaskController extends CommonController{
         }
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
-        $where = array('a.hotel_id'=>$hotel_id);
+        $where = array('a.hotel_id'=>$hotel_id,'a.off_state'=>1);
         if($is_overdue==0){
             if($task_id>0){
                 $where['a.task_id'] = $task_id;
             }
             if(in_array($hotel_role_type,array(2,4,6))){
-                $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                if($res_staff['is_operrator']==1){
+                    $where['a.residenter_id'] = $res_staff['sysuser_id'];
+                }else{
+                    $where['hotel.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                }
             }elseif($hotel_role_type==3){
                 $where['a.residenter_id'] = $res_staff['sysuser_id'];
             }
@@ -355,8 +379,8 @@ class TaskController extends CommonController{
             $fileds = "a.residenter_id,a.residenter_name,count(a.id) as num,group_concat(a.id) as tids";
             $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
             foreach ($res_task as $v){
-                $hfileds = "a.id as task_record_id,hotel.name as hotel_name,task.name as task_name,a.remind_content";
-                $task_list = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'','','a.hotel_id');
+                $hfileds = "a.id as task_record_id,hotel.name as hotel_name,task.name as task_name,a.content";
+                $task_list = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'a.hotel_id desc','','');
                 $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
                     'task_num'=>$v['num'],'task_list'=>$task_list);
                 $datalist[]=$dinfo;
@@ -388,7 +412,7 @@ class TaskController extends CommonController{
         }
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $m_crmtask_record->updateData(array('id'=>$task_record_id),$updata);
-
+        $this->to_back(array());
     }
 
 

@@ -281,7 +281,7 @@ class CrmsaleController extends CommonController{
         }
         $status = 1;
         if($type==2){
-            if(!empty($task_data_arr)){
+            if(!empty($hcontent1)){
                 unset($this->valid_fields['content']);
             }else{
                 unset($this->valid_fields['task_data'],$this->valid_fields['hcontent1'],$this->valid_fields['hcontent2'],

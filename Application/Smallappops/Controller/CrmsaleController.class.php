@@ -431,7 +431,7 @@ class CrmsaleController extends CommonController{
             if($status==2){
                 $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
                 foreach ($task_data_arr as $v){
-                    if($v['status']>0){
+                    if($v['status']==2){
                         $img = '';
                         $location_hotel_id = 0;
                         $res_tinfo = $m_crmtask_record->getTaskRecords('a.id,task.type',array('a.id'=>$v['id']),'a.id desc','0,1');
@@ -593,6 +593,10 @@ class CrmsaleController extends CommonController{
             $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
             $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
             $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
+            foreach ($task_list as $k=>$v){
+                $task_list[$k]['content'] = '';
+            }
+
         }
         $res_info['task_list'] = $task_list;
         $this->to_back($res_info);

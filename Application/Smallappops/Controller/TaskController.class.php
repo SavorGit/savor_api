@@ -73,9 +73,6 @@ class TaskController extends CommonController{
             $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
             $task_list = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
             foreach ($task_list as $k=>$v){
-                if($v['handle_status']==1){
-                    $task_list[$k]['handle_status'] = 0;
-                }
                 if($v['type']==11){
                     $task_list[$k]['desc'] = '';
                 }
@@ -151,7 +148,7 @@ class TaskController extends CommonController{
         }
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
-        $where = array('a.off_state'=>1,'a.status'=>array('in','0,1,2'));
+        $where = array('a.off_state'=>1,'a.status'=>array('in','0,1'));
         if($task_id>0){
             $where['a.task_id'] = $task_id;
         }
@@ -267,7 +264,7 @@ class TaskController extends CommonController{
         }
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
-        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.remind_content,a.handle_time,a.finish_time,task.type,task.desc';
+        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc';
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
         $unhandle_list = $handle_list = array();
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
@@ -281,6 +278,9 @@ class TaskController extends CommonController{
             }
             if($v['finish_time']=='0000-00-00 00:00:00'){
                 $v['finish_time'] = '';
+            }
+            if($v['audit_time']=='0000-00-00 00:00:00'){
+                $v['audit_time'] = '';
             }
             $v['status_str'] = $status_str;
             if($v['status']==0){

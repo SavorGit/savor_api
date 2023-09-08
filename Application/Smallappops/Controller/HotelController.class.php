@@ -115,7 +115,7 @@ class HotelController extends CommonController{
             $this->to_back(94001);
         }
         if($source==2){
-            $where = array('a.state'=>1,'a.flag'=>0);
+            $where = array('a.state'=>array('in','1,4'),'a.flag'=>0);
         }else{
             $permission = json_decode($res_staff['permission'],true);
             $hotel_types = C('HEART_HOTEL_BOX_TYPE');
@@ -710,8 +710,12 @@ class HotelController extends CommonController{
         $m_hotel = new \Common\Model\HotelModel();
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps,a.htype";
         $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0,'a.gps'=>array('neq',''));
-        $test_hotel_ids = C('TEST_HOTEL');
-        $where['a.id'] = array('not in',"$test_hotel_ids");
+
+        if(!in_array($openid,array('oreqO5NXrcBFni6VVkHY_aBioa70','oreqO5JaMORW7oCcXRpwfTBIy9XE'))){
+            $test_hotel_ids = C('TEST_HOTEL');
+            $where['a.id'] = array('not in',"$test_hotel_ids");
+        }
+
         $hotel_list = $m_hotel->alias('a')
             ->join('savor_hotel_ext ext on a.id=ext.hotel_id','left')
             ->join('savor_media media on ext.hotel_cover_media_id=media.id','left')

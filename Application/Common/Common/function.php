@@ -590,14 +590,57 @@ function viewTimes($strtime){
     }
     return $view_time;
 }
-function getgeoByloa($lat,$lon){
-    $ak = C('BAIDU_SAPP_OPS_KEY');
-    $url = "https://api.map.baidu.com/reverse_geocoding/v3/?ak=$ak&output=json&coordtype=wgs84ll&location=$lat,$lon";
-    $result = file_get_contents($url);
-    $re = json_decode($result,true);
-    if($re && $re['status'] == 0){
-        return $re['result'];
+function getgeoByloa($lat,$lon,$source=1){
+    $res = array();
+    if($source==1){
+        $ak = C('BAIDU_SAPP_OPS_KEY');
+        $url = "https://api.map.baidu.com/reverse_geocoding/v3/?ak=$ak&output=json&coordtype=wgs84ll&location=$lat,$lon";
+        $result = file_get_contents($url);
+        $re = json_decode($result,true);
+        if($re && $re['status'] == 0){
+            $res = $re['result'];
+        }
+    }elseif($source==2){
+        $key = C('TIAN_DITU_KEY');
+        $url = "https://api.tianditu.gov.cn/geocoder?postStr={'lon':$lon,'lat':$lat,'ver':1}&type=geocode&tk=$key";
+        $curl = new \Common\Lib\Curl();
+        $result = '';
+        $curl::get($url,$result);
+        if(!empty($result)){
+            $res = json_decode($result,true);
+        }
     }
+    return $res;
+}
+
+function getLocationByIp(){
+    $ip = get_client_ipaddr();
+    $host = "https://ipcity.market.alicloudapi.com";
+    $path = "/ip/city/query";
+    $method = "GET";
+    $ip_key = C('IP_LOCATION_KEY');
+    $appcode = $ip_key['AppCode'];
+    $headers = array();
+    array_push($headers, "Authorization:APPCODE " . $appcode);
+    $querys = "ip=$ip&coordsys=coordsys";
+    $bodys = "";
+    $url = $host . $path . "?" . $querys;
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_FAILONERROR, false);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+    if(1 == strpos("$".$host, "https://")){
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    }
+    $res_location = curl_exec($curl);
+    curl_close($curl);
+    $res_location = json_decode($res_location,true);
+    return $res_location;
 }
 
 function getgeoByTc($lat,$lon,$type=1){

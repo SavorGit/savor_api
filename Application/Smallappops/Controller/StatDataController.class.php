@@ -863,8 +863,9 @@ class StatDataController extends CommonController{
         $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
         $overdue_not_finish_num = intval($res_task[0]['num']);
 
+        $desc = C('TASKDATA_DESC');
         $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,
-            'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num);
+            'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num,'desc'=>$desc);
         $this->to_back($res_data);
     }
 }

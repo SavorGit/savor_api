@@ -494,9 +494,13 @@ class CrminfoController extends CommonController{
             'addr'=>$addr,'contractor'=>$contractor,'mobile'=>$mobile,'state'=>4,'type'=>2,'htype'=>20,'no_work_type'=>21
         );
         if($longitude>0 && $latitude>0 ) {
-            $bd_lnglat = getgeoByTc($latitude, $longitude,3);
-            if(!empty($bd_lnglat[0]['x']) && !empty($bd_lnglat[0]['y'])){
-                $data['gps'] = "{$bd_lnglat[0]['x']},{$bd_lnglat[0]['y']}";
+//            $bd_lnglat = getgeoByTc($latitude, $longitude,3);
+//            if(!empty($bd_lnglat[0]['x']) && !empty($bd_lnglat[0]['y'])){
+//                $data['gps'] = "{$bd_lnglat[0]['x']},{$bd_lnglat[0]['y']}";
+//            }
+            $bd_lnglat = gcj02ToBd09($longitude, $latitude);
+            if(!empty($bd_lnglat['longitude']) && !empty($bd_lnglat['latitude'])){
+                $data['gps'] = "{$bd_lnglat['longitude']},{$bd_lnglat['latitude']}";
             }
         }
 

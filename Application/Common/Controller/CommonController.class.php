@@ -182,7 +182,7 @@ class CommonController extends Controller {
             if(!empty($_SERVER['HTTP_SERIAL_NUMBER'])){
                 $data['serial_number'] = $_SERVER['HTTP_SERIAL_NUMBER'];
             }
-            $ip = get_client_ip();
+            $ip = get_client_ipaddr();
             $data['user_agent'] = $user_agent;
             $data['ip'] = $ip;
             $m_accesslog = new \Common\Model\Smallapp\AccesslogModel();

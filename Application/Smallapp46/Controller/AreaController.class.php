@@ -34,13 +34,21 @@ class AreaController extends CommonController{
         $latitude = $this->params['latitude'];  //纬度
         $longitude= $this->params['longitude']; //经度
 
-        $ret = getgeoByloa($latitude,$longitude);
+        $city_name = '';
+        $res_lonlat = getgeoByloa($latitude,$longitude,2);
+        if(!empty($res_lonlat['result']['addressComponent']['city'])){
+            $city_name = $res_lonlat['result']['addressComponent']['city'];
+        }else{
+            $res_location = getLocationByIp();
+            if(!empty($res_location['data']['result']['city'])){
+                $city_name = $res_location['data']['result']['city'];
+            }
+        }
         $m_area = new \Common\Model\AreaModel();
-        if(empty($ret)){
+        if(empty($city_name)){
             $area_id = 1;
             $region_name = '北京';
         }else {
-            $city_name = $ret['addressComponent']['city'];
             $fields = "id,region_name";
             $where['region_name'] = $city_name;
             $where['is_in_hotel'] = 1;
@@ -53,15 +61,11 @@ class AreaController extends CommonController{
                 $area_id = $city_info['id'];
                 $region_name = str_replace('市', '', $city_info['region_name']);
             }
-
         }
         $fields = "id,region_name";
-        $where = [];
-        $where['is_in_hotel'] = 1;
-        $where['is_valid']    = 1;
+        $where = array('is_in_hotel'=>1,'is_valid'=>1);
         $city_list = $m_area->field($fields)->where($where)->order('id asc')->select();
         $cityindex = 0;
-        //sprint_r($city_list);exit;
         foreach($city_list as $key=>$v){
             if($v['id'] == $area_id){
                 $cityindex = $key;

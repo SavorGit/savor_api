@@ -304,11 +304,32 @@ class CrmsaleController extends CommonController{
         $ops_staff_id = $res_staff['id'];
         $add_data = array('ops_staff_id'=>$ops_staff_id,'visit_purpose'=>",$visit_purpose,",'visit_type'=>$visit_type,
             'contact_id'=>$contact_id,'status'=>$status);
-        if(!empty($content))    $add_data['content'] = $content;
-        if(!empty($hcontent1))  $add_data['hcontent1'] = $hcontent1;
-        if(!empty($hcontent2))  $add_data['hcontent2'] = $hcontent2;
-        if(!empty($hcontent3))  $add_data['hcontent3'] = $hcontent3;
-        if(!empty($hcontent4))  $add_data['hcontent4'] = $hcontent4;
+        $data_content='';
+        $data_hcontent1='';
+        $data_hcontent2='';
+        $data_hcontent3='';
+        $data_hcontent4='';
+        if(!empty($content)){
+            $data_content = $content;
+        }
+        $add_data['content'] = $data_content;
+        if(!empty($hcontent1)){
+            $data_hcontent1 = $hcontent1;
+        }
+        $add_data['hcontent1'] = $data_hcontent1;
+        if(!empty($hcontent2)){
+            $data_hcontent2 = $hcontent2;
+        }
+        $add_data['hcontent2'] = $data_hcontent2;
+        if(!empty($hcontent3)){
+            $data_hcontent3 = $hcontent3;
+        }
+        $add_data['hcontent3'] = $data_hcontent3;
+        if(!empty($hcontent4)){
+            $data_hcontent4 = $hcontent4;
+        }
+        $add_data['hcontent4'] = $data_hcontent4;
+
         if(!empty($images))     $add_data['images'] = $images;
         if(!empty($sign_progress_id)){
             $add_data['sign_progress_id'] = $sign_progress_id;

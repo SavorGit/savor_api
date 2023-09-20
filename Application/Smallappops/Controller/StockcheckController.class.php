@@ -134,7 +134,7 @@ class StockcheckController extends CommonController{
         $idcodes = array();
         $other_idcodes = array();
         if($hotel_id>0){
-            $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'a.dstatus'=>1);
+            $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'stock.io_type'=>22,'a.dstatus'=>1);
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,GROUP_CONCAT(a.type) as all_type';
             $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');
             foreach ($res_allidcodes as $v){
@@ -232,7 +232,7 @@ class StockcheckController extends CommonController{
             $now_other_idcodes = explode(',',$other_idcodes);
             $stock_check_error = 2;
         }
-        $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
+        $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'stock.io_type'=>22,'a.dstatus'=>1);
         $fileds = 'a.idcode,goods.id as goods_id,GROUP_CONCAT(a.type) as all_type';
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $res_allidcodes = $m_stock_record->getStockRecordList($fileds,$where,'','','a.idcode');

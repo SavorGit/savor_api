@@ -689,12 +689,20 @@ class HotelController extends CommonController{
         $openid = $this->params['openid'];
 
         $nearby_m = 200;
-        $ret = getgeoByloa($latitude,$longitude);
+        $city_name = '';
+        $res_lonlat = getgeoByloa($latitude,$longitude,2);
+        if(!empty($res_lonlat['result']['addressComponent']['city'])){
+            $city_name = $res_lonlat['result']['addressComponent']['city'];
+        }else{
+            $res_location = getLocationByIp();
+            if(!empty($res_location['data']['result']['city'])){
+                $city_name = $res_location['data']['result']['city'];
+            }
+        }
         $m_area = new \Common\Model\AreaModel();
-        if(empty($ret)){
+        if(empty($city_name)){
             $area_id = 1;
         }else {
-            $city_name = $ret['addressComponent']['city'];
             $fields = "id,region_name";
             $where['region_name'] = $city_name;
             $where['is_in_hotel'] = 1;
@@ -711,7 +719,7 @@ class HotelController extends CommonController{
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps,a.htype";
         $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0,'a.gps'=>array('neq',''));
 
-        if(!in_array($openid,array('oreqO5NXrcBFni6VVkHY_aBioa70','oreqO5JaMORW7oCcXRpwfTBIy9XE'))){
+        if(!in_array($openid,array('oreqO5NXrcBFni6VVkHY_aBioa70','oreqO5JaMORW7oCcXRpwfTBIy9XE','oreqO5C0Sg8NTxIMa8Ez3oVSADuo'))){
             $test_hotel_ids = C('TEST_HOTEL');
             $where['a.id'] = array('not in',"$test_hotel_ids");
         }
@@ -722,13 +730,13 @@ class HotelController extends CommonController{
             ->field($fields)->where($where)->select();
         $nearby_data = array();
         if($longitude>0 && $latitude>0){
-            $bd_lnglat = getgeoByTc($latitude, $longitude);
+//            $bd_lnglat = getgeoByTc($latitude, $longitude);
+            $bd_lnglat = gpsToBaidu($longitude, $latitude);
+            $latitude = $bd_lnglat['latitude'];
+            $longitude = $bd_lnglat['longitude'];
             foreach($hotel_list as $k=>$v){
                 $v['dis'] = '';
                 if($v['gps']!='' && $longitude>0 && $latitude>0){
-                    $latitude = $bd_lnglat[0]['y'];
-                    $longitude = $bd_lnglat[0]['x'];
-
                     $gps_arr = explode(',',$v['gps']);
                     $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
                     $v['dis_com'] = $dis;

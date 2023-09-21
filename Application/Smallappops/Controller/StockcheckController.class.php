@@ -192,9 +192,12 @@ class StockcheckController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $bd_lnglat = getgeoByTc($latitude, $longitude);
-        $latitude = $bd_lnglat[0]['y'];
-        $longitude = $bd_lnglat[0]['x'];
+//        $bd_lnglat = getgeoByTc($latitude, $longitude);
+//        $latitude = $bd_lnglat[0]['y'];
+//        $longitude = $bd_lnglat[0]['x'];
+        $bd_lnglat = gpsToBaidu($longitude, $latitude);
+        $latitude = $bd_lnglat['latitude'];
+        $longitude = $bd_lnglat['longitude'];
 
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getOneById('id,gps',$hotel_id);

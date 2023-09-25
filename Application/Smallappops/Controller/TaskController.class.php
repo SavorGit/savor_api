@@ -10,7 +10,7 @@ class TaskController extends CommonController{
         switch(ACTION_NAME) {
             case 'getSalerecordTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'salerecord_id'=>1002);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'visit_purpose_id'=>1002,'salerecord_id'=>1002,'version'=>1002);
                 break;
             case 'filterconditions':
                 $this->is_verify = 1;
@@ -47,8 +47,10 @@ class TaskController extends CommonController{
     public function getSalerecordTask(){
         $openid = $this->params['openid'];
         $hotel_id = intval($this->params['hotel_id']);
+        $visit_purpose_id = intval($this->params['visit_purpose_id']);
         $salerecord_id = intval($this->params['salerecord_id']);
-
+        $version       = $this->params['version'];
+        //$version>='1.0.15'
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -83,8 +85,16 @@ class TaskController extends CommonController{
             $is_has_task = 1;
         }
         $content_default = array();
+        if($version<'1.0.20'){
+            $is_salehotel = 0;
+        }
         if($is_salehotel){
-            $content_default = C('CONTENT_DEFAULT');
+            if($visit_purpose_id==182){
+                $content_default = C('CONTENT_DEFAULT');
+            }else if($visit_purpose_id==183){
+                $content_default = C('CONTENT_DEFAULT_RESIDENT');
+            }
+            
         }
         $res_data = array('is_has_task'=>$is_has_task,'task_list'=>$task_list,'is_salehotel'=>$is_salehotel,
             'content_default'=>$content_default);
@@ -264,7 +274,7 @@ class TaskController extends CommonController{
         }
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
-        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc';
+        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc';
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
         $unhandle_list = $handle_list = array();
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');

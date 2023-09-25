@@ -283,6 +283,10 @@ class CrmsaleController extends CommonController{
         if($type==2){
             if(!empty($hcontent1)){
                 unset($this->valid_fields['content']);
+                $visit_purpose_arr = explode(',', $visit_purpose);
+                if(in_array(183, $visit_purpose_arr)){
+                    unset($this->valid_fields['hcontent4']);
+                }
             }else{
                 unset($this->valid_fields['task_data'],$this->valid_fields['hcontent1'],$this->valid_fields['hcontent2'],
                     $this->valid_fields['hcontent3'],$this->valid_fields['hcontent4']);
@@ -832,7 +836,11 @@ class CrmsaleController extends CommonController{
                 }
                 $hcontent = array();
                 if(!empty($record_info['hcontent1'])){
-                    $hcontent = array($record_info['hcontent1'],$record_info['hcontent2'],$record_info['hcontent3'],$record_info['hcontent4']);
+                    $hcontent = array(
+                        text_substr($record_info['hcontent1'], 50,'...'),
+                        text_substr($record_info['hcontent2'], 50,'...'),
+                        text_substr($record_info['hcontent3'], 50,'...'),
+                        text_substr($record_info['hcontent4'], 50,'...'));
                 }
                 if(in_array($type,array(3,4)) && !in_array($salerecord_id,$unread_ids)){
                     $res_data = $m_salerecord_remind->getALLDataList('id,read_status',array('remind_user_id'=>$ops_staff_id,'salerecord_id'=>$record_info['id'],'status'=>1),'id desc','0,1','');

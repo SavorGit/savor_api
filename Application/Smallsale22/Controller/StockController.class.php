@@ -313,7 +313,7 @@ class StockController extends CommonController{
 
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $where = array('idcode'=>$idcode,'dstatus'=>1);
-        $res_stock_record_type = $m_stock_record->getALLDataList('type,stock_detail_id',$where,'id desc','0,1','');
+        $res_stock_record_type = $m_stock_record->getALLDataList('goods_id,type,stock_detail_id',$where,'id desc','0,1','');
         if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']>3){
             $type_error_codes = array('4'=>93088,'5'=>93089,'6'=>93095,'7'=>93094);
             if(in_array($io_type,array(12,13))){
@@ -322,6 +322,10 @@ class StockController extends CommonController{
             if(isset($type_error_codes[$res_stock_record_type[0]['type']])){
                 $this->to_back($type_error_codes[$res_stock_record_type[0]['type']]);
             }
+        }
+
+        if(!empty($res_stock_record_type[0]['goods_id']) && $res_stock_record_type[0]['goods_id']!=$goods_id){
+            $this->to_back(93083);
         }
 
         $where = array('idcode'=>$idcode,'type'=>1,'dstatus'=>1);
@@ -383,7 +387,13 @@ class StockController extends CommonController{
                 $this->to_back(93079);
             }
         }elseif($type==20){
-            if($unit_id!=$now_unit_id){
+            $res_nowunit = $m_unit->getInfo(array('id'=>$now_unit_id));
+            if($res_nowunit['type']==1 && $res_nowunit['convert_type']==1){
+                $now_unit_type = 2;
+            }else{
+                $now_unit_type = 1;
+            }
+            if($unit_type!=$now_unit_type){
                 $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                 $res_uppack = $m_stock_record->getInfo($where);
                 if(empty($res_uppack)){

@@ -117,6 +117,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
                 break;
+            case 'updateViewWinePrice':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -142,7 +146,7 @@ class UserController extends CommonController{
         $mtype = 0;
         if(!empty($userinfo['openid'])){
             $m_staff = new \Common\Model\Integral\StaffModel();
-            $fields = 'mt.hotel_id,mt.type,mt.mtype,mt.service_model_id,a.level';
+            $fields = 'mt.hotel_id,mt.type,mt.mtype,mt.service_model_id,a.level,a.is_view_wine_price';
             $rts = $m_staff->alias('a')
                            ->field($fields)
                            ->join('savor_integral_merchant mt on mt.id=a.merchant_id','left')
@@ -151,6 +155,16 @@ class UserController extends CommonController{
             if(!empty($rts)){
                 $hotel_id = $rts['hotel_id'];
                 $userinfo['role_type'] = $rts['level'];
+                $now_time =  time();
+                
+                $end_time = strtotime('2023-10-31 23:59:59');
+                $userinfo['is_view_wine_price'] = $rts['is_view_wine_price'];
+                if($now_time>$end_time){
+                    $userinfo['is_view_wine_price'] = 1;
+                }
+                
+                $userinfo['pop_wine_price'] = array('title'=>'调价通知','content'=>"        亲爱的小热点合作餐厅，近期我们的价格监测部门注意到以下酒水的市场价格变动，为提高餐厅酒水价格竞争力，提升酒水销量，我们将对以下产品做出如下价格调整，其他产品保持不变。\n本价格执行时间:2023年10月8日");
+                
                 $code_type = $rts['type'];
                 $service_model_id = $rts['service_model_id'];
                 $mtype = $rts['mtype'];
@@ -1479,6 +1493,26 @@ class UserController extends CommonController{
             $m_user->updateInfo($where, array('mobile'=>$encryptedData['phoneNumber']));
         }
         $this->to_back($encryptedData);
+    }
+    public function updateViewWinePrice(){
+        $openid = $this->params['openid'];
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $res_staff = $m_staff->getMerchantStaff('a.openid,a.level,merchant.type,merchant.hotel_id',$where);
+        
+        if(empty($res_staff) || $res_staff[0]['level']!=1 ){
+            $this->to_back(12002);
+        }
+        
+        $map = [];
+        $data = [];
+        $map['openid'] = $openid;
+        $map['status'] = 1;
+        $data['is_view_wine_price'] = 1;
+        $rt = $m_staff->updateData($map, $data);
+        if($rt){
+            $this->to_back(10000);
+        }
     }
     
 

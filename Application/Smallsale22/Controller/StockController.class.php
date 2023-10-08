@@ -1356,6 +1356,8 @@ class StockController extends CommonController{
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
                         $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
+
+                        sendTopicMessage($record_id,80);
                     }
                 }
             }

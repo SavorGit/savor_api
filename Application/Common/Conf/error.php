@@ -523,6 +523,7 @@ return array(
         '93226'=>'smallappsale_task_tastewine_not_use_openbottle',
         '93227'=>'smallappsale_task_tastewine_use_tastewine_over',
         '93228'=>'smallappsale_add_customer_mobile_repeat',
+        '93229'=>'smallappsale_exchange_spacetime_error',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

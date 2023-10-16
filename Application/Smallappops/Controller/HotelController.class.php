@@ -476,7 +476,7 @@ class HotelController extends CommonController{
                     $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
                     $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
                     $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','');
+                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
                     foreach ($res_data as $v){
                         $gstock_num = 0;
                         if(isset($stock_goods[$v['finance_goods_id']])){
@@ -574,7 +574,7 @@ class HotelController extends CommonController{
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
                 $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
                 $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','');
+                $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
                 $oss_host = get_oss_host();
                 foreach ($res_data as $v){
                     $img_url = '';

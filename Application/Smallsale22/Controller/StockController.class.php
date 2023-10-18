@@ -1308,8 +1308,23 @@ class StockController extends CommonController{
         }
         $goods_ids = array();
         $all_idcodes = explode(',',$goods_codes);
+        if(count($all_idcodes)>6){
+            $this->to_back(93109);
+        }
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $fileds = 'a.idcode,stock.hotel_id,a.add_time';
+            $rwhere = array('a.idcode'=>$all_idcodes[0],'a.dstatus'=>1);
+            $res_records = $m_stock_record->getStockRecordList($fileds,$rwhere,'a.id desc','0,1');
+            $hotel_id = intval($res_records[0]['hotel_id']);
+            $m_hotelblacklist = new \Common\Model\Finance\HotelBlacklistModel();
+            $res_blacklist = $m_hotelblacklist->getInfo(array('hotel_id'=>$hotel_id));
+            $is_black = 0;
+            if(!empty($res_blacklist)){
+                $is_black = 1;
+            }
+
+            $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_sale = new \Common\Model\Finance\SaleModel();
             $batch_no = getMillisecond();
             foreach ($all_idcodes as $v){
@@ -1326,6 +1341,12 @@ class StockController extends CommonController{
                                 $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
                                     'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'wo_time'=>date('Y-m-d H:i:s')
                                 );
+                                if($is_black==0){
+                                    $up_data['wo_status'] = 2;
+                                    $up_data['recycle_status'] = 2;
+                                    $up_data['update_time'] = date('Y-m-d H:i:s');
+                                    $up_data['recycle_time'] = date('Y-m-d H:i:s');
+                                }
                                 $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
                                 break;
                             case 3:
@@ -1352,13 +1373,22 @@ class StockController extends CommonController{
                         $add_data['wo_num'] = 1;
                         $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
+                        if($is_black==0){
+                            $add_data['wo_status'] = 2;
+                            $add_data['recycle_status'] = 2;
+                            $add_data['update_time'] = date('Y-m-d H:i:s');
+                            $add_data['recycle_time'] = date('Y-m-d H:i:s');
+                        }
                         $record_id = $m_stock_record->add($add_data);
 
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
                         $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
 
-                        sendTopicMessage($record_id,80);
+                        if($is_black==0){
+                            $stock_record_info['hotel_id']=$hotel_id;
+                            $m_userintegral_record->finishWriteoff($stock_record_info);
+                        }
                     }
                 }
             }

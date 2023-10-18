@@ -527,6 +527,7 @@ return array(
     'smallappsale_finance_create_data_error'=>'所选时间段内无数据,无法生成',
     'smallappsale_finance_threshold_error'=>'暂时无法兑换，请联系热点工作人员',
     'smallappsale_exchange_spacetime_error'=>'一分钟内只能兑换一次',
+    'smallappsale_finance_writeoff_bottle_error'=>'单次核销不能超过6瓶',
 
 
 

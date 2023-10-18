@@ -70,7 +70,7 @@ class TaskController extends CommonController{
             $residenter_id = $res_staff['sysuser_id'];
             $fileds = 'a.id as task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img,task.is_upimg,task.is_check_location';
             $where = array('a.hotel_id'=>$hotel_id,'a.residenter_id'=>$residenter_id,'a.handle_status'=>array('in','0,1'),
-                'a.audit_handle_status'=>array('in','0,1'));
+                'a.audit_handle_status'=>array('in','0,1'),'a.status'=>array('in','0,1'));
             $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
             $task_list = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');

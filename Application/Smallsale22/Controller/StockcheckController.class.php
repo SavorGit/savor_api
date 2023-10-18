@@ -129,7 +129,7 @@ class StockcheckController extends CommonController{
             foreach ($res_wo as $v){
                 $writeoff_idcodes[]=$v['idcode'];
             }
-            $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
+            $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'stock.io_type'=>22,'a.dstatus'=>1);
             if(!empty($writeoff_idcodes)){
                 $where['a.idcode'] = array('not in',$writeoff_idcodes);
             }
@@ -251,7 +251,7 @@ class StockcheckController extends CommonController{
         foreach ($res_wo as $v){
             $writeoff_idcodes[]=$v['idcode'];
         }
-        $where = array('stock.hotel_id'=>$hotel_id,'a.dstatus'=>1);
+        $where = array('stock.hotel_id'=>$hotel_id,'stock.type'=>20,'stock.io_type'=>22,'a.dstatus'=>1);
         if(!empty($writeoff_idcodes)){
             $where['a.idcode'] = array('not in',$writeoff_idcodes);
         }

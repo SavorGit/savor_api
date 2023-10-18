@@ -83,11 +83,17 @@ class WithdrawController extends CommonController{
             $is_inlist = 1;
         }
 
-        $exchange_num = 10;
+        $exchange_num = 5;
         $sale_key = C('SAPP_SALE');
         $cache_key = $sale_key.'exchange:'.'openid'.$openid.date('Ymd');
+        $space_cache_key = $sale_key.'exchange:spacetime:'.$openid;
         $redis  =  \Common\Lib\SavorRedis::getInstance();
         $redis->select(14);
+        $res_spacecache = $redis->get($space_cache_key);
+        if(!empty($res_spacecache)){
+            $this->to_back(93229);
+        }
+
         $res_cache = $redis->get($cache_key);
         if(!empty($res_cache)){
             $order_exchange = json_decode($res_cache,true);
@@ -151,7 +157,9 @@ class WithdrawController extends CommonController{
         $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral));
 
         $order_exchange[] = array($order_id=>date('Y-m-d H:i:s'));
+        $redis->select(14);
         $redis->set($cache_key,json_encode($order_exchange),86400);
+        $redis->set($space_cache_key,$order_id,60);
 
         if($res_goods['is_audit']==0){
             $smallapp_config = C('SMALLAPP_SALE_CONFIG');
@@ -170,6 +178,9 @@ class WithdrawController extends CommonController{
             $trade_info = array('trade_no'=>$order_id,'money'=>$money,'open_id'=>$openid);
             $m_wxpay = new \Payment\Model\WxpayModel();
             $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+            $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'wxorder_id'=>$order_id,'pay_result'=>json_encode($res));
+            $m_paylog->add($pay_data);
             if($res['code']==10000){
                 $m_order->updateData(array('id'=>$order_id),array('status'=>21));
             }else{

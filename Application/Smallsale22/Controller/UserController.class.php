@@ -868,7 +868,7 @@ class UserController extends CommonController{
         }
         $all_nums = $page * $pagesize;
         $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $fields = 'hotel_id,room_name,integral,money,content,type,integral_time,goods_id,source';
+        $fields = 'id,hotel_id,room_name,integral,money,content,type,integral_time,goods_id,source';
         $where = array('openid'=>$openid,'status'=>1);
         if($type){
             $where['type'] = $type;
@@ -884,7 +884,7 @@ class UserController extends CommonController{
         $m_staff = new \Common\Model\Integral\StaffModel();
         foreach ($res_record['list'] as $v){
             $add_time = date('Y-m-d',strtotime($v['integral_time']));
-            $info = array('room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time,'type'=>$v['type']);
+            $info = array('id'=>$v['id'],'room_name'=>$v['room_name'],'integral'=>$v['integral'],'add_time'=>$add_time,'type'=>$v['type']);
             switch ($v['type']){
                 case 1:
                     $content = $all_types[1]."{$v['content']}小时";

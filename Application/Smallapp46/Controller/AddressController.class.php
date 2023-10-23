@@ -140,6 +140,7 @@ class AddressController extends CommonController{
         $res_area = $m_area->find($area_id);
         $res_county = $m_area->find($county_id);
         $detail_address = $res_area['region_name'].$res_county['region_name'].$address;
+        /*
         $res_location = getGDgeocodeByAddress($detail_address);
         if(empty($res_location)){
             $res_location = getGDgeocodeByAddress($detail_address);
@@ -148,6 +149,7 @@ class AddressController extends CommonController{
             $data['lng'] = $res_location['lng'];
             $data['lat'] = $res_location['lat'];
         }
+        */
 
         $m_address = new \Common\Model\Smallapp\AddressModel();
         $address_id = $m_address->add($data);
@@ -229,6 +231,7 @@ class AddressController extends CommonController{
         $res_area = $m_area->find($res_address['area_id']);
         $res_county = $m_area->find($res_address['county_id']);
         $detail_address = $res_area['region_name'].$res_county['region_name'].$res_address['address'];
+        /*
         $res_location = getGDgeocodeByAddress($detail_address);
         if(empty($res_location)){
             $res_location = getGDgeocodeByAddress($detail_address);
@@ -237,6 +240,7 @@ class AddressController extends CommonController{
             $data['lng'] = $res_location['lng'];
             $data['lat'] = $res_location['lat'];
         }
+        */
 
         $m_address->updateData(array('id'=>$address_id),$data);
         $this->to_back(array());

@@ -424,8 +424,21 @@ class BasicdataController extends CommonController{
             $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
             $m_sale = new \Common\Model\Finance\SaleModel();
             $res_saledata = $m_sale->getStaticSaleData($static_area_id,$static_maintainer_id,0,$start_time,$end_time);
+
+            $gfields = 'count(DISTINCT goods.series_id) as groupby_series_num,sum(a.num) as groupby_num,sum(a.settlement_price) as groupby_money';
+            $gwhere = array('a.type'=>4,'a.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+            if($static_area_id){
+                $where['a.area_id'] = $static_area_id;
+            }
+            if($static_maintainer_id){
+                $where['a.maintainer_id'] = $static_maintainer_id;
+            }
+            $res_groupdata = $m_sale->getGroupSaleDatas($gfields,$gwhere);
+
             $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
-                'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money']);
+                'sale_money'=>$res_saledata['sale_money'],'groupby_series_num'=>intval($res_groupdata[0]['groupby_series_num']),
+                'groupby_num'=>intval($res_groupdata[0]['groupby_num']),'groupby_money'=>intval($res_groupdata[0]['groupby_money']),
+                'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money']);
             $res_data['desc'] = array();
         }
         $this->to_back($res_data);

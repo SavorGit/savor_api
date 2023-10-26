@@ -39,7 +39,7 @@ class StatDataController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'start_date'=>1001,'end_date'=>1001,'type'=>1001);
                 break;
             case 'taskdata':
-                $this->valid_fields = array('openid'=>1001,'task_id'=>1002,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002);
+                $this->valid_fields = array('openid'=>1001,'task_id'=>1002,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002,'version'=>1002);
                 break;
         }
         parent::_init_();
@@ -807,6 +807,7 @@ class StatDataController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
         $stat_date = $this->params['stat_date'];
+        $version = $this->params['version'];
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -841,6 +842,10 @@ class StatDataController extends CommonController{
         $start_time = $stat_date.'-01 00:00:00';
         $end_time = $stat_date.'-31 23:59:59';
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        if($version>='1.0.21'){
+            $where['ext.is_salehotel'] = 1;
+            $where['a.off_state'] = 1;
+        }
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $fileds = 'count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as release_num';
@@ -864,10 +869,13 @@ class StatDataController extends CommonController{
         $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
         $finish_num = intval($res_task[0]['num']);
 
+
+        $where['a.add_time'] = array('elt',$end_time);
         $where['a.status'] = 2;
         $where['a.is_trigger'] = 1;
-        $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
-        $overdue_not_finish_num = intval($res_task[0]['num']);
+        $where['a.finish_task_record_id'] = 0;
+        $res_task = $m_crmtask_record->getTaskRecords('max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
+        $overdue_not_finish_num = count($res_task);
 
         $desc = C('TASKDATA_DESC');
         $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,

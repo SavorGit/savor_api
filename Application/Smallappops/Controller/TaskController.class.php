@@ -626,27 +626,33 @@ class TaskController extends CommonController{
             $where['a.status'] = 2;
             $where['a.is_trigger'] = 1;
             $where['a.finish_task_record_id'] = 0;
-
-            $fileds = "a.residenter_id,a.residenter_name,count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as num,group_concat(a.id) as tids";
-            $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
-            $all_types = C('CRM_TASK_TYPES');
-            foreach ($res_task as $v){
-                $hfileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(task.type) as types";
-                $res_hoteltask = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'','','a.hotel_id');
-                $hotel_list = array();
-                foreach ($res_hoteltask as $tv){
-                    $types_arr = explode(',',$tv['types']);
-                    $task_type_name = '';
-                    if(in_array(3,$types_arr)){
-                        $task_type_name = $all_types[3];
-                    }elseif(in_array(4,$types_arr)){
-                        $task_type_name = $all_types[4];
-                    }
-                    $hotel_list[]=array('hotel_id'=>$tv['hotel_id'],'hotel_name'=>$tv['hotel_name'],'hotel_task_num'=>$tv['num'],'task_type_name'=>$task_type_name);
+            $res_taskids = $m_crmtask_record->getTaskRecords('a.hotel_id,a.task_id,GROUP_CONCAT(a.id) as ids,max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
+            if(!empty($res_taskids)){
+                $all_ids = array();
+                foreach ($res_taskids as $v){
+                    $all_ids[]=$v['last_id'];
                 }
-                $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
-                    'hotel_num'=>$v['hotel_num'],'task_num'=>$v['num'],'task_list'=>$hotel_list);
-                $datalist[]=$dinfo;
+                $fileds = "a.residenter_id,a.residenter_name,count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as num,group_concat(a.id) as tids";
+                $res_task = $m_crmtask_record->getTaskRecords($fileds,array('a.id'=>array('in',$all_ids)),'',"$offset,$pagesize",'a.residenter_id');
+                $all_types = C('CRM_TASK_TYPES');
+                foreach ($res_task as $v){
+                    $hfileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(task.type) as types";
+                    $res_hoteltask = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'','','a.hotel_id');
+                    $hotel_list = array();
+                    foreach ($res_hoteltask as $tv){
+                        $types_arr = explode(',',$tv['types']);
+                        $task_type_name = '';
+                        if(in_array(3,$types_arr)){
+                            $task_type_name = $all_types[3];
+                        }elseif(in_array(4,$types_arr)){
+                            $task_type_name = $all_types[4];
+                        }
+                        $hotel_list[]=array('hotel_id'=>$tv['hotel_id'],'hotel_name'=>$tv['hotel_name'],'hotel_task_num'=>$tv['num'],'task_type_name'=>$task_type_name);
+                    }
+                    $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
+                        'hotel_num'=>$v['hotel_num'],'task_num'=>$v['num'],'task_list'=>$hotel_list);
+                    $datalist[]=$dinfo;
+                }
             }
         }elseif($type==2){
             $where['a.handle_status'] = 1;

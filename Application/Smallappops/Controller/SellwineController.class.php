@@ -678,18 +678,18 @@ class SellwineController extends CommonController{
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'hotel_name'=>$v['hotel_name'],'num'=>$v['num'],
                 'sale_money'=>$v['sale_money'],'ys_money'=>$ys_money,'type'=>1);
         }
-        if($version>='1.0.21'){
+        $group_data = array('num'=>0);
+        if($version>='1.0.21' && $page==1){
             $swhere = array('type'=>4,'maintainer_id'=>$residenter_id);
             $swhere['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $sfields = 'sum(num) as total_num,sum(settlement_price) as sale_money';
             $res_group = $m_sale->getALLDataList($sfields,$swhere,'','','');
             if(!empty($res_group[0]['total_num'])){
-                $group_info = array('hotel_id'=>0,'hotel_name'=>'团购售卖','num'=>$res_group[0]['total_num'],
+                $group_data = array('hotel_id'=>0,'hotel_name'=>'团购售卖','num'=>$res_group[0]['total_num'],
                     'sale_money'=>$res_group[0]['sale_money'],'ys_money'=>0,'type'=>4);
-                array_unshift($datalist,$group_info);
             }
         }
-        $this->to_back(array('datalist'=>$datalist,'sdate'=>date('Y-m-d',strtotime($start_time)),'edate'=>date('Y-m-d',strtotime($end_time))));
+        $this->to_back(array('datalist'=>$datalist,'group_data'=>$group_data,'sdate'=>date('Y-m-d',strtotime($start_time)),'edate'=>date('Y-m-d',strtotime($end_time))));
     }
 
     public function groupby(){

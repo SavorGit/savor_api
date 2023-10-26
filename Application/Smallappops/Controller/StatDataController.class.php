@@ -192,10 +192,16 @@ class StatDataController extends CommonController{
         $date_range = array(date('Y-m-d',strtotime('-6 days')),date('Y-m-d'));
         $stat_range_str= '(近七天,数据更新至'.date('Y/m/d').')';
         $stat_update_str = '数据更新至'.date('Y/m/d');
+        $res_lastsale = $m_sale->getALLDataList('id,add_time',array('hotel_id'=>$hotel_id),'id desc','0,1','');
+        $sell_wine_str = '';
+        if(!empty($res_lastsale[0]['add_time']) && $res_lastsale[0]['add_time']<date('Y-m-d 00:00:00')){
+            $no_sell_day = round((time()-strtotime($res_lastsale[0]['add_time']))/86400);
+            $sell_wine_str = $no_sell_day.'日内未售酒';
+        }
         $res_data = array(
             'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
             'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money'],
-            'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,
+            'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,'sell_wine_str'=>$sell_wine_str,
         );
         $staff_list = array();
         if($source==2){

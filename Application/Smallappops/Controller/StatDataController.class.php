@@ -874,6 +874,7 @@ class StatDataController extends CommonController{
         $where['a.status'] = 2;
         $where['a.is_trigger'] = 1;
         $where['a.finish_task_record_id'] = 0;
+        $where['task.type'] = array('neq',7);
         $res_task = $m_crmtask_record->getTaskRecords('max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
         $overdue_not_finish_num = count($res_task);
 

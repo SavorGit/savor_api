@@ -626,6 +626,7 @@ class TaskController extends CommonController{
             $where['a.status'] = 2;
             $where['a.is_trigger'] = 1;
             $where['a.finish_task_record_id'] = 0;
+            $where['task.type'] = array('neq',7);
             $res_taskids = $m_crmtask_record->getTaskRecords('a.hotel_id,a.task_id,GROUP_CONCAT(a.id) as ids,max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
             if(!empty($res_taskids)){
                 $all_ids = array();

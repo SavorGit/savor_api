@@ -42,7 +42,11 @@ class SellwineController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'mysale':
-                $this->valid_fields = array('openid'=>1001,'month'=>1001,'status'=>1001,'page'=>1001,'hotel_name'=>1002);
+                $this->valid_fields = array('openid'=>1001,'month'=>1001,'status'=>1001,'page'=>1001,'hotel_name'=>1002,'version'=>1002);
+                $this->is_verify = 1;
+                break;
+            case 'groupby':
+                $this->valid_fields = array('openid'=>1001,'sdate'=>1001,'edate'=>1001,'page'=>1001);
                 $this->is_verify = 1;
                 break;
         }
@@ -634,6 +638,7 @@ class SellwineController extends CommonController{
         $status = intval($this->params['status']);//1已收款 2未收款
         $hotel_name = trim($this->params['hotel_name']);
         $page = intval($this->params['page']);
+        $version = $this->params['version'];
         $pagesize = 10;
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -642,7 +647,7 @@ class SellwineController extends CommonController{
             $this->to_back(94001);
         }
         $residenter_id = $res_staff['sysuser_id'];
-        $where = array('a.residenter_id'=>$residenter_id,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);
+        $where = array('a.residenter_id'=>$residenter_id,'a.type'=>1,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);
         if($status){
             if($status==1){
                 $where['a.ptype'] = 1;
@@ -654,7 +659,7 @@ class SellwineController extends CommonController{
             $where['hotel.name'] = array('like',"%$hotel_name%");
         }
         $start_time = date("$month-01 00:00:00");
-        $end_time = date("$month-31 23:59:59");
+        $end_time = date("Y-m-t 23:59:59", strtotime($start_time));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
@@ -671,8 +676,95 @@ class SellwineController extends CommonController{
                 $ys_money = $v['sale_money']-$res_pay_money[0]['has_pay_money'];
             }
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'hotel_name'=>$v['hotel_name'],'num'=>$v['num'],
-                'sale_money'=>$v['sale_money'],'ys_money'=>$ys_money);
+                'sale_money'=>$v['sale_money'],'ys_money'=>$ys_money,'type'=>1);
+        }
+        if($version>='1.0.21'){
+            $swhere = array('type'=>4,'maintainer_id'=>$residenter_id);
+            $swhere['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+            $sfields = 'sum(num) as total_num,sum(settlement_price) as sale_money';
+            $res_group = $m_sale->getALLDataList($sfields,$swhere,'','','');
+            if(!empty($res_group[0]['total_num'])){
+                $group_info = array('hotel_id'=>0,'hotel_name'=>'团购售卖','num'=>$res_group[0]['total_num'],
+                    'sale_money'=>$res_group[0]['sale_money'],'ys_money'=>0,'type'=>4);
+                array_unshift($datalist,$group_info);
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist,'sdate'=>date('Y-m-d',strtotime($start_time)),'edate'=>date('Y-m-d',strtotime($end_time))));
+    }
+
+    public function groupby(){
+        $openid = $this->params['openid'];
+        $sdate = $this->params['sdate'];
+        $edate = $this->params['edate'];
+        $page = intval($this->params['page']);
+        $pagesize = 10;
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $residenter_id = $res_staff['sysuser_id'];
+
+        $start_time = "$sdate 00:00:00";
+        $end_time = "$edate 23:59:59";
+        $swhere = array('a.type'=>4,'a.maintainer_id'=>$residenter_id);
+        $swhere['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $offset = ($page-1)*$pagesize;
+        $limit = "$offset,$pagesize";
+        $sfields = 'a.order_id,o.goods_id,o.amount,o.otype,o.total_fee,o.status,o.contact,o.buy_type,o.sale_uid,o.add_time';
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $datalist = $m_sale->alias('a')
+            ->field($sfields)
+            ->join('savor_smallapp_order o on a.order_id=o.id','left')
+            ->where($swhere)
+            ->order('a.id desc')
+            ->limit($limit)
+            ->select();
+        if(!empty($datalist)){
+            $oss_host = get_oss_host();
+            $all_status = C('ORDER_STATUS');
+            $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
+            $m_ordergoods = new \Common\Model\Smallapp\OrdergoodsModel();
+            foreach($datalist as $k=>$v){
+                $datalist[$k]['type'] = $v['otype'];
+                $datalist[$k]['status_str'] = $all_status[$v['status']];
+                $datalist[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
+
+                $order_id = $v['order_id'];
+                $gfields = 'goods.id as goods_id,goods.name as goods_name,goods.gtype,goods.attr_name,goods.parent_id,
+                goods.model_media_id,goods.price,goods.cover_imgs,goods.merchant_id,goods.status,og.amount';
+                $res_goods = $m_ordergoods->getOrdergoodsList($gfields,array('og.order_id'=>$order_id),'og.id asc');
+                $goods = array();
+                foreach ($res_goods as $gv){
+                    $goods_name = $gv['goods_name'];
+                    $cover_imgs_info = explode(',',$gv['cover_imgs']);
+                    $img = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                    $ginfo = array('id'=>$gv['goods_id'],'name'=>$goods_name,'price'=>$gv['price'],'amount'=>$gv['amount'],
+                        'status'=>$gv['status'],'img'=>$img);
+                    $goods[]=$ginfo;
+                }
+                $datalist[$k]['goods'] = $goods;
+                $datalist[$k]['price'] = $goods[0]['price'];
+
+                $stfields = 'a.money,duser.name,duser.level,duser.sysuser_id,user.nickName,user.avatarUrl';
+                $res_settlement = $m_ordersettlement->getOrdersettlement($stfields,array('a.order_id'=>$order_id));
+                $income_money = 0;
+                $distribution = array('money'=>0);
+                foreach ($res_settlement as $sv){
+                    if($sv['sysuser_id']==$residenter_id){
+                        $income_money = $sv['money'];
+                    }else{
+                        $distribution['money'] = $sv['money'];
+                        $distribution['nickName'] = $sv['nickName'];
+                        $distribution['avatarUrl'] = $sv['avatarUrl'];
+                    }
+                }
+                $datalist[$k]['income_money'] = $income_money;
+                $datalist[$k]['distribution'] = $distribution;
+            }
         }
         $this->to_back(array('datalist'=>$datalist));
     }
+
 }

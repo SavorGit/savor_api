@@ -129,6 +129,16 @@ class OrderModel extends BaseModel{
         $title = $username.'送你小热点好物-'.$goods_name;
         $share = array('title'=>$title);
         return $share;
+    }
 
+    public function getGroupbyOrders($fields,$where){
+        $data = $this->alias('a')
+            ->field($fields)
+            ->join('savor_smallapp_dishgoods as goods on a.goods_id=goods.id','left')
+            ->join('savor_finance_goods as fg on goods.finance_goods_id=fg.id','left')
+            ->join('savor_smallapp_user as user on a.openid=user.openid','left')
+            ->where($where)
+            ->select();
+        return $data;
     }
 }

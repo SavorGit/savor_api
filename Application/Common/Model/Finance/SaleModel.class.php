@@ -145,4 +145,15 @@ class SaleModel extends BaseModel{
             ->select();
         return $res_data;
     }
+
+    public function getGroupSaleDatas($fileds,$where,$group='',$limit=''){
+        $res_data = $this->alias('a')
+            ->field($fileds)
+            ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
+            ->where($where)
+            ->limit($limit)
+            ->group($group)
+            ->select();
+        return $res_data;
+    }
 }

@@ -615,13 +615,18 @@ class TaskController extends CommonController{
         $start_time = $stat_date.'-01 00:00:00';
         $end_time = $stat_date.'-31 23:59:59';
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $where['ext.is_salehotel'] = 1;
+        $where['a.off_state'] = 1;
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $datalist = array();
         $offset = ($page-1)*$pagesize;
         if($type==1){
+            $where['a.add_time'] = array('elt',$end_time);
             $where['a.status'] = 2;
             $where['a.is_trigger'] = 1;
+            $where['a.finish_task_record_id'] = 0;
+
             $fileds = "a.residenter_id,a.residenter_name,count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as num,group_concat(a.id) as tids";
             $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
             $all_types = C('CRM_TASK_TYPES');

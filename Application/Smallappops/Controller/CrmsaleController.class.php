@@ -90,7 +90,7 @@ class CrmsaleController extends CommonController{
         }
 
         $m_category = new \Common\Model\Smallapp\CategoryModel();
-        $res_category = $m_category->getDataList('id,name,type',array('type'=>array('in','9,10')),'id desc');
+        $res_category = $m_category->getDataList('id,name,type',array('type'=>array('in','9,10'),'status'=>1),'id desc');
         $purpose = $types = array(array('id'=>0,'name'=>'请选择','checked'=>false));
         foreach ($res_category as $v){
             $checked = false;

@@ -218,7 +218,7 @@ class TaskController extends CommonController{
         }
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
-        $where = array('a.off_state'=>1,'a.status'=>array('in','0,1'));
+        $where = array('a.off_state'=>1,'a.status'=>array('in','0,1'),'task.type'=>array('neq',11));
         if($task_id>0){
             $where['a.task_id'] = $task_id;
         }
@@ -739,9 +739,6 @@ class TaskController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $img = $this->params['img'];
         $content = trim($this->params['content']);
-        if(empty($hotel_id) && empty($img)){
-            $this->to_back(1001);
-        }
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));

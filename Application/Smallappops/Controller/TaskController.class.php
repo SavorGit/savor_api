@@ -168,6 +168,7 @@ class TaskController extends CommonController{
         $arrange_task_name = '';
         if($hotel_role_type==3){
             $where = array('task.type'=>11,'a.residenter_id'=>$res_staff['sysuser_id']);
+            $where['task.start_time'] = array('elt',date('Y-m-d H:i:s'));
             $fileds = "count(a.id) as num,a.status";
             $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'','','a.status');
             $all_arrange_num = 0;
@@ -660,7 +661,7 @@ class TaskController extends CommonController{
             $fileds = "a.residenter_id,a.residenter_name,count(a.id) as num,group_concat(a.id) as tids";
             $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
             foreach ($res_task as $v){
-                $hfileds = "a.id as task_record_id,hotel.name as hotel_name,task.name as task_name,a.content";
+                $hfileds = "a.id as task_record_id,hotel.name as hotel_name,task.name as task_name,a.content,a.handle_time as refuse_time";
                 $task_list = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>array('in',$v['tids'])),'a.hotel_id desc','','');
                 $dinfo = array('residenter_id'=>$v['residenter_id'],'residenter_name'=>$v['residenter_name'],
                     'task_num'=>$v['num'],'task_list'=>$task_list);
@@ -685,15 +686,23 @@ class TaskController extends CommonController{
         $where = array('a.residenter_id'=>$res_staff['sysuser_id'],'task.type'=>11);
         if($status==1){
             $where['a.status'] = array('in','0,1,2');
+            $where['task.start_time'] = array('elt',date('Y-m-d H:i:s'));
         }else{
             $where['a.status'] = 3;
         }
 
-        $fileds = "a.id as task_record_id,task.name,task.desc,su.remark as user_name";
+        $fileds = "a.id as task_record_id,task.name,task.desc,su.remark as user_name,task.start_time,task.end_time";
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $offset = ($page-1)*$pagesize;
         $res_task = $m_crmtask_record->getCustomTasks($fileds,$where,'',"$offset,$pagesize",'');
-
+        $now_time = date('Y-m-d H:i:s');
+        foreach ($res_task as $k=>$v){
+            $status_str = '';
+            if($now_time>$v['end_time']){
+                $status_str = '已过期';
+            }
+            $res_task[$k]['status_str'] = $status_str;
+        }
         $this->to_back(array('datalist'=>$res_task));
     }
 
@@ -707,7 +716,7 @@ class TaskController extends CommonController{
             $this->to_back(94001);
         }
 
-        $hfileds = "task.name,task.desc,task.is_upimg,task.is_check_location,a.id as task_record_id,a.img,a.location_hotel_id as hotel_id,a.content as remark,a.finish_time";
+        $hfileds = "task.name,task.desc,task.is_upimg,task.end_time,task.is_check_location,a.id as task_record_id,a.img,a.location_hotel_id as hotel_id,a.content as remark,a.finish_time";
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $res_task = $m_crmtask_record->getTaskRecords($hfileds,array('a.id'=>$task_record_id),'','','');
         $imgs = array();
@@ -730,6 +739,7 @@ class TaskController extends CommonController{
         }
         $res_task[0]['imgs'] = $imgs;
         $res_task[0]['hotel_name'] = $hotel_name;
+        $res_task[0]['end_time'] = date('Y-m-d',strtotime($res_task[0]['end_time']));
         $this->to_back($res_task[0]);
     }
 

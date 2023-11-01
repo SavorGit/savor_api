@@ -245,10 +245,10 @@ class SellwineController extends CommonController{
             $gfields = 'count(DISTINCT goods.series_id) as groupby_series_num,sum(a.num) as groupby_num,sum(a.settlement_price) as groupby_money';
             $gwhere = array('a.type'=>4,'a.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
             if($static_area_id){
-                $where['a.area_id'] = $static_area_id;
+                $gwhere['a.area_id'] = $static_area_id;
             }
             if($static_maintainer_id){
-                $where['a.maintainer_id'] = $static_maintainer_id;
+                $gwhere['a.maintainer_id'] = $static_maintainer_id;
             }
             $res_groupdata = $m_sale->getGroupSaleDatas($gfields,$gwhere);
         }

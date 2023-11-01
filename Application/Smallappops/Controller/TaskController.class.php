@@ -22,7 +22,7 @@ class TaskController extends CommonController{
                 break;
             case 'getHotelTask':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002,'is_overdue'=>1002);
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002,'is_overdue'=>1002,'residenter_id'=>1002);
                 break;
             case 'handletask':
                 $this->is_verify = 1;
@@ -288,6 +288,7 @@ class TaskController extends CommonController{
         $task_id = $this->params['task_id'];
         $area_id = intval($this->params['area_id']);
         $staff_id = intval($this->params['staff_id']);
+        $residenter_id = intval($this->params['residenter_id']);
         $is_overdue = intval($this->params['is_overdue']);
         $stat_date = $this->params['stat_date'];
 
@@ -296,6 +297,12 @@ class TaskController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        if(empty($stat_date)){
+            $stat_date = date('Y-m');
+        }
+        $start_time = $stat_date.'-01 00:00:00';
+        $end_time = $stat_date.'-31 23:59:59';
+
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
         $where = array('a.hotel_id'=>$hotel_id,'a.off_state'=>1);
@@ -323,20 +330,27 @@ class TaskController extends CommonController{
                     $where['a.residenter_id'] = $res_residenter['sysuser_id'];
                 }
             }
-            if(empty($stat_date)){
-                $stat_date = date('Y-m');
-            }
-            $start_time = $stat_date.'-01 00:00:00';
-            $end_time = $stat_date.'-31 23:59:59';
             $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-        }else{
+        }elseif($is_overdue==1){
+            if($residenter_id){
+                $where['a.residenter_id'] = $residenter_id;
+            }
             $where['a.is_trigger'] = 1;
             $where['a.status'] = array('in','0,1');
+        }elseif($is_overdue==2){
+            if($residenter_id){
+                $where['a.residenter_id'] = $residenter_id;
+            }
+            $where['a.add_time'] = array('elt',$end_time);
+            $where['a.status'] = 2;
+            $where['a.is_trigger'] = 1;
+            $where['a.finish_task_record_id'] = 0;
+            $where['task.type'] = array('neq',7);
         }
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
-        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc';
-        $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'task.id asc');
+        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc,a.add_time';
+        $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'a.id desc');
         $unhandle_list = $handle_list = array();
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
         foreach ($res_task as $v){
@@ -419,7 +433,7 @@ class TaskController extends CommonController{
         }
         $permission = json_decode($res_staff['permission'],true);
         $area_ids = $permission['hotel_info']['area_ids'];
-        $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0));
+        $where = array('hotel.area_id'=>array('in',$area_ids),'a.residenter_id'=>array('gt',0),'a.off_state'=>1);
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $datalist = array();
         $offset = ($page-1)*$pagesize;
@@ -561,7 +575,7 @@ class TaskController extends CommonController{
             foreach ($task_list as $tk=>$tv){
                 $status_str = '';
                 if(time()>strtotime($tv['end_time'])){
-                    $status_str = '超期未完成';
+                    $status_str = '超期';
                 }
                 $task_list[$tk]['desc'] = text_substr($tv['desc'],50);
                 $task_list[$tk]['status_str'] = $status_str;

@@ -321,7 +321,7 @@ class SellwineController extends CommonController{
         $limit = "$offset,$pagesize";
         $order = 'id desc';
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $fields = 'idcode,add_time,hotel_id,ptype,type,settlement_price,residenter_id,sale_openid,order_id';
+        $fields = 'idcode,add_time,hotel_id,ptype,type,settlement_price,residenter_id,sale_openid,order_id,num';
         $res_sale = $m_sale->getALLDataList($fields,$where,$order,$limit);
         $data_list = array();
         if(!empty($res_sale)){
@@ -381,7 +381,7 @@ class SellwineController extends CommonController{
                     $res_settlement = $m_ordersettlement->getOrdersettlement('a.money,duser.name,duser.level',array('a.order_id'=>$order_id));
 
                     $info = array('nickName'=>$res_order[0]['nickName'],'avatarUrl'=>$res_order[0]['avatarUrl'],'type'=>$v['type'],
-                        'num'=>$res_order[0]['amount'],'total_fee'=>intval($res_order[0]['total_fee']),'add_time'=>$res_order[0]['add_time'],
+                        'num'=>$v['num'],'total_fee'=>intval($res_order[0]['total_fee']),'add_time'=>$res_order[0]['add_time'],
                         'goods'=>array(array('goods_id'=>$res_order[0]['goods_id'],'goods_name'=>$res_order[0]['goods_name'])),
                         'settlement'=>$res_settlement
                     );

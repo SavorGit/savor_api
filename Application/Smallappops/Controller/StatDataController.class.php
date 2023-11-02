@@ -872,6 +872,8 @@ class StatDataController extends CommonController{
         $where['a.status'] = 2;
         $where['a.is_trigger'] = 1;
         if($version>='1.0.21'){
+            $where['a.status'] = array('neq',3);
+            $where['a.handle_status'] = array('in','0,2');
             $where['a.add_time'] = array('elt',$end_time);
             $where['a.finish_task_record_id'] = 0;
             $where['task.type'] = array('neq',7);

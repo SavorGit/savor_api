@@ -306,6 +306,7 @@ class TaskController extends CommonController{
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
         $where = array('a.hotel_id'=>$hotel_id,'a.off_state'=>1);
+        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         if($is_overdue==0){
             if($task_id>0){
                 $where['a.task_id'] = $task_id;
@@ -338,17 +339,23 @@ class TaskController extends CommonController{
             $where['a.is_trigger'] = 1;
             $where['a.status'] = array('in','0,1');
         }elseif($is_overdue==2){
-            if($residenter_id){
-                $where['a.residenter_id'] = $residenter_id;
-            }
-            $where['a.add_time'] = array('elt',$end_time);
-            $where['a.status'] = 2;
+            $where['a.status'] = array('neq',3);
             $where['a.is_trigger'] = 1;
+            $where['a.handle_status'] = array('in','0,2');
+            $where['a.add_time'] = array('elt',$end_time);
             $where['a.finish_task_record_id'] = 0;
             $where['task.type'] = array('neq',7);
+            $res_taskids = $m_crmtask_record->getTaskRecords('a.hotel_id,a.task_id,GROUP_CONCAT(a.id) as ids,max(a.id) as last_id',$where,'','','a.task_id');
+            $all_ids = array();
+            if(!empty($res_taskids)) {
+                foreach ($res_taskids as $v) {
+                    $all_ids[] = $v['last_id'];
+                }
+                $where['a.id'] = array('in',$all_ids);
+                $where['a.residenter_id'] = $residenter_id;
+            }
         }
 
-        $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc,a.add_time';
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'a.id desc');
         $unhandle_list = $handle_list = array();
@@ -462,6 +469,7 @@ class TaskController extends CommonController{
                 $datalist[]=$dinfo;
             }
         }elseif($type==2){
+            $where['a.status'] = array('in','0,1');
             $where['a.handle_status'] = 1;
             $where['a.audit_handle_status'] = array('in','0,1');
             $fileds = "a.residenter_id,a.residenter_name,count(a.id) as num,group_concat(a.id) as tids";
@@ -637,9 +645,10 @@ class TaskController extends CommonController{
         $datalist = array();
         $offset = ($page-1)*$pagesize;
         if($type==1){
-            $where['a.add_time'] = array('elt',$end_time);
-            $where['a.status'] = 2;
+            $where['a.status'] = array('neq',3);
             $where['a.is_trigger'] = 1;
+            $where['a.handle_status'] = array('in','0,2');
+            $where['a.add_time'] = array('elt',$end_time);
             $where['a.finish_task_record_id'] = 0;
             $where['task.type'] = array('neq',7);
             $res_taskids = $m_crmtask_record->getTaskRecords('a.hotel_id,a.task_id,GROUP_CONCAT(a.id) as ids,max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');

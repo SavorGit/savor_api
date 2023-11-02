@@ -339,6 +339,9 @@ class TaskController extends CommonController{
             $where['a.is_trigger'] = 1;
             $where['a.status'] = array('in','0,1');
         }elseif($is_overdue==2){
+            if($task_id>0){
+                $where['a.task_id'] = $task_id;
+            }
             $where['a.status'] = array('neq',3);
             $where['a.is_trigger'] = 1;
             $where['a.handle_status'] = array('in','0,2');

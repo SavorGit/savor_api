@@ -463,7 +463,7 @@ class TaskController extends CommonController{
             }
         }elseif($type==2){
             $where['a.handle_status'] = 1;
-            $where['a.audit_handle_status'] = 0;
+            $where['a.audit_handle_status'] = array('in','0,1');
             $fileds = "a.residenter_id,a.residenter_name,count(a.id) as num,group_concat(a.id) as tids";
             $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'',"$offset,$pagesize",'a.residenter_id');
             foreach ($res_task as $v){

@@ -31,7 +31,7 @@ return array(
 	'MODULE_DENY_LIST'      => array('Common','Runtime'), // 禁止访问的模块列表
 
 	'MODULE_ALLOW_LIST'     => array('Basedata','Feed','Clientstart','Catvideo','H5',
-	                                 'Version','Content','Heartbeat','Heartcalcu',
+	                                 'Version','Content','Heartbeat','Heartcalcu','Smallappdata',
 	                                 'Download','Award','Small','Smalls','Screendistance',
 	                                 'Opclient','Dailyknowledge','Tasksubcontract','Opclient11','Smallappops','Dinnerapp',
 	                                 'Dinnerapp2','Box','Opclient20','Forscreen','Smallapp','Smallapp21','Netty',
@@ -324,6 +324,7 @@ return array(
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',
     'SAPP_OPS'=>'smallappops:',
+    'SAPP_DATA'=>'smallappdata:',
     'SAPP_SALE_ACTIVITYGOODS_PROGRAM'=>'smallappsale:activitygoodsprogram',
     'SAPP_SALE_INVITE_QRCODE'=>'smallappsale:inviteqrcode:',
     'SAPP_SALE_OPGOODS_INTEGRAL'=>'smallappsale:opgoodsintegral:',
@@ -641,11 +642,11 @@ return array(
         'ofYZG47NzXqDD0lumUkq-it6_mXY'=>'王伟明',
         ),
     'STOCK_MANAGER'=>array(
-//        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
-//        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
-//        'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
-//        'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
-//        'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
+        'o9GS-4reX0MCJbXvGamZghvmPk6U'=>'郑伟',
+        'o9GS-4oZfWgjT0lySkJskdlflNrw'=>'黄勇',
+        'o9GS-4g6xM3jhCWUUPnvK5a4sysI'=>'张英涛',
+        'o9GS-4icfJEZSX8_qDs6pB_nD30o'=>'李昭',
+        'o9GS-4t61F_qSPmwEaAtd9v6f6DY'=>'刘斌',
 //        'o9GS-4oGSdRGYiNZZ4oKQ9PBm_TI'=>'李丛',
         'o9GS-4iGZE9olTzXTMjon8xDyRpo'=>'黄勇',
         'o9GS-4iinyutBsN73FJFjdZC3rWg'=>'赵翠燕',

@@ -27,6 +27,10 @@ class StockController extends CommonController{
                 $this->params = array('openid'=>1001,'stock_id'=>1001);
                 $this->is_verify = 1;
                 break;
+            case 'scanVintnercode':
+                $this->params = array('openid'=>1001,'vintner_code'=>1001);
+                $this->is_verify = 1;
+                break;
             case 'scancode':
                 $this->params = array('openid'=>1001,'unit_id'=>1001,'idcode'=>1001,'type'=>1001,'goods_id'=>1001,'stock_detail_id'=>1002);
                 $this->is_verify = 1;
@@ -41,6 +45,10 @@ class StockController extends CommonController{
                 break;
             case 'finishGoods':
                 $this->params = array('openid'=>1001,'type'=>1001,'stock_detail_id'=>1001,'goods_codes'=>1001);
+                $this->is_verify = 1;
+                break;
+            case 'finishInGoods':
+                $this->params = array('openid'=>1001,'stock_detail_id'=>1001,'goods_codes'=>1001);
                 $this->is_verify = 1;
                 break;
             case 'finish':
@@ -266,7 +274,7 @@ class StockController extends CommonController{
         $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
         $where = array('a.stock_id'=>$stock_id);
         $fileds = 'a.id as stock_detail_id,a.goods_id,a.amount,a.stock_amount,goods.name,cate.name as cate_name,spec.name as sepc_name,
-        unit.id as unit_id,unit.name as unit_name';
+        unit.id as unit_id,unit.name as unit_name,unit.convert_type';
         $res_goodsdata = $m_stock_detail->getStockGoods($fileds,$where);
         $datalist = array();
         foreach ($res_goodsdata as $v){
@@ -277,6 +285,36 @@ class StockController extends CommonController{
         }
         $res_data['goods_list'] = $datalist;
         $this->to_back($res_data);
+    }
+
+    public function scanVintnercode(){
+        $openid = $this->params['openid'];
+        $vintner_code = $this->params['vintner_code'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $key = C('QRCODE_SECRET_KEY');
+        $qrcode_id = decrypt_data($vintner_code,false,$key);
+        $qrcode_id = intval($qrcode_id);
+        $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
+        $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
+        if(!empty($res_qrcode)){
+            $this->to_back(93110);
+        }
+
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $where = array('vintner_code'=>$vintner_code);
+        $res_stock_record = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
+        if(!empty($res_stock_record[0]['id'])){
+            $this->to_back(93111);
+        }
+        $res = array('vintner_code'=>$vintner_code,'add_time'=>date('Y-m-d H:i:s'));
+        $this->to_back($res);
     }
 
     public function scancode(){
@@ -486,19 +524,107 @@ class StockController extends CommonController{
             );
             $m_stock_record->add($add_record_data);
 
+            $res_stock_precord = $m_stock_record->getALLDataList('id,idcode,vintner_code',array('idcode'=>$p_idcode,'dstatus'=>1),'id desc','0,1','');
             $batch_no = $batch_no.'01';
             $res_all_codes = $m_qrcode_content->getDataList('id',array('parent_id'=>$p_idnum),'id asc');
             foreach ($res_all_codes as $v){
                 $now_idcode = encrypt_data($v['id'],$key);
                 $add_record_data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,
                     'batch_no'=>$batch_no,'idcode'=>$now_idcode,'price'=>$price,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$amount,
-                    'total_fee'=>$price,'type'=>3,'op_openid'=>$openid
+                    'total_fee'=>$price,'type'=>3,'op_openid'=>$openid,'pidcode'=>$p_idcode
                 );
+                if(!empty($res_stock_precord[0]['vintner_code'])){
+                    $add_record_data['vintner_code'] = $res_stock_precord[0]['vintner_code'];
+                }
                 $m_stock_record->add($add_record_data);
             }
             $all_code[]= array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'status'=>1);
         }
         $this->to_back($all_code);
+    }
+
+    public function finishInGoods(){
+        $openid = $this->params['openid'];
+        $stock_detail_id = intval($this->params['stock_detail_id']);
+        $goods_codes = $this->params['goods_codes'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        $m_stockdetail = new \Common\Model\Finance\StockDetailModel();
+        $res_detail = $m_stockdetail->getInfo(array('id'=>$stock_detail_id));
+        if(empty($res_detail)){
+            $this->to_back(93084);
+        }
+        $stock_id = $res_detail['stock_id'];
+        $goods_id = $res_detail['goods_id'];
+        $unit_id = $res_detail['unit_id'];
+
+        $amount = 1;
+        $m_unit = new \Common\Model\Finance\UnitModel();
+        $res_unit = $m_unit->getInfo(array('id'=>$unit_id));
+        $total_amount = $res_unit['convert_type']*$amount;
+
+        $price = 0;
+        $total_fee = 0;
+        if(!empty($res_detail['purchase_detail_id'])){
+            $m_purchasedetail = new \Common\Model\Finance\PurchaseDetailModel();
+            $res_purchase = $m_purchasedetail->getInfo(array('id'=>$res_detail['purchase_detail_id']));
+            $total_fee = $res_purchase['price'];
+            $price = sprintf("%.2f",$total_fee/$total_amount);//单瓶价格
+        }else{
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $srwhere = array('goods_id'=>$goods_id,'unit_id'=>$unit_id,'type'=>1);
+            $srwhere['price'] = array('gt',0);
+            $res_record = $m_stock_record->getALLDataList('price,total_fee',$srwhere,'id asc','0,1','');
+            if(!empty($res_record)){
+                $price = $res_record[0]['price'];
+                $total_fee = $res_record[0]['total_fee'];
+            }
+        }
+
+        $all_idcodes = explode(',',$goods_codes);
+        if(!empty($all_idcodes)){
+            $idcode_num = 0;
+            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+            $key = C('QRCODE_SECRET_KEY');
+            $batch_no = getMillisecond();
+            foreach ($all_idcodes as $v){
+                $codes_arr = explode('-',$v);
+                $idcode = $codes_arr[0];
+                $vintner_code = $codes_arr[1];
+                if(!empty($idcode)){
+                    $idcode_num++;
+                    $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'batch_no'=>$batch_no,'idcode'=>$idcode,
+                        'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>1,'op_openid'=>$openid
+                    );
+                    if(!empty($vintner_code)){
+                        $data['vintner_code'] = $vintner_code;
+                    }
+                    $m_stock_record->add($data);
+
+                }
+            }
+            if($idcode_num>0){
+                $detail_amount = $amount*$idcode_num;
+                $detail_total_amount = $total_amount*$idcode_num;
+
+                $updata = array('amount'=>$res_detail['amount']+$detail_amount,'total_amount'=>$res_detail['total_amount']+$detail_total_amount);
+                $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
+                $m_stock = new \Common\Model\Finance\StockModel();
+                $m_stock->updateData(array('id'=>$stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
+
+                $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
+                if($res_stock['area_id']>0){
+                    sendTopicMessage($res_stock['area_id'],70);
+                }
+            }
+        }
+        $this->to_back(array('stock_detail_id'=>$stock_detail_id));
     }
 
     public function finishGoods(){
@@ -566,6 +692,7 @@ class StockController extends CommonController{
                         if(!empty($res_in)){
                             $data['price'] = -$res_in['price'];
                             $data['avg_price'] = $res_in['avg_price'];
+                            $data['vintner_code'] = $res_in['vintner_code'];
                         }else{
                             $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                             $res_in = $m_stock_record->getInfo($where);
@@ -625,7 +752,7 @@ class StockController extends CommonController{
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $where = array('stock_detail_id'=>$stock_detail_id);
         $where['type'] = array('neq',3);
-        $res = $m_stock_record->getDataList('idcode,add_time',$where,'id desc');
+        $res = $m_stock_record->getDataList('idcode,vintner_code,add_time',$where,'id desc');
         $res_data = array();
         if(!empty($res)){
             foreach ($res as $k=>$v){

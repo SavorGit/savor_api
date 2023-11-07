@@ -454,6 +454,8 @@ return array(
     'smallappsale_invitation_hotel_error'=>'当前酒楼暂未开通邀请函,请联系管理员',
     'smallappsale_finance_qrcode_type_error'=>'二维码单位和商品单位不一致',
     'smallappsale_finance_qrcode_error'=>'请扫酒水二维码',
+    'smallappsale_finance_vqrcode_error'=>'扫码错误,请扫酒商码',
+    'smallappsale_finance_vintner_code_hadrecord'=>'此商品已有扫码记录,请勿重复扫码',
     'smallappsale_finance_stock_goods_hasin_exist'=>'扫码商品已入库',
     'smallappsale_finance_stock_goods_hasout_exist'=>'扫码商品已出库',
     'smallappsale_finance_stock_goods_hasin_noexist'=>'扫码商品未入库',
@@ -528,6 +530,9 @@ return array(
     'smallappsale_finance_threshold_error'=>'暂时无法兑换，请联系热点工作人员',
     'smallappsale_exchange_spacetime_error'=>'一分钟内只能兑换一次',
     'smallappsale_finance_writeoff_bottle_error'=>'单次核销不能超过6瓶',
+    'smallappdata_mobile_not_open_account'=>'当前手机号没有开通账号',
+    'smallappdata_user_had_register'=>'当前用户已注册账号',
+    'smallappdata_user_not_open_account'=>'当前用户没有开通账号',
 
 
 

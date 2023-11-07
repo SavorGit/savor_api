@@ -32,15 +32,15 @@ class LoginController extends CommonController{
         if(!check_mobile($mobile)){//验证手机格式
             $this->to_back(92001);
         }
-
         $m_vintner = new \Common\Model\VintnerModel();
-        $res_vintner = $m_vintner->getInfo(array('mobile'=>$mobile,'status'=>1));
-        if(empty($res_vintner)){
-            $this->to_back(95001);
-        }
         $res_vintner = $m_vintner->getInfo(array('openid'=>$openid,'status'=>1));
         if(!empty($res_vintner)){
             $this->to_back(95002);
+        }
+
+        $res_vintner = $m_vintner->getInfo(array('mobile'=>$mobile,'status'=>1));
+        if(empty($res_vintner)){
+            $this->to_back(95001);
         }
         $m_vintner->updateData(array('id'=>$res_vintner['id']),array('openid'=>$openid,'update_time'=>date('Y-m-d H:i:s')));
 

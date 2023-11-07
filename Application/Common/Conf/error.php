@@ -494,6 +494,8 @@ return array(
         '93107'=>'smallappsale_finance_create_data_error',
         '93108'=>'smallappsale_finance_threshold_error',
         '93109'=>'smallappsale_finance_writeoff_bottle_error',
+        '93110'=>'smallappsale_finance_vqrcode_error',
+        '93111'=>'smallappsale_finance_vintner_code_hadrecord',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',
@@ -536,5 +538,11 @@ return array(
         '94007'=>'smallappops_stock_check_local_error',
         '94008'=>'smallappops_stock_check_month_finish',
 	    '94100'=>'smallappops_not_entity_platform',
+
+        //小程序数据端
+        '95001'=>'smallappdata_mobile_not_open_account',
+        '95002'=>'smallappdata_user_had_register',
+        '95003'=>'smallappdata_user_not_open_account',
+
 	),
 );

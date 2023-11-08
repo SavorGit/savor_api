@@ -138,7 +138,7 @@ class SellwineController extends CommonController{
         $day = intval($this->params['day']);
         $goods_id = intval($this->params['goods_id']);
         $page = intval($this->params['page']);
-        $pagesize = 10;
+        $pagesize = 20;
 
         $m_vintner = new \Common\Model\VintnerModel();
         $res_vintner = $m_vintner->getInfo(array('openid'=>$openid,'status'=>1));

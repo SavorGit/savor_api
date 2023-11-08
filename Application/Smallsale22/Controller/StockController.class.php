@@ -375,9 +375,6 @@ class StockController extends CommonController{
                 if($stock_detail_id>0 && $stock_detail_id==$res_stock_record_type[0]['stock_detail_id']){
                     $this->to_back(93081);
                 }
-                if(!empty($res_stock_record_type[0]['type']) && $stock_detail_id!=$res_stock_record_type[0]['stock_detail_id']){
-                    $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));
-                }
             }else{
                 if(!empty($res_stock_record)){
                     $this->to_back(93081);
@@ -563,6 +560,8 @@ class StockController extends CommonController{
         $stock_id = $res_detail['stock_id'];
         $goods_id = $res_detail['goods_id'];
         $unit_id = $res_detail['unit_id'];
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
 
         $amount = 1;
         $m_unit = new \Common\Model\Finance\UnitModel();
@@ -598,6 +597,14 @@ class StockController extends CommonController{
                 $idcode = $codes_arr[0];
                 $vintner_code = $codes_arr[1];
                 if(!empty($idcode)){
+
+                    if(in_array($res_stock['io_type'],array(12,13))){
+                        $res_stock_record = $m_stock_record->getALLDataList('goods_id,type,stock_detail_id',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+                        if(!empty($res_stock_record[0]['stock_detail_id']) && $stock_detail_id!=$res_stock_record[0]['stock_detail_id']){
+                            $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));
+                        }
+                    }
+
                     $idcode_num++;
                     $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'batch_no'=>$batch_no,'idcode'=>$idcode,
                         'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>1,'op_openid'=>$openid
@@ -615,7 +622,6 @@ class StockController extends CommonController{
 
                 $updata = array('amount'=>$res_detail['amount']+$detail_amount,'total_amount'=>$res_detail['total_amount']+$detail_total_amount);
                 $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
-                $m_stock = new \Common\Model\Finance\StockModel();
                 $m_stock->updateData(array('id'=>$stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
 
                 $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
@@ -648,6 +654,8 @@ class StockController extends CommonController{
         $stock_id = $res_detail['stock_id'];
         $goods_id = $res_detail['goods_id'];
         $unit_id = $res_detail['unit_id'];
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
 
         $amount = 1;
         $m_unit = new \Common\Model\Finance\UnitModel();
@@ -682,6 +690,16 @@ class StockController extends CommonController{
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 if(!empty($idcode)){
+
+                    if($type==1){
+                        if(in_array($res_stock['io_type'],array(12,13))){
+                            $res_stock_record = $m_stock_record->getALLDataList('goods_id,type,stock_detail_id',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
+                            if(!empty($res_stock_record[0]['stock_detail_id']) && $stock_detail_id!=$res_stock_record[0]['stock_detail_id']){
+                                $m_stock_record->updateData(array('idcode'=>$idcode),array('dstatus'=>2));
+                            }
+                        }
+                    }
+
                     $idcode_num++;
                     $data = array('stock_id'=>$stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$goods_id,'batch_no'=>$batch_no,'idcode'=>$idcode,
                         'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>$amount,'total_amount'=>$total_amount,'type'=>$type,'op_openid'=>$openid
@@ -719,7 +737,7 @@ class StockController extends CommonController{
                 }
                 $updata = array('amount'=>$res_detail['amount']+$detail_amount,'total_amount'=>$res_detail['total_amount']+$detail_total_amount);
                 $m_stockdetail->updateData(array('id'=>$stock_detail_id),$updata);
-                $m_stock = new \Common\Model\Finance\StockModel();
+
                 $m_stock->updateData(array('id'=>$stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
 
                 $res_stock = $m_stock->getInfo(array('id'=>$stock_id));

@@ -514,14 +514,17 @@ class StockController extends CommonController{
             $price = $res_stock_record['price'];
             $total_fee = $total_amount*$price;
 
+            $res_stock_precord = $m_stock_record->getALLDataList('id,idcode,vintner_code',array('idcode'=>$p_idcode,'dstatus'=>1),'id desc','0,1','');
             //记录拆箱:箱-1,瓶+6
             $add_record_data = array('stock_id'=>$res_stock_record['stock_id'],'stock_detail_id'=>$res_stock_record['stock_detail_id'],'goods_id'=>$res_stock_record['goods_id'],
                 'batch_no'=>$batch_no,'idcode'=>$p_idcode,'price'=>-$price,'unit_id'=>$res_stock_record['unit_id'],'amount'=>-$amount,'total_amount'=>-$total_amount,
                 'total_fee'=>-$total_fee,'type'=>3,'op_openid'=>$openid
             );
+            if(!empty($res_stock_precord[0]['vintner_code'])){
+                $add_record_data['vintner_code'] = $res_stock_precord[0]['vintner_code'];
+            }
             $m_stock_record->add($add_record_data);
 
-            $res_stock_precord = $m_stock_record->getALLDataList('id,idcode,vintner_code',array('idcode'=>$p_idcode,'dstatus'=>1),'id desc','0,1','');
             $batch_no = $batch_no.'01';
             $res_all_codes = $m_qrcode_content->getDataList('id',array('parent_id'=>$p_idnum),'id asc');
             foreach ($res_all_codes as $v){
@@ -711,11 +714,14 @@ class StockController extends CommonController{
                             $data['price'] = -$res_in['price'];
                             $data['avg_price'] = $res_in['avg_price'];
                             $data['vintner_code'] = $res_in['vintner_code'];
+                            $data['pidcode'] = $res_in['pidcode'];
                         }else{
                             $where = array('idcode'=>$idcode,'type'=>3,'dstatus'=>1);
                             $res_in = $m_stock_record->getInfo($where);
                             if(!empty($res_in)){
                                 $data['price'] = -$res_in['price'];
+                                $data['vintner_code'] = $res_in['vintner_code'];
+                                $data['pidcode'] = $res_in['pidcode'];
                             }
                         }
                         $data['total_fee'] = $data['price']*$total_amount;

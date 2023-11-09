@@ -81,7 +81,7 @@ class SellwineController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $day = intval($this->params['day']);
         $page = intval($this->params['page']);
-        $pagesize = 10;
+        $pagesize = 20;
 
         $m_vintner = new \Common\Model\VintnerModel();
         $res_vintner = $m_vintner->getInfo(array('openid'=>$openid,'status'=>1));
@@ -123,7 +123,7 @@ class SellwineController extends CommonController{
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $data_list = $m_sale->getSaleStockRecordList($fields,$where,'',$limit);
+        $data_list = $m_sale->getSaleStockRecordList($fields,$where,'',$limit,'a.id desc');
         foreach ($data_list as $k=>$v){
             $data_list[$k]['num'] = 1;
             $data_list[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));

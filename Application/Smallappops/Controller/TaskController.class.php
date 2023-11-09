@@ -354,8 +354,7 @@ class TaskController extends CommonController{
                 foreach ($res_taskids as $v) {
                     $all_ids[] = $v['last_id'];
                 }
-                $where['a.id'] = array('in',$all_ids);
-                $where['a.residenter_id'] = $residenter_id;
+                $where = array('a.id'=>array('in',$all_ids),'a.residenter_id'=>$residenter_id);
             }
         }
 
@@ -654,6 +653,11 @@ class TaskController extends CommonController{
             $where['a.add_time'] = array('elt',$end_time);
             $where['a.finish_task_record_id'] = 0;
             $where['task.type'] = array('neq',7);
+            $residenter_id = -1;
+            if(isset($where['a.residenter_id'])){
+                $residenter_id = $where['a.residenter_id'];
+                unset($where['a.residenter_id']);
+            }
             $res_taskids = $m_crmtask_record->getTaskRecords('a.hotel_id,a.task_id,GROUP_CONCAT(a.id) as ids,max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
             if(!empty($res_taskids)){
                 $all_ids = array();
@@ -661,7 +665,11 @@ class TaskController extends CommonController{
                     $all_ids[]=$v['last_id'];
                 }
                 $fileds = "a.residenter_id,a.residenter_name,count(DISTINCT a.hotel_id) as hotel_num,count(a.id) as num,group_concat(a.id) as tids";
-                $res_task = $m_crmtask_record->getTaskRecords($fileds,array('a.id'=>array('in',$all_ids)),'',"$offset,$pagesize",'a.residenter_id');
+                $twhere = array('a.id'=>array('in',$all_ids));
+                if($residenter_id>=0){
+                    $twhere['a.residenter_id'] = $residenter_id;
+                }
+                $res_task = $m_crmtask_record->getTaskRecords($fileds,$twhere,'',"$offset,$pagesize",'a.residenter_id');
                 $all_types = C('CRM_TASK_TYPES');
                 foreach ($res_task as $v){
                     $hfileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(task.type) as types";

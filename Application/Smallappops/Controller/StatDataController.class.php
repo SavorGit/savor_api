@@ -3,7 +3,7 @@ namespace Smallappops\Controller;
 use \Common\Controller\CommonController as CommonController;
 
 class StatDataController extends CommonController{
-    
+
     function _init_() {
         switch(ACTION_NAME) {
             case 'sale':
@@ -287,7 +287,7 @@ class StatDataController extends CommonController{
         $start_time = !empty($start_date)? $start_date.' 00:00:00' : date('Y-m-d 00:00:00',strtotime('-7 days'));
         $end_time   = !empty($end_date)? $end_date.' 23:59:59' : date('Y-m-d 23:59:59',strtotime('-1 days'));
         if($start_time>$end_time){
-            $this->to_back(93075);   
+            $this->to_back(93075);
         }
         $data = [];
         //销售端数据开始
@@ -307,7 +307,7 @@ class StatDataController extends CommonController{
                 break;
             }
         }
-        
+
         //投宣传片、投生日歌
         $forscreen_adv_num = $forscreen_happy_num = 0;
         $m_forscreen = new \Common\Model\Smallapp\ForscreenRecordModel();
@@ -333,10 +333,10 @@ class StatDataController extends CommonController{
         $where['hotel_id']      = $hotel_id;
         $where['action']        = array('in','2,4,30,31');
         $where['create_time']   = array(array('egt',$start_time),array('elt',$end_time));
-        
+
         $ret = $m_forscreen->field($fields)->where($where)->group('forscreen_id')->select();
         $forscreen_nums = count($ret);
-        
+
         //投欢迎词次数
         $fields = 'id';
         $where  = [];
@@ -344,10 +344,10 @@ class StatDataController extends CommonController{
         $where['hotel_id']      = $hotel_id;
         $where['action']        = array('in','41');
         $where['create_time']   = array(array('egt',$start_time),array('elt',$end_time));
-        
+
         $ret = $m_forscreen->field($fields)->where($where)->group('forscreen_id')->select();
         $forscreen_welcome_nums = count($ret);
-        
+
         //签到次数
         $m_user_sigin = new \Common\Model\Smallapp\UserSigninModel();
         $fields = 'a.id';
@@ -355,23 +355,23 @@ class StatDataController extends CommonController{
         $where['m.hotel_id'] = $hotel_id;
         $where['a.add_time']        = array(array('egt',$start_time),array('elt',$end_time));
         $ret = $m_user_sigin->alias('a')
-                     ->join('savor_integral_merchant_staff as s on a.openid=s.openid','left')
-                     ->join('savor_integral_merchant as m on s.merchant_id = m.id','left')
-                     ->field($fields)
-                     ->where($where)
-                     ->select();
+            ->join('savor_integral_merchant_staff as s on a.openid=s.openid','left')
+            ->join('savor_integral_merchant as m on s.merchant_id = m.id','left')
+            ->field($fields)
+            ->where($where)
+            ->select();
         $sigin_nums = count($ret);
         //发送邀请函
         //$m_welcome = new \Common\Model\Smallapp\WelcomeModel();
         $m_invite = new \Common\Model\Smallapp\InvitationModel();
-        
+
         $fields = 'id';
         $where  = [];
         $where['hotel_id'] = $hotel_id;
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $ret  = $m_invite->field($fields)->where($where)->select();
         $send_welcome_nums = count($ret);
-        
+
         //售酒数量
         $m_record = new \Common\Model\Finance\StockRecordModel();
         $rfileds = 'sum(a.total_amount) as total_amount,a.type';
@@ -413,8 +413,8 @@ class StatDataController extends CommonController{
         $sale_info['sale_wine_nums']  = $sale_wine_nums;
         $sale_info['integral_nums']   = $integral_nums;
         $sale_info['exchange_fee']    = $exchange_fee;
-        
-        
+
+
         //用户端数据开始
         //获取当前酒楼的投屏总次数
         $fields = 'id';
@@ -426,7 +426,7 @@ class StatDataController extends CommonController{
         $group  = 'forscreen_id' ;
         $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', $group);
         $hotel_forscreen_nums = count($forscreen_data);   //酒楼投屏总次数
-        
+
         //当前酒楼的投屏总人数
         $fields = 'id';
         $where  = [];
@@ -443,7 +443,7 @@ class StatDataController extends CommonController{
         $fields = 'a.id box_id,a.name box_name';
         $box_list = $m_box->getBoxListByHotelid($fields,$hotel_id);
         //酒楼销售酒
-        
+
         foreach($box_list as $key=>$v){
             //机顶盒的投屏次数
             $fields = 'id';
@@ -452,12 +452,12 @@ class StatDataController extends CommonController{
             $where['box_id']   = $v['box_id'];
             $where['small_app_id']  = array('in','1,2');
             $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            
+
             $where['openid']   = array('neq','ofYZG4yZJHaV2h3lJHG5wOB9MzxE');
             $group  = 'forscreen_id' ;
             $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', $group);
             $box_list[$key]['box_forscreen_num'] = count($forscreen_data);
-            
+
             //机顶盒的投屏人数
             $fields = 'id';
             $where  = [];
@@ -465,7 +465,7 @@ class StatDataController extends CommonController{
             $where['box_id']   = $v['box_id'];
             $where['small_app_id']  = array('in','1,2');
             $where['create_time'] = array(array('egt',$start_time),array('elt',$end_time));
-            
+
             $where['openid']   = array('neq','ofYZG4yZJHaV2h3lJHG5wOB9MzxE');
             $group  = 'openid' ;
             $forscreen_data = $m_forscreen->getWhere($fields, $where, '', '', $group);
@@ -877,8 +877,24 @@ class StatDataController extends CommonController{
             $where['a.add_time'] = array('elt',$end_time);
             $where['a.finish_task_record_id'] = 0;
             $where['task.type'] = array('neq',7);
-            $res_task = $m_crmtask_record->getTaskRecords('max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
-            $overdue_not_finish_num = count($res_task);
+            if(isset($where['a.residenter_id'])){
+                $residenter_id = $where['a.residenter_id'];
+                unset($where['a.residenter_id']);
+                $res_task = $m_crmtask_record->getTaskRecords('max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
+                $overdue_not_finish_num = 0;
+                if(!empty($res_task)){
+                    $all_overdue_not_ids = array();
+                    foreach ($res_task as $v){
+                        $all_overdue_not_ids[]=$v['last_id'];
+                    }
+                    $where = array('a.residenter_id'=>$residenter_id,'a.id'=>array('in',$all_overdue_not_ids));
+                    $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where,'','','');
+                    $overdue_not_finish_num = intval($res_task[0]['num']);
+                }
+            }else{
+                $res_task = $m_crmtask_record->getTaskRecords('max(a.id) as last_id',$where,'','','a.hotel_id,a.task_id');
+                $overdue_not_finish_num = count($res_task);
+            }
         }else{
             $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
             $overdue_not_finish_num = intval($res_task[0]['num']);

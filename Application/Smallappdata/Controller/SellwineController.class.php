@@ -35,10 +35,10 @@ class SellwineController extends CommonController{
             $this->to_back(95003);
         }
         $m_finance_goods = new \Common\Model\Finance\GoodsModel();
-        $res_goods = $m_finance_goods->getDataList('id,name',array('brand_id'=>array('in',$res_vintner['brand_ids'])),'id desc');
+        $res_goods = $m_finance_goods->getDataList('id as goods_id,name as goods_name',array('brand_id'=>array('in',$res_vintner['brand_ids'])),'id desc');
         $goods = array();
         foreach ($res_goods as $v){
-            $goods[$v['id']]=$v;
+            $goods[$v['goods_id']]=$v;
         }
 
         $now_date = date('Y-m-d');
@@ -59,18 +59,32 @@ class SellwineController extends CommonController{
         $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
         $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
-        $fields = 'goods_id,count(DISTINCT hotel_id) as hotel_num,count(id) as num';
+        $fields = 'goods_id,count(id) as num';
         $where = array('goods_id'=>array('in',array_keys($goods)),'type'=>1);
         if($area_id){
             $where['area_id'] = $area_id;
         }
         $where['add_time'] = array(array('egt',$start_time),array('elt',$end_time));
-
         $m_sale = new \Common\Model\Finance\SaleModel();
         $res_data = $m_sale->getALLDataList($fields,$where,'','','goods_id');
-        $datalist = array();
+        $all_goods_data = array();
         foreach ($res_data as $v){
-            $v['goods_name'] = $goods[$v['goods_id']]['name'];
+            $all_goods_data[$v['goods_id']]=$v;
+        }
+        $m_hotelstock = new \Common\Model\Finance\HotelStockModel();
+        $where = array('goods_id'=>array('in',array_keys($goods)));
+        if($area_id){
+            $where['area_id'] = $area_id;
+        }
+        $res_hotelstock = $m_hotelstock->getALLDataList('goods_id,count(id) as num',$where,'','','goods_id');
+        $all_hotel_nums = array();
+        foreach ($res_hotelstock as $v){
+            $all_hotel_nums[$v['goods_id']] = $v;
+        }
+        $datalist = array();
+        foreach ($goods as $v){
+            $v['num'] = isset($all_goods_data[$v['goods_id']]['num'])?$all_goods_data[$v['goods_id']]['num']:0;
+            $v['hotel_num'] = isset($all_hotel_nums[$v['goods_id']]['num'])?$all_hotel_nums[$v['goods_id']]['num']:0;
             $datalist[]=$v;
         }
         $this->to_back(array('datalist'=>$datalist));
@@ -146,34 +160,15 @@ class SellwineController extends CommonController{
             $this->to_back(95003);
         }
 
-        $now_date = date('Y-m-d');
-        switch ($day){
-            case 1:
-                $start_date = $now_date;
-                break;
-            case 2:
-                $start_date = date('Y-m-d',strtotime('-6day'));
-                break;
-            case 3:
-                $start_date = date('Y-m-01');
-                break;
-            default:
-                $start_date = $now_date;
-        }
-        $end_date = $now_date;
-        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
-        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
-
-        $fields = 'a.hotel_id,hotel.name as hotel_name';
-        $where = array('a.goods_id'=>$goods_id,'a.type'=>1);
+        $where = array('a.goods_id'=>$goods_id);
         if($area_id){
             $where['a.area_id'] = $area_id;
         }
-        $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
+        $m_hotelstock = new \Common\Model\Finance\HotelStockModel();
         $offset = ($page-1)*$pagesize;
         $limit = "$offset,$pagesize";
-        $m_sale = new \Common\Model\Finance\SaleModel();
-        $data_list = $m_sale->getSaleStockRecordList($fields,$where,'a.hotel_id',$limit);
+        $fields = 'a.hotel_id,hotel.name as hotel_name';
+        $data_list = $m_hotelstock->getHotelDatas($fields,$where,'',$limit,'');
         foreach ($data_list as $k=>$v){
             $data_list[$k]['hotel_name'] = $this->hideHotelName($v['hotel_name']);
         }

@@ -21,6 +21,10 @@ class GoodsController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1002,'page'=>1001);
                 break;
+            case 'topDistributionGoods':
+                $this->is_verify = 2;
+                $this->valid_fields = array('openid'=>1002);
+                break;
         }
         parent::_init_();
     }
@@ -279,5 +283,24 @@ class GoodsController extends CommonController{
 
         $img_poster = $oss_host.'WeChat/MiniProgram/images/poster-head.png';
         $this->to_back(array('datalist'=>$datalist,'sale_uid'=>$sale_uid,'qrcode_url'=>$qrcode_url,'img_poster'=>$img_poster));
+    }
+
+    public function topDistributionGoods(){
+        $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+        $res_goods = $m_goods->getDataList('id,name,top_media_id',array('type'=>45,'status'=>1,'is_top'=>1),'sort desc,id desc');
+        $datalist = array();
+        if(!empty($res_goods)){
+            $m_media = new \Common\Model\MediaModel();
+            foreach ($res_goods as $v){
+                $img_url = '';
+                if(!empty($v['top_media_id'])){
+                    $res_media = $m_media->getMediaInfoById($v['top_media_id']);
+                    $img_url = $res_media['oss_addr'];
+                }
+                $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'img_url'=>$img_url);
+                $datalist[] = $dinfo;
+            }
+        }
+        $this->to_back(array('datalist'=>$datalist));
     }
 }

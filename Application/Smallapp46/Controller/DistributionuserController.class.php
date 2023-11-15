@@ -16,6 +16,10 @@ class DistributionuserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'sale_uid'=>1001);
                 break;
+            case 'edituser':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'sale_uid'=>1001,'name'=>1001);
+                break;
             case 'invite':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'invite_uid'=>1001,'itime'=>1001);
@@ -39,7 +43,7 @@ class DistributionuserController extends CommonController{
         if(!empty($res_duser) && $res_duser['level']==1){
             $pagesize = 10;
             $start = ($page-1)*$pagesize;
-            $fields = 'a.id as sale_uid,user.openid,user.nickName,user.avatarUrl';
+            $fields = 'a.id as sale_uid,a.name,user.openid,user.nickName,user.avatarUrl';
             $res_data = $m_distuser->getUserDatas($fields,array('a.parent_id'=>$res_duser['id'],'a.status'=>1),'a.id desc',"$start,$pagesize");
             if(!empty($res_data)){
                 $datalist = $res_data;
@@ -60,6 +64,25 @@ class DistributionuserController extends CommonController{
         $res_sale_user = $m_distuser->getInfo(array('id'=>$sale_uid));
         if(!empty($res_sale_user) && $res_sale_user['parent_id']==$parent_id){
             $m_distuser->updateData(array('id'=>$sale_uid),array('status'=>2));
+        }
+        $this->to_back(array());
+    }
+
+    public function edituser(){
+        $openid = $this->params['openid'];
+        $sale_uid = $this->params['sale_uid'];
+        $name = trim($this->params['name']);
+
+        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+        $res_duser = $m_distuser->getInfo(array('openid'=>$openid,'status'=>1));
+        $parent_id = intval($res_duser['id']);
+        $res_sale_user = $m_distuser->getInfo(array('id'=>$sale_uid));
+        if(!empty($res_sale_user) && $res_sale_user['parent_id']==$parent_id){
+            $m_distuser->updateData(array('id'=>$sale_uid),array('name'=>$name));
+            if(!empty($res_sale_user['openid'])){
+                $m_user = new \Common\Model\Smallapp\UserModel();
+                $m_user->updateInfo(array('openid'=>$res_sale_user['openid']),array('nickName'=>$name));
+            }
         }
         $this->to_back(array());
     }

@@ -334,6 +334,10 @@ return array(
         '90198'=>'smallapp_use_edit_error',
         '90199'=>'smallapp_invite_sale_user_time_error',
         '90200'=>'smallapp_invite_user_disable',
+        '90201'=>'smallapp_exchange_spacetime_error',
+        '90202'=>'smallapp_exchange_num_has_upper_limit',
+        '90203'=>'smallapp_exchange_money_greater_last',
+        '90204'=>'smallapp_exchange_money_greater_500',
 
 
         '91015'=>'smallapp_user_add_failed',

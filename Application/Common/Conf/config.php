@@ -320,6 +320,7 @@ return array(
     'SAPP_INITDATA'=>'smallapp:initdata:',
     'SAPP_FORSCREENTRACK'=>'smallapp:trackforscreen:',
     'SAPP_SHOPDATA'=>'smallapp:shopdata:',
+    'SAPP_EXCHANGE'=>'smallapp:exchange:',
     'VSMALL_PREFIX'=>'vsmall:',
     'BOX_TPMEDIA'=>'box:tpmedia:',
     'SAPP_SALE'=>'smallappsale:',

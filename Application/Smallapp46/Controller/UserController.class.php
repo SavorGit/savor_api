@@ -22,6 +22,10 @@ class UserController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001);
                 break;
+            case 'purse':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
             case 'closeHotelHind':
                 $this->is_verify =1;
                 $this->valid_fields = array('openid'=>1001);
@@ -518,11 +522,33 @@ class UserController extends CommonController{
             $info_status = 1;
         }
         $user_info['info_status'] = $info_status;
-
+        $m_userpurse = new \Common\Model\Smallapp\UserpurseModel();
+        $res_purse = $m_userpurse->getInfo(array('openid'=>$openid));
+        $user_info['money'] = intval($res_purse['money']);
 
         $data['user_info'] = $user_info;
         $this->to_back($data);
     }
+
+    public function purse(){
+        $openid = $this->params['openid'];
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $res_user = $m_user->getOne('id,idnumber,name,mobile', array('openid'=>$openid,'small_app_id'=>1,'status'=>1),'id desc');
+        if(empty($res_user)){
+            $this->to_back(90116);
+        }
+
+        $m_userpurse = new \Common\Model\Smallapp\UserpurseModel();
+        $res_purse = $m_userpurse->getInfo(array('openid'=>$openid));
+        $money = intval($res_purse['money']);
+        $is_alert = 0;
+        if(empty($res_user['name']) || empty($res_user['idnumber'])){
+            $is_alert = 1;
+        }
+        $this->to_back(array('money'=>$money,'is_alert'=>$is_alert));
+    }
+
     /**
      * @desc 获取我的公开记录
      */

@@ -533,6 +533,10 @@ return array(
     'smallappdata_mobile_not_open_account'=>'当前手机号没有开通账号',
     'smallappdata_user_had_register'=>'当前用户已注册账号',
     'smallappdata_user_not_open_account'=>'当前用户没有开通账号',
+    'smallapp_exchange_spacetime_error'=>'一分钟内只能提现一次',
+    'smallapp_exchange_num_has_upper_limit'=>'提现机会已达上限',
+    'smallapp_exchange_money_greater_last'=>'提现金额大于剩余金额',
+    'smallapp_exchange_money_greater_500'=>'单次提现金额不能大于500元',
 
 
 

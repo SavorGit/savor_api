@@ -9,11 +9,11 @@ class SellwineController extends CommonController{
     function _init_() {
         switch(ACTION_NAME) {
             case 'statdata':
-                $this->valid_fields = array('openid'=>1001,'day'=>1001,'area_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'day'=>1001,'area_id'=>1001,'sdate'=>1002,'edate'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'datalist':
-                $this->valid_fields = array('openid'=>1001,'day'=>1001,'area_id'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1001,'day'=>1001,'area_id'=>1001,'page'=>1001,'sdate'=>1002,'edate'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'hotels':
@@ -28,6 +28,8 @@ class SellwineController extends CommonController{
         $openid = $this->params['openid'];
         $area_id = intval($this->params['area_id']);
         $day = intval($this->params['day']);
+        $sdate = $this->params['sdate'];
+        $edate = $this->params['edate'];
 
         $m_vintner = new \Common\Model\VintnerModel();
         $res_vintner = $m_vintner->getInfo(array('openid'=>$openid,'status'=>1));
@@ -41,26 +43,36 @@ class SellwineController extends CommonController{
             $goods[$v['goods_id']]=$v;
         }
 
-        $now_date = date('Y-m-d');
-        switch ($day){
-            case 1:
-                $start_date = $now_date;
-                break;
-            case 2:
-                $start_date = date('Y-m-d',strtotime('-6day'));
-                break;
-            case 3:
-                $start_date = date('Y-m-01');
-                break;
-            default:
-                $start_date = $now_date;
+        if($day>0){
+            $now_date = date('Y-m-d');
+            switch ($day){
+                case 1:
+                    $start_date = $now_date;
+                    break;
+                case 2:
+                    $start_date = date('Y-m-d',strtotime('-6day'));
+                    break;
+                case 3:
+                    $start_date = date('Y-m-01');
+                    break;
+                default:
+                    $start_date = $now_date;
+            }
+            $end_date = $now_date;
+            $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+            $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+        }else{
+            if(empty($sdate) || empty($edate)){
+                $this->to_back(1001);
+            }
+            $start_date = $sdate;
+            $end_date = $edate;
+            $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
+            $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
         }
-        $end_date = $now_date;
-        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
-        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
-        $fields = 'goods_id,count(id) as num';
-        $where = array('goods_id'=>array('in',array_keys($goods)),'type'=>1);
+        $fields = 'goods_id,sum(num) as num';
+        $where = array('goods_id'=>array('in',array_keys($goods)),'type'=>array('in','1,4'));
         if($area_id){
             $where['area_id'] = $area_id;
         }
@@ -95,6 +107,8 @@ class SellwineController extends CommonController{
         $area_id = intval($this->params['area_id']);
         $day = intval($this->params['day']);
         $page = intval($this->params['page']);
+        $sdate = $this->params['sdate'];
+        $edate = $this->params['edate'];
         $pagesize = 20;
 
         $m_vintner = new \Common\Model\VintnerModel();
@@ -108,27 +122,37 @@ class SellwineController extends CommonController{
         foreach ($res_goods as $v){
             $goods[$v['id']]=$v;
         }
-
-        $now_date = date('Y-m-d');
-        switch ($day){
-            case 1:
-                $start_date = $now_date;
-                break;
-            case 2:
-                $start_date = date('Y-m-d',strtotime('-6day'));
-                break;
-            case 3:
-                $start_date = date('Y-m-01');
-                break;
-            default:
-                $start_date = $now_date;
+        if($day>0){
+            $now_date = date('Y-m-d');
+            switch ($day){
+                case 1:
+                    $start_date = $now_date;
+                    break;
+                case 2:
+                    $start_date = date('Y-m-d',strtotime('-6day'));
+                    break;
+                case 3:
+                    $start_date = date('Y-m-01');
+                    break;
+                default:
+                    $start_date = $now_date;
+            }
+            $end_date = $now_date;
+            $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+            $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
+        }else{
+            if(empty($sdate) || empty($edate)){
+                $this->to_back(1001);
+            }
+            $start_date = $sdate;
+            $end_date = $edate;
+            $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
+            $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
         }
-        $end_date = $now_date;
-        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
-        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
-        $fields = 'a.id,a.add_time,a.goods_id,a.hotel_id,hotel.name as hotel_name,goods.name as goods_name,record.vintner_code';
-        $where = array('a.goods_id'=>array('in',array_keys($goods)),'a.type'=>1);
+        $fields = 'a.id,a.idcode,a.num,a.add_time,a.goods_id,a.hotel_id,a.type,a.sale_openid,
+            hotel.name as hotel_name,goods.name as goods_name,record.vintner_code';
+        $where = array('a.goods_id'=>array('in',array_keys($goods)),'a.type'=>array('in','1,4'));
         if($area_id){
             $where['a.area_id'] = $area_id;
         }
@@ -138,10 +162,24 @@ class SellwineController extends CommonController{
         $limit = "$offset,$pagesize";
         $m_sale = new \Common\Model\Finance\SaleModel();
         $data_list = $m_sale->getSaleStockRecordList($fields,$where,'',$limit,'a.id desc');
+        $all_sale_types = C('STOCK_SALE_TYPES');
+        $oss_host = get_oss_host();
+        $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
+        $m_user = new \Common\Model\Smallapp\UserModel();
         foreach ($data_list as $k=>$v){
-            $data_list[$k]['num'] = 1;
             $data_list[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
-            $data_list[$k]['hotel_name'] = $this->hideHotelName($v['hotel_name']);
+            if($v['type']==1){
+                $hotel_name = $this->hideHotelName($v['hotel_name']);
+                $res_user = $m_user->getOne('avatarUrl',array('openid'=>$v['sale_openid']),'id desc');
+                $avatar_url = $res_user['avatarUrl'];
+            }else{
+                $avatar_url = $default_avatar;
+                $hotel_name = $all_sale_types[$v['type']];
+                $data_list[$k]['idcode'] = '';
+                $data_list[$k]['vintner_code'] = '';
+            }
+            $data_list[$k]['avatar_url'] = $avatar_url;
+            $data_list[$k]['hotel_name'] = $hotel_name;
         }
         $this->to_back(array('datalist'=>$data_list));
     }

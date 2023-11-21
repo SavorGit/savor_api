@@ -59,17 +59,15 @@ class SellwineController extends CommonController{
                     $start_date = $now_date;
             }
             $end_date = $now_date;
-            $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
-            $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
         }else{
             if(empty($sdate) || empty($edate)){
                 $this->to_back(1001);
             }
             $start_date = $sdate;
             $end_date = $edate;
-            $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
-            $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
         }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
         $fields = 'goods_id,sum(num) as num';
         $where = array('goods_id'=>array('in',array_keys($goods)),'type'=>array('in','1,4'));
@@ -138,17 +136,15 @@ class SellwineController extends CommonController{
                     $start_date = $now_date;
             }
             $end_date = $now_date;
-            $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
-            $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
         }else{
             if(empty($sdate) || empty($edate)){
                 $this->to_back(1001);
             }
             $start_date = $sdate;
             $end_date = $edate;
-            $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
-            $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
         }
+        $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
+        $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
 
         $fields = 'a.id,a.idcode,a.num,a.add_time,a.goods_id,a.hotel_id,a.type,a.sale_openid,
             hotel.name as hotel_name,goods.name as goods_name,record.vintner_code';

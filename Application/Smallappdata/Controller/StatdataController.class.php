@@ -214,12 +214,10 @@ class StatdataController extends CommonController{
         $m_sale = new \Common\Model\Finance\SaleModel();
         $res_data = $m_sale->getALLDataList($fields,$where,'','','type');
         $sale_data = array();
-        $all_num = 0;
         $all_sale_types = C('STOCK_SALE_TYPES');
         foreach ($res_data as $v){
             $num = intval($v['num']);
             $sale_data[]=array('name'=>$all_sale_types[$v['type']],'data'=>$num,'type'=>$v['type']);
-            $all_num+=$num;
         }
         $this->to_back(array('type_data'=>$sale_data));
     }

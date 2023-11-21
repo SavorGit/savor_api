@@ -49,11 +49,11 @@ class ConfigController extends CommonController{
         $s_month = '2023-07';
         $data_end_date = date('Y-m',strtotime('-1 month'));
         $data_date_range = array($s_month,$data_end_date);
-        $sale_date_range = array($s_month,date('Y-m'));
+        $sale_date_range = array("$s_month-01",date('Y-m-d'));
 
         $res_data = array('city_list'=>$all_area,
-            'sale_date'=>array('range'=>$sale_date_range,'default'=>array(date('Y-m'),date('Y-m'))),
-            'data_date'=>array('range'=>$data_date_range,'default'=>array($data_end_date,$data_end_date)),
+            'sale_date'=>array('range'=>$sale_date_range,'default'=>array(date('Y-m-d',strtotime('-30 day')),date('Y-m-d'))),
+            'data_date'=>array('range'=>$data_date_range,'default'=>array(date('Y-m',strtotime('-3 month')),$data_end_date)),
         );
         $this->to_back($res_data);
     }

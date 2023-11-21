@@ -214,12 +214,18 @@ class StatdataController extends CommonController{
         $m_sale = new \Common\Model\Finance\SaleModel();
         $res_data = $m_sale->getALLDataList($fields,$where,'','','type');
         $sale_data = array();
-        $all_sale_types = C('STOCK_SALE_TYPES');
         foreach ($res_data as $v){
             $num = intval($v['num']);
-            $sale_data[]=array('name'=>$all_sale_types[$v['type']],'data'=>$num,'type'=>$v['type']);
+            $sale_data[$v['type']]=$num;
         }
-        $this->to_back(array('type_data'=>$sale_data));
+        $all_sale_types = C('STOCK_SALE_TYPES');
+        $data1 = isset($sale_data[1])?$sale_data[1]:0;
+        $data4 = isset($sale_data[4])?$sale_data[4]:0;
+        $type_data = array(
+            array('name'=>$all_sale_types[1],'data'=>$data1),
+            array('name'=>$all_sale_types[4],'data'=>$data4),
+        );
+        $this->to_back(array('type_data'=>$type_data));
     }
 
 }

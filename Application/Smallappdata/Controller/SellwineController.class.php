@@ -163,7 +163,7 @@ class SellwineController extends CommonController{
         $default_avatar = $oss_host.'media/resource/btCfRRhHkn.jpg';
         $m_user = new \Common\Model\Smallapp\UserModel();
         foreach ($data_list as $k=>$v){
-            $data_list[$k]['add_time'] = date('Y-m-d H:i',strtotime($v['add_time']));
+            $data_list[$k]['add_time'] = date('Y-m-d',strtotime($v['add_time']));
             if($v['type']==1){
                 $hotel_name = $this->hideHotelName($v['hotel_name']);
                 $res_user = $m_user->getOne('avatarUrl',array('openid'=>$v['sale_openid']),'id desc');

@@ -79,10 +79,6 @@ class DistributionuserController extends CommonController{
         $res_sale_user = $m_distuser->getInfo(array('id'=>$sale_uid));
         if(!empty($res_sale_user) && $res_sale_user['parent_id']==$parent_id){
             $m_distuser->updateData(array('id'=>$sale_uid),array('name'=>$name));
-            if(!empty($res_sale_user['openid'])){
-                $m_user = new \Common\Model\Smallapp\UserModel();
-                $m_user->updateInfo(array('openid'=>$res_sale_user['openid']),array('nickName'=>$name));
-            }
         }
         $this->to_back(array());
     }

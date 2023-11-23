@@ -755,6 +755,35 @@ class OrderController extends CommonController{
                 $m_invoice->add($invoice_adddata);
             }
         }
+        if($otype==10 && !empty($address_id) && $goods_id){
+            if(!empty($res_goods['area_ids'])){
+                $m_address = new \Common\Model\Smallapp\AddressModel();
+                $res_address = $m_address->getInfo(array('id'=>$address_id));
+                if(in_array($res_address['area_id'],array(1,9,2,22))){
+                    $area_id = $res_address['area_id'];
+                }else{
+                    $area_id = $res_address['county_id'];
+                }
+
+                $all_area_ids = explode(',',$res_goods['area_ids']);
+                if(!in_array($area_id,$all_area_ids)){
+                    $m_order->updateData(array('id'=>$order_id),array('is_area_range'=>0));
+                    $m_area = new \Common\Model\AreaModel();
+                    $res_areainfo = $m_area->getWhere('id,region_name',array('id'=>$area_id),'','');
+                    $message = '此商品暂不支持'.'"'.$res_areainfo['region_name'].'"'.'区域配送';
+                    if(!empty($sale_uid)){
+                        $m_distuser = new \Common\Model\Smallapp\DistributionUserModel();
+                        $res_duser = $m_distuser->getInfo(array('id'=>$sale_uid));
+                        if($res_duser['status']==1 && !empty($res_duser['name'])){
+                            $message.="，如有需要请联系工作人员{$res_duser['name']}";
+                        }
+                    }
+                    $resp_data = array('is_pop_tips_wind'=>1,'message'=>$message);
+                    $this->to_back($resp_data);
+                }
+            }
+        }
+
         $jump_type = 2;
         if($parent_oid){
             $jump_type = 1;
@@ -828,7 +857,7 @@ class OrderController extends CommonController{
             $wxpay = $m_payment->pay($trade_info,$payconfig);
             $payinfo = json_decode($wxpay,true);
         }
-        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type);
+        $resp_data = array('pay_type'=>$pay_type,'order_id'=>$oid,'payinfo'=>$payinfo,'jump_type'=>$jump_type,'is_pop_tips_wind'=>0);
         if($now_pay_type==20){
             if($goods_id==C('LAIMAO_SECKILL_GOODS_ID')){
                 $resp_data['tips'] = '已获得秒杀资格';
@@ -2020,7 +2049,7 @@ class OrderController extends CommonController{
                             'height'=>24,
                         ),
                     );
-                    $res_distance = geo_distance($dd_res['transporterLat'], $dd_res['transporterLng'], $order_data['user_location']['lat'], $order_data['user_location']['lng']);
+                    $res_distance = geo_distance($dd_res['transporterLat'], $dd_res['transporterLng'], $res_order['user_location']['lat'], $res_order['user_location']['lng']);
                     if($res_distance>1000){
                         $distance = $res_distance/1000;
                         $distance = sprintf("%.2f",$distance);

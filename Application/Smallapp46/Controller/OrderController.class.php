@@ -778,6 +778,7 @@ class OrderController extends CommonController{
                             $message.="，如有需要请联系工作人员{$res_duser['name']}";
                         }
                     }
+                    $redis->remove($order_space_key);
                     $resp_data = array('is_pop_tips_wind'=>1,'message'=>$message);
                     $this->to_back($resp_data);
                 }

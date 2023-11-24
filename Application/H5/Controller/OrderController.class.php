@@ -233,47 +233,86 @@ class OrderController extends Controller {
             $money = intval($money*$order_amount);
             $admin_money = intval($admin_money*$order_amount);
 
-            $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
-            $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
-                'amount'=>$order_amount,'total_fee'=>$money,'status'=>20);
-            $order_exchange_id = $m_exchange->add($add_data);
-            $m_baseinc = new \Payment\Model\BaseIncModel();
-            $payconfig = $m_baseinc->getPayConfig();
-            $m_wxpay = new \Payment\Model\WxpayModel();
-            $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$money,'open_id'=>$openid);
-            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
-            $pay_status = 2;
-            if($res['code']==10000){
-                $pay_status = 1;
-                $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+            $is_purse = 0;
+            $test_openids = array('ofYZG417MIHCyVZkq-RbiIddn_8s','ofYZG4yZJHaV2h3lJHG5wOB9MzxE','ofYZG42whtWOvSELbvxvnXHbzty8','ofYZG4zmrApmvRSfzeA_mN-pHv2E','ofYZG47hd0j3wLzonUW6bATpDi3w');
+            if(in_array($openid,$test_openids)){
+                $is_purse = 1;
             }
-            $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
-            $data = array('order_id'=>$order_id,'openid'=>$openid,'distribution_user_id'=>$res_duser['id'],'money'=>$money,'pay_status'=>$pay_status);
-            $m_ordersettlement->add($data);
+            if($is_purse==1){
+                $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
+                $data = array('order_id'=>$order_id,'openid'=>$openid,'distribution_user_id'=>$res_duser['id'],'money'=>$money,'pay_status'=>3);
+                $m_ordersettlement->add($data);
 
-            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
-            $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
-            $m_paylog->add($pay_data);
-            if(!empty($admin_openid) && !empty($admin_money)){
-                $m_message = new \Common\Model\Smallapp\MessageModel();
-                $m_message->recordMessage($admin_openid,$order_id,12);
+                $m_userpurse = new \Common\Model\Smallapp\UserpurseModel();
+                $res_purse = $m_userpurse->getInfo(array('openid'=>$openid));
+                if(!empty($res_purse)){
+                    $where = array('id'=>$res_purse['id']);
+                    $m_userpurse->updateData($where,array('money'=>$money+$res_purse['money'],'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $m_userpurse->add(array('openid'=>$openid,'money'=>$money));
+                }
 
-                $add_data = array('openid'=>$admin_openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
-                    'amount'=>1,'total_fee'=>$admin_money,'status'=>20);
+                if(!empty($admin_openid) && !empty($admin_money)){
+                    $m_message = new \Common\Model\Smallapp\MessageModel();
+                    $m_message->recordMessage($admin_openid,$order_id,12);
+                    $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'distribution_user_id'=>$res_duser['parent_id'],'money'=>$admin_money,'pay_status'=>3);
+                    $m_ordersettlement->add($data);
+
+                    $res_purse = $m_userpurse->getInfo(array('openid'=>$admin_openid));
+                    if(!empty($res_purse)){
+                        $where = array('id'=>$res_purse['id']);
+                        $m_userpurse->updateData($where,array('money'=>$admin_money+$res_purse['money'],'update_time'=>date('Y-m-d H:i:s')));
+                    }else{
+                        $m_userpurse->add(array('openid'=>$admin_openid,'money'=>$admin_money));
+                    }
+                }
+
+            }else{
+                $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
+                $add_data = array('openid'=>$openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
+                    'amount'=>$order_amount,'total_fee'=>$money,'status'=>20);
                 $order_exchange_id = $m_exchange->add($add_data);
-
-                $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$admin_money,'open_id'=>$admin_openid);
+                $m_baseinc = new \Payment\Model\BaseIncModel();
+                $payconfig = $m_baseinc->getPayConfig();
+                $m_wxpay = new \Payment\Model\WxpayModel();
+                $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$money,'open_id'=>$openid);
                 $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
                 $pay_status = 2;
                 if($res['code']==10000){
                     $pay_status = 1;
                     $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
                 }
-                $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'distribution_user_id'=>$res_duser['parent_id'],'money'=>$admin_money,'pay_status'=>$pay_status);
+
+                $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
+                $data = array('order_id'=>$order_id,'openid'=>$openid,'distribution_user_id'=>$res_duser['id'],'money'=>$money,'pay_status'=>$pay_status);
                 $m_ordersettlement->add($data);
-                $pay_data = array('order_id'=>$order_id,'openid'=>$admin_openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
+
+                $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+                $pay_data = array('order_id'=>$order_id,'openid'=>$openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
                 $m_paylog->add($pay_data);
+
+                if(!empty($admin_openid) && !empty($admin_money)){
+                    $m_message = new \Common\Model\Smallapp\MessageModel();
+                    $m_message->recordMessage($admin_openid,$order_id,12);
+
+                    $add_data = array('openid'=>$admin_openid,'goods_id'=>0,'order_id'=>$order_id,'price'=>0,'type'=>6,
+                        'amount'=>1,'total_fee'=>$admin_money,'status'=>20);
+                    $order_exchange_id = $m_exchange->add($add_data);
+
+                    $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$admin_money,'open_id'=>$admin_openid);
+                    $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+                    $pay_status = 2;
+                    if($res['code']==10000){
+                        $pay_status = 1;
+                        $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+                    }
+                    $data = array('order_id'=>$order_id,'openid'=>$admin_openid,'distribution_user_id'=>$res_duser['parent_id'],'money'=>$admin_money,'pay_status'=>$pay_status);
+                    $m_ordersettlement->add($data);
+                    $pay_data = array('order_id'=>$order_id,'openid'=>$admin_openid,'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
+                    $m_paylog->add($pay_data);
+                }
             }
+
             $m_order->updateData(array('id'=>$order_id),array('is_settlement'=>1,'buy_type'=>$buy_type));
         }else{
             $log_content = date("Y-m-d H:i:s").'[order_id]'.$orders[0]['order_id'].'[sale_uid]'.$res_order['sale_uid'].'[status]'.$res_order['status'].'[is_settlement]'.$res_order['is_settlement']."\n";

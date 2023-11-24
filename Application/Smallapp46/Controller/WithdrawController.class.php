@@ -88,17 +88,8 @@ class WithdrawController extends CommonController{
         $redis->set($cache_key,json_encode($order_exchange),86400);
         $redis->set($space_cache_key,$order_exchange_id,60);
 
-        $smallapp_config = C('SMALLAPP_CONFIG');
-        $pay_wx_config = C('PAY_WEIXIN_CONFIG_1594752111');
-        $sslcert_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_cert.pem';
-        $sslkey_path = APP_PATH.'Payment/Model/wxpay_lib/cert/1594752111_apiclient_key.pem';
-        $payconfig = array(
-            'appid'=>$smallapp_config['appid'],
-            'partner'=>$pay_wx_config['partner'],
-            'key'=>$pay_wx_config['key'],
-            'sslcert_path'=>$sslcert_path,
-            'sslkey_path'=>$sslkey_path,
-        );
+        $m_baseinc = new \Payment\Model\BaseIncModel();
+        $payconfig = $m_baseinc->getPayConfig();
         $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$total_fee,'open_id'=>$openid);
         $m_wxpay = new \Payment\Model\WxpayModel();
         $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
@@ -109,7 +100,7 @@ class WithdrawController extends CommonController{
         $pay_data = array('order_id'=>$order_exchange_id,'openid'=>$openid,
             'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
         $m_paylog->add($pay_data);
-        
+
         $message = '您已提现成功，请注意查收。';
         $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
         $res = array('message'=>$message,'tips'=>$tips);

@@ -182,7 +182,7 @@ class DistributionuserController extends CommonController{
                 $res_order = $m_order->getDataList($fields,$where,'id desc',$start,$pagesize);
                 if($res_order['total']){
                     $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
-                    $swhere = array('distribution_user_id'=>$where['sale_uid']);
+                    $swhere = array('distribution_user_id'=>$res_duser['id']);
                     $res_allsettle = $m_ordersettlement->getDataList('sum(money) as total_money',$swhere,'id desc');
                     $total_income_money = $res_allsettle[0]['total_money'];
 

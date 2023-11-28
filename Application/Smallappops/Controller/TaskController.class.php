@@ -74,8 +74,7 @@ class TaskController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $visit_purpose_id = intval($this->params['visit_purpose_id']);
         $salerecord_id = intval($this->params['salerecord_id']);
-        $version       = $this->params['version'];
-        //$version>='1.0.15'
+        $version = $this->params['version'];
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -105,13 +104,10 @@ class TaskController extends CommonController{
             $is_has_task = 1;
         }
         $content_default = array();
-        if($version<'1.0.20'){
-            $is_salehotel = 0;
-        }
         if($is_salehotel){
             if($visit_purpose_id==182){
                 $content_default = C('CONTENT_DEFAULT');
-            }else if($visit_purpose_id==183){
+            }elseif($visit_purpose_id==183){
                 $content_default = C('CONTENT_DEFAULT_RESIDENT');
             }
         }

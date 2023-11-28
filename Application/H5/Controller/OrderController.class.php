@@ -238,6 +238,7 @@ class OrderController extends Controller {
             if(in_array($openid,$test_openids)){
                 $is_purse = 1;
             }
+            $is_purse = 1;
             if($is_purse==1){
                 $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
                 $data = array('order_id'=>$order_id,'openid'=>$openid,'distribution_user_id'=>$res_duser['id'],'money'=>$money,'pay_status'=>3);

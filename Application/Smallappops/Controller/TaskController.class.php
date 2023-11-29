@@ -384,6 +384,7 @@ class TaskController extends CommonController{
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'a.id desc');
         $unhandle_list = $handle_list = array();
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
+        $task_help_desc = C('TASK_HELP_DESC');
         foreach ($res_task as $v){
             $status_str = '';
             if(isset($all_status_map[$v['status']])){
@@ -399,6 +400,7 @@ class TaskController extends CommonController{
                 $v['audit_time'] = '';
             }
             $v['status_str'] = $status_str;
+            $v['task_help_desc'] = $task_help_desc[$v['type']];
             if($v['status']==0){
                 $unhandle_list[]=$v;
             }else{

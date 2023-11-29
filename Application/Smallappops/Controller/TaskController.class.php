@@ -18,7 +18,7 @@ class TaskController extends CommonController{
                 break;
             case 'datalist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'task_id'=>1001,'page'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002);
+                $this->valid_fields = array('openid'=>1001,'task_id'=>1001,'page'=>1001,'area_id'=>1002,'staff_id'=>1002,'stat_date'=>1002,'order_type'=>1002,'version'=>1002);
                 break;
             case 'getHotelTask':
                 $this->is_verify = 1;
@@ -207,6 +207,9 @@ class TaskController extends CommonController{
         $page = intval($this->params['page']);
         $pagesize = 20;
         $stat_date = $this->params['stat_date'];
+        $order_type = $this->params['order_type'];
+        $version   = $this->params['version'];
+        
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -247,8 +250,31 @@ class TaskController extends CommonController{
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
+        if(!empty($version) && $version>='1.0.22'){
+            
+            switch ($order_type){
+                case 1:
+                    $orders = 'ext.sale_cqmoney,ext.sale_ysmoney desc';
+                    break;
+                case 2:
+                    $orders = 'ext.sale_hotel_in_time desc';
+                    break;
+                case 3:
+                    $orders = 'ext.sale_not_day desc';
+                    break;
+                case 4:
+                    $orders = 'ext.sale_decline_percent asc ';
+                    break;
+                default:
+                    $orders = 'hotel.pinyin asc';
+            }
+            
+            
+        }else {
+            $orders = 'hotel.pinyin asc';
+        }
         $fileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(a.id,'-',a.status,'-',task.type Separator ',') as gtype";
-        $res_data = $m_crmtask_record->getTaskRecords($fileds,$where,'hotel.pinyin asc','','a.hotel_id');
+        $res_data = $m_crmtask_record->getTaskRecords($fileds,$where,$orders,'','a.hotel_id');
         $head_data = array();
         $other_data = array();
         $all_types = C('CRM_TASK_TYPES');

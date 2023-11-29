@@ -901,8 +901,9 @@ class StatDataController extends CommonController{
         }
 
         $desc = C('TASKDATA_DESC');
+        $hotel_task_order_desc = C('HOTEL_TASK_ORDER_DESC');
         $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,
-            'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num,'desc'=>$desc);
+            'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num,'desc'=>$desc,'hotel_task_order_desc'=>$hotel_task_order_desc);
         $this->to_back($res_data);
     }
 }

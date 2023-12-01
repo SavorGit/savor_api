@@ -209,13 +209,13 @@ class TaskController extends CommonController{
         $stat_date = $this->params['stat_date'];
         $order_type = $this->params['order_type'];
         $version   = $this->params['version'];
-        
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $staff_residenter_id = $res_staff['sysuser_id'];
         $hotel_role_type = $res_staff['hotel_role_type'];//酒楼角色类型1全国,2城市,3个人,4城市和个人,5全国财务,6城市财务
         $permission = json_decode($res_staff['permission'],true);
         $where = array('a.off_state'=>1,'ext.is_salehotel'=>1,'a.status'=>array('in','0,1'),'task.type'=>array('neq',11));
@@ -251,7 +251,6 @@ class TaskController extends CommonController{
 
         $m_crmtask_record = new \Common\Model\Crm\TaskRecordModel();
         if(!empty($version) && $version>='1.0.22'){
-            
             switch ($order_type){
                 case 1:
                     $orders = 'ext.sale_cqmoney,ext.sale_ysmoney desc';
@@ -268,16 +267,15 @@ class TaskController extends CommonController{
                 default:
                     $orders = 'hotel.pinyin asc';
             }
-            
-            
         }else {
             $orders = 'hotel.pinyin asc';
         }
-        $fileds = "a.hotel_id,hotel.name as hotel_name,count(a.id) as num,group_concat(a.id,'-',a.status,'-',task.type Separator ',') as gtype";
+        $fileds = "a.hotel_id,hotel.name as hotel_name,ext.residenter_id,count(a.id) as num,group_concat(a.id,'-',a.status,'-',task.type Separator ',') as gtype";
         $res_data = $m_crmtask_record->getTaskRecords($fileds,$where,$orders,'','a.hotel_id');
         $head_data = array();
         $other_data = array();
         $all_types = C('CRM_TASK_TYPES');
+        $m_message = new \Common\Model\Smallapp\MessageModel();
         foreach ($res_data as $v){
             $is_head = 0;
             $task_type_name = '';
@@ -291,6 +289,16 @@ class TaskController extends CommonController{
                 }
             }
             $v['task_type_name'] = $task_type_name;
+            $is_hotel_residenter = 0;
+            $message_num = 0;
+            if($v['residenter_id']==$staff_residenter_id){
+                $is_hotel_residenter = 1;
+                $mwhere = array('ops_staff_id'=>$res_staff['id'],'type'=>19,'hotel_id'=>$v['hotel_id'],'read_status'=>1);
+                $res_message = $m_message->getDataList('count(id) as num',$mwhere,'');
+                $message_num = intval($res_message[0]['num']);
+            }
+            $v['is_hotel_residenter'] = $is_hotel_residenter;
+            $v['message_num'] = $message_num;
             unset($v['gtype']);
             if($is_head){
                 $head_data[]=$v;

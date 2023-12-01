@@ -853,6 +853,10 @@ class StatDataController extends CommonController{
         $hotel_num = intval($res_task[0]['hotel_num']);
         $release_num = intval($res_task[0]['release_num']);
 
+        $where['a.status'] = 3;
+        $res_task = $m_crmtask_record->getTaskRecords('count(a.id) as num',$where);
+        $all_finish_num = intval($res_task[0]['num']);
+
         $fileds = 'count(a.id) as num,a.handle_status';
         $where['a.handle_status'] = array('gt',0);
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'','','a.handle_status');
@@ -902,7 +906,7 @@ class StatDataController extends CommonController{
 
         $desc = C('TASKDATA_DESC');
         $hotel_task_order_desc = C('HOTEL_TASK_ORDER_DESC');
-        $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,
+        $res_data = array('hotel_num'=>$hotel_num,'release_num'=>$release_num,'handle_num'=>$handle_num,'all_finish_num'=>$all_finish_num,
             'finish_num'=>$finish_num,'overdue_not_finish_num'=>$overdue_not_finish_num,'refuse_num'=>$refuse_num,'desc'=>$desc,'hotel_task_order_desc'=>$hotel_task_order_desc);
         $this->to_back($res_data);
     }

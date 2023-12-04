@@ -254,7 +254,7 @@ class TaskController extends CommonController{
             
             switch ($order_type){
                 case 1:
-                    $orders = 'ext.sale_cqmoney,ext.sale_ysmoney desc';
+                    $orders = 'ext.sale_cqmoney desc ,ext.sale_ysmoney desc';
                     break;
                 case 2:
                     $orders = 'ext.sale_hotel_in_time desc';

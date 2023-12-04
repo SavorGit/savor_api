@@ -10,7 +10,7 @@ class MessageController extends CommonController{
         switch(ACTION_NAME) {
             case 'datalist':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001);
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'page'=>1001,'hotel_id'=>1002);
                 break;
             case 'detail':
                 $this->is_verify = 1;
@@ -24,14 +24,19 @@ class MessageController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'message_id'=>1001);
                 break;
+            case 'readHotelMsg':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'type'=>1001,'hotel_id'=>1002);
+                break;
         }
         parent::_init_();
     }
 
     public function datalist(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);//13盘点记录,14收款,15超期欠款,16酒水售卖,17积分到账,18积分提现(运维端)
+        $type = intval($this->params['type']);//13盘点记录,14收款,15超期欠款,16酒水售卖,17积分到账,18积分提现(运维端),19酒水回款(运维端)
         $page = intval($this->params['page']);
+        $hotel_id = intval($this->params['hotel_id']);
         $pagesize = 20;
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -44,6 +49,9 @@ class MessageController extends CommonController{
 
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $where = array('a.ops_staff_id'=>$res_staff['id'],'a.type'=>$type);
+        if($hotel_id){
+            $where['a.hotel_id'] = $hotel_id;
+        }
         $fields = 'a.id,a.staff_openid,a.ops_staff_id,a.hotel_id,a.content_id,a.read_status,a.add_time,a.money,a.qk_day,a.integral,hotel.name as hotel_name';
         $res_message = $m_message->getMessageInfo($fields,$where,'a.id desc',"$offset,$pagesize");
         if(!empty($res_message)){
@@ -107,6 +115,10 @@ class MessageController extends CommonController{
                     case 18:
                         $res_user = $m_user->getOne('nickName',array('openid'=>$v['staff_openid']),'');
                         $content = $res_user['nickName'].'使用积分兑换的'.$v['money'].'元已到账';
+                        break;
+                    case 19:
+                        $hotel_name = '回款通知';
+                        $content = '店内售卖了1瓶酒水，产生'.$v['money'].'元欠款，请及时处理';
                         break;
                 }
                 $tmp_datas[$mdate][]=array('message_id'=>$v['id'],'name'=>$hotel_name,'stockcheck_id'=>$stockcheck_id,'color'=>$color,'read_status'=>$v['read_status'],
@@ -198,6 +210,22 @@ class MessageController extends CommonController{
         }
         $m_message = new \Common\Model\Smallapp\MessageModel();
         $m_message->updateData(array('id'=>$message_id),array('read_status'=>2));
+        $this->to_back(array());
+    }
+
+    public function readHotelMsg(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $type = intval($this->params['type']);//19酒水回款
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_message = new \Common\Model\Smallapp\MessageModel();
+        $where = array('ops_staff_id'=>$res_staff['id'],'type'=>$type,'hotel_id'=>$hotel_id);
+        $m_message->updateData($where,array('read_status'=>2));
         $this->to_back(array());
     }
 

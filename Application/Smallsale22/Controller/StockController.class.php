@@ -380,6 +380,18 @@ class StockController extends CommonController{
                     $this->to_back(93081);
                 }
             }
+            if($res_qrcode['parent_id']==0){
+                $res_soncodes = $m_qrcode_content->getDataList('id',array('parent_id'=>$res_qrcode['id']),'id asc');
+                $all_soncodes = array();
+                foreach ($res_soncodes as $sonv){
+                    $s_idcode = encrypt_data($sonv['id'],$key);
+                    $all_soncodes[]="'$s_idcode'";
+                }
+                $res_son_record = $m_stock_record->getDataList('id',array('idcode'=>array('in',$all_soncodes)),'id desc');
+                if(!empty($res_son_record)){
+                    $this->to_back(93100);
+                }
+            }
         }else{
             if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']==2){
                 $this->to_back(93103);

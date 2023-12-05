@@ -54,13 +54,13 @@ class AdvController extends CommonController{
 		//酒水
         $redis = new SavorRedis();
         $redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK');
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
         $res_cache = $redis->get($key);
         $hotel_stock = array();
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
-        if(isset($hotel_stock[$hotel_id])){
+        if(!empty($hotel_stock['goods_ids'])){
             $now_date = date('Y-m-d H:i:s');
             $m_life_adshotel = new \Common\Model\Smallapp\StoresaleAdsHotelModel();
             $fields = "ads.id,ads.name as title,ads.img_url,ads.create_time,media.id as media_id,media.oss_addr,
@@ -75,7 +75,7 @@ class AdvController extends CommonController{
             if(!empty($res_data)){
                 $m_media = new \Common\Model\MediaModel();
                 foreach($res_data as $v){
-                    if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                    if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
                         $create_time = $v['create_time'];
                         $dinfo = array('id'=>$v['id'],'title'=>$v['title'],'forscreen_id'=>0,'res_type'=>2,'res_nums'=>1,'create_time'=>$create_time,'rtype'=>'wineads');
                         $res_url = $oss_host.$v['oss_addr'];

@@ -45,7 +45,7 @@ class GoodsController extends CommonController{
 
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK');
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
         $res_cache = $redis->get($key);
         $hotel_stock = array();
         if(!empty($res_cache)) {
@@ -53,7 +53,7 @@ class GoodsController extends CommonController{
         }
 
         $res_goods = array();
-        if($is_olddata || isset($hotel_stock[$hotel_id])){
+        if($is_olddata || !empty($hotel_stock)){
             $fields = 'g.id as goods_id,g.name as goods_name,g.model_media_id,g.price,g.line_price,g.finance_goods_id,g.end_time,g.is_seckill,
             g.start_time,g.end_time';
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
@@ -67,7 +67,7 @@ class GoodsController extends CommonController{
             $goods_info = array();
             foreach ($res_goods as $v){
                 $goods_id = $v['goods_id'];
-                if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
                     $price = intval($v['price']);
                     $goods_info[]="{$v['goods_name']}({$price}元)";
 

@@ -509,12 +509,6 @@ class UserController extends CommonController{
         $cache_data = array('id'=>$id,'openid'=>$openid,'box_mac'=>$box_mac,'nowtime'=>time());
         $redis->set($cache_key,json_encode($cache_data),18000);
 
-		$redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK');
-        $res_cache = $redis->get($key);
-        if(!empty($res_cache)) {
-            $hotel_stock = json_decode($res_cache, true);
-        }
         $hotel_stock = '';
 		if(!empty($hotel_stock)){
 			$media_id = 0;

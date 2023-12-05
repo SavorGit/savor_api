@@ -41,14 +41,14 @@ class StoresaleAdsController extends CommonController{
             $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
         }
         $redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK');
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
         $res_cache = $redis->get($key);
         $hotel_stock = array();
         if(!empty($res_cache)) {
             $hotel_stock = json_decode($res_cache, true);
         }
         $media_list = array();
-        if(!isset($hotel_stock[$hotel_id])){
+        if(empty($hotel_stock)){
             $period = getMillisecond();
             $data = array('period'=>$period,'media_list'=>$media_list);
             $this->to_back($data);
@@ -76,7 +76,7 @@ class StoresaleAdsController extends CommonController{
             }
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_data as $k=>$v){
-                if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+                if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
                     $now_goods_ids[]=$v['goods_id'];
                     $v['type'] = 'storesale';
                     $v['is_sapp_qrcode'] = intval($v['is_sapp_qrcode']);

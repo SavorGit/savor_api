@@ -858,6 +858,7 @@ class StatDataController extends CommonController{
         $all_finish_num = intval($res_task[0]['num']);
 
         $fileds = 'count(a.id) as num,a.handle_status';
+        unset($where['a.status']);
         $where['a.handle_status'] = array('gt',0);
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'','','a.handle_status');
         $handle_num = $refuse_num = 0;

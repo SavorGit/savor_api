@@ -376,8 +376,6 @@ return array(
     'BOX_LANHOTEL_DOWNLOADQUEUE'=>'lanhotel:queuedownload:',
     'BOX_LANHOTEL_DOWNLOAD_FAIL'=>'lanhotel:faildownload:',
 
-    'FINANCE_HOTELSTOCK'=>'finance:hotelstock',
-
     'UMENBAI_API_CONFIG' => array(
         'API_URL'=>'http://msg.umeng.com/api/send',
         'boxclient'=>array(

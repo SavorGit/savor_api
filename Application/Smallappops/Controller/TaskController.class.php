@@ -86,13 +86,13 @@ class TaskController extends CommonController{
 
         if($salerecord_id>0){
             $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
-            $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img,task.is_upimg,task.is_check_location';
+            $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img,task.is_upimg,task.is_check_location,tr.remind_content';
             $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
         }else{
             $start_time = date('Y-m-01 00:00:00');
             $end_time = date('Y-m-31 23:59:59');
             $residenter_id = $res_staff['sysuser_id'];
-            $fileds = 'a.id as task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img,task.is_upimg,task.is_check_location';
+            $fileds = 'a.id as task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img,task.is_upimg,task.is_check_location,a.remind_content';
             $where = array('a.hotel_id'=>$hotel_id,'a.residenter_id'=>$residenter_id,'a.handle_status'=>array('in','0,1'),
                 'a.audit_handle_status'=>array('in','0,1'),'a.status'=>array('in','0,1'));
             $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));

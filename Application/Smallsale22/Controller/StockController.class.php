@@ -1534,6 +1534,7 @@ class StockController extends CommonController{
                         $add_data['wo_data_imgs'] = $data_imgs;
                         $add_data['wo_status'] = 1;
                         $add_data['wo_num'] = 1;
+                        $add_data['is_notifymsg'] = 0;
                         $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
                         if($is_black==0){

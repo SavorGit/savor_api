@@ -861,17 +861,24 @@ class StockController extends CommonController{
         }
         $m_stock = new \Common\Model\Finance\StockModel();
         $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
+        $amount = 0;
+        $total_fee = $total_money = 0;
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
         if($res_stock['status']==1){
-            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-            $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
             if($res_stock['type']==10 && $res_stock['io_type']==11){
-                $rfields = 'goods_id,stock_detail_id,sum(total_amount) as total_num,price';
+                $rfields = 'goods_id,stock_detail_id,sum(total_amount) as total_num,sum(total_fee) as total_fee,price';
                 $rwhere = array('stock_id'=>$stock_id,'type'=>1,'dstatus'=>1);
                 $res_stock_num = $m_stock_record->getALLDataList($rfields,$rwhere,'','','goods_id');
                 $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
                 foreach ($res_stock_num as $v){
-                    $goods_id = $v['goods_id'];
                     $num = $v['total_num'];
+                    $now_total_fee = $v['total_fee'];
+                    $amount+=$num;
+                    $total_fee+=$now_total_fee;
+                    $total_money+=$now_total_fee;
+
+                    $goods_id = $v['goods_id'];
                     $price = $v['price'];
                     $stock_detail_id = $v['stock_detail_id'];
                     $res_sdetail = $m_stock_detail->getInfo(array('id'=>$stock_detail_id));
@@ -915,6 +922,20 @@ class StockController extends CommonController{
         }
 
         $up_data = array('status'=>2,'op_openid'=>$openid);
+        if($res_stock['status']==1 && $res_stock['type']==10){
+            if($res_stock['io_type']==11){
+                $up_data['amount'] = $amount;
+                $up_data['total_fee'] = $total_fee;
+                $up_data['total_money'] = $total_money;
+            }else{
+                $rfields = 'sum(total_amount) as total_num,sum(total_fee) as total_fee';
+                $rwhere = array('stock_id'=>$stock_id,'type'=>1,'dstatus'=>1);
+                $res_stock_num = $m_stock_record->getALLDataList($rfields,$rwhere,'','','');
+                $up_data['amount'] = intval($res_stock_num[0]['total_num']);
+                $up_data['total_fee'] = $res_stock_num[0]['total_fee']>0?$res_stock_num[0]['total_fee']:0;
+                $up_data['total_money'] = $up_data['total_fee'];
+            }
+        }
         $m_stock->updateData(array('id'=>$stock_id),$up_data);
         $this->to_back(array());
     }

@@ -96,7 +96,7 @@ class StockController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'finishWriteoff':
-                $this->params = array('openid'=>1001,'goods_codes'=>1001,'reason_type'=>1001,'data_imgs'=>1001);
+                $this->params = array('openid'=>1001,'goods_codes'=>1001,'reason_type'=>1001,'data_imgs'=>1001,'latitude'=>1002,'longitude'=>1002,);
                 $this->is_verify = 1;
                 break;
             case 'getWriteoffList':
@@ -1482,6 +1482,8 @@ class StockController extends CommonController{
         $goods_codes = $this->params['goods_codes'];
         $reason_type = intval($this->params['reason_type']);
         $data_imgs = $this->params['data_imgs'];
+        $latitude = $this->params['latitude'];
+        $longitude = $this->params['longitude'];
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
@@ -1490,11 +1492,11 @@ class StockController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
-        $goods_ids = array();
         $all_idcodes = explode(',',$goods_codes);
         if(count($all_idcodes)>6){
             $this->to_back(93109);
         }
+        $message = '提交成功';
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
             $fileds = 'a.idcode,stock.hotel_id,a.add_time';
@@ -1510,13 +1512,23 @@ class StockController extends CommonController{
 
             $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_sale = new \Common\Model\Finance\SaleModel();
+            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
             $batch_no = getMillisecond();
+            $goods_config = array();
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
                 if(!empty($res_record)){
                     $add_data = $res_record[0];
-                    $goods_ids[]=$add_data['goods_id'];
+                    $goods_id = $add_data['goods_id'];
+                    if(empty($goods_config)){
+                        $configwhere = array('goods_id'=>$goods_id,'type'=>10);
+                        $goods_config = $m_goodsconfig->getALLDataList('*',$configwhere,'id desc','0,1','');
+                    }
+                    $recycle_status = 4;
+                    if(!empty($goods_config[0]['open_integral'])){
+                        $recycle_status = 1;
+                    }
                     $is_new = 0;
                     if($add_data['type']==7){
                         switch ($add_data['wo_status']){
@@ -1525,11 +1537,14 @@ class StockController extends CommonController{
                                 $up_data = array('op_openid'=>$openid,'batch_no'=>$batch_no,'wo_reason_type'=>$reason_type,
                                     'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'wo_time'=>date('Y-m-d H:i:s')
                                 );
+                                $up_data['recycle_status'] = $recycle_status;
+                                if(!empty($longitude) && !empty($latitude)){
+                                    $up_data['longitude'] = $longitude;
+                                    $up_data['latitude'] = $latitude;
+                                }
                                 if($is_black==0){
                                     $up_data['wo_status'] = 2;
-                                    $up_data['recycle_status'] = 2;
                                     $up_data['update_time'] = date('Y-m-d H:i:s');
-                                    $up_data['recycle_time'] = date('Y-m-d H:i:s');
                                 }
                                 $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
                                 break;
@@ -1554,15 +1569,19 @@ class StockController extends CommonController{
                         $add_data['wo_reason_type'] = $reason_type;
                         $add_data['wo_data_imgs'] = $data_imgs;
                         $add_data['wo_status'] = 1;
+                        $add_data['recycle_status'] = $recycle_status;
+                        $add_data['out_time'] = $add_data['add_time'];
                         $add_data['wo_num'] = 1;
                         $add_data['is_notifymsg'] = 0;
                         $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
+                        if(!empty($longitude) && !empty($latitude)){
+                            $up_data['longitude'] = $longitude;
+                            $up_data['latitude'] = $latitude;
+                        }
                         if($is_black==0){
                             $add_data['wo_status'] = 2;
-                            $add_data['recycle_status'] = 2;
                             $add_data['update_time'] = date('Y-m-d H:i:s');
-                            $add_data['recycle_time'] = date('Y-m-d H:i:s');
                         }
                         $record_id = $m_stock_record->add($add_data);
 
@@ -1577,14 +1596,7 @@ class StockController extends CommonController{
                     }
                 }
             }
-        }
-        $message = '提交成功';
-        if(!empty($goods_ids)){
-            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-            $configwhere = array('goods_id'=>array('in',$goods_ids),'type'=>10);
-            $configwhere['integral'] = array('gt',0);
-            $res_goods = $m_goodsconfig->getDataList('*',$configwhere,'id desc');
-            if(!empty($res_goods)){
+            if(!empty($goods_config[0]['integral'])){
                 $message = '提交成功，审核通过后24小时内将为你发放对应积分奖励。';
             }
         }
@@ -1594,6 +1606,7 @@ class StockController extends CommonController{
     public function getWriteoffList(){
         $openid = $this->params['openid'];
         $page = intval($this->params['page']);
+        $version = $this->params['version'];
         $pagesize = 10;
 
         $m_staff = new \Common\Model\Integral\StaffModel();
@@ -1616,8 +1629,11 @@ class StockController extends CommonController{
             $m_media = new \Common\Model\MediaModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
-            $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
-            spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
+            $all_recycle_status = C('STOCK_RECYCLE_ALL_STATUS');
+            $open_time = '2023-12-27 13:00:10';
+            $fileds = 'a.id,a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+            spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.recycle_status,a.recycle_time,
+            a.reason,a.add_time';
             foreach ($res_records as $v){
                 $reason = '';
                 if(isset($all_reasons[$v['reason_type']])){
@@ -1628,19 +1644,75 @@ class StockController extends CommonController{
                 $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
 
                 $entity = array();
-                $cwhere = array('goods_id'=>$res_goods[0]['goods_id'],'status'=>1,'type'=>20);
-                $res_config = $m_goodsconfig->getDataList('id,name,media_id',$cwhere,'id asc');
+                $cwhere = array('goods_id'=>$res_goods[0]['goods_id'],'status'=>1,'type'=>array('in','10,20'));
+                $res_config = $m_goodsconfig->getDataList('id,name,media_id,open_integral,type',$cwhere,'id asc');
+                $demo_img = '';
+                $open_integral = 0;
                 if(!empty($res_config)){
                     foreach ($res_config as $cv){
-                        $res_media = $m_media->getMediaInfoById($cv['media_id']);
-                        $entity[]=array('name'=>$cv['name'],'img_url'=>$res_media['oss_addr']);
+                        $img_url = '';
+                        if($cv['media_id']>0){
+                            $res_media = $m_media->getMediaInfoById($cv['media_id']);
+                            $img_url = $res_media['oss_addr'];
+                        }
+                        if($cv['type']==10){
+                            $demo_img = $img_url;
+                            $open_integral = $cv['open_integral'];
+                        }
+                        if($cv['type']==20){
+                            $entity[]=array('name'=>$cv['name'],'img_url'=>$img_url);
+                        }
                     }
                 }
-
-                $data_list[]=array('reason'=>$reason,'status'=>$v['status'],
-                    'status_str'=>$all_status[$v['status']],'num'=>count($res_goods),'add_time'=>$v['add_time'],
-                    'goods'=>$res_goods,'entity'=>$entity);
+                $recycle_status = 4;
+                if($open_integral && $res_goods[0]['add_time']>=$open_time){
+                    $recycle_status = $res_goods[0]['recycle_status'];
+                }
+                $idcode_num = count($res_goods);
+                $recycle_list = array();
+                if(!in_array($recycle_status,array(1,4))){
+                    $tmp_recycle = array();
+                    foreach ($res_goods as $rgv){
+                        $tmp_recycle[$rgv['recycle_status']][]=array('recycle_time'=>$rgv['recycle_time'],'reason'=>$rgv['reason']);
+                    }
+                    foreach ($tmp_recycle as $trk=>$trv){
+                        $status_str = '开瓶奖励'.$all_recycle_status[$trk];
+                        if($idcode_num>1){
+                            $now_num = count($trv);
+                            $status_str = $now_num.'个'.$status_str;
+                        }
+                        $rlist = $trv;
+                        if($trk==3){
+                            foreach ($rlist as $rlk=>$rlv){
+                                $rlist[$rlk]['reason'] = '无法回收未上传开瓶资料';
+                            }
+                        }
+                        $recycle_list[]=array('status'=>$trk,'status_str'=>$status_str,'num'=>count($trv),'rlist'=>$rlist);
+                    }
+                }
+                $data_list[]=array('reason'=>$reason,'status'=>$v['status'],'recycle_status'=>$recycle_status,'recycle_list'=>$recycle_list,
+                    'status_str'=>$all_status[$v['status']],'num'=>$idcode_num,'add_time'=>$v['add_time'],
+                    'goods'=>$res_goods,'entity'=>$entity,'demo_img'=>$demo_img,'batch_no'=>$batch_no);
             }
+        }
+        if($version>='1.9.48'){
+            $reward_tips = '';
+            if($page==1){
+                $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+                $configwhere = array('type'=>10,'open_integral'=>array('gt',0));
+                $res_goods = $m_goodsconfig->getDataList('goods_id',$configwhere,'id desc');
+                $goods_ids = array();
+                foreach ($res_goods as $v){
+                    $goods_ids[]=$v['goods_id'];
+                }
+                $where = array('op_openid'=>$openid,'type'=>7,'wo_status'=>2,'recycle_status'=>1);
+                $where['goods_id'] = array('in',$goods_ids);
+                $res_records = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
+                if(!empty($res_records[0]['id'])){
+                    $reward_tips = '您有待领取的开瓶费，请尽快申请领取';
+                }
+            }
+            $data_list = array('datalist'=>$data_list,'reward_tips'=>$reward_tips);
         }
         $this->to_back($data_list);
     }

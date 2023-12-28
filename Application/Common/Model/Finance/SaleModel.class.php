@@ -6,41 +6,33 @@ class SaleModel extends BaseModel{
 	protected $tableName='finance_sale';
 
 	public function addsale($stock_record_info,$hotel_id,$sale_openid,$user){
-	    /*
-	    $index_voucher_no = 10001;
-	    $res_data = $this->getALLDataList('id,jd_voucher_no',array(),'id desc','0,1','');
-	    if(!empty($res_data[0]['jd_voucher_no'])){
-	        $jd_voucher_no = $res_data[0]['jd_voucher_no']+1;
-        }else{
-            $jd_voucher_no = $index_voucher_no;
-        }
-	    */
         $m_stock = new \Common\Model\Finance\StockModel();
         $res_stock = $m_stock->getInfo(array('id'=>$stock_record_info['stock_id']));
         if(!empty($res_stock['hotel_id'])){
             $hotel_id = $res_stock['hotel_id'];
         }
-        $jd_voucher_no = 0;
-        $settlement_price = 0;
+        $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
+        $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
         $sale_price = 0;
+        $goods_settlement_price = $settlement_price;
         if($stock_record_info['wo_reason_type']==1){
-            $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
-            $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
             $res_data = $m_hotelgoods->getGoodsList('g.id,g.price',$where,'g.id desc',"0,1");
             if(!empty($res_data[0]['price'])){
                 $sale_price = $res_data[0]['price'];
             }
+        }else{
+            $settlement_price = 0;
         }
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';
         $res_ext = $m_hotel->getHotelById($fields,array('hotel.id'=>$hotel_id));
 
 	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,
-            'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,
+            'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,'goods_settlement_price'=>$goods_settlement_price,
             'hotel_id'=>$hotel_id,'maintainer_id'=>intval($res_ext['maintainer_id']),'residenter_id'=>intval($res_ext['residenter_id']),
-            'type'=>1,'jd_voucher_no'=>$jd_voucher_no,'area_id'=>intval($res_ext['area_id']));
+            'type'=>1,'area_id'=>intval($res_ext['area_id']));
 	    if(!empty($sale_openid)){
 	        $add_data['sale_openid'] = $sale_openid;
         }

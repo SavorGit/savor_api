@@ -758,4 +758,45 @@ class UserIntegralrecordModel extends BaseModel{
         //end
         return $stock_record_id;
     }
+
+    public function finishRecycle($stock_record_info){
+        $stock_record_id = $stock_record_info['id'];
+
+        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+        $res_goodsintegral = $m_goodsconfig->getInfo(array('goods_id'=>$stock_record_info['goods_id'],'type'=>10));
+        if(empty($res_goodsintegral) || $res_goodsintegral['open_integral']==0){
+            $msg = "stock_record_id:{$stock_record_id},goods_id:{$stock_record_info['goods_id']},open_integral:0";
+            return $msg;
+        }
+        if($stock_record_info['wo_reason_type']!=1){
+            $msg = "stock_record_id:{$stock_record_id},wo_reason_type:{$stock_record_info['wo_reason_type']} error";
+            return $msg;
+        }
+
+        $now_integral = $res_goodsintegral['open_integral'];
+        $m_unit = new \Common\Model\Finance\UnitModel();
+        $res_unit = $m_unit->getInfo(array('id'=>$stock_record_info['unit_id']));
+        $unit_num = intval($res_unit['convert_type']);
+        $now_integral = $now_integral*$unit_num;
+        $integral_status = 2;
+
+        $where = array('a.openid'=>$stock_record_info['op_openid'],'a.status'=>1,'merchant.status'=>1);
+        $field_staff = 'a.openid,a.level,merchant.type,merchant.id as merchant_id,merchant.is_integral,merchant.is_shareprofit,merchant.shareprofit_config';
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
+        $m_hotel = new \Common\Model\HotelModel();
+        if($res_staff[0]['is_integral']==1){
+            $integralrecord_openid = $stock_record_info['op_openid'];
+        }else{
+            $integralrecord_openid = $stock_record_info['hotel_id'];
+        }
+        $res_hotel = $m_hotel->getHotelInfoById($stock_record_info['hotel_id']);
+        $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+            'hotel_id'=>$stock_record_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+            'integral'=>$now_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,'type'=>25,
+            'integral_time'=>date('Y-m-d H:i:s'));
+        $this->add($integralrecord_data);
+        //end
+        return $stock_record_id;
+    }
 }

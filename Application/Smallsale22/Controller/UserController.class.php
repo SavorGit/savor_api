@@ -916,6 +916,7 @@ class UserController extends CommonController{
                 case 22:
                 case 23:
                 case 24:
+                case 25:
                     $content = $all_types[$v['type']];
                     break;
                 case 14:

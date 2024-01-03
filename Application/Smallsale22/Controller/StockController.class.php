@@ -1576,8 +1576,8 @@ class StockController extends CommonController{
                         $add_data['wo_time'] = date('Y-m-d H:i:s');
                         $add_data['add_time'] = date('Y-m-d H:i:s');
                         if(!empty($longitude) && !empty($latitude)){
-                            $up_data['longitude'] = $longitude;
-                            $up_data['latitude'] = $latitude;
+                            $add_data['longitude'] = $longitude;
+                            $add_data['latitude'] = $latitude;
                         }
                         if($is_black==0){
                             $add_data['wo_status'] = 2;
@@ -1630,7 +1630,7 @@ class StockController extends CommonController{
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
             $all_recycle_status = C('STOCK_RECYCLE_ALL_STATUS');
-            $open_time = '2023-12-27 13:00:10';
+            $open_time = '2024-01-03 14:00:10';
             $fileds = 'a.id,a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
             spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.recycle_status,a.recycle_time,
             a.reason,a.add_time';
@@ -1665,7 +1665,7 @@ class StockController extends CommonController{
                     }
                 }
                 $recycle_status = 4;
-                if($open_integral && $res_goods[0]['add_time']>=$open_time){
+                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
                     $recycle_status = $res_goods[0]['recycle_status'];
                 }
                 $idcode_num = count($res_goods);
@@ -1690,8 +1690,9 @@ class StockController extends CommonController{
                         $recycle_list[]=array('status'=>$trk,'status_str'=>$status_str,'num'=>count($trv),'rlist'=>$rlist);
                     }
                 }
+                $status_str = '售卖'.$all_status[$v['status']];
                 $data_list[]=array('reason'=>$reason,'status'=>$v['status'],'recycle_status'=>$recycle_status,'recycle_list'=>$recycle_list,
-                    'status_str'=>$all_status[$v['status']],'num'=>$idcode_num,'add_time'=>$v['add_time'],
+                    'status_str'=>$status_str,'num'=>$idcode_num,'add_time'=>$v['add_time'],
                     'goods'=>$res_goods,'entity'=>$entity,'demo_img'=>$demo_img,'batch_no'=>$batch_no);
             }
         }
@@ -1705,7 +1706,7 @@ class StockController extends CommonController{
                 foreach ($res_goods as $v){
                     $goods_ids[]=$v['goods_id'];
                 }
-                $where = array('op_openid'=>$openid,'type'=>7,'wo_status'=>2,'recycle_status'=>1);
+                $where = array('op_openid'=>$openid,'type'=>7,'wo_status'=>2,'wo_reason_type'=>1,'recycle_status'=>1);
                 $where['goods_id'] = array('in',$goods_ids);
                 $res_records = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
                 if(!empty($res_records[0]['id'])){

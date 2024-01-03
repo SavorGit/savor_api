@@ -972,7 +972,7 @@ class UserController extends CommonController{
         if(!empty($hotel_id)){
             $openid = $hotel_id;
         }
-        $where = array('a.openid'=>$openid,'a.type'=>array('in',array(17,18,19)),'a.status'=>2);
+        $where = array('a.openid'=>$openid,'a.type'=>array('in',array(17,18,19,25)),'a.status'=>2);
         $fileds = 'a.id,a.openid,a.integral,a.add_time,a.jdorder_id,a.type,user.avatarUrl as avatar_url,user.nickName as user_name';
         $res_data = $m_userintegral_record->getFinishRecordlist($fileds,$where,'a.id desc',$offset,$pagesize);
 
@@ -980,13 +980,13 @@ class UserController extends CommonController{
         $m_media = new \Common\Model\MediaModel();
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $all_audit_status = C('STOCK_AUDIT_STATUS');
-        $all_recycle_status = C('STOCK_RECYCLE_STATUS');
+        $all_recycle_status = C('STOCK_RECYCLE_ALL_STATUS');
         $datalist = array();
         foreach ($res_data as $v){
             $add_time = date('Y/m/d H:i',strtotime($v['add_time']));
             $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,
             unit.name as unit_name,a.wo_status,a.recycle_status';
-            if($v['type']==17){
+            if($v['type']==17 || $v['type']==25){
                 $where = array('a.id'=>$v['jdorder_id']);
             }else{
                 $where = array('a.idcode'=>$v['jdorder_id']);

@@ -279,16 +279,22 @@ class DishController extends CommonController{
             $distribution_config = json_decode($res_goods['distribution_config'],true);
             $prices = array();
             $now_price = intval($res_goods['price']);
-            $price_list = array("原价：￥{$now_price}/箱");
+            $unit = '箱';
+            if($goods_id==11757){
+                $unit = '瓶';
+            }
+            $price_list = array("原价：￥{$now_price}/$unit");
             foreach ($distribution_config as $ck=>$cv){
                 $prices[]=$cv['price'];
                 if($ck<2){
-                    $price_list[]="{$cv['min']}-{$cv['max']}箱到手价：￥{$cv['price']}/箱";
+                    $price_list[]="{$cv['min']}-{$cv['max']}{$unit}到手价：￥{$cv['price']}/$unit";
                 }
-
             }
             $min_price = min($prices);
             $data['min_price'] = $min_price;
+            if($goods_id==11757){
+                $price_list = array();
+            }
             $data['price_list'] = $price_list;
         }else{
             if($res_goods['finance_goods_id']>0){

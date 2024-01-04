@@ -994,7 +994,7 @@ class UserController extends CommonController{
             $stock_record = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
             $recycle_status_str = '';
             if($stock_record[0]['wo_status']==2){
-                $recycle_status_str = $all_recycle_status[$stock_record[0]['recycle_status']];
+                $recycle_status_str = '开瓶奖励'.$all_recycle_status[$stock_record[0]['recycle_status']];
             }
             $entity = array();
             $cwhere = array('goods_id'=>$stock_record[0]['goods_id'],'status'=>1,'type'=>20);
@@ -1007,7 +1007,7 @@ class UserController extends CommonController{
             }
 
             $info = array('id'=>$v['id'],'openid'=>$v['openid'],'avatar_url'=>$v['avatar_url'],'user_name'=>$v['user_name'],
-                'integral'=>$v['integral'],'add_time'=>$add_time,'wo_status_str'=>$all_audit_status[$stock_record[0]['wo_status']],
+                'integral'=>$v['integral'],'add_time'=>$add_time,'wo_status_str'=>'售卖'.$all_audit_status[$stock_record[0]['wo_status']],
                 'recycle_status_str'=>$recycle_status_str,'entity'=>$entity);
             $datalist[] = array_merge($info,$stock_record[0]);
         }

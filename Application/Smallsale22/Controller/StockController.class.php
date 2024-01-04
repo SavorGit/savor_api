@@ -1503,6 +1503,9 @@ class StockController extends CommonController{
             $rwhere = array('a.idcode'=>$all_idcodes[0],'a.dstatus'=>1);
             $res_records = $m_stock_record->getStockRecordList($fileds,$rwhere,'a.id desc','0,1');
             $hotel_id = intval($res_records[0]['hotel_id']);
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('id,name,area_id',$hotel_id);
+
             $m_hotelblacklist = new \Common\Model\Finance\HotelBlacklistModel();
             $res_blacklist = $m_hotelblacklist->getInfo(array('hotel_id'=>$hotel_id));
             $is_black = 0;
@@ -1526,7 +1529,8 @@ class StockController extends CommonController{
                         $goods_config = $m_goodsconfig->getALLDataList('*',$configwhere,'id desc','0,1','');
                     }
                     $recycle_status = 4;
-                    if(!empty($goods_config[0]['open_integral'])){
+                    $open_area_ids = explode(',',$goods_config[0]['open_area_ids']);
+                    if($reason_type==1 && !empty($goods_config[0]['open_integral']) && in_array($res_hotel['area_id'],$open_area_ids)){
                         $recycle_status = 1;
                     }
                     $is_new = 0;

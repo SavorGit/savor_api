@@ -772,6 +772,11 @@ class UserIntegralrecordModel extends BaseModel{
             $msg = "stock_record_id:{$stock_record_id},wo_reason_type:{$stock_record_info['wo_reason_type']} error";
             return $msg;
         }
+        $open_area_ids = explode(',',$res_goodsintegral['open_area_ids']);
+        if(!in_array($stock_record_info['area_id'],$open_area_ids)){
+            $msg = "stock_record_id:{$stock_record_id},area_ids:{$stock_record_info['area_id']} error";
+            return $msg;
+        }
 
         $now_integral = $res_goodsintegral['open_integral'];
         $m_unit = new \Common\Model\Finance\UnitModel();

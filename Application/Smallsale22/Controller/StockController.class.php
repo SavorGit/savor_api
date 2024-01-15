@@ -1496,6 +1496,12 @@ class StockController extends CommonController{
         if(count($all_idcodes)>6){
             $this->to_back(93109);
         }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
+        if($res_hotel['area_id']==1){
+            $this->to_back(93112);
+        }
+
         $message = '提交成功';
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
@@ -1591,8 +1597,14 @@ class StockController extends CommonController{
 
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
-                        $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
-
+                        $sale_id = $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
+                        if($sale_id){
+                            if($reason_type==1){
+                                sendTopicMessage($sale_id,81);
+                            }elseif($reason_type==2){
+                                sendTopicMessage($sale_id,82);
+                            }
+                        }
                         if($is_black==0){
                             $stock_record_info['hotel_id']=$hotel_id;
                             $m_userintegral_record->finishWriteoff($stock_record_info);

@@ -500,6 +500,7 @@ return array(
         '93109'=>'smallappsale_finance_writeoff_bottle_error',
         '93110'=>'smallappsale_finance_vqrcode_error',
         '93111'=>'smallappsale_finance_vintner_code_hadrecord',
+        '93112'=>'smallappsale_finance_writeoff_not_support',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',
@@ -531,6 +532,7 @@ return array(
         '93227'=>'smallappsale_task_tastewine_use_tastewine_over',
         '93228'=>'smallappsale_add_customer_mobile_repeat',
         '93229'=>'smallappsale_exchange_spacetime_error',
+        '93230'=>'smallappsale_exchange_not_support',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

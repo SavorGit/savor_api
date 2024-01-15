@@ -132,6 +132,11 @@ class WithdrawController extends CommonController{
         if(empty($res_integral) || $res_integral['integral']<$res_goods['rebate_integral']){
             $this->to_back(93017);
         }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
+        if($res_hotel['area_id']==1){
+            $this->to_back(93230);
+        }
 
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
@@ -144,8 +149,6 @@ class WithdrawController extends CommonController{
 
         $order_id = $m_order->add($add_data);
 
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
         $integralrecord_data = array('openid'=>$openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$hotel_id,'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
             'integral'=>-$res_goods['rebate_integral'],'goods_id'=>$id,'jdorder_id'=>$order_id,'source'=>2,'content'=>1,'type'=>4,

@@ -537,6 +537,8 @@ return array(
     'smallapp_exchange_num_has_upper_limit'=>'提现机会已达上限',
     'smallapp_exchange_money_greater_last'=>'提现金额大于剩余金额',
     'smallapp_exchange_money_greater_500'=>'单次提现金额不能大于500元',
+    'smallappsale_exchange_not_support'=>'系统维护中',
+    'smallappsale_finance_writeoff_not_support'=>'系统维护中',
 
 
 

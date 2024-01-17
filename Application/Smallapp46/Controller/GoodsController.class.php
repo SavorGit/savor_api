@@ -251,7 +251,7 @@ class GoodsController extends CommonController{
         $datalist = array();
         $start = ($page-1)*$pagesize;
         $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc,desc2,distribution_config',array('type'=>45,'status'=>1),'id desc',$start,$pagesize);
+        $res_goods = $m_goods->getDataList('id,name,price,line_price,cover_imgs,desc,desc2,distribution_config',array('type'=>45,'status'=>1),'sort desc',$start,$pagesize);
         $oss_host = get_oss_host();
         if($res_goods['list']){
             foreach ($res_goods['list'] as $v){

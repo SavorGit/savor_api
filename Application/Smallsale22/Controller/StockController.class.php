@@ -1598,13 +1598,13 @@ class StockController extends CommonController{
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
                         $sale_id = $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
-                        if($sale_id){
-                            if($reason_type==1){
-                                sendTopicMessage($sale_id,81);
-                            }elseif($reason_type==2){
-                                sendTopicMessage($sale_id,82);
-                            }
-                        }
+//                        if($sale_id){
+//                            if($reason_type==1){
+//                                sendTopicMessage($sale_id,81);
+//                            }elseif($reason_type==2){
+//                                sendTopicMessage($sale_id,82);
+//                            }
+//                        }
                         if($is_black==0){
                             $stock_record_info['hotel_id']=$hotel_id;
                             $m_userintegral_record->finishWriteoff($stock_record_info);

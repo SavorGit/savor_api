@@ -789,19 +789,40 @@ class UserIntegralrecordModel extends BaseModel{
         $field_staff = 'a.openid,a.level,merchant.type,merchant.id as merchant_id,merchant.is_integral,merchant.is_shareprofit,merchant.shareprofit_config';
         $m_staff = new \Common\Model\Integral\StaffModel();
         $res_staff = $m_staff->getMerchantStaff($field_staff,$where);
-        $m_hotel = new \Common\Model\HotelModel();
+        $admin_integral = 0;
+        $admin_openid = '';
         if($res_staff[0]['is_integral']==1){
+            //开瓶费积分 增加分润
+            if($res_staff[0]['is_shareprofit']==1 && $res_staff[0]['level']==2){
+                $shareprofit_config = json_decode($res_staff[0]['shareprofit_config'],true);
+                if(!empty($shareprofit_config['kpjl'])){
+                    $staff_integral = ($shareprofit_config['kpjl'][1]/100)*$now_integral;
+                    if($staff_integral>1){
+                        $staff_integral = round($staff_integral);
+                    }else{
+                        $staff_integral = 1;
+                    }
+                    $admin_integral = $now_integral - $staff_integral;
+                    $now_integral = $staff_integral;
+                }
+            }
             $integralrecord_openid = $stock_record_info['op_openid'];
         }else{
             $integralrecord_openid = $stock_record_info['hotel_id'];
         }
+        $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($stock_record_info['hotel_id']);
+        if($admin_integral>0 && !empty($admin_openid)){
+            $integralrecord_data = array('openid'=>$admin_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$stock_record_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'integral'=>$admin_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,
+                'type'=>25,'source'=>4);
+            $this->add($integralrecord_data);
+        }
         $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$stock_record_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
-            'integral'=>$now_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,'type'=>25,
-            'integral_time'=>date('Y-m-d H:i:s'));
+            'integral'=>$now_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,'type'=>25);
         $this->add($integralrecord_data);
-        //end
         return $stock_record_id;
     }
 }

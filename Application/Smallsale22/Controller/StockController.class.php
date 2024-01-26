@@ -372,6 +372,10 @@ class StockController extends CommonController{
         $now_unit_id = 0;
         if($type==10){
             if(in_array($io_type,array(12,13))){
+                $res_purse_stock_record = $m_stock_record->getStockRecordList('a.id',array('a.idcode'=>$idcode,'a.type'=>1,'stock.io_type'=>11),'a.id desc','0,1');
+                if(empty($res_purse_stock_record[0]['id'])){
+                    $this->to_back(93082);
+                }
                 if($stock_detail_id>0 && $stock_detail_id==$res_stock_record_type[0]['stock_detail_id']){
                     $this->to_back(93081);
                 }
@@ -1495,11 +1499,6 @@ class StockController extends CommonController{
         $all_idcodes = explode(',',$goods_codes);
         if(count($all_idcodes)>6){
             $this->to_back(93109);
-        }
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getHotelInfoById($res_staff[0]['hotel_id']);
-        if($res_hotel['area_id']==1){
-            $this->to_back(93112);
         }
 
         $message = '提交成功';

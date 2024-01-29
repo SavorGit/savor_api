@@ -374,7 +374,16 @@ class StockController extends CommonController{
             if(in_array($io_type,array(12,13))){
                 $res_purse_stock_record = $m_stock_record->getStockRecordList('a.id',array('a.idcode'=>$idcode,'a.type'=>1,'stock.io_type'=>11),'a.id desc','0,1');
                 if(empty($res_purse_stock_record[0]['id'])){
-                    $this->to_back(93082);
+                    $res_unpack = $m_stock_record->getALLDataList('id,type',array('idcode'=>$idcode),'id asc','0,1','');
+                    if($res_unpack[0]['type']==3 && $res_qrcode['parent_id']>0){
+                        $now_pidcode = encrypt_data($res_qrcode['parent_id'],$key);
+                        $res_purse_stock_record = $m_stock_record->getStockRecordList('a.id',array('a.idcode'=>$now_pidcode,'a.type'=>1,'stock.io_type'=>11),'a.id desc','0,1');
+                        if(empty($res_purse_stock_record[0]['id'])){
+                            $this->to_back(93082);
+                        }
+                    }else{
+                        $this->to_back(93082);
+                    }
                 }
                 if($stock_detail_id>0 && $stock_detail_id==$res_stock_record_type[0]['stock_detail_id']){
                     $this->to_back(93081);

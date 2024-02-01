@@ -25,11 +25,14 @@ class SaleModel extends BaseModel{
         }else{
             $settlement_price = 0;
         }
+        $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
+        $res_avg_price = $m_goods_avg_price->getALLDataList('price',array('goods_id'=>$stock_record_info['goods_id']),'id desc','0,1','');
+
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';
         $res_ext = $m_hotel->getHotelById($fields,array('hotel.id'=>$hotel_id));
 
-	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,
+	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,'now_avg_price'=>$now_avg_price,
             'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,'goods_settlement_price'=>$goods_settlement_price,
             'hotel_id'=>$hotel_id,'maintainer_id'=>intval($res_ext['maintainer_id']),'residenter_id'=>intval($res_ext['residenter_id']),
             'type'=>1,'area_id'=>intval($res_ext['area_id']));

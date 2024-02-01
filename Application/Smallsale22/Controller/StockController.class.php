@@ -269,7 +269,7 @@ class StockController extends CommonController{
         $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
         $m_duser = new \Common\Model\Finance\DepartmentUserModel();
         $res_duser = $m_duser->getInfo(array('id'=>$res_stock['department_user_id']));
-        $res_data = array('stock_id'=>$res_stock['id'],'name'=>$res_stock['name'],'add_time'=>$res_stock['add_time'],'user_name'=>$res_duser['name']);
+        $res_data = array('stock_id'=>$res_stock['id'],'io_type'=>$res_stock['io_type'],'name'=>$res_stock['name'],'add_time'=>$res_stock['add_time'],'user_name'=>$res_duser['name']);
 
         $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
         $where = array('a.stock_id'=>$stock_id);

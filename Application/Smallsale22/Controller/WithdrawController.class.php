@@ -134,10 +134,6 @@ class WithdrawController extends CommonController{
         }
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($hotel_id);
-        if($res_hotel['area_id']==1){
-            $this->to_back(93230);
-        }
-
         $total_fee = sprintf("%.2f",1*$res_goods['price']);
         $m_order = new \Common\Model\Smallapp\ExchangeModel();
         $add_data = array('openid'=>$openid,'goods_id'=>$id,'price'=>$res_goods['price'],'hotel_id'=>$hotel_id,

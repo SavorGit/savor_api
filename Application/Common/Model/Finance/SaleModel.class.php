@@ -27,6 +27,7 @@ class SaleModel extends BaseModel{
         }
         $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
         $res_avg_price = $m_goods_avg_price->getALLDataList('price',array('goods_id'=>$stock_record_info['goods_id']),'id desc','0,1','');
+        $now_avg_price = $res_avg_price[0]['price']>0?$res_avg_price[0]['price']:0;
 
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';

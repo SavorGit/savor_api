@@ -15,6 +15,10 @@ class WithdrawController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'money'=>1001);
                 break;
+            case 'failchange':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'exchange_id'=>1001);
+                break;
         }
         parent::_init_();
     }
@@ -105,6 +109,41 @@ class WithdrawController extends CommonController{
         $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
         $res = array('message'=>$message,'tips'=>$tips);
         $this->to_back($res);
+    }
+
+    public function failchange(){
+        $openid = $this->params['openid'];
+        $order_exchange_id = intval($this->params['exchange_id']);
+
+        $m_user = new \Common\Model\Smallapp\UserModel();
+        $where = array('openid'=>$openid,'small_app_id'=>1,'status'=>1);
+        $user_info = $m_user->getOne('id', $where, 'id desc');
+        if(empty($user_info)){
+            $this->to_back(90116);
+        }
+        $m_exchange = new \Common\Model\Smallapp\ExchangeModel();
+        $res_exchange = $m_exchange->getInfo(array('id'=>$order_exchange_id,'openid'=>$openid,'type'=>7,'status'=>20));
+        $message = $tips = '';
+        if(!empty($res_exchange)){
+            $total_fee = $res_exchange['total_fee'];
+            $m_baseinc = new \Payment\Model\BaseIncModel();
+            $payconfig = $m_baseinc->getPayConfig();
+            $trade_info = array('trade_no'=>$order_exchange_id,'money'=>$total_fee,'open_id'=>$openid);
+            $m_wxpay = new \Payment\Model\WxpayModel();
+            $res = $m_wxpay->mmpaymkttransfers($trade_info,$payconfig);
+            if($res['code']==10000){
+                $m_exchange->updateData(array('id'=>$order_exchange_id),array('status'=>21));
+            }
+            $m_paylog = new \Common\Model\Smallapp\PaylogModel();
+            $pay_data = array('order_id'=>$order_exchange_id,'openid'=>$openid,
+                'wxorder_id'=>$order_exchange_id,'pay_result'=>json_encode($res));
+            $m_paylog->add($pay_data);
+            $message = '您已提现成功，请注意查收。';
+            $tips = '可能会因为网络问题有延迟到账情况，请耐心等待。';
+        }
+        $res = array('message'=>$message,'tips'=>$tips);
+        $this->to_back($res);
+
     }
 
 }

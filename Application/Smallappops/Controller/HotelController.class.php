@@ -720,7 +720,7 @@ class HotelController extends CommonController{
         $fields = "a.id hotel_id,a.media_id,a.name,a.addr,a.tel,concat('".$oss_host."',media.`oss_addr`) as img_url,a.gps,a.htype";
         $where = array('a.area_id'=>$area_id,'a.state'=>array('in','1,4'),'a.flag'=>0,'a.gps'=>array('neq',''));
 
-        if(!in_array($openid,array('oreqO5NXrcBFni6VVkHY_aBioa70','oreqO5JaMORW7oCcXRpwfTBIy9XE','oreqO5C0Sg8NTxIMa8Ez3oVSADuo'))){
+        if(!in_array($openid,array('oreqO5NXrcBFni6VVkHY_aBioa70','oreqO5JaMORW7oCcXRpwfTBIy9XE','oreqO5C0Sg8NTxIMa8Ez3oVSADuo','oreqO5KEDZbSOtMT5O1LrKnWUxoU'))){
             $test_hotel_ids = C('TEST_HOTEL');
             $where['a.id'] = array('not in',"$test_hotel_ids");
         }

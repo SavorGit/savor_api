@@ -620,6 +620,7 @@ class CrmsaleController extends CommonController{
             $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
             foreach ($task_list as $k=>$v){
                 $task_list[$k]['content'] = '';
+                $task_list[$k]['img_arr'] = explode(',',$v['img']);
             }
 
         }

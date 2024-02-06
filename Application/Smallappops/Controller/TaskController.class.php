@@ -102,6 +102,9 @@ class TaskController extends CommonController{
         $is_has_task = 0;
         if(!empty($task_list)){
             $is_has_task = 1;
+            foreach ($task_list as $k=>$v){
+                $task_list[$k]['img_arr'] = explode(',',$v['img']);
+            }
         }
         $content_default = array();
         if($is_salehotel){

@@ -391,12 +391,18 @@ class TaskController extends CommonController{
             }
         }
 
-        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc,a.add_time';
+        $fileds = 'a.id as task_record_id,task.name as task_name,a.status,a.content,a.remind_content,a.handle_time,a.finish_time,a.audit_time,task.type,task.desc,a.sale_date,a.add_time';
         $res_task = $m_crmtask_record->getTaskRecords($fileds,$where,'a.id desc');
         $unhandle_list = $handle_list = array();
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
         $task_help_desc = C('TASK_HELP_DESC');
         foreach ($res_task as $v){
+            if($v['type']==4){
+                $sale_date = $v['sale_date'];
+                $dateTime = \DateTime::createFromFormat('Ymd',"$sale_date");
+                $sale_date_time = $dateTime->format('Y-m-d');
+                $v['task_name'] = $v['task_name']."($sale_date_time)";
+            }
             $status_str = '';
             if(isset($all_status_map[$v['status']])){
                 $status_str = $all_status_map[$v['status']];

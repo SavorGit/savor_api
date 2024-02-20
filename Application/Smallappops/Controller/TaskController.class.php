@@ -397,7 +397,7 @@ class TaskController extends CommonController{
         $all_status_map = array('1'=>'进行中','2'=>'未完成','3'=>'已完成');
         $task_help_desc = C('TASK_HELP_DESC');
         foreach ($res_task as $v){
-            if($v['type']==4){
+            if($v['type']==4 && $v['sale_date']>0){
                 $sale_date = $v['sale_date'];
                 $dateTime = \DateTime::createFromFormat('Ymd',"$sale_date");
                 $sale_date_time = $dateTime->format('Y-m-d');

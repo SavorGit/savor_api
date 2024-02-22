@@ -881,6 +881,7 @@ return array(
         '2'=>'销售经理',
         '3'=>'服务员',
     ),
+    'UP_STOCK_PRICE_RANGE'=>1.1,
     'SELLWINE_ACTIVITY' =>array(
         'url'=>'media/resource/iWzxhCKCDN.mp4',
         'filename'=>'iWzxhCKCDN.mp4',

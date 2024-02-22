@@ -47,6 +47,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'modifygoodsprice':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hid'=>1001,'price'=>1001);
+                break;
             case 'stockidcodelist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'goods_id'=>1001,'page'=>1001);
@@ -571,7 +575,7 @@ class HotelController extends CommonController{
                 $stock_goods[$v['id']] = $v;
             }
             if(!empty($hotel_stock['goods_ids'])){
-                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
+                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id,h.hotel_price,h.id as hid';
                 $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
                 $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
                 $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
@@ -589,14 +593,56 @@ class HotelController extends CommonController{
                     if(isset($stock_goods[$v['finance_goods_id']])){
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
-                    $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>intval($v['price']),'type'=>$v['type'],
-                        'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id']);
+                    $min_price = intval($v['price']);
+                    $up_range = C('UP_STOCK_PRICE_RANGE');
+                    $max_price = round($min_price*$up_range);
+                    $hotel_price = intval($v['hotel_price']);
+                    $price = $hotel_price>0?$hotel_price:$min_price;
+
+                    $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'type'=>$v['type'],
+                        'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id'],
+                        'min_price'=>$min_price,'max_price'=>$max_price,'hid'=>$v['hid']);
                     $datalist[] = $dinfo;
                 }
             }
 
         }
         $this->to_back($datalist);
+    }
+
+    public function modifygoodsprice(){
+        $openid = $this->params['openid'];
+        $hid = intval($this->params['hid']);
+        $price = intval($this->params['price']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $fields = 'g.id,g.price,h.hotel_price,h.hotel_id';
+        $where = array('h.id'=>$hid,'g.type'=>43,'g.status'=>1);
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $res_data = $m_hotelgoods->getGoodsList($fields,$where,'h.id desc','0,1');
+        $min_price = intval($res_data[0]['price']);
+        $max_price = $min_price + round($min_price*1.1);
+        $msg = '';
+        if($price>=$min_price && $price<=$max_price){
+            $msg = '修改成功';
+            $m_hotelgoods->updateData(array('id'=>$hid),array('openid'=>$openid,'hotel_price'=>$price,'update_time'=>date('Y-m-d H:i:s')));
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(12);
+            $cache_key = C('SMALLAPP_STORESALE_ADS').$res_data[0]['hotel_id'];
+            $res_ads_cachedata = $redis->get($cache_key);
+            if(!empty($res_ads_cachedata)){
+                $ads_cache_data = json_decode($res_ads_cachedata,true);
+                $period = getMillisecond();
+                $cache_goods_ids = $ads_cache_data['goods_ids'];
+                $ads_cache_data = array('period'=>$period,'goods_ids'=>$cache_goods_ids);
+                $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
+            }
+        }
+        $this->to_back(array('msg'=>$msg));
     }
 
     public function stockidcodelist(){

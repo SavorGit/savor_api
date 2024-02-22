@@ -110,6 +110,20 @@ class StoresaleAdsController extends CommonController{
                 $is_upcache = 1;
                 $period = getMillisecond();
             }
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $hgwhere = array('hotel_id'=>$hotel_id,'goods_id'=>array('in',$now_goods_ids),'hotel_price'=>array('gt',0));
+            $res_hotelgoods = $m_hotelgoods->getDataList('goods_id,hotel_price',$hgwhere);
+            if(!empty($res_hotelgoods)){
+                $hotel_goods_price = array();
+                foreach ($res_hotelgoods as $hgv){
+                    $hotel_goods_price[$hgv['goods_id']] = $hgv['hotel_price'];
+                }
+                foreach ($media_list as $k=>$v){
+                    if(isset($hotel_goods_price[$v['goods_id']])){
+                        $media_list[$k]['price'] = intval($hotel_goods_price[$v['goods_id']]).'元';
+                    }
+                }
+            }
         }
         if($is_upcache){
             $redis->select(12);

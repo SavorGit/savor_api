@@ -18,9 +18,9 @@ class SaleModel extends BaseModel{
         if($stock_record_info['wo_reason_type']==1){
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
-            $res_data = $m_hotelgoods->getGoodsList('g.id,g.price',$where,'g.id desc',"0,1");
+            $res_data = $m_hotelgoods->getGoodsList('g.id,g.price,h.hotel_price',$where,'g.id desc',"0,1");
             if(!empty($res_data[0]['price'])){
-                $sale_price = $res_data[0]['price'];
+                $sale_price = $res_data[0]['hotel_price']>0?$res_data[0]['hotel_price']:$res_data[0]['price'];
             }
         }else{
             $settlement_price = 0;

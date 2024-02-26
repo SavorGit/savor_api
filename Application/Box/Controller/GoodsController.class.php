@@ -55,7 +55,7 @@ class GoodsController extends CommonController{
         $res_goods = array();
         if($is_olddata || !empty($hotel_stock)){
             $fields = 'g.id as goods_id,g.name as goods_name,g.model_media_id,g.price,g.line_price,g.finance_goods_id,g.end_time,g.is_seckill,
-            g.start_time,g.end_time,h.hotel_price';
+            g.start_time,g.end_time';
             $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
             $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
         }
@@ -68,8 +68,7 @@ class GoodsController extends CommonController{
             foreach ($res_goods as $v){
                 $goods_id = $v['goods_id'];
                 if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
-                    $hotel_price = intval($v['hotel_price']);
-                    $price = $hotel_price>0?$hotel_price:intval($v['price']);
+                    $price = intval($v['price']);
                     $goods_info[]="{$v['goods_name']}({$price}元)";
 
                     if($v['is_seckill']==1 && $v['end_time']>=$nowtime){

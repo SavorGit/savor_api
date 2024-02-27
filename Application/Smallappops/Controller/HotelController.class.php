@@ -24,7 +24,7 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'area_id'=>1001,'county_id'=>1001,
                     'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1002,'food_style_id'=>1001,
-                    'avg_expense'=>1002,'contract_expiretime'=>1002,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
+                    'avg_expense'=>1002,'service_fee'=>1002,'contract_expiretime'=>1002,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
                     );
                 break;
             case 'detail':
@@ -142,7 +142,7 @@ class HotelController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $m_hotel = new \Common\Model\HotelModel();
         $where = array('hotel.id'=>$hotel_id);
-        $field = 'hotel.*,ext.maintainer_id,ext.food_style_id,ext.avg_expense,ext.mac_addr,ext.contract_expiretime,area.region_name as area_name';
+        $field = 'hotel.*,ext.maintainer_id,ext.food_style_id,ext.avg_expense,ext.mac_addr,ext.contract_expiretime,area.region_name as area_name,ext.service_fee';
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $data = array();
         if(!empty($res_hotel)){
@@ -219,7 +219,8 @@ class HotelController extends CommonController{
                 'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'install_date'=>$install_date,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info,
                 'area_id'=>$res_hotel['area_id'],'county_id'=>$res_hotel['county_id'],'food_style_id'=>$res_hotel['food_style_id'],
-                'business_circle_id'=>$res_hotel['business_circle_id'],'avg_expense_num'=>$avg_expense_num,'now_date'=>date('Y-m-d')
+                'business_circle_id'=>$res_hotel['business_circle_id'],'avg_expense_num'=>$avg_expense_num,'service_fee'=>$res_hotel['service_fee'],
+                'now_date'=>date('Y-m-d')
             );
         }
         $this->to_back($data);
@@ -515,6 +516,7 @@ class HotelController extends CommonController{
         $mobile = $this->params['mobile'];
         $food_style_id = $this->params['food_style_id'];
         $avg_expense = $this->params['avg_expense'];
+        $service_fee = intval($this->params['service_fee']);
         $contract_expiretime = $this->params['contract_expiretime'];
         $hotel_wifi = trim($this->params['hotel_wifi']);
         $hotel_wifi_pas = trim($this->params['hotel_wifi_pas']);
@@ -540,7 +542,7 @@ class HotelController extends CommonController{
                 $redis->set($cache_key, json_encode($data));
             }
         }
-        $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'contract_expiretime'=>$contract_expiretime);
+        $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'service_fee'=>$service_fee,'contract_expiretime'=>$contract_expiretime);
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $res_ext = $m_hotel_ext->saveData($hotel_ext_data, array('hotel_id'=>$hotel_id));
         if($res_ext){
@@ -593,15 +595,11 @@ class HotelController extends CommonController{
                     if(isset($stock_goods[$v['finance_goods_id']])){
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
-                    $min_price = intval($v['price']);
-                    $up_range = C('UP_STOCK_PRICE_RANGE');
-                    $max_price = round($min_price*$up_range);
+                    $price = intval($v['price']);
                     $hotel_price = intval($v['hotel_price']);
-                    $price = $hotel_price>0?$hotel_price:$min_price;
-
                     $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'type'=>$v['type'],
                         'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id'],
-                        'min_price'=>$min_price,'max_price'=>$max_price,'hid'=>$v['hid']);
+                        'hotel_price'=>$hotel_price,'hid'=>$v['hid']);
                     $datalist[] = $dinfo;
                 }
             }
@@ -624,23 +622,10 @@ class HotelController extends CommonController{
         $where = array('h.id'=>$hid,'g.type'=>43,'g.status'=>1);
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $res_data = $m_hotelgoods->getGoodsList($fields,$where,'h.id desc','0,1');
-        $min_price = intval($res_data[0]['price']);
-        $max_price = $min_price + round($min_price*1.1);
         $msg = '';
-        if($price>=$min_price && $price<=$max_price){
+        if($price>0 && !empty($res_data[0]['id'])){
             $msg = '修改成功';
             $m_hotelgoods->updateData(array('id'=>$hid),array('openid'=>$openid,'hotel_price'=>$price,'update_time'=>date('Y-m-d H:i:s')));
-            $redis = new \Common\Lib\SavorRedis();
-            $redis->select(12);
-            $cache_key = C('SMALLAPP_STORESALE_ADS').$res_data[0]['hotel_id'];
-            $res_ads_cachedata = $redis->get($cache_key);
-            if(!empty($res_ads_cachedata)){
-                $ads_cache_data = json_decode($res_ads_cachedata,true);
-                $period = getMillisecond();
-                $cache_goods_ids = $ads_cache_data['goods_ids'];
-                $ads_cache_data = array('period'=>$period,'goods_ids'=>$cache_goods_ids);
-                $redis->set($cache_key,json_encode($ads_cache_data),86400*14);
-            }
         }
         $this->to_back(array('msg'=>$msg));
     }

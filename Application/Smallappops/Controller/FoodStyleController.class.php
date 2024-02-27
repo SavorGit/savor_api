@@ -1,7 +1,7 @@
 <?php
 namespace Smallappops\Controller;
 use \Common\Controller\CommonController as CommonController;
-class FfController extends CommonController{
+class FoodStyleController extends CommonController{
 
     function _init_() {
         switch(ACTION_NAME) {

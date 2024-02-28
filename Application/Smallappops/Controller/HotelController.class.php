@@ -623,7 +623,7 @@ class HotelController extends CommonController{
         $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
         $res_data = $m_hotelgoods->getGoodsList($fields,$where,'h.id desc','0,1');
         $msg = '';
-        if($price>0 && !empty($res_data[0]['id'])){
+        if(!empty($res_data[0]['id'])){
             $msg = '修改成功';
             $m_hotelgoods->updateData(array('id'=>$hid),array('openid'=>$openid,'hotel_price'=>$price,'update_time'=>date('Y-m-d H:i:s')));
         }

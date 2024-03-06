@@ -171,6 +171,7 @@ class BbsController extends CommonController{
             'images'=>$images,'add_time'=>date('Y-m-d H:i:s'),'comment_num'=>$res_content['comment_num'],'like_num'=>$res_content['like_num'],
             'collect_num'=>$res_content['collect_num'],'is_like'=>$is_like,'is_collect'=>$is_collect
         );
+        $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
         $this->to_back($res_data);
     }
 
@@ -298,6 +299,10 @@ class BbsController extends CommonController{
         }
         $m_comment = new \Common\Model\BbsCommentModel();
         $comment_id = $m_comment->add($add_data);
+
+        $res_content = $m_content->getInfo(array('id'=>$content_id));
+        $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
+
         $this->to_back(array('comment_id'=>$comment_id));
     }
 
@@ -322,6 +327,10 @@ class BbsController extends CommonController{
             $m_content->where(array('id'=>$content_id))->setInc('collect_num');
             $collect_id = $m_collect->add(array('bbs_user_id'=>$bbs_user_id,'content_id'=>$content_id));
         }
+
+        $res_content = $m_content->getInfo(array('id'=>$content_id));
+        $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
+
         $this->to_back(array('collect_id'=>$collect_id));
     }
 
@@ -356,6 +365,10 @@ class BbsController extends CommonController{
                 $m_content->where(array('id'=>$content_id))->setInc('like_num');
             }
         }
+
+        $res_content = $m_content->getInfo(array('id'=>$content_id));
+        $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
+
         $this->to_back(array('like_id'=>$like_id));
     }
 

@@ -13,4 +13,10 @@ class BbsContentModel extends BaseModel{
             ->select();
         return $data;
     }
+
+    public function updateHotNum($id,$view_num,$like_num,$comment_num,$collect_num){
+        $hot_num = $view_num*1 + $like_num*2 + $comment_num*5 + $collect_num*5;
+        $this->updateData(array('id'=>$id),array('hot_num'=>$hot_num));
+        return $hot_num;
+    }
 }

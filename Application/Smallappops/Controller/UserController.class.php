@@ -180,7 +180,11 @@ class UserController extends CommonController{
         $res_sale = $m_sale->getSaleStockRecordList($fields,$where);
         $sale_num = intval($res_sale[0]['num']);
         $sale_money = intval($res_sale[0]['sale_money']);
+        $m_bbsuser = new \Common\Model\BbsUserModel();
+        $now_openid = encrypt_data($openid,C('USER_SECRET_KEY'));
+        $res_bbsuser = $m_bbsuser->getInfo(array('openid'=>$now_openid));
+        $bbs_user_id = !empty($res_bbsuser['id'])?intval($res_bbsuser['id']):0;
 
-        $this->to_back(array('sale_money'=>$sale_money,'sale_num'=>$sale_num,'zd_hotel_num'=>$zd_hotel_num));
+        $this->to_back(array('sale_money'=>$sale_money,'sale_num'=>$sale_num,'zd_hotel_num'=>$zd_hotel_num,'bbs_user_id'=>$bbs_user_id));
     }
 }

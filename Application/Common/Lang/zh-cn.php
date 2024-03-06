@@ -539,6 +539,7 @@ return array(
     'smallapp_exchange_money_greater_500'=>'单次提现金额不能大于500元',
     'smallappsale_exchange_not_support'=>'系统维护中',
     'smallappsale_finance_writeoff_not_support'=>'系统维护中',
+    'smallappops_bbs_nick_name_error'=>'昵称已被占用,请重新输入',
 
 
 

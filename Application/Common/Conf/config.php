@@ -506,8 +506,8 @@ return array(
         'pdf'=>2,'rtf'=>2,'txt'=>2
     ),
     'SAPP_FILE_FORSCREEN_PLAY_TIMES'=>array(
-        array('id'=>1,'name'=>'1分钟','value'=>60,'is_select'=>1),
-        array('id'=>3,'name'=>'3分钟','value'=>180,'is_select'=>0),
+        array('id'=>1,'name'=>'1分钟','value'=>60,'is_select'=>0),
+        array('id'=>3,'name'=>'3分钟','value'=>180,'is_select'=>1),
         array('id'=>5,'name'=>'5分钟','value'=>300,'is_select'=>0),
     ),
     'SAPP_FILE_FORSCREEN_IMAGES'=>array(
@@ -869,6 +869,13 @@ return array(
     'STOCK_RECYCLE_ALL_STATUS'=>array('1'=>'待审核','2'=>'审核通过','3'=>'无法收回','4'=>'无需回收','5'=>'审核中','6'=>'审核不通过'),
     'STOCK_PAY_TYPES'=>array('10'=>'未收款','1'=>'已收款','2'=>'部分收款'),
     'STOCK_SALE_TYPES'=>array('1'=>'餐厅售卖','4'=>'线上团购'),
+    'BBS_CATEGORY'=>array(
+        '240301'=>array('id'=>240301,'name'=>'吐槽','icon'=>'WeChat/resource/bbs_icon/tucao.png'),
+        '240302'=>array('id'=>240302,'name'=>'分享','icon'=>'WeChat/resource/bbs_icon/fenxiang.png'),
+        '240303'=>array('id'=>240303,'name'=>'建议','icon'=>'WeChat/resource/bbs_icon/jianyi.png'),
+        '240304'=>array('id'=>240304,'name'=>'举报','icon'=>'WeChat/resource/bbs_icon/jubao.png'),
+        '240305'=>array('id'=>240305,'name'=>'其他','icon'=>'WeChat/resource/bbs_icon/qit.png'),
+    ),
 
     'VIP_3_BUY_WINDE_NUM'=>1200,
     'STAT_TASK_TYPES'=>array(

@@ -175,7 +175,7 @@ class BbsController extends CommonController{
             }
         }
         $res_data = array('nick_name'=>$res_bbsuser['nick_name'],'avatar_url'=>$avatar_url,'title'=>$res_content['title'],'content'=>$res_content['content'],
-            'images'=>$images,'add_time'=>date('Y-m-d H:i:s'),'comment_num'=>$res_content['comment_num'],'like_num'=>$res_content['like_num'],
+            'images'=>$images,'add_time'=>$res_content['add_time'],'comment_num'=>$res_content['comment_num'],'like_num'=>$res_content['like_num'],
             'collect_num'=>$res_content['collect_num'],'is_like'=>$is_like,'is_collect'=>$is_collect
         );
         $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
@@ -264,6 +264,7 @@ class BbsController extends CommonController{
             $now_time = date('Y-m-d H:i:s');
             $where['content.hot_start_time'] = array('ELT',$now_time);
             $where['content.hot_end_time'] = array('EGT',$now_time);
+            $orderby = 'content.hot_num desc';
         }
         $m_content = new \Common\Model\BbsContentModel();
         $res_content = $m_content->getContentList($fields,$where,$orderby,$start,$size);
@@ -479,19 +480,14 @@ class BbsController extends CommonController{
             $join_day = round((time()-strtotime($res_bbsuser['add_time']))/86400);
             $join_day = $join_day>0?$join_day:1;
             $m_content = new \Common\Model\BbsContentModel();
-            $res_content = $m_content->getDataList('count(id) as num',array('bbs_user_id'=>$bbs_user_id),'id desc');
+            $cfields = 'count(id) as num,sum(collect_num) as collect_num,sum(comment_num) as comment_num,sum(like_num) as like_num';
+            $res_content = $m_content->getDataList($cfields,array('bbs_user_id'=>$bbs_user_id),'id desc');
             $content_num = intval($res_content[0]['num']);
-            $m_collect = new \Common\Model\BbsCollectModel();
-            $res_collect = $m_collect->getDataList('count(id) as num',array('bbs_user_id'=>$bbs_user_id),'id desc');
-            $collect_num = intval($res_collect[0]['num']);
-            $m_comment = new \Common\Model\BbsCommentModel();
-            $res_comment = $m_comment->getDataList('count(id) as num',array('bbs_user_id'=>$bbs_user_id),'id desc');
-            $comment_num = intval($res_comment[0]['num']);
-            $m_like = new \Common\Model\BbsLikeModel();
-            $res_like = $m_like->getDataList('count(id) as num',array('bbs_user_id'=>$bbs_user_id),'id desc');
-            $like_num = intval($res_like[0]['num']);
-            $join_day_str = "今天是你加入热点社区的第{$join_day}天";
+            $collect_num = intval($res_content[0]['collect_num']);
+            $comment_num = intval($res_content[0]['comment_num']);
+            $like_num = intval($res_content[0]['like_num']);
 
+            $join_day_str = "今天是你加入热点社区的第{$join_day}天";
             $res_data = array('bbs_user_id'=>$bbs_user_id,'content_num'=>$content_num,'collect_num'=>$collect_num,'comment_num'=>$comment_num,'like_num'=>$like_num,
                 'join_day_str'=>$join_day_str,'nick_name'=>$res_bbsuser['nick_name'],'avatar_url'=>$avatar_url
             );

@@ -135,8 +135,15 @@ class BbsController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $redis = \Common\Lib\SavorRedis::getInstance();
+        $redis->select(14);
+        $cache_key = C('SAPP_OPS').'bbs:viewcontent:'.date('Ymd').":$content_id.$openid";
+        $res_cache = $redis->get($cache_key);
         $m_content = new \Common\Model\BbsContentModel();
-        $m_content->where(array('id'=>$content_id))->setInc('view_num');
+        if(empty($res_cache)){
+            $m_content->where(array('id'=>$content_id))->setInc('view_num');
+        }
+        $redis->set($cache_key,json_encode(array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'))),86400);
 
         $now_openid = encrypt_data($openid,C('USER_SECRET_KEY'));
         $m_bbsuser = new \Common\Model\BbsUserModel();
@@ -290,19 +297,28 @@ class BbsController extends CommonController{
             $this->to_back(94001);
         }
         $m_content = new \Common\Model\BbsContentModel();
-        $m_content->where(array('id'=>$content_id))->setInc('comment_num');
-
         $add_data = array('content_id'=>$content_id,'bbs_user_id'=>$bbs_user_id,'content'=>$content,'type'=>1);
         if(!empty($comment_id)){
             $add_data['type'] = 2;
             $add_data['comment_id'] = $comment_id;
         }
+        if($add_data['type']==1){
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(14);
+            $cache_key = C('SAPP_OPS').'bbs:addcomment:'.date('Ymd').":$content_id.$openid";
+            $res_cache = $redis->get($cache_key);
+            if(!empty($res_cache)){
+                $this->to_back(94102);
+            }
+            $redis->set($cache_key,json_encode(array('openid'=>$openid,'time'=>date('Y-m-d H:i:s'))),86400);
+            $m_content->where(array('id'=>$content_id))->setInc('comment_num');
+        }
         $m_comment = new \Common\Model\BbsCommentModel();
         $comment_id = $m_comment->add($add_data);
-
-        $res_content = $m_content->getInfo(array('id'=>$content_id));
-        $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
-
+        if($add_data['type']==1){
+            $res_content = $m_content->getInfo(array('id'=>$content_id));
+            $m_content->updateHotNum($content_id,$res_content['view_num'],$res_content['like_num'],$res_content['comment_num'],$res_content['collect_num']);
+        }
         $this->to_back(array('comment_id'=>$comment_id));
     }
 
@@ -436,7 +452,9 @@ class BbsController extends CommonController{
             $data_list[]=array('comment_id'=>$comment_id,'nick_name'=>$v['nick_name'],'avatar_url'=>$avatar_url,'content'=>$v['content'],
                 'add_time'=>$v['add_time'],'like_num'=>$like_num,'is_like'=>$is_like,'comment_list'=>$comment_list);
         }
-        $this->to_back(array('datalist'=>$data_list));
+        $m_content = new \Common\Model\BbsContentModel();
+        $res_content = $m_content->getInfo(array('id'=>$content_id));
+        $this->to_back(array('datalist'=>$data_list,'comment_num'=>$res_content['comment_num']));
 
     }
 

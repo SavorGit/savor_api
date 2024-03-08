@@ -540,6 +540,7 @@ return array(
     'smallappsale_exchange_not_support'=>'系统维护中',
     'smallappsale_finance_writeoff_not_support'=>'系统维护中',
     'smallappops_bbs_nick_name_error'=>'昵称已被占用,请重新输入',
+    'smallappops_bbs_add_comment_error'=>'每个话题每人每天只能评论一次',
 
 
 

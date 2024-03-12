@@ -494,10 +494,4 @@ class BbsController extends CommonController{
         }
         $this->to_back($res_data);
     }
-
-    public function deuser(){
-        $oepnid = I('get.openid','');
-        $now_openid = decrypt_data($oepnid,false,C('USER_SECRET_KEY'));
-        echo $now_openid;
-    }
 }

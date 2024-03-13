@@ -606,7 +606,7 @@ function getgeoByloa($lat,$lon,$source=1){
         $url = "https://api.tianditu.gov.cn/geocoder?postStr={'lon':$lon,'lat':$lat,'ver':1}&type=geocode&tk=$key";
         $curl = new \Common\Lib\Curl();
         $result = '';
-        $curl::get($url,$result);
+        $curl::get($url,$result,2);
         if(!empty($result)){
             $res = json_decode($result,true);
         }

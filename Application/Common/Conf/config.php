@@ -876,6 +876,11 @@ return array(
         '240304'=>array('id'=>240304,'name'=>'举报','icon'=>'WeChat/resource/bbs_icon/jubao.png'),
         '240305'=>array('id'=>240305,'name'=>'其他','icon'=>'WeChat/resource/bbs_icon/qit.png'),
     ),
+    'OPS_TASK_SOURCES'=>array(
+        '1'=>array('id'=>1,'name'=>'渠道部'),
+        '2'=>array('id'=>2,'name'=>'运维部'),
+        '3'=>array('id'=>3,'name'=>'系统任务'),
+    ),
 
     'VIP_3_BUY_WINDE_NUM'=>1200,
     'STAT_TASK_TYPES'=>array(

@@ -25,11 +25,15 @@ class HotelController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'name'=>1001,'area_id'=>1001,'county_id'=>1001,
                     'business_circle_id'=>1002,'addr'=>1001,'contractor'=>1001,'mobile'=>1002,'food_style_id'=>1001,
                     'avg_expense'=>1002,'service_fee'=>1002,'contract_expiretime'=>1002,'hotel_wifi'=>1002,'hotel_wifi_pas'=>1002
-                    );
+                );
                 break;
             case 'detail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001);
+                break;
+            case 'claimhotel':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
             case 'nearby':
                 $this->is_verify = 1;
@@ -174,7 +178,7 @@ class HotelController extends CommonController{
                 $contract_expiretime = '';
             }
             $m_opuser = new \Common\Model\OpuserRoleModel();
-            $res_user = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['maintainer_id']),'','');
+            $res_user = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['maintainer_id'],'a.state'=>1,'user.status'=>1),'','');
             $maintainer = $maintainer_mobile = '';
             if(!empty($res_user)){
                 $maintainer = $res_user[0]['remark'];
@@ -230,7 +234,7 @@ class HotelController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $m_hotel = new \Common\Model\HotelModel();
         $where = array('hotel.id'=>$hotel_id);
-        $field = 'hotel.*,ext.maintainer_id,ext.mac_addr';
+        $field = 'hotel.*,ext.maintainer_id,ext.mac_addr,ext.responsible_maintainer_id';
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $data = array();
         if(!empty($res_hotel)){
@@ -363,10 +367,10 @@ class HotelController extends CommonController{
                         $ads_proid = $ads_info['menu_num'];
                     } */
                     $ads_proid = $ads_info['menu_num'];
-                    
+
                 }
                 if(empty($ads_proid)){
-                    $m_pub_ads_box = new \Common\Model\PubAdsBoxModel(); 
+                    $m_pub_ads_box = new \Common\Model\PubAdsBoxModel();
                     $max_adv_location = C('MAX_ADS_LOCATION_NUMS');
                     $now_date = date('Y-m-d H:i:s');
                     $ads_num_arr = array();
@@ -389,7 +393,7 @@ class HotelController extends CommonController{
                                 $ads_time_arr[] = $av['create_time'];
                                 unset($av['pub_ads_id']);
                                 unset($av['create_time']);
-                                
+
                             }
                         }
                     }
@@ -400,10 +404,10 @@ class HotelController extends CommonController{
                         $program_ads_menu_num_key = C('PROGRAM_ADS_MENU_NUM');
                         $program_ads_menu_num = $redis->get($program_ads_menu_num_key);
                         $ads_proid = $program_ads_menu_num;
-                        
+
                     }
                 }
-                
+
                 $redis->select(13);
                 $cache_key  = 'heartbeat:2:'.$v['mac'];
                 $res_cache = $redis->get($cache_key);
@@ -492,13 +496,21 @@ class HotelController extends CommonController{
                     }
                 }
             }
+            $responsible_maintainer = '';
+            if(!empty($res_hotel['responsible_maintainer_id'])){
+                $res_responsibleuser = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['responsible_maintainer_id'],'a.state'=>1,'user.status'=>1),'','');
+                if(!empty($res_responsibleuser)){
+                    $responsible_maintainer = $res_responsibleuser[0]['remark'];
+                }
+            }
+
             $data = array('hotel_id'=>$res_hotel['id'],'hotel_name'=>$res_hotel['name'],'address'=>$res_hotel['addr'],
                 'contractor'=>$res_hotel['contractor'],'mobile'=>$res_hotel['mobile'],'maintainer'=>$maintainer,'maintainer_mobile'=>$maintainer_mobile,
                 'hotel_network'=>$hotel_network,'hotel_box_type'=>$all_hotel_box_types[$res_hotel['hotel_box_type']],
                 'small_platform_status'=>$small_platform_status,'small_platform_uptips'=>$small_platform_uptips,'box_list'=>$res_box,
                 'up_time'=>date('Y-m-d H:i:s'),'desc'=>$desc,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,
                 'box_num'=>$box_num,'room_num'=>$room_num,'box_type'=>$box_type,'box_info'=>$box_info,'stock_num'=>$stock_num,
-                'hotel_drinks_num'=>$hotel_drinks_num,'hotel_drinks_content'=>$hotel_drinks_content,
+                'hotel_drinks_num'=>$hotel_drinks_num,'hotel_drinks_content'=>$hotel_drinks_content,'responsible_maintainer_id'=>$res_hotel['responsible_maintainer_id'],'responsible_maintainer'=>$responsible_maintainer,
             );
         }
         $this->to_back($data);
@@ -820,6 +832,34 @@ class HotelController extends CommonController{
         $this->to_back($sign_progress);
     }
 
+    public function claimhotel(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $sysuser_id = $res_staff['sysuser_id'];
+        $m_hoteext = new \Common\Model\HotelExtModel();
+        $where = array('hotel_id'=>$hotel_id);
+        $res_hotel = $m_hoteext->getOnerow($where);
+        $responsible_maintainer_id = $res_hotel['responsible_maintainer_id'];
+        $responsible_maintainer = '';
+        if($res_hotel['responsible_maintainer_id']==0 && $sysuser_id>0){
+            $responsible_maintainer_id = $sysuser_id;
+            if($responsible_maintainer_id>0){
+                $m_opuser = new \Common\Model\OpuserRoleModel();
+                $res_responsibleuser = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$responsible_maintainer_id,'a.state'=>1,'user.status'=>1),'','');
+                if(!empty($res_responsibleuser)){
+                    $responsible_maintainer = $res_responsibleuser[0]['remark'];
+                }
+            }
+            $m_hoteext->saveData(array('responsible_maintainer_id'=>$sysuser_id,'claim_time'=>date('Y-m-d H:i:s')), $where);
+        }
+        $this->to_back(array('responsible_maintainer_id'=>$responsible_maintainer_id,'responsible_maintainer'=>$responsible_maintainer));
+    }
 
     private function changeadvList($res,$type=1){
         if($res){
@@ -830,10 +870,10 @@ class HotelController extends CommonController{
                     }else {
                         $res[$vk]['location_id'] = $res[$vk]['sortNum'];
                     }
-                    
+
                     unset($res[$vk]['sortNum']);
                 }
-                
+
                 if(!empty($val['name'])){
                     $ttp = explode('/', $val['name']);
                     $res[$vk]['name'] = $ttp[2];
@@ -843,7 +883,7 @@ class HotelController extends CommonController{
                 }
                 $res[$vk]['is_sapp_qrcode'] = intval($val['is_sapp_qrcode']);
             }
-            
+
         }
         return $res;
     }

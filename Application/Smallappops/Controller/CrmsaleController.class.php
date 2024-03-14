@@ -9,7 +9,7 @@ class CrmsaleController extends CommonController{
     function _init_() {
         switch(ACTION_NAME) {
             case 'visitconfig':
-                $this->valid_fields = array('openid'=>1001,'purpose_ids'=>1002,'type_id'=>1002);
+                $this->valid_fields = array('openid'=>1001,'purpose_ids'=>1002,'type_id'=>1002,'task_source_id'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'getOpsusers':
@@ -69,6 +69,7 @@ class CrmsaleController extends CommonController{
         $openid = $this->params['openid'];
         $purpose_ids = $this->params['purpose_ids'];
         $type_id = $this->params['type_id'];
+        $task_source_id = $this->params['task_source_id'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -90,8 +91,8 @@ class CrmsaleController extends CommonController{
         }
 
         $m_category = new \Common\Model\Smallapp\CategoryModel();
-        $res_category = $m_category->getDataList('id,name,type',array('type'=>array('in','9,10'),'status'=>1),'id desc');
-        $purpose = $types = array(array('id'=>0,'name'=>'请选择','checked'=>false));
+        $res_category = $m_category->getDataList('id,name,type',array('type'=>array('in','9,10,11'),'status'=>1),'id desc');
+        $purpose = $types = $ops_types = array(array('id'=>0,'name'=>'请选择','checked'=>false));
         foreach ($res_category as $v){
             $checked = false;
             if(!empty($ids)){
@@ -104,13 +105,26 @@ class CrmsaleController extends CommonController{
                 }
             }
             $info = array('id'=>$v['id'],'name'=>$v['name'],'checked'=>$checked);
-            if($v['type']==10){
+            if($v['type']==11){
+                $ops_types[]=$info;
+            }elseif($v['type']==10){
                 $types[]=$info;
-            }else{
+            }elseif($v['type']==9){
                 $purpose[]=$info;
             }
         }
-        $res_data = array('purpose'=>$purpose,'types'=>$types);
+        $task_sources = C('OPS_TASK_SOURCES');
+        $ops_task_sources = array(array('id'=>0,'name'=>'请选择'));
+        foreach ($task_sources as $v){
+            $checked = false;
+            if($v['id']==$task_source_id){
+                $checked = true;
+            }
+            $v['checked'] = $checked;
+            $ops_task_sources[]=$v;
+        }
+
+        $res_data = array('purpose'=>$purpose,'types'=>$types,'ops_types'=>$ops_types,'ops_task_sources'=>$ops_task_sources);
         $this->to_back($res_data);
     }
 
@@ -613,8 +627,14 @@ class CrmsaleController extends CommonController{
         $res_info['sign_progress_percent'] = $percent;
         $res_info['sign_progress'] = $sign_progress;
         $res_info['hcontent'] = array($res_info['hcontent1'],$res_info['hcontent2'],$res_info['hcontent3'],$res_info['hcontent4']);
+        $ops_task_source = '';
+        if(!empty($res_info['task_source'])){
+            $task_sources = C('OPS_TASK_SOURCES');
+            $ops_task_source = $task_sources[$res_info['task_source']]['name'];
+        }
+        $res_info['ops_task_source'] = $ops_task_source;
         $task_list = array();
-        if($res_info['status']==2){
+        if($res_info['status']==2 && $res_info['type']==1){
             $m_salerecord_task = new \Common\Model\Crm\SalerecordTaskModel();
             $fileds = 'a.task_record_id,task.name as task_name,a.handle_status,a.content,task.desc,task.type,a.img';
             $task_list = $m_salerecord_task->getSalerecordTask($fileds,array('a.salerecord_id'=>$salerecord_id));
@@ -630,7 +650,7 @@ class CrmsaleController extends CommonController{
 
     public function recordlist(){
         $openid = $this->params['openid'];
-        $type = intval($this->params['type']);//类型1全部,2@我的,3销售记录,4盘点记录
+        $type = intval($this->params['type']);//类型1全部,2@我的,3销售记录,4盘点记录,5运维记录
         $page = intval($this->params['page']);
         $pagesize = $this->params['pagesize'];
         $area_id = intval($this->params['area_id']);
@@ -732,6 +752,29 @@ class CrmsaleController extends CommonController{
                     $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.read_status'=>1,'a.status'=>1,'record.type'=>2,'record.status'=>2);
                 }
                 break;
+            case 5:
+                $where = array('record.type'=>3,'a.status'=>1,'record.status'=>2);
+                if($res_staff['is_operrator']==0){
+                    if($area_id>0 || $staff_id>0){
+                        if($area_id){
+                            $where['staff.area_id'] = $area_id;
+                        }
+                        if($staff_id>0){
+                            $where['record.ops_staff_id'] = $staff_id;
+                        }
+                    }else{
+                        $permission = json_decode($res_staff['permission'],true);
+                        if(in_array($permission['hotel_info']['type'],array(2,4,6))){
+                            $where['staff.area_id'] = array('in',$permission['hotel_info']['area_ids']);
+                        }elseif($permission['hotel_info']['type']==3){
+                            $where['record.ops_staff_id'] = $ops_staff_id;
+                        }
+                    }
+                }else{
+                    $where['record.ops_staff_id'] = $ops_staff_id;
+                }
+                $orderby = 'a.salerecord_id desc';
+                break;
             default:
                 $where = array();
         }
@@ -782,14 +825,14 @@ class CrmsaleController extends CommonController{
                 $hotel_name = '';
                 $hotel_id   = 0;
                 $consume_time = $signin_time = $signout_time = '';
-                if($record_info['visit_type']==171 || $record_info['type']==2){
+                if($record_info['visit_type']==171 || in_array($record_info['type'],array(2,3))){
                     if ($record_info['signin_hotel_id']) {
                         $res_hotel = $m_hotel->getOneById('id,name', $record_info['signin_hotel_id']);
                         $hotel_name = $res_hotel['name'];
                         $hotel_id = $res_hotel['id'];
                     }
                 }
-                if($record_info['visit_type']==171){
+                if($record_info['visit_type']==171 || $record_info['type']==3){
                     if($record_info['signin_time']!='0000-00-00 00:00:00'){
                         $signin_time = $record_info['signin_time'];
                     }
@@ -874,14 +917,20 @@ class CrmsaleController extends CommonController{
                         }
                     }
                 }
+                $ops_task_source = '';
+                if(!empty($record_info['task_source'])){
+                    $task_sources = C('OPS_TASK_SOURCES');
+                    $ops_task_source = $task_sources[$record_info['task_source']]['name'];
+                }
+                $res_info['ops_task_source'] = $ops_task_source;
 
                 $info = array('salerecord_id'=>$salerecord_id,'staff_id'=>$staff_id,'staff_name'=>$staff_name,'avatarUrl'=>$avatarUrl,'job'=>$job,
-                    'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],
+                    'add_time'=>$add_time,'visit_purpose_str'=>$visit_purpose_str,'visit_type_str'=>$visit_type_str,'content'=>$record_info['content'],'box_handle_num'=>$record_info['box_handle_num'],
                     'images_url'=>$images_url,'hotel_id'=>$hotel_id,'hotel_name'=>$hotel_name,'consume_time'=>$consume_time,'signin_time'=>$signin_time,'signout_time'=>$signout_time,
                     'comment_num'=>$comment_num,'status'=>$record_info['status'],'read_status'=>$record_info['read_status'],'record_type'=>$record_info['type'],'is_handle_stock_check'=>$record_info['is_handle_stock_check'],
                     'stock_check_num'=>$record_info['stock_check_num'],'stock_check_hadnum'=>$record_info['stock_check_hadnum'],'stock_check_percent'=>$stock_check_percent,
                     'stock_check_status'=>$record_info['stock_check_status'],'stock_check_error'=>$record_info['stock_check_error'],'stock_check_success_status'=>$record_info['stock_check_success_status'],
-                    'sign_progress'=>$sign_progress,'task_handle_num'=>$task_handle_num,'task_nohandle_num'=>$task_nohandle_num,'hcontent'=>$hcontent
+                    'sign_progress'=>$sign_progress,'task_handle_num'=>$task_handle_num,'task_nohandle_num'=>$task_nohandle_num,'hcontent'=>$hcontent,'ops_task_source'=>$ops_task_source
                 );
                 $datalist[]=$info;
             }

@@ -41,7 +41,7 @@ class OpsRecordController extends CommonController{
         }
         $status = 1;
         if($type==2){
-            unset($this->valid_fields['images']);
+            unset($this->valid_fields['images'],$this->valid_fields['salerecord_id']);
             foreach ($this->valid_fields as $k=>$v){
                 if(empty($this->params["$k"])){
                     $this->to_back(1001);

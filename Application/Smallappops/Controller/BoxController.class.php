@@ -225,7 +225,8 @@ class BoxController extends CommonController{
             $m_upgrade = new \Common\Model\DeviceUpgradeModel();
             $field = 'sdv.oss_addr,md5';
             $device_type = 2;
-            $data = $m_upgrade->getLastOneByDeviceNew($field, $device_type, $hotel_id);
+            //$data = $m_upgrade->getLastOneByDeviceNew($field, $device_type, $hotel_id);
+            $data = $m_upgrade->getLastOneByDeviceCommon($field, $device_type, $hotel_id);
         }else {//广告机
             $m_device_version = new \Common\Model\DeviceVersionModel();
             $data = $m_device_version->field('oss_addr,md5')->where('device_type=21')->order('id desc')->find();

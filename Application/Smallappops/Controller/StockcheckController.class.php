@@ -23,7 +23,7 @@ class StockcheckController extends CommonController{
             case 'addcheckrecord':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001,'idcodes'=>1001,'other_idcodes'=>1002,
-                    'content'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'is_check_error'=>1002,'type'=>1002);
+                    'video_path'=>1002,'content'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'is_check_error'=>1002,'type'=>1002);
                 break;
             case 'getrecordcodelist':
                 $this->is_verify = 1;
@@ -217,6 +217,7 @@ class StockcheckController extends CommonController{
         $content = $this->params['content'];
         $review_uid = $this->params['review_uid'];
         $cc_uids = $this->params['cc_uids'];
+        $video_path = $this->params['video_path'];
         $type = intval($this->params['type']);//类型1保存2提交
         $is_check_error = intval($this->params['is_check_error']);
         if(empty($type)){
@@ -324,6 +325,9 @@ class StockcheckController extends CommonController{
         if(!empty($content)){
             $add_data['content'] = $content;
         }
+        if(!empty($video_path)){
+            $add_data['video_path'] = $video_path;
+        }
         $m_salerecord = new \Common\Model\Crm\SalerecordModel();
         $salerecord_id = $m_salerecord->add($add_data);
         if(!empty($check_list)){
@@ -424,7 +428,7 @@ class StockcheckController extends CommonController{
             $cc_users = $all_remind_user[2];
         }
         $resp_data = array('hotel_id'=>$res_info['signin_hotel_id'],'content'=>$res_info['content'],'idcodes'=>$idcodes,
-            'other_idcodes'=>$other_idcodes,'cc_users'=>$cc_users,'review_users'=>$review_users);
+            'other_idcodes'=>$other_idcodes,'cc_users'=>$cc_users,'review_users'=>$review_users,'video_path'=>$res_info['video_path']);
         $this->to_back($resp_data);
     }
 

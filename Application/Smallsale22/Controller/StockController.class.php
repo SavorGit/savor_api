@@ -241,7 +241,8 @@ class StockController extends CommonController{
 
         $where = array('op_openid'=>$openid,'type'=>$type);
         $where['status'] = array('in',array(2,3,4));
-        $res_stock = $m_stock->getDataList('*',$where,'id asc');
+        $res_stock = $m_stock->getDataList('*',$where,'id desc',0,10);
+        $res_stock = $res_stock['list'];
         if(!empty($res_stock)){
             foreach ($res_stock as $v){
                 $res_duser = $m_duser->getInfo(array('id'=>$v['department_user_id']));

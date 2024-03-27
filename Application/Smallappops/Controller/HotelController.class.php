@@ -815,7 +815,7 @@ class HotelController extends CommonController{
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis,'htype_str'=>$htype_str);
         }
         $range_str = "可选{$nearby_m}米范围内的地点";
-        $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str));
+        $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str,'api_result'=>$res_lonlat));
     }
 
     public function getsignprogress(){

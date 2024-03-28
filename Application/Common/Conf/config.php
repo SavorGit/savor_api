@@ -881,7 +881,7 @@ return array(
         '2'=>array('id'=>2,'name'=>'运维部'),
         '3'=>array('id'=>3,'name'=>'系统任务'),
     ),
-
+    'DATA_GOODS_IDS'=>array(56),
     'VIP_3_BUY_WINDE_NUM'=>1200,
     'STAT_TASK_TYPES'=>array(
 //        '26'=>'会员邀请(奖券任务)',

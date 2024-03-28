@@ -38,7 +38,8 @@ class StockRecordModel extends BaseModel{
 
     public function getHotelStaffStaticData($hotel_id,$openid){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
-        $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')));
+        $data_goods_ids =C('DATA_GOODS_IDS');
+        $where = array('a.type'=>7,'a.wo_status'=>array('in',array('1','2','4')),'a.goods_id'=>array('not in',$data_goods_ids));
         if($hotel_id){
             $where['stock.hotel_id'] = $hotel_id;
         }
@@ -68,6 +69,9 @@ class StockRecordModel extends BaseModel{
         }
         if(!empty($goods_id)){
             $where['a.goods_id'] = $goods_id;
+        }else {
+            $data_goods_ids = C('DATA_GOODS_IDS');
+            $where['a.goods_id'] = array('not in',$data_goods_ids);
         }
         if(!empty($ptype) && $ptype<99){
             if($ptype==10){

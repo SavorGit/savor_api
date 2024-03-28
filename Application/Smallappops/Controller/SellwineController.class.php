@@ -64,7 +64,7 @@ class SellwineController extends CommonController{
         $edate = $this->params['edate'];
         $sell_openid = $this->params['sell_openid'];
         $version = $this->params['version'];
-
+        $data_goods_ids = C('DATA_GOODS_IDS');
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -174,7 +174,7 @@ class SellwineController extends CommonController{
             }
         }
         $m_goods = new \Common\Model\Finance\GoodsModel();
-        $gwhere = array('status'=>1,'brand_id'=>array('not in','11,12,13,14'));
+        $gwhere = array('status'=>1,'brand_id'=>array('not in','11,12,13,14'),'id'=>array('not in',$data_goods_ids));
         $res_goods = $m_goods->getDataList('id,name',$gwhere,'brand_id asc');
         $goods_list = array(array('goods_id'=>0,'goods_name'=>'全部酒水','is_check'=>0));
         foreach ($res_goods as $v){
@@ -206,6 +206,7 @@ class SellwineController extends CommonController{
         $ptype = intval($this->params['ptype']);
         $param_type = intval($this->params['type']);
         $goods_id = intval($this->params['goods_id']);
+        $data_goods_ids = C('DATA_GOODS_IDS');
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -271,6 +272,7 @@ class SellwineController extends CommonController{
         $params_type = intval($this->params['type']);
         $goods_id = intval($this->params['goods_id']);
         $page = intval($this->params['page']);
+        $data_goods_ids = C('DATA_GOODS_IDS');
         $pagesize = 10;
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -282,6 +284,8 @@ class SellwineController extends CommonController{
         $where = array();
         if(!empty($goods_id)){
             $where['goods_id'] = $goods_id;
+        }else {
+            $where['goods_id'] = array('not in',$data_goods_ids);
         }
         if(!empty($ptype) && $ptype<99){
             if($ptype==10){
@@ -526,7 +530,8 @@ class SellwineController extends CommonController{
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
         $limit = "$offset,$pagesize";
         $order = 'a.id desc';
-        $where = array('a.type'=>7,'a.wo_status'=>array('in',array(1,2,4)));
+        $data_goods_ids =C('DATA_GOODS_IDS');
+        $where = array('a.type'=>7,'a.wo_status'=>array('in',array(1,2,4)),'a.goods_id'=>array('not in',$data_goods_ids));
         $is_query = 0;
         $sell_openid = '';
         if($type==1){
@@ -561,6 +566,7 @@ class SellwineController extends CommonController{
             $series_num = intval($res_sell[0]['series_num']);
 
             $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,a.op_openid,hotel.id as hotel_id';
+            
             $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
             if(!empty($res_records)){
                 $m_user = new \Common\Model\Smallapp\UserModel();
@@ -639,6 +645,7 @@ class SellwineController extends CommonController{
         $hotel_name = trim($this->params['hotel_name']);
         $page = intval($this->params['page']);
         $version = $this->params['version'];
+        $data_goods_id = C('DATA_GOODS_IDS');
         $pagesize = 10;
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -647,7 +654,7 @@ class SellwineController extends CommonController{
             $this->to_back(94001);
         }
         $residenter_id = $res_staff['sysuser_id'];
-        $where = array('a.residenter_id'=>$residenter_id,'a.type'=>1,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);
+        $where = array('a.residenter_id'=>$residenter_id,'a.type'=>1,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2,'a.goods_id'=>array('not in',$data_goods_id));
         if($status){
             if($status==1){
                 $where['a.ptype'] = 1;

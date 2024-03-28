@@ -506,6 +506,7 @@ class StatDataController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $start_date = $this->params['start_date'];
         $end_date   = $this->params['end_date'];
+        $data_goods_ids =C('DATA_GOODS_IDS');
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -514,7 +515,7 @@ class StatDataController extends CommonController{
         $start_time = date('Y-m-01 00:00:00',strtotime($start_date));
         $end_time = date('Y-m-31 23:59:59',strtotime($end_date));
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.goods_id'=>array('not in',$data_goods_ids));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,count(a.id) as sale_num,sum(a.sale_price) as hotel_sale_money,hotel.name as hotel_name';
         $res_saledata = $m_sale->getSaleStockRecordList($fileds,$where);
@@ -541,7 +542,7 @@ class StatDataController extends CommonController{
             }
         }
 
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'),'a.goods_id'=>array('not in',$data_goods_ids));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
         $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
@@ -557,7 +558,7 @@ class StatDataController extends CommonController{
         }
         if($bf_qk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2,'sale.goods_id'=>array('not in',$data_goods_ids));
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
@@ -565,7 +566,7 @@ class StatDataController extends CommonController{
             $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
         }
 
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'),'a.goods_id'=>array('not in',$data_goods_ids));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
         $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
@@ -581,15 +582,15 @@ class StatDataController extends CommonController{
         }
         if($bf_cqqk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2,'sale.goods_id'=>array('not in',$data_goods_ids));
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
             $has_pay_money = intval($res_payrecord[0]['has_pay_money']);
             $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
         }
-
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.goods_id'=>array('not in',$data_goods_ids));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'count(a.id) as num,a.settlement_price,a.goods_id,goods.name as goods_name';
         $res_detaildata = $m_sale->getSaleStockRecordList($fileds,$where,'a.goods_id,a.settlement_price');
@@ -621,6 +622,7 @@ class StatDataController extends CommonController{
         $start_date = $this->params['start_date'];
         $end_date   = $this->params['end_date'];
         $type = $this->params['type'];//1全部销售 2未付款
+        $data_goods_id = C('DATA_GOODS_IDS');
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -629,7 +631,7 @@ class StatDataController extends CommonController{
         $start_time = date('Y-m-d 00:00:00',strtotime($start_date));
         $end_time = date('Y-m-d 23:59:59',strtotime($end_date));
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.goods_id'=>array('not in',$data_goods_id));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,count(a.id) as sale_num,hotel.name as hotel_name';
         $res_saledata = $m_sale->getSaleStockRecordList($fileds,$where);
@@ -640,7 +642,7 @@ class StatDataController extends CommonController{
         $sale_num=$res_saledata[0]['sale_num'];
 
         $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-        $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.goods_id'=>array('not in',$data_goods_id));
         $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.pay_money) as has_pay_money';
         $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
@@ -662,7 +664,7 @@ class StatDataController extends CommonController{
             }
         }
 
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'));
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.ptype'=>array('in','0,2'),'a.goods_id'=>array('not in',$data_goods_id));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
         $res_qksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
@@ -678,7 +680,7 @@ class StatDataController extends CommonController{
         }
         if($bf_qk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2);
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.ptype'=>2,'sale.goods_id'=>array('not in',$data_goods_id));
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
@@ -686,7 +688,7 @@ class StatDataController extends CommonController{
             $qk_money = $qk_money+($bf_qk_money-$has_pay_money);
         }
 
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'));
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.is_expire'=>1,'a.ptype'=>array('in','0,2'),'a.goods_id'=>array('not in',$data_goods_id));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         $fileds = 'sum(a.settlement_price) as sale_money,a.ptype';
         $res_cqqksaledata = $m_sale->getSaleStockRecordList($fileds,$where,'a.ptype');
@@ -702,7 +704,7 @@ class StatDataController extends CommonController{
         }
         if($bf_cqqk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2);
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2,'sale.goods_id'=>aray('not in',$data_goods_id));
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);
@@ -710,7 +712,7 @@ class StatDataController extends CommonController{
             $cqqk_money = $cqqk_money+($bf_cqqk_money-$has_pay_money);
         }
 
-        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1);
+        $where = array('a.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'a.goods_id'=>array('not in',$data_goods_id));
         $where['a.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
         if($type==2){
             $where['a.ptype'] = array('in','0,2');

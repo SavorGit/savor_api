@@ -58,6 +58,9 @@ class SaleModel extends BaseModel{
         }
         if(!empty($goods_id)){
             $where['record.goods_id'] = $goods_id;
+        }else{
+            $data_goods_ids = C('DATA_GOODS_IDS');
+            $where['a.goods_id'] = array('not in',$data_goods_ids);
         }
         if(!empty($ptype) && $ptype<99){
             if($ptype==10){

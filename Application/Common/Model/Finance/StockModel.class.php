@@ -6,6 +6,10 @@ class StockModel extends BaseModel{
 	protected $tableName='finance_stock';
 
     public function checkHotelThreshold($hotel_id){
+        $ts_hotels = array(43686,43475,24041,46826,43015,43427,43688,24705,42425,43117);
+        if(in_array($hotel_id,$ts_hotels)){
+            return 1;
+        }
         $m_sale = new \Common\Model\Finance\SaleModel();
         $fileds = 'sum(a.settlement_price) as money';
         $where = array('a.hotel_id'=>$hotel_id,'a.ptype'=>0,'record.type'=>7,'record.wo_reason_type'=>1,'record.wo_status'=>2);

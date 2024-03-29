@@ -156,6 +156,7 @@ class StatDataController extends CommonController{
         $day = intval($this->params['day']);//1今日,2近7天,3本月
         $start_date = $this->params['start_date'];
         $end_date   = $this->params['end_date'];
+        $data_goods_ids =C('DATA_GOODS_IDS');
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -192,7 +193,7 @@ class StatDataController extends CommonController{
         $date_range = array(date('Y-m-d',strtotime('-6 days')),date('Y-m-d'));
         $stat_range_str= '(近七天,数据更新至'.date('Y/m/d').')';
         $stat_update_str = '数据更新至'.date('Y/m/d');
-        $res_lastsale = $m_sale->getALLDataList('id,add_time',array('hotel_id'=>$hotel_id),'id desc','0,1','');
+        $res_lastsale = $m_sale->getALLDataList('id,add_time',array('hotel_id'=>$hotel_id,'goods_id'=>array('not in',$data_goods_ids)),'id desc','0,1','');
         $sell_wine_str = '';
         if(!empty($res_lastsale[0]['add_time']) && $res_lastsale[0]['add_time']<date('Y-m-d 00:00:00')){
             $no_sell_day = round((time()-strtotime($res_lastsale[0]['add_time']))/86400);

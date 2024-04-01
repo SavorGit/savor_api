@@ -20,6 +20,7 @@ class Smallapp_api {
 	private $url_get_smallapp_code = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
 	private $url_get_smallapp_openid = "https://api.weixin.qq.com/sns/jscode2session";
 	private $url_get_idcard_info = 'https://api.weixin.qq.com/cv/ocr/idcard';
+	private $url_get_commn_info  = 'https://api.weixin.qq.com/cv/ocr/comm';
     private $flag;
 	public function __construct($flag = 1){
 	    $this->flag =$flag;
@@ -113,6 +114,10 @@ class Smallapp_api {
 	        $smallapp_config = C('SMALLAPP_DINNER_CONFIG');
 	    }else if($this->flag==5){
 	        $smallapp_config = C('SMALLAPP_SALE_CONFIG');
+	    }else if($this->flag==6){
+	        $smallapp_config = C('SMALLAPP_OPS_CONFIG');
+	    }else if($this->flag==7){
+	        $smallapp_config = C('SMALLAPP_DATA_CONFIG');
 	    }
 	    
 		$key_token = $smallapp_config['cache_key'];
@@ -228,6 +233,19 @@ class Smallapp_api {
     }
     public function getIdcardInfo($access_token ,$img_url){
         $url = $this->url_get_idcard_info."?type=MODE&img_url=".$img_url."&access_token=".$access_token;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);   //没有这个会自动输出，不用print_r();也会在后面多个1
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        $out = json_decode($output,true);
+        return $out;
+    }
+    public function getImageCharacters($access_token ,$img_url){
+        $url = $this->url_get_commn_info."?img_url=".$img_url."&access_token=".$access_token;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

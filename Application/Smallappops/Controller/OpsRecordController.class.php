@@ -10,7 +10,7 @@ class OpsRecordController extends CommonController{
         switch(ACTION_NAME) {
             case 'addrecord':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'ops_type'=>1001,'task_source'=>1001,'box_handle_num'=>1001,
+                $this->valid_fields = array('openid'=>1001,'ops_type'=>1001,'task_source'=>1001,'box_handle_num'=>1002,
                     'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,'signout_time'=>1002,'signout_hotel_id'=>1002,
                     'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002,'content'=>1002,'type'=>1001);
                 break;
@@ -19,6 +19,9 @@ class OpsRecordController extends CommonController{
     }
 
     public function addrecord(){
+        if($this->params['box_handle_num']==''){
+            $this->to_back(1001);
+        }
         $openid = $this->params['openid'];
         $visit_type = intval($this->params['ops_type']);
         $task_source = intval($this->params['task_source']);
@@ -33,7 +36,10 @@ class OpsRecordController extends CommonController{
         $cc_uids = $this->params['cc_uids'];
         $salerecord_id = intval($this->params['salerecord_id']);
         $type = intval($this->params['type']);//类型1保存2提交
-
+        
+        
+        
+        
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){

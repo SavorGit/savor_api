@@ -498,9 +498,11 @@ class HotelController extends CommonController{
             }
             $responsible_maintainer = '';
             if(!empty($res_hotel['responsible_maintainer_id'])){
-                $res_responsibleuser = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['responsible_maintainer_id'],'a.state'=>1,'user.status'=>1),'','');
+                //$res_responsibleuser = $m_opuser->getList('a.mobile,user.remark',array('a.user_id'=>$res_hotel['responsible_maintainer_id']),'','');
+                $m_user = new \Common\Model\SysUserModel();
+                $res_responsibleuser = $m_user->field('remark')->where(array('id'=>$res_hotel['responsible_maintainer_id']))->find();
                 if(!empty($res_responsibleuser)){
-                    $responsible_maintainer = $res_responsibleuser[0]['remark'];
+                    $responsible_maintainer = $res_responsibleuser['remark'];
                 }
             }
 

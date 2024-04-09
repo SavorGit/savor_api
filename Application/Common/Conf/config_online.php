@@ -14,7 +14,6 @@ $redis['db1']['1']['port'] = '';
 $redis['db1']['1']['isMaster'] = '0';
 
 
-$config_db =  array(
 	'DB_DEPLOY_TYPE' => 1, //数据库主从支持
     'DB_RW_SEPARATE' => true, //读写分离
     'DB_TYPE' => 'mysql',

@@ -541,6 +541,8 @@ return array(
     'smallappsale_finance_writeoff_not_support'=>'系统维护中',
     'smallappops_bbs_nick_name_error'=>'昵称已被占用,请重新输入',
     'smallappops_bbs_add_comment_error'=>'每个话题每人每天只能评论一次',
+    'smallappsale_finance_winecode_association_error'=>'关联失败，此酒商码已使用过',
+    'smallappsale_finance_idcode_association_error'=>'关联失败，此热点码已使用过',
 
 
 

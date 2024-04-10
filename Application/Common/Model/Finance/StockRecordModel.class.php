@@ -84,7 +84,7 @@ class StockRecordModel extends BaseModel{
             $where['hotel.area_id'] = $area_id;
         }
         if($maintainer_id){
-            $where['ext.maintainer_id'] = $maintainer_id;
+            $where['sale.maintainer_id'] = $maintainer_id;
         }
         if($hotel_id){
             $where['stock.hotel_id'] = $hotel_id;

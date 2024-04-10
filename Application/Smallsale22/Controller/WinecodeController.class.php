@@ -18,7 +18,7 @@ class WinecodeController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'association':
-                $this->params = array('openid'=>1001,'goods_id'=>1001,'idcode'=>1001,'winecode'=>1001);
+                $this->params = array('openid'=>1001,'goods_id'=>1001,'idcode'=>1001,'winecode'=>1001,'image'=>1002);
                 $this->is_verify = 1;
                 break;
         }
@@ -75,13 +75,14 @@ class WinecodeController extends CommonController{
         if(!empty($res_data['prism_wordsInfo'][5]['word'])){
             $code = str_replace("酒盒防伪码：","",$res_data['prism_wordsInfo'][5]['word']);
         }
-        $this->to_back(array('winecode'=>$code));
+        $this->to_back(array('winecode'=>$code,'image'=>$img_url));
     }
 
     public function association(){
         $openid = $this->params['openid'];
         $idcode = $this->params['idcode'];
         $winecode = $this->params['winecode'];
+        $image = $this->params['image'];
         $goods_id = intval($this->params['goods_id']);
 
         $key = C('QRCODE_SECRET_KEY');
@@ -109,7 +110,11 @@ class WinecodeController extends CommonController{
         if(!empty($res_data)){
             $this->to_back(93114);
         }
-        $id = $m_finnace_winecode->add(array('goods_id'=>$goods_id,'idcode'=>$idcode,'winecode'=>$winecode));
+        $add_data = array('goods_id'=>$goods_id,'idcode'=>$idcode,'winecode'=>$winecode);
+        if(!empty($image)){
+            $add_data['image'] = $image;
+        }
+        $id = $m_finnace_winecode->add($add_data);
         $this->to_back(array('id'=>$id));
     }
 

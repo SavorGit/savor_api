@@ -45,11 +45,14 @@ class WinecodeController extends CommonController{
             $this->to_back(93001);
         }
         $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,goods.link_type,cate.name as cate_name,spec.name as spec_name,unit.name as unit_name';
+        $fileds = 'a.idcode,goods.id as goods_id,goods.name as goods_name,goods.link_type,cate.name as cate_name,spec.name as spec_name,unit.name as unit_name,unit.convert_type';
         $where = array('a.idcode'=>$idcode,'a.dstatus'=>1);
         $res_records = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1');
         $goods_info = array();
-        if(!empty($res_records)){
+        if(!empty($res_records[0]['idcode'])){
+            if($res_records[0]['convert_type']!=1){
+                $this->to_back(93115);
+            }
             $goods_info = $res_records[0];
         }
         $this->to_back($goods_info);

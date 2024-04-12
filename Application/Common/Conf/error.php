@@ -503,6 +503,7 @@ return array(
         '93112'=>'smallappsale_finance_writeoff_not_support',
         '93113'=>'smallappsale_finance_winecode_association_error',
         '93114'=>'smallappsale_finance_idcode_association_error',
+        '93115'=>'smallappsale_finance_use_bind_idcode_error',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

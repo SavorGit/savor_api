@@ -75,8 +75,15 @@ class WinecodeController extends CommonController{
         $res_ocr = $ali_ocr->RecognizeGeneral($oss_host.$img_url);
         $res_data = json_decode($res_ocr['Data'],true);
         $code = '';
-        if(!empty($res_data['prism_wordsInfo'][5]['word'])){
-            $code = str_replace("酒盒防伪码：","",$res_data['prism_wordsInfo'][5]['word']);
+        if(!empty($res_data['prism_wordsInfo'])){
+            foreach ($res_data['prism_wordsInfo'] as $v){
+                $words = "酒盒防伪码：";
+                $position = strpos($v['word'], $words);
+                if($position!==false){
+                    $code = str_replace("酒盒防伪码：","",$v['word']);
+                    break;
+                }
+            }
         }
         $this->to_back(array('winecode'=>$code,'image'=>$img_url));
     }

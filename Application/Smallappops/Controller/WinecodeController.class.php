@@ -65,12 +65,22 @@ class WinecodeController extends CommonController{
         $res_ocr = $ali_ocr->RecognizeGeneral($oss_host.$img_url);
         $res_data = json_decode($res_ocr['Data'],true);
         $goods_info = array();
-        if(!empty($res_data['prism_wordsInfo'][5]['word'])){
-            $winecode = str_replace("酒盒防伪码：","",$res_data['prism_wordsInfo'][5]['word']);
-            $m_finnace_winecode = new \Common\Model\Finance\WinecodeModel();
-            $res_winedata = $m_finnace_winecode->getInfo(array('winecode'=>$winecode));
-            if(!empty($res_winedata)){
-                $goods_info = $this->query_data($res_winedata);
+        if(!empty($res_data['prism_wordsInfo'])){
+            $winecode = '';
+            foreach ($res_data['prism_wordsInfo'] as $v){
+                $words = "酒盒防伪码：";
+                $position = strpos($v['word'], $words);
+                if($position!==false){
+                    $winecode = str_replace("酒盒防伪码：","",$v['word']);
+                    break;
+                }
+            }
+            if(!empty($winecode)){
+                $m_finnace_winecode = new \Common\Model\Finance\WinecodeModel();
+                $res_winedata = $m_finnace_winecode->getInfo(array('winecode'=>$winecode));
+                if(!empty($res_winedata)){
+                    $goods_info = $this->query_data($res_winedata);
+                }
             }
         }
         $this->to_back($goods_info);

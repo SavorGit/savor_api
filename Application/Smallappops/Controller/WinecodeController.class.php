@@ -96,7 +96,7 @@ class WinecodeController extends CommonController{
         $message = '';
         if(!empty($res_qrcode) && $res_staff['hotel_role_type']==6){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-            $where = array('idcode'=>$idcode,'type'=>7,'wo_status'=>2,'recycle_status'=>5);
+            $where = array('idcode'=>$idcode,'type'=>7,'wo_status'=>2,'recycle_status'=>array('in','4,5'));
             $res_record = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
             if(!empty($res_record[0]['id'])){
                 $stock_record_id = $res_record[0]['id'];

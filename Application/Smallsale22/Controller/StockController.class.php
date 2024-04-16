@@ -1543,9 +1543,11 @@ class StockController extends CommonController{
                         $goods_config = $m_goodsconfig->getALLDataList('*',$configwhere,'id desc','0,1','');
                     }
                     $recycle_status = 4;
+                    $is_open_reward = 0;
                     $open_area_ids = explode(',',$goods_config[0]['open_area_ids']);
                     if($reason_type==1 && !empty($goods_config[0]['open_integral']) && in_array($res_hotel['area_id'],$open_area_ids)){
                         $recycle_status = 1;
+                        $is_open_reward = 1;
                     }
                     $is_new = 0;
                     if($add_data['type']==7){
@@ -1556,6 +1558,7 @@ class StockController extends CommonController{
                                     'wo_data_imgs'=>$data_imgs,'wo_status'=>1,'wo_num'=>$add_data['wo_num']+1,'wo_time'=>date('Y-m-d H:i:s')
                                 );
                                 $up_data['recycle_status'] = $recycle_status;
+                                $up_data['is_open_reward'] = $is_open_reward;
                                 if(!empty($longitude) && !empty($latitude)){
                                     $up_data['longitude'] = $longitude;
                                     $up_data['latitude'] = $latitude;
@@ -1588,6 +1591,7 @@ class StockController extends CommonController{
                         $add_data['wo_data_imgs'] = $data_imgs;
                         $add_data['wo_status'] = 1;
                         $add_data['recycle_status'] = $recycle_status;
+                        $add_data['is_open_reward'] = $is_open_reward;
                         $add_data['out_time'] = $add_data['add_time'];
                         $add_data['wo_num'] = 1;
                         $add_data['is_notifymsg'] = 0;

@@ -66,18 +66,30 @@ class WinecodeController extends CommonController{
         $res_data = json_decode($res_ocr['Data'],true);
         $goods_info = array();
         if(!empty($res_data['prism_wordsInfo'])){
-            $winecode = '';
-            foreach ($res_data['prism_wordsInfo'] as $v){
-                $words = "酒盒防伪码：";
+            $first_num = 0;
+            $end_num = 0;
+            $code = '';
+            foreach ($res_data['prism_wordsInfo'] as $k=>$v){
+                $words = "06";
                 $position = strpos($v['word'], $words);
                 if($position!==false){
-                    $winecode = str_replace("酒盒防伪码：","",$v['word']);
+                    $first_num = $k;
+                    $code.=$v['word'];
+                }else{
+                    if(!empty($code)){
+                        $code.=$v['word'];
+                    }
+                }
+                $end_words = "XXXX";
+                $position = strpos($v['word'], $end_words);
+                if($position!==false){
+                    $end_num = $k;
                     break;
                 }
             }
-            if(!empty($winecode)){
+            if(!empty($code)){
                 $m_finnace_winecode = new \Common\Model\Finance\WinecodeModel();
-                $res_winedata = $m_finnace_winecode->getInfo(array('winecode'=>$winecode));
+                $res_winedata = $m_finnace_winecode->getInfo(array('winecode'=>$code));
                 if(!empty($res_winedata)){
                     $goods_info = $this->query_data($res_winedata);
                 }

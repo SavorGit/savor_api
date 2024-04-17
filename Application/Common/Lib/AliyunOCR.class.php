@@ -65,6 +65,22 @@ class AliyunOCR{
         return $result;
     }
 
+    public function RecognizeBasic($url){
+        $this->data = array(
+            'Format' => 'json',
+            'Version' => '2021-07-07',
+            'AccessKeyId' => $this->accessKeyId,
+            'SignatureVersion' => '1.0',
+            'SignatureMethod' => 'HMAC-SHA1',
+            'SignatureNonce'=> uniqid(),
+            'Timestamp' => date('Y-m-d\TH:i:s\Z'),
+            'Action' => 'RecognizeBasic',
+            'Url' => $url,
+        );
+        $result = $this->http_get();
+        return $result;
+    }
+
     private function http_get(){
         $this->data['Signature'] = $this->computeSignature($this->data, $this->accessKeySecret);
         $ch = curl_init();

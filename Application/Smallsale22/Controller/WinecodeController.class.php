@@ -72,7 +72,7 @@ class WinecodeController extends CommonController{
         }
         $ali_ocr = new \Common\Lib\AliyunOCR();
         $oss_host = get_oss_host('http');
-        $res_ocr = $ali_ocr->RecognizeGeneral($oss_host.$img_url);
+        $res_ocr = $ali_ocr->RecognizeBasic($oss_host.$img_url);
         $res_data = json_decode($res_ocr['Data'],true);
         $code = '';
         if(!empty($res_data['prism_wordsInfo'])){
@@ -97,7 +97,7 @@ class WinecodeController extends CommonController{
                 }
             }
         }
-        $this->to_back(array('winecode'=>$code,'image'=>$img_url,'ocr_data'=>$res_data));
+        $this->to_back(array('winecode'=>$code,'image'=>$img_url));
     }
 
     public function association(){

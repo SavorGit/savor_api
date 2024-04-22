@@ -70,9 +70,15 @@ class WinecodeController extends CommonController{
             $end_num = 0;
             $code = '';
             foreach ($res_data['prism_wordsInfo'] as $k=>$v){
-                $words = "06";
-                $position = strpos($v['word'], $words);
-                if($position!==false){
+                $position6 = strpos($v['word'], "06");
+                $position7 = strpos($v['word'], "07");
+                $is_first = 0;
+                if($position6!==false && $position6==0){
+                    $is_first = 1;
+                }elseif($position7!==false && $position7==0){
+                    $is_first = 1;
+                }
+                if($is_first==1){
                     $first_num = $k;
                     $code.=$v['word'];
                 }else{

@@ -544,6 +544,7 @@ return array(
     'smallappsale_finance_winecode_association_error'=>'关联失败，此酒商码已使用过',
     'smallappsale_finance_idcode_association_error'=>'关联失败，此热点码已使用过',
     'smallappsale_finance_use_bind_idcode_error'=>'请使用瓶码进行绑定',
+    'smallappops_finance_threshold_error'=>'当前酒楼有欠款,无法进行送酒',
 
 
 

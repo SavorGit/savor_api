@@ -549,6 +549,7 @@ return array(
 	    '94100'=>'smallappops_not_entity_platform',
 	    '94101'=>'smallappops_bbs_nick_name_error',
 	    '94102'=>'smallappops_bbs_add_comment_error',
+	    '94103'=>'smallappops_finance_threshold_error',
 
         //小程序数据端
         '95001'=>'smallappdata_mobile_not_open_account',

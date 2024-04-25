@@ -32,6 +32,7 @@ class OpsstaffModel extends BaseModel{
             case 2:
             case 4:
             case 6:
+            case 8:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 foreach ($permission_city as $k=>$v){
@@ -89,17 +90,13 @@ class OpsstaffModel extends BaseModel{
             case 2:
             case 4:
             case 6:
+            case 8:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 foreach ($permission_city as $k=>$v){
                     $staff_list = array();
                     if($v['area_id']){
                         $fields = 'a.id as staff_id,su.remark as staff_name';
-                        
-                        $mps = [];
-                        $mps['a.area_id'] = $v['area_id'];
-                        $mps['a.status'] = 1;
-                        $mps['a.hotel_role_type'] = array('in',array(3,4));
                         $wheres = " (a.area_id=".$v['area_id']." and a.status=1 and a.hotel_role_type in(3,4)) or (a.area_id=".$v['area_id']." and a.status=1  and a.is_operrator=1)";
                         $staff_list = $this->getStaffinfo($fields,$wheres);
                         if(!empty($staff_list)){

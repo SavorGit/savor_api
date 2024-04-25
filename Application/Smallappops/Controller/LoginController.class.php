@@ -144,7 +144,7 @@ class LoginController extends CommonController{
             $data['role_type'] = $res_staff['hotel_role_type'];
             $data['is_operrator'] = $res_staff['is_operrator'];
             $data['permission_city'] = $m_staff->get_permission_city($res_staff);
-            if($res_staff['is_operrator']==0){
+            if($res_staff['is_operrator']==0 || $res_staff['hotel_role_type']==8){
                 $data['permission_work_city'] = $m_staff->get_permission_work_city($res_staff);
             }else {
                 $data['permission_work_city'] = array();

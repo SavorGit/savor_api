@@ -63,6 +63,10 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
+            case 'winehotels':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'keywords'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -818,6 +822,29 @@ class HotelController extends CommonController{
         }
         $range_str = "可选{$nearby_m}米范围内的地点";
         $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str,'api_result'=>$res_lonlat));
+    }
+
+    public function winehotels(){
+        $openid = $this->params['openid'];
+        $keywords = trim($this->params['keywords']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+
+        $fields = "a.id hotel_id,a.name,a.addr";
+        $where = array('a.state'=>1,'a.flag'=>0,'ext.is_salehotel'=>1,'merchant.status'=>1);
+        $where['a.area_id'] = $res_staff['area_id'];
+        $where['a.name'] = array('like',"%$keywords%");
+        $m_hotel = new \Common\Model\HotelModel();
+        $hotel_list = $m_hotel->alias('a')
+            ->join('savor_hotel_ext ext on a.id=ext.hotel_id','left')
+            ->join('savor_integral_merchant merchant on a.id=merchant.hotel_id','left')
+            ->field($fields)->where($where)->select();
+
+        $this->to_back(array('datalist'=>$hotel_list));
     }
 
     public function getsignprogress(){

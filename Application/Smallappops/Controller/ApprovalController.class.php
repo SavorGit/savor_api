@@ -25,6 +25,10 @@ class ApprovalController extends CommonController{
                 $this->valid_fields = array('openid'=>1001,'item_id'=>1001,'hotel_id'=>1001,'op_time'=>1001,
                     'merchant_staff_id'=>1001,'goods_data'=>1002,'content'=>1002,'bottle_num'=>1002);
                 break;
+            case 'nums':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001);
+                break;
             case 'datalist':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'item_id'=>1001,'area_id'=>1001,'ops_staff_id'=>1001,
@@ -82,8 +86,14 @@ class ApprovalController extends CommonController{
         $delivery_time = time()+86400;
         $delivery_date = date('Y-m-d',$delivery_time);
         $delivery_hour = date('H:i',$delivery_time);
+        $all_status = C('APPROVAL_STATUS');
+        $approval_status = array(array('value'=>0,'name'=>'全部'));
+        foreach ($all_status as $k=>$v){
+            $approval_status[]=array('value'=>$k,'name'=>$v);
+        }
 
-        $res_data = array('goods_list'=>$goods_list,'goods_num'=>$goods_num,'delivery_date'=>$delivery_date,'delivery_hour'=>$delivery_hour);
+        $res_data = array('goods_list'=>$goods_list,'goods_num'=>$goods_num,'delivery_date'=>$delivery_date,
+            'delivery_hour'=>$delivery_hour,'approval_status'=>$approval_status);
         $this->to_back($res_data);
     }
 
@@ -215,6 +225,41 @@ class ApprovalController extends CommonController{
         $this->to_back(array('approval_id'=>$approval_id));
     }
 
+    public function nums(){
+        $openid = $this->params['openid'];
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+        $fields = 'count(id) as num,handle_status';
+        $where = array('ops_staff_id'=>$res_staff['id'],'is_receive'=>1);
+        $res_process = $m_approval_process->getALLDataList($fields,$where,'','','handle_status');
+        $pending_num = $processing_num = $processed_num = 0;
+        foreach ($res_process as $v){
+            switch ($v['handle_status']){
+                case 1:
+                    $pending_num = $v['num'];
+                    break;
+                case 2:
+                    $processing_num = $v['num'];
+                    break;
+                case 3:
+                    $processed_num = $v['num'];
+                    break;
+            }
+        }
+        $where = array('ops_staff_id'=>$res_staff['id']);
+        $m_approval = new \Common\Model\Crm\ApprovalModel();
+        $res_approval = $m_approval->getDataList('count(id) as num',$where,'');
+        $myrelease_num = intval($res_approval[0]['num']);
+
+        $res_data = array('pending_num'=>$pending_num,'processing_num'=>$processing_num,'processed_num'=>$processed_num,'myrelease_num'=>$myrelease_num);
+        $this->to_back($res_data);
+    }
+
     public function managedatas(){
         $openid = $this->params['openid'];
         $handle_status = intval($this->params['handle_status']);//1待处理,2处理中,3已处理
@@ -246,7 +291,6 @@ class ApprovalController extends CommonController{
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
         $page = intval($this->params['page']);
-        $source = intval($this->params['source']);//my,all,manage
         $page_szie = 10;
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -265,14 +309,6 @@ class ApprovalController extends CommonController{
         approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array();
-        switch ($source){
-            case 'my':
-                $where = array('approval.ops_staff_id'=>$res_staff['id']);
-                break;
-            case 'manage':
-                break;
-
-        }
         if($status){
             $where['approval.status'] = $status;
         }

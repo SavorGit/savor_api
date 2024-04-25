@@ -52,14 +52,14 @@ class ApprovalHandleController extends CommonController{
                     if($is_out==0){
                         $this->to_back(94103);
                     }
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>3,'handle_time'=>date('Y-m-d H:i:s')));
                     if(!empty($res_next)){
-                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1));
+                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'handle_status'=>1));
                     }
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>3));
                     break;
                 case 2:
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>3,'handle_time'=>date('Y-m-d H:i:s')));
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>2));
                     break;
                 case 3:
@@ -75,27 +75,27 @@ class ApprovalHandleController extends CommonController{
                     }else{
                         $m_approval->updateData(array('id'=>$approval_id),array('status'=>6));
                     }
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>2,'handle_time'=>date('Y-m-d H:i:s')));
                     break;
                 case 4:
                     if(empty($work_staff_id)){
                         $this->to_back(1001);
                     }
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s'),
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>3,'handle_time'=>date('Y-m-d H:i:s'),
                         'allot_time'=>date('Y-m-d H:i:s'),'allot_ops_staff_id'=>$work_staff_id
                         ));
                     if(empty($res_next)){
                         $next_process = array('approval_id'=>$approval_id,'step_id'=>0,'step_order'=>$step_order,'area_id'=>$res_staff['area_id'],
-                            'is_receive'=>1,'ops_staff_id'=>$work_staff_id);
+                            'is_receive'=>1,'handle_status'=>1,'ops_staff_id'=>$work_staff_id);
                         $m_approval_process->add($next_process);
                     }else{
-                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'ops_staff_id'=>$work_staff_id));
+                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'handle_status'=>1,'ops_staff_id'=>$work_staff_id));
                     }
 
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>10));
                     break;
                 case 5:
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>2,'handle_time'=>date('Y-m-d H:i:s')));
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>8));
                     break;
                 case 8:
@@ -105,7 +105,7 @@ class ApprovalHandleController extends CommonController{
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>9,'receipt_img'=>$receipt_img,'receipt_time'=>date('Y-m-d H:i:s')));
                     break;
                 case 10:
-                    $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_handle'=>1,'status'=>3,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData(array('id'=>$res_next['id']),array('handle_status'=>2,'status'=>3,'handle_time'=>date('Y-m-d H:i:s')));
                     break;
             }
         }
@@ -139,20 +139,20 @@ class ApprovalHandleController extends CommonController{
                     if(empty($work_staff_id)){
                         $this->to_back(1001);
                     }
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s'),
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>3,'handle_time'=>date('Y-m-d H:i:s'),
                         'allot_time'=>date('Y-m-d H:i:s'),'allot_ops_staff_id'=>$work_staff_id
                         ));
                     if(!empty($res_next)){
-                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'ops_staff_id'=>$work_staff_id));
+                        $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'handle_status'=>1,'ops_staff_id'=>$work_staff_id));
                     }
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>10));
                     break;
                 case 2:
-                    $m_approval_process->updateData($where,array('status'=>$status,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>3,'handle_time'=>date('Y-m-d H:i:s')));
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>2));
                     break;
                 case 11:
-                    $m_approval_process->updateData($where,array('status'=>3,'is_handle'=>1,'handle_time'=>date('Y-m-d H:i:s')));
+                    $m_approval_process->updateData($where,array('status'=>3,'handle_status'=>2,'handle_time'=>date('Y-m-d H:i:s')));
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>11));
                     break;
 

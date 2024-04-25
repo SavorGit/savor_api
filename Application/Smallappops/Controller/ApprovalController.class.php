@@ -34,6 +34,10 @@ class ApprovalController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'page'=>1001);
                 break;
+            case 'managedatas':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'handle_status'=>1001,'page'=>1001);
+                break;
             case 'detail':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'approval_id'=>1001);
@@ -183,8 +187,10 @@ class ApprovalController extends CommonController{
         $processes_data = array();
         foreach ($res_steps as $v){
             $is_receive = 0;
+            $handle_status = 0;
             if($v['step_order']==1){
                 $is_receive = 1;
+                $handle_status = 1;
             }
             $ops_staff_id = $v['ops_staff_id'];
             if($ops_staff_id==0){
@@ -201,12 +207,34 @@ class ApprovalController extends CommonController{
             }
 
             $processes_data[] = array('approval_id'=>$approval_id,'step_id'=>$v['id'],'step_order'=>$v['step_order'],'area_id'=>$area_id,
-                'is_receive'=>$is_receive,'ops_staff_id'=>$ops_staff_id);
+                'is_receive'=>$is_receive,'handle_status'=>$handle_status,'ops_staff_id'=>$ops_staff_id);
         }
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
         $m_approval_process->addAll($processes_data);
 
         $this->to_back(array('approval_id'=>$approval_id));
+    }
+
+    public function managedatas(){
+        $openid = $this->params['openid'];
+        $handle_status = intval($this->params['handle_status']);//1待处理,2处理中,3已处理
+        $page = intval($this->params['page']);
+        $page_szie = 10;
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $offset = ($page-1)*$page_szie;
+        $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,
+        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
+        staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
+        $where = array('a.ops_staff_id'=>$res_staff['id'],'a.is_receive'=>1,'a.handle_status'=>$handle_status);
+        $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+        $res_data = $m_approval_process->getProcessDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'');
+        $res_data = $this->handle_approval_data($res_data);
+        $this->to_back(array('datalist'=>$res_data));
     }
 
     pubLic function datalist(){
@@ -218,6 +246,7 @@ class ApprovalController extends CommonController{
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
         $page = intval($this->params['page']);
+        $source = intval($this->params['source']);//my,all,manage
         $page_szie = 10;
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -236,6 +265,14 @@ class ApprovalController extends CommonController{
         approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array();
+        switch ($source){
+            case 'my':
+                $where = array('approval.ops_staff_id'=>$res_staff['id']);
+                break;
+            case 'manage':
+                break;
+
+        }
         if($status){
             $where['approval.status'] = $status;
         }
@@ -266,19 +303,7 @@ class ApprovalController extends CommonController{
             $m_approval = new \Common\Model\Crm\ApprovalModel();
             $res_data = $m_approval->getApprovalDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'');
         }
-        $all_status = C('APPROVAL_STATUS');
-        foreach ($res_data as $k=>$v){
-            $res_data[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
-            $res_data[$k]['status_str'] = $all_status[$v['status']];
-            switch ($v['item_id']){
-                case 10:
-                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['delivery_time']));
-                    break;
-                case 11:
-                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['recycle_time']));
-                    break;
-            }
-        }
+        $res_data = $this->handle_approval_data($res_data);
         $this->to_back(array('datalist'=>$res_data));
     }
 
@@ -299,19 +324,7 @@ class ApprovalController extends CommonController{
         $where = array('approval.ops_staff_id'=>$res_staff['id']);
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $res_data = $m_approval->getApprovalDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'');
-        $all_status = C('APPROVAL_STATUS');
-        foreach ($res_data as $k=>$v){
-            $res_data[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
-            $res_data[$k]['status_str'] = $all_status[$v['status']];
-            switch ($v['item_id']){
-                case 10:
-                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['delivery_time']));
-                    break;
-                case 11:
-                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['recycle_time']));
-                    break;
-            }
-        }
+        $res_data = $this->handle_approval_data($res_data);
         $this->to_back(array('datalist'=>$res_data));
     }
 
@@ -364,8 +377,8 @@ class ApprovalController extends CommonController{
             }
             $handle_time = $v['handle_time']=='0000-00-00 00:00:00'?'':$v['handle_time'];
             $approval_content = array();
-            $is_handle = $v['is_handle'];
-            if($is_handle==1){
+            $handle_status = $v['handle_status'];
+            if($handle_status==3){
                 $approval_content[]=array('status_str'=>$process_status[$v['status']],'handle_time'=>$handle_time);
                 if($v['stock_out_finish_time']!='0000-00-00 00:00:00'){
                     $approval_content[]=array('status_str'=>'完成出库','handle_time'=>$v['stock_out_finish_time']);
@@ -374,13 +387,30 @@ class ApprovalController extends CommonController{
             if(empty($v['user_name'])){
                 $v['user_name'] = '';
             }
-            $process[]=array('processes_id'=>$v['id'],'step_order'=>$v['step_order'],'name'=>$v['name'],'user_name'=>$v['user_name'],'is_handle'=>$is_handle,'approval_content'=>$approval_content);
+            $process[]=array('processes_id'=>$v['id'],'step_order'=>$v['step_order'],'name'=>$v['name'],'user_name'=>$v['user_name'],'handle_status'=>$handle_status,'approval_content'=>$approval_content);
         }
         $res_data['is_approval'] = $is_approval;
         $res_data['process'] = $process;
         $res_data['processes_id'] = $now_processes_id;
 
         $this->to_back($res_data);
+    }
+
+    private function handle_approval_data($res_data){
+        $all_status = C('APPROVAL_STATUS');
+        foreach ($res_data as $k=>$v){
+            $res_data[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
+            $res_data[$k]['status_str'] = $all_status[$v['status']];
+            switch ($v['item_id']){
+                case 10:
+                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['delivery_time']));
+                    break;
+                case 11:
+                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['recycle_time']));
+                    break;
+            }
+        }
+        return $res_data;
     }
 
 

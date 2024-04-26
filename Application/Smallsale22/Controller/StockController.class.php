@@ -950,6 +950,12 @@ class StockController extends CommonController{
             }
         }
         $m_stock->updateData(array('id'=>$stock_id),$up_data);
+
+        if($res_stock['type']==20){
+            $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+            $m_approval_process->handleProcessStatus($stock_id,2);
+        }
+
         $this->to_back(array());
     }
 
@@ -1093,6 +1099,10 @@ class StockController extends CommonController{
 
         $up_data = array('status'=>3,'receive_openid'=>$openid,'update_time'=>date('Y-m-d H:i:s'));
         $m_stock->updateData(array('id'=>$stock_id),$up_data);
+
+        $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+        $m_approval_process->handleProcessStatus($stock_id,4);
+
         $this->to_back(array());
     }
 
@@ -1214,6 +1224,10 @@ class StockController extends CommonController{
 
         $up_data = array('status'=>4,'check_openid'=>$openid,'check_img'=>$check_img,'update_time'=>date('Y-m-d H:i:s'));
         $m_stock->updateData(array('id'=>$stock_id),$up_data);
+
+        $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+        $m_approval_process->handleProcessStatus($stock_id,5);
+
         $this->to_back(array());
     }
 

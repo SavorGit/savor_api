@@ -33,4 +33,36 @@ class ApprovalProcessesModel extends BaseModel{
             ->select();
         return $data;
     }
+
+    public function handleProcessStatus($stock_id,$type){
+        $m_approval = new \Common\Model\Crm\ApprovalModel();
+        $res_approval = $m_approval->getInfo(array('stock_id'=>$stock_id));
+        $approval_id = 0;
+        if(empty($res_approval)){
+            return $approval_id;
+        }
+        $approval_id = $res_approval['id'];
+        $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+        switch ($type){
+            case 2://2出库,4领取,5验收
+                $m_approval->updateData(array('id'=>$approval_id),array('status'=>5));
+                $pwhere = array('approval_id'=>$approval_id,'step_order'=>2);
+                $res_process = $m_approval_process->getInfo($pwhere);
+                if(!empty($res_process)){
+                    $m_approval_process->updateData(array('id'=>$res_process['id']),array('handle_status'=>3));
+                }
+                break;
+            case 4:
+                $m_approval->updateData(array('id'=>$approval_id),array('status'=>7));
+                break;
+            case 5:
+                $m_approval->updateData(array('id'=>$approval_id),array('status'=>9));
+                $res_process = $m_approval_process->getDataList('id',array('approval_id'=>$approval_id,'step_order'=>array('in','3,4')),'id asc');
+                foreach ($res_process as $v){
+                    $m_approval_process->updateData(array('id'=>$v['id']),array('handle_status'=>3));
+                }
+                break;
+        }
+        return $approval_id;
+    }
 }

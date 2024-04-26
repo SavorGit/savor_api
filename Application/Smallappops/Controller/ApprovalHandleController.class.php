@@ -97,6 +97,10 @@ class ApprovalHandleController extends CommonController{
                 case 5:
                     $m_approval_process->updateData($where,array('status'=>$status,'handle_status'=>2,'handle_time'=>date('Y-m-d H:i:s')));
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>8));
+                    if($res_approval['stock_id']>0){
+                        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+                        $m_stock_record->createReceiveCheckData($res_approval['stock_id'],$openid);
+                    }
                     break;
                 case 8:
                     if(empty($receipt_img)){

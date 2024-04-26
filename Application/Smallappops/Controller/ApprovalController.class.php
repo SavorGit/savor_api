@@ -375,7 +375,7 @@ class ApprovalController extends CommonController{
         }
         $now_ops_staff_id = $res_staff['id'];
         $m_approval = new \Common\Model\Crm\ApprovalModel();
-        $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,
+        $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,approval.stock_id,
         approval.merchant_staff_id,approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('approval.id'=>$approval_id);
@@ -394,6 +394,14 @@ class ApprovalController extends CommonController{
             default:
                 $res_data['op_time'] = '';
         }
+        $stock_serial_number = '';
+        if($res_data['stock_id']){
+            $m_stock = new \Common\Model\Finance\StockModel();
+            $res_stock = $m_stock->getInfo(array('id'=>$res_data['stock_id']));
+            $stock_serial_number = $res_stock['serial_number'];
+        }
+        $res_data['stock_serial_number'] = $stock_serial_number;
+
         $m_merchant_staff = new \Common\Model\Integral\StaffModel();
         $sfileds = 'user.nickName,user.mobile';
         $res_mstaff = $m_merchant_staff->getMerchantStaff($sfileds,array('a.id'=>$res_data['merchant_staff_id']));

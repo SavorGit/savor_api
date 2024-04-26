@@ -194,7 +194,9 @@ class StockRecordModel extends BaseModel{
         }
 
         $m_stock = new \Common\Model\Finance\StockModel();
-        $m_stock->updateData(array('id'=>$stock_id),array('delivery_type'=>2,'status'=>4,'check_openid'=>$openid,'update_time'=>date('Y-m-d H:i:s')));
+        $updata = array('delivery_type'=>2,'status'=>4,'receive_openid'=>$openid,'check_openid'=>$openid,
+            'receive_time'=>date('Y-m-d H:i:s'),'check_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'));
+        $m_stock->updateData(array('id'=>$stock_id),$updata);
         return $stock_id;
     }
 }

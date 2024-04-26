@@ -57,7 +57,7 @@ class StockModel extends BaseModel{
         $nowdate = date('Ymd',strtotime($res_approval['delivery_time']));
         $field = 'count(id) as num';
         $where = array('type'=>20,'area_id'=>$area_id,'DATE_FORMAT(add_time, "%Y%m%d")'=>$nowdate);
-        $res_stock = $this->getAll($field,$where,0,1);
+        $res_stock = $this->getALLDataList($field,$where,'',"0,1",'');
         if($res_stock[0]['num']>0){
             $number = $res_stock[0]['num']+1;
         }else{

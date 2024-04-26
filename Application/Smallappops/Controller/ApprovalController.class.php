@@ -121,9 +121,6 @@ class ApprovalController extends CommonController{
                 $user_name = $res_ops[0]['user_name'];
             }else{
                 $hotel_role_type = $v['role_type'];
-                if($hotel_role_type==7){
-                    $hotel_role_type = 6;
-                }
                 $owhere = array('a.area_id'=>$area_id,'a.hotel_role_type'=>$hotel_role_type);
                 $res_ops = $m_staff->getStaffinfo('su.remark as user_name',$owhere);
                 $user_name = $res_ops[0]['user_name'];
@@ -205,9 +202,6 @@ class ApprovalController extends CommonController{
             $ops_staff_id = $v['ops_staff_id'];
             if($ops_staff_id==0){
                 $hotel_role_type = $v['role_type'];
-                if($hotel_role_type==7){
-                    $hotel_role_type = 6;
-                }
                 $owhere = array('a.area_id'=>$area_id,'a.hotel_role_type'=>$hotel_role_type);
                 $res_ops = $m_staff->getStaffinfo('a.id',$owhere);
                 $ops_staff_id = $res_ops[0]['id'];
@@ -375,7 +369,7 @@ class ApprovalController extends CommonController{
         }
         $now_ops_staff_id = $res_staff['id'];
         $m_approval = new \Common\Model\Crm\ApprovalModel();
-        $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,approval.stock_id,
+        $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,approval.stock_id,approval.wine_data,
         approval.merchant_staff_id,approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('approval.id'=>$approval_id);
@@ -401,14 +395,25 @@ class ApprovalController extends CommonController{
             $stock_serial_number = $res_stock['serial_number'];
         }
         $res_data['stock_serial_number'] = $stock_serial_number;
-
+        $goods_data = array();
+        if(!empty($res_data['wine_data'])){
+            $wine_data = json_decode($res_data['wine_data'],true);
+            $m_goods = new \Common\Model\Finance\GoodsModel();
+            $res_goods = $m_goods->getDataList('id,name',array('id'=>array('in',array_keys($wine_data))),'id asc');
+            foreach ($res_goods as $v){
+                $goods_data[]=array('name'=>$v['name'],'num'=>$wine_data[$v['id']].'瓶');
+            }
+        }
+        $res_data['goods_data'] = $goods_data;
+        unset($res_data['wine_data']);
         $m_merchant_staff = new \Common\Model\Integral\StaffModel();
         $sfileds = 'user.nickName,user.mobile';
         $res_mstaff = $m_merchant_staff->getMerchantStaff($sfileds,array('a.id'=>$res_data['merchant_staff_id']));
         $res_data['merchant_staff_name'] = $res_mstaff[0]['nickName'];
         $res_data['merchant_staff_mobile'] = $res_mstaff[0]['mobile'];
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
-        $fields = 'step.name,sysuser.remark as user_name,a.*';
+        $m_stock = new \Common\Model\Finance\StockModel();
+        $fields = 'step.name,sysuser.remark as user_name,approval.item_id,approval.stock_id,approval.status as approval_status,a.*';
         $res_process = $m_approval_process->getDatas($fields,array('a.approval_id'=>$approval_id),'a.step_order asc');
         $is_approval = 0;
         $process = array();
@@ -416,20 +421,58 @@ class ApprovalController extends CommonController{
         $now_processes_id = 0;
         foreach ($res_process as $v){
             if($v['is_receive']==1 && $v['ops_staff_id']==$now_ops_staff_id){
-                $is_approval = 1;
-                $now_processes_id = $v['id'];
+                if($v['handle_status']==1){
+                    $is_approval = 1;
+                    $now_processes_id = $v['id'];
+                }elseif($v['handle_status']==2 && $v['status']==5 && $v['approval_status']==8){
+                    $is_approval = 1;
+                    $now_processes_id = $v['id'];
+                }
+
             }
             $handle_time = $v['handle_time']=='0000-00-00 00:00:00'?'':$v['handle_time'];
             $approval_content = array();
+
             $handle_status = $v['handle_status'];
-            if($handle_status==3){
+            if(in_array($handle_status,array(2,3))){
                 $approval_content[]=array('status_str'=>$process_status[$v['status']],'handle_time'=>$handle_time);
-                if($v['stock_out_finish_time']!='0000-00-00 00:00:00'){
-                    $approval_content[]=array('status_str'=>'完成出库','handle_time'=>$v['stock_out_finish_time']);
+                if($v['item_id']==10){
+                    if($v['stock_id']>0){
+                        $res_stock = $m_stock->getInfo(array('id'=>$v['stock_id']));
+                        switch ($v['step_order']){
+                            case 2:
+                                if($res_stock['finish_out_time']!='0000-00-00 00:00:00'){
+                                    $approval_content[]=array('status_str'=>'完成出库','handle_time'=>$res_stock['finish_out_time']);
+                                }
+                                break;
+                            case 3:
+                                if(empty($res_process[3])){
+                                    if($res_stock['receive_time']!='0000-00-00 00:00:00'){
+                                        $approval_content[]=array('status_str'=>'领取','handle_time'=>$res_stock['receive_time']);
+                                    }
+                                    if($res_stock['check_time']!='0000-00-00 00:00:00'){
+                                        $approval_content[]=array('status_str'=>'送达','handle_time'=>$res_stock['check_time']);
+                                    }
+                                }
+                                break;
+                            case 4:
+                                if($res_stock['receive_time']!='0000-00-00 00:00:00'){
+                                    $approval_content[]=array('status_str'=>'领取','handle_time'=>$res_stock['receive_time']);
+                                }
+                                if($res_stock['check_time']!='0000-00-00 00:00:00'){
+                                    $approval_content[]=array('status_str'=>'送达','handle_time'=>$res_stock['check_time']);
+                                }
+                                break;
+                        }
+                    }
                 }
+
             }
             if(empty($v['user_name'])){
                 $v['user_name'] = '';
+            }
+            if(empty($v['name'])){
+                $v['name'] = '';
             }
             $process[]=array('processes_id'=>$v['id'],'step_order'=>$v['step_order'],'name'=>$v['name'],'user_name'=>$v['user_name'],'handle_status'=>$handle_status,'approval_content'=>$approval_content);
         }

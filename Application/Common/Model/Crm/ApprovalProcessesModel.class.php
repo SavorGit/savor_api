@@ -24,6 +24,7 @@ class ApprovalProcessesModel extends BaseModel{
 
     public function getDatas($fields,$where,$order){
         $data = $this->alias('a')
+            ->join('savor_approval approval on a.approval_id=approval.id','left')
             ->join('savor_approval_step step on a.step_id=step.id','left')
             ->join('savor_ops_staff staff on a.ops_staff_id=staff.id','left')
             ->join('savor_sysuser sysuser on staff.sysuser_id=sysuser.id','left')
@@ -50,6 +51,10 @@ class ApprovalProcessesModel extends BaseModel{
                 $res_process = $m_approval_process->getInfo($pwhere);
                 if(!empty($res_process)){
                     $m_approval_process->updateData(array('id'=>$res_process['id']),array('handle_status'=>3));
+                }
+                $res_next = $m_approval_process->getInfo(array('approval_id'=>$approval_id,'step_order'=>3));
+                if(!empty($res_next)){
+                    $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'handle_status'=>1));
                 }
                 break;
             case 4:

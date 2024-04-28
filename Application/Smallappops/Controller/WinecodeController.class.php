@@ -135,9 +135,9 @@ class WinecodeController extends CommonController{
                 if($status==2){
                     $up_record['recycle_status']=2;
                     $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
-
+                    $hotel_id = $res_recordinfo[0]['hotel_id'];
                     if(!empty($res_recordinfo[0]['id'])){
-                        $where = array('hotel_id'=>$res_recordinfo[0]['hotel_id'],'status'=>1);
+                        $where = array('hotel_id'=>$hotel_id,'status'=>1);
                         $m_merchant = new \Common\Model\Integral\MerchantModel();
                         $res_merchant = $m_merchant->getInfo($where);
                         $is_integral = $res_merchant['is_integral'];
@@ -161,8 +161,10 @@ class WinecodeController extends CommonController{
                         }
                         $up_record['recycle_status']=2;
                     }
-
                     $message = '审核通过';
+
+                    $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
+                    $m_approval_process->handleProcessStatus(0,12,$hotel_id);
                 }elseif($status==6){
                     $up_record['recycle_status']=6;
                     if(!empty($reason)){

@@ -35,7 +35,7 @@ class ApprovalProcessesModel extends BaseModel{
         return $data;
     }
 
-    public function handleProcessStatus($stock_id,$type){
+    public function handleProcessStatus($stock_id,$type,$hotel_id=0){
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $res_approval = $m_approval->getInfo(array('stock_id'=>$stock_id));
         $approval_id = 0;
@@ -65,6 +65,19 @@ class ApprovalProcessesModel extends BaseModel{
                 $res_process = $m_approval_process->getDataList('id',array('approval_id'=>$approval_id,'step_order'=>array('in','3,4')),'id asc');
                 foreach ($res_process as $v){
                     $m_approval_process->updateData(array('id'=>$v['id']),array('handle_status'=>3));
+                }
+                break;
+            case 12:
+                $res_approval = $m_approval->getInfo(array('hotel_id'=>$hotel_id,'status'=>11));
+                if(!empty($res_approval)){
+                    $approval_id = $res_approval['id'];
+                    $m_approval->updateData(array('id'=>$approval_id),array('status'=>12,'real_recycle_time'=>date('Y-m-d H:i:s')));
+
+                    $pwhere = array('approval_id'=>$approval_id,'step_order'=>2);
+                    $res_process = $m_approval_process->getInfo($pwhere);
+                    if(!empty($res_process)){
+                        $m_approval_process->updateData(array('id'=>$res_process['id']),array('handle_status'=>3));
+                    }
                 }
                 break;
         }

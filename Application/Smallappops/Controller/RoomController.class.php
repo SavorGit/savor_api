@@ -60,7 +60,14 @@ class RoomController extends CommonController{
         $data = array('hotel_id'=>$hotel_id,'name'=>$name,'type'=>$type,'people_num'=>$people_num,'is_device'=>$is_device,'state'=>$state,
             'op_openid'=>$openid);
         if($room_id>0){
+            $data['update_time'] = date('Y-m-d H:i:s');
             $m_room->where(array('id'=>$room_id))->save($data);
+
+            $redis = \Common\Lib\SavorRedis::getInstance();
+            $redis->select(15);
+            $data = $m_room->getOne('*',array('id'=>$room_id));
+            $cache_key = 'savor_room_'.$room_id;
+            $redis->set($cache_key, json_encode($data));
         }else{
             $room_id = $m_room->add($data);
         }

@@ -10,18 +10,19 @@ class OpsRecordController extends CommonController{
         switch(ACTION_NAME) {
             case 'addrecord':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'ops_type'=>1001,'task_source'=>1001,'box_handle_num'=>1002,
+                $this->valid_fields = array('openid'=>1001,'ops_type'=>1001,'task_source'=>1001,'box_handle_num'=>1001,
                     'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,'signout_time'=>1002,'signout_hotel_id'=>1002,
                     'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002,'content'=>1002,'type'=>1001);
+                break;
+            case 'getWorkTips':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
                 break;
         }
         parent::_init_();
     }
 
     public function addrecord(){
-        if($this->params['box_handle_num']==''){
-            $this->to_back(1001);
-        }
         $openid = $this->params['openid'];
         $visit_type = intval($this->params['ops_type']);
         $task_source = intval($this->params['task_source']);
@@ -36,10 +37,7 @@ class OpsRecordController extends CommonController{
         $cc_uids = $this->params['cc_uids'];
         $salerecord_id = intval($this->params['salerecord_id']);
         $type = intval($this->params['type']);//类型1保存2提交
-        
-        
-        
-        
+
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
@@ -101,5 +99,38 @@ class OpsRecordController extends CommonController{
         $m_saleremind->addAll($add_remind);
 
         $this->to_back(array('salerecord_id'=>$salerecord_id));
+    }
+
+    public function getWorkTips(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $m_stock_check_record = new \Common\Model\Crm\StockcheckRecordModel();
+        $check_where = array('signin_hotel_id'=>$hotel_id,'type'=>2,'stock_check_status'=>2);
+        $check_where["DATE_FORMAT(add_time,'%Y-%m')"] = date('Y-m');
+        $res_stock_check = $m_stock_check_record->getALLDataList('id',$check_where,'id desc','0,1','');
+        $tips = array();
+        if(empty($res_stock_check[0]['id'])){
+            $tips[]=array('type'=>'stockcheck','tips'=>'本月尚未盘点');
+        }
+        $m_room = new \Common\Model\RoomModel();
+        $room_where = array('hotel_id'=>$hotel_id,'op_openid'=>array('neq',''));
+        $room_where["DATE_FORMAT(update_time,'%Y-%m')"] = date('Y-m');
+        $res_room = $m_room->getOne('id',$room_where);
+        if(empty($res_room['id'])){
+            $tips[]=array('type'=>'room','tips'=>'本月需更新包间信息');
+        }
+        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+        $hgwhere = array('h.hotel_id'=>$hotel_id,'h.hotel_price'=>array('gt',0),'g.type'=>43,'g.status'=>1);
+        $hgwhere["DATE_FORMAT(h.update_time,'%Y-%m')"] = date('Y-m');
+        $res_hotegoods = $m_hotelgoods->getGoodsList('h.id',$hgwhere,'h.id desc','0,1');
+        if(empty($res_hotegoods[0]['id'])){
+            $tips[]=array('type'=>'wineprice','tips'=>'本月需更新酒水真实售价');
+        }
+        $this->to_back(array('datalist'=>$tips));
     }
 }

@@ -370,7 +370,7 @@ class ApprovalController extends CommonController{
         $now_ops_staff_id = $res_staff['id'];
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,approval.stock_id,approval.wine_data,
-        approval.merchant_staff_id,approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
+        approval.merchant_staff_id,approval.delivery_time,approval.recycle_time,approval.real_recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('approval.id'=>$approval_id);
         $res_approval = $m_approval->getApprovalDatas($fields,$where,'','','');
@@ -464,6 +464,14 @@ class ApprovalController extends CommonController{
                                 }
                                 break;
                         }
+                    }
+                }elseif($v['item_id']==11){
+                    switch ($v['step_order']){
+                        case 2:
+                            if($res_data['real_recycle_time']!='0000-00-00 00:00:00'){
+                                $approval_content[]=array('status_str'=>'已回收','handle_time'=>$res_data['real_recycle_time']);
+                            }
+                            break;
                     }
                 }
 

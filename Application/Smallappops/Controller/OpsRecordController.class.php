@@ -109,7 +109,7 @@ class OpsRecordController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $m_stock_check_record = new \Common\Model\Crm\StockcheckRecordModel();
+        $m_stock_check_record = new \Common\Model\Crm\SalerecordModel();
         $check_where = array('signin_hotel_id'=>$hotel_id,'type'=>2,'stock_check_status'=>2);
         $check_where["DATE_FORMAT(add_time,'%Y-%m')"] = date('Y-m');
         $res_stock_check = $m_stock_check_record->getALLDataList('id',$check_where,'id desc','0,1','');

@@ -50,7 +50,7 @@ class ApprovalHandleController extends CommonController{
                     $hotel_id = $res_approval['hotel_id'];
                     $m_hotel_ext = new \Common\Model\HotelExtModel();
                     $res_ext = $m_hotel_ext->getData('is_salehotel', array('hotel_id'=>$hotel_id));
-                    if($res_ext['is_salehotel']==0){
+                    if($res_ext[0]['is_salehotel']==0){
                         $this->to_back(94104);
                     }
 

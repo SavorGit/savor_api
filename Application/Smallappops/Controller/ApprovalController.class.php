@@ -392,7 +392,7 @@ class ApprovalController extends CommonController{
         if($res_data['stock_id']){
             $m_stock = new \Common\Model\Finance\StockModel();
             $res_stock = $m_stock->getInfo(array('id'=>$res_data['stock_id']));
-            $stock_serial_number = $res_stock['serial_number'];
+            $stock_serial_number = $res_data['stock_id'].'--'.$res_stock['serial_number'];
         }
         $res_data['stock_serial_number'] = $stock_serial_number;
         $goods_data = array();

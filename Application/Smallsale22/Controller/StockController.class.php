@@ -1190,6 +1190,9 @@ class StockController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
+        if(empty($check_img)){
+            $this->to_back(93231);
+        }
         $m_stock = new \Common\Model\Finance\StockModel();
         $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
         if($res_stock['status']==4){

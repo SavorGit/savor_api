@@ -546,6 +546,7 @@ return array(
     'smallappsale_finance_use_bind_idcode_error'=>'请使用瓶码进行绑定',
     'smallappops_finance_threshold_error'=>'当前酒楼有欠款,无法进行送酒',
     'smallappops_hotel_not_sale'=>'当前酒楼未开启售酒,无法进行送酒',
+    'smallappsale_check_img_empty'=>'请先上传收货单',
 
 
 

@@ -536,6 +536,7 @@ return array(
         '93228'=>'smallappsale_add_customer_mobile_repeat',
         '93229'=>'smallappsale_exchange_spacetime_error',
         '93230'=>'smallappsale_exchange_not_support',
+        '93231'=>'smallappsale_check_img_empty',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

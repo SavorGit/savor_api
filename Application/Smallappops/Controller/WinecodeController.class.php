@@ -122,20 +122,22 @@ class WinecodeController extends CommonController{
         $m_qrcode_content = new \Common\Model\Finance\QrcodeContentModel();
         $res_qrcode = $m_qrcode_content->getInfo(array('id'=>$qrcode_id));
         $message = '';
-        if(!empty($res_qrcode) && $res_staff['hotel_role_type']==6){
-            $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-            $where = array('idcode'=>$idcode,'type'=>7,'wo_status'=>2,'recycle_status'=>array('in','4,5'));
-            $res_record = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
-            if(!empty($res_record[0]['id'])){
-                $stock_record_id = $res_record[0]['id'];
+        if(!empty($res_qrcode) && in_array($res_staff['hotel_role_type'],array(6,7))){
+            $m_sale = new \Common\Model\Finance\SaleModel();
+            $where = array('a.idcode'=>$idcode,'record.wo_status'=>2,'record.recycle_status'=>array('in','4,5'));
+            $res_sale = $m_sale->getSaleStockRecordList('a.stock_record_id,a.hotel_id',$where);
+            if(!empty($res_sale[0]['stock_record_id'])){
+                $stock_record_id = $res_sale[0]['stock_record_id'];
+                $hotel_id = $res_sale[0]['hotel_id'];
+
                 $up_record = array('recycle_audit_ops_staff_id'=>$res_staff['id'],'recycle_audit_time'=>date('Y-m-d H:i:s'));
                 $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
                 $rwhere = array('jdorder_id'=>$stock_record_id,'type'=>25,'status'=>2);
                 $res_recordinfo = $m_integralrecord->getALLDataList('id,openid,integral,hotel_id',$rwhere,'id desc','0,2','');
+                $m_stock_record = new \Common\Model\Finance\StockRecordModel();
                 if($status==2){
                     $up_record['recycle_status']=2;
                     $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
-                    $hotel_id = $res_recordinfo[0]['hotel_id'];
                     if(!empty($res_recordinfo[0]['id'])){
                         $where = array('hotel_id'=>$hotel_id,'status'=>1);
                         $m_merchant = new \Common\Model\Integral\MerchantModel();
@@ -179,7 +181,6 @@ class WinecodeController extends CommonController{
                         }
                         $m_integralrecord->delData(array('id'=>array('in',$del_record_ids)));
                     }
-
                     $message = '审核不通过';
                 }
             }

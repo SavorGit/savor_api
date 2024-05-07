@@ -22,7 +22,7 @@ class CrmsaleController extends CommonController{
                 break;
             case 'addrecord':
                 $this->valid_fields = array('openid'=>1001,'visit_purpose'=>1001,'visit_type'=>1001,'contact_id'=>1002,
-                    'type'=>1001,'content'=>1002,'images'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,
+                    'type'=>1001,'content'=>1002,'images'=>1002,'photos'=>1002,'signin_time'=>1002,'signin_hotel_id'=>1002,
                     'signout_time'=>1002,'signout_hotel_id'=>1002,'review_uid'=>1002,'cc_uids'=>1002,'salerecord_id'=>1002,
                     'sign_progress_id'=>1002,'contractor'=>1002,'mobile'=>1002,'job'=>1002,'gender'=>1002,'task_data'=>1002,
                     'hcontent1'=>1002,'hcontent2'=>1002,'hcontent3'=>1002,'hcontent4'=>1002
@@ -269,6 +269,7 @@ class CrmsaleController extends CommonController{
         $hcontent3 = trim($this->params['hcontent3']);
         $hcontent4 = trim($this->params['hcontent4']);
         $images = $this->params['images'];
+        $photos = $this->params['photos'];
         $signin_time = $this->params['signin_time'];
         $signin_hotel_id = intval($this->params['signin_hotel_id']);
         $signout_time = $this->params['signout_time'];
@@ -295,6 +296,7 @@ class CrmsaleController extends CommonController{
         }
         $status = 1;
         if($type==2){
+            unset($this->valid_fields['photos']);
             if(!empty($hcontent1)){
                 unset($this->valid_fields['content']);
                 $visit_purpose_arr = explode(',', $visit_purpose);
@@ -347,7 +349,7 @@ class CrmsaleController extends CommonController{
             $data_hcontent4 = $hcontent4;
         }
         $add_data['hcontent4'] = $data_hcontent4;
-
+        $add_data['photos'] = !empty($photos)?$photos:'';
         if(!empty($images))     $add_data['images'] = $images;
         if(!empty($sign_progress_id)){
             $add_data['sign_progress_id'] = $sign_progress_id;
@@ -534,9 +536,10 @@ class CrmsaleController extends CommonController{
         $res_info['visit_purpose_str'] = $visit_purpose_str;
         $res_info['visit_type_str'] = $visit_type_str;
         $images_path = $images_url = array();
+        $photos_path = $photos_url = '';
+        $oss_host = get_oss_host();
         if(!empty($res_info['images'])){
             $arr_images_path = explode(',',$res_info['images']);
-            $oss_host = get_oss_host();
             foreach ($arr_images_path as $v){
                 if(!empty($v)){
                     $images_path[]=$v;
@@ -544,8 +547,14 @@ class CrmsaleController extends CommonController{
                 }
             }
         }
+        if(!empty($res_info['photos'])){
+            $photos_path = $res_info['photos'];
+            $photos_url = $oss_host.$res_info['photos'].'?x-oss-process=image/quality,Q_80';
+        }
         $res_info['images_path'] = $images_path;
         $res_info['images_url'] = $images_url;
+        $res_info['photos_path'] = $photos_path;
+        $res_info['photos_url'] = $photos_url;
         if($res_info['signin_time']=='0000-00-00 00:00:00'){
             $res_info['signin_time'] = '';
         }

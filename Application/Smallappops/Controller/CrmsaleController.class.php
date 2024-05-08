@@ -855,15 +855,19 @@ class CrmsaleController extends CommonController{
                         }
                     }
                 }
+                $oss_host = get_oss_host();
                 $images_url = array();
                 if(!empty($record_info['images'])){
                     $arr_images_path = explode(',',$record_info['images']);
-                    $oss_host = get_oss_host();
                     foreach ($arr_images_path as $iv){
                         if(!empty($iv)){
                             $images_url[]=$oss_host.$iv."?x-oss-process=image/resize,m_mfit,h_300,w_300$format_webp";
                         }
                     }
+                }
+                if(!empty($record_info['photos'])){
+                    $photos_img = $oss_host.$record_info['photos']."?x-oss-process=image/resize,m_mfit,h_300,w_300$format_webp";
+                    array_unshift($images_url,$photos_img);
                 }
                 $visit_purpose = $record_info['visit_purpose'];
                 $visit_purpose_str = $visit_type_str = '';

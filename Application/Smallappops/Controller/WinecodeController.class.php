@@ -17,7 +17,7 @@ class WinecodeController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'auditRecycle':
-                $this->params = array('openid'=>1001,'idcode'=>1001,'status'=>1001,'reason'=>1002);
+                $this->params = array('openid'=>1001,'idcode'=>1001,'status'=>1001,'reason'=>1002,'recycle_img'=>1002);
                 $this->is_verify = 1;
                 break;
         }
@@ -109,6 +109,7 @@ class WinecodeController extends CommonController{
         $idcode = $this->params['idcode'];
         $status = intval($this->params['status']);//2审核通过,6审核不通过
         $reason = $this->params['reason'];
+        $recycle_img = $this->params['recycle_img'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -124,8 +125,9 @@ class WinecodeController extends CommonController{
         $message = '';
         if(!empty($res_qrcode) && in_array($res_staff['hotel_role_type'],array(6,7))){
             $m_sale = new \Common\Model\Finance\SaleModel();
-            $where = array('a.idcode'=>$idcode,'record.wo_status'=>2,'record.recycle_status'=>array('in','4,5'));
-            $res_sale = $m_sale->getSaleStockRecordList('a.stock_record_id,a.hotel_id',$where);
+            $where = array('a.idcode'=>$idcode,'record.wo_status'=>2,'record.recycle_status'=>array('in','1,4,5'));
+            $fields = 'a.stock_record_id,a.hotel_id,a.area_id,a.goods_id,record.id,record.wo_reason_type,record.unit_id,record.op_openid';
+            $res_sale = $m_sale->getSaleStockRecordList($fields,$where);
             if(!empty($res_sale[0]['stock_record_id'])){
                 $stock_record_id = $res_sale[0]['stock_record_id'];
                 $hotel_id = $res_sale[0]['hotel_id'];
@@ -137,6 +139,10 @@ class WinecodeController extends CommonController{
                 $m_stock_record = new \Common\Model\Finance\StockRecordModel();
                 if($status==2){
                     $up_record['recycle_status']=2;
+                    $up_record['is_open_reward']=1;
+                    if(!empty($recycle_img)){
+                        $up_record['recycle_img']=$recycle_img;
+                    }
                     $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
                     if(!empty($res_recordinfo[0]['id'])){
                         $where = array('hotel_id'=>$hotel_id,'status'=>1);
@@ -161,7 +167,9 @@ class WinecodeController extends CommonController{
                                 $m_merchant->where($where)->setInc('integral',$now_integral);
                             }
                         }
-                        $up_record['recycle_status']=2;
+                    }else{
+                        $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
+                        $m_userintegral->finishRecycle($res_sale[0],1);
                     }
                     $message = '审核通过';
 

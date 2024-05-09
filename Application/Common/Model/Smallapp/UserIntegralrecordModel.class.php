@@ -759,7 +759,7 @@ class UserIntegralrecordModel extends BaseModel{
         return $stock_record_id;
     }
 
-    public function finishRecycle($stock_record_info){
+    public function finishRecycle($stock_record_info,$integral_status=2){
         $stock_record_id = $stock_record_info['id'];
 
         $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
@@ -783,7 +783,6 @@ class UserIntegralrecordModel extends BaseModel{
         $res_unit = $m_unit->getInfo(array('id'=>$stock_record_info['unit_id']));
         $unit_num = intval($res_unit['convert_type']);
         $now_integral = $now_integral*$unit_num;
-        $integral_status = 2;
 
         $where = array('a.openid'=>$stock_record_info['op_openid'],'a.status'=>1,'merchant.status'=>1);
         $field_staff = 'a.openid,a.level,merchant.type,merchant.id as merchant_id,merchant.is_integral,merchant.is_shareprofit,merchant.shareprofit_config';
@@ -793,6 +792,8 @@ class UserIntegralrecordModel extends BaseModel{
         $adminwhere = array('merchant_id'=>$res_staff[0]['merchant_id'],'level'=>1,'status'=>1);
         $res_admin_staff = $m_staff->getALLDataList('id,openid',$adminwhere,'id desc','0,1','');
         $admin_openid = $res_admin_staff[0]['openid'];
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        $m_merchant = new \Common\Model\Integral\MerchantModel();
         if($res_staff[0]['is_integral']==1){
             //开瓶费积分 增加分润
             if($res_staff[0]['is_shareprofit']==1 && $res_staff[0]['level']==2){
@@ -809,9 +810,36 @@ class UserIntegralrecordModel extends BaseModel{
                 }
             }
             $integralrecord_openid = $stock_record_info['op_openid'];
+
+            if($integral_status==1){
+                if($admin_integral>0){
+                    if(!empty($admin_openid)){
+                        $res_integral = $m_userintegral->getInfo(array('openid'=>$admin_openid));
+                        if(!empty($res_integral)){
+                            $userintegral = $res_integral['integral']+$admin_integral;
+                            $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                        }else{
+                            $m_userintegral->add(array('openid'=>$admin_openid,'integral'=>$admin_integral));
+                        }
+                    }
+                }
+                $res_integral = $m_userintegral->getInfo(array('openid'=>$stock_record_info['op_openid']));
+                if(!empty($res_integral)){
+                    $userintegral = $res_integral['integral']+$now_integral;
+                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                }else{
+                    $m_userintegral->add(array('openid'=>$stock_record_info['op_openid'],'integral'=>$now_integral));
+                }
+            }
         }else{
             $integralrecord_openid = $stock_record_info['hotel_id'];
+
+            if($integral_status==1){
+                $where = array('id'=>$res_staff[0]['merchant_id']);
+                $m_merchant->where($where)->setInc('integral',$now_integral);
+            }
         }
+
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getHotelInfoById($stock_record_info['hotel_id']);
         if($admin_integral>0 && !empty($admin_openid)){

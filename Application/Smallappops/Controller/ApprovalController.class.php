@@ -228,7 +228,7 @@ class ApprovalController extends CommonController{
             $this->to_back(94001);
         }
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
-        $fields = 'count(id) as num,handle_status';
+        $fields = 'count(DISTINCT approval_id) as num,handle_status';
         $where = array('ops_staff_id'=>$res_staff['id'],'is_receive'=>1);
         $res_process = $m_approval_process->getALLDataList($fields,$where,'','','handle_status');
         $pending_num = $processing_num = $processed_num = 0;
@@ -271,7 +271,7 @@ class ApprovalController extends CommonController{
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('a.ops_staff_id'=>$res_staff['id'],'a.is_receive'=>1,'a.handle_status'=>$handle_status);
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
-        $res_data = $m_approval_process->getProcessDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'');
+        $res_data = $m_approval_process->getProcessDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'approval.id');
         $res_data = $this->handle_approval_data($res_data);
         $this->to_back(array('datalist'=>$res_data));
     }

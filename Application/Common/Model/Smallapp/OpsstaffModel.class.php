@@ -131,10 +131,13 @@ class OpsstaffModel extends BaseModel{
             case 2:
             case 4:
             case 6:
+            case 7:
+            case 8:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>array('in',$permission['hotel_info']['area_ids']));
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 break;
             case 3:
+            case 9:
                 $where = array('is_in_hotel'=>1,'is_valid'=>1,'id'=>$staff_info['area_id']);
                 $permission_city = $m_area->field($fields)->where($where)->order('id asc')->select();
                 break;

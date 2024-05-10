@@ -1713,9 +1713,9 @@ class StockController extends CommonController{
                     }
                 }
                 $recycle_status = 4;
-                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
-                    $recycle_status = $res_goods[0]['recycle_status'];
-                }
+//                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
+//                    $recycle_status = $res_goods[0]['recycle_status'];
+//                }
                 $idcode_num = count($res_goods);
                 $recycle_list = array();
                 if(!in_array($recycle_status,array(1,4))){

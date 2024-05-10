@@ -75,9 +75,12 @@ class ApprovalController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $not_goods_id = array_merge(array(),C('DATA_GOODS_IDS'));
         $m_goods = new \Common\Model\Finance\GoodsModel();
         $gwhere = array('status'=>1);
-        $goods_list = $m_goods->getDataList('id as value,name',$gwhere,'category_id asc');
+        $gwhere['brand_id'] = array('not in','11,13,14,15');
+        $gwhere['id'] = array('not in',$not_goods_id);
+        $goods_list = $m_goods->getDataList('id as value,name',$gwhere,'brand_id asc');
         array_unshift($goods_list,array('value'=>0,'name'=>'请选择'));
         $goods_num = array();
         for($i=0;$i<11;$i++){
@@ -148,9 +151,15 @@ class ApprovalController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelById('hotel.area_id,ext.is_have_group',array('hotel.id'=>$hotel_id));
+        $area_id = $res_hotel['area_id'];
+        if($res_hotel['is_have_group']==0){
+            $this->to_back(94105);
+        }
+
         $adata = array('item_id'=>$item_id,'ops_staff_id'=>$res_staff['id'],'hotel_id'=>$hotel_id,
             'merchant_staff_id'=>$merchant_staff_id,'bottle_num'=>$bottle_num,'status'=>1);
-
         $json_str = stripslashes(html_entity_decode($goods_data));
         $goods_arr = json_decode($json_str,true);
         $wine_data = array();
@@ -184,10 +193,6 @@ class ApprovalController extends CommonController{
         }
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $approval_id = $m_approval->add($adata);
-
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
-        $area_id = $res_hotel['area_id'];
         $m_approval_step = new \Common\Model\Crm\ApprovalStepModel();
         $fields = 'id,name,ops_staff_id,step_order,role_type';
         $res_steps = $m_approval_step->getDataList($fields,array('item_id'=>$item_id),'step_order asc');

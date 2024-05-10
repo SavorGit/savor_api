@@ -547,6 +547,7 @@ return array(
     'smallappops_finance_threshold_error'=>'当前酒楼有欠款,无法进行送酒',
     'smallappops_hotel_not_sale'=>'当前酒楼未开启售酒,无法进行送酒',
     'smallappsale_check_img_empty'=>'请先上传收货单',
+    'smallappops_hotel_not_have_group'=>'暂未开通企微群，请联系运维人员',
 
 
 

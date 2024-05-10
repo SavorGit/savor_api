@@ -552,6 +552,7 @@ return array(
 	    '94102'=>'smallappops_bbs_add_comment_error',
 	    '94103'=>'smallappops_finance_threshold_error',
 	    '94104'=>'smallappops_hotel_not_sale',
+	    '94105'=>'smallappops_hotel_not_have_group',
 
         //小程序数据端
         '95001'=>'smallappdata_mobile_not_open_account',

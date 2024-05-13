@@ -27,7 +27,7 @@ class SellwineController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'auditWriteoff':
-                $this->valid_fields = array('openid'=>1001,'stock_record_id'=>1001,'status'=>1001);
+                $this->valid_fields = array('openid'=>1001,'stock_record_id'=>1001,'status'=>1001,'reason'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'salelist':
@@ -588,6 +588,7 @@ class SellwineController extends CommonController{
         $openid = $this->params['openid'];
         $stock_record_id = intval($this->params['stock_record_id']);
         $status = intval($this->params['status']);//2审核通过、3审核不通过
+        $reason = trim($this->params['reason']);
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -636,6 +637,9 @@ class SellwineController extends CommonController{
                     $message = '审核通过';
                 }
             }elseif($status==3){
+                if(!empty($reason)){
+                    $up_record['reason'] = $reason;
+                }
                 $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
 
                 if(!empty($res_recordinfo[0]['id'])){

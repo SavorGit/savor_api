@@ -59,13 +59,16 @@ class StockRecordModel extends BaseModel{
         return $res_data;
     }
 
-    public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype=''){
+    public function getStaticData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype='',$recycle_status=0){
         $fileds = 'count(DISTINCT goods.brand_id) as brand_num,count(DISTINCT goods.series_id) as series_num,count(a.id) as sell_num,a.op_openid';
         $where = array('a.type'=>7,'a.wo_reason_type'=>1);
         if($wo_status){
             $where['a.wo_status'] = $wo_status;
         }else{
             $where['a.wo_status'] = array('in','1,2,4');
+        }
+        if($recycle_status){
+            $where['a.recycle_status'] = $recycle_status;
         }
         if(!empty($goods_id)){
             $where['a.goods_id'] = $goods_id;

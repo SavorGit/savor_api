@@ -134,8 +134,8 @@ class WinecodeController extends CommonController{
 
                 $up_record = array('recycle_audit_ops_staff_id'=>$res_staff['id'],'recycle_audit_time'=>date('Y-m-d H:i:s'));
                 $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
-                $rwhere = array('jdorder_id'=>$stock_record_id,'type'=>25,'status'=>2);
-                $res_recordinfo = $m_integralrecord->getALLDataList('id,openid,integral,hotel_id',$rwhere,'id desc','0,2','');
+                $rwhere = array('jdorder_id'=>$stock_record_id,'type'=>25);
+                $res_recordinfo = $m_integralrecord->getALLDataList('id,openid,integral,hotel_id,status',$rwhere,'id desc','0,2','');
                 $m_stock_record = new \Common\Model\Finance\StockRecordModel();
                 if($status==2){
                     $up_record['recycle_status']=2;
@@ -145,26 +145,28 @@ class WinecodeController extends CommonController{
                     }
                     $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
                     if(!empty($res_recordinfo[0]['id'])){
-                        $where = array('hotel_id'=>$hotel_id,'status'=>1);
-                        $m_merchant = new \Common\Model\Integral\MerchantModel();
-                        $res_merchant = $m_merchant->getInfo($where);
-                        $is_integral = $res_merchant['is_integral'];
-                        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
-                        foreach ($res_recordinfo as $rv){
-                            $record_id = $rv['id'];
-                            $m_integralrecord->updateData(array('id'=>$record_id),array('status'=>1,'integral_time'=>date('Y-m-d H:i:s')));
-                            $now_integral = $rv['integral'];
-                            if($is_integral==1){
-                                $res_integral = $m_userintegral->getInfo(array('openid'=>$rv['openid']));
-                                if(!empty($res_integral)){
-                                    $userintegral = $res_integral['integral']+$now_integral;
-                                    $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                        if($res_recordinfo[0]['status']==2){
+                            $where = array('hotel_id'=>$hotel_id,'status'=>1);
+                            $m_merchant = new \Common\Model\Integral\MerchantModel();
+                            $res_merchant = $m_merchant->getInfo($where);
+                            $is_integral = $res_merchant['is_integral'];
+                            $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                            foreach ($res_recordinfo as $rv){
+                                $record_id = $rv['id'];
+                                $m_integralrecord->updateData(array('id'=>$record_id),array('status'=>1,'integral_time'=>date('Y-m-d H:i:s')));
+                                $now_integral = $rv['integral'];
+                                if($is_integral==1){
+                                    $res_integral = $m_userintegral->getInfo(array('openid'=>$rv['openid']));
+                                    if(!empty($res_integral)){
+                                        $userintegral = $res_integral['integral']+$now_integral;
+                                        $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                                    }else{
+                                        $m_userintegral->add(array('openid'=>$rv['openid'],'integral'=>$now_integral));
+                                    }
                                 }else{
-                                    $m_userintegral->add(array('openid'=>$rv['openid'],'integral'=>$now_integral));
+                                    $where = array('id'=>$res_merchant['id']);
+                                    $m_merchant->where($where)->setInc('integral',$now_integral);
                                 }
-                            }else{
-                                $where = array('id'=>$res_merchant['id']);
-                                $m_merchant->where($where)->setInc('integral',$now_integral);
                             }
                         }
                     }else{

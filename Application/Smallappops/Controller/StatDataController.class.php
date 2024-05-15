@@ -204,7 +204,7 @@ class StatDataController extends CommonController{
             $sell_wine_str = $no_sell_day.'日内未售酒';
         }
         $res_data = array(
-            'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>$sell_num,
+            'brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>$sell_num,'sell_num1'=>$sell_num1,
             'sale_money'=>$res_saledata['sale_money'],'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money'],
             'date_range'=>$date_range,'stat_range_str'=>$stat_range_str,'stat_update_str'=>$stat_update_str,'sell_wine_str'=>$sell_wine_str,
         );

@@ -23,7 +23,7 @@ class SellwineController extends CommonController{
             case 'datalist':
                 $this->valid_fields = array('openid'=>1001,'sdate'=>1001,'edate'=>1001,'page'=>1001,
                     'area_id'=>1002,'staff_id'=>1002,'hotel_id'=>1002,'status'=>1002,'recycle_status'=>1002,
-                    'ptype'=>1002,'goods_id'=>1002,'type'=>1002);;
+                    'ptype'=>1002,'goods_id'=>1002,'type'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'auditWriteoff':

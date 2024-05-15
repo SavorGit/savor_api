@@ -1050,9 +1050,4 @@ return array(
         
         
     ),
-    'WX_WORK_CONFIG'=>array(
-        'corpid'=>'wwcf82e3f0cccd0fcd',
-        'corpsecret'=>'lkrXQ3d_PDbohx51AyrE4BMz4DqPVpI413-JZfsHHiA',
-        'cache_key'=>'wx_work_access_token'
-    )
 );

@@ -1499,7 +1499,19 @@ class StockController extends CommonController{
                 }elseif($record_info[0]['wo_status']==2){
                     $this->to_back(93094);
                 }else{
-                    $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'goods_id'=>$record_info[0]['goods_id']);
+                    $oss_host = get_oss_host();
+                    $wo_data_imgs_arr = explode(',',$record_info[0]['wo_data_imgs']);
+                    $wo_imgs = array();
+                    foreach ($wo_data_imgs_arr as $wim){
+                        if(!empty($wim)){
+                            $img_path = $wim;
+                            $img_url = $oss_host.$wim;
+                            $wo_imgs[]=array('img_path'=>$img_path,'img_url'=>$img_url);
+                        }
+                    }
+                    $res = array('idcode'=>$idcode,'add_time'=>date('Y-m-d H:i:s'),'goods_id'=>$record_info[0]['goods_id'],
+                        'wo_reason_type'=>$record_info[0]['wo_reason_type'],'wo_imgs'=>$wo_imgs
+                    );
                     $this->to_back($res);
                 }
             }elseif($record_info[0]['type']==6){
@@ -1547,7 +1559,7 @@ class StockController extends CommonController{
             foreach ($all_idcodes as $v){
                 $idcode = $v;
                 $res_record = $m_stock_record->getALLDataList('*',array('idcode'=>$idcode,'dstatus'=>1),'id desc','0,1','');
-                if(!empty($res_record)){
+                if(!empty($res_record[0]['id'])){
                     $add_data = $res_record[0];
                     $goods_id = $add_data['goods_id'];
                     if(empty($goods_config)){
@@ -1578,8 +1590,9 @@ class StockController extends CommonController{
                                 $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
                                 break;
                             case 3:
-                                $up_data = array('dstatus'=>2,'update_time'=>date('Y-m-d H:i:s'));
-                                $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
+                                $m_stock_record->delData(array('id'=>$add_data['id']));
+                                $m_userintegral_record->delData(array('jdorder_id'=>$add_data['id'],'type'=>array('in','17,25')));
+                                $m_sale->delData(array('stock_record_id'=>$add_data['id']));
                                 $is_new = 1;
                                 break;
                         }

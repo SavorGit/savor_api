@@ -150,7 +150,7 @@ class HotelController extends CommonController{
         $hotel_id = intval($this->params['hotel_id']);
         $m_hotel = new \Common\Model\HotelModel();
         $where = array('hotel.id'=>$hotel_id);
-        $field = 'hotel.*,ext.maintainer_id,ext.food_style_id,ext.avg_expense,ext.mac_addr,ext.contract_expiretime,area.region_name as area_name,ext.service_fee';
+        $field = 'hotel.*,ext.maintainer_id,ext.food_style_id,ext.avg_expense,ext.mac_addr,ext.contract_expiretime,area.region_name as area_name,ext.service_fee,ext.is_have_groupmanager,ext.is_trusteeship';
         $res_hotel = $m_hotel->getHotelById($field,$where);
         $data = array();
         if(!empty($res_hotel)){
@@ -228,7 +228,7 @@ class HotelController extends CommonController{
                 'install_date'=>$install_date,'small_platform_num'=>$small_platform_num,'tv_num'=>$tv_num,'box_num'=>$box_num,'box_type'=>$box_type,'box_info'=>$box_info,
                 'area_id'=>$res_hotel['area_id'],'county_id'=>$res_hotel['county_id'],'food_style_id'=>$res_hotel['food_style_id'],
                 'business_circle_id'=>$res_hotel['business_circle_id'],'avg_expense_num'=>$avg_expense_num,'service_fee'=>$res_hotel['service_fee'],
-                'now_date'=>date('Y-m-d')
+                'is_have_groupmanager'=>$res_hotel['is_have_groupmanager'],'is_trusteeship'=>$res_hotel['is_trusteeship'],'now_date'=>date('Y-m-d')
             );
         }
         $this->to_back($data);
@@ -538,6 +538,8 @@ class HotelController extends CommonController{
         $contract_expiretime = $this->params['contract_expiretime'];
         $hotel_wifi = trim($this->params['hotel_wifi']);
         $hotel_wifi_pas = trim($this->params['hotel_wifi_pas']);
+        $is_have_groupmanager = intval($this->params['is_have_groupmanager']);
+        $is_trusteeship = intval($this->params['is_trusteeship']);
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -560,7 +562,8 @@ class HotelController extends CommonController{
                 $redis->set($cache_key, json_encode($data));
             }
         }
-        $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'service_fee'=>$service_fee,'contract_expiretime'=>$contract_expiretime);
+        $hotel_ext_data = array('food_style_id'=>$food_style_id,'avg_expense'=>$avg_expense,'service_fee'=>$service_fee,
+            'contract_expiretime'=>$contract_expiretime,'is_have_groupmanager'=>$is_have_groupmanager,'is_trusteeship'=>$is_trusteeship);
         $m_hotel_ext = new \Common\Model\HotelExtModel();
         $res_ext = $m_hotel_ext->saveData($hotel_ext_data, array('hotel_id'=>$hotel_id));
         if($res_ext){

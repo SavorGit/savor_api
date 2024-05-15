@@ -54,7 +54,7 @@ class StockModel extends BaseModel{
             '246'=>array('in'=>'SZRK','out'=>'SZCK'),
             '248'=>array('in'=>'FSRK','out'=>'FSCK'),
         );
-        $nowdate = date('Ymd',strtotime($res_approval['delivery_time']));
+        $nowdate = date('Ymd');
         $field = 'count(id) as num';
         $where = array('type'=>20,'area_id'=>$area_id,'DATE_FORMAT(add_time, "%Y%m%d")'=>$nowdate);
         $res_stock = $this->getALLDataList($field,$where,'',"0,1",'');

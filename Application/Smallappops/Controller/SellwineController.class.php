@@ -22,14 +22,17 @@ class SellwineController extends CommonController{
                 break;
             case 'datalist':
                 $this->valid_fields = array('openid'=>1001,'sdate'=>1001,'edate'=>1001,'page'=>1001,
-                    'area_id'=>1002,'staff_id'=>1002,'hotel_id'=>1002,
-                    'sell_openid'=>1002,'status'=>1002,'ptype'=>1002,'goods_id'=>1002,
-                    'type'=>1002);
+                    'area_id'=>1002,'staff_id'=>1002,'hotel_id'=>1002,'status'=>1002,'recycle_status'=>1002,
+                    'ptype'=>1002,'goods_id'=>1002,'type'=>1002);;
+                $this->is_verify = 1;
+                break;
+            case 'auditWriteoff':
+                $this->valid_fields = array('openid'=>1001,'stock_record_id'=>1001,'status'=>1001,'reason'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'salelist':
                 $this->valid_fields = array('openid'=>1001,'sdate'=>1001,'edate'=>1001,'page'=>1001,
-                    'area_id'=>1002,'staff_id'=>1002,'hotel_id'=>1002,
+                    'area_id'=>1002,'staff_id'=>1002,'hotel_id'=>1002,'status'=>1002,'recycle_status'=>1002,
                     'ptype'=>1002,'goods_id'=>1002,'type'=>1002);
                 $this->is_verify = 1;
                 break;
@@ -121,11 +124,16 @@ class SellwineController extends CommonController{
         }
 
         $all_stock_status = C('STOCK_AUDIT_STATUS');
-        $stock_status = array(array('name'=>'全部核销状态','status'=>0));
+        $stock_status = array(array('name'=>'售酒核销状态','status'=>0));
         foreach ($all_stock_status as $k=>$v){
-            if($k!=3){
+            if($k!=4){
                 $stock_status[]=array('name'=>$v,'status'=>$k);
             }
+        }
+        $all_stock_recycle_status = C('STOCK_RECYCLE_STATUS');
+        $recycle_status = array(array('name'=>'开瓶奖励状态','recycle_status'=>0));
+        foreach ($all_stock_recycle_status as $k=>$v){
+            $recycle_status[]=array('name'=>$v,'recycle_status'=>$k);
         }
         $all_pay_types = C('STOCK_PAY_TYPES');
         $stock_pay_types = array(array('name'=>'全部收款状态','ptype'=>99));
@@ -189,7 +197,7 @@ class SellwineController extends CommonController{
         $range_end_date = date('Y-m-d');
         $date_range = array(date('Y-m-d',strtotime($sell_date)),$range_end_date);
         $res_data = array('start_date'=>$start_date,'end_date'=>$end_date,'date_range'=>$date_range,
-            'hotel_list'=>$hotel_list,'staff_list'=>$staff_list,'stock_status'=>$stock_status,
+            'hotel_list'=>$hotel_list,'staff_list'=>$staff_list,'stock_status'=>$stock_status,'recycle_status'=>$recycle_status,
             'stock_pay_types'=>$stock_pay_types,'stock_sale_types'=>$stock_sale_types,'goods_list'=>$goods_list);
         $this->to_back($res_data);
     }
@@ -203,6 +211,7 @@ class SellwineController extends CommonController{
         $hotel_id = $this->params['hotel_id'];
         $sell_openid = $this->params['sell_openid'];
         $status = $this->params['status'];
+        $recycle_status = $this->params['recycle_status'];
         $ptype = intval($this->params['ptype']);
         $param_type = intval($this->params['type']);
         $goods_id = intval($this->params['goods_id']);
@@ -237,9 +246,27 @@ class SellwineController extends CommonController{
         }
 
         $m_finance_stockrecord = new \Common\Model\Finance\StockRecordModel();
-        $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',$status,$goods_id,$ptype);
+        $res_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',$status,$goods_id,$ptype,$recycle_status);
+        $sell_num = $res_sell[0]['sell_num'];
+        switch ($status){
+            case 0:
+                $res_approved_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',1,$goods_id,$ptype,$recycle_status);
+                $sell_num1 = $res_approved_sell[0]['sell_num'];
+                $sell_num = $sell_num - $sell_num1;
+                break;
+            case 1:
+            case 3:
+                $sell_num1 = 0;
+                break;
+            case 2:
+                $res_approved_sell = $m_finance_stockrecord->getStaticData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',1,$goods_id,$ptype,$recycle_status);
+                $sell_num1 = $res_approved_sell[0]['sell_num'];
+                break;
+            default:
+                $sell_num1 = 0;
+        }
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $res_saledata = $m_sale->getStaticSaleData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',$status,$goods_id,$ptype);
+        $res_saledata = $m_sale->getStaticSaleData($static_area_id,$static_maintainer_id,$static_hotel_id,$start_time,$end_time,'',$status,$goods_id,$ptype,$recycle_status);
 
         $res_groupdata = array();
         if($param_type==0 || $param_type==4){
@@ -254,7 +281,7 @@ class SellwineController extends CommonController{
             $res_groupdata = $m_sale->getGroupSaleDatas($gfields,$gwhere);
         }
 
-        $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>intval($res_sell[0]['sell_num']),
+        $res_data = array('brand_num'=>intval($res_sell[0]['brand_num']),'series_num'=>intval($res_sell[0]['series_num']),'sell_num'=>$sell_num,'sell_num1'=>$sell_num1,
             'sale_money'=>$res_saledata['sale_money'],'groupby_series_num'=>intval($res_groupdata[0]['groupby_series_num']),
             'groupby_num'=>intval($res_groupdata[0]['groupby_num']),'groupby_money'=>intval($res_groupdata[0]['groupby_money']),
             'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money']);
@@ -272,7 +299,6 @@ class SellwineController extends CommonController{
         $params_type = intval($this->params['type']);
         $goods_id = intval($this->params['goods_id']);
         $page = intval($this->params['page']);
-        $data_goods_ids = C('DATA_GOODS_IDS');
         $pagesize = 10;
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -281,6 +307,7 @@ class SellwineController extends CommonController{
             $this->to_back(94001);
         }
 
+        $data_goods_ids = C('DATA_GOODS_IDS');
         $where = array();
         if(!empty($goods_id)){
             $where['goods_id'] = $goods_id;
@@ -395,7 +422,6 @@ class SellwineController extends CommonController{
             }
         }
         $this->to_back($data_list);
-
     }
 
     public function datalist(){
@@ -405,11 +431,12 @@ class SellwineController extends CommonController{
         $sdate = $this->params['sdate'];
         $edata = $this->params['edate'];
         $hotel_id = $this->params['hotel_id'];
-        $sell_openid = $this->params['sell_openid'];
-        $status = $this->params['status'];
         $ptype = intval($this->params['ptype']);
+        $params_type = intval($this->params['type']);
         $goods_id = intval($this->params['goods_id']);
         $page = intval($this->params['page']);
+        $status = intval($this->params['status']);
+        $recycle_status = intval($this->params['recycle_status']);
         $pagesize = 10;
 
         $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -417,33 +444,31 @@ class SellwineController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $offset = ($page-1)*$pagesize;
-        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $limit = "$offset,$pagesize";
-        $order = 'a.id desc';
-        $where = array('a.type'=>7);
-        if($status){
-            $where['a.wo_status'] = $status;
-        }else{
-            $where['a.wo_status'] = array('in',array(1,2,4));
-        }
+        $ops_staff_sysuid = $res_staff['sysuser_id'];
+        $data_goods_ids = C('DATA_GOODS_IDS');
+        $where = array();
         if(!empty($goods_id)){
             $where['a.goods_id'] = $goods_id;
+        }else {
+            $where['a.goods_id'] = array('not in',$data_goods_ids);
         }
         if(!empty($ptype) && $ptype<99){
             if($ptype==10){
-                $where['sale.ptype'] = 0;
+                $where['a.ptype'] = 0;
             }else{
-                $where['sale.ptype'] = $ptype;
+                $where['a.ptype'] = $ptype;
             }
+        }
+        if($params_type){
+            $where['a.type'] = $params_type;
+        }else{
+            $where['a.type'] = array('in','1,4');
         }
         $start_time = date('Y-m-d 00:00:00',strtotime($sdate));
         $end_time = date('Y-m-d 23:59:59',strtotime($edata));
         $where['a.add_time']   = array(array('egt',$start_time),array('elt',$end_time));
-        if(!empty($sell_openid)){
-            $where['a.op_openid'] = $sell_openid;
-        }elseif($hotel_id>0){
-            $where['stock.hotel_id'] = $hotel_id;
+        if($hotel_id>0){
+            $where['a.hotel_id'] = $hotel_id;
         }else{
             if($staff_id>0){
                 $res_staff = $m_opsstaff->getInfo(array('id'=>$staff_id));
@@ -451,66 +476,183 @@ class SellwineController extends CommonController{
             $type = $m_opsstaff->checkStaffpermission($res_staff,$area_id,$staff_id);
             if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
                 if($area_id>0){
-                    $where['hotel.area_id'] = $area_id;
+                    $where['a.area_id'] = $area_id;
                 }
             }elseif($area_id>0 && $staff_id>0){
-                $where['ext.maintainer_id'] = $res_staff['sysuser_id'];
-                $where['hotel.area_id'] = $area_id;
+                $where['a.maintainer_id'] = $res_staff['sysuser_id'];
+                $where['a.area_id'] = $area_id;
             }elseif($area_id==0 && $staff_id>0){
-                $where['ext.maintainer_id'] = $res_staff['sysuser_id'];
+                $where['a.maintainer_id'] = $res_staff['sysuser_id'];
             }
         }
+        if($status){
+            $where['record.wo_status'] = $status;
+        }
+        if($recycle_status){
+            $where['record.recycle_status'] = $recycle_status;
+        }
 
-        $fields = 'a.idcode,a.add_time,a.wo_time,a.wo_status as status,a.wo_reason_type as reason_type,
-        a.op_openid,hotel.name as hotel_name,hotel.id as hotel_id,sale.ptype,sale.settlement_price,ext.residenter_id';
-        $res_records = $m_stock_record->getHotelStaffRecordList($fields,$where,$order,$limit);
+        $offset = ($page-1)*$pagesize;
+        $limit = "$offset,$pagesize";
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $fields = 'a.stock_record_id,a.idcode,a.add_time,a.hotel_id,a.ptype,a.type,a.settlement_price,a.residenter_id,a.sale_openid,a.order_id,a.num,
+        record.price,record.wo_data_imgs,record.reason,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,unit.name as unit_name,
+        record.wo_status,record.recycle_status,record.wo_reason_type,record.wo_time,user.nickName,user.avatarUrl,hotel.name as hotel_name,ext.residenter_id as now_residenter_id';
+        $res_salerecord = $m_sale->getSaleStockRecordList($fields,$where,'',$limit,'a.id desc');
         $data_list = array();
-        if(!empty($res_records)){
-            $m_user = new \Common\Model\Smallapp\UserModel();
+        if(!empty($res_salerecord)){
             $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
             $m_sysuser = new \Common\Model\SysUserModel();
+            $m_order = new \Common\Model\Smallapp\OrderModel();
+            $m_ordersettlement = new \Common\Model\Smallapp\OrdersettlementModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
             $all_pay_types = C('STOCK_PAY_TYPES');
-            $fileds = 'a.idcode,a.price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
-            spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
-            foreach ($res_records as $v){
-                if($v['wo_time']=='0000-00-00 00:00:00'){
-                    $add_time = $v['add_time'];
-                }else{
-                    $add_time = $v['wo_time'];
-                }
-                $res_user = $m_user->getOne('*',array('openid'=>$v['op_openid']),'id desc');
-                $nickName = $res_user['nickName'];
-                $avatarUrl = $res_user['avatarUrl'];
-                $reason = '';
-                if(isset($all_reasons[$v['reason_type']])){
-                    $reason = $all_reasons[$v['reason_type']]['name'];
-                }
-                $where = array('a.idcode'=>$v['idcode'],'a.type'=>7);
-                $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id desc','0,1','');
-
-                $res_goods[0]['price'] = intval($v['settlement_price']);
-                $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
-                $ptype_str='';
-                if($v['reason_type']==1){
-                    if($v['ptype']==0){
-                        $ptype_str = $all_pay_types[10];
-                    }else{
-                        $ptype_str = $all_pay_types[$v['ptype']];
+            $all_stock_recycle_status = C('STOCK_RECYCLE_STATUS');
+            $oss_host = get_oss_host();
+            foreach ($res_salerecord as $v){
+                if($v['type']==1){
+                    $res_goods = array(
+                        array('idcode'=>$v['idcode'],'price'=>intval($v['settlement_price']),'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],
+                            'cate_name'=>$v['cate_name'],'spec_name'=>$v['spec_name'],'unit_name'=>$v['unit_name'],'status'=>$v['wo_status'],
+                            'wo_reason_type'=>$v['wo_reason_type'],'add_time'=>$v['add_time'],'wo_time'=>$v['wo_time']
+                            )
+                    );
+                    $status = $v['wo_status'];
+                    $status_str = '售酒奖励'.$all_status[$status];
+                    $recycle_status = $v['recycle_status'];
+                    $nickName = $v['nickName'];
+                    $avatarUrl = $v['avatarUrl'];
+                    $reason = '';
+                    $reason_type = $v['wo_reason_type'];
+                    if(isset($all_reasons[$reason_type])){
+                        $reason = $all_reasons[$reason_type]['name'];
                     }
+                    $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
+                    $ptype_str='';
+                    if($reason_type==1){
+                        if($v['ptype']==0){
+                            $ptype_str = $all_pay_types[10];
+                        }else{
+                            $ptype_str = $all_pay_types[$v['ptype']];
+                        }
+                    }
+                    $res_sysuser = $m_sysuser->getUserInfo(array('id'=>$v['residenter_id']));
+                    $hotel_name = $v['hotel_name'];
+                    if(!empty($res_sysuser) && !empty($hotel_name)){
+                        $hotel_name = $res_sysuser['remark'].'：'.$hotel_name;
+                    }
+                    $sell_audit_button = 0;
+                    $recycle_status_str = '';
+                    if($status==1){
+                        if($ops_staff_sysuid==$v['now_residenter_id']){
+                            $sell_audit_button = 1;
+                        }
+                    }elseif($status==2){
+                        $recycle_status_str = '开瓶奖励'.$all_stock_recycle_status[$recycle_status];
+                    }
+                    $wo_data_imgs = array();
+                    if(!empty($v['wo_data_imgs'])){
+                        $wo_data_imgs_arr = explode(',',$v['wo_data_imgs']);
+                        foreach ($wo_data_imgs_arr as $imv){
+                            if(!empty($imv)){
+                                $wo_data_imgs[]=$oss_host.$imv;
+                            }
+                        }
+                    }
+                    $info = array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$status,'status_str'=>$status_str,
+                        'ptype'=>$v['ptype'],'ptype_str'=>$ptype_str,'type'=>$v['type'],'num'=>$v['num'],'add_time'=>$v['add_time'],'stock_record_id'=>$v['stock_record_id'],
+                        'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$hotel_name,'hotel_id'=>$v['hotel_id'],'sell_audit_button'=>$sell_audit_button,
+                        'reason'=>$v['reason'],'recycle_status'=>$recycle_status,'recycle_status_str'=>$recycle_status_str,'wo_data_imgs'=>$wo_data_imgs);
+                }else{
+                    $order_id = $v['order_id'];
+                    $gofields = 'a.id,a.openid,a.goods_id,a.amount,a.total_fee,a.add_time,user.nickName,user.avatarUrl,fg.id as goods_id,fg.name as goods_name';
+                    $gowhere = array('a.id'=>$order_id);
+                    $res_order = $m_order->getGroupbyOrders($gofields,$gowhere);
+                    $res_settlement = $m_ordersettlement->getOrdersettlement('a.money,duser.name,duser.level',array('a.order_id'=>$order_id));
+
+                    $info = array('nickName'=>$res_order[0]['nickName'],'avatarUrl'=>$res_order[0]['avatarUrl'],'type'=>$v['type'],
+                        'num'=>$v['num'],'total_fee'=>intval($res_order[0]['total_fee']),'add_time'=>$res_order[0]['add_time'],
+                        'goods'=>array(array('goods_id'=>$res_order[0]['goods_id'],'goods_name'=>$res_order[0]['goods_name'])),
+                        'settlement'=>$res_settlement
+                    );
                 }
-                $res_sysuser = $m_sysuser->getUserInfo(array('id'=>$v['residenter_id']));
-                $hotel_name = $v['hotel_name'];
-                if(!empty($res_sysuser)){
-                    $hotel_name = $res_sysuser['remark'].'：'.$hotel_name;
-                }
-                $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],
-                    'ptype'=>$v['ptype'],'ptype_str'=>$ptype_str,
-                    'num'=>count($res_goods),'add_time'=>$add_time,'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$hotel_name,'hotel_id'=>$v['hotel_id']);
+
+                $data_list[]=$info;
             }
         }
         $this->to_back($data_list);
+    }
+
+    public function auditWriteoff(){
+        $openid = $this->params['openid'];
+        $stock_record_id = intval($this->params['stock_record_id']);
+        $status = intval($this->params['status']);//2审核通过、3审核不通过
+        $reason = trim($this->params['reason']);
+
+        $m_opsstaff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_opsstaff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $ops_staff_sysuid = $res_staff['sysuser_id'];
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $fields = 'a.id,a.wo_status,sale.hotel_id,ext.residenter_id';
+        $res_record = $m_stock_record->getHotelStaffRecordList($fields,array('a.id'=>$stock_record_id),'','');
+        $message = '';
+        if(!empty($res_record[0]['id']) && $res_record[0]['wo_status']==1 && $res_record[0]['residenter_id']==$ops_staff_sysuid){
+            $stock_record_id = $res_record[0]['stock_record_id'];
+            $hotel_id = $res_record[0]['hotel_id'];
+
+            $up_record = array('wo_status'=>$status,'update_time'=>date('Y-m-d H:i:s'));
+            $m_integralrecord = new \Common\Model\Smallapp\UserIntegralrecordModel();
+            $rwhere = array('jdorder_id'=>$stock_record_id,'type'=>17,'status'=>2);
+            $res_recordinfo = $m_integralrecord->getALLDataList('id,openid,integral,hotel_id',$rwhere,'id desc','0,2','');
+            if($status==2){
+                $up_record['wo_time']=date('Y-m-d H:i:s');
+                $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
+                if(!empty($res_recordinfo[0]['id'])){
+                    $where = array('hotel_id'=>$hotel_id,'status'=>1);
+                    $m_merchant = new \Common\Model\Integral\MerchantModel();
+                    $res_merchant = $m_merchant->getInfo($where);
+                    $is_integral = $res_merchant['is_integral'];
+                    $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+                    foreach ($res_recordinfo as $rv){
+                        $record_id = $rv['id'];
+                        $m_integralrecord->updateData(array('id'=>$record_id),array('status'=>1,'integral_time'=>date('Y-m-d H:i:s')));
+                        $now_integral = $rv['integral'];
+                        if($is_integral==1){
+                            $res_integral = $m_userintegral->getInfo(array('openid'=>$rv['openid']));
+                            if(!empty($res_integral)){
+                                $userintegral = $res_integral['integral']+$now_integral;
+                                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+                            }else{
+                                $m_userintegral->add(array('openid'=>$rv['openid'],'integral'=>$now_integral));
+                            }
+                        }else{
+                            $where = array('id'=>$res_merchant['id']);
+                            $m_merchant->where($where)->setInc('integral',$now_integral);
+                        }
+                    }
+                    $message = '审核通过';
+                }
+            }elseif($status==3){
+                if(!empty($reason)){
+                    $up_record['reason'] = $reason;
+                }
+                $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
+
+                if(!empty($res_recordinfo[0]['id'])){
+                    $del_record_ids = array();
+                    foreach ($res_recordinfo as $rv){
+                        $del_record_ids[] = $rv['id'];
+                    }
+                    $m_integralrecord->delData(array('id'=>array('in',$del_record_ids)));
+                }
+                $message = '审核不通过';
+            }
+        }
+        $this->to_back(array('message'=>$message));
     }
 
     public function hotelcontactlist(){

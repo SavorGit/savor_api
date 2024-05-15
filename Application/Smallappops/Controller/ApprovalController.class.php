@@ -75,9 +75,12 @@ class ApprovalController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $not_goods_id = array_merge(array('7','8','27','28','30','42','43','44','45','49','50','51','54','56','57','58','59','60','62','63','64','66','67'),C('DATA_GOODS_IDS'));
         $m_goods = new \Common\Model\Finance\GoodsModel();
         $gwhere = array('status'=>1);
-        $goods_list = $m_goods->getDataList('id as value,name',$gwhere,'category_id asc');
+        $gwhere['brand_id'] = array('not in','10,11,13,14,15,18');
+        $gwhere['id'] = array('not in',$not_goods_id);
+        $goods_list = $m_goods->getDataList('id as value,name',$gwhere,'brand_id asc');
         array_unshift($goods_list,array('value'=>0,'name'=>'请选择'));
         $goods_num = array();
         for($i=0;$i<11;$i++){
@@ -148,9 +151,15 @@ class ApprovalController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelById('hotel.area_id,ext.is_have_group',array('hotel.id'=>$hotel_id));
+        $area_id = $res_hotel['area_id'];
+        if($res_hotel['is_have_group']==0){
+            $this->to_back(94105);
+        }
+
         $adata = array('item_id'=>$item_id,'ops_staff_id'=>$res_staff['id'],'hotel_id'=>$hotel_id,
             'merchant_staff_id'=>$merchant_staff_id,'bottle_num'=>$bottle_num,'status'=>1);
-
         $json_str = stripslashes(html_entity_decode($goods_data));
         $goods_arr = json_decode($json_str,true);
         $wine_data = array();
@@ -184,10 +193,6 @@ class ApprovalController extends CommonController{
         }
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $approval_id = $m_approval->add($adata);
-
-        $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
-        $area_id = $res_hotel['area_id'];
         $m_approval_step = new \Common\Model\Crm\ApprovalStepModel();
         $fields = 'id,name,ops_staff_id,step_order,role_type';
         $res_steps = $m_approval_step->getDataList($fields,array('item_id'=>$item_id),'step_order asc');
@@ -228,7 +233,7 @@ class ApprovalController extends CommonController{
             $this->to_back(94001);
         }
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
-        $fields = 'count(id) as num,handle_status';
+        $fields = 'count(DISTINCT approval_id) as num,handle_status';
         $where = array('ops_staff_id'=>$res_staff['id'],'is_receive'=>1);
         $res_process = $m_approval_process->getALLDataList($fields,$where,'','','handle_status');
         $pending_num = $processing_num = $processed_num = 0;
@@ -271,7 +276,7 @@ class ApprovalController extends CommonController{
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('a.ops_staff_id'=>$res_staff['id'],'a.is_receive'=>1,'a.handle_status'=>$handle_status);
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
-        $res_data = $m_approval_process->getProcessDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'');
+        $res_data = $m_approval_process->getProcessDatas($fields,$where,'approval.id desc',"$offset,$page_szie",'approval.id');
         $res_data = $this->handle_approval_data($res_data);
         $this->to_back(array('datalist'=>$res_data));
     }
@@ -392,7 +397,7 @@ class ApprovalController extends CommonController{
         if($res_data['stock_id']){
             $m_stock = new \Common\Model\Finance\StockModel();
             $res_stock = $m_stock->getInfo(array('id'=>$res_data['stock_id']));
-            $stock_serial_number = $res_stock['serial_number'];
+            $stock_serial_number = $res_data['stock_id'].'--'.$res_stock['serial_number'];
         }
         $res_data['stock_serial_number'] = $stock_serial_number;
         $goods_data = array();

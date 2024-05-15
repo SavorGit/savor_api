@@ -48,13 +48,16 @@ class SaleModel extends BaseModel{
 	    return $sale_id;
     }
 
-    public function getStaticSaleData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype=''){
+    public function getStaticSaleData($area_id,$maintainer_id,$hotel_id,$start_time,$end_time,$group='',$wo_status='',$goods_id='',$ptype='',$recycle_status=0){
         $fileds = 'sum(a.settlement_price) as sale_money';
         $where = array();
         if($wo_status){
             $where['record.wo_status'] = $wo_status;
         }else{
             $where['record.wo_status'] = array('in','1,2,4');
+        }
+        if($recycle_status){
+            $where['record.recycle_status'] = $recycle_status;
         }
         if(!empty($goods_id)){
             $where['record.goods_id'] = $goods_id;
@@ -135,6 +138,9 @@ class SaleModel extends BaseModel{
             ->field($fileds)
             ->join('savor_finance_stock_record record on a.stock_record_id=record.id','left')
             ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
+            ->join('savor_finance_unit unit on record.unit_id=unit.id','left')
+            ->join('savor_finance_category cate on goods.category_id=cate.id','left')
+            ->join('savor_finance_specification spec on goods.specification_id=spec.id','left')
             ->join('savor_hotel hotel on a.hotel_id=hotel.id','left')
             ->join('savor_hotel_ext ext on hotel.id=ext.hotel_id','left')
             ->join('savor_smallapp_user user on record.op_openid=user.openid','left')

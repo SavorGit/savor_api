@@ -47,8 +47,15 @@ class ApprovalHandleController extends CommonController{
             $message = '处理完毕';
             switch ($status){
                 case 1:
+                    $hotel_id = $res_approval['hotel_id'];
+                    $m_hotel_ext = new \Common\Model\HotelExtModel();
+                    $res_ext = $m_hotel_ext->getData('is_salehotel', array('hotel_id'=>$hotel_id));
+                    if($res_ext[0]['is_salehotel']==0){
+                        $this->to_back(94104);
+                    }
+
                     $m_stock = new \Common\Model\Finance\StockModel();
-                    $is_out = $m_stock->checkHotelThreshold($res_approval['hotel_id'],1);
+                    $is_out = $m_stock->checkHotelThreshold($hotel_id,1);
                     if($is_out==0){
                         $this->to_back(94103);
                     }

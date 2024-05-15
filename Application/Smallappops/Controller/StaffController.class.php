@@ -61,7 +61,9 @@ class StaffController extends CommonController{
         }
         $area_id = $res_staff['area_id'];
         $fields = 'a.id as staff_id,su.remark as staff_name';
-        $staff_list = $m_opsstaff->getStaffinfo($fields,array('a.area_id'=>$area_id,'a.status'=>1,'a.hotel_role_type'=>$type));
+        $where = array('a.area_id'=>$area_id,'a.status'=>1);
+        $where['a.hotel_role_type'] = array('in',array('8','9'));
+        $staff_list = $m_opsstaff->getStaffinfo($fields,$where);
         if(!empty($staff_list)){
             $stmp = array('staff_id'=>0,'staff_name'=>'全部');
             array_unshift($staff_list, $stmp);

@@ -1190,6 +1190,9 @@ class StockController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(93001);
         }
+        if(empty($check_img)){
+            $this->to_back(93231);
+        }
         $m_stock = new \Common\Model\Finance\StockModel();
         $res_stock = $m_stock->getInfo(array('id'=>$stock_id));
         if($res_stock['status']==4){
@@ -1536,14 +1539,6 @@ class StockController extends CommonController{
             $hotel_id = intval($res_records[0]['hotel_id']);
             $m_hotel = new \Common\Model\HotelModel();
             $res_hotel = $m_hotel->getOneById('id,name,area_id',$hotel_id);
-
-            $m_hotelblacklist = new \Common\Model\Finance\HotelBlacklistModel();
-            $res_blacklist = $m_hotelblacklist->getInfo(array('hotel_id'=>$hotel_id));
-            $is_black = 0;
-            if(!empty($res_blacklist)){
-                $is_black = 1;
-            }
-
             $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_sale = new \Common\Model\Finance\SaleModel();
             $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
@@ -1580,10 +1575,6 @@ class StockController extends CommonController{
                                     $up_data['longitude'] = $longitude;
                                     $up_data['latitude'] = $latitude;
                                 }
-                                if($is_black==0){
-                                    $up_data['wo_status'] = 2;
-                                    $up_data['update_time'] = date('Y-m-d H:i:s');
-                                }
                                 $m_stock_record->updateData(array('id'=>$add_data['id']),$up_data);
                                 break;
                             case 3:
@@ -1618,25 +1609,16 @@ class StockController extends CommonController{
                             $add_data['longitude'] = $longitude;
                             $add_data['latitude'] = $latitude;
                         }
-                        if($is_black==0){
-                            $add_data['wo_status'] = 2;
-                            $add_data['update_time'] = date('Y-m-d H:i:s');
-                        }
                         $record_id = $m_stock_record->add($add_data);
 
                         $stock_record_info = $add_data;
                         $stock_record_info['id'] = $record_id;
                         $sale_id = $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
-//                        if($sale_id){
-//                            if($reason_type==1){
-//                                sendTopicMessage($sale_id,81);
-//                            }elseif($reason_type==2){
-//                                sendTopicMessage($sale_id,82);
-//                            }
-//                        }
-                        if($is_black==0){
-                            $stock_record_info['hotel_id']=$hotel_id;
-                            $m_userintegral_record->finishWriteoff($stock_record_info);
+                        $stock_record_info['hotel_id']=$hotel_id;
+                        $m_userintegral_record->finishWriteoff($stock_record_info,2);
+                        if($is_open_reward==1){
+                            $stock_record_info['area_id']=$res_hotel['area_id'];
+                            $m_userintegral_record->finishRecycle($stock_record_info,2);
                         }
                     }
                 }
@@ -1710,9 +1692,9 @@ class StockController extends CommonController{
                     }
                 }
                 $recycle_status = 4;
-                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
-                    $recycle_status = $res_goods[0]['recycle_status'];
-                }
+//                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
+//                    $recycle_status = $res_goods[0]['recycle_status'];
+//                }
                 $idcode_num = count($res_goods);
                 $recycle_list = array();
                 if(!in_array($recycle_status,array(1,4))){

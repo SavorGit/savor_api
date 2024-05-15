@@ -68,16 +68,19 @@ class ApprovalProcessesModel extends BaseModel{
                 }
                 break;
             case 12:
-                $res_approval = $m_approval->getInfo(array('hotel_id'=>$hotel_id,'status'=>11));
+                $res_approval = $m_approval->getDataList('*',array('hotel_id'=>$hotel_id,'status'=>11),'id asc');
                 if(!empty($res_approval)){
-                    $approval_id = $res_approval['id'];
-                    $m_approval->updateData(array('id'=>$approval_id),array('status'=>12,'real_recycle_time'=>date('Y-m-d H:i:s')));
+                    foreach ($res_approval as $v){
+                        $approval_id = $v['id'];
+                        $m_approval->updateData(array('id'=>$approval_id),array('status'=>12,'real_recycle_time'=>date('Y-m-d H:i:s')));
 
-                    $pwhere = array('approval_id'=>$approval_id,'step_order'=>2);
-                    $res_process = $m_approval_process->getInfo($pwhere);
-                    if(!empty($res_process)){
-                        $m_approval_process->updateData(array('id'=>$res_process['id']),array('handle_status'=>3));
+                        $pwhere = array('approval_id'=>$approval_id,'step_order'=>2);
+                        $res_process = $m_approval_process->getInfo($pwhere);
+                        if(!empty($res_process)){
+                            $m_approval_process->updateData(array('id'=>$res_process['id']),array('handle_status'=>3));
+                        }
                     }
+
                 }
                 break;
         }

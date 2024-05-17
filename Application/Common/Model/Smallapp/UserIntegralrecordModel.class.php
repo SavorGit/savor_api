@@ -850,11 +850,17 @@ class UserIntegralrecordModel extends BaseModel{
                 'hotel_id'=>$stock_record_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
                 'integral'=>$admin_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,
                 'type'=>25,'source'=>4);
+            if($integral_status==1){
+                $integralrecord_data['integral_time'] = date('Y-m-d H:i:s');
+            }
             $this->add($integralrecord_data);
         }
         $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
             'hotel_id'=>$stock_record_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
             'integral'=>$now_integral,'jdorder_id'=>$stock_record_id,'content'=>1,'status'=>$integral_status,'type'=>25);
+        if($integral_status==1){
+            $integralrecord_data['integral_time'] = date('Y-m-d H:i:s');
+        }
         $this->add($integralrecord_data);
         return $stock_record_id;
     }

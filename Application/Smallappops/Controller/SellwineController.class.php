@@ -515,7 +515,7 @@ class SellwineController extends CommonController{
                     $res_goods = array(
                         array('idcode'=>$v['idcode'],'price'=>intval($v['settlement_price']),'goods_id'=>$v['goods_id'],'goods_name'=>$v['goods_name'],
                             'cate_name'=>$v['cate_name'],'spec_name'=>$v['spec_name'],'unit_name'=>$v['unit_name'],'status'=>$v['wo_status'],
-                            'wo_reason_type'=>$v['wo_reason_type'],'add_time'=>$v['add_time'],'wo_time'=>$v['wo_time']
+                            'wo_reason_type'=>$v['wo_reason_type'],'add_time'=>$v['add_time'],'wo_time'=>$v['wo_time'],'reason'=>$v['reason']
                             )
                     );
                     $status = $v['wo_status'];
@@ -563,7 +563,7 @@ class SellwineController extends CommonController{
                     $info = array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$status,'status_str'=>$status_str,
                         'ptype'=>$v['ptype'],'ptype_str'=>$ptype_str,'type'=>$v['type'],'num'=>$v['num'],'add_time'=>$v['add_time'],'stock_record_id'=>$v['stock_record_id'],
                         'goods'=>$res_goods,'coupon'=>$res_coupon,'hotel_name'=>$hotel_name,'hotel_id'=>$v['hotel_id'],'sell_audit_button'=>$sell_audit_button,
-                        'reason'=>$v['reason'],'recycle_status'=>$recycle_status,'recycle_status_str'=>$recycle_status_str,'wo_data_imgs'=>$wo_data_imgs);
+                        'recycle_status'=>$recycle_status,'recycle_status_str'=>$recycle_status_str,'wo_data_imgs'=>$wo_data_imgs,'wo_reason_type'=>$v['wo_reason_type']);
                 }else{
                     $order_id = $v['order_id'];
                     $gofields = 'a.id,a.openid,a.goods_id,a.amount,a.total_fee,a.add_time,user.nickName,user.avatarUrl,fg.id as goods_id,fg.name as goods_name';
@@ -601,7 +601,6 @@ class SellwineController extends CommonController{
         $res_record = $m_stock_record->getHotelStaffRecordList($fields,array('a.id'=>$stock_record_id),'','');
         $message = '';
         if(!empty($res_record[0]['id']) && $res_record[0]['wo_status']==1 && $res_record[0]['residenter_id']==$ops_staff_sysuid){
-            $stock_record_id = $res_record[0]['stock_record_id'];
             $hotel_id = $res_record[0]['hotel_id'];
 
             $up_record = array('wo_status'=>$status,'update_time'=>date('Y-m-d H:i:s'));
@@ -641,7 +640,6 @@ class SellwineController extends CommonController{
                     $up_record['reason'] = $reason;
                 }
                 $m_stock_record->updateData(array('id'=>$stock_record_id),$up_record);
-
                 if(!empty($res_recordinfo[0]['id'])){
                     $del_record_ids = array();
                     foreach ($res_recordinfo as $rv){

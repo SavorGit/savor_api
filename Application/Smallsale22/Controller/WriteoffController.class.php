@@ -191,9 +191,8 @@ class WriteoffController extends CommonController{
                 }
                 $status_str = '售卖奖励'.$all_status[$v['wo_status']];
                 $recycle_status_str = '开瓶奖励'.$all_recycle_status[$v['recycle_status']];
-                $reason = isset($all_reasons[$v['reason_type']])?$all_reasons[$v['reason_type']]['name']:'';
-
-                $res_uirecord = $m_userintegral->getALLDataList('sum(integral) as all_integral,status,type',array('jdorder_id'=>$stock_record_id,'type'=>array('in','17,25')),'id desc','','type');
+                $reason = isset($all_reasons[$v['wo_reason_type']])?$all_reasons[$v['wo_reason_type']]['name']:'';
+                $res_uirecord = $m_userintegral->getALLDataList('sum(integral) as all_integral,status,type',array('jdorder_id'=>$stock_record_id,'type'=>array('in','17,25')),'id asc','','type');
                 $integreal_list = array();
                 if($v['wo_status']==3) {
                     $is_wobutton = 0;
@@ -230,7 +229,7 @@ class WriteoffController extends CommonController{
                 }
 
                 $data_list[]=array('nickName'=>$v['nickName'],'avatarUrl'=>$v['avatarUrl'],'reason'=>$reason,'status'=>$v['wo_status'],'status_str'=>$status_str,
-                    'recycle_status'=>$v['recycle_status'],'recycle_status_str'=>$recycle_status_str,'num'=>$v['num'],'add_time'=>$v['add_time'],
+                    'recycle_status'=>$v['recycle_status'],'recycle_status_str'=>$recycle_status_str,'num'=>$v['num'],'add_time'=>$v['add_time'],'wo_reason_type'=>$v['wo_reason_type'],
                     'goods'=>$res_goods,'entity'=>$entity,'demo_img'=>$demo_img,'stock_record_id'=>$stock_record_id,'integreal_list'=>$integreal_list);
             }
         }

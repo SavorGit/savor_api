@@ -96,10 +96,7 @@ class WriteoffController extends CommonController{
         $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'','','');
         $recycle_num = intval($res_salerecord[0]['num']);
         $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-        $iwhere = array('hotel_id'=>$res_staff[0]['hotel_id'],'type'=>array('in','17,25'),'status'=>1);
-        if($res_staff[0]['level']>1){
-            $iwhere['openid']=$openid;
-        }
+        $iwhere = array('openid'=>$openid,'hotel_id'=>$res_staff[0]['hotel_id'],'type'=>array('in','17,25'),'status'=>1);
         $res_uirecord = $m_userintegral->getALLDataList('sum(integral) as all_integral,type',$iwhere,'id desc','','type');
         $sale_integral = $recycle_integral = 0;
         foreach ($res_uirecord as $v){
@@ -195,7 +192,8 @@ class WriteoffController extends CommonController{
                 $status_str = '售卖奖励'.$all_status[$v['wo_status']];
                 $recycle_status_str = '开瓶奖励'.$all_recycle_status[$v['recycle_status']];
                 $reason = isset($all_reasons[$v['wo_reason_type']])?$all_reasons[$v['wo_reason_type']]['name']:'';
-                $res_uirecord = $m_userintegral->getALLDataList('sum(integral) as all_integral,status,type',array('jdorder_id'=>$stock_record_id,'type'=>array('in','17,25')),'id asc','','type');
+                $iwhere = array('openid'=>$openid,'jdorder_id'=>$stock_record_id,'type'=>array('in','17,25'));
+                $res_uirecord = $m_userintegral->getALLDataList('sum(integral) as all_integral,status,type',$iwhere,'id asc','','type');
                 $integreal_list = array();
                 if($v['wo_status']==3) {
                     $is_wobutton = 0;

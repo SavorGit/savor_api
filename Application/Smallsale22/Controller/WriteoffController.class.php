@@ -64,7 +64,7 @@ class WriteoffController extends CommonController{
 
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,a.hotel_id,a.level';
+        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,a.level';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         if(empty($res_staff)){
             $this->to_back(93001);
@@ -77,6 +77,8 @@ class WriteoffController extends CommonController{
             $sdate = date('Y-m-d',strtotime('-7 day'));
             $edate = date('Y-m-d');
         }
+        $data_goods_ids = C('DATA_GOODS_IDS');
+        $salewhere['a.goods_id'] = array('not in',$data_goods_ids);
         $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
         $m_sale = new \Common\Model\Finance\SaleModel();
         $fields = 'sum(a.num) as num,record.wo_status';
@@ -86,9 +88,8 @@ class WriteoffController extends CommonController{
             $now_num = intval($v['num']);
             if($v['wo_status']==2){
                 $approval_num=$now_num;
-            }else{
-                $sale_num+=$now_num;
             }
+            $sale_num+=$now_num;
         }
         $salewhere['record.recycle_status'] = 2;
         $fields = 'sum(a.num) as num';
@@ -148,6 +149,8 @@ class WriteoffController extends CommonController{
             $sdate = date('Y-m-d',strtotime('-7 day'));
             $edate = date('Y-m-d');
         }
+        $data_goods_ids = C('DATA_GOODS_IDS');
+        $where['a.goods_id'] = array('not in',$data_goods_ids);
         $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
         $m_sale = new \Common\Model\Finance\SaleModel();
         $fields = 'a.idcode,a.add_time,a.hotel_id,a.ptype,a.type,a.settlement_price,a.residenter_id,a.sale_openid,a.num,a.stock_record_id,

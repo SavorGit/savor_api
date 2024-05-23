@@ -499,7 +499,7 @@ class BasicdataController extends CommonController{
 
         $res_data = array();
         if($is_data){
-            $fileds = 'sum(a.id) as hotel_num,sum(a.integral+a.step_integral) as total_integral';
+            $fileds = 'count(a.id) as hotel_num,sum(a.integral+a.step_integral) as total_integral';
             $where = array('a.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
             if($static_area_id){
                 $where['a.area_id'] = $static_area_id;

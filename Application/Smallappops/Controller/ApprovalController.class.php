@@ -75,10 +75,10 @@ class ApprovalController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $not_goods_id = array_merge(array('7','8','27','28','30','42','43','44','45','49','50','51','54','56','57','58','59','60','62','63','64','66','67'),C('DATA_GOODS_IDS'));
+        $not_goods_id = array_merge(C('SELL_NOTIN_HOTEL_GOODS'),C('DATA_GOODS_IDS'));
         $m_goods = new \Common\Model\Finance\GoodsModel();
         $gwhere = array('status'=>1);
-        $gwhere['brand_id'] = array('not in','10,11,13,14,15,18');
+        $gwhere['brand_id'] = array('not in',C('SELL_NOTIN_HOTEL_BRANDS'));
         $gwhere['id'] = array('not in',$not_goods_id);
         $goods_list = $m_goods->getDataList('id as value,name',$gwhere,'brand_id asc');
         array_unshift($goods_list,array('value'=>0,'name'=>'请选择'));

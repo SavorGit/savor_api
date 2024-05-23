@@ -661,6 +661,8 @@ return array(
         '2'=>array('id'=>2,'name'=>'品鉴酒'),
         '3'=>array('id'=>3,'name'=>'活动')
     ),
+    'SELL_NOTIN_HOTEL_GOODS'=>array(7,8,27,28,30,42,43,44,45,49,50,51,54,56,57,58,59,60,62,63,64,66,67),
+    'SELL_NOTIN_HOTEL_BRANDS'=>array(10,11,13,14,15,18),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>0,
     'LOTTERY_TIMEOUT'=>300,
     'DEFAULT_PAGE_SHOW_TIME'=>2*1000,
@@ -872,6 +874,8 @@ return array(
     'APPROVAL_STATUS'=>array('1'=>'待审批','2'=>'审批不通过','3'=>'待库管接收','4'=>'待出库','5'=>'待运维接收','6'=>'待送货','7'=>'已领取',
         '8'=>'未上传收货单','9'=>'已送达','10'=>'派单待接收','11'=>'待回收瓶盖','12'=>'已回收瓶盖'
     ),
+    'ACTIVITY_AWARD_STATUS'=>array('1'=>'发放正常积分','2'=>'发放冻结积分','3'=>'待发放积分'),
+
     'BBS_CATEGORY'=>array(
         '240301'=>array('id'=>240301,'name'=>'吐槽','icon'=>'WeChat/resource/bbs_icon/tucao.png'),
         '240302'=>array('id'=>240302,'name'=>'分享','icon'=>'WeChat/resource/bbs_icon/fenxiang.png'),

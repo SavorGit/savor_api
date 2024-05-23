@@ -44,6 +44,10 @@ class BasicdataController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
                 break;
+            case 'awarddata':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'area_id'=>1001,'staff_id'=>1001,'day'=>1001);
+                break;
 
         }
         parent::_init_();
@@ -445,6 +449,68 @@ class BasicdataController extends CommonController{
                 'groupby_num'=>intval($res_groupdata[0]['groupby_num']),'groupby_money'=>intval($res_groupdata[0]['groupby_money']),
                 'qk_money'=>$res_saledata['qk_money'],'cqqk_money'=>$res_saledata['cqqk_money']);
             $res_data['desc'] = array();
+        }
+        $this->to_back($res_data);
+    }
+
+    public function awarddata(){
+        $openid = $this->params['openid'];
+        $area_id = intval($this->params['area_id']);
+        $staff_id = intval($this->params['staff_id']);
+        $day = intval($this->params['day']);
+
+        $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
+        $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
+        if(empty($res_staff)){
+            $this->to_back(94001);
+        }
+        $type = $m_staff->checkStaffpermission($res_staff,$area_id,$staff_id);
+        if($type==1001){
+            $this->to_back(1001);
+        }
+        $res_staff = $m_staff->getInfo(array('id'=>$staff_id));
+        $start_time = date('Y-m-d 00:00:00');
+        switch ($day){
+            case 1:
+                $start_time = date('Y-m-d 00:00:00');
+                break;
+            case 2:
+                $start_time = date('Y-m-d 00:00:00',strtotime('-6day'));
+                break;
+            case 3:
+                $start_time = date('Y-m-01 00:00:00');
+                break;
+        }
+        $end_time = date('Y-m-d 23:59:59');
+        $static_maintainer_id = $static_area_id = 0;
+        $is_data = 1;
+        if(in_array($type,array(1,2,4)) && ($area_id==0 || ($area_id>0 && $staff_id==0))){
+            if($area_id>0){
+                $static_area_id = $area_id;
+            }
+        }elseif($area_id>0 && $staff_id>0){
+            $static_area_id = $area_id;
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }elseif($area_id==0 && $staff_id>0){
+            $static_maintainer_id = $res_staff['sysuser_id'];
+        }else{
+            $is_data = 0;
+        }
+
+        $res_data = array();
+        if($is_data){
+            $fileds = 'count(a.id) as hotel_num,sum(a.integral+a.step_integral) as total_integral';
+            $where = array('a.add_time'=>array(array('egt',$start_time),array('elt',$end_time)));
+            if($static_area_id){
+                $where['a.area_id'] = $static_area_id;
+            }
+            if($static_maintainer_id){
+                $where['ext.maintainer_id'] = $static_maintainer_id;
+            }
+            $m_award_hotel_data = new \Common\Model\Finance\AwardHoteldataModel();
+            $res_award_hotel_data = $m_award_hotel_data->getData($fileds,$where);
+            $res_data['hotel_num'] = intval($res_award_hotel_data[0]['hotel_num']);
+            $res_data['total_integral'] = intval($res_award_hotel_data[0]['total_integral']);
         }
         $this->to_back($res_data);
     }

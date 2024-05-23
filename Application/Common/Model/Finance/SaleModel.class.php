@@ -103,7 +103,6 @@ class SaleModel extends BaseModel{
                 $res_sale_qk = $this->getSaleStockRecordList('a.id as sale_id,a.settlement_price,a.ptype,a.add_time,a.is_expire',$where);
                 if(!empty($res_sale_qk)){
                     $m_sale_payment_record = new \Common\Model\Finance\SalePaymentRecordModel();
-                    $expire_time = 7*86400;
                     foreach ($res_sale_qk as $v){
                         if($v['ptype']==0){
                             $now_money = $v['settlement_price'];
@@ -113,14 +112,6 @@ class SaleModel extends BaseModel{
                             $now_money = $v['settlement_price']-$had_pay_money;
                         }
                         $qk_money+=$now_money;
-
-                        /*
-                        $sale_time = strtotime($v['add_time']);
-                        $now_time = time();
-                        if($now_time-$sale_time>=$expire_time){
-                            $cqqk_money+=$now_money;
-                        }
-                        */
                         if($v['is_expire']==1){
                             $cqqk_money+=$now_money;
                         }

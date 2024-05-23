@@ -20,6 +20,11 @@ class WriteoffController extends CommonController{
                     'wo_status'=>1002,'recycle_status'=>1002);
                 $this->is_verify = 1;
                 break;
+            case 'sumsellwine':
+                $this->params = array('openid'=>1001,'sdate'=>1002,'edate'=>1002);
+                $this->is_verify = 1;
+                break;
+                
         }
         parent::_init_();
     }
@@ -113,7 +118,51 @@ class WriteoffController extends CommonController{
         $this->to_back(array('is_stat'=>$is_stat,'sale_num'=>$sale_num,'approval_num'=>$approval_num,'recycle_num'=>$recycle_num,
             'sale_integral'=>$sale_integral,'recycle_integral'=>$recycle_integral));
     }
-
+    public function sumsellwine(){
+        $openid = $this->params['openid'];
+        $sdate = $this->params['sdate'];
+        $edate = $this->params['edate'];
+        $wo_status = 2;
+        $recycle_status = 2;
+        
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,a.level';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+        
+        $salewhere = array('a.hotel_id'=>$res_staff[0]['hotel_id'],'record.wo_reason_type'=>1,'record.wo_status'=>2);
+        if($res_staff[0]['level']>1){
+            $salewhere['a.sale_openid'] = $openid;
+        }
+        if(empty($sdate) || empty($edate)){
+            //$sdate = date('Y-m-d',strtotime('-7 day'));
+            $sdate = date('Y-m-').'01';
+            $edate = date('Y-m-d',time());
+        }
+        $data_goods_ids = C('DATA_GOODS_IDS');
+        $salewhere['a.goods_id'] = array('not in',$data_goods_ids);
+        $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
+        
+        $m_sale = new \Common\Model\Finance\SaleModel();
+        $fields = 'sum(a.num) as num,record.wo_status';
+        $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'record.wo_status','','');
+        $sale_num = $approval_num = 0;
+        foreach ($res_salerecord as $v){
+            $now_num = intval($v['num']);
+            
+            $sale_num+=$now_num;
+        }
+        
+        $salewhere['record.recycle_status'] = 2;
+        $fields = 'sum(a.num) as num';
+        $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'','','');
+        $recycle_num = intval($res_salerecord[0]['num']);
+        
+        $this->to_back(array('sale_num'=>$sale_num,'recycle_num'=>$recycle_num));
+    }
     public function datalist(){
         $openid = $this->params['openid'];
         $sdate = $this->params['sdate'];

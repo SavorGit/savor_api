@@ -90,7 +90,7 @@ class ActivityAwardController extends CommonController{
         $award_status = array(array('name'=>'奖励状态','status'=>0));
         $all_activity_award_status = C('ACTIVITY_AWARD_STATUS');
         foreach ($all_activity_award_status as $k=>$v){
-            $award_status[]=array('name'=>$v,'recycle_status'=>$k);
+            $award_status[]=array('name'=>$v,'status'=>$k);
         }
         $start_date = date('Y-m-d',strtotime($start_time));
         $end_date = date('Y-m-d',strtotime($end_time));

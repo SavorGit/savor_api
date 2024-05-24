@@ -17,11 +17,7 @@ class WriteoffController extends CommonController{
                 $this->is_verify = 1;
             case 'datalist':
                 $this->params = array('openid'=>1001,'page'=>1001,'sdate'=>1002,'edate'=>1002,
-                    'wo_status'=>1002,'recycle_status'=>1002);
-                $this->is_verify = 1;
-                break;
-            case 'sumsellwine':
-                $this->params = array('openid'=>1001,'sdate'=>1002,'edate'=>1002);
+                    'recycle_sdate'=>1002,'recycle_edate'=>1002,'wo_status'=>1002,'recycle_status'=>1002);
                 $this->is_verify = 1;
                 break;
                 
@@ -79,8 +75,8 @@ class WriteoffController extends CommonController{
             $salewhere['a.sale_openid'] = $openid;
         }
         if(empty($sdate) || empty($edate)){
-            $sdate = date('Y-m-d',strtotime('-7 day'));
-            $edate = date('Y-m-d');
+            $sdate = date('Y-m-01');
+            $edate = date('Y-m-t');
         }
         $data_goods_ids = C('DATA_GOODS_IDS');
         $salewhere['a.goods_id'] = array('not in',$data_goods_ids);
@@ -115,58 +111,21 @@ class WriteoffController extends CommonController{
         if($wo_status || $recycle_status){
             $is_stat = 0;
         }
+        $tips = '';
+        $no_recycle_num = $sale_num-$recycle_num;
+        if($no_recycle_num>0){
+            $tips = "本月有{$no_recycle_num}瓶酒没有收回瓶盖，回收后才能获得开瓶奖励哦～";
+        }
         $this->to_back(array('is_stat'=>$is_stat,'sale_num'=>$sale_num,'approval_num'=>$approval_num,'recycle_num'=>$recycle_num,
-            'sale_integral'=>$sale_integral,'recycle_integral'=>$recycle_integral));
+            'sale_integral'=>$sale_integral,'recycle_integral'=>$recycle_integral,'tips'=>$tips));
     }
-    public function sumsellwine(){
-        $openid = $this->params['openid'];
-        $sdate = $this->params['sdate'];
-        $edate = $this->params['edate'];
-        $wo_status = 2;
-        $recycle_status = 2;
-        
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id,a.level';
-        $res_staff = $m_staff->getMerchantStaff($fields,$where);
-        if(empty($res_staff)){
-            $this->to_back(93001);
-        }
-        
-        $salewhere = array('a.hotel_id'=>$res_staff[0]['hotel_id'],'record.wo_reason_type'=>1,'record.wo_status'=>2);
-        if($res_staff[0]['level']>1){
-            $salewhere['a.sale_openid'] = $openid;
-        }
-        if(empty($sdate) || empty($edate)){
-            //$sdate = date('Y-m-d',strtotime('-7 day'));
-            $sdate = date('Y-m-').'01';
-            $edate = date('Y-m-d',time());
-        }
-        $data_goods_ids = C('DATA_GOODS_IDS');
-        $salewhere['a.goods_id'] = array('not in',$data_goods_ids);
-        $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
-        
-        $m_sale = new \Common\Model\Finance\SaleModel();
-        $fields = 'sum(a.num) as num,record.wo_status';
-        $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'record.wo_status','','');
-        $sale_num = $approval_num = 0;
-        foreach ($res_salerecord as $v){
-            $now_num = intval($v['num']);
-            
-            $sale_num+=$now_num;
-        }
-        
-        $salewhere['record.recycle_status'] = 2;
-        $fields = 'sum(a.num) as num';
-        $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'','','');
-        $recycle_num = intval($res_salerecord[0]['num']);
-        
-        $this->to_back(array('sale_num'=>$sale_num,'recycle_num'=>$recycle_num));
-    }
+
     public function datalist(){
         $openid = $this->params['openid'];
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
+        $recycle_sdate = $this->params['recycle_sdate'];
+        $recycle_edate = $this->params['recycle_edate'];
         $wo_status = intval($this->params['wo_status']);
         $recycle_status = intval($this->params['recycle_status']);
         $page = intval($this->params['page']);
@@ -191,13 +150,18 @@ class WriteoffController extends CommonController{
         if($recycle_status){
             $salewhere['record.recycle_status'] = $recycle_status;
         }
-        if(empty($sdate) || empty($edate)){
-            $sdate = date('Y-m-d',strtotime('-7 day'));
-            $edate = date('Y-m-d');
-        }
         $data_goods_ids = C('DATA_GOODS_IDS');
         $where['a.goods_id'] = array('not in',$data_goods_ids);
-        $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
+        if(!empty($sdate) && !empty($edate)){
+            $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
+        }elseif(!empty($recycle_sdate) && !empty($recycle_edate)){
+            $salewhere['record.recycle_audit_time'] = array(array('egt',"$recycle_sdate 00:00:00"),array('elt',"$recycle_edate 23:59:59"));
+        }elseif(empty($sdate) || empty($edate)){
+            $sdate = date('Y-m-d',strtotime('-7 day'));
+            $edate = date('Y-m-d');
+            $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
+        }
+
         $m_sale = new \Common\Model\Finance\SaleModel();
         $fields = 'a.idcode,a.add_time,a.hotel_id,a.ptype,a.type,a.settlement_price,a.residenter_id,a.sale_openid,a.num,a.stock_record_id,
         record.wo_data_imgs,record.reason,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,unit.name as unit_name,

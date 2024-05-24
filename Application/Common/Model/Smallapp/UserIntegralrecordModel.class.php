@@ -864,4 +864,45 @@ class UserIntegralrecordModel extends BaseModel{
         $this->add($integralrecord_data);
         return $stock_record_id;
     }
+
+    public function confirmActivityAward($award_info,$integral_status=2){
+        $award_hoteldata_id = $award_info['id'];
+
+        $integral = $award_info['integral'];
+        $step_integral = $award_info['step_integral'];
+        $now_integral = $integral+$step_integral;
+        $integralrecord_openid = $award_info['award_openid'];
+        $m_userintegral = new \Common\Model\Smallapp\UserIntegralModel();
+        if($integral_status==1){
+            $res_integral = $m_userintegral->getInfo(array('openid'=>$integralrecord_openid));
+            if(!empty($res_integral)){
+                $userintegral = $res_integral['integral']+$now_integral;
+                $m_userintegral->updateData(array('id'=>$res_integral['id']),array('integral'=>$userintegral,'update_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $m_userintegral->add(array('openid'=>$integralrecord_openid,'integral'=>$now_integral));
+            }
+        }
+
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getHotelInfoById($award_info['hotel_id']);
+        if($integral>0){
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$award_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'integral'=>$integral,'jdorder_id'=>$award_hoteldata_id,'content'=>1,'status'=>$integral_status,'type'=>26);
+            if($integral_status==1){
+                $integralrecord_data['integral_time'] = date('Y-m-d H:i:s');
+            }
+            $this->add($integralrecord_data);
+        }
+        if($step_integral>0){
+            $integralrecord_data = array('openid'=>$integralrecord_openid,'area_id'=>$res_hotel['area_id'],'area_name'=>$res_hotel['area_name'],
+                'hotel_id'=>$award_info['hotel_id'],'hotel_name'=>$res_hotel['hotel_name'],'hotel_box_type'=>$res_hotel['hotel_box_type'],
+                'integral'=>$step_integral,'jdorder_id'=>$award_hoteldata_id,'content'=>1,'status'=>$integral_status,'type'=>27);
+            if($integral_status==1){
+                $integralrecord_data['integral_time'] = date('Y-m-d H:i:s');
+            }
+            $this->add($integralrecord_data);
+        }
+        return $award_hoteldata_id;
+    }
 }

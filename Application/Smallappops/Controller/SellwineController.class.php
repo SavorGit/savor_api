@@ -711,10 +711,9 @@ class SellwineController extends CommonController{
             if(!empty($res_records)){
                 $m_user = new \Common\Model\Smallapp\UserModel();
                 $m_usercoupon = new \Common\Model\Smallapp\UserCouponModel();
-                $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
                 $all_reasons = C('STOCK_REASON');
                 $all_status = C('STOCK_AUDIT_STATUS');
-                $fileds = 'a.idcode,a.price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
+                $fileds = 'a.idcode,sale.settlement_price as price,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
                 spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.add_time';
                 foreach ($res_records as $v){
                     if($v['wo_time']=='0000-00-00 00:00:00'){
@@ -731,13 +730,6 @@ class SellwineController extends CommonController{
                     }
                     $where = array('a.idcode'=>$v['idcode'],'a.type'=>7,'a.dstatus'=>1);
                     $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','a.idcode');
-                    $price = abs($res_goods[0]['price']);
-                    $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($v['hotel_id'],$res_goods[0]['goods_id'],1);
-                    if($settlement_price>0){
-                        $price = intval($settlement_price);
-                    }
-                    $res_goods[0]['price'] = $price;
-
                     $res_coupon = $m_usercoupon->getUsercouponDatas('a.id,coupon.name,a.money,a.use_time',array('a.idcode'=>$v['idcode'],'ustatus'=>2),'a.id desc','0,1');
 
                     $data_list[]=array('nickName'=>$nickName,'avatarUrl'=>$avatarUrl,'reason'=>$reason,'status'=>$v['status'],'status_str'=>$all_status[$v['status']],

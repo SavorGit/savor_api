@@ -8,6 +8,7 @@ class StockRecordModel extends BaseModel{
     public function getStockRecordList($fileds,$where,$order,$limit,$group=''){
         $res = $this->alias('a')
             ->field($fileds)
+            ->join('savor_finance_sale sale on a.id=sale.stock_record_id','left')
             ->join('savor_finance_stock stock on a.stock_id=stock.id','left')
             ->join('savor_finance_goods goods on a.goods_id=goods.id','left')
             ->join('savor_finance_unit unit on a.unit_id=unit.id','left')

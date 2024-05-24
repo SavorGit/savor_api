@@ -52,7 +52,8 @@ class WriteoffController extends CommonController{
         $start_date = date('Y-m-d',strtotime('-7 day'));
         $end_date = date('Y-m-d');
         $date_range = array($start_date,$end_date);
-        $res_data = array('date_range'=>$date_range,'stock_status'=>$stock_status,'recycle_status'=>$recycle_status);
+        $now_month_date = array(date('Y-m-01'),date('Y-m-t'));
+        $res_data = array('date_range'=>$date_range,'now_month_date'=>$now_month_date,'stock_status'=>$stock_status,'recycle_status'=>$recycle_status);
         $this->to_back($res_data);
     }
 

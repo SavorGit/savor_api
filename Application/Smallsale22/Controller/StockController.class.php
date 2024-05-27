@@ -363,11 +363,9 @@ class StockController extends CommonController{
                 $this->to_back($type_error_codes[$res_stock_record_type[0]['type']]);
             }
         }
-
         if(!empty($res_stock_record_type[0]['goods_id']) && $res_stock_record_type[0]['goods_id']!=$goods_id){
             $this->to_back(93083);
         }
-
         $where = array('idcode'=>$idcode,'type'=>1,'dstatus'=>1);
         $res_stock_record = $m_stock_record->getInfo($where);
         $now_unit_id = 0;
@@ -406,6 +404,16 @@ class StockController extends CommonController{
                 }
             }
         }else{
+            $m_goods = new \Common\Model\Finance\GoodsModel();
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            if($res_goods['link_type']>0){
+                $m_winecode = new \Common\Model\Finance\WinecodeModel();
+                $res_winecode = $m_winecode->getInfo(array('idcode'=>$idcode));
+                if(empty($res_winecode)){
+                    $this->to_back(93116);
+                }
+            }
+
             if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']==2){
                 $this->to_back(93103);
             }

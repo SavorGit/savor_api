@@ -404,16 +404,6 @@ class StockController extends CommonController{
                 }
             }
         }else{
-            $m_goods = new \Common\Model\Finance\GoodsModel();
-            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
-            if($res_goods['link_type']>0){
-                $m_winecode = new \Common\Model\Finance\WinecodeModel();
-                $res_winecode = $m_winecode->getInfo(array('idcode'=>$idcode));
-                if(empty($res_winecode)){
-                    $this->to_back(93116);
-                }
-            }
-
             if(!empty($res_stock_record_type[0]['type']) && $res_stock_record_type[0]['type']==2){
                 $this->to_back(93103);
             }

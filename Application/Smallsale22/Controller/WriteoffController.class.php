@@ -16,8 +16,7 @@ class WriteoffController extends CommonController{
                 $this->params = array('openid'=>1001,'sdate'=>1002,'edate'=>1002,'wo_status'=>1002,'recycle_status'=>1002);
                 $this->is_verify = 1;
             case 'datalist':
-                $this->params = array('openid'=>1001,'page'=>1001,'sdate'=>1002,'edate'=>1002,
-                    'recycle_sdate'=>1002,'recycle_edate'=>1002,'wo_status'=>1002,'recycle_status'=>1002);
+                $this->params = array('openid'=>1001,'page'=>1001,'sdate'=>1002,'edate'=>1002,'wo_status'=>1002,'recycle_status'=>1002);
                 $this->is_verify = 1;
                 break;
                 
@@ -125,8 +124,6 @@ class WriteoffController extends CommonController{
         $openid = $this->params['openid'];
         $sdate = $this->params['sdate'];
         $edate = $this->params['edate'];
-        $recycle_sdate = $this->params['recycle_sdate'];
-        $recycle_edate = $this->params['recycle_edate'];
         $wo_status = intval($this->params['wo_status']);
         $recycle_status = intval($this->params['recycle_status']);
         $page = intval($this->params['page']);
@@ -155,8 +152,6 @@ class WriteoffController extends CommonController{
         $where['a.goods_id'] = array('not in',$data_goods_ids);
         if(!empty($sdate) && !empty($edate)){
             $salewhere['a.add_time'] = array(array('egt',"$sdate 00:00:00"),array('elt',"$edate 23:59:59"));
-        }elseif(!empty($recycle_sdate) && !empty($recycle_edate)){
-            $salewhere['record.recycle_audit_time'] = array(array('egt',"$recycle_sdate 00:00:00"),array('elt',"$recycle_edate 23:59:59"));
         }elseif(empty($sdate) || empty($edate)){
             $sdate = date('Y-m-d',strtotime('-7 day'));
             $edate = date('Y-m-d');

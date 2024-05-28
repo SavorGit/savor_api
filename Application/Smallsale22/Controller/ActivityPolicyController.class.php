@@ -36,7 +36,7 @@ class ActivityPolicyController extends CommonController{
         $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
         $is_show = 0;
         $num = $integral = 0;
-        $step_award_process = array();
+        $step_award_process = array('end_step_num'=>0);
         $confirm_data = array('month'=>0);
         if(!empty($res_awdata[0]['id'])){
             $is_show = 1;
@@ -46,54 +46,47 @@ class ActivityPolicyController extends CommonController{
                 $step_num = $res_awdata[0]['step_num'];
                 $step_integral = $res_awdata[0]['step_integral'];
                 if($step_num){
-                    $next_num = 0;
                     $m_activity_policy = new \Common\Model\Finance\ActivityPolicyModel();
                     $res_policy = $m_activity_policy->getInfo(array('id'=>$res_awdata[0]['jt_policy_id']));
                     $integral_config = json_decode($res_policy['integral_config'],true);
+                    $next_num = 0;
                     $end_step_num = 0;
                     foreach ($integral_config as $k=>$v){
                         $end_step_num = $v['n'];
-                        $is_select = 0;
-                        if($step_num>=$v['n']){
-                            $is_select = 1;
-                        }else{
+                        if($step_num<$v['n']){
                             if($next_num==0){
                                 $next_num = $v['n'];
                             }
                         }
-                        $integral_config[$k]['is_select'] = $is_select;
                     }
                     $tips = '';
                     if($next_num>0){
                         $next_last_num = $next_num-$step_num;
                         $tips = "当前已开瓶{$step_num}瓶，可收益{$step_integral}积分，再开瓶{$next_last_num}瓶可获得下一个奖励";
                     }
-                    $step_award_process = array('process'=>$integral_config,'tips'=>$tips,'end_step_num'=>$end_step_num+10);
+                    $step_award_process = array('process'=>$integral_config,'tips'=>$tips,'now_step_num'=>$step_num,'end_step_num'=>$end_step_num+10);
                 }
-            }
-            if($res_awdata[0]['is_confirm']==0){
-                $month_number = strtotime($res_awdata[0]['static_date'].'01');
-                $month = date('n',strtotime($month_number));
-                $recycle_sdate = date('Y-m-01',$month_number);
-                $recycle_edate = date('Y-m-t',$month_number);
-                $confirm_data['month'] = $month;
-                $confirm_data['recycle_sdate'] = $recycle_sdate;
-                $confirm_data['recycle_edate'] = $recycle_edate;
-                $confirm_data['num'] = $res_awdata[0]['num'];
-                $confirm_data['integral'] = $res_awdata[0]['integral'];
-                $confirm_data['step_num'] = $res_awdata[0]['step_num'];
-                $confirm_data['step_integral'] = $res_awdata[0]['step_integral'];
             }else{
-                $ahwhere['is_confirm'] = 0;
-                $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
-                if(!empty($res_awdata[0]['id'])){
+                $is_confirm_data = 0;
+                if($res_awdata[0]['is_confirm']==0){
+                    $is_confirm_data = 1;
+                }else{
+                    $ahwhere['static_date'] = array('lt',$now_month);
+                    $ahwhere['is_confirm'] = 0;
+                    $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
+                    if(!empty($res_awdata[0]['id'])){
+                        $is_confirm_data = 1;
+                    }
+                }
+                if($is_confirm_data){
                     $month_number = strtotime($res_awdata[0]['static_date'].'01');
                     $month = date('n',strtotime($month_number));
-                    $recycle_sdate = date('Y-m-01',$month_number);
-                    $recycle_edate = date('Y-m-t',$month_number);
+                    $sdate = date('Y-m-01',$month_number);
+                    $edate = date('Y-m-t',$month_number);
                     $confirm_data['month'] = $month;
-                    $confirm_data['recycle_sdate'] = $recycle_sdate;
-                    $confirm_data['recycle_edate'] = $recycle_edate;
+                    $confirm_data['confirm_month'] = date('Ym',$month_number);
+                    $confirm_data['sdate'] = $sdate;
+                    $confirm_data['edate'] = $edate;
                     $confirm_data['num'] = $res_awdata[0]['num'];
                     $confirm_data['integral'] = $res_awdata[0]['integral'];
                     $confirm_data['step_num'] = $res_awdata[0]['step_num'];

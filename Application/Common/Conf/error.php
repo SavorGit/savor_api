@@ -504,6 +504,7 @@ return array(
         '93113'=>'smallappsale_finance_winecode_association_error',
         '93114'=>'smallappsale_finance_idcode_association_error',
         '93115'=>'smallappsale_finance_use_bind_idcode_error',
+        '93116'=>'smallappsale_finance_outstock_no_bind',
 
         '93200'=>'smallappsale_invitation_not_exist',
         '93201'=>'smallappsale_invitation_had_expire',

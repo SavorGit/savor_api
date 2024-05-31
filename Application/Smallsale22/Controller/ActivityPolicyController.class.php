@@ -33,7 +33,7 @@ class ActivityPolicyController extends CommonController{
         $m_award_hotel_data = new \Common\Model\Finance\AwardHoteldataModel();
         $ahwhere = array('award_openid'=>$openid,'hotel_id'=>$res_staff[0]['hotel_id']);
         $ahfields = 'id,num,integral,step_num,step_integral,jt_policy_id,static_date,is_confirm';
-        $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
+        $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'static_date desc','0,1','');
         $is_show = 0;
         $num = $integral = 0;
         $step_award_process = array('end_step_num'=>0);
@@ -68,15 +68,11 @@ class ActivityPolicyController extends CommonController{
                 }
             }else{
                 $is_confirm_data = 0;
-                if($res_awdata[0]['is_confirm']==0){
+                $ahwhere['static_date'] = array('lt',$now_month);
+                $ahwhere['is_confirm'] = 0;
+                $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
+                if(!empty($res_awdata[0]['id'])){
                     $is_confirm_data = 1;
-                }else{
-                    $ahwhere['static_date'] = array('lt',$now_month);
-                    $ahwhere['is_confirm'] = 0;
-                    $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
-                    if(!empty($res_awdata[0]['id'])){
-                        $is_confirm_data = 1;
-                    }
                 }
                 if($is_confirm_data){
                     $month_number = strtotime($res_awdata[0]['static_date'].'01');
@@ -94,7 +90,7 @@ class ActivityPolicyController extends CommonController{
                 }
             }
         }
-        $res_data = array('is_show'=>$is_show,'num'=>$num,'integral'=>$integral,'step_award_process'=>$step_award_process,'confirm_data'=>$confirm_data);
+        $res_data = array('is_show'=>$is_show,'now_month'=>$now_month,'num'=>$num,'integral'=>$integral,'step_award_process'=>$step_award_process,'confirm_data'=>$confirm_data);
         $this->to_back($res_data);
     }
 

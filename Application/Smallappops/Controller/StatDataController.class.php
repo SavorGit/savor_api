@@ -709,7 +709,7 @@ class StatDataController extends CommonController{
         }
         if($bf_cqqk_money>0){
             $m_salepayrecord = new \Common\Model\Finance\SalePaymentRecordModel();
-            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2,'sale.goods_id'=>aray('not in',$data_goods_id));
+            $where = array('sale.hotel_id'=>$hotel_id,'record.wo_reason_type'=>1,'sale.is_expire'=>1,'sale.ptype'=>2,'sale.goods_id'=>array('not in',$data_goods_id));
             $where['sale.add_time'] = array(array('egt',$start_time),array('elt',$end_time));
             $fileds = 'sum(a.pay_money) as has_pay_money';
             $res_payrecord = $m_salepayrecord->getSalePaymentRecordList($fileds,$where);

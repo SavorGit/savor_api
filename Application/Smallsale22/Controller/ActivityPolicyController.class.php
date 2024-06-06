@@ -66,28 +66,27 @@ class ActivityPolicyController extends CommonController{
                     }
                     $step_award_process = array('process'=>$integral_config,'tips'=>$tips,'now_step_num'=>$step_num,'end_step_num'=>$end_step_num+10);
                 }
-            }else{
-                $is_confirm_data = 0;
-                $ahwhere['static_date'] = array('lt',$now_month);
-                $ahwhere['is_confirm'] = 0;
-                $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
-                if(!empty($res_awdata[0]['id'])){
-                    $is_confirm_data = 1;
-                }
-                if($is_confirm_data){
-                    $month_number = strtotime($res_awdata[0]['static_date'].'01');
-                    $month = date('n',strtotime($month_number));
-                    $sdate = date('Y-m-01',$month_number);
-                    $edate = date('Y-m-t',$month_number);
-                    $confirm_data['month'] = $month;
-                    $confirm_data['confirm_month'] = date('Ym',$month_number);
-                    $confirm_data['sdate'] = $sdate;
-                    $confirm_data['edate'] = $edate;
-                    $confirm_data['num'] = $res_awdata[0]['num'];
-                    $confirm_data['integral'] = $res_awdata[0]['integral'];
-                    $confirm_data['step_num'] = $res_awdata[0]['step_num'];
-                    $confirm_data['step_integral'] = $res_awdata[0]['step_integral'];
-                }
+            }
+            $is_confirm_data = 0;
+            $ahwhere['static_date'] = array('lt',$now_month);
+            $ahwhere['is_confirm'] = 0;
+            $res_awdata = $m_award_hotel_data->getALLDataList($ahfields,$ahwhere,'id desc','0,1','');
+            if(!empty($res_awdata[0]['id'])){
+                $is_confirm_data = 1;
+            }
+            if($is_confirm_data){
+                $month_number = strtotime($res_awdata[0]['static_date'].'01');
+                $month = date('n',$month_number);
+                $sdate = date('Y-m-01',$month_number);
+                $edate = date('Y-m-t',$month_number);
+                $confirm_data['month'] = $month;
+                $confirm_data['confirm_month'] = date('Ym',$month_number);
+                $confirm_data['sdate'] = $sdate;
+                $confirm_data['edate'] = $edate;
+                $confirm_data['num'] = $res_awdata[0]['num'];
+                $confirm_data['integral'] = $res_awdata[0]['integral'];
+                $confirm_data['step_num'] = $res_awdata[0]['step_num'];
+                $confirm_data['step_integral'] = $res_awdata[0]['step_integral'];
             }
         }
         $res_data = array('is_show'=>$is_show,'now_month'=>$now_month,'num'=>$num,'integral'=>$integral,'step_award_process'=>$step_award_process,'confirm_data'=>$confirm_data);

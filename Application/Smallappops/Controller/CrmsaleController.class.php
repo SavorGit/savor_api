@@ -699,6 +699,10 @@ class CrmsaleController extends CommonController{
                 $where2 = array('a.remind_user_id'=>$ops_staff_id);
                 $where['_complex'] = array($where1,$where2,'_logic'=>'or');
                 $orderby = 'a.salerecord_id desc,record.status asc';
+
+                if($ops_staff_id==3 && $res_staff['job']=='开发'){
+                    $unread_where = array('a.remind_user_id'=>$ops_staff_id,'a.type'=>6,'a.status'=>1,'record.type'=>3,'record.status'=>1);
+                }
                 break;
             case 2:
                 $where = array('a.remind_user_id'=>$ops_staff_id,'record.status'=>2,'a.status'=>1);

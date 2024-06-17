@@ -549,6 +549,11 @@ return array(
     'smallappsale_check_img_empty'=>'请先上传收货单',
     'smallappops_hotel_not_have_group'=>'暂未开通企微群，请联系运维人员',
     'smallappsale_finance_outstock_no_bind'=>'没有绑定酒商码，无法出库',
+    'smallappops_stock_idcode_not_in_hotel'=>'未出库到餐厅',
+    'smallappops_stock_idcode_has_writeoff'=>'酒水已经核销',
+    'smallappops_stock_idcode_not_leave_hotel'=>'不属于撤酒酒楼',
+    'smallappops_stock_goods_num_error'=>'调拨酒水数量不一致',
+    'smallappops_scan_goods_not_leavel_goods'=>'扫码酒水不是撤回酒水',
 
 
 

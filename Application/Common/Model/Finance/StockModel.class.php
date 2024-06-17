@@ -5,6 +5,14 @@ use Common\Model\BaseModel;
 class StockModel extends BaseModel{
 	protected $tableName='finance_stock';
 
+	public  $stock_serial_number_prefix = array(
+        '1'=>array('in'=>'BJRK','out'=>'BJCK'),
+        '9'=>array('in'=>'SHRK','out'=>'SHCK'),
+        '236'=>array('in'=>'GZRK','out'=>'GZCK'),
+        '246'=>array('in'=>'SZRK','out'=>'SZCK'),
+        '248'=>array('in'=>'FSRK','out'=>'FSCK'),
+    );
+
     public function checkHotelThreshold($hotel_id,$is_check=0){
         if($is_check==0){
             return 1;
@@ -47,13 +55,7 @@ class StockModel extends BaseModel{
         $m_hotel = new \Common\Model\HotelModel();
         $res_hotel = $m_hotel->getOneById('name,area_id',$res_approval['hotel_id']);
         $area_id = $res_hotel['area_id'];
-        $stock_serial_number_prefix = array(
-            '1'=>array('in'=>'BJRK','out'=>'BJCK'),
-            '9'=>array('in'=>'SHRK','out'=>'SHCK'),
-            '236'=>array('in'=>'GZRK','out'=>'GZCK'),
-            '246'=>array('in'=>'SZRK','out'=>'SZCK'),
-            '248'=>array('in'=>'FSRK','out'=>'FSCK'),
-        );
+        $stock_serial_number_prefix = $this->stock_serial_number_prefix;
         $nowdate = date('Ymd');
         $field = 'count(id) as num';
         $where = array('type'=>20,'area_id'=>$area_id,'DATE_FORMAT(add_time, "%Y%m%d")'=>$nowdate);
@@ -87,6 +89,55 @@ class StockModel extends BaseModel{
             $unit_id = intval($res_unit['id']);
             $stock_details[] = array('stock_id'=>$stock_id,'goods_id'=>$k,'unit_id'=>$unit_id,
                 'stock_amount'=>$v,'stock_total_amount'=>$v,'status'=>1);
+        }
+        $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
+        $m_stock_detail->addAll($stock_details);
+        return $stock_id;
+    }
+
+    public function createIn($res_approval){
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getOneById('name,area_id',$res_approval['goal_hotel_id']);
+        $area_id = $res_hotel['area_id'];
+        $nowdate = date('Ymd');
+        $field = 'count(id) as num';
+        $where = array('type'=>10,'area_id'=>$area_id,'DATE_FORMAT(add_time, "%Y%m%d")'=>$nowdate);
+        $res_stock = $this->getALLDataList($field,$where,'',"0,1",'');
+        if($res_stock[0]['num']>0){
+            $number = $res_stock[0]['num']+1;
+        }else{
+            $number = 1;
+        }
+        $num_str = str_pad($number,3,'0',STR_PAD_LEFT);
+        $serial_number = $this->stock_serial_number_prefix[$area_id]['in'].$nowdate.$num_str;
+        $name = $res_hotel['name'].$res_approval['bottle_num'].'瓶';
+        $io_date = date('Y-m-d',strtotime($res_approval['delivery_time']));
+        $m_department_user = new \Common\Model\Finance\DepartmentUserModel();
+        $res_duser = $m_department_user->getInfo(array('sys_user_id'=>$res_approval['now_staff_sysuser_id'],'status'=>1));
+        $department_id = intval($res_duser['department_id']);
+        $department_user_id = intval($res_duser['id']);
+        $add_data = array('serial_number'=>$serial_number,'name'=>$name,'io_type'=>12,'io_date'=>$io_date,
+            'department_id'=>$department_id,'department_user_id'=>$department_user_id,'total_fee'=>0,
+            'area_id'=>$area_id,'hotel_id'=>$res_approval['goal_hotel_id'],'type'=>10,'sysuser_id'=>0
+        );
+        $stock_id = $this->add($add_data);
+        $m_goods = new \Common\Model\Finance\GoodsModel();
+        $m_unit = new \Common\Model\Finance\UnitModel();
+        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
+        $stock_details = array();
+        $goods_data = json_decode($res_approval['wine_data'],true);
+        foreach ($goods_data as $k=>$v){
+            $goods_id = $k;
+            $res_goods = $m_goods->getInfo(array('id'=>$goods_id));
+            $res_unit = $m_unit->getInfo(array('category_id'=>$res_goods['category_id'],'type'=>1,'convert_type'=>1));
+            $unit_id = intval($res_unit['id']);
+            $res_record = $m_stock_record->getALLDataList('price,total_fee',array('goods_id'=>$goods_id,'unit_id'=>$unit_id,'type'=>1),'id asc','0,1','');
+            $price = 0;
+            if(!empty($res_record)){
+                $price = $res_record[0]['price'];
+            }
+            $stock_details[] = array('stock_id'=>$stock_id,'goods_id'=>$goods_id,'rate'=>0.13,'price'=>$price,
+                'unit_id'=>$unit_id,'stock_amount'=>$v,'stock_total_amount'=>$v,'status'=>1);
         }
         $m_stock_detail = new \Common\Model\Finance\StockDetailModel();
         $m_stock_detail->addAll($stock_details);

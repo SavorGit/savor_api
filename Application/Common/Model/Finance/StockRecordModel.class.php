@@ -150,57 +150,72 @@ class StockRecordModel extends BaseModel{
         return $res_stock;
     }
 
-    public function createReceiveCheckData($stock_id,$openid){
+    public function createReceiveCheckData($stock_id,$openid,$is_delivery=1,$type=0){
         $where = array('stock_id'=>$stock_id,'type'=>2,'dstatus'=>1);
         $res_records = $this->getDataList('*',$where,'id desc');
-        $batch_no = getMillisecond();
-        $receive_datas = array();
-        foreach ($res_records as $v){
-            unset($v['id'],$v['update_time']);
-            $res_receive = $this->getInfo(array('stock_id'=>$stock_id,'idcode'=>$v['idcode'],'type'=>4,'dstatus'=>1));
-            if(!empty($res_receive)){
-                continue;
+        if($type==0 || $type==4){
+            $batch_no = getMillisecond();
+            $receive_datas = array();
+            foreach ($res_records as $v){
+                unset($v['id'],$v['update_time']);
+                $res_receive = $this->getInfo(array('stock_id'=>$stock_id,'idcode'=>$v['idcode'],'type'=>4,'dstatus'=>1));
+                if(!empty($res_receive)){
+                    continue;
+                }
+                $v['price'] = abs($v['price']);
+                $v['total_fee'] = abs($v['total_fee']);
+                $v['amount'] = abs($v['amount']);
+                $v['total_amount'] = abs($v['total_amount']);
+                $v['type'] = 4;
+                $v['op_openid'] = $openid;
+                $v['batch_no'] = $batch_no;
+                $v['add_time'] = date('Y-m-d H:i:s');
+                $receive_datas[]=$v;
             }
-            $v['price'] = abs($v['price']);
-            $v['total_fee'] = abs($v['total_fee']);
-            $v['amount'] = abs($v['amount']);
-            $v['total_amount'] = abs($v['total_amount']);
-            $v['type'] = 4;
-            $v['op_openid'] = $openid;
-            $v['batch_no'] = $batch_no;
-            $v['add_time'] = date('Y-m-d H:i:s');
-            $receive_datas[]=$v;
-        }
-        if(!empty($receive_datas)){
-            $this->addAll($receive_datas);
-        }
-
-        $check_datas = array();
-        $batch_no = getMillisecond();
-        foreach ($res_records as $v){
-            unset($v['id'],$v['update_time']);
-            $res_check = $this->getInfo(array('stock_id'=>$stock_id,'idcode'=>$v['idcode'],'type'=>5,'dstatus'=>1));
-            if(!empty($res_check)){
-                continue;
+            if(!empty($receive_datas)){
+                $this->addAll($receive_datas);
             }
-            $v['price'] = abs($v['price']);
-            $v['total_fee'] = abs($v['total_fee']);
-            $v['amount'] = abs($v['amount']);
-            $v['total_amount'] = abs($v['total_amount']);
-            $v['type'] = 5;
-            $v['op_openid'] = $openid;
-            $v['batch_no'] = $batch_no;
-            $v['add_time'] = date('Y-m-d H:i:s');
-            $check_datas[]=$v;
         }
-        if(!empty($check_datas)){
-            $this->addAll($check_datas);
+        if($type==0 || $type==5){
+            $check_datas = array();
+            $batch_no = getMillisecond();
+            foreach ($res_records as $v){
+                unset($v['id'],$v['update_time']);
+                $res_check = $this->getInfo(array('stock_id'=>$stock_id,'idcode'=>$v['idcode'],'type'=>5,'dstatus'=>1));
+                if(!empty($res_check)){
+                    continue;
+                }
+                $v['price'] = abs($v['price']);
+                $v['total_fee'] = abs($v['total_fee']);
+                $v['amount'] = abs($v['amount']);
+                $v['total_amount'] = abs($v['total_amount']);
+                $v['type'] = 5;
+                $v['op_openid'] = $openid;
+                $v['batch_no'] = $batch_no;
+                $v['add_time'] = date('Y-m-d H:i:s');
+                $check_datas[]=$v;
+            }
+            if(!empty($check_datas)){
+                $this->addAll($check_datas);
+            }
         }
-
         $m_stock = new \Common\Model\Finance\StockModel();
-        $updata = array('delivery_type'=>2,'status'=>4,'receive_openid'=>$openid,'check_openid'=>$openid,
-            'receive_time'=>date('Y-m-d H:i:s'),'check_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'));
-        $m_stock->updateData(array('id'=>$stock_id),$updata);
+        if($type==0){
+            $updata = array('status'=>4,'receive_openid'=>$openid,'receive_time'=>date('Y-m-d H:i:s'),
+                'check_openid'=>$openid,'check_time'=>date('Y-m-d H:i:s'),'update_time'=>date('Y-m-d H:i:s'));
+            if($is_delivery){
+                $updata['delivery_type']=2;
+            }
+            $m_stock->updateData(array('id'=>$stock_id),$updata);
+        }elseif($type==4){
+            $updata = array('status'=>3,'receive_openid'=>$openid,'receive_time'=>date('Y-m-d H:i:s'),
+                'update_time'=>date('Y-m-d H:i:s'));
+            $m_stock->updateData(array('id'=>$stock_id),$updata);
+        }elseif($type==5){
+            $updata = array('status'=>4,'check_openid'=>$openid,'check_time'=>date('Y-m-d H:i:s'),
+                'update_time'=>date('Y-m-d H:i:s'));
+            $m_stock->updateData(array('id'=>$stock_id),$updata);
+        }
         return $stock_id;
     }
 }

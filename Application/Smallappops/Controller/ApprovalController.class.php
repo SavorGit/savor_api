@@ -18,12 +18,13 @@ class ApprovalController extends CommonController{
                 break;
             case 'steps':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'item_id'=>1001,'hotel_id'=>1001);
+                $this->valid_fields = array('openid'=>1001,'item_id'=>1001,'hotel_id'=>1001,'allot_type'=>1002);
                 break;
             case 'add':
                 $this->is_verify = 1;
                 $this->valid_fields = array('openid'=>1001,'item_id'=>1001,'hotel_id'=>1001,'op_time'=>1001,
-                    'merchant_staff_id'=>1001,'goods_data'=>1002,'content'=>1002,'bottle_num'=>1002);
+                    'merchant_staff_id'=>1001,'goods_data'=>1002,'content'=>1002,'bottle_num'=>1002,
+                    'goal_hotel_id'=>1002,'goal_merchant_staff_id'=>1002,'allot_type'=>1002);
                 break;
             case 'nums':
                 $this->is_verify = 1;
@@ -94,9 +95,14 @@ class ApprovalController extends CommonController{
         foreach ($all_status as $k=>$v){
             $approval_status[]=array('value'=>$k,'name'=>$v);
         }
+        $all_allot_types = C('ALL_ALLOT_TYPE');
+        $allot_types = array();
+        foreach ($all_allot_types as $k=>$v){
+            $allot_types[]=array('value'=>$k,'name'=>$v);
+        }
 
         $res_data = array('goods_list'=>$goods_list,'goods_num'=>$goods_num,'delivery_date'=>$delivery_date,
-            'delivery_hour'=>$delivery_hour,'approval_status'=>$approval_status);
+            'delivery_hour'=>$delivery_hour,'approval_status'=>$approval_status,'allot_types'=>$allot_types);
         $this->to_back($res_data);
     }
 
@@ -104,6 +110,7 @@ class ApprovalController extends CommonController{
         $openid = $this->params['openid'];
         $item_id = intval($this->params['item_id']);
         $hotel_id = intval($this->params['hotel_id']);
+        $allot_type = intval($this->params['allot_type']);
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
@@ -118,7 +125,6 @@ class ApprovalController extends CommonController{
         $res_steps = $m_approval_step->getDataList($fields,array('item_id'=>$item_id),'step_order asc');
         $datalist = array();
         foreach ($res_steps as $v){
-            $user_name = '';
             if($v['ops_staff_id']){
                 $res_ops = $m_staff->getStaffinfo('su.remark as user_name',array('a.id'=>$v['ops_staff_id']));
                 $user_name = $res_ops[0]['user_name'];
@@ -127,8 +133,15 @@ class ApprovalController extends CommonController{
                 $owhere = array('a.area_id'=>$area_id,'a.hotel_role_type'=>$hotel_role_type);
                 $res_ops = $m_staff->getStaffinfo('su.remark as user_name',$owhere);
                 $user_name = $res_ops[0]['user_name'];
-                if($item_id==11 && $v['step_order']==2){
-                    $user_name = '';
+                if($item_id==11){
+                    if($v['step_order']==2){
+                        $user_name = '';
+                    }
+                }elseif($item_id==12){
+                    if($v['step_order']==2 && $allot_type==2){
+                        $res_ops = $m_staff->getStaffinfo('su.remark as user_name',array('a.id'=>$res_staff['id']));
+                        $user_name = $res_ops[0]['user_name'];
+                    }
                 }
             }
             $datalist[]=array('name'=>$v['name'],'user_name'=>$user_name,'step_order'=>$v['step_order']);
@@ -140,7 +153,10 @@ class ApprovalController extends CommonController{
         $openid = $this->params['openid'];
         $item_id = intval($this->params['item_id']);
         $hotel_id = intval($this->params['hotel_id']);
+        $goal_hotel_id = intval($this->params['goal_hotel_id']);
         $merchant_staff_id = intval($this->params['merchant_staff_id']);
+        $goal_merchant_staff_id = intval($this->params['goal_merchant_staff_id']);
+        $allot_type = intval($this->params['allot_type']);
         $op_time = $this->params['op_time'];
         $goods_data = $this->params['goods_data'];
         $content = trim($this->params['content']);
@@ -159,7 +175,8 @@ class ApprovalController extends CommonController{
         }
 
         $adata = array('item_id'=>$item_id,'ops_staff_id'=>$res_staff['id'],'hotel_id'=>$hotel_id,
-            'merchant_staff_id'=>$merchant_staff_id,'bottle_num'=>$bottle_num,'status'=>1);
+            'merchant_staff_id'=>$merchant_staff_id,'bottle_num'=>$bottle_num,'status'=>1,
+            'goal_hotel_id'=>$goal_hotel_id,'goal_merchant_staff_id'=>$goal_merchant_staff_id,'allot_type'=>$allot_type);
         $json_str = stripslashes(html_entity_decode($goods_data));
         $goods_arr = json_decode($json_str,true);
         $wine_data = array();
@@ -186,6 +203,25 @@ class ApprovalController extends CommonController{
             case 11:
                 $adata['recycle_time'] = date('Y-m-d H:i:s',strtotime($op_time));
                 break;
+            case 12:
+                $wine_num = 0;
+                foreach ($goods_arr as $v){
+                    if($v['id']>0 && $v['num']>0){
+                        $wine_num+=$v['num'];
+                        $num = 0;
+                        if(isset($wine_data[$v['id']])){
+                            $num = $wine_data[$v['id']];
+                        }
+                        $wine_data[$v['id']]=$v['num']+$num;
+                    }
+                }
+                if(empty($wine_data) || empty($goal_hotel_id) || empty($goal_merchant_staff_id) || empty($allot_type)){
+                    $this->to_back(1001);
+                }
+                $adata['bottle_num'] = $wine_num;
+                $adata['wine_data'] = json_encode($wine_data);
+                $adata['delivery_time'] = date('Y-m-d H:i:s',strtotime($op_time));
+                break;
 
         }
         if(!empty($content)){
@@ -210,8 +246,14 @@ class ApprovalController extends CommonController{
                 $owhere = array('a.area_id'=>$area_id,'a.hotel_role_type'=>$hotel_role_type);
                 $res_ops = $m_staff->getStaffinfo('a.id',$owhere);
                 $ops_staff_id = $res_ops[0]['id'];
-                if($item_id==11 && $v['step_order']==2){
-                    $ops_staff_id = 0;
+                if($item_id==11){
+                    if($v['step_order']==2){
+                        $ops_staff_id = 0;
+                    }
+                }elseif($item_id==12){
+                    if($v['step_order']==2 && $allot_type==2){
+                        $ops_staff_id = $res_staff['id'];
+                    }
                 }
             }
 
@@ -376,19 +418,34 @@ class ApprovalController extends CommonController{
         $m_approval = new \Common\Model\Crm\ApprovalModel();
         $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,approval.stock_id,approval.wine_data,
         approval.merchant_staff_id,approval.delivery_time,approval.recycle_time,approval.real_recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
-        staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
+        staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name,approval.goal_hotel_id,approval.allot_type,approval.goal_merchant_staff_id';
         $where = array('approval.id'=>$approval_id);
         $res_approval = $m_approval->getApprovalDatas($fields,$where,'','','');
         $res_data = $res_approval[0];
         $all_status = C('APPROVAL_STATUS');
         $res_data['add_time'] = date('m月d日 H:i',strtotime($res_data['add_time']));
         $res_data['status_str'] = $all_status[$res_data['status']];
+        $m_merchant_staff = new \Common\Model\Integral\StaffModel();
+        $sfileds = 'user.nickName,user.mobile';
+        $res_mstaff = $m_merchant_staff->getMerchantStaff($sfileds,array('a.id'=>$res_data['merchant_staff_id']));
+        $res_data['merchant_staff_name'] = $res_mstaff[0]['nickName'];
+        $res_data['merchant_staff_mobile'] = $res_mstaff[0]['mobile'];
+
         switch ($res_data['item_id']){
             case 10:
                 $res_data['op_time'] = date('Y.m.d H:i',strtotime($res_data['delivery_time']));
                 break;
             case 11:
                 $res_data['op_time'] = date('Y.m.d H:i',strtotime($res_data['recycle_time']));
+                break;
+            case 12:
+                $res_data['op_time'] = date('Y.m.d H:i',strtotime($res_data['delivery_time']));
+                $m_hotel = new \Common\Model\HotelModel();
+                $res_hotel = $m_hotel->getOneById('name',$res_data['goal_hotel_id']);
+                $res_data['goal_hotel_name'] = $res_hotel['name'];
+                $res_mstaff = $m_merchant_staff->getMerchantStaff($sfileds,array('a.id'=>$res_data['goal_merchant_staff_id']));
+                $res_data['goal_merchant_staff_name'] = $res_mstaff[0]['nickName'];
+                $res_data['goal_merchant_staff_mobile'] = $res_mstaff[0]['mobile'];
                 break;
             default:
                 $res_data['op_time'] = '';
@@ -411,11 +468,7 @@ class ApprovalController extends CommonController{
         }
         $res_data['goods_data'] = $goods_data;
         unset($res_data['wine_data']);
-        $m_merchant_staff = new \Common\Model\Integral\StaffModel();
-        $sfileds = 'user.nickName,user.mobile';
-        $res_mstaff = $m_merchant_staff->getMerchantStaff($sfileds,array('a.id'=>$res_data['merchant_staff_id']));
-        $res_data['merchant_staff_name'] = $res_mstaff[0]['nickName'];
-        $res_data['merchant_staff_mobile'] = $res_mstaff[0]['mobile'];
+
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
         $m_stock = new \Common\Model\Finance\StockModel();
         $fields = 'step.name,sysuser.remark as user_name,approval.item_id,approval.stock_id,approval.status as approval_status,a.*';

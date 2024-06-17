@@ -554,6 +554,11 @@ return array(
 	    '94103'=>'smallappops_finance_threshold_error',
 	    '94104'=>'smallappops_hotel_not_sale',
 	    '94105'=>'smallappops_hotel_not_have_group',
+	    '94106'=>'smallappops_stock_idcode_not_in_hotel',
+	    '94107'=>'smallappops_stock_idcode_has_writeoff',
+	    '94108'=>'smallappops_stock_idcode_not_leave_hotel',
+	    '94109'=>'smallappops_stock_goods_num_error',
+	    '94110'=>'smallappops_scan_goods_not_leavel_goods',
 
         //小程序数据端
         '95001'=>'smallappdata_mobile_not_open_account',

@@ -559,6 +559,8 @@ return array(
 	    '94108'=>'smallappops_stock_idcode_not_leave_hotel',
 	    '94109'=>'smallappops_stock_goods_num_error',
 	    '94110'=>'smallappops_scan_goods_not_leavel_goods',
+	    '94111'=>'smallappops_leavel_hotel_stock_error',
+	    '94112'=>'smallappops_hotel_distance_error',
 
         //小程序数据端
         '95001'=>'smallappdata_mobile_not_open_account',

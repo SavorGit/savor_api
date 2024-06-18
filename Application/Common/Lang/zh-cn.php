@@ -554,6 +554,8 @@ return array(
     'smallappops_stock_idcode_not_leave_hotel'=>'不属于撤酒酒楼',
     'smallappops_stock_goods_num_error'=>'调拨酒水数量不一致',
     'smallappops_scan_goods_not_leavel_goods'=>'扫码酒水不是撤回酒水',
+    'smallappops_leavel_hotel_stock_error'=>'调拨酒楼库存不足',
+    'smallappops_hotel_distance_error'=>'请在目标酒楼范围内进行送达操作',
 
 
 

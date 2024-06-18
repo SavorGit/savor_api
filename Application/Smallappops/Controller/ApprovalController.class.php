@@ -215,6 +215,20 @@ class ApprovalController extends CommonController{
                         $wine_data[$v['id']]=$v['num']+$num;
                     }
                 }
+                $redis = new \Common\Lib\SavorRedis();
+                $redis->select(9);
+                $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+                $res_cache = $redis->get($key);
+                $hotel_stock = json_decode($res_cache, true);
+                if(empty($res_cache) || empty($hotel_stock['goods_list'])) {
+                    $this->to_back(94111);
+                }
+                foreach ($hotel_stock['goods_list'] as $v){
+                    if($v['stock_num']<$wine_data[$v['id']]){
+                        $this->to_back(94111);
+                    }
+                }
+
                 if(empty($wine_data) || empty($goal_hotel_id) || empty($goal_merchant_staff_id) || empty($allot_type)){
                     $this->to_back(1001);
                 }
@@ -485,6 +499,12 @@ class ApprovalController extends CommonController{
                 }elseif($v['handle_status']==2 && $v['status']==5 && $v['approval_status']==8){
                     $is_approval = 1;
                     $now_processes_id = $v['id'];
+                }elseif($v['item_id']==12 && $v['handle_status']==2 && $v['status']==3){
+                    if($v['approval_status']==4 || $v['approval_status']==7){
+                        $is_approval = 1;
+                        $now_processes_id = $v['id'];
+                    }
+
                 }
 
             }
@@ -531,6 +551,16 @@ class ApprovalController extends CommonController{
                             }
                             break;
                     }
+                }elseif($v['item_id']==12){
+                    if($v['status']==3){
+                        $res_stock = $m_stock->getInfo(array('id'=>$v['stock_id']));
+                        if($res_stock['receive_time']!='0000-00-00 00:00:00'){
+                            $approval_content[]=array('status_str'=>'领取','handle_time'=>$res_stock['receive_time']);
+                        }
+                        if($res_stock['check_time']!='0000-00-00 00:00:00'){
+                            $approval_content[]=array('status_str'=>'送达','handle_time'=>$res_stock['check_time']);
+                        }
+                    }
                 }
 
             }
@@ -560,6 +590,9 @@ class ApprovalController extends CommonController{
                     break;
                 case 11:
                     $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['recycle_time']));
+                    break;
+                case 12:
+                    $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['delivery_time']));
                     break;
             }
         }

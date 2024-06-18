@@ -18,7 +18,8 @@ class ApprovalHandleController extends CommonController{
                 break;
             case 'process12':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'approval_id'=>1001,'processes_id'=>1001,'status'=>1001,'work_staff_id'=>1002,'idcodes'=>1002);
+                $this->valid_fields = array('openid'=>1001,'approval_id'=>1001,'processes_id'=>1001,'status'=>1001,
+                    'work_staff_id'=>1002,'idcodes'=>1002,'latitude'=>1002,'longitude'=>1002);
                 break;
             case 'scancode':
                 $this->is_verify = 1;
@@ -191,6 +192,8 @@ class ApprovalHandleController extends CommonController{
         $processes_id = intval($this->params['processes_id']);
         $work_staff_id = intval($this->params['work_staff_id']);
         $status = intval($this->params['status']);
+        $latitude = $this->params['latitude'];
+        $longitude = $this->params['longitude'];
         $idcodes = $this->params['idcodes'];
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
@@ -236,11 +239,12 @@ class ApprovalHandleController extends CommonController{
                     break;
                 case 3:
                     $m_stock = new \Common\Model\Finance\StockModel();
-                    $is_out = $m_stock->checkHotelThreshold($res_approval['hotel_id'],1);
+                    $is_out = $m_stock->checkHotelThreshold($res_approval['goal_hotel_id'],1);
                     if($is_out==0){
                         $this->to_back(94103);
                     }
                     $res_approval['now_staff_sysuser_id'] = $res_staff['sysuser_id'];
+                    $res_approval['hotel_id'] = $res_approval['goal_hotel_id'];
                     $stock_id = $m_stock->createOut($res_approval);
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>4,'stock_id'=>$stock_id));
 
@@ -275,7 +279,7 @@ class ApprovalHandleController extends CommonController{
                     }
                     $goods_ids = array_keys($goods_data);
                     $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-                    $where = array('goods_id'=>array('in',$goods_ids),'idcode'=>array('in',$all_idcodes),'type'=>1,'dstatus'=>1);
+                    $where = array('goods_id'=>array('in',$goods_ids),'idcode'=>array('in',$all_idcodes),'type'=>2,'dstatus'=>1);
                     $res_record = $m_stock_record->getALLDataList('goods_id,idcode',$where,'id desc','','');
                     $goods_idcodes = array();
                     foreach ($res_record as $v){
@@ -294,7 +298,7 @@ class ApprovalHandleController extends CommonController{
                     $price_idcodes = array();
                     foreach($res_detail as $v){
                         $now_goods_id = $v['goods_id'];
-                        $stock_detail_id = $v['stock_detail_id'];
+                        $stock_detail_id = $v['id'];
                         $unit_id = $v['unit_id'];
                         $now_goods_idcodes = $goods_idcodes[$now_goods_id];
                         $batch_no = getMillisecond();
@@ -310,6 +314,10 @@ class ApprovalHandleController extends CommonController{
                             $data = array('stock_id'=>$in_stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$now_goods_id,'batch_no'=>$batch_no,'idcode'=>$iv,
                                 'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>1,'total_amount'=>1,'type'=>1,'op_openid'=>$openid
                             );
+                            $res_in = $m_stock_record->getInfo(array('stock_id'=>$in_stock_id,'idcode'=>$iv,'type'=>1,'dstatus'=>1));
+                            if(!empty($res_in)){
+                                continue;
+                            }
                             $m_stock_record->add($data);
                         }
                         $detail_amount = count($now_goods_idcodes);
@@ -323,7 +331,7 @@ class ApprovalHandleController extends CommonController{
                     $res_detail = $m_stockdetail->getALLDataList('id,stock_id,goods_id,unit_id',array('stock_id'=>$out_stock_id,'status'=>1),'id asc','','');
                     foreach($res_detail as $v){
                         $now_goods_id = $v['goods_id'];
-                        $stock_detail_id = $v['stock_detail_id'];
+                        $stock_detail_id = $v['id'];
                         $unit_id = $v['unit_id'];
                         $now_goods_idcodes = $goods_idcodes[$now_goods_id];
                         $batch_no = getMillisecond();
@@ -334,6 +342,10 @@ class ApprovalHandleController extends CommonController{
                             $data = array('stock_id'=>$out_stock_id,'stock_detail_id'=>$stock_detail_id,'goods_id'=>$now_goods_id,'batch_no'=>$batch_no,'idcode'=>$iv,
                                 'price'=>$price,'total_fee'=>$total_fee,'unit_id'=>$unit_id,'amount'=>-1,'total_amount'=>-1,'type'=>2,'op_openid'=>$openid
                             );
+                            $res_in = $m_stock_record->getInfo(array('stock_id'=>$out_stock_id,'idcode'=>$iv,'type'=>2,'dstatus'=>1));
+                            if(!empty($res_in)){
+                                continue;
+                            }
                             $m_stock_record->add($data);
                         }
                         $detail_amount = count($now_goods_idcodes);
@@ -349,6 +361,20 @@ class ApprovalHandleController extends CommonController{
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>7));
                     break;
                 case 9:
+                    if(empty($longitude) || empty($latitude)){
+                        $this->to_back(1001);
+                    }
+                    $nearby_m = 200;
+                    $bd_lnglat = gpsToBaidu($longitude, $latitude);
+                    $latitude = $bd_lnglat['latitude'];
+                    $longitude = $bd_lnglat['longitude'];
+                    $m_hotel = new \Common\Model\HotelModel();
+                    $res_hotel = $m_hotel->getOneById('gps',$res_approval['goal_hotel_id']);
+                    $gps_arr = explode(',',$res_hotel['gps']);
+                    $dis = geo_distance($latitude,$longitude,$gps_arr[1],$gps_arr[0]);
+                    if($dis>$nearby_m){
+                        $this->to_back(94112);
+                    }
                     $m_stock_record = new \Common\Model\Finance\StockRecordModel();
                     $m_stock_record->createReceiveCheckData($res_approval['stock_id'],$openid,0,5);
                     
@@ -408,7 +434,7 @@ class ApprovalHandleController extends CommonController{
         if(!empty($res_stock[0]['goods_name'])){
             $goods_name = $res_stock[0]['goods_name'];
         }
-        $this->to_back(array('idcode'=>$idcode,'goods_id'=>$goods_id,'goods_name'=>$goods_name,'add_time'=>date('Y-m-d H:i:s')));
+        $this->to_back(array('idcode'=>$idcode,'checked'=>true,'goods_id'=>$goods_id,'goods_name'=>$goods_name,'add_time'=>date('Y-m-d H:i:s')));
     }
 
 

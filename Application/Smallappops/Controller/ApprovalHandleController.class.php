@@ -351,14 +351,14 @@ class ApprovalHandleController extends CommonController{
                         $detail_amount = count($now_goods_idcodes);
                         $m_stockdetail->updateData(array('id'=>$stock_detail_id),array('amount'=>-$detail_amount,'total_amount'=>-$detail_amount));
                     }
+                    $m_stock_record->createReceiveCheckData($out_stock_id,$openid,0,4);
 
+                    $m_approval->updateData(array('id'=>$approval_id),array('status'=>7));
+                    
                     $res_stock = $m_stock->getInfo(array('id'=>$out_stock_id));
                     if($res_stock['area_id']>0){
                         sendTopicMessage($res_stock['area_id'],70);
                     }
-                    $m_stock_record->createReceiveCheckData($out_stock_id,$openid,0,4);
-
-                    $m_approval->updateData(array('id'=>$approval_id),array('status'=>7));
                     break;
                 case 9:
                     if(empty($longitude) || empty($latitude)){

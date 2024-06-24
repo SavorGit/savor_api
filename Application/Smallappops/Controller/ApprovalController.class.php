@@ -223,15 +223,23 @@ class ApprovalController extends CommonController{
                 if(empty($res_cache) || empty($hotel_stock['goods_list'])) {
                     $this->to_back(94111);
                 }
+                $stock_goods = array();
                 foreach ($hotel_stock['goods_list'] as $v){
-                    if($v['stock_num']<$wine_data[$v['id']]){
+                    $stock_goods[$v['id']] = $v['stock_num'];
+                }
+                foreach ($wine_data as $k=>$v){
+                    $stock_num = isset($stock_goods[$k])?$stock_goods[$k]:0;
+                    if($v>$stock_num){
                         $this->to_back(94111);
                     }
                 }
-
                 if(empty($wine_data) || empty($goal_hotel_id) || empty($goal_merchant_staff_id) || empty($allot_type)){
                     $this->to_back(1001);
                 }
+                if($hotel_id==$goal_hotel_id){
+                    $this->to_back(94113);
+                }
+
                 $adata['bottle_num'] = $wine_num;
                 $adata['wine_data'] = json_encode($wine_data);
                 $adata['delivery_time'] = date('Y-m-d H:i:s',strtotime($op_time));
@@ -584,6 +592,9 @@ class ApprovalController extends CommonController{
         foreach ($res_data as $k=>$v){
             $res_data[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
             $res_data[$k]['status_str'] = $all_status[$v['status']];
+            if($res_data['allot_type'==2] && $v['status']==5){
+                $res_data[$k]['status_str'] = '待完成';
+            }
             switch ($v['item_id']){
                 case 10:
                     $res_data[$k]['op_time'] = date('Y.m.d H:i',strtotime($v['delivery_time']));

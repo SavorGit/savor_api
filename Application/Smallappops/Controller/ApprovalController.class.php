@@ -336,7 +336,7 @@ class ApprovalController extends CommonController{
         }
         $offset = ($page-1)*$page_szie;
         $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,
-        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
+        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,approval.allot_type,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('a.ops_staff_id'=>$res_staff['id'],'a.is_receive'=>1,'a.handle_status'=>$handle_status);
         $m_approval_process = new \Common\Model\Crm\ApprovalProcessesModel();
@@ -369,7 +369,7 @@ class ApprovalController extends CommonController{
         }
         $offset = ($page-1)*$page_szie;
         $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,
-        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
+        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,approval.allot_type,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array();
         if($status){
@@ -418,7 +418,7 @@ class ApprovalController extends CommonController{
         }
         $offset = ($page-1)*$page_szie;
         $fields = 'approval.id as approval_id,approval.add_time,approval.bottle_num,approval.content,approval.item_id,
-        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,hotel.name as hotel_name,
+        approval.delivery_time,approval.recycle_time,approval.status,approval.hotel_id,approval.allot_type,hotel.name as hotel_name,
         staff.id as staff_id,staff.job,sysuser.remark as staff_name,user.avatarUrl,user.nickName,item.name as item_name';
         $where = array('approval.ops_staff_id'=>$res_staff['id']);
         $m_approval = new \Common\Model\Crm\ApprovalModel();
@@ -592,7 +592,7 @@ class ApprovalController extends CommonController{
         foreach ($res_data as $k=>$v){
             $res_data[$k]['add_time'] = date('m月d日 H:i',strtotime($v['add_time']));
             $res_data[$k]['status_str'] = $all_status[$v['status']];
-            if($res_data['allot_type'==2] && $v['status']==5){
+            if($res_data[$k]['allot_type']==2 && $v['status']==5){
                 $res_data[$k]['status_str'] = '待完成';
             }
             switch ($v['item_id']){

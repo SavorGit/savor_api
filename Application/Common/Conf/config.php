@@ -663,7 +663,7 @@ return array(
         '2'=>array('id'=>2,'name'=>'品鉴酒'),
         '3'=>array('id'=>3,'name'=>'活动')
     ),
-    'SELL_NOTIN_HOTEL_GOODS'=>array(7,8,27,28,30,42,43,44,45,49,50,51,54,56,57,58,59,60,62,63,64,66,67),
+    'SELL_NOTIN_HOTEL_GOODS'=>array(7,8,27,28,30,42,43,44,45,49,50,54,56,57,58,59,60,62,63,64,66,67),
     'SELL_NOTIN_HOTEL_BRANDS'=>array(10,11,13,14,15,18),
     'FORSCREEN_GUIDE_IMAGE_SWITCH'=>0,
     'LOTTERY_TIMEOUT'=>300,

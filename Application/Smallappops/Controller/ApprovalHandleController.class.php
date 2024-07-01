@@ -230,6 +230,7 @@ class ApprovalHandleController extends CommonController{
                     if(!empty($res_next)){
                         $m_approval_process->updateData(array('id'=>$res_next['id']),array('is_receive'=>1,'handle_status'=>1));
                     }
+                    $res_approval['now_staff_sysuser_id'] = $res_staff['sysuser_id'];
                     $in_stock_id = $m_stock->createIn($res_approval);
                     $m_approval->updateData(array('id'=>$approval_id),array('status'=>5,'in_stock_id'=>$in_stock_id));
                     break;
@@ -324,7 +325,7 @@ class ApprovalHandleController extends CommonController{
                         $m_stockdetail->updateData(array('id'=>$stock_detail_id),array('amount'=>$detail_amount,'total_amount'=>$detail_amount));
                     }
                     $m_stock = new \Common\Model\Finance\StockModel();
-                    $m_stock->updateData(array('id'=>$in_stock_id),array('status'=>1,'update_time'=>date('Y-m-d H:i:s')));
+                    $m_stock->updateData(array('id'=>$in_stock_id),array('status'=>2,'update_time'=>date('Y-m-d H:i:s')));
 
                     $out_stock_id = $res_approval['stock_id'];
                     $m_stockdetail = new \Common\Model\Finance\StockDetailModel();

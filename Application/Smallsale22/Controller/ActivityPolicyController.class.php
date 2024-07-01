@@ -87,6 +87,27 @@ class ActivityPolicyController extends CommonController{
                 $confirm_data['integral'] = $res_awdata[0]['integral'];
                 $confirm_data['step_num'] = $res_awdata[0]['step_num'];
                 $confirm_data['step_integral'] = $res_awdata[0]['step_integral'];
+                $tips = '';
+                $zz_day = 0;
+                $last_month = date('Ym',strtotime('-1 month'));
+                if($confirm_data['confirm_month']==$last_month){
+                    $m_hotel_ext = new \Common\Model\HotelExtModel();
+                    $res_hotel = $m_hotel_ext->getData('zz_date',array('hotel_id'=>$res_staff[0]['hotel_id']));
+                    if($res_hotel[0]['zz_date']!='0000-00-00'){
+                        $zz_month = date('Ym',strtotime($res_hotel[0]['zz_date']));
+                        if($now_month==$zz_month){
+                            $zz_day = date('j',strtotime($res_hotel[0]['zz_date']));
+                        }
+                    }else{
+                        $m_global_config = new \Common\Model\SysConfigModel();
+                        $res_config = $m_global_config->getAllconfig();
+                        $zz_day = $res_config['zz_day'];
+                    }
+                    if($zz_day){
+                        $tips = "请及时确认，如未确认系统将于本月{$zz_day}日23:50自动确认";
+                    }
+                }
+                $confirm_data['tips'] = $tips;
             }
         }
         $res_data = array('is_show'=>$is_show,'now_month'=>$now_month,'num'=>$num,'integral'=>$integral,'step_award_process'=>$step_award_process,'confirm_data'=>$confirm_data);

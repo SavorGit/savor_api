@@ -159,14 +159,15 @@ class WriteoffController extends CommonController{
         }
 
         $m_sale = new \Common\Model\Finance\SaleModel();
-        $fields = 'a.idcode,a.add_time,a.hotel_id,a.ptype,a.type,a.settlement_price,a.residenter_id,a.sale_openid,a.num,a.stock_record_id,
+        $fields = 'a.idcode,a.add_time,a.hotel_id,a.ptype,a.type,a.settlement_price,a.residenter_id,a.sale_openid,a.num,a.stock_record_id,a.area_id,a.hotel_id,
         record.wo_data_imgs,record.reason,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,spec.name as spec_name,unit.name as unit_name,
         record.wo_status,record.recycle_status,record.recycle_time,record.wo_reason_type,record.wo_time,user.nickName,user.avatarUrl,hotel.name as hotel_name,ext.residenter_id as now_residenter_id';
         $res_salerecord = $m_sale->getSaleStockRecordList($fields,$salewhere,'',$limit,'a.id desc');
         $data_list = array();
         if(!empty($res_salerecord)){
             $m_userintegral = new \Common\Model\Smallapp\UserIntegralrecordModel();
-            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
+            $m_goods_wodata = new \Common\Model\Finance\GoodsPolicyWodataModel();
             $m_media = new \Common\Model\MediaModel();
             $all_reasons = C('STOCK_REASON');
             $all_status = C('STOCK_AUDIT_STATUS');
@@ -180,22 +181,23 @@ class WriteoffController extends CommonController{
                         'recycle_status'=>$v['recycle_status'],'recycle_time'=>$v['recycle_time'],'reason'=>$v['reason'],'add_time'=>$v['add_time']
                     )
                 );
-                $cwhere = array('goods_id'=>$res_goods[0]['goods_id'],'status'=>1,'type'=>array('in','10,20'));
-                $res_config = $m_goodsconfig->getDataList('id,name,media_id,open_integral,type',$cwhere,'id asc');
+                $res_goods_policy = $m_goods_policy_hotel->getGoodsPolicy($v['goods_id'],$v['area_id'],$v['hotel_id']);
                 $demo_img = '';
+                if($res_goods_policy['media_id']>0){
+                    $res_media = $m_media->getMediaInfoById($res_goods_policy['media_id']);
+                    $demo_img = $res_media['oss_addr'];
+                }
+
+                $res_woconfig = $m_goods_wodata->getGoodsWodata($v['goods_id'],$v['area_id'],$v['hotel_id'],20);
                 $entity = array();
-                if(!empty($res_config)){
-                    foreach ($res_config as $cv){
+                if(!empty($res_woconfig)){
+                    foreach ($res_woconfig as $cv){
                         $img_url = '';
                         if($cv['media_id']>0){
                             $res_media = $m_media->getMediaInfoById($cv['media_id']);
                             $img_url = $res_media['oss_addr'];
                         }
-                        if($cv['type']==10){
-                            $demo_img = $img_url;
-                        }elseif($cv['type']==20){
-                            $entity[]=array('name'=>$cv['name'],'img_url'=>$img_url);
-                        }
+                        $entity[]=array('name'=>$cv['name'],'img_url'=>$img_url);
                     }
                 }
                 $status_str = '售卖奖励'.$all_status[$v['wo_status']];

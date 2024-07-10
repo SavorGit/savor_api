@@ -88,7 +88,7 @@ class StockController extends CommonController{
                 $this->is_verify = 1;
                 break;
             case 'getWriteoffReasonByGoods':
-                $this->params = array('goods_id'=>1001,'type'=>1002);
+                $this->params = array('goods_id'=>1001,'openid'=>1001,'type'=>1002);
                 $this->is_verify = 1;
                 break;
             case 'scanWriteoff':
@@ -1416,15 +1416,24 @@ class StockController extends CommonController{
     public function getWriteoffReasonByGoods(){
         $goods_id = intval($this->params['goods_id']);
         $type = intval($this->params['type']);//类型 1售卖,2品鉴酒,3活动
+        $openid = $this->params['openid'];
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
         if($type>0){
             $now_type = $type;
         }else{
             $now_type = 1;
         }
-        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>$now_type);
-        $field = 'id,name,is_required';
-        $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
+        $m_hotel = new \Common\Model\HotelModel();
+        $res_hotel = $m_hotel->getOneById('area_id',$res_staff[0]['hotel_id']);
+        $m_goods_wodata = new \Common\Model\Finance\GoodsPolicyWodataModel();
+        $res_config = $m_goods_wodata->getGoodsWodata($goods_id,$res_hotel['area_id'],$res_staff[0]['hotel_id'],$now_type);
         $data = array();
         if(!empty($res_config)){
             foreach ($res_config as $v){
@@ -1433,9 +1442,7 @@ class StockController extends CommonController{
             }
         }
         $entity = array();
-        $where = array('goods_id'=>$goods_id,'status'=>1,'type'=>20);
-        $field = 'id,name,media_id';
-        $res_config = $m_goodsconfig->getDataList($field,$where,'id asc');
+        $res_config = $m_goods_wodata->getGoodsWodata($goods_id,$res_hotel['area_id'],$res_staff[0]['hotel_id'],20);
         if(!empty($res_config)){
             $m_media = new \Common\Model\MediaModel();
             foreach ($res_config as $v){
@@ -1551,7 +1558,7 @@ class StockController extends CommonController{
             $res_hotel = $m_hotel->getOneById('id,name,area_id',$hotel_id);
             $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_sale = new \Common\Model\Finance\SaleModel();
-            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
             $batch_no = getMillisecond();
             $goods_config = array();
             foreach ($all_idcodes as $v){
@@ -1561,13 +1568,11 @@ class StockController extends CommonController{
                     $add_data = $res_record[0];
                     $goods_id = $add_data['goods_id'];
                     if(empty($goods_config)){
-                        $configwhere = array('goods_id'=>$goods_id,'type'=>10);
-                        $goods_config = $m_goodsconfig->getALLDataList('*',$configwhere,'id desc','0,1','');
+                        $goods_config = $m_goods_policy_hotel->getGoodsPolicy($goods_id,$res_hotel['area_id'],$hotel_id);
                     }
                     $recycle_status = 4;
                     $is_open_reward = 0;
-                    $open_area_ids = explode(',',$goods_config[0]['open_area_ids']);
-                    if($reason_type==1 && !empty($goods_config[0]['open_integral']) && in_array($res_hotel['area_id'],$open_area_ids)){
+                    if($reason_type==1 && !empty($goods_config['open_integral'])){
                         $recycle_status = 1;
                         $is_open_reward = 1;
                     }
@@ -1626,9 +1631,9 @@ class StockController extends CommonController{
                         $stock_record_info['id'] = $record_id;
                         $sale_id = $m_sale->addsale($stock_record_info,$res_staff[0]['hotel_id'],$openid,'');
                         $stock_record_info['hotel_id']=$hotel_id;
+                        $stock_record_info['area_id']=$res_hotel['area_id'];
                         $m_userintegral_record->finishWriteoff($stock_record_info,2);
                         if($is_open_reward==1){
-                            $stock_record_info['area_id']=$res_hotel['area_id'];
                             $m_userintegral_record->finishRecycle($stock_record_info,2);
                         }
                     }

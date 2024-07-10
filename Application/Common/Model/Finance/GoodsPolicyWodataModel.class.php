@@ -11,13 +11,13 @@ class GoodsPolicyWodataModel extends BaseModel{
         $policy_id = intval($res_policy[0]['policy_id']);
         $wo_data = array();
         if($policy_id>0){
-            $where = array('policy_id'=>$policy_id);
+            $where = array('policy_id'=>$policy_id,'status'=>1);
             if(is_array($types)){
                 $where['type'] = array('in',$types);
             }else{
                 $where['type'] = $types;
             }
-            $wo_data = $this->getALLDataList('*',$where,'id desc','0,1','');
+            $wo_data = $this->getALLDataList('id,name,is_required,media_id',$where,'id asc');
         }
         return $wo_data;
     }

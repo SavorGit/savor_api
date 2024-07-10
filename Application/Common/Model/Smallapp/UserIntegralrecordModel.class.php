@@ -669,10 +669,17 @@ class UserIntegralrecordModel extends BaseModel{
     }
 
     public function finishWriteoff($stock_record_info,$integral_status=2){
-        $stock_record_id = $stock_record_info['id'];
+        if($stock_record_info['hotel_id']==7){
+            $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
+            $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
+        }else{
+            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $res_goodsintegral = $m_goodsconfig->getInfo(array('goods_id'=>$stock_record_info['goods_id'],'type'=>10));
+        }
+//        $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
+//        $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
 
-        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-        $res_goodsintegral = $m_goodsconfig->getInfo(array('goods_id'=>$stock_record_info['goods_id'],'type'=>10));
+        $stock_record_id = $stock_record_info['id'];
         if(empty($res_goodsintegral) || $res_goodsintegral['integral']==0){
             $msg = "stock_record_id:{$stock_record_id},goods_id:{$stock_record_info['goods_id']},integral:0";
             return $msg;
@@ -763,10 +770,17 @@ class UserIntegralrecordModel extends BaseModel{
     }
 
     public function finishRecycle($stock_record_info,$integral_status=2){
-        $stock_record_id = $stock_record_info['id'];
+        if($stock_record_info['hotel_id']==7){
+            $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
+            $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
+        }else{
+            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
+            $res_goodsintegral = $m_goodsconfig->getInfo(array('goods_id'=>$stock_record_info['goods_id'],'type'=>10));
+        }
+//        $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
+//        $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
 
-        $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-        $res_goodsintegral = $m_goodsconfig->getInfo(array('goods_id'=>$stock_record_info['goods_id'],'type'=>10));
+        $stock_record_id = $stock_record_info['id'];
         if(empty($res_goodsintegral) || $res_goodsintegral['open_integral']==0){
             $msg = "stock_record_id:{$stock_record_id},goods_id:{$stock_record_info['goods_id']},open_integral:0";
             return $msg;

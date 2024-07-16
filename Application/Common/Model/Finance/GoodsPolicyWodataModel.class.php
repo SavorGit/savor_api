@@ -8,7 +8,7 @@ class GoodsPolicyWodataModel extends BaseModel{
     public function getGoodsWodata($goods_id,$area_id,$hotel_id,$types){
         $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
         $res_policy = $m_goods_policy_hotel->getGoodsPolicy($goods_id,$area_id,$hotel_id);
-        $policy_id = intval($res_policy[0]['policy_id']);
+        $policy_id = intval($res_policy['policy_id']);
         $wo_data = array();
         if($policy_id>0){
             $where = array('policy_id'=>$policy_id,'status'=>1);

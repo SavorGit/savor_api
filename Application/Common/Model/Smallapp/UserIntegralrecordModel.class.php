@@ -669,7 +669,7 @@ class UserIntegralrecordModel extends BaseModel{
     }
 
     public function finishWriteoff($stock_record_info,$integral_status=2){
-        if($stock_record_info['hotel_id']==7){
+        if($stock_record_info['hotel_id']==7){//上线后删除
             $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
             $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
         }else{
@@ -770,7 +770,7 @@ class UserIntegralrecordModel extends BaseModel{
     }
 
     public function finishRecycle($stock_record_info,$integral_status=2){
-        if($stock_record_info['hotel_id']==7){
+        if($stock_record_info['hotel_id']==7){//上线后删除
             $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();
             $res_goodsintegral = $m_goods_policy_hotel->getGoodsPolicy($stock_record_info['goods_id'],$stock_record_info['area_id'],$stock_record_info['hotel_id']);
         }else{
@@ -789,10 +789,13 @@ class UserIntegralrecordModel extends BaseModel{
             $msg = "stock_record_id:{$stock_record_id},wo_reason_type:{$stock_record_info['wo_reason_type']} error";
             return $msg;
         }
-        $open_area_ids = explode(',',$res_goodsintegral['open_area_ids']);
-        if(!in_array($stock_record_info['area_id'],$open_area_ids)){
-            $msg = "stock_record_id:{$stock_record_id},area_ids:{$stock_record_info['area_id']} error";
-            return $msg;
+
+        if($stock_record_info['hotel_id']!=7){//上线后删除
+            $open_area_ids = explode(',',$res_goodsintegral['open_area_ids']);
+            if(!in_array($stock_record_info['area_id'],$open_area_ids)){
+                $msg = "stock_record_id:{$stock_record_id},area_ids:{$stock_record_info['area_id']} error";
+                return $msg;
+            }
         }
 
         $now_integral = $res_goodsintegral['open_integral'];

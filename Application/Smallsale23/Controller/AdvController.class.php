@@ -1,5 +1,5 @@
 <?php
-namespace Smallsale22\Controller;
+namespace Smallsale23\Controller;
 use \Common\Controller\CommonController as CommonController;
 use Common\Lib\SavorRedis;
 class AdvController extends CommonController{

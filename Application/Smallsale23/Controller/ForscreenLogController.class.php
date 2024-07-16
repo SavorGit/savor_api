@@ -1,5 +1,5 @@
 <?php
-namespace Smallsale22\Controller;
+namespace Smallsale23\Controller;
 use Think\Controller;
 use Common\Lib\Smallapp_api;
 use \Common\Controller\CommonController as CommonController;

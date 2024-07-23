@@ -53,7 +53,7 @@ class HotelController extends CommonController{
                 break;
             case 'modifygoodsprice':
                 $this->is_verify = 1;
-                $this->valid_fields = array('openid'=>1001,'hid'=>1001,'price'=>1001);
+                $this->valid_fields = array('openid'=>1001,'hid'=>1001,'price'=>1001,'hotel_id'=>1002,'goods_id'=>1002);
                 break;
             case 'stockidcodelist':
                 $this->is_verify = 1;
@@ -598,11 +598,22 @@ class HotelController extends CommonController{
                 $stock_goods[$v['id']] = $v;
             }
             if(!empty($hotel_stock['goods_ids'])){
-                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id,h.hotel_price,h.id as hid';
-                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-                $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
-                $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
+                if($hotel_id==7){//上线后去掉
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+                    $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+                    $res_data = $m_goods->getDataList($fields,$where,'id desc');
+                }else{
+                    $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id,h.hotel_price,h.id as hid';
+                    $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+                    $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
+                    $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
+                }
+
+                $m_hotel = new \Common\Model\HotelModel();
+                $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
+                $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
                 $oss_host = get_oss_host();
                 foreach ($res_data as $v){
                     $img_url = '';
@@ -616,11 +627,21 @@ class HotelController extends CommonController{
                     if(isset($stock_goods[$v['finance_goods_id']])){
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
-                    $price = intval($v['price']);
-                    $hotel_price = intval($v['hotel_price']);
+                    if($hotel_id==7){
+                        $res_price = $m_goods_price_hotel->getGoodsAreaPrice($v['id'],$res_hotel['area_id']);
+                        $price = intval($res_price['price']);
+                        $res_price = $m_goods_price_hotel->getGoodsHotelPrice($v['id'],$res_hotel['area_id'],$hotel_id);
+                        $hotel_price = intval($res_price['price']);
+                        $hid = 0;
+                    }else{//上线后去掉
+                        $price = intval($v['price']);
+                        $hotel_price = intval($v['hotel_price']);
+                        $hid = $v['hid'];
+                    }
+
                     $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'type'=>$v['type'],
                         'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id'],
-                        'hotel_price'=>$hotel_price,'hid'=>$v['hid']);
+                        'hotel_price'=>$hotel_price,'hid'=>$hid);
                     $datalist[] = $dinfo;
                 }
             }
@@ -633,21 +654,46 @@ class HotelController extends CommonController{
         $openid = $this->params['openid'];
         $hid = intval($this->params['hid']);
         $price = intval($this->params['price']);
+        $hotel_id = intval($this->params['hotel_id']);
+        $goods_id = intval($this->params['goods_id']);
 
         $m_staff = new \Common\Model\Smallapp\OpsstaffModel();
         $res_staff = $m_staff->getInfo(array('openid'=>$openid,'status'=>1));
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        $fields = 'g.id,g.price,h.hotel_price,h.hotel_id';
-        $where = array('h.id'=>$hid,'g.type'=>43,'g.status'=>1);
-        $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-        $res_data = $m_hotelgoods->getGoodsList($fields,$where,'h.id desc','0,1');
-        $msg = '';
-        if(!empty($res_data[0]['id'])){
+        if($hid){//上线后去掉
+            $fields = 'g.id,g.price,h.hotel_price,h.hotel_id';
+            $where = array('h.id'=>$hid,'g.type'=>43,'g.status'=>1);
+            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+            $res_data = $m_hotelgoods->getGoodsList($fields,$where,'h.id desc','0,1');
+            $msg = '';
+            if(!empty($res_data[0]['id'])){
+                $msg = '修改成功';
+                $m_hotelgoods->updateData(array('id'=>$hid),array('openid'=>$openid,'hotel_price'=>$price,'update_time'=>date('Y-m-d H:i:s')));
+            }
+        }else{
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('name,area_id',$hotel_id);
+            $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+            $res_price = $m_goods_price_hotel->getGoodsAreaPrice($goods_id,$res_hotel['area_id']);
+            $line_price = intval($res_price['line_price']);
+
+            $res_price = $m_goods_price_hotel->getGoodsHotelPrice($goods_id,$res_hotel['area_id'],$hotel_id);
+            $m_goods_price = new \Common\Model\Smallapp\GoodsPriceModel();
+            if(!empty($res_price)){
+                $goods_price_id = $res_price['goods_price_id'];
+                $m_goods_price->updateData(array('id'=>$goods_price_id),array('price'=>$price,'line_price'=>$line_price,'openid'=>$openid,'update_time'=>date('Y-m-d H:i:s')));
+            }else{
+                $name = $res_hotel['name'].'-特殊政策';
+                $pdata = array('name'=>$name,'goods_id'=>$goods_id,'price'=>$price,'line_price'=>$line_price,'openid'=>$openid,'area_id'=>$res_hotel['area_id'],'type'=>2,'status'=>1);
+                $goods_price_id = $m_goods_price->add($pdata);
+
+                $m_goods_price_hotel->add(array('goods_price_id'=>$goods_price_id,'area_id'=>$res_hotel['area_id'],'hotel_id'=>$hotel_id));
+            }
             $msg = '修改成功';
-            $m_hotelgoods->updateData(array('id'=>$hid),array('openid'=>$openid,'hotel_price'=>$price,'update_time'=>date('Y-m-d H:i:s')));
         }
+
         $this->to_back(array('msg'=>$msg));
     }
 
@@ -823,6 +869,14 @@ class HotelController extends CommonController{
             }
             $datalist[]=array('hotel_id'=>$v['hotel_id'],'name'=>$v['name'],'addr'=>$v['addr'],'dis'=>$dis,'htype_str'=>$htype_str);
         }
+        if($openid=='oreqO5FRLsHxC74LB4VCeju2YxjI'){
+            $hotel_info = $m_hotel->alias('a')
+                ->join('savor_hotel_ext ext on a.id=ext.hotel_id','left')
+                ->join('savor_media media on ext.hotel_cover_media_id=media.id','left')
+                ->field($fields)->where(array('a.id'=>47510))->find();
+            $datalist[]=array('hotel_id'=>$hotel_info['hotel_id'],'name'=>$hotel_info['name'],'addr'=>$hotel_info['addr'],'dis'=>'100m','htype_str'=>'已签约');
+        }
+
         $range_str = "可选{$nearby_m}米范围内的地点";
         $this->to_back(array('datalist'=>$datalist,'range_str'=>$range_str,'api_result'=>$res_lonlat));
     }

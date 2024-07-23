@@ -31,25 +31,53 @@ class HotelgoodsModel extends BaseModel{
     }
 
     public function getStockGoodsList($hotel_id,$offset,$pagesize){
-        $redis = new \Common\Lib\SavorRedis();
-        $redis->select(9);
-        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
-        $res_cache = $redis->get($key);
-        if(!empty($res_cache)) {
-            $hotel_stock = json_decode($res_cache,true);
-            $fields = 'g.id,g.name,g.price,g.advright_media_id,g.small_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
-            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-            $order = 'g.wine_type asc';
-            $res_data = $this->getGoodsList($fields,$where,$order,'','');
-            $all_data = array();
-            foreach ($res_data as $v){
-                if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
-                    $all_data[]=$v;
+        if($hotel_id==7){
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(9);
+            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+            $res_cache = $redis->get($key);
+            $data = array();
+            if(!empty($res_cache)) {
+                $hotel_stock = json_decode($res_cache,true);
+                if(!empty($hotel_stock['goods_ids'])){
+                    $m_hotel = new \Common\Model\HotelModel();
+                    $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+                    $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+                    $res_goods = $m_goods->getDataList($fields,$where,'wine_type asc',$offset,$pagesize);
+                    $data = $res_goods['list'];
+                    $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+                    foreach ($data as $k=>$v){
+                        $res_price = $m_goods_price_hotel->getGoodsPrice($v['id'],$res_hotel['area_id'],$hotel_id);
+                        if(!empty($res_price['price'])){
+                            $data[$k]['price'] = $res_price['price'];
+                            $data[$k]['line_price'] = $res_price['line_price'];
+                        }
+                    }
                 }
             }
-            $data = array_slice($all_data,$offset,$pagesize);
-        }else{
-            $data = array();
+        }else{//上线后去掉
+            $redis = new \Common\Lib\SavorRedis();
+            $redis->select(9);
+            $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+            $res_cache = $redis->get($key);
+            if(!empty($res_cache)) {
+                $hotel_stock = json_decode($res_cache,true);
+                $fields = 'g.id,g.name,g.price,g.advright_media_id,g.small_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
+                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
+                $order = 'g.wine_type asc';
+                $res_data = $this->getGoodsList($fields,$where,$order,'','');
+                $all_data = array();
+                foreach ($res_data as $v){
+                    if(in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
+                        $all_data[]=$v;
+                    }
+                }
+                $data = array_slice($all_data,$offset,$pagesize);
+            }else{
+                $data = array();
+            }
         }
         return $data;
     }
@@ -58,26 +86,27 @@ class HotelgoodsModel extends BaseModel{
         $redis = new \Common\Lib\SavorRedis();
         $redis->select(9);
         $key = C('FINANCE_HOTELSTOCK');
-
-        $now_hotel_ids = array();
-        $hotel_stock = array();
+        $hotel_goods_ids = array();
         foreach ($hotel_ids as $v){
-            $hotel_key = $key.':'.$v['hotel_id'];
+            $hotel_id = $v['hotel_id'];
+            $hotel_key = $key.':'.$hotel_id;
             $res_cache = $redis->get($hotel_key);
             if(!empty($res_cache)){
                 $hotel_cache = json_decode($res_cache,true);
-                $now_hotel_ids[]=$v['hotel_id'];
-                $hotel_stock[$v['hotel_id']]=$hotel_cache;
+                if(!empty($hotel_cache[$hotel_id]['goods_ids'])){
+                    foreach ($hotel_cache[$hotel_id]['goods_ids'] as $hgv){
+                        $hotel_goods_ids[$hgv]=$hgv;
+                    }
+                }
             }
         }
-        $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id,h.hotel_id';
-        $where = array('h.hotel_id'=>array('in',$now_hotel_ids),'g.type'=>43,'g.status'=>1);
-        $order = 'h.hotel_id asc';
-        $res_data = $this->getGoodsList($fields,$where,$order,'','');
         $all_data = array();
-        foreach ($res_data as $v){
-            $hotel_id = $v['hotel_id'];
-            if(in_array($v['finance_goods_id'],$hotel_stock[$hotel_id]['goods_ids'])){
+        if(!empty($hotel_goods_ids)){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+            $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',array_values($hotel_goods_ids)));
+            $res_goods = $m_goods->getALLDataList($fields,$where,'id desc','','finance_goods_id');
+            foreach ($res_goods as $v){
                 $all_data[$v['finance_goods_id']]=$v;
             }
         }

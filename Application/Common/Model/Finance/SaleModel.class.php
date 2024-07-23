@@ -13,25 +13,38 @@ class SaleModel extends BaseModel{
         }
         $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
         $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
+        $m_hotel = new \Common\Model\HotelModel();
+        $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';
+        $res_ext = $m_hotel->getHotelById($fields,array('hotel.id'=>$hotel_id));
         $sale_price = 0;
         $goods_settlement_price = $settlement_price;
         if($stock_record_info['wo_reason_type']==1){
-            $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
-            $res_data = $m_hotelgoods->getGoodsList('g.id,g.price,h.hotel_price',$where,'g.id desc',"0,1");
-            if(!empty($res_data[0]['price'])){
-                $sale_price = $res_data[0]['price'];
+            //修改售卖价格,上线后去掉
+            if($hotel_id==7){
+                $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+                $res_price = $m_goods_price_hotel->getGoodsPrice($stock_record_info['goods_id'],$res_ext['area_id'],$hotel_id);
+                if(!empty($res_price['price'])){
+                    $sale_price = $res_price['price'];
+                }
+            }else{
+                $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
+                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
+                $res_data = $m_hotelgoods->getGoodsList('g.id,g.price,h.hotel_price',$where,'g.id desc',"0,1");
+                if(!empty($res_data[0]['price'])){
+                    $sale_price = $res_data[0]['price'];
+                }
             }
+//            $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+//            $res_price = $m_goods_price_hotel->getGoodsPrice($stock_record_info['goods_id'],$res_ext['area_id'],$hotel_id);
+//            if(!empty($res_price['price'])){
+//                $sale_price = $res_price['price'];
+//            }
         }else{
             $settlement_price = 0;
         }
         $m_goods_avg_price = new \Common\Model\Finance\GoodsAvgpriceModel();
         $res_avg_price = $m_goods_avg_price->getALLDataList('price',array('goods_id'=>$stock_record_info['goods_id']),'id desc','0,1','');
         $now_avg_price = $res_avg_price[0]['price']>0?$res_avg_price[0]['price']:0;
-
-        $m_hotel = new \Common\Model\HotelModel();
-        $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';
-        $res_ext = $m_hotel->getHotelById($fields,array('hotel.id'=>$hotel_id));
 
 	    $add_data = array('stock_record_id'=>$stock_record_info['id'],'goods_id'=>$stock_record_info['goods_id'],'sale_price'=>$sale_price,'now_avg_price'=>$now_avg_price,
             'idcode'=>$stock_record_info['idcode'],'cost_price'=>abs($stock_record_info['price']),'settlement_price'=>$settlement_price,'goods_settlement_price'=>$goods_settlement_price,

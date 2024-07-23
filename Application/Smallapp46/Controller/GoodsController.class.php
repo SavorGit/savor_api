@@ -182,9 +182,6 @@ class GoodsController extends CommonController{
             $res_goods = array();
         }else{
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-            $fields = 'g.id,g.name,g.price,g.cover_imgs,g.line_price,g.type';
-            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-//            $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc',"$start,$pagesize");
             $res_data = $m_hotelgoods->getStockGoodsList($hotel_id,$start,$pagesize);
             $res_goods = array('list'=>$res_data);
         }
@@ -210,20 +207,22 @@ class GoodsController extends CommonController{
                 $datalist[] = $dinfo;
             }
         }
-        if(!empty($version) && $version>='4.6.69'){
-            $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
-            $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
-            foreach ($datalist as $k=>$v){
-                $message = '';
-                if(isset($sellwine_activity['goods_data'][$v['finance_goods_id']])){
-                    $money = intval($sellwine_activity['goods_data'][$v['finance_goods_id']]['money']);
-                    $message = "下单得{$money}元红包";
-                }
-                $datalist[$k]['message'] = $message;
-            }
-            $datalist = array('datalist'=>$datalist);
-        }
+//        if(!empty($version) && $version>='4.6.69'){
+//            $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
+//            $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
+//            foreach ($datalist as $k=>$v){
+//                $message = '';
+//                if(isset($sellwine_activity['goods_data'][$v['finance_goods_id']])){
+//                    $money = intval($sellwine_activity['goods_data'][$v['finance_goods_id']]['money']);
+//                    $message = "下单得{$money}元红包";
+//                }
+//                $datalist[$k]['message'] = $message;
+//            }
+//            $datalist = array('datalist'=>$datalist);
+//        }
+        $datalist = array('datalist'=>$datalist);
         $this->to_back($datalist);
+
     }
 
     public function distributionGoodsList(){

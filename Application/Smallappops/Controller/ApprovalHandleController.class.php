@@ -362,6 +362,7 @@ class ApprovalHandleController extends CommonController{
                     }
                     break;
                 case 9:
+                    /*
                     if(empty($longitude) || empty($latitude)){
                         $this->to_back(1001);
                     }
@@ -376,6 +377,7 @@ class ApprovalHandleController extends CommonController{
                     if($dis>$nearby_m){
                         $this->to_back(94112);
                     }
+                    */
                     $m_stock_record = new \Common\Model\Finance\StockRecordModel();
                     $m_stock_record->createReceiveCheckData($res_approval['stock_id'],$openid,0,5);
                     

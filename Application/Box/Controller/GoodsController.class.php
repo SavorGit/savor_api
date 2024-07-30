@@ -30,6 +30,7 @@ class GoodsController extends CommonController{
         }
         $hotel_id = $box_info[0]['hotel_id'];
         $short_name = $box_info[0]['short_name'];
+        $area_id = $box_info[0]['area_id'];
 
         $version = isset($_SERVER['HTTP_X_VERSION'])?$_SERVER['HTTP_X_VERSION']:'';
         $is_olddata=1;
@@ -65,10 +66,14 @@ class GoodsController extends CommonController{
             $all_config = $m_config->getAllconfig();
             $roll_content = json_decode($all_config['seckill_roll_content'],true);
             $goods_info = array();
+            $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
             foreach ($res_goods as $v){
                 $goods_id = $v['goods_id'];
                 if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
-                    $price = intval($v['price']);
+                    $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$area_id,$hotel_id);
+                    $price = intval($res_price['price']);
+                    $line_price = intval($res_price['line_price']);
+
                     $goods_info[]="{$v['goods_name']}({$price}元)";
 
                     if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
@@ -78,7 +83,7 @@ class GoodsController extends CommonController{
                         $m_media = new \Common\Model\MediaModel();
                         $res_media = $m_media->getMediaInfoById($v['model_media_id']);
                         $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>$price,
-                            'line_price'=>intval($v['line_price']),'remain_time'=>intval($remain_time),'hotel_name'=>$short_name
+                            'line_price'=>$line_price,'remain_time'=>intval($remain_time),'hotel_name'=>$short_name
                         );
                         $datalist[]=$info;
                     }

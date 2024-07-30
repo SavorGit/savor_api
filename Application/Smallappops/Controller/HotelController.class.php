@@ -628,10 +628,10 @@ class HotelController extends CommonController{
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
                     if($hotel_id==7){
-                        $res_price = $m_goods_price_hotel->getGoodsAreaPrice($v['id'],$res_hotel['area_id']);
+                        $res_price = $m_goods_price_hotel->getGoodsPrice($v['id'],$res_hotel['area_id'],$hotel_id,1);
                         $price = intval($res_price['price']);
-                        $res_price = $m_goods_price_hotel->getGoodsHotelPrice($v['id'],$res_hotel['area_id'],$hotel_id);
-                        $hotel_price = intval($res_price['price']);
+                        $res_hotelprice = $m_goods_price_hotel->getGoodsHotelPrice($v['id'],$res_hotel['area_id'],$hotel_id);
+                        $hotel_price = intval($res_hotelprice['price']);
                         $hid = 0;
                     }else{//上线后去掉
                         $price = intval($v['price']);
@@ -676,7 +676,7 @@ class HotelController extends CommonController{
             $m_hotel = new \Common\Model\HotelModel();
             $res_hotel = $m_hotel->getOneById('name,area_id',$hotel_id);
             $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
-            $res_price = $m_goods_price_hotel->getGoodsAreaPrice($goods_id,$res_hotel['area_id']);
+            $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$res_hotel['area_id'],$hotel_id,1);
             $line_price = intval($res_price['line_price']);
 
             $res_price = $m_goods_price_hotel->getGoodsHotelPrice($goods_id,$res_hotel['area_id'],$hotel_id);

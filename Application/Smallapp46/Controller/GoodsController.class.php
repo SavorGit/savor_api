@@ -207,7 +207,7 @@ class GoodsController extends CommonController{
                 $datalist[] = $dinfo;
             }
         }
-//        if(!empty($version) && $version>='4.6.69'){
+        if(!empty($version) && $version>='4.6.69'){
 //            $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
 //            $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2);
 //            foreach ($datalist as $k=>$v){
@@ -218,9 +218,8 @@ class GoodsController extends CommonController{
 //                }
 //                $datalist[$k]['message'] = $message;
 //            }
-//            $datalist = array('datalist'=>$datalist);
-//        }
-        $datalist = array('datalist'=>$datalist);
+            $datalist = array('datalist'=>$datalist);
+        }
         $this->to_back($datalist);
 
     }

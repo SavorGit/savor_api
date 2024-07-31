@@ -54,11 +54,13 @@ class GoodsController extends CommonController{
         }
 
         $res_goods = array();
-        if($is_olddata || !empty($hotel_stock)){
-            $fields = 'g.id as goods_id,g.name as goods_name,g.model_media_id,g.price,g.line_price,g.finance_goods_id,g.end_time,g.is_seckill,
-            g.start_time,g.end_time';
-            $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-            $res_goods = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','');
+        if(!empty($hotel_stock['goods_ids'])){
+            $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+            $fields = 'id as goods_id,name as goods_name,model_media_id,price,line_price,finance_goods_id,end_time,is_seckill,
+            start_time,end_time';
+            $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+            $res_goods = $m_goods->getDataList($fields,$where,'id desc');
+
         }
         $nowtime = date('Y-m-d H:i:s');
         if(!empty($res_goods)){
@@ -69,24 +71,22 @@ class GoodsController extends CommonController{
             $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
             foreach ($res_goods as $v){
                 $goods_id = $v['goods_id'];
-                if($is_olddata || in_array($v['finance_goods_id'],$hotel_stock['goods_ids'])){
-                    $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$area_id,$hotel_id);
-                    $price = intval($res_price['price']);
-                    $line_price = intval($res_price['line_price']);
+                $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$area_id,$hotel_id);
+                $price = intval($res_price['price']);
+                $line_price = intval($res_price['line_price']);
 
-                    $goods_info[]="{$v['goods_name']}({$price}元)";
+                $goods_info[]="{$v['goods_name']}({$price}元)";
 
-                    if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
-                        $end_time = strtotime($v['end_time']);
-                        $now_time = time();
-                        $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
-                        $m_media = new \Common\Model\MediaModel();
-                        $res_media = $m_media->getMediaInfoById($v['model_media_id']);
-                        $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>$price,
-                            'line_price'=>$line_price,'remain_time'=>intval($remain_time),'hotel_name'=>$short_name
-                        );
-                        $datalist[]=$info;
-                    }
+                if($v['is_seckill']==1 && $v['end_time']>=$nowtime){
+                    $end_time = strtotime($v['end_time']);
+                    $now_time = time();
+                    $remain_time = $end_time-$now_time>0?$end_time-$now_time:0;
+                    $m_media = new \Common\Model\MediaModel();
+                    $res_media = $m_media->getMediaInfoById($v['model_media_id']);
+                    $info = array('goods_id'=>$goods_id,'image'=>$res_media['oss_path'],'price'=>$price,
+                        'line_price'=>$line_price,'remain_time'=>intval($remain_time),'hotel_name'=>$short_name
+                    );
+                    $datalist[]=$info;
                 }
             }
             if(!empty($goods_info)){

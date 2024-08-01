@@ -486,11 +486,11 @@ class HotelController extends CommonController{
                     $stock_goods[$v['id']] = $v;
                 }
                 if(!empty($hotel_stock['goods_ids'])){
-                    $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id';
-                    $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-                    $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
-                    $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
+                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                    $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+                    $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+                    $res_data = $m_goods->getDataList($fields,$where,'id desc');
+
                     foreach ($res_data as $v){
                         $gstock_num = 0;
                         if(isset($stock_goods[$v['finance_goods_id']])){
@@ -598,18 +598,10 @@ class HotelController extends CommonController{
                 $stock_goods[$v['id']] = $v;
             }
             if(!empty($hotel_stock['goods_ids'])){
-                if($hotel_id==7){//上线后去掉
-                    $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
-                    $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
-                    $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
-                    $res_data = $m_goods->getDataList($fields,$where,'id desc');
-                }else{
-                    $fields = 'g.id,g.name,g.price,g.advright_media_id,g.cover_imgs,g.line_price,g.type,g.finance_goods_id,h.hotel_price,h.id as hid';
-                    $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.status'=>1);
-                    $where['g.finance_goods_id'] = array('in',$hotel_stock['goods_ids']);
-                    $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                    $res_data = $m_hotelgoods->getGoodsList($fields,$where,'g.id desc','','g.finance_goods_id');
-                }
+                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+                $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+                $res_data = $m_goods->getDataList($fields,$where,'id desc');
 
                 $m_hotel = new \Common\Model\HotelModel();
                 $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
@@ -627,17 +619,11 @@ class HotelController extends CommonController{
                     if(isset($stock_goods[$v['finance_goods_id']])){
                         $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
                     }
-                    if($hotel_id==7){
-                        $res_price = $m_goods_price_hotel->getGoodsPrice($v['id'],$res_hotel['area_id'],$hotel_id,1);
-                        $price = intval($res_price['price']);
-                        $res_hotelprice = $m_goods_price_hotel->getGoodsHotelPrice($v['id'],$res_hotel['area_id'],$hotel_id);
-                        $hotel_price = intval($res_hotelprice['price']);
-                        $hid = 0;
-                    }else{//上线后去掉
-                        $price = intval($v['price']);
-                        $hotel_price = intval($v['hotel_price']);
-                        $hid = $v['hid'];
-                    }
+                    $res_price = $m_goods_price_hotel->getGoodsPrice($v['id'],$res_hotel['area_id'],$hotel_id,1);
+                    $price = intval($res_price['price']);
+                    $res_hotelprice = $m_goods_price_hotel->getGoodsHotelPrice($v['id'],$res_hotel['area_id'],$hotel_id);
+                    $hotel_price = intval($res_hotelprice['price']);
+                    $hid = 0;
 
                     $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'price'=>$price,'type'=>$v['type'],
                         'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id'],
@@ -662,7 +648,7 @@ class HotelController extends CommonController{
         if(empty($res_staff)){
             $this->to_back(94001);
         }
-        if($hid){//上线后去掉
+        if($hid){
             $fields = 'g.id,g.price,h.hotel_price,h.hotel_id';
             $where = array('h.id'=>$hid,'g.type'=>43,'g.status'=>1);
             $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();

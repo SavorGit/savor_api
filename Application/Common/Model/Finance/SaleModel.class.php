@@ -19,26 +19,11 @@ class SaleModel extends BaseModel{
         $sale_price = 0;
         $goods_settlement_price = $settlement_price;
         if($stock_record_info['wo_reason_type']==1){
-            //修改售卖价格,上线后去掉
-            if($hotel_id==7){
-                $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
-                $res_price = $m_goods_price_hotel->getGoodsPrice($stock_record_info['goods_id'],$res_ext['area_id'],$hotel_id);
-                if(!empty($res_price['price'])){
-                    $sale_price = $res_price['price'];
-                }
-            }else{
-                $m_hotelgoods = new \Common\Model\Smallapp\HotelgoodsModel();
-                $where = array('h.hotel_id'=>$hotel_id,'g.type'=>43,'g.finance_goods_id'=>$stock_record_info['goods_id'],'g.status'=>1);
-                $res_data = $m_hotelgoods->getGoodsList('g.id,g.price,h.hotel_price',$where,'g.id desc',"0,1");
-                if(!empty($res_data[0]['price'])){
-                    $sale_price = $res_data[0]['price'];
-                }
+            $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+            $res_price = $m_goods_price_hotel->getGoodsPrice($stock_record_info['goods_id'],$res_ext['area_id'],$hotel_id);
+            if(!empty($res_price['price'])){
+                $sale_price = $res_price['price'];
             }
-//            $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
-//            $res_price = $m_goods_price_hotel->getGoodsPrice($stock_record_info['goods_id'],$res_ext['area_id'],$hotel_id);
-//            if(!empty($res_price['price'])){
-//                $sale_price = $res_price['price'];
-//            }
         }else{
             $settlement_price = 0;
         }

@@ -304,15 +304,13 @@ class DishController extends CommonController{
                     $where = array('box.mac'=>$box_mac,'box.state'=>1,'box.flag'=>0);
                     $box_info = $m_box->getBoxByCondition($fields,$where);
                     $hotel_id = $box_info[0]['hotel_id'];
-                    if($hotel_id==7){//上线后去掉
-                        $m_hotel = new \Common\Model\HotelModel();
-                        $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
-                        $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
-                        $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$res_hotel['area_id'],$hotel_id);
-                        if(!empty($res_price['price'])){
-                            $data['price'] = $res_price['price'];
-                            $data['line_price'] = $res_price['line_price'];
-                        }
+                    $m_hotel = new \Common\Model\HotelModel();
+                    $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
+                    $m_goods_price_hotel = new \Common\Model\Smallapp\GoodsPriceHotelModel();
+                    $res_price = $m_goods_price_hotel->getGoodsPrice($goods_id,$res_hotel['area_id'],$hotel_id);
+                    if(!empty($res_price['price'])){
+                        $data['price'] = $res_price['price'];
+                        $data['line_price'] = $res_price['line_price'];
                     }
 //                    $m_sellwine_activity_hotel = new \Common\Model\Smallapp\SellwineActivityHotelModel();
 //                    $sellwine_activity = $m_sellwine_activity_hotel->getSellwineActivity($hotel_id,$openid,2,$res_goods['finance_goods_id']);

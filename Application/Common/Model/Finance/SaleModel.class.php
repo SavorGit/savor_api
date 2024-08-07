@@ -12,7 +12,7 @@ class SaleModel extends BaseModel{
             $hotel_id = $res_stock['hotel_id'];
         }
         $m_price_template_hotel = new \Common\Model\Finance\PriceTemplateHotelModel();
-        $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id'],0);
+        $settlement_price = $m_price_template_hotel->getHotelGoodsPrice($hotel_id,$stock_record_info['goods_id']);
         $m_hotel = new \Common\Model\HotelModel();
         $fields = 'hotel.area_id,ext.maintainer_id,ext.residenter_id';
         $res_ext = $m_hotel->getHotelById($fields,array('hotel.id'=>$hotel_id));

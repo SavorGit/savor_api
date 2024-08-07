@@ -5,7 +5,7 @@ use Common\Model\BaseModel;
 class PriceTemplateHotelModel extends BaseModel{
 	protected $tableName='finance_price_template_hotel';
 
-    public function getHotelGoodsPrice($hotel_id,$goods_id,$is_cache=1){
+    public function getHotelGoodsPrice($hotel_id,$goods_id,$is_cache=0){
         $settlement_price = 0;
         if($is_cache==1){
             $redis = new \Common\Lib\SavorRedis();
@@ -19,7 +19,13 @@ class PriceTemplateHotelModel extends BaseModel{
                 }
             }
         }else{
-            $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1);
+            if($hotel_id==7){
+                $m_hotel = new \Common\Model\HotelModel();
+                $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
+                $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1,'a.area_id'=>$res_hotel['area_id']);
+            }else{
+                $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1);
+            }
             $result = $this->alias('a')
                 ->join('savor_finance_price_template t on a.template_id=t.id','left')
                 ->field('a.template_id')

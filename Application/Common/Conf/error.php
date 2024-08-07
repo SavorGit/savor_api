@@ -538,6 +538,7 @@ return array(
         '93229'=>'smallappsale_exchange_spacetime_error',
         '93230'=>'smallappsale_exchange_not_support',
         '93231'=>'smallappsale_check_img_empty',
+        '93232'=>'smallappsale_hotel_not_bd',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',
@@ -562,6 +563,7 @@ return array(
 	    '94111'=>'smallappops_leavel_hotel_stock_error',
 	    '94112'=>'smallappops_hotel_distance_error',
         '94113'=>'smallappops_hotel_same_error',
+        '94114'=>'smallappops_hotel_not_bd',
 
         //小程序数据端
         '95001'=>'smallappdata_mobile_not_open_account',

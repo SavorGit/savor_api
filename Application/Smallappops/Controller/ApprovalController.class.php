@@ -168,7 +168,7 @@ class ApprovalController extends CommonController{
             $this->to_back(94001);
         }
         $m_hotel = new \Common\Model\HotelModel();
-        $res_hotel = $m_hotel->getHotelById('hotel.area_id,ext.is_have_group',array('hotel.id'=>$hotel_id));
+        $res_hotel = $m_hotel->getHotelById('hotel.area_id,ext.is_have_group,ext.bd_name',array('hotel.id'=>$hotel_id));
         $area_id = $res_hotel['area_id'];
         if($res_hotel['is_have_group']==0){
             $this->to_back(94105);
@@ -182,6 +182,9 @@ class ApprovalController extends CommonController{
         $wine_data = array();
         switch ($item_id){
             case 10:
+                if(empty($res_hotel['bd_name'])){
+                    $this->to_back(94114);
+                }
                 $wine_num = 0;
                 foreach ($goods_arr as $v){
                     if($v['id']>0 && $v['num']>0){

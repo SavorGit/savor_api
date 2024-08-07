@@ -556,6 +556,8 @@ return array(
     'smallappops_scan_goods_not_leavel_goods'=>'扫码酒水不是调拨酒水',
     'smallappops_leavel_hotel_stock_error'=>'调拨酒楼库存不足',
     'smallappops_hotel_same_error'=>'调拨酒楼和目标酒楼不能是同一个酒楼',
+    'smallappops_hotel_not_bd'=>'当前酒楼没有BD不能发起送酒申请',
+    'smallappsale_hotel_not_bd'=>'当前酒楼没有BD不能核销',
 
 
 

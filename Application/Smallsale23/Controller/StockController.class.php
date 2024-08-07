@@ -1546,7 +1546,6 @@ class StockController extends CommonController{
         if(count($all_idcodes)>6){
             $this->to_back(93109);
         }
-
         $message = '提交成功';
         if(!empty($all_idcodes)){
             $m_stock_record = new \Common\Model\Finance\StockRecordModel();
@@ -1555,7 +1554,11 @@ class StockController extends CommonController{
             $res_records = $m_stock_record->getStockRecordList($fileds,$rwhere,'a.id desc','0,1');
             $hotel_id = intval($res_records[0]['hotel_id']);
             $m_hotel = new \Common\Model\HotelModel();
-            $res_hotel = $m_hotel->getOneById('id,name,area_id',$hotel_id);
+            $field = 'hotel.id,hotel.name,hotel.area_id,ext.bd_name';
+            $res_hotel = $m_hotel->getHotelById($field,array('hotel.id'=>$hotel_id));
+            if(empty($res_hotel['bd_name'])){
+                $this->to_back(93232);
+            }
             $m_userintegral_record = new \Common\Model\Smallapp\UserIntegralrecordModel();
             $m_sale = new \Common\Model\Finance\SaleModel();
             $m_goods_policy_hotel = new \Common\Model\Finance\GoodsPolicyHotelModel();

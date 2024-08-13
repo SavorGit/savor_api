@@ -19,13 +19,9 @@ class PriceTemplateHotelModel extends BaseModel{
                 }
             }
         }else{
-            if($hotel_id==7){
-                $m_hotel = new \Common\Model\HotelModel();
-                $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
-                $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1,'a.area_id'=>$res_hotel['area_id']);
-            }else{
-                $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1);
-            }
+            $m_hotel = new \Common\Model\HotelModel();
+            $res_hotel = $m_hotel->getOneById('area_id',$hotel_id);
+            $where = array('a.hotel_id'=>array('in',"$hotel_id,0"),'a.goods_id'=>$goods_id,'t.status'=>1,'a.area_id'=>$res_hotel['area_id']);
             $result = $this->alias('a')
                 ->join('savor_finance_price_template t on a.template_id=t.id','left')
                 ->field('a.template_id')

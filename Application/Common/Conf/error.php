@@ -539,6 +539,11 @@ return array(
         '93230'=>'smallappsale_exchange_not_support',
         '93231'=>'smallappsale_check_img_empty',
         '93232'=>'smallappsale_hotel_not_bd',
+        '93233'=>'smallappsale_hotel_not_have_group',
+        '93234'=>'smallappsale_hotel_has_cqmoney',
+        '93235'=>'smallappsale_hotel_winemoney_max_error',
+        '93236'=>'smallappsale_contract_hotel_quota_error',
+        '93237'=>'smallappsale_hotel_restock_not_bd',
 
         //小程序运维端
         '94001'=>'smallappops_contact_admin_createuser',

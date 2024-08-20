@@ -558,6 +558,11 @@ return array(
     'smallappops_hotel_same_error'=>'调拨酒楼和目标酒楼不能是同一个酒楼',
     'smallappops_hotel_not_bd'=>'当前酒楼没有BD不能发起送酒申请',
     'smallappsale_hotel_not_bd'=>'当前酒楼没有BD不能核销',
+    'smallappsale_hotel_restock_not_bd'=>'当前酒楼没有BD不能申请补酒',
+    'smallappsale_hotel_not_have_group'=>'当前酒楼暂未开通企微群，请联系运维人员',
+    'smallappsale_hotel_has_cqmoney'=>'超期欠款尚未结清，无法提交补酒申请',
+    'smallappsale_hotel_winemoney_max_error'=>'已超过配额，无法提交补酒申请，请联系热点工作人员',
+    'smallappsale_contract_hotel_quota_error'=>'配额未设置，无法提交补酒申请，请联系热点工作人员',
 
 
 

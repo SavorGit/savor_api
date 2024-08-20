@@ -25,6 +25,9 @@ class HotelController extends CommonController{
                 $this->is_verify = 1;
                 $this->valid_fields = array('hotel_id'=>1001,'type'=>1);
                 break;
+            case 'stockgoodslist':
+                $this->is_verify = 1;
+                $this->valid_fields = array('openid'=>1001,'hotel_id'=>1001);
         }
         parent::_init_();
     }
@@ -227,5 +230,56 @@ class HotelController extends CommonController{
         $data['invite_open_num']  = $invite_open_num;
         $data['send_invite_nums'] = $send_invite_nums;
         $this->to_back($data);
+    }
+
+    public function stockgoodslist(){
+        $openid = $this->params['openid'];
+        $hotel_id = intval($this->params['hotel_id']);
+
+        $m_staff = new \Common\Model\Integral\StaffModel();
+        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
+        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id';
+        $res_staff = $m_staff->getMerchantStaff($fields,$where);
+        if(empty($res_staff)){
+            $this->to_back(93001);
+        }
+
+        $datalist = array();
+        $redis = new \Common\Lib\SavorRedis();
+        $redis->select(9);
+        $key = C('FINANCE_HOTELSTOCK').':'.$hotel_id;
+        $res_cache = $redis->get($key);
+        if(!empty($res_cache)){
+            $hotel_stock = json_decode($res_cache,true);
+            $stock_goods = array();
+            foreach ($hotel_stock['goods_list'] as $v){
+                $stock_goods[$v['id']] = $v;
+            }
+            if(!empty($hotel_stock['goods_ids'])){
+                $m_goods = new \Common\Model\Smallapp\DishgoodsModel();
+                $fields = 'id,name,price,advright_media_id,small_media_id,cover_imgs,line_price,type,finance_goods_id';
+                $where = array('type'=>43,'status'=>1,'finance_goods_id'=>array('in',$hotel_stock['goods_ids']));
+                $res_data = $m_goods->getDataList($fields,$where,'id desc');
+                $oss_host = get_oss_host();
+                foreach ($res_data as $v){
+                    $img_url = '';
+                    if(!empty($v['cover_imgs'])){
+                        $cover_imgs_info = explode(',',$v['cover_imgs']);
+                        if(!empty($cover_imgs_info[0])){
+                            $img_url = $oss_host.$cover_imgs_info[0]."?x-oss-process=image/resize,p_50/quality,q_80";
+                        }
+                    }
+                    $stock_num = 0;
+                    if(isset($stock_goods[$v['finance_goods_id']])){
+                        $stock_num = $stock_goods[$v['finance_goods_id']]['stock_num'];
+                    }
+                    $dinfo = array('id'=>$v['id'],'name'=>$v['name'],'type'=>$v['type'],
+                        'img_url'=>$img_url,'stock_num'=>$stock_num,'finance_goods_id'=>$v['finance_goods_id']);
+                    $datalist[] = $dinfo;
+                }
+            }
+
+        }
+        $this->to_back($datalist);
     }
 }

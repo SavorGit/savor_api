@@ -1649,121 +1649,6 @@ class StockController extends CommonController{
         $this->to_back(array('message'=>$message));
     }
 
-    public function getWriteoffList(){
-        $openid = $this->params['openid'];
-        $page = intval($this->params['page']);
-        $version = $this->params['version'];
-        $pagesize = 10;
-
-        $m_staff = new \Common\Model\Integral\StaffModel();
-        $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
-        $res_staff = $m_staff->getMerchantStaff($fields,$where);
-        if(empty($res_staff)){
-            $this->to_back(93001);
-        }
-        $offset = ($page-1)*$pagesize;
-        $m_stock_record = new \Common\Model\Finance\StockRecordModel();
-        $limit = "$offset,$pagesize";
-        $order = 'id desc';
-        $where = array('op_openid'=>$openid,'type'=>7);
-        $fields = 'batch_no,add_time,wo_status as status,wo_reason_type as reason_type';
-        $res_records = $m_stock_record->getALLDataList($fields,$where,$order,$limit,'batch_no');
-        $data_list = array();
-        if(!empty($res_records)){
-            $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-            $m_media = new \Common\Model\MediaModel();
-            $all_reasons = C('STOCK_REASON');
-            $all_status = C('STOCK_AUDIT_STATUS');
-            $all_recycle_status = C('STOCK_RECYCLE_ALL_STATUS');
-            $open_time = '2024-01-03 14:00:10';
-            $fileds = 'a.id,a.idcode,goods.id as goods_id,goods.name as goods_name,cate.name as cate_name,
-            spec.name as spec_name,unit.name as unit_name,a.wo_status as status,a.recycle_status,a.recycle_time,
-            a.reason,a.add_time';
-            foreach ($res_records as $v){
-                $reason = '';
-                if(isset($all_reasons[$v['reason_type']])){
-                    $reason = $all_reasons[$v['reason_type']]['name'];
-                }
-                $batch_no = $v['batch_no'];
-                $where = array('a.batch_no'=>$batch_no,'a.type'=>7,'a.op_openid'=>$openid);
-                $res_goods = $m_stock_record->getStockRecordList($fileds,$where,'a.id asc','','');
-
-                $entity = array();
-                $cwhere = array('goods_id'=>$res_goods[0]['goods_id'],'status'=>1,'type'=>array('in','10,20'));
-                $res_config = $m_goodsconfig->getDataList('id,name,media_id,open_integral,type',$cwhere,'id asc');
-                $demo_img = '';
-                $open_integral = 0;
-                if(!empty($res_config)){
-                    foreach ($res_config as $cv){
-                        $img_url = '';
-                        if($cv['media_id']>0){
-                            $res_media = $m_media->getMediaInfoById($cv['media_id']);
-                            $img_url = $res_media['oss_addr'];
-                        }
-                        if($cv['type']==10){
-                            $demo_img = $img_url;
-                            $open_integral = $cv['open_integral'];
-                        }
-                        if($cv['type']==20){
-                            $entity[]=array('name'=>$cv['name'],'img_url'=>$img_url);
-                        }
-                    }
-                }
-                $recycle_status = 4;
-//                if($v['reason_type']==1 && $v['status']==2 && $open_integral && $res_goods[0]['add_time']>=$open_time){
-//                    $recycle_status = $res_goods[0]['recycle_status'];
-//                }
-                $idcode_num = count($res_goods);
-                $recycle_list = array();
-                if(!in_array($recycle_status,array(1,4))){
-                    $tmp_recycle = array();
-                    foreach ($res_goods as $rgv){
-                        $tmp_recycle[$rgv['recycle_status']][]=array('recycle_time'=>$rgv['recycle_time'],'reason'=>$rgv['reason']);
-                    }
-                    foreach ($tmp_recycle as $trk=>$trv){
-                        $status_str = '开瓶奖励'.$all_recycle_status[$trk];
-                        if($idcode_num>1){
-                            $now_num = count($trv);
-                            $status_str = $now_num.'个'.$status_str;
-                        }
-                        $rlist = $trv;
-                        if($trk==3){
-                            foreach ($rlist as $rlk=>$rlv){
-                                $rlist[$rlk]['reason'] = '无法回收未上传开瓶资料';
-                            }
-                        }
-                        $recycle_list[]=array('status'=>$trk,'status_str'=>$status_str,'num'=>count($trv),'rlist'=>$rlist);
-                    }
-                }
-                $status_str = '售卖'.$all_status[$v['status']];
-                $data_list[]=array('reason'=>$reason,'status'=>$v['status'],'recycle_status'=>$recycle_status,'recycle_list'=>$recycle_list,
-                    'status_str'=>$status_str,'num'=>$idcode_num,'add_time'=>$v['add_time'],
-                    'goods'=>$res_goods,'entity'=>$entity,'demo_img'=>$demo_img,'batch_no'=>$batch_no);
-            }
-        }
-        if($version>='1.9.48'){
-            $reward_tips = '';
-            if($page==1){
-                $m_goodsconfig = new \Common\Model\Finance\GoodsConfigModel();
-                $configwhere = array('type'=>10,'open_integral'=>array('gt',0));
-                $res_goods = $m_goodsconfig->getDataList('goods_id',$configwhere,'id desc');
-                $goods_ids = array();
-                foreach ($res_goods as $v){
-                    $goods_ids[]=$v['goods_id'];
-                }
-                $where = array('op_openid'=>$openid,'type'=>7,'wo_status'=>2,'wo_reason_type'=>1,'recycle_status'=>1);
-                $where['goods_id'] = array('in',$goods_ids);
-                $res_records = $m_stock_record->getALLDataList('id',$where,'id desc','0,1','');
-                if(!empty($res_records[0]['id'])){
-                    $reward_tips = '您有待领取的开瓶费，请尽快申请领取';
-                }
-            }
-            $data_list = array('datalist'=>$data_list,'reward_tips'=>$reward_tips);
-        }
-        $this->to_back($data_list);
-    }
-
     public function scanReplaceCode(){
         $openid = $this->params['openid'];
         $idcode = $this->params['idcode'];
@@ -1783,7 +1668,7 @@ class StockController extends CommonController{
         }
         $m_staff = new \Common\Model\Integral\StaffModel();
         $where = array('a.openid'=>$openid,'a.status'=>1,'merchant.status'=>1);
-        $fields = 'a.id,a.openid,merchant.type,a.hotel_id';
+        $fields = 'a.id,a.openid,merchant.type,merchant.hotel_id';
         $res_staff = $m_staff->getMerchantStaff($fields,$where);
         if(empty($res_staff)){
             $this->to_back(93001);
